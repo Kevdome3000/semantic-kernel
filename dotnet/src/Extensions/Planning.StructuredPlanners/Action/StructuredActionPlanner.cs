@@ -69,8 +69,8 @@ public class StructuredActionPlanner : IStructuredPlanner
 
         _plannerFunction.SetDefaultFunctionCollection(skillCollection);
 
-        SKContext? result = await _plannerFunction.InvokeAsync(_context, cancellationToken: cancellationToken).ConfigureAwait(false);
-        ActionFunctionCall? response = result.ToFunctionCallResult<ActionFunctionCall>();
+        FunctionResult? result = await _plannerFunction.InvokeAsync(_context, cancellationToken: cancellationToken).ConfigureAwait(false);
+        ActionFunctionCall? response = result.Context.ToFunctionCallResult<ActionFunctionCall>();
 
         if (response is null)
         {

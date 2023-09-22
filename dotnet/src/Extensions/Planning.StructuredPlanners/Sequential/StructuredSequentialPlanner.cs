@@ -71,15 +71,15 @@ public class StructuredSequentialPlanner : IStructuredPlanner
         FunctionCollection skillCollection = await _context.GetSkillCollection(Config, goal).ConfigureAwait(false);
         _plannerFunction.SetDefaultFunctionCollection(skillCollection);
 
-        SKContext? result = await _plannerFunction.InvokeAsync(_context, cancellationToken: cancellationToken).ConfigureAwait(false);
-        List<SequentialFunctionCallResult>? functionCalls = result.ToFunctionCallResult<List<SequentialFunctionCallResult>>();
+        FunctionResult? result = await _plannerFunction.InvokeAsync(_context, cancellationToken: cancellationToken).ConfigureAwait(false);
+        List<SequentialFunctionCallResult>? functionCalls = result.Context.ToFunctionCallResult<List<SequentialFunctionCallResult>>();
 
         if (functionCalls is null)
         {
             throw new SKException("The planner failed to generate a response");
         }
 
-        var plan = functionCalls.ToPlan(goal, skillCollection);
+        Plan plan = functionCalls.ToPlan(goal, skillCollection);
         return plan;
     }
 

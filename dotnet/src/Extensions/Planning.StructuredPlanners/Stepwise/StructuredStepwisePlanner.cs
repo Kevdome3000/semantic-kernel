@@ -238,11 +238,16 @@ public class StructuredStepwisePlanner : IStructuredPlanner
 
         try
         {
-            var result = await targetFunction.InvokeAsync(_kernel, functionCall.FunctionParameters()).ConfigureAwait(false);
+            foreach (KeyValuePair<string, string> variable in functionCall.FunctionParameters())
+            {
+                _context.Variables.Set(variable.Key, variable.Value);
+            }
 
-            _logger.LogTrace("Invoked {FunctionName}. Result: {Result}", targetFunction.Name, result.Result);
+            var result = await targetFunction.InvokeAsync(_context).ConfigureAwait(false);
 
-            nextStep.FunctionResult = result.Result.Trim();
+            _logger.LogTrace("Invoked {FunctionName}. Result: {Result}", targetFunction.Name, result.Context.Result);
+
+            nextStep.FunctionResult = result.GetValue<string>();
             return nextStep;
         }
         catch (Exception e) when (!e.IsCriticalException())

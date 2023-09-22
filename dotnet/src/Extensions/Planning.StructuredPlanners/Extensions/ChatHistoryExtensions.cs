@@ -4,6 +4,7 @@ namespace Microsoft.SemanticKernel.Planning.Structured.Extensions;
 
 using System.Linq;
 using AI.ChatCompletion;
+using Text;
 
 
 /// <summary>
@@ -19,7 +20,7 @@ public static class ChatHistoryExtensions
     // <param name="skipStart">The index to start skipping messages.</param>
     // <param name="skipCount">The number of messages to skip.</param>
     // <param name="tokenCounter">The token counter to use.</param>
-    internal static int GetTokenCount(this ChatHistory chatHistory, string? additionalMessage = null, int skipStart = 0, int skipCount = 0, TokenCounter? tokenCounter = null)
+    internal static int GetTokenCount(this ChatHistory chatHistory, string? additionalMessage = null, int skipStart = 0, int skipCount = 0, TextChunker.TokenCounter? tokenCounter = null)
     {
         tokenCounter ??= DefaultTokenCounter;
 
