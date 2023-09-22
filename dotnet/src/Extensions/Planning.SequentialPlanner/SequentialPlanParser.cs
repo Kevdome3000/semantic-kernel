@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Planning.Sequential;
+
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
@@ -7,7 +9,6 @@ using System.Xml;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 
-namespace Microsoft.SemanticKernel.Planning.Sequential;
 
 /// <summary>
 /// Parse sequential plan text into a plan.
@@ -60,6 +61,7 @@ internal static class SequentialPlanParser
         };
     }
 
+
     /// <summary>
     /// Convert a plan xml string to a plan.
     /// </summary>
@@ -72,6 +74,7 @@ internal static class SequentialPlanParser
     internal static Plan ToPlanFromXml(this string xmlString, string goal, Func<string, string, ISKFunction?> getPluginFunction, bool allowMissingFunctions = false)
     {
         XmlDocument xmlDoc = new();
+
         try
         {
             xmlDoc.LoadXml("<xml>" + xmlString + "</xml>");
@@ -94,9 +97,10 @@ internal static class SequentialPlanParser
                 match = planRegex.Match($"{xmlString}</plan>"); // try again with a closing tag
             }
 
+
             if (match.Success)
             {
-                string planXml = match.Value;
+                var planXml = match.Value;
 
                 try
                 {
@@ -114,7 +118,7 @@ internal static class SequentialPlanParser
         }
 
         // Get the Solution
-        XmlNodeList solution = xmlDoc.GetElementsByTagName(SolutionTag);
+        var solution = xmlDoc.GetElementsByTagName(SolutionTag);
 
         var plan = new Plan(goal);
 
@@ -146,10 +150,12 @@ internal static class SequentialPlanParser
                             var planStep = new Plan(pluginFunction);
 
                             var functionVariables = new ContextVariables();
-                            var functionOutputs = new List<string>();
-                            var functionResults = new List<string>();
+                            List<string> functionOutputs = new List<string>();
+                            List<string> functionResults = new List<string>();
+
 
                             var view = pluginFunction.Describe();
+
                             foreach (var p in view.Parameters)
                             {
                                 functionVariables.Set(p.Name, p.DefaultValue);
@@ -178,6 +184,7 @@ internal static class SequentialPlanParser
                             // Plan properties
                             planStep.Outputs = functionOutputs;
                             planStep.Parameters = functionVariables;
+
                             foreach (var result in functionResults)
                             {
                                 plan.Outputs.Add(result);
@@ -213,6 +220,7 @@ internal static class SequentialPlanParser
         pluginName = pluginFunctionNameParts?.Length > 1 ? pluginFunctionNameParts[0] : string.Empty;
         functionName = pluginFunctionNameParts?.Length > 1 ? pluginFunctionNameParts[1] : pluginFunctionName;
     }
+
 
     private static readonly string[] s_functionTagArray = new string[] { FunctionTag };
 }

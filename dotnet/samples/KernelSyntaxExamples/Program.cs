@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Reliability;
 using RepoUtils;
 
+
 public static class Program
 {
     // ReSharper disable once InconsistentNaming
@@ -72,6 +73,7 @@ public static class Program
         }
     }
 
+
     private static void LoadUserSecrets()
     {
         IConfigurationRoot configRoot = new ConfigurationBuilder()
@@ -80,6 +82,7 @@ public static class Program
             .Build();
         TestConfiguration.Initialize(configRoot);
     }
+
 
     private static CancellationToken ConsoleCancellationToken(this CancellationTokenSource tokenSource)
     {
@@ -93,7 +96,9 @@ public static class Program
         return tokenSource.Token;
     }
 
-    private static async Task SafeWaitAsync(this Task task,
+
+    private static async Task SafeWaitAsync(
+        this Task task,
         CancellationToken cancellationToken = default)
     {
         try

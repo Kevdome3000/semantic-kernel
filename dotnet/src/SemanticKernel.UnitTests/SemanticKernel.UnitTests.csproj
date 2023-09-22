@@ -33,4 +33,5 @@
     <ProjectReference Include="..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
 
+
 </Project>
