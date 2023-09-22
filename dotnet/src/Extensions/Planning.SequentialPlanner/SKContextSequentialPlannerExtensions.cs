@@ -10,9 +10,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Planning.Sequential;
+using Extensions.Logging;
+using Memory;
+using Planning.Sequential;
 
 #pragma warning restore IDE0130
 
@@ -70,7 +70,7 @@ public static class SKContextSequentialPlannerExtensions
 
         var availableFunctions = functionsView
             .Where(s => !config.ExcludedPlugins.Contains(s.PluginName, StringComparer.OrdinalIgnoreCase)
-                && !config.ExcludedFunctions.Contains(s.Name, StringComparer.OrdinalIgnoreCase))
+                        && !config.ExcludedFunctions.Contains(s.Name, StringComparer.OrdinalIgnoreCase))
             .ToList();
 
         List<FunctionView>? result = null;

@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using static Microsoft.SemanticKernel.Text.TextChunker;
-
 namespace Microsoft.SemanticKernel.Planning.Structured.Extensions;
 
 using System.Linq;

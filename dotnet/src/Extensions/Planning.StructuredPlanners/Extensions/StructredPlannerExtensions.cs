@@ -14,7 +14,6 @@ using Azure.AI.OpenAI;
 using Connectors.AI.OpenAI.FunctionCalling.Extensions;
 using Extensions.Logging;
 using Memory;
-using Planning;
 using Planning.Structured;
 using Planning.Structured.Extensions;
 using Planning.Structured.Sequential;

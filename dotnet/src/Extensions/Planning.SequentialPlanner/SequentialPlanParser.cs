@@ -6,8 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Xml;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Orchestration;
+using Diagnostics;
+using Orchestration;
 
 
 /// <summary>
@@ -40,6 +40,7 @@ internal static class SequentialPlanParser
     /// The attribute tag used in the plan xml for appending the output of a function to the final result for a plan.
     /// </summary>
     internal const string AppendToResultTag = "appendToResult";
+
 
     internal static Func<string, string, ISKFunction?> GetPluginFunction(IReadOnlyFunctionCollection functions)
     {
@@ -97,7 +98,6 @@ internal static class SequentialPlanParser
                 match = planRegex.Match($"{xmlString}</plan>"); // try again with a closing tag
             }
 
-
             if (match.Success)
             {
                 var planXml = match.Value;
@@ -152,7 +152,6 @@ internal static class SequentialPlanParser
                             var functionVariables = new ContextVariables();
                             List<string> functionOutputs = new List<string>();
                             List<string> functionResults = new List<string>();
-
 
                             var view = pluginFunction.Describe();
 
@@ -213,6 +212,7 @@ internal static class SequentialPlanParser
 
         return plan;
     }
+
 
     private static void GetPluginFunctionNames(string pluginFunctionName, out string pluginName, out string functionName)
     {

@@ -85,8 +85,8 @@ internal static class Example12_SequentialPlanner
 
         string folder = RepoFiles.SamplePluginsPath();
         kernel.ImportSemanticPluginFromDirectory(folder,
-           "SummarizePlugin",
-           "WriterPlugin");
+            "SummarizePlugin",
+            "WriterPlugin");
 
         Plan plan = null;
 
@@ -213,8 +213,8 @@ internal static class Example12_SequentialPlanner
         // Load additional plugins to enable planner to do non-trivial asks.
         string folder = RepoFiles.SamplePluginsPath();
         kernel.ImportSemanticPluginFromDirectory(folder,
-           "SummarizePlugin",
-           "WriterPlugin");
+            "SummarizePlugin",
+            "WriterPlugin");
 
         var plan = await planner.CreatePlanAsync("Summarize an input, translate to french, and e-mail to John Doe");
 
@@ -748,17 +748,17 @@ internal static class Example12_SequentialPlanner
 
         string folder = RepoFiles.SamplePluginsPath();
         kernel.ImportSemanticPluginFromDirectory(folder,
-           "SummarizePlugin",
-           "WriterPlugin",
-           "CalendarPlugin",
-           "ChatPlugin",
-           "ChildrensBookPlugin",
-           "ClassificationPlugin",
-           "CodingPlugin",
-           "FunPlugin",
-           "IntentDetectionPlugin",
-           "MiscPlugin",
-           "QAPlugin");
+            "SummarizePlugin",
+            "WriterPlugin",
+            "CalendarPlugin",
+            "ChatPlugin",
+            "ChildrensBookPlugin",
+            "ClassificationPlugin",
+            "CodingPlugin",
+            "FunPlugin",
+            "IntentDetectionPlugin",
+            "MiscPlugin",
+            "QAPlugin");
 
         kernel.ImportPlugin(new EmailPlugin(), "email");
         kernel.ImportPlugin(new StaticTextPlugin(), "statictext");

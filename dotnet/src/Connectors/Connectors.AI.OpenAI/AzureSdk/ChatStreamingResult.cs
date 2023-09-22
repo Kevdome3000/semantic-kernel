@@ -77,11 +77,11 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
         {
             if (!_isFunctionCall)
             {
-            if (!string.IsNullOrWhiteSpace(message.Content))
-              {
-                yield return new SKChatMessage(message);
-              }
-              
+                if (!string.IsNullOrWhiteSpace(message.Content))
+                {
+                    yield return new SKChatMessage(message);
+                }
+
                 continue;
             }
 
@@ -102,7 +102,7 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
                               $"Cleaned Version: {content}");
 
             yield return new SKChatMessage(AuthorRole.FunctionCall.Label, content, functionName);
-           
+
         }
     }
 

@@ -10,7 +10,6 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.FunctionCalling;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.FunctionCalling.Extensions;
-using Microsoft.SemanticKernel.SkillDefinition;
 using RepoUtils;
 
 

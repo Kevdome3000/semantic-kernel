@@ -97,6 +97,7 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
     public bool Equals(AuthorRole other)
         => string.Equals(this.Label, other.Label, StringComparison.OrdinalIgnoreCase);
 
+
     /// <inheritdoc/>
     public override string ToString() => this.Label;
 }

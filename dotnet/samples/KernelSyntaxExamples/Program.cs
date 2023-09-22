@@ -31,6 +31,7 @@ public static class Program
         await RunExamplesAsync(filter, cancelToken);
     }
 
+
     private static async Task RunExamplesAsync(string? filter, CancellationToken cancellationToken)
     {
         var examples = (Assembly.GetExecutingAssembly().GetTypes())
@@ -47,6 +48,7 @@ public static class Program
                     Console.WriteLine($"Running {example}...");
 
                     var method = Assembly.GetExecutingAssembly().GetType(example)?.GetMethod("RunAsync");
+
                     if (method == null)
                     {
                         Console.WriteLine($"Example {example} not found");
@@ -56,6 +58,7 @@ public static class Program
                     bool hasCancellationToken = method.GetParameters().Any(param => param.ParameterType == typeof(CancellationToken));
 
                     var taskParameters = hasCancellationToken ? new object[] { cancellationToken } : null;
+
                     if (method.Invoke(null, taskParameters) is Task t)
                     {
                         await t.SafeWaitAsync(cancellationToken);
