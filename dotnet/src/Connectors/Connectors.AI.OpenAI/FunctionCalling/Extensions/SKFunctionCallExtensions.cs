@@ -101,27 +101,56 @@ public static class SKFunctionCallExtensions
         Func<string, T>? deserializationFallback = null,
         CancellationToken cancellationToken = default)
     {
-        var answer = await function.InvokeAsync(kernel, context, cancellationToken: cancellationToken).ConfigureAwait(false);
+        var functionResult = await function.InvokeAsync(kernel, context, cancellationToken: cancellationToken).ConfigureAwait(false);
         T? result = default;
-        var content = answer.Result;
 
         try
         {
-            result = JsonSerializer.Deserialize<T>(content, serializerOptions ?? new JsonSerializerOptions(JsonSerializerDefaults.Web) { WriteIndented = true });
-
+            result = functionResult.GetValue<T>();
         }
 
-        catch (JsonException ex)
+        catch (InvalidCastException exception)
         {
-            Console.WriteLine($"Error while converting '{content}' to a '{typeof(T)}': {ex}");
-
-            if (deserializationFallback != null)
+            try
             {
-                result = deserializationFallback.Invoke(content);
+                result = functionResult.Context.ToFunctionCallResult<T>(serializerOptions);
             }
+            catch (JsonException ex)
+            {
+                Console.WriteLine($"Error while converting '{functionResult.Context.Result}' to a '{typeof(T)}': {ex}");
+
+                if (deserializationFallback != null)
+                {
+                    result = deserializationFallback.Invoke(functionResult.Context.Result);
+                }
+            }
+
         }
 
         return result;
+    }
+
+
+    /// <summary>
+    /// Returns the content of the chat message as a FunctionCallResult
+    /// </summary>
+    /// <param name="functionResult"></param>
+    /// <returns></returns>
+    public static FunctionCallResult? ToFunctionCallResult(this FunctionResult functionResult)
+    {
+        FunctionCallResult? functionCall = default;
+
+        try
+        {
+            functionCall = functionResult.Context.ToFunctionCallResult<FunctionCallResult>();
+
+        }
+        catch (JsonException ex)
+        {
+            Console.WriteLine($"Error while converting '{functionResult.Context.Result}' to a '{typeof(FunctionCallResult)}': {ex}");
+        }
+
+        return functionCall;
     }
 
 

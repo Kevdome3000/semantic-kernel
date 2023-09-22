@@ -99,8 +99,9 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
 
 
     /// <inheritdoc />
-    public async Task<SKContext> InvokeAsync(SKContext context, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+    public async Task<FunctionResult> InvokeAsync(SKContext context, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
     {
+
         if (_skillCollection is null)
         {
             SetDefaultFunctionCollection(context.Functions);
@@ -109,17 +110,21 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
         var settings = GetRequestSettings(requestSettings ?? RequestSettings);
 
         // trim any skills from the 
-        IReadOnlyList<IChatResult> results = await RunPromptAsync(_aiService?.Value, settings, context, cancellationToken).ConfigureAwait(false);
-        context.ModelResults = results.Select(c => c.ModelResult).ToArray();
+        var result = await RunPromptAsync(_aiService?.Value, settings, context, cancellationToken).ConfigureAwait(false);
 
-        if (CallFunctionsAutomatically)
+        if (!CallFunctionsAutomatically)
         {
-            return await ExecuteFunctionCallAsync(results.ToList(), context, cancellationToken).ConfigureAwait(false);
+            return result;
         }
 
-        var content = await GetCompletionsResultContentAsync(results.ToList(), cancellationToken).ConfigureAwait(false);
-        context.Variables.Update(content);
-        return context;
+        var functionCallResult = await ExecuteFunctionCallAsync(result, context, cancellationToken).ConfigureAwait(false);
+
+        if (functionCallResult is null)
+        {
+            throw new SKException("The function call result is null");
+        }
+        return functionCallResult;
+
     }
 
 
@@ -237,7 +242,7 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
             .Select(group => group.First())
             .ToList();
 
-        var requestSettings = new FunctionCallRequestSettings()
+        var requestSettings = new FunctionCallRequestSettings
         {
             Temperature = openAIRequestSettings.Temperature,
             TopP = openAIRequestSettings.TopP,
@@ -271,7 +276,7 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
     }
 
 
-    private async Task<IReadOnlyList<IChatResult>> RunPromptAsync(
+    private async Task<IReadOnlyList<IChatResult>> GetChatResults(
         IChatCompletion? client,
         FunctionCallRequestSettings? requestSettings,
         SKContext context,
@@ -318,9 +323,50 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
     }
 
 
-    private async Task<SKContext> ExecuteFunctionCallAsync(IReadOnlyList<IChatResult> results, SKContext context, CancellationToken cancellationToken)
+    private async Task<FunctionResult> RunPromptAsync(
+        IChatCompletion? client,
+        FunctionCallRequestSettings? requestSettings,
+        SKContext context,
+        CancellationToken cancellationToken)
     {
-        var functionCallResult = await GetFunctionCallResponseAsync(results, cancellationToken).ConfigureAwait(false);
+        Verify.NotNull(client);
+        Verify.NotNull(requestSettings);
+
+        FunctionResult result;
+
+        try
+        {
+            var renderedPrompt = await _promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
+            IReadOnlyList<IChatResult> completionResults = await client.GetChatCompletionsAsync(client.CreateNewChat(renderedPrompt), requestSettings, cancellationToken).ConfigureAwait(false);
+
+            if (completionResults is null)
+            {
+                throw new SKException("The completion results are null");
+            }
+
+            var completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
+            // Update the result with the completion
+            context.Variables.Update(completion);
+
+            result = new FunctionResult(Name, PluginName, context, completion);
+
+            ModelResult[] modelResults = completionResults.Select(c => c.ModelResult).ToArray();
+
+            result.Metadata.Add("ModelResults", modelResults);
+        }
+        catch (Exception ex) when (!ex.IsCriticalException())
+        {
+            _logger?.LogError(ex, "Semantic function {Plugin}.{Name} execution failed with error {Error}", PluginName, Name, ex.Message);
+            throw;
+        }
+
+        return result;
+    }
+
+
+    private async Task<FunctionResult?> ExecuteFunctionCallAsync(FunctionResult result, SKContext context, CancellationToken cancellationToken)
+    {
+        var functionCallResult = result.ToFunctionCallResult();
 
         if (functionCallResult is null)
         {
@@ -340,10 +386,10 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
 
         if (_functionToCall != null)
         {
-            context = await _functionToCall.InvokeAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
+            return await _functionToCall.InvokeAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
-        return context;
+        return null;
     }
 
     #endregion

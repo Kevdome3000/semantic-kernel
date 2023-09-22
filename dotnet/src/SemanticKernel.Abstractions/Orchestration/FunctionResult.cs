@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Orchestration;
+
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.SemanticKernel.Orchestration;
 
 /// <summary>
 /// Function result after execution.
@@ -33,7 +34,8 @@ public sealed class FunctionResult
     /// <summary>
     /// Instance of <see cref="SKContext"/> to pass in function pipeline.
     /// </summary>
-    internal SKContext Context { get; private set; }
+    public SKContext Context { get; private set; }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionResult"/> class.
@@ -48,6 +50,7 @@ public sealed class FunctionResult
         this.Context = context;
     }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionResult"/> class.
     /// </summary>
@@ -60,6 +63,7 @@ public sealed class FunctionResult
     {
         this.Value = value;
     }
+
 
     /// <summary>
     /// Returns function result value.
