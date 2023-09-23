@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using Azure.AI.OpenAI;
+using Microsoft.Extensions.Logging;
 using Orchestration;
 
 
@@ -229,7 +230,7 @@ public static class FunctionExtensions
     public static T? ToFunctionCallResult<T>(this SKContext context, JsonSerializerOptions? options = null)
     {
         T? result = default;
-
+        ILogger logger = context.LoggerFactory.CreateLogger("FunctionCallResult");
         try
         {
             using var document = JsonDocument.Parse(context.Result.Trim());
@@ -249,7 +250,8 @@ public static class FunctionExtensions
         }
         catch (JsonException ex)
         {
-            Console.WriteLine($"Error while converting '{context.Result}' to a '{typeof(T)}': {ex}");
+            logger.LogError("Error while converting \'{ContextResult}\' to a \'{Unknown}\': {Ex}", context.Result, typeof(T), ex);
+            // Console.WriteLine($"Error while converting '{context.Result}' to a '{typeof(T)}': {ex}");
         }
 
         return result;

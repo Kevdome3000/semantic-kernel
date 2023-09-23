@@ -113,7 +113,12 @@ public static class SKFunctionCallExtensions
         {
             try
             {
-                result = functionResult.Context.ToFunctionCallResult<T>(serializerOptions);
+                var resultJson = functionResult.GetValue<string>();
+
+                if (resultJson != null)
+                {
+                    result = JsonSerializer.Deserialize<T>(resultJson, serializerOptions);
+                }
             }
             catch (JsonException ex)
             {
