@@ -7,6 +7,7 @@ using Microsoft.SemanticKernel.Planners;
 using Microsoft.SemanticKernel.Plugins.Core;
 using RepoUtils;
 
+
 // ReSharper disable CommentTypo
 // ReSharper disable once InconsistentNaming
 internal static class Example48_GroundednessChecks
@@ -48,13 +49,15 @@ the chamber. He came like a protecting spirit to the poor girl, who committed he
 interment of his friend he conducted her to Geneva and placed her under the protection of a relation.Two years
 after this event Caroline became his wife.""";
 
+
     public static async Task RunAsync()
     {
-        await GroundednessCheckingSkillAsync();
+        await GroundednessCheckingAsync();
         await PlanningWithGroundednessAsync();
     }
 
-    public static async Task GroundednessCheckingSkillAsync()
+
+    public static async Task GroundednessCheckingAsync()
     {
         Console.WriteLine("======== Groundedness Checks ========");
         var kernel = new KernelBuilder()
@@ -109,6 +112,7 @@ her a beggar. My father came to her aid and two years later they married.
         Console.WriteLine(excisionResult.GetValue<string>());
     }
 
+
     public static async Task PlanningWithGroundednessAsync()
     {
         var targetTopic = "people and places";
@@ -146,6 +150,7 @@ which are not grounded in the original.
     }
 }
 
+
 /* Example Output:
 ======== Groundedness Checks ========
 ======== Extract Entities ========
@@ -180,9 +185,9 @@ which are not grounded in the original.
 Steps:
   - _GLOBAL_FUNCTIONS_.Echo INPUT='' => ORIGINAL_TEXT
   - SummarizePlugin.Summarize INPUT='' => RESULT__SUMMARY
-  - GroundingSkill.ExtractEntities example_entities='John;Jane;mother;brother;Paris;Rome' topic='people and places' INPUT='$RESULT__SUMMARY' => ENTITIES
-  - GroundingSkill.ReferenceCheckEntities reference_context='$ORIGINAL_TEXT' INPUT='$ENTITIES' => RESULT__UNGROUND_ENTITIES
-  - GroundingSkill.ExciseEntities ungrounded_entities='$RESULT__UNGROUND_ENTITIES' INPUT='$RESULT__SUMMARY' => RESULT__FINAL_SUMMARY
+  - GroundingPlugin.ExtractEntities example_entities='John;Jane;mother;brother;Paris;Rome' topic='people and places' INPUT='$RESULT__SUMMARY' => ENTITIES
+  - GroundingPlugin.ReferenceCheckEntities reference_context='$ORIGINAL_TEXT' INPUT='$ENTITIES' => RESULT__UNGROUND_ENTITIES
+  - GroundingPlugin.ExciseEntities ungrounded_entities='$RESULT__UNGROUND_ENTITIES' INPUT='$RESULT__SUMMARY' => RESULT__FINAL_SUMMARY
 A possible summary is:
 
 

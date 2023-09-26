@@ -1,18 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Planners.Sequential;
-using Microsoft.SemanticKernel.Planning;
-
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of Plan
 namespace Microsoft.SemanticKernel.Planners;
+
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using AI;
+using Diagnostics;
+using Orchestration;
+using Planning;
+using Sequential;
+
 #pragma warning restore IDE0130
+
 
 /// <summary>
 /// A planner that uses semantic function to create a sequential plan.
@@ -21,6 +23,7 @@ public sealed class SequentialPlanner : ISequentialPlanner
 {
     private const string StopSequence = "<!-- END -->";
     private const string AvailableFunctionsKey = "available_functions";
+
 
     /// <summary>
     /// Initialize a new instance of the <see cref="SequentialPlanner"/> class.
@@ -51,12 +54,13 @@ public sealed class SequentialPlanner : ISequentialPlanner
                 {
                     { "Temperature", 0.0 },
                     { "StopSequences", new[] { StopSequence } },
-                    { "MaxTokens", this.Config.MaxTokens ?? 1024 },
+                    { "MaxTokens", this.Config.MaxTokens },
                 }
             });
 
         this._kernel = kernel;
     }
+
 
     /// <inheritdoc />
     public async Task<Plan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
@@ -66,7 +70,7 @@ public sealed class SequentialPlanner : ISequentialPlanner
             throw new SKException("The goal specified is empty");
         }
 
-        string relevantFunctionsManual = await this._kernel.CreateNewContext().GetFunctionsManualAsync(goal, this.Config, cancellationToken).ConfigureAwait(false);
+        string relevantFunctionsManual = await this._kernel.Functions.GetFunctionsManualAsync(this.Config, goal, null, cancellationToken).ConfigureAwait(false);
 
         ContextVariables vars = new(goal)
         {
@@ -84,9 +88,10 @@ public sealed class SequentialPlanner : ISequentialPlanner
                 $"\nGoal:{goal}\nFunctions:\n{relevantFunctionsManual}");
         }
 
-        var getFunctionCallback = this.Config.GetFunctionCallback ?? SequentialPlanParser.GetFunctionCallback(this._kernel.Functions);
+        var getFunctionCallback = this.Config.GetFunctionCallback ?? this._kernel.Functions.GetFunctionCallback();
 
         Plan plan;
+
         try
         {
             plan = planResultString!.ToPlanFromXml(goal, getFunctionCallback, this.Config.AllowMissingFunctions);
@@ -103,6 +108,7 @@ public sealed class SequentialPlanner : ISequentialPlanner
 
         return plan;
     }
+
 
     private SequentialPlannerConfig Config { get; }
 

@@ -1,7 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
+
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -11,21 +14,35 @@ using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Builders;
+using Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Builders;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
-using Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
-using Microsoft.SemanticKernel.Orchestration;
+using Model;
+using OpenApi;
+using Orchestration;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 
 /// <summary>
 /// Provides extension methods for importing AI plugins exposed as OpenAPI v3 endpoints or through OpenAI's ChatGPT format.
 /// </summary>
 public static class KernelAIPluginExtensions
 {
+    [Obsolete("Methods and classes which includes Skill in the name have been renamed to use Plugin. Use Kernel.ImportPluginFunctionsAsync instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS1591
+    public static async Task<IDictionary<string, ISKFunction>> ImportAIPluginAsync(
+        this IKernel kernel,
+        string pluginName,
+        string filePath,
+        OpenApiFunctionExecutionParameters? executionParameters = null,
+        CancellationToken cancellationToken = default)
+    {
+        return await kernel.ImportPluginFunctionsAsync(pluginName, filePath, executionParameters, cancellationToken).ConfigureAwait(false);
+    }
+#pragma warning restore CS1591
+
+
     /// <summary>
     /// Imports an AI plugin that is exposed as an OpenAPI v3 endpoint or through OpenAI's ChatGPT format.
     /// </summary>
@@ -35,7 +52,7 @@ public static class KernelAIPluginExtensions
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
-    public static async Task<IDictionary<string, ISKFunction>> ImportAIPluginAsync(
+    public static async Task<IDictionary<string, ISKFunction>> ImportPluginFunctionsAsync(
         this IKernel kernel,
         string pluginName,
         string filePath,
@@ -65,6 +82,22 @@ public static class KernelAIPluginExtensions
             cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
+
+    [Obsolete("Methods and classes which includes Skill in the name have been renamed to use Plugin. Use Kernel.ImportPluginFunctionsAsync instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS1591
+    public static async Task<IDictionary<string, ISKFunction>> ImportAIPluginAsync(
+        this IKernel kernel,
+        string pluginName,
+        Uri uri,
+        OpenApiFunctionExecutionParameters? executionParameters = null,
+        CancellationToken cancellationToken = default)
+    {
+        return await kernel.ImportPluginFunctionsAsync(pluginName, uri, executionParameters, cancellationToken).ConfigureAwait(false);
+    }
+#pragma warning restore CS1591
+
+
     /// <summary>
     /// Imports an AI plugin that is exposed as an OpenAPI v3 endpoint or through OpenAI's ChatGPT format.
     /// </summary>
@@ -74,7 +107,7 @@ public static class KernelAIPluginExtensions
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
-    public static async Task<IDictionary<string, ISKFunction>> ImportAIPluginAsync(
+    public static async Task<IDictionary<string, ISKFunction>> ImportPluginFunctionsAsync(
         this IKernel kernel,
         string pluginName,
         Uri uri,
@@ -105,6 +138,7 @@ public static class KernelAIPluginExtensions
             cancellationToken).ConfigureAwait(false);
     }
 
+
     /// <summary>
     /// Imports an AI plugin that is exposed as an OpenAPI v3 endpoint or through OpenAI's ChatGPT format.
     /// </summary>
@@ -114,7 +148,7 @@ public static class KernelAIPluginExtensions
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
-    public static async Task<IDictionary<string, ISKFunction>> ImportAIPluginAsync(
+    public static async Task<IDictionary<string, ISKFunction>> ImportPluginFunctionsAsync(
         this IKernel kernel,
         string pluginName,
         Stream stream,
@@ -139,6 +173,7 @@ public static class KernelAIPluginExtensions
             cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
+
     #region private
 
     private static async Task<IDictionary<string, ISKFunction>> CompleteImportAsync(
@@ -153,7 +188,7 @@ public static class KernelAIPluginExtensions
         if (TryParseAIPluginForUrl(pluginContents, out var openApiUrl))
         {
             return await kernel
-                .ImportAIPluginAsync(
+                .ImportPluginFunctionsAsync(
                     pluginName,
                     new Uri(openApiUrl),
                     executionParameters,
@@ -170,6 +205,7 @@ public static class KernelAIPluginExtensions
             documentUri,
             cancellationToken).ConfigureAwait(false);
     }
+
 
     private static async Task<IDictionary<string, ISKFunction>> LoadPluginAsync(
         IKernel kernel,
@@ -197,6 +233,7 @@ public static class KernelAIPluginExtensions
             var plugin = new Dictionary<string, ISKFunction>();
 
             ILogger logger = kernel.LoggerFactory.CreateLogger(typeof(KernelAIPluginExtensions));
+
             foreach (var operation in operations)
             {
                 try
@@ -217,6 +254,7 @@ public static class KernelAIPluginExtensions
         }
     }
 
+
     private static async Task<string> LoadDocumentFromUriAsync(
         IKernel kernel,
         Uri uri,
@@ -235,6 +273,7 @@ public static class KernelAIPluginExtensions
 
         return await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
     }
+
 
     private static async Task<string> LoadDocumentFromFilePathAsync(
         IKernel kernel,
@@ -258,6 +297,7 @@ public static class KernelAIPluginExtensions
         }
     }
 
+
     private static async Task<string> LoadDocumentFromStreamAsync(
         IKernel kernel,
         Stream stream)
@@ -265,6 +305,7 @@ public static class KernelAIPluginExtensions
         using StreamReader reader = new(stream);
         return await reader.ReadToEndAsync().ConfigureAwait(false);
     }
+
 
     private static bool TryParseAIPluginForUrl(string gptPluginJson, out string? openApiUrl)
     {
@@ -297,6 +338,7 @@ public static class KernelAIPluginExtensions
             return false;
         }
     }
+
 
     /// <summary>
     /// Registers SKFunction for a REST API operation.
@@ -333,6 +375,7 @@ public static class KernelAIPluginExtensions
             {
                 // Extract function arguments from context
                 var arguments = new Dictionary<string, string>();
+
                 foreach (var parameter in restOperationParameters)
                 {
                     // A try to resolve argument by alternative parameter name
@@ -398,6 +441,7 @@ public static class KernelAIPluginExtensions
         return kernel.RegisterCustomFunction(function);
     }
 
+
     /// <summary>
     /// Converts operation id to valid SK Function name.
     /// A function name can contain only ASCII letters, digits, and underscores.
@@ -432,10 +476,13 @@ public static class KernelAIPluginExtensions
         return result;
     }
 
+
     /// <summary>
     /// Used to convert operationId to SK function names.
     /// </summary>
     private static readonly Regex s_removeInvalidCharsRegex = new("[^0-9A-Za-z_]");
 
     #endregion
+
+
 }

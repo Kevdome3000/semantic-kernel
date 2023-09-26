@@ -1,19 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.IntegrationTests.Planners.SequentialPlanner;
+
 using System;
 using System.Threading.Tasks;
+using Fakes;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Planners;
-using SemanticKernel.IntegrationTests.Fakes;
-using SemanticKernel.IntegrationTests.TestSettings;
+using TestSettings;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.Planners.SequentialPlanner;
 
 public sealed class SequentialPlannerTests : IDisposable
 {
@@ -30,6 +31,7 @@ public sealed class SequentialPlannerTests : IDisposable
             .AddUserSecrets<SequentialPlannerTests>()
             .Build();
     }
+
 
     [Theory]
     [InlineData(false, "Write a joke and send it in an e-mail to Kai.", "SendEmail", "_GLOBAL_FUNCTIONS_")]
@@ -55,6 +57,7 @@ public sealed class SequentialPlannerTests : IDisposable
                 step.PluginName.Equals(expectedPlugin, StringComparison.OrdinalIgnoreCase));
     }
 
+
     [Theory]
     [InlineData("Write a novel about software development that is 3 chapters long.", "NovelOutline", "WriterPlugin", "<!--===ENDPART===-->")]
     public async Task CreatePlanWithDefaultsAsync(string prompt, string expectedFunction, string expectedPlugin, string expectedDefault)
@@ -77,6 +80,7 @@ public sealed class SequentialPlannerTests : IDisposable
                 step.Parameters["endMarker"].Equals(expectedDefault, StringComparison.OrdinalIgnoreCase));
     }
 
+
     [Theory]
     [InlineData("Write a poem and a joke and send it in an e-mail to Kai.", "SendEmail", "_GLOBAL_FUNCTIONS_")]
     public async Task CreatePlanGoalRelevantAsync(string prompt, string expectedFunction, string expectedPlugin)
@@ -90,7 +94,7 @@ public sealed class SequentialPlannerTests : IDisposable
         TestHelpers.ImportAllSamplePlugins(kernel);
 
         var planner = new Microsoft.SemanticKernel.Planners.SequentialPlanner(kernel,
-            new SequentialPlannerConfig { RelevancyThreshold = 0.65, MaxRelevantFunctions = 30, Memory = kernel.Memory });
+            new SequentialPlannerConfig { SemanticMemoryConfig = new() { RelevancyThreshold = 0.65, MaxRelevantFunctions = 30, Memory = kernel.Memory } });
 
         // Act
         var plan = await planner.CreatePlanAsync(prompt);
@@ -102,6 +106,7 @@ public sealed class SequentialPlannerTests : IDisposable
                 step.Name.Equals(expectedFunction, StringComparison.OrdinalIgnoreCase) &&
                 step.PluginName.Equals(expectedPlugin, StringComparison.OrdinalIgnoreCase));
     }
+
 
     private IKernel InitializeKernel(bool useEmbeddings = false, bool useChatModel = false)
     {
@@ -142,9 +147,11 @@ public sealed class SequentialPlannerTests : IDisposable
         return kernel;
     }
 
+
     private readonly ILoggerFactory _logger;
     private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
+
 
     public void Dispose()
     {
@@ -152,10 +159,12 @@ public sealed class SequentialPlannerTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
+
     ~SequentialPlannerTests()
     {
         this.Dispose(false);
     }
+
 
     private void Dispose(bool disposing)
     {

@@ -13,8 +13,8 @@ using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
-
 using RepoUtils;
+
 
 // ReSharper disable CommentTypo
 // ReSharper disable once InconsistentNaming
@@ -71,6 +71,7 @@ internal static class Example31_CustomPlanner
     For dinner, you might enjoy some sushi with your partner, since you both like it and you only ate it once this month
     */
 
+
     private static SKContext CreateContextQueryContext(IKernel kernel)
     {
         var context = kernel.CreateNewContext();
@@ -84,6 +85,7 @@ internal static class Example31_CustomPlanner
         context.Variables.Set("relevance", "0.3");
         return context;
     }
+
 
     private static async Task RememberFactsAsync(IKernel kernel)
     {
@@ -109,9 +111,10 @@ internal static class Example31_CustomPlanner
         }
     }
 
-    // ContextQuery is part of the QASkill
+
+    // ContextQuery is part of the QAPlugin
     // DependsOn: TimePlugin named "time"
-    // DependsOn: BingSkill named "bing"
+    // DependsOn: BingPlugin named "bing"
     private static IDictionary<string, ISKFunction> LoadQAPlugin(IKernel kernel)
     {
         string folder = RepoFiles.SamplePluginsPath();
@@ -123,6 +126,7 @@ internal static class Example31_CustomPlanner
 
         return kernel.ImportSemanticFunctionsFromDirectory(folder, "QAPlugin");
     }
+
 
     private static IKernel InitializeKernel()
     {
@@ -141,7 +145,8 @@ internal static class Example31_CustomPlanner
     }
 }
 
-// Example Skill that can process XML Markup created by ContextQuery
+
+// Example Plugin that can process XML Markup created by ContextQuery
 public class MarkupPlugin
 {
     [SKFunction, Description("Run Markup")]
@@ -158,12 +163,14 @@ public class MarkupPlugin
     }
 }
 
+
 public static class XmlMarkupPlanParser
 {
     private static readonly Dictionary<string, KeyValuePair<string, string>> s_pluginMapping = new()
     {
         { "lookup", new KeyValuePair<string, string>("bing", "SearchAsync") },
     };
+
 
     public static Plan FromMarkup(this string markup, string goal, SKContext context)
     {
@@ -176,9 +183,11 @@ public static class XmlMarkupPlanParser
         return nodes.Count == 0 ? new Plan(goal) : NodeListToPlan(nodes, context, goal);
     }
 
+
     private static Plan NodeListToPlan(XmlNodeList nodes, SKContext context, string description)
     {
         Plan plan = new(description);
+
         for (var i = 0; i < nodes.Count; ++i)
         {
             var node = nodes[i];
@@ -227,6 +236,7 @@ public static class XmlMarkupPlanParser
     }
 }
 
+
 #region Utility Classes
 
 public class XmlMarkup
@@ -242,12 +252,15 @@ public class XmlMarkup
         this.Document.LoadXml(response);
     }
 
+
     public XmlDocument Document { get; }
+
 
     public XmlNodeList SelectAllElements()
     {
         return this.Document.SelectNodes("//*")!;
     }
+
 
     public XmlNodeList SelectElements()
     {
@@ -255,12 +268,14 @@ public class XmlMarkup
     }
 }
 
+
 #pragma warning disable CA1815 // Override equals and operator equals on value types
 public struct XmlNodeInfo
 {
     public int StackDepth { get; set; }
     public XmlNode Parent { get; set; }
     public XmlNode Node { get; set; }
+
 
     public static implicit operator XmlNode(XmlNodeInfo info)
     {
@@ -280,6 +295,7 @@ public static class XmlEx
         }
 
         var childNodes = elt.ChildNodes;
+
         for (int i = 0, count = childNodes.Count; i < count; ++i)
         {
             if (childNodes[i]?.NodeType == XmlNodeType.Element)
@@ -291,6 +307,7 @@ public static class XmlEx
         return false;
     }
 
+
     /// <summary>
     ///     Walks the Markup DOM using an XPathNavigator, allowing recursive descent WITHOUT requiring a Stack Hit
     ///     This is safe for very large and highly nested documents.
@@ -301,12 +318,14 @@ public static class XmlEx
         return EnumerateNodes(nav!, maxStackDepth);
     }
 
+
     public static IEnumerable<XmlNodeInfo> EnumerateNodes(this XmlDocument doc, int maxStackDepth = 32)
     {
         var nav = doc.CreateNavigator();
         nav!.MoveToRoot();
         return EnumerateNodes(nav, maxStackDepth);
     }
+
 
     public static IEnumerable<XmlNodeInfo> EnumerateNodes(this XPathNavigator nav, int maxStackDepth = 32)
     {
@@ -315,9 +334,11 @@ public static class XmlEx
             StackDepth = 0
         };
         var hasChildren = nav.HasChildren;
+
         while (true)
         {
             info.Parent = (XmlNode)nav.UnderlyingObject!;
+
             if (hasChildren && info.StackDepth < maxStackDepth)
             {
                 nav.MoveToFirstChild();
@@ -326,9 +347,11 @@ public static class XmlEx
             else
             {
                 var hasParent = false;
+
                 while (hasParent = nav.MoveToParent())
                 {
                     info.StackDepth--;
+
                     if (info.StackDepth == 0)
                     {
                         hasParent = false;
@@ -351,6 +374,7 @@ public static class XmlEx
             {
                 info.Node = (XmlNode)nav.UnderlyingObject!;
                 yield return info;
+
                 if (hasChildren = nav.HasChildren)
                 {
                     break;

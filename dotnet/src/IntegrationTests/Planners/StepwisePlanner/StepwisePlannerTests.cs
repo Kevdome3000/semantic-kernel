@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.IntegrationTests.Planners.StepwisePlanner;
+
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -13,15 +15,15 @@ using Microsoft.SemanticKernel.Planners;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
-using SemanticKernel.IntegrationTests.TestSettings;
+using TestSettings;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.Planners.StepwisePlanner;
 
 public sealed class StepwisePlannerTests : IDisposable
 {
     private readonly string _bingApiKey;
+
 
     public StepwisePlannerTests(ITestOutputHelper output)
     {
@@ -40,6 +42,7 @@ public sealed class StepwisePlannerTests : IDisposable
         Assert.NotNull(bingApiKeyCandidate);
         this._bingApiKey = bingApiKeyCandidate;
     }
+
 
     [Theory]
     [InlineData(false, "Who is the current president of the United States? What is his current age divided by 2", "ExecutePlan", "StepwisePlanner")]
@@ -67,6 +70,7 @@ public sealed class StepwisePlannerTests : IDisposable
                 step.PluginName.Contains(expectedPlugin, StringComparison.OrdinalIgnoreCase));
     }
 
+
     [Theory]
     [InlineData(false, "What is the tallest mountain on Earth? How tall is it divided by 2", "Everest")]
     [InlineData(true, "What is the tallest mountain on Earth? How tall is it divided by 2", "Everest")]
@@ -93,6 +97,7 @@ public sealed class StepwisePlannerTests : IDisposable
         Assert.Contains(partialExpectedAnswer, result, StringComparison.InvariantCultureIgnoreCase);
     }
 
+
     [Fact]
     public async Task ExecutePlanFailsWithTooManyFunctionsAsync()
     {
@@ -117,13 +122,14 @@ public sealed class StepwisePlannerTests : IDisposable
         Assert.Equal("ChatHistory is too long to get a completion. Try reducing the available functions.", ex.Message);
     }
 
+
     [Fact]
     public async Task ExecutePlanSucceedsWithAlmostTooManyFunctionsAsync()
     {
         // Arrange
         IKernel kernel = this.InitializeKernel();
 
-        _ = await kernel.ImportAIPluginAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenApiFunctionExecutionParameters(enableDynamicOperationPayload: true));
+        _ = await kernel.ImportPluginFunctionsAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenApiFunctionExecutionParameters(enableDynamicOperationPayload: true));
 
         var planner = new Microsoft.SemanticKernel.Planners.StepwisePlanner(kernel);
 
@@ -136,6 +142,7 @@ public sealed class StepwisePlannerTests : IDisposable
         Assert.NotNull(result);
         Assert.DoesNotContain("Result not found, review 'stepsTaken' to see what happened", result, StringComparison.OrdinalIgnoreCase);
     }
+
 
     private IKernel InitializeKernel(bool useEmbeddings = false, bool useChatModel = false)
     {
@@ -176,9 +183,11 @@ public sealed class StepwisePlannerTests : IDisposable
         return kernel;
     }
 
+
     private readonly ILoggerFactory _loggerFactory;
     private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
+
 
     public void Dispose()
     {
@@ -186,10 +195,12 @@ public sealed class StepwisePlannerTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
+
     ~StepwisePlannerTests()
     {
         this.Dispose(false);
     }
+
 
     private void Dispose(bool disposing)
     {

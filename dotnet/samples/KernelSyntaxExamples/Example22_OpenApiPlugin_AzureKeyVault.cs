@@ -29,6 +29,7 @@ public static class Example22_OpenApiPlugin_AzureKeyVault
         await AddSecretToAzureKeyVaultAsync(authenticationProvider);
     }
 
+
     public static async Task GetSecretFromAzureKeyVaultWithRetryAsync(InteractiveMsalAuthenticationProvider authenticationProvider)
     {
         var kernel = new KernelBuilder()
@@ -46,7 +47,7 @@ public static class Example22_OpenApiPlugin_AzureKeyVault
         var stream = type.Assembly.GetManifestResourceStream(type, resourceName);
 
         // Import AI Plugin
-        var plugin = await kernel.ImportAIPluginAsync(
+        var plugin = await kernel.ImportPluginFunctionsAsync(
             PluginResourceNames.AzureKeyVault,
             stream!,
             new OpenApiFunctionExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
@@ -63,6 +64,7 @@ public static class Example22_OpenApiPlugin_AzureKeyVault
         Console.WriteLine("GetSecret plugin response: {0}", result);
     }
 
+
     public static async Task AddSecretToAzureKeyVaultAsync(InteractiveMsalAuthenticationProvider authenticationProvider)
     {
         var kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
@@ -73,7 +75,7 @@ public static class Example22_OpenApiPlugin_AzureKeyVault
         var stream = type.Assembly.GetManifestResourceStream(type, resourceName);
 
         // Import AI Plugin
-        var plugin = await kernel.ImportAIPluginAsync(
+        var plugin = await kernel.ImportPluginFunctionsAsync(
             PluginResourceNames.AzureKeyVault,
             stream!,
             new OpenApiFunctionExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });

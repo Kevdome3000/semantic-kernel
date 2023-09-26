@@ -1,19 +1,32 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Planners.UnitTests.XunitHelpers;
-using Moq;
-using Xunit;
-
 #pragma warning disable IDE0130 // Namespace does not match folder structure
-namespace Microsoft.SemanticKernel.Planners.Sequential.UnitTests;
+namespace Microsoft.SemanticKernel.Planners.UnitTests;
+
+using Memory;
+using Moq;
+using Orchestration;
+using Xunit;
+using XunitHelpers;
+
 #pragma warning restore IDE0130 // Namespace does not match folder structure
 
-public class SKContextExtensionsTests
+
+public class ReadOnlyFunctionCollectionExtensionsTests
 {
-    [Fact]
-    public async Task CanCallGetAvailableFunctionsWithNoFunctionsAsync()
+    private static PlannerConfigBase InitializeConfig(Type t)
+    {
+        PlannerConfigBase? config = Activator.CreateInstance(t) as PlannerConfigBase;
+        Assert.NotNull(config);
+        return config;
+    }
+
+
+    [Theory]
+    [InlineData(typeof(ActionPlannerConfig))]
+    [InlineData(typeof(SequentialPlannerConfig))]
+    [InlineData(typeof(StepwisePlannerConfig))]
+    public async Task CanCallGetAvailableFunctionsWithNoFunctionsAsync(Type t)
     {
         // Arrange
         var kernel = new Mock<IKernel>();
@@ -40,21 +53,47 @@ public class SKContextExtensionsTests
 
         // Arrange GetAvailableFunctionsAsync parameters
         var context = new SKContext(kernel.Object, variables, functions);
-        var config = new SequentialPlannerConfig() { Memory = memory.Object };
+        var config = InitializeConfig(t);
         var semanticQuery = "test";
 
         // Act
-        var result = await context.GetAvailableFunctionsAsync(config, semanticQuery, cancellationToken);
+        var result = await context.Functions.GetAvailableFunctionsAsync(config, semanticQuery, null, cancellationToken);
 
         // Assert
         Assert.NotNull(result);
         memory.Verify(
             x => x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()),
             Times.Never);
+
+        config.SemanticMemoryConfig = new();
+
+        // Act
+        result = await context.Functions.GetAvailableFunctionsAsync(config, semanticQuery, null, cancellationToken);
+
+        // Assert
+        Assert.NotNull(result);
+        memory.Verify(
+            x => x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+
+        config.SemanticMemoryConfig = new() { Memory = memory.Object };
+
+        // Act
+        result = await context.Functions.GetAvailableFunctionsAsync(config, semanticQuery, null, cancellationToken);
+
+        // Assert
+        Assert.NotNull(result);
+        memory.Verify(
+            x => x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 
-    [Fact]
-    public async Task CanCallGetAvailableFunctionsWithFunctionsAsync()
+
+    [Theory]
+    [InlineData(typeof(ActionPlannerConfig))]
+    [InlineData(typeof(SequentialPlannerConfig))]
+    [InlineData(typeof(StepwisePlannerConfig))]
+    public async Task CanCallGetAvailableFunctionsWithFunctionsAsync(Type t)
     {
         // Arrange
         var kernel = new Mock<IKernel>();
@@ -92,11 +131,11 @@ public class SKContextExtensionsTests
 
         // Arrange GetAvailableFunctionsAsync parameters
         var context = new SKContext(kernel.Object, variables, functions.Object);
-        var config = new SequentialPlannerConfig() { Memory = memory.Object };
+        var config = InitializeConfig(t);
         var semanticQuery = "test";
 
         // Act
-        var result = (await context.GetAvailableFunctionsAsync(config, semanticQuery, cancellationToken)).ToList();
+        var result = (await context.Functions.GetAvailableFunctionsAsync(config, semanticQuery, null, cancellationToken)).ToList();
 
         // Assert
         Assert.NotNull(result);
@@ -104,10 +143,11 @@ public class SKContextExtensionsTests
         Assert.Equal(functionView, result[0]);
 
         // Arrange update IncludedFunctions
-        config.IncludedFunctions.UnionWith(new List<(string, string)> { ("pluginName", "nativeFunctionName") });
+        config.SemanticMemoryConfig = new() { Memory = memory.Object };
+        config.SemanticMemoryConfig.IncludedFunctions.UnionWith(new List<(string, string)> { ("pluginName", "nativeFunctionName") });
 
         // Act
-        result = (await context.GetAvailableFunctionsAsync(config, semanticQuery)).ToList();
+        result = (await context.Functions.GetAvailableFunctionsAsync(config, semanticQuery)).ToList();
 
         // Assert
         Assert.NotNull(result);
@@ -116,8 +156,12 @@ public class SKContextExtensionsTests
         Assert.Equal(nativeFunctionView, result[1]);
     }
 
-    [Fact]
-    public async Task CanCallGetAvailableFunctionsWithFunctionsWithRelevancyAsync()
+
+    [Theory]
+    [InlineData(typeof(ActionPlannerConfig))]
+    [InlineData(typeof(SequentialPlannerConfig))]
+    [InlineData(typeof(StepwisePlannerConfig))]
+    public async Task CanCallGetAvailableFunctionsWithFunctionsWithRelevancyAsync(Type t)
     {
         // Arrange
         var kernel = new Mock<IKernel>();
@@ -157,11 +201,12 @@ public class SKContextExtensionsTests
 
         // Arrange GetAvailableFunctionsAsync parameters
         var context = new SKContext(kernel.Object, variables, functions.Object);
-        var config = new SequentialPlannerConfig { RelevancyThreshold = 0.78, Memory = memory.Object };
+        var config = InitializeConfig(t);
+        config.SemanticMemoryConfig = new() { RelevancyThreshold = 0.78, Memory = memory.Object };
         var semanticQuery = "test";
 
         // Act
-        var result = (await context.GetAvailableFunctionsAsync(config, semanticQuery, cancellationToken)).ToList();
+        var result = (await context.Functions.GetAvailableFunctionsAsync(config, semanticQuery, null, cancellationToken)).ToList();
 
         // Assert
         Assert.NotNull(result);
@@ -169,10 +214,10 @@ public class SKContextExtensionsTests
         Assert.Equal(functionView, result[0]);
 
         // Arrange update IncludedFunctions
-        config.IncludedFunctions.UnionWith(new List<(string, string)> { ("pluginName", "nativeFunctionName") });
+        config.SemanticMemoryConfig.IncludedFunctions.UnionWith(new List<(string, string)> { ("pluginName", "nativeFunctionName") });
 
         // Act
-        result = (await context.GetAvailableFunctionsAsync(config, semanticQuery)).ToList();
+        result = (await context.Functions.GetAvailableFunctionsAsync(config, semanticQuery)).ToList();
 
         // Assert
         Assert.NotNull(result);
@@ -181,8 +226,12 @@ public class SKContextExtensionsTests
         Assert.Equal(nativeFunctionView, result[1]);
     }
 
-    [Fact]
-    public async Task CanCallGetAvailableFunctionsAsyncWithDefaultRelevancyAsync()
+
+    [Theory]
+    [InlineData(typeof(ActionPlannerConfig))]
+    [InlineData(typeof(SequentialPlannerConfig))]
+    [InlineData(typeof(StepwisePlannerConfig))]
+    public async Task CanCallGetAvailableFunctionsAsyncWithDefaultRelevancyAsync(Type t)
     {
         // Arrange
         var kernel = new Mock<IKernel>();
@@ -210,11 +259,12 @@ public class SKContextExtensionsTests
 
         // Arrange GetAvailableFunctionsAsync parameters
         var context = new SKContext(kernel.Object, variables, functions);
-        var config = new SequentialPlannerConfig { RelevancyThreshold = 0.78, Memory = memory.Object };
+        var config = InitializeConfig(t);
+        config.SemanticMemoryConfig = new() { RelevancyThreshold = 0.78, Memory = memory.Object };
         var semanticQuery = "test";
 
         // Act
-        var result = await context.GetAvailableFunctionsAsync(config, semanticQuery, cancellationToken);
+        var result = await context.Functions.GetAvailableFunctionsAsync(config, semanticQuery, null, cancellationToken);
 
         // Assert
         Assert.NotNull(result);

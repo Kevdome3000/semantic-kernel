@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Planning.Sequential;
+namespace Microsoft.SemanticKernel.Planners.Sequential;
 
 using System;
 using System.Collections.Generic;
@@ -8,9 +8,8 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using Diagnostics;
 using Orchestration;
-using Microsoft.SemanticKernel.Planning;
+using Planning;
 
-namespace Microsoft.SemanticKernel.Planners.Sequential;
 
 /// <summary>
 /// Parse sequential plan text into a plan.
@@ -42,27 +41,6 @@ internal static class SequentialPlanParser
     /// The attribute tag used in the plan xml for appending the output of a function to the final result for a plan.
     /// </summary>
     internal const string AppendToResultTag = "appendToResult";
-
-
-    internal static Func<string, string, ISKFunction?> GetFunctionCallback(IReadOnlyFunctionCollection functions)
-    {
-        return (pluginName, functionName) =>
-        {
-            if (string.IsNullOrEmpty(pluginName))
-            {
-                if (functions.TryGetFunction(functionName, out var pluginFunction))
-                {
-                    return pluginFunction;
-                }
-            }
-            else if (functions.TryGetFunction(pluginName, functionName, out var pluginFunction))
-            {
-                return pluginFunction;
-            }
-
-            return null;
-        };
-    }
 
 
     /// <summary>
@@ -102,7 +80,7 @@ internal static class SequentialPlanParser
 
             if (match.Success)
             {
-                var planXml = match.Value;
+                string planXml = match.Value;
 
                 try
                 {
@@ -120,7 +98,7 @@ internal static class SequentialPlanParser
         }
 
         // Get the Solution
-        var solution = xmlDoc.GetElementsByTagName(SolutionTag);
+        XmlNodeList solution = xmlDoc.GetElementsByTagName(SolutionTag);
 
         var plan = new Plan(goal);
 
@@ -141,7 +119,7 @@ internal static class SequentialPlanParser
                 if (childNode.Name.StartsWith(FunctionTag, StringComparison.OrdinalIgnoreCase))
                 {
                     var pluginFunctionName = childNode.Name.Split(s_functionTagArray, StringSplitOptions.None)?[1] ?? string.Empty;
-                    GetFunctionCallbackNames(pluginFunctionName, out var pluginName, out var functionName);
+                    FunctionUtils.SplitPluginFunctionName(pluginFunctionName, out var pluginName, out var functionName);
 
                     if (!string.IsNullOrEmpty(functionName))
                     {
@@ -213,14 +191,6 @@ internal static class SequentialPlanParser
         }
 
         return plan;
-    }
-
-
-    private static void GetFunctionCallbackNames(string pluginFunctionName, out string pluginName, out string functionName)
-    {
-        var pluginFunctionNameParts = pluginFunctionName.Split('.');
-        pluginName = pluginFunctionNameParts?.Length > 1 ? pluginFunctionNameParts[0] : string.Empty;
-        functionName = pluginFunctionNameParts?.Length > 1 ? pluginFunctionNameParts[1] : pluginFunctionName;
     }
 
 

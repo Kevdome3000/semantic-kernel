@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RepoUtils;
 
+
 /// <summary>
 /// Import and run GitHub Functions using OpenAPI Plugin.
 /// To use this example, run:
@@ -24,16 +25,17 @@ public static class Example23_OpenApiPlugin_GitHub
     public static async Task RunAsync()
     {
         var authenticationProvider = new BearerAuthenticationProvider(() => { return Task.FromResult(TestConfiguration.Github.PAT); });
-        Console.WriteLine("== Example22_c_OpenApiSkill_GitHub ==");
+        Console.WriteLine("== Example23_OpenApiPlugin_GitHub ==");
         var firstPRNumber = await ListPullRequestsFromGitHubAsync(authenticationProvider);
         await GetPullRequestFromGitHubAsync(authenticationProvider, firstPRNumber);
     }
+
 
     public static async Task<string> ListPullRequestsFromGitHubAsync(BearerAuthenticationProvider authenticationProvider)
     {
         var kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
 
-        var plugin = await kernel.ImportAIPluginAsync(
+        var plugin = await kernel.ImportPluginFunctionsAsync(
             "GitHubPlugin",
             "../../../samples/apps/copilot-chat-app/webapi/Skills/OpenApiSkills/GitHubSkill/openapi.json",
             new OpenApiFunctionExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
@@ -61,11 +63,12 @@ public static class Example23_OpenApiPlugin_GitHub
         return string.Empty;
     }
 
+
     public static async Task GetPullRequestFromGitHubAsync(BearerAuthenticationProvider authenticationProvider, string pullNumber)
     {
         var kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
 
-        var plugin = await kernel.ImportAIPluginAsync(
+        var plugin = await kernel.ImportPluginFunctionsAsync(
             "GitHubPlugin",
             "../../../samples/apps/copilot-chat-app/webapi/Skills/OpenApiSkills/GitHubSkill/openapi.json",
             new OpenApiFunctionExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });

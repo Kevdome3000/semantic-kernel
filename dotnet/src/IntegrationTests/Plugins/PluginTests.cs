@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.IntegrationTests.Plugins;
+
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -8,7 +10,7 @@ using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Orchestration;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Plugins;
+
 public class PluginTests
 {
     [Theory]
@@ -27,7 +29,7 @@ public class PluginTests
         var kernel = new KernelBuilder().Build();
         using HttpClient httpClient = new();
 
-        var plugin = await kernel.ImportAIPluginAsync(
+        var plugin = await kernel.ImportPluginFunctionsAsync(
             name,
             new Uri(pluginEndpoint),
             new OpenApiFunctionExecutionParameters(httpClient));
@@ -42,12 +44,13 @@ public class PluginTests
         await plugin[functionName].InvokeAsync(new SKContext(kernel, contextVariables));
     }
 
+
     [Theory]
     [InlineData("https://raw.githubusercontent.com/sisbell/chatgpt-plugin-store/main/manifests/instacart.com.json",
         "Instacart",
         "create",
         "{\"title\":\"Shopping List\", \"ingredients\": [\"Flour\"], \"question\": \"what ingredients do I need to make chocolate cookies?\", \"partnerName\": \"OpenAI\" }"
-        )]
+    )]
     public async Task QueryInstacartPluginAsync(
         string pluginEndpoint,
         string name,
@@ -59,7 +62,7 @@ public class PluginTests
         using HttpClient httpClient = new();
 
         //note that this plugin is not compliant according to the underlying validator in SK
-        var plugin = await kernel.ImportAIPluginAsync(
+        var plugin = await kernel.ImportPluginFunctionsAsync(
             name,
             new Uri(pluginEndpoint),
             new OpenApiFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
@@ -71,12 +74,13 @@ public class PluginTests
         await plugin[functionName].InvokeAsync(new SKContext(kernel, contextVariables));
     }
 
+
     [Theory]
     [InlineData("Plugins/instacart-ai-plugin.json",
         "Instacart",
         "create",
         "{\"title\":\"Shopping List\", \"ingredients\": [\"Flour\"], \"question\": \"what ingredients do I need to make chocolate cookies?\", \"partnerName\": \"OpenAI\" }"
-        )]
+    )]
     public async Task QueryInstacartPluginFromStreamAsync(
         string pluginFilePath,
         string name,
@@ -90,7 +94,7 @@ public class PluginTests
             using HttpClient httpClient = new();
 
             //note that this plugin is not compliant according to the underlying validator in SK
-            var plugin = await kernel.ImportAIPluginAsync(
+            var plugin = await kernel.ImportPluginFunctionsAsync(
                 name,
                 stream,
                 new OpenApiFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
@@ -103,12 +107,13 @@ public class PluginTests
         }
     }
 
+
     [Theory]
     [InlineData("Plugins/instacart-ai-plugin.json",
         "Instacart",
         "create",
         "{\"title\":\"Shopping List\", \"ingredients\": [\"Flour\"], \"question\": \"what ingredients do I need to make chocolate cookies?\", \"partnerName\": \"OpenAI\" }"
-        )]
+    )]
     public async Task QueryInstacartPluginUsingRelativeFilePathAsync(
         string pluginFilePath,
         string name,
@@ -120,7 +125,7 @@ public class PluginTests
         using HttpClient httpClient = new();
 
         //note that this plugin is not compliant according to the underlying validator in SK
-        var plugin = await kernel.ImportAIPluginAsync(
+        var plugin = await kernel.ImportPluginFunctionsAsync(
             name,
             pluginFilePath,
             new OpenApiFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });

@@ -1,9 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0130
+namespace Microsoft.SemanticKernel.Planners;
+
 using System.Linq;
 
-namespace Microsoft.SemanticKernel.Planners.Sequential;
+#pragma warning restore IDE0130
 
+
+/// <summary>
+/// Provides extension methods for the <see cref="FunctionView"/> class.
+/// </summary>
 internal static class FunctionViewExtensions
 {
     /// <summary>
@@ -25,6 +32,7 @@ internal static class FunctionViewExtensions
   {inputs}";
     }
 
+
     /// <summary>
     /// Create a fully qualified name for a function.
     /// </summary>
@@ -34,6 +42,7 @@ internal static class FunctionViewExtensions
     {
         return $"{function.PluginName}.{function.Name}";
     }
+
 
     /// <summary>
     /// Create a string for generating an embedding for a function.

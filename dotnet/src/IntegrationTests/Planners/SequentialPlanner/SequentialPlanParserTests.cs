@@ -1,15 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.IntegrationTests.Planners.SequentialPlanner;
+
+using Fakes;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planners.Sequential;
 using Microsoft.SemanticKernel.Planning;
-using SemanticKernel.IntegrationTests.Fakes;
-using SemanticKernel.IntegrationTests.TestSettings;
+using TestSettings;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.Planners.SequentialPlanner;
 
 public class SequentialPlanParserTests
 {
@@ -23,6 +24,7 @@ public class SequentialPlanParserTests
             .AddUserSecrets<SequentialPlanParserTests>()
             .Build();
     }
+
 
     [Fact]
     public void CanCallToPlanFromXml()
@@ -52,7 +54,7 @@ public class SequentialPlanParserTests
         var goal = "Summarize an input, translate to french, and e-mail to John Doe";
 
         // Act
-        var plan = planString.ToPlanFromXml(goal, SequentialPlanParser.GetFunctionCallback(kernel.Functions));
+        var plan = planString.ToPlanFromXml(goal, kernel.Functions.GetFunctionCallback());
 
         // Assert
         Assert.NotNull(plan);
@@ -88,6 +90,7 @@ public class SequentialPlanParserTests
             }
         );
     }
+
 
     private readonly IConfigurationRoot _configuration;
 }

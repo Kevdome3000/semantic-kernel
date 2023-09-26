@@ -11,7 +11,7 @@ using SemanticFunctions;
 /// <summary>
 ///  Configuration for a function call
 /// </summary>
-public class SKFunctionCallConfig
+public sealed class SKFunctionCallConfig
 {
     /// <summary>
     /// Prompt template configuration.

@@ -7,6 +7,7 @@ using Microsoft.SemanticKernel.Functions.Grpc.Extensions;
 using Microsoft.SemanticKernel.Orchestration;
 using RepoUtils;
 
+
 /**
  * This example shows how to use gRPC plugins.
  */
@@ -31,6 +32,6 @@ public static class Example35_GrpcPlugins
         // Run
         var result = await kernel.RunAsync(contextVariables, plugin["<operation-name>"]);
 
-        Console.WriteLine("Skill response: {0}", result);
+        Console.WriteLine("Plugin response: {0}", result);
     }
 }

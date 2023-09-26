@@ -17,10 +17,12 @@ using RepoUtils;
  * adding the ability to query it using natural language.
  */
 
+
 // ReSharper disable once InconsistentNaming
 public static class Example14_SemanticMemory
 {
     private const string MemoryCollectionName = "SKGitHub";
+
 
     public static async Task RunAsync()
     {
@@ -64,6 +66,7 @@ public static class Example14_SemanticMemory
         await RunExampleAsync(kernelWithCustomDb);
     }
 
+
     public static async Task RunExampleAsync(IKernel kernel)
     {
         await StoreMemoryAsync(kernel);
@@ -93,7 +96,7 @@ public static class Example14_SemanticMemory
         Query: Can I build a chat with SK?
 
         Result 1:
-          URL:     : https://github.com/microsoft/semantic-kernel/tree/main/samples/plugins/ChatSkill/ChatGPT
+          URL:     : https://github.com/microsoft/semantic-kernel/tree/main/samples/plugins/ChatPlugin/ChatGPT
           Title    : Sample demonstrating how to create a chat plugin interfacing with ChatGPT
 
         Result 2:
@@ -103,6 +106,7 @@ public static class Example14_SemanticMemory
         */
     }
 
+
     private static async Task SearchMemoryAsync(IKernel kernel, string query)
     {
         Console.WriteLine("\nQuery: " + query + "\n");
@@ -110,6 +114,7 @@ public static class Example14_SemanticMemory
         var memories = kernel.Memory.SearchAsync(MemoryCollectionName, query, limit: 2, minRelevanceScore: 0.5);
 
         int i = 0;
+
         await foreach (MemoryQueryResult memory in memories)
         {
             Console.WriteLine($"Result {++i}:");
@@ -121,6 +126,7 @@ public static class Example14_SemanticMemory
 
         Console.WriteLine("----------------------");
     }
+
 
     private static async Task StoreMemoryAsync(IKernel kernel)
     {
@@ -135,6 +141,7 @@ public static class Example14_SemanticMemory
         Console.WriteLine("\nAdding some GitHub file URLs and their descriptions to the semantic memory.");
         var githubFiles = SampleData();
         var i = 0;
+
         foreach (var entry in githubFiles)
         {
             await kernel.Memory.SaveReferenceAsync(
@@ -150,6 +157,7 @@ public static class Example14_SemanticMemory
         Console.WriteLine("\n----------------------");
     }
 
+
     private static Dictionary<string, string> SampleData()
     {
         return new Dictionary<string, string>
@@ -160,7 +168,7 @@ public static class Example14_SemanticMemory
                 = "Jupyter notebook describing how to pass prompts from a file to a semantic plugin or function",
             ["https://github.com/microsoft/semantic-kernel/blob/main/dotnet/notebooks//00-getting-started.ipynb"]
                 = "Jupyter notebook describing how to get started with the Semantic Kernel",
-            ["https://github.com/microsoft/semantic-kernel/tree/main/samples/plugins/ChatSkill/ChatGPT"]
+            ["https://github.com/microsoft/semantic-kernel/tree/main/samples/plugins/ChatPlugin/ChatGPT"]
                 = "Sample demonstrating how to create a chat plugin interfacing with ChatGPT",
             ["https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel/Memory/VolatileMemoryStore.cs"]
                 = "C# class that defines a volatile embedding store",

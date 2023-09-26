@@ -1,16 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SemanticFunctions;
-using Moq;
-using Xunit;
-
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.Planners.Action.UnitTests;
+
+using AI;
+using Diagnostics;
+using Extensions.Logging.Abstractions;
+using Moq;
+using Orchestration;
+using SemanticFunctions;
+using Xunit;
+
 #pragma warning restore IDE0130 // Namespace does not match folder structure
+
 
 public sealed class ActionPlannerTests
 {
@@ -35,6 +37,7 @@ public sealed class ActionPlannerTests
         Assert.Equal("PullsList", plan.Steps[0].Name);
     }
 
+
     [Fact]
     public async Task InvalidJsonThrowsAsync()
     {
@@ -48,6 +51,7 @@ public sealed class ActionPlannerTests
         // Act & Assert
         await Assert.ThrowsAsync<SKException>(() => planner.CreatePlanAsync("goal"));
     }
+
 
     [Fact]
     public void UsesPromptDelegateWhenProvided()
@@ -67,6 +71,7 @@ public sealed class ActionPlannerTests
         // Assert
         getPromptTemplateMock.Verify(x => x(), Times.Once());
     }
+
 
     [Fact]
     public async Task MalformedJsonThrowsAsync()
@@ -99,8 +104,9 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
         await Assert.ThrowsAsync<SKException>(async () => await planner.CreatePlanAsync("goal"));
     }
 
+
     [Fact]
-    public void ListOfFunctionsIncludesNativeAndSemanticFunctions()
+    public async Task ListOfFunctionsIncludesNativeAndSemanticFunctionsAsync()
     {
         // Arrange
         var plugins = this.CreateMockFunctionCollection();
@@ -109,15 +115,16 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
         var context = kernel.Object.CreateNewContext();
 
         // Act
-        var result = planner.ListOfFunctions("goal", context);
+        var result = await planner.ListOfFunctionsAsync("goal", context);
 
         // Assert
         var expected = $"// Send an e-mail.{Environment.NewLine}email.SendEmail{Environment.NewLine}// List pull requests.{Environment.NewLine}GitHubPlugin.PullsList{Environment.NewLine}// List repositories.{Environment.NewLine}GitHubPlugin.RepoList{Environment.NewLine}";
         Assert.Equal(expected, result);
     }
 
+
     [Fact]
-    public void ListOfFunctionsExcludesExcludedPlugins()
+    public async Task ListOfFunctionsExcludesExcludedPluginsAsync()
     {
         // Arrange
         var plugins = this.CreateMockFunctionCollection();
@@ -128,15 +135,16 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
         var context = kernel.Object.CreateNewContext();
 
         // Act
-        var result = planner.ListOfFunctions("goal", context);
+        var result = await planner.ListOfFunctionsAsync("goal", context);
 
         // Assert
         var expected = $"// Send an e-mail.{Environment.NewLine}email.SendEmail{Environment.NewLine}";
         Assert.Equal(expected, result);
     }
 
+
     [Fact]
-    public void ListOfFunctionsExcludesExcludedFunctions()
+    public async Task ListOfFunctionsExcludesExcludedFunctionsAsync()
     {
         // Arrange
         var plugins = this.CreateMockFunctionCollection();
@@ -147,12 +155,13 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
         var context = kernel.Object.CreateNewContext();
 
         // Act
-        var result = planner.ListOfFunctions("goal", context);
+        var result = await planner.ListOfFunctionsAsync("goal", context);
 
         // Assert
         var expected = $"// Send an e-mail.{Environment.NewLine}email.SendEmail{Environment.NewLine}// List repositories.{Environment.NewLine}GitHubPlugin.RepoList{Environment.NewLine}";
         Assert.Equal(expected, result);
     }
+
 
     private Mock<IKernel> CreateMockKernelAndFunctionFlowWithTestString(string testPlanString, Mock<IFunctionCollection>? functions = null)
     {
@@ -197,6 +206,7 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
         return kernel;
     }
 
+
     // Method to create Mock<ISKFunction> objects
     private static Mock<ISKFunction> CreateMockFunction(FunctionView functionView)
     {
@@ -206,6 +216,7 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
         mockFunction.Setup(x => x.PluginName).Returns(functionView.PluginName);
         return mockFunction;
     }
+
 
     private Mock<IFunctionCollection> CreateMockFunctionCollection()
     {
@@ -218,6 +229,7 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
 
         var functionsView = new List<FunctionView>();
         var plugins = new Mock<IFunctionCollection>();
+
         foreach (var (name, pluginName, description, isSemantic) in functions)
         {
             var functionView = new FunctionView(name, pluginName, description);
@@ -240,6 +252,7 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
         plugins.Setup(x => x.GetFunctionViews()).Returns(functionsView);
         return plugins;
     }
+
 
     private const string ValidPlanString = @"Here is a possible plan to accomplish the user intent:
 {

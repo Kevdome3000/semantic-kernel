@@ -13,6 +13,7 @@ using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using NCalcPlugins;
 using RepoUtils;
 
+
 /**
  * This example shows how to use Stepwise Planner to create and run a stepwise plan for a given goal.
  */
@@ -29,6 +30,7 @@ public static class Example51_StepwisePlanner
     internal static string? TextModelOverride = null; //"text-davinci-003";
 
     internal static string? Suffix = null;
+
 
     public static async Task RunAsync()
     {
@@ -54,6 +56,7 @@ public static class Example51_StepwisePlanner
         PrintResults();
     }
 
+
     // print out summary table of ExecutionResults
     private static void PrintResults()
     {
@@ -65,12 +68,14 @@ public static class Example51_StepwisePlanner
         {
             Console.WriteLine("Question: " + question);
             Console.WriteLine("Mode\tModel\tAnswer\tStepsTaken\tIterations\tTimeTaken");
+
             foreach (var er in s_executionResults.OrderByDescending(s => s.model).Where(s => s.question == question))
             {
                 Console.WriteLine($"{er.mode}\t{er.model}\t{er.timeTaken}\t{er.answer}");
             }
         }
     }
+
 
     private struct ExecutionResult
     {
@@ -81,7 +86,9 @@ public static class Example51_StepwisePlanner
         public string? timeTaken;
     }
 
+
     private static readonly List<ExecutionResult> s_executionResults = new();
+
 
     private static async Task RunTextCompletionAsync(string question)
     {
@@ -92,6 +99,7 @@ public static class Example51_StepwisePlanner
         await RunWithQuestionAsync(kernel, currentExecutionResult, question, TextMaxTokens);
     }
 
+
     private static async Task RunChatCompletionAsync(string question, string? model = null)
     {
         Console.WriteLine("RunChatCompletion");
@@ -101,13 +109,14 @@ public static class Example51_StepwisePlanner
         await RunWithQuestionAsync(kernel, currentExecutionResult, question, ChatMaxTokens);
     }
 
+
     private static async Task RunWithQuestionAsync(IKernel kernel, ExecutionResult currentExecutionResult, string question, int? MaxTokens = null)
     {
         currentExecutionResult.question = question;
         var bingConnector = new BingConnector(TestConfiguration.Bing.ApiKey);
-        var webSearchEngineSkill = new WebSearchEnginePlugin(bingConnector);
+        var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
 
-        kernel.ImportFunctions(webSearchEngineSkill, "WebSearch");
+        kernel.ImportFunctions(webSearchEnginePlugin, "WebSearch");
         kernel.ImportFunctions(new LanguageCalculatorPlugin(kernel), "semanticCalculator");
         kernel.ImportFunctions(new TimePlugin(), "time");
 
@@ -176,10 +185,12 @@ public static class Example51_StepwisePlanner
         Console.WriteLine("*****************************************************");
     }
 
+
     private static IKernel GetKernel(ref ExecutionResult result, bool useChat = false, string? model = null)
     {
         var builder = new KernelBuilder();
         var maxTokens = 0;
+
         if (useChat)
         {
             builder.WithAzureChatCompletionService(

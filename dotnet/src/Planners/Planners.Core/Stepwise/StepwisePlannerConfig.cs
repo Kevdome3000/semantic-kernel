@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Planning;
-using Microsoft.SemanticKernel.SemanticFunctions;
-
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of Plan
 namespace Microsoft.SemanticKernel.Planners;
+
+using SemanticFunctions;
+
 #pragma warning restore IDE0130
+
 
 /// <summary>
 /// Configuration for Stepwise planner instances.
@@ -14,22 +15,28 @@ namespace Microsoft.SemanticKernel.Planners;
 public sealed class StepwisePlannerConfig : PlannerConfigBase
 {
     /// <summary>
-    /// The maximum total number of tokens to allow in a completion request,
-    /// which includes the tokens from the prompt and completion
+    /// Initializes a new instance of the <see cref="StepwisePlannerConfig"/>
     /// </summary>
-    /// <remarks>
-    /// Default value is 4000.
-    /// </remarks>
-    public int MaxTokens { get; set; } = 4000;
+    public StepwisePlannerConfig()
+    {
+        this.MaxTokens = 4000;
+    }
+
 
     /// <summary>
     /// The ratio of tokens to allocate to the completion request. (prompt / (prompt + completion))
     /// </summary>
     public double MaxTokensRatio { get; set; } = 0.1;
 
-    internal int MaxCompletionTokens { get { return (int)(this.MaxTokens * this.MaxTokensRatio); } }
+    internal int MaxCompletionTokens
+    {
+        get { return (int)(this.MaxTokens * this.MaxTokensRatio); }
+    }
 
-    internal int MaxPromptTokens { get { return (int)(this.MaxTokens * (1 - this.MaxTokensRatio)); } }
+    internal int MaxPromptTokens
+    {
+        get { return (int)(this.MaxTokens * (1 - this.MaxTokensRatio)); }
+    }
 
     /// <summary>
     /// The maximum number of iterations to allow in a plan.

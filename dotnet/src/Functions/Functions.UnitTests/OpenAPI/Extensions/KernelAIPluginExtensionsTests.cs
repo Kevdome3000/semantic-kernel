@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Functions.UnitTests.OpenAPI.Extensions;
+
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -10,10 +12,9 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
 using Microsoft.SemanticKernel.Orchestration;
-using SemanticKernel.Functions.UnitTests.OpenAPI.TestPlugins;
+using TestPlugins;
 using Xunit;
 
-namespace SemanticKernel.Functions.UnitTests.OpenAPI.Extensions;
 
 public sealed class KernelAIPluginExtensionsTests : IDisposable
 {
@@ -32,6 +33,7 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
     /// </summary>
     private IKernel _kernel;
 
+
     /// <summary>
     /// Creates an instance of a <see cref="KernelAIPluginExtensionsTests"/> class.
     /// </summary>
@@ -44,11 +46,12 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
         this._sut = new OpenApiDocumentParser();
     }
 
+
     [Fact]
     public async Task ItCanIncludeOpenApiOperationParameterTypesIntoFunctionParametersViewAsync()
     {
         //Act
-        var plugin = await this._kernel.ImportAIPluginAsync("fakePlugin", this._openApiDocument);
+        var plugin = await this._kernel.ImportPluginFunctionsAsync("fakePlugin", this._openApiDocument);
 
         //Assert
         var setSecretFunction = plugin["SetSecret"];
@@ -66,6 +69,7 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
         var payloadParameter = functionView.Parameters.First(p => p.Name == "payload");
         Assert.Equal(ParameterViewType.Object, payloadParameter.Type);
     }
+
 
     [Theory]
     [InlineData(true)]
@@ -93,7 +97,7 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
         var variables = this.GetFakeContextVariables();
 
         // Act
-        var plugin = await this._kernel.ImportAIPluginAsync("fakePlugin", new Uri(DocumentUri), executionParameters);
+        var plugin = await this._kernel.ImportPluginFunctionsAsync("fakePlugin", new Uri(DocumentUri), executionParameters);
         var setSecretFunction = plugin["SetSecret"];
 
         messageHandlerStub.ResetResponse();
@@ -113,6 +117,7 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
         Assert.StartsWith(ServerUrlOverride, messageHandlerStub.RequestUri.AbsoluteUri, StringComparison.Ordinal);
     }
 
+
     [Theory]
     [InlineData("documentV2_0.json")]
     [InlineData("documentV3_0.json")]
@@ -131,7 +136,7 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
         var variables = this.GetFakeContextVariables();
 
         // Act
-        var plugin = await this._kernel.ImportAIPluginAsync("fakePlugin", new Uri(DocumentUri), executionParameters);
+        var plugin = await this._kernel.ImportPluginFunctionsAsync("fakePlugin", new Uri(DocumentUri), executionParameters);
         var setSecretFunction = plugin["SetSecret"];
 
         messageHandlerStub.ResetResponse();
@@ -150,6 +155,7 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
         Assert.NotNull(messageHandlerStub.RequestUri);
         Assert.StartsWith(ServerUrlFromDocument, messageHandlerStub.RequestUri.AbsoluteUri, StringComparison.Ordinal);
     }
+
 
     [Theory]
     [InlineData("http://localhost:3001/openapi.json", "http://localhost:3001/", "documentV2_0.json")]
@@ -176,7 +182,7 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
         var variables = this.GetFakeContextVariables();
 
         // Act
-        var plugin = await this._kernel.ImportAIPluginAsync("fakePlugin", new Uri(documentUri), executionParameters);
+        var plugin = await this._kernel.ImportPluginFunctionsAsync("fakePlugin", new Uri(documentUri), executionParameters);
         var setSecretFunction = plugin["SetSecret"];
 
         messageHandlerStub.ResetResponse();
@@ -196,10 +202,12 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
         Assert.StartsWith(expectedServerUrl, messageHandlerStub.RequestUri.AbsoluteUri, StringComparison.Ordinal);
     }
 
+
     public void Dispose()
     {
         this._openApiDocument.Dispose();
     }
+
 
     #region private ================================================================================
 
@@ -216,4 +224,6 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
     }
 
     #endregion
+
+
 }
