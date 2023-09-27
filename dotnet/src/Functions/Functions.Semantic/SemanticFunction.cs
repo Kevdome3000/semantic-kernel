@@ -1,5 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - Using the main namespace
+namespace Microsoft.SemanticKernel;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -8,20 +12,17 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SemanticFunctions;
+using AI;
+using AI.TextCompletion;
+using Diagnostics;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
+using Orchestration;
+using SemanticFunctions;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using the main namespace
-namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
-
 #pragma warning disable format
+
 
 /// <summary>
 /// A Semantic Kernel "Semantic" prompt function.
@@ -51,6 +52,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     /// List of function parameters
     /// </summary>
     public IReadOnlyList<ParameterView> Parameters => this._promptTemplate.Parameters;
+
 
     /// <summary>
     /// Create a semantic function instance, given a semantic function configuration.
@@ -82,11 +84,13 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         return func;
     }
 
+
     /// <inheritdoc/>
     public FunctionView Describe()
     {
         return new FunctionView(this.Name, this.PluginName, this.Description) { Parameters = this.Parameters };
     }
+
 
     /// <inheritdoc/>
     public async Task<FunctionResult> InvokeAsync(
@@ -99,6 +103,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         return await this.RunPromptAsync(this._aiService?.Value, requestSettings ?? this.RequestSettings, context, cancellationToken).ConfigureAwait(false);
     }
 
+
     /// <inheritdoc/>
     public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions)
     {
@@ -106,11 +111,13 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         return this;
     }
 
+
     [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SetDefaultFunctionCollection instead. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
 #pragma warning disable CS1591
     public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) =>
         this.SetDefaultFunctionCollection(skills);
+
 
     /// <inheritdoc/>
     public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
@@ -120,12 +127,14 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         return this;
     }
 
+
     /// <inheritdoc/>
     public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
     {
         this.RequestSettings = requestSettings;
         return this;
     }
+
 
     /// <summary>
     /// Dispose of resources.
@@ -138,17 +147,20 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         }
     }
 
+
     /// <summary>
     /// JSON serialized string representation of the function.
     /// </summary>
     public override string ToString()
         => this.ToString(false);
 
+
     /// <summary>
     /// JSON serialized string representation of the function.
     /// </summary>
     public string ToString(bool writeIndented)
         => JsonSerializer.Serialize(this, options: writeIndented ? s_toStringIndentedSerialization : s_toStringStandardSerialization);
+
 
     internal SemanticFunction(
         IPromptTemplate template,
@@ -173,15 +185,17 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         this._view = new(() => new(functionName, pluginName, description, this.Parameters));
     }
 
+
     #region private
 
     private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
     private readonly ILogger _logger;
     private IReadOnlyFunctionCollection? _functionCollection;
-    private Lazy<ITextCompletion>? _aiService = null;
-    private Lazy<FunctionView> _view;
+    private Lazy<ITextCompletion>? _aiService;
+    private readonly Lazy<FunctionView> _view;
     public IPromptTemplate _promptTemplate { get; }
+
 
     private static async Task<string> GetCompletionsResultContentAsync(IReadOnlyList<ITextResult> completions, CancellationToken cancellationToken = default)
     {
@@ -189,8 +203,10 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         return await completions[0].GetCompletionAsync(cancellationToken).ConfigureAwait(false);
     }
 
+
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay => $"{this.Name} ({this.Description})";
+
 
     /// <summary>Add default values to the context variables if the variable is not defined</summary>
     private void AddDefaultValues(ContextVariables variables)
@@ -203,6 +219,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
             }
         }
     }
+
 
     private async Task<FunctionResult> RunPromptAsync(
         ITextCompletion? client,
@@ -223,11 +240,11 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
             // Update the result with the completion
             context.Variables.Update(completion);
 
-            result = new FunctionResult(this.Name, this.PluginName, context, completion);
-
             var modelResults = completionResults.Select(c => c.ModelResult).ToArray();
 
-            result.AddModelResults(modelResults);
+            result = new FunctionResult(this.Name, this.PluginName, context, completion);
+
+            result.Metadata.Add(AIFunctionResultExtensions.ModelResultsMetadataKey, modelResults);
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
@@ -240,6 +257,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
 
     #endregion
 
+
     #region Obsolete
 
     /// <inheritdoc/>
@@ -248,4 +266,6 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     public bool IsSemantic => true;
 
     #endregion
+
+
 }

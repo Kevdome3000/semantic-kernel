@@ -8,7 +8,6 @@ using Diagnostics;
 using Extensions.Logging.Abstractions;
 using Moq;
 using Orchestration;
-using SemanticFunctions;
 using Xunit;
 
 #pragma warning restore IDE0130 // Namespace does not match folder structure
@@ -197,11 +196,8 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
         kernel.Setup(x => x.CreateNewContext()).Returns(context);
         kernel.Setup(x => x.LoggerFactory).Returns(NullLoggerFactory.Instance);
 
-        kernel.Setup(x => x.RegisterSemanticFunction(
-            It.IsAny<string>(),
-            It.IsAny<string>(),
-            It.IsAny<SemanticFunctionConfig>()
-        )).Returns(mockFunctionFlowFunction.Object);
+        kernel.Setup(x => x.RegisterCustomFunction(It.IsAny<ISKFunction>()))
+            .Returns(mockFunctionFlowFunction.Object);
 
         return kernel;
     }

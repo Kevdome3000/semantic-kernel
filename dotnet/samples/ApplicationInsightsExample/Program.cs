@@ -19,6 +19,7 @@ using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using NCalcPlugins;
 
+
 /// <summary>
 /// Example of telemetry in Semantic Kernel using Application Insights within console application.
 /// </summary>
@@ -31,7 +32,8 @@ public sealed class Program
     /// <see cref="LogLevel.Information"/> is set by default. <para />
     /// <see cref="LogLevel.Trace"/> will enable logging with more detailed information, including sensitive data. Should not be used in production. <para />
     /// </remarks>
-    private static LogLevel s_logLevel = LogLevel.Information;
+    private const LogLevel MinLogLevel = LogLevel.Information;
+
 
     /// <summary>
     /// The main entry point for the application.
@@ -79,6 +81,7 @@ public sealed class Program
         }
     }
 
+
     private static ServiceProvider GetServiceProvider()
     {
         var services = new ServiceCollection();
@@ -88,14 +91,15 @@ public sealed class Program
         return services.BuildServiceProvider();
     }
 
+
     private static void ConfigureApplicationInsightsTelemetry(ServiceCollection services)
     {
         string instrumentationKey = Env.Var("ApplicationInsights__InstrumentationKey");
 
         services.AddLogging(loggingBuilder =>
         {
-            loggingBuilder.AddFilter<ApplicationInsightsLoggerProvider>(logLevel => logLevel == s_logLevel);
-            loggingBuilder.SetMinimumLevel(s_logLevel);
+            loggingBuilder.AddFilter<ApplicationInsightsLoggerProvider>(logLevel => logLevel == MinLogLevel);
+            loggingBuilder.SetMinimumLevel(MinLogLevel);
         });
 
         services.AddApplicationInsightsTelemetryWorkerService(options =>
@@ -103,6 +107,7 @@ public sealed class Program
             options.ConnectionString = $"InstrumentationKey={instrumentationKey}";
         });
     }
+
 
     private static IKernel GetKernel(ILoggerFactory loggerFactory)
     {
@@ -127,6 +132,7 @@ public sealed class Program
         return kernel;
     }
 
+
     private static ISequentialPlanner GetSequentialPlanner(
         IKernel kernel,
         ILoggerFactory loggerFactory,
@@ -137,12 +143,14 @@ public sealed class Program
         return new SequentialPlanner(kernel, plannerConfig).WithInstrumentation(loggerFactory);
     }
 
+
     private static IActionPlanner GetActionPlanner(
         IKernel kernel,
         ILoggerFactory loggerFactory)
     {
         return new ActionPlanner(kernel).WithInstrumentation(loggerFactory);
     }
+
 
     private static IStepwisePlanner GetStepwisePlanner(
         IKernel kernel,
@@ -158,6 +166,7 @@ public sealed class Program
 
         return new StepwisePlanner(kernel, plannerConfig).WithInstrumentation(loggerFactory);
     }
+
 
     /// <summary>
     /// Example of metering configuration in Application Insights
@@ -182,6 +191,7 @@ public sealed class Program
         meterListener.Start();
     }
 
+
     /// <summary>
     /// The callback which can be used to get measurement recording.
     /// </summary>
@@ -193,6 +203,7 @@ public sealed class Program
             telemetryClient.GetMetric(instrument.Name).TrackValue(measurement);
         };
     }
+
 
     /// <summary>
     /// Example of advanced distributed tracing configuration in Application Insights

@@ -1,18 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Planning;
+
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Orchestration;
+using AI;
+using AI.TextCompletion;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
+using Orchestration;
 
-namespace Microsoft.SemanticKernel.Planning;
 
 /// <summary>
 /// Standard Semantic Kernel callable plan with instrumentation.
@@ -37,6 +38,7 @@ public sealed class InstrumentedPlan : IPlan
     /// <inheritdoc/>
     public AIRequestSettings? RequestSettings => this._plan.RequestSettings;
 
+
     /// <summary>
     /// Initialize a new instance of the <see cref="InstrumentedPlan"/> class.
     /// </summary>
@@ -50,11 +52,13 @@ public sealed class InstrumentedPlan : IPlan
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(InstrumentedPlan)) : NullLogger.Instance;
     }
 
+
     /// <inheritdoc/>
     public FunctionView Describe()
     {
         return this._plan.Describe();
     }
+
 
     /// <inheritdoc/>
     public async Task<FunctionResult> InvokeAsync(
@@ -66,23 +70,28 @@ public sealed class InstrumentedPlan : IPlan
             this._plan.InvokeAsync(context, requestSettings, cancellationToken)).ConfigureAwait(false);
     }
 
+
     /// <inheritdoc/>
     public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings) =>
         this._plan.SetAIConfiguration(requestSettings);
+
 
     /// <inheritdoc/>
     public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory) =>
         this._plan.SetAIService(serviceFactory);
 
+
     /// <inheritdoc/>
     public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions) =>
         this._plan.SetDefaultFunctionCollection(functions);
+
 
     [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SetDefaultFunctionCollection instead. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
 #pragma warning disable CS1591
     public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) =>
-    this._plan.SetDefaultFunctionCollection(skills);
+        this._plan.SetDefaultFunctionCollection(skills);
+
 
     #region private ================================================================================
 
@@ -92,12 +101,12 @@ public sealed class InstrumentedPlan : IPlan
     /// <summary>
     /// Instance of <see cref="Meter"/> for plan-related metrics.
     /// </summary>
-    private static Meter s_meter = new(typeof(Plan).FullName);
+    private static readonly Meter s_meter = new(typeof(Plan).FullName);
 
     /// <summary>
     /// Instance of <see cref="Histogram{T}"/> to measure and track the time of plan execution.
     /// </summary>
-    private static Histogram<double> s_executionTimeHistogram =
+    private static readonly Histogram<double> s_executionTimeHistogram =
         s_meter.CreateHistogram<double>(
             name: "SK.Plan.Execution.ExecutionTime",
             unit: "ms",
@@ -106,7 +115,7 @@ public sealed class InstrumentedPlan : IPlan
     /// <summary>
     /// Instance of <see cref="Counter{T}"/> to keep track of the total number of plan executions.
     /// </summary>
-    private static Counter<int> s_executionTotalCounter =
+    private static readonly Counter<int> s_executionTotalCounter =
         s_meter.CreateCounter<int>(
             name: "SK.Plan.Execution.ExecutionTotal",
             description: "Total number of plan executions");
@@ -114,7 +123,7 @@ public sealed class InstrumentedPlan : IPlan
     /// <summary>
     /// Instance of <see cref="Counter{T}"/> to keep track of the number of successful plan executions.
     /// </summary>
-    private static Counter<int> s_executionSuccessCounter =
+    private static readonly Counter<int> s_executionSuccessCounter =
         s_meter.CreateCounter<int>(
             name: "SK.Plan.Execution.ExecutionSuccess",
             description: "Number of successful plan executions");
@@ -122,10 +131,11 @@ public sealed class InstrumentedPlan : IPlan
     /// <summary>
     /// Instance of <see cref="Counter{T}"/> to keep track of the number of failed plan executions.
     /// </summary>
-    private static Counter<int> s_executionFailureCounter =
+    private static readonly Counter<int> s_executionFailureCounter =
         s_meter.CreateCounter<int>(
             name: "SK.Plan.Execution.ExecutionFailure",
             description: "Number of failed plan executions");
+
 
     /// <summary>
     /// Wrapper for instrumentation to be used in multiple invocation places.
@@ -169,6 +179,7 @@ public sealed class InstrumentedPlan : IPlan
 
     #endregion
 
+
     #region Obsolete =======================================================================
 
     /// <inheritdoc/>
@@ -177,4 +188,6 @@ public sealed class InstrumentedPlan : IPlan
     public bool IsSemantic => this._plan.IsSemantic;
 
     #endregion
+
+
 }

@@ -1,18 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - Using NS of Plan
+namespace Microsoft.SemanticKernel.Planners;
+
 using System;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Planning;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
+using Planning;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using NS of Plan
-namespace Microsoft.SemanticKernel.Planners;
 #pragma warning restore IDE0130
+
 
 /// <summary>
 /// Instrumented planner that uses set of semantic functions to select one function out of many and create a plan.
@@ -32,6 +34,7 @@ public class InstrumentedActionPlanner : IActionPlanner
         this._planner = planner;
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(InstrumentedActionPlanner)) : NullLogger.Instance;
     }
+
 
     /// <inheritdoc />
     public async Task<Plan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
@@ -77,6 +80,7 @@ public class InstrumentedActionPlanner : IActionPlanner
         }
     }
 
+
     #region private ================================================================================
 
     private const string PlannerType = nameof(ActionPlanner);
@@ -87,21 +91,23 @@ public class InstrumentedActionPlanner : IActionPlanner
     /// <summary>
     /// Instance of <see cref="ActivitySource"/> for planner-related activities.
     /// </summary>
-    private static ActivitySource s_activitySource = new(typeof(InstrumentedActionPlanner).FullName);
+    private static readonly ActivitySource s_activitySource = new(typeof(InstrumentedActionPlanner).FullName);
 
     /// <summary>
     /// Instance of <see cref="Meter"/> for planner-related metrics.
     /// </summary>
-    private static Meter s_meter = new(typeof(InstrumentedActionPlanner).FullName);
+    private static readonly Meter s_meter = new(typeof(InstrumentedActionPlanner).FullName);
 
     /// <summary>
     /// Instance of <see cref="Histogram{T}"/> to record plan creation execution time.
     /// </summary>
-    private static Histogram<double> s_createPlanExecutionTime =
+    private static readonly Histogram<double> s_createPlanExecutionTime =
         s_meter.CreateHistogram<double>(
             name: $"SK.{PlannerType}.CreatePlan.ExecutionTime",
             unit: "ms",
             description: "Execution time of plan creation");
 
     #endregion
+
+
 }

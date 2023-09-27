@@ -1,5 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - Using the main namespace
+namespace Microsoft.SemanticKernel;
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -13,19 +17,16 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Orchestration;
+using AI;
+using AI.TextCompletion;
+using Diagnostics;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
+using Orchestration;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using the main namespace
-namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
-
 #pragma warning disable format
+
 
 /// <summary>
 /// Standard Semantic Kernel callable function.
@@ -58,6 +59,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     /// </summary>
     public IReadOnlyList<ParameterView> Parameters { get; }
 
+
     /// <summary>
     /// Create a native function instance, wrapping a native object method
     /// </summary>
@@ -79,7 +81,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
         if (string.IsNullOrWhiteSpace(pluginName))
         {
-            pluginName = FunctionCollection.GlobalFunctionsCollectionName;
+            pluginName = FunctionCollection.GlobalFunctionsPluginName;
         }
 
         ILogger logger = loggerFactory?.CreateLogger(method.DeclaringType ?? typeof(SKFunction)) ?? NullLogger.Instance;
@@ -94,6 +96,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             description: methodDetails.Description,
             logger: logger);
     }
+
 
     /// <summary>
     /// Create a native function instance, wrapping a delegate function
@@ -117,7 +120,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
         if (string.IsNullOrWhiteSpace(pluginName))
         {
-            pluginName = FunctionCollection.GlobalFunctionsCollectionName;
+            pluginName = FunctionCollection.GlobalFunctionsPluginName;
         }
 
         MethodDetails methodDetails = GetMethodDetails(nativeFunction.Method, nativeFunction.Target, pluginName!, logger);
@@ -135,9 +138,11 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             logger: logger);
     }
 
+
     /// <inheritdoc/>
     public FunctionView Describe()
         => this._view.Value;
+
 
     /// <inheritdoc/>
     public async Task<FunctionResult> InvokeAsync(
@@ -156,6 +161,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         }
     }
 
+
     /// <inheritdoc/>
     public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions)
     {
@@ -164,11 +170,13 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         return this;
     }
 
+
     [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SetDefaultFunctionCollection instead. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
 #pragma warning disable CS1591
     public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) =>
         this.SetDefaultFunctionCollection(skills);
+
 
     /// <inheritdoc/>
     public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
@@ -177,12 +185,14 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         return this;
     }
 
+
     /// <inheritdoc/>
     public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
     {
         this.ThrowNotSemantic();
         return this;
     }
+
 
     /// <summary>
     /// Dispose of resources.
@@ -191,11 +201,13 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     {
     }
 
+
     /// <summary>
     /// JSON serialized string representation of the function.
     /// </summary>
     public override string ToString()
         => this.ToString(false);
+
 
     /// <summary>
     /// JSON serialized string representation of the function.
@@ -203,12 +215,14 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     public string ToString(bool writeIndented)
         => JsonSerializer.Serialize(this, options: writeIndented ? s_toStringIndentedSerialization : s_toStringStandardSerialization);
 
+
     #region private
 
     private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
-    private NativeFunctionDelegate _function;
+    private readonly NativeFunctionDelegate _function;
     private readonly ILogger _logger;
+
 
     private struct MethodDetails
     {
@@ -218,11 +232,13 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         public string Description { get; set; }
     }
 
+
     private static async Task<string> GetCompletionsResultContentAsync(IReadOnlyList<ITextResult> completions, CancellationToken cancellationToken = default)
     {
         // To avoid any unexpected behavior we only take the first completion result (when running from the Kernel)
         return await completions[0].GetCompletionAsync(cancellationToken).ConfigureAwait(false);
     }
+
 
     internal NativeFunction(
         NativeFunctionDelegate delegateFunction,
@@ -246,8 +262,9 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         this.PluginName = pluginName;
         this.Description = description;
 
-        this._view = new(() => new (functionName, pluginName, description) { Parameters = this.Parameters });
+        this._view = new(() => new(functionName, pluginName, description) { Parameters = this.Parameters });
     }
+
 
     /// <summary>
     /// Throw an exception if the function is not semantic, use this method when some logic makes sense only for semantic functions.
@@ -259,6 +276,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         this._logger.LogError("The function is not semantic");
         throw new SKException("Invalid operation, the method requires a semantic function");
     }
+
 
     private static MethodDetails GetMethodDetails(
         MethodInfo method,
@@ -273,6 +291,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         // We don't apply any heuristics to the value supplied by SKName so that it can always be used
         // as a definitive override.
         string? functionName = method.GetCustomAttribute<SKNameAttribute>(inherit: true)?.Name?.Trim();
+
         if (string.IsNullOrEmpty(functionName))
         {
             functionName = SanitizeMetadataName(method.Name!);
@@ -303,6 +322,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         return result;
     }
 
+
     /// <summary>Gets whether a method has a known async return type.</summary>
     private static bool IsAsyncMethod(MethodInfo method)
     {
@@ -316,6 +336,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         if (t.IsGenericType)
         {
             t = t.GetGenericTypeDefinition();
+
             if (t == typeof(Task<>) || t == typeof(ValueTask<>))
             {
                 return true;
@@ -324,6 +345,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
         return false;
     }
+
 
     // Inspect a method and returns the corresponding delegate and related info
     private static (NativeFunctionDelegate function, List<ParameterView>) GetDelegateInfo(
@@ -340,11 +362,13 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         // Get marshaling funcs for parameters and build up the parameter views.
         var parameterFuncs = new Func<SKContext, CancellationToken, object?>[parameters.Length];
         bool sawFirstParameter = false, hasSKContextParam = false, hasCancellationTokenParam = false, hasLoggerParam = false, hasMemoryParam = false, hasCultureParam = false;
+
         for (int i = 0; i < parameters.Length; i++)
         {
             (parameterFuncs[i], ParameterView? parameterView) = GetParameterMarshalerDelegate(
                 method, parameters[i],
                 ref sawFirstParameter, ref hasSKContextParam, ref hasCancellationTokenParam, ref hasLoggerParam, ref hasMemoryParam, ref hasCultureParam);
+
             if (parameterView is not null)
             {
                 stringParameterViews.Add(parameterView);
@@ -359,6 +383,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         {
             // Create the arguments.
             object?[] args = parameterFuncs.Length != 0 ? new object?[parameterFuncs.Length] : Array.Empty<object?>();
+
             for (int i = 0; i < args.Length; i++)
             {
                 args[i] = parameterFuncs[i](context, cancellationToken);
@@ -371,11 +396,6 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             return returnFunc(functionName, pluginName, result, context);
         }
 
-        // Add parameters applied to the method that aren't part of the signature.
-        stringParameterViews.AddRange(method
-            .GetCustomAttributes<SKParameterAttribute>(inherit: true)
-            .Select(x => new ParameterView(x.Name ?? string.Empty, x.Description ?? string.Empty, x.DefaultValue ?? string.Empty)));
-
         // Check for param names conflict
         Verify.ParametersUniqueness(stringParameterViews);
 
@@ -383,12 +403,19 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         return (Function, stringParameterViews);
     }
 
+
     /// <summary>
     /// Gets a delegate for handling the marshaling of a parameter.
     /// </summary>
     private static (Func<SKContext, CancellationToken, object?>, ParameterView?) GetParameterMarshalerDelegate(
-        MethodInfo method, ParameterInfo parameter,
-        ref bool sawFirstParameter, ref bool hasSKContextParam, ref bool hasCancellationTokenParam, ref bool hasLoggerParam, ref bool hasMemoryParam, ref bool hasCultureParam)
+        MethodInfo method,
+        ParameterInfo parameter,
+        ref bool sawFirstParameter,
+        ref bool hasSKContextParam,
+        ref bool hasCancellationTokenParam,
+        ref bool hasLoggerParam,
+        ref bool hasMemoryParam,
+        ref bool hasCultureParam)
     {
         Type type = parameter.ParameterType;
 
@@ -405,9 +432,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         if (type == typeof(ILogger) || type == typeof(ILoggerFactory))
         {
             TrackUniqueParameterType(ref hasLoggerParam, method, $"At most one {nameof(ILogger)}/{nameof(ILoggerFactory)} parameter is permitted.");
-            return type == typeof(ILogger) ?
-                ((SKContext context, CancellationToken _) => context.LoggerFactory.CreateLogger(method?.DeclaringType ?? typeof(SKFunction)), null) :
-                ((SKContext context, CancellationToken _) => context.LoggerFactory, null);
+            return type == typeof(ILogger) ? ((SKContext context, CancellationToken _) => context.LoggerFactory.CreateLogger(method?.DeclaringType ?? typeof(SKFunction)), null) : ((SKContext context, CancellationToken _) => context.LoggerFactory, null);
         }
 
         if (type == typeof(CultureInfo) || type == typeof(IFormatProvider))
@@ -438,6 +463,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             DefaultValueAttribute defaultValueAttribute = parameter.GetCustomAttribute<DefaultValueAttribute>(inherit: true);
             bool hasDefaultValue = defaultValueAttribute is not null;
             object? defaultValue = defaultValueAttribute?.Value;
+
             if (!hasDefaultValue && parameter.HasDefaultValue)
             {
                 hasDefaultValue = true;
@@ -470,6 +496,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             }
 
             bool fallBackToInput = !sawFirstParameter && !nameIsInput;
+
             object? parameterFunc(SKContext context, CancellationToken _)
             {
                 // 1. Use the value of the variable if it exists.
@@ -494,7 +521,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
                 throw new SKException($"Missing value for parameter '{name}'",
                     new ArgumentException("Missing value function parameter", name));
 
-                object ? Process(string value)
+                object? Process(string value)
                 {
                     if (type == typeof(string))
                     {
@@ -525,6 +552,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         // Fail for unknown parameter types.
         throw GetExceptionForInvalidSignature(method, $"Unknown parameter type {parameter.ParameterType}");
     }
+
 
     /// <summary>
     /// Gets a delegate for handling the result value of a method, converting it into the <see cref="Task{SKContext}"/> to return from the invocation.
@@ -709,10 +737,12 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             throw new SKException("Function returned null unexpectedly.");
     }
 
+
     /// <summary>Gets an exception that can be thrown indicating an invalid signature.</summary>
     [DoesNotReturn]
     private static Exception GetExceptionForInvalidSignature(MethodInfo method, string reason) =>
         throw new SKException($"Function '{method.Name}' is not supported by the kernel. {reason}");
+
 
     /// <summary>Throws an exception indicating an invalid SKFunction signature if the specified condition is not met.</summary>
     private static void ThrowForInvalidSignatureIf([DoesNotReturnIf(true)] bool condition, MethodInfo method, string reason)
@@ -723,12 +753,14 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         }
     }
 
+
     /// <summary>Tracks whether a particular kind of parameter has been seen, throwing an exception if it has, and marking it as seen if it hasn't</summary>
     private static void TrackUniqueParameterType(ref bool hasParameterType, MethodInfo method, string failureMessage)
     {
         ThrowForInvalidSignatureIf(hasParameterType, method, failureMessage);
         hasParameterType = true;
     }
+
 
     /// <summary>
     /// Gets a TypeConverter-based parser for parsing a string as the target type.
@@ -752,6 +784,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             // For nullables, parse as the inner type.  We then just need to be careful to treat null as null,
             // as the underlying parser might not be expecting null.
             bool wasNullable = false;
+
             if (targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(Nullable<>))
             {
                 wasNullable = true;
@@ -799,6 +832,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             return null;
         });
 
+
     /// <summary>
     /// Gets a TypeConverter-based formatter for formatting an object as a string.
     /// </summary>
@@ -810,6 +844,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         {
             // For nullables, render as the underlying type.
             bool wasNullable = false;
+
             if (targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(Nullable<>))
             {
                 wasNullable = true;
@@ -845,6 +880,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             return null;
         });
 
+
     private static TypeConverter? GetTypeConverter(Type targetType)
     {
         // In an ideal world, this would use TypeDescriptor.GetConverter. However, that is not friendly to
@@ -853,22 +889,39 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         // types that are explicitly attributed with TypeConverterAttribute.
 
         if (targetType == typeof(byte)) { return new ByteConverter(); }
+
         if (targetType == typeof(sbyte)) { return new SByteConverter(); }
+
         if (targetType == typeof(bool)) { return new BooleanConverter(); }
+
         if (targetType == typeof(ushort)) { return new UInt16Converter(); }
+
         if (targetType == typeof(short)) { return new Int16Converter(); }
+
         if (targetType == typeof(char)) { return new CharConverter(); }
+
         if (targetType == typeof(uint)) { return new UInt32Converter(); }
+
         if (targetType == typeof(int)) { return new Int32Converter(); }
+
         if (targetType == typeof(ulong)) { return new UInt64Converter(); }
+
         if (targetType == typeof(long)) { return new Int64Converter(); }
+
         if (targetType == typeof(float)) { return new SingleConverter(); }
+
         if (targetType == typeof(double)) { return new DoubleConverter(); }
+
         if (targetType == typeof(decimal)) { return new DecimalConverter(); }
+
         if (targetType == typeof(TimeSpan)) { return new TimeSpanConverter(); }
+
         if (targetType == typeof(DateTime)) { return new DateTimeConverter(); }
+
         if (targetType == typeof(DateTimeOffset)) { return new DateTimeOffsetConverter(); }
+
         if (targetType == typeof(Uri)) { return new UriTypeConverter(); }
+
         if (targetType == typeof(Guid)) { return new GuidConverter(); }
 
         if (targetType.GetCustomAttribute<TypeConverterAttribute>() is TypeConverterAttribute tca &&
@@ -881,14 +934,17 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         return null;
     }
 
+
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay => $"{this.Name} ({this.Description})";
+
 
     /// <summary>
     /// Remove characters from method name that are valid in metadata but invalid for SK.
     /// </summary>
     private static string SanitizeMetadataName(string methodName) =>
         s_invalidNameCharsRegex.Replace(methodName, "_");
+
 
     /// <summary>Regex that flags any character other than ASCII digits or letters or the underscore.</summary>
     private static readonly Regex s_invalidNameCharsRegex = new("[^0-9A-Za-z_]");
@@ -903,6 +959,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
     #endregion
 
+
     #region Obsolete
 
     /// <inheritdoc/>
@@ -911,4 +968,6 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     public bool IsSemantic => false;
 
     #endregion
+
+
 }

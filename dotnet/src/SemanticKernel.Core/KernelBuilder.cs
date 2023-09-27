@@ -1,20 +1,21 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel;
+
 using System;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.TemplateEngine;
+using Diagnostics;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
+using Http;
+using Memory;
+using Orchestration;
+using Services;
+using TemplateEngine;
 
-namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// A builder for Semantic Kernel.
@@ -31,6 +32,7 @@ public sealed class KernelBuilder
     private static bool s_promptTemplateEngineInitialized = false;
     private static Type? s_promptTemplateEngineType = null;
 
+
     /// <summary>
     /// Create a new kernel instance
     /// </summary>
@@ -40,6 +42,7 @@ public sealed class KernelBuilder
         var builder = new KernelBuilder();
         return builder.Build();
     }
+
 
     /// <summary>
     /// Build a new kernel instance using the settings passed so far.
@@ -65,6 +68,7 @@ public sealed class KernelBuilder
         return instance;
     }
 
+
     /// <summary>
     /// Add a logger to the kernel to be built.
     /// </summary>
@@ -76,6 +80,7 @@ public sealed class KernelBuilder
         this._loggerFactory = loggerFactory;
         return this;
     }
+
 
     /// <summary>
     /// Add a semantic text memory entity to the kernel to be built.
@@ -89,6 +94,7 @@ public sealed class KernelBuilder
         return this;
     }
 
+
     /// <summary>
     /// Add a semantic text memory store factory.
     /// </summary>
@@ -100,6 +106,7 @@ public sealed class KernelBuilder
         this._memoryFactory = () => factory(this._loggerFactory);
         return this;
     }
+
 
     /// <summary>
     /// Add memory storage to the kernel to be built.
@@ -113,6 +120,7 @@ public sealed class KernelBuilder
         return this;
     }
 
+
     /// <summary>
     /// Add memory storage factory to the kernel.
     /// </summary>
@@ -124,6 +132,7 @@ public sealed class KernelBuilder
         this._memoryStorageFactory = () => factory(this._loggerFactory);
         return this;
     }
+
 
     /// <summary>
     /// Add memory storage factory to the kernel.
@@ -137,6 +146,7 @@ public sealed class KernelBuilder
         return this;
     }
 
+
     /// <summary>
     /// Add prompt template engine to the kernel to be built.
     /// </summary>
@@ -148,6 +158,7 @@ public sealed class KernelBuilder
         this._promptTemplateEngine = promptTemplateEngine;
         return this;
     }
+
 
     /// <summary>
     /// Add a http handler factory to the kernel to be built.
@@ -161,6 +172,7 @@ public sealed class KernelBuilder
         return this;
     }
 
+
     /// <summary>
     /// Add a retry handler factory to the kernel to be built.
     /// </summary>
@@ -172,6 +184,7 @@ public sealed class KernelBuilder
         return this.WithHttpHandlerFactory(httpHandlerFactory);
     }
 
+
     /// <summary>
     /// Adds a <typeparamref name="TService"/> instance to the services collection
     /// </summary>
@@ -182,6 +195,7 @@ public sealed class KernelBuilder
         return this;
     }
 
+
     /// <summary>
     /// Adds a <typeparamref name="TService"/> factory method to the services collection
     /// </summary>
@@ -191,6 +205,7 @@ public sealed class KernelBuilder
         this._aiServices.SetService<TService>(() => factory(this._loggerFactory));
         return this;
     }
+
 
     /// <summary>
     /// Adds a <typeparamref name="TService"/> instance to the services collection
@@ -207,6 +222,7 @@ public sealed class KernelBuilder
         return this;
     }
 
+
     /// <summary>
     /// Adds a <typeparamref name="TService"/> factory method to the services collection
     /// </summary>
@@ -222,6 +238,7 @@ public sealed class KernelBuilder
         return this;
     }
 
+
     /// <summary>
     /// Adds a <typeparamref name="TService"/> factory method to the services collection
     /// </summary>
@@ -236,6 +253,7 @@ public sealed class KernelBuilder
         this._aiServices.SetService<TService>(serviceId, () => factory(this._loggerFactory, this._httpHandlerFactory), setAsDefault);
         return this;
     }
+
 
     /// <summary>
     /// Create a default prompt template engine.
@@ -257,6 +275,7 @@ public sealed class KernelBuilder
         if (s_promptTemplateEngineType is not null)
         {
             var constructor = s_promptTemplateEngineType.GetConstructor(new Type[] { typeof(ILoggerFactory) });
+
             if (constructor is not null)
             {
 #pragma warning disable CS8601 // Null logger factory is OK
@@ -267,6 +286,7 @@ public sealed class KernelBuilder
 
         return new NullPromptTemplateEngine();
     }
+
 
     /// <summary>
     /// Get the prompt template engine type if available
@@ -289,12 +309,13 @@ public sealed class KernelBuilder
     }
 }
 
+
 /// <summary>
 /// No-operation IPromptTemplateEngine which performs no rendering of the template.
 ///
 /// This is a temporary solution to avoid breaking existing clients.
 /// </summary>
-internal class NullPromptTemplateEngine : IPromptTemplateEngine
+internal sealed class NullPromptTemplateEngine : IPromptTemplateEngine
 {
     public Task<string> RenderAsync(string templateText, SKContext context, CancellationToken cancellationToken = default)
     {

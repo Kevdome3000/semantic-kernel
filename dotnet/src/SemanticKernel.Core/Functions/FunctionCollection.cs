@@ -1,18 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - Using the main namespace
+namespace Microsoft.SemanticKernel;
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Diagnostics;
+using Diagnostics;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using the main namespace
-namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
+
 
 /// <summary>
 /// Semantic Kernel default function collection class.
@@ -24,7 +26,11 @@ namespace Microsoft.SemanticKernel;
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public class FunctionCollection : IFunctionCollection
 {
-    internal const string GlobalFunctionsCollectionName = "_GLOBAL_FUNCTIONS_";
+    /// <summary>
+    /// Plugin name used when storing global functions.
+    /// </summary>
+    public const string GlobalFunctionsPluginName = "_GLOBAL_FUNCTIONS_";
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionCollection"/> class.
@@ -37,6 +43,7 @@ public class FunctionCollection : IFunctionCollection
         // Important: names are case insensitive
         this._functionCollection = new(StringComparer.OrdinalIgnoreCase);
     }
+
 
     /// <summary>
     /// Adds a function to the function collection.
@@ -53,9 +60,11 @@ public class FunctionCollection : IFunctionCollection
         return this;
     }
 
+
     /// <inheritdoc/>
     public ISKFunction GetFunction(string functionName) =>
-        this.GetFunction(GlobalFunctionsCollectionName, functionName);
+        this.GetFunction(GlobalFunctionsPluginName, functionName);
+
 
     /// <inheritdoc/>
     public ISKFunction GetFunction(string pluginName, string functionName)
@@ -68,9 +77,11 @@ public class FunctionCollection : IFunctionCollection
         return functionInstance;
     }
 
+
     /// <inheritdoc/>
     public bool TryGetFunction(string functionName, [NotNullWhen(true)] out ISKFunction? availableFunction) =>
-        this.TryGetFunction(GlobalFunctionsCollectionName, functionName, out availableFunction);
+        this.TryGetFunction(GlobalFunctionsPluginName, functionName, out availableFunction);
+
 
     /// <inheritdoc/>
     public bool TryGetFunction(string pluginName, string functionName, [NotNullWhen(true)] out ISKFunction? availableFunction)
@@ -86,6 +97,7 @@ public class FunctionCollection : IFunctionCollection
         availableFunction = null;
         return false;
     }
+
 
     /// <inheritdoc/>
     public IReadOnlyList<FunctionView> GetFunctionViews()
@@ -103,8 +115,10 @@ public class FunctionCollection : IFunctionCollection
         return result;
     }
 
+
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     internal string DebuggerDisplay => $"Count = {this._functionCollection.Count}";
+
 
     #region private ================================================================================
 
@@ -115,9 +129,12 @@ public class FunctionCollection : IFunctionCollection
         throw new SKException($"Function not available {pluginName}.{functionName}");
     }
 
+
     private readonly ILogger _logger;
 
     private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, ISKFunction>> _functionCollection;
 
     #endregion
+
+
 }

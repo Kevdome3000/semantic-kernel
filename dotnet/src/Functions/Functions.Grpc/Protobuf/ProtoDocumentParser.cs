@@ -1,20 +1,21 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Functions.Grpc.Protobuf;
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Diagnostics;
 using Google.Protobuf.Reflection;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Functions.Grpc.Model;
+using Model;
 using ProtoBuf;
 
-namespace Microsoft.SemanticKernel.Functions.Grpc.Protobuf;
 
 /// <summary>
 /// Parser for .proto definition documents.
 /// </summary>
-internal class ProtoDocumentParser
+internal sealed class ProtoDocumentParser
 {
     /// <summary>
     /// Parses .proto document.
@@ -34,6 +35,7 @@ internal class ProtoDocumentParser
         descriptor.Process();
 
         var errors = descriptor.GetErrors();
+
         if (errors != null && errors.Length != 0)
         {
             throw new SKException($"Parsing of '{protoFileName}' .proto document has failed. Details: {string.Join(";", errors.AsEnumerable())}");
@@ -41,6 +43,7 @@ internal class ProtoDocumentParser
 
         return this.GetGrpcOperations(descriptor.Files.Single());
     }
+
 
     /// <summary>
     /// Parses an .proto document and extracts gRPC operations.
@@ -69,6 +72,7 @@ internal class ProtoDocumentParser
         return operations;
     }
 
+
     /// <summary>
     /// Creates gRPC operation data contract.
     /// </summary>
@@ -89,6 +93,7 @@ internal class ProtoDocumentParser
         }
 
         var messageType = allMessageTypes.SingleOrDefault(mt => mt.Name == fullTypeName || mt.Name == typeName);
+
         if (messageType == null)
         {
             throw new SKException($"No '{fullTypeName}' message type is found while resolving data contracts for the '{methodName}' method.");
@@ -98,6 +103,7 @@ internal class ProtoDocumentParser
 
         return new GrpcOperationDataContractType(fullTypeName, fields);
     }
+
 
     /// <summary>
     /// Returns data contract fields.
@@ -117,6 +123,7 @@ internal class ProtoDocumentParser
 
         return result;
     }
+
 
     /// <summary>
     /// Returns protobuf data type name.

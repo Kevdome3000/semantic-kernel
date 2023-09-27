@@ -1,21 +1,23 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - Using the main namespace
+namespace Microsoft.SemanticKernel;
+
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Orchestration;
+using AI;
+using AI.TextCompletion;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
+using Orchestration;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using the main namespace
-namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
+
 
 /// <summary>
 /// Standard Semantic Kernel callable function with instrumentation.
@@ -39,6 +41,7 @@ public sealed class InstrumentedSKFunction : ISKFunction
 
     /// <inheritdoc/>
     public AIRequestSettings? RequestSettings => this._function.RequestSettings;
+
 
     /// <summary>
     /// Initialize a new instance of the <see cref="InstrumentedSKFunction"/> class.
@@ -70,9 +73,11 @@ public sealed class InstrumentedSKFunction : ISKFunction
             description: "Number of failed function executions");
     }
 
+
     /// <inheritdoc/>
     public FunctionView Describe() =>
         this._function.Describe();
+
 
     /// <inheritdoc/>
     public async Task<FunctionResult> InvokeAsync(
@@ -84,23 +89,28 @@ public sealed class InstrumentedSKFunction : ISKFunction
             this._function.InvokeAsync(context, requestSettings, cancellationToken)).ConfigureAwait(false);
     }
 
+
     /// <inheritdoc/>
     public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings) =>
         this._function.SetAIConfiguration(requestSettings);
+
 
     /// <inheritdoc/>
     public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory) =>
         this._function.SetAIService(serviceFactory);
 
+
     /// <inheritdoc/>
     public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions) =>
         this._function.SetDefaultFunctionCollection(functions);
+
 
     [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SetDefaultFunctionCollection instead. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
 #pragma warning disable CS1591
     public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) =>
         this._function.SetDefaultFunctionCollection(skills);
+
 
     #region private ================================================================================
 
@@ -110,32 +120,33 @@ public sealed class InstrumentedSKFunction : ISKFunction
     /// <summary>
     /// Instance of <see cref="ActivitySource"/> for function-related activities.
     /// </summary>
-    private static ActivitySource s_activitySource = new(typeof(SKFunction).FullName);
+    private static readonly ActivitySource s_activitySource = new(typeof(SKFunction).FullName);
 
     /// <summary>
     /// Instance of <see cref="Meter"/> for function-related metrics.
     /// </summary>
-    private static Meter s_meter = new(typeof(SKFunction).FullName);
+    private static readonly Meter s_meter = new(typeof(SKFunction).FullName);
 
     /// <summary>
     /// Instance of <see cref="Histogram{T}"/> to measure and track the time of function execution.
     /// </summary>
-    private Histogram<double> _executionTimeHistogram;
+    private readonly Histogram<double> _executionTimeHistogram;
 
     /// <summary>
     /// Instance of <see cref="Counter{T}"/> to keep track of the total number of function executions.
     /// </summary>
-    private Counter<int> _executionTotalCounter;
+    private readonly Counter<int> _executionTotalCounter;
 
     /// <summary>
     /// Instance of <see cref="Counter{T}"/> to keep track of the number of successful function executions.
     /// </summary>
-    private Counter<int> _executionSuccessCounter;
+    private readonly Counter<int> _executionSuccessCounter;
 
     /// <summary>
     /// Instance of <see cref="Counter{T}"/> to keep track of the number of failed function executions.
     /// </summary>
-    private Counter<int> _executionFailureCounter;
+    private readonly Counter<int> _executionFailureCounter;
+
 
     /// <summary>
     /// Wrapper for instrumentation to be used in multiple invocation places.
@@ -176,7 +187,7 @@ public sealed class InstrumentedSKFunction : ISKFunction
         }
 
         this._logger.LogInformation("{PluginName}.{FunctionName}: Function execution status: {Status}",
-                this.PluginName, this.Name, "Success");
+            this.PluginName, this.Name, "Success");
 
         this._logger.LogInformation("{PluginName}.{FunctionName}: Function execution finished in {ExecutionTime}ms",
             this.PluginName, this.Name, stopwatch.ElapsedMilliseconds);
@@ -188,6 +199,7 @@ public sealed class InstrumentedSKFunction : ISKFunction
 
     #endregion
 
+
     #region Obsolete =======================================================================
 
     /// <inheritdoc/>
@@ -196,4 +208,6 @@ public sealed class InstrumentedSKFunction : ISKFunction
     public bool IsSemantic => this._function.IsSemantic;
 
     #endregion
+
+
 }

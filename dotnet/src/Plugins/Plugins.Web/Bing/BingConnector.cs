@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Plugins.Web.Bing;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -9,11 +11,10 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Diagnostics;
+using Diagnostics;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
 
-namespace Microsoft.SemanticKernel.Plugins.Web.Bing;
 
 /// <summary>
 /// Bing API connector.
@@ -24,6 +25,7 @@ public sealed class BingConnector : IWebSearchEngineConnector
     private readonly HttpClient _httpClient;
     private readonly string? _apiKey;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="BingConnector"/> class.
     /// </summary>
@@ -33,6 +35,7 @@ public sealed class BingConnector : IWebSearchEngineConnector
         this(apiKey, new HttpClient(NonDisposableHttpClientHandler.Instance, false), loggerFactory)
     {
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BingConnector"/> class.
@@ -50,14 +53,19 @@ public sealed class BingConnector : IWebSearchEngineConnector
         this._httpClient.DefaultRequestHeaders.Add("User-Agent", Telemetry.HttpUserAgent);
     }
 
+
     /// <inheritdoc/>
     public async Task<IEnumerable<string>> SearchAsync(string query, int count = 1, int offset = 0, CancellationToken cancellationToken = default)
     {
-        if (count <= 0) { throw new ArgumentOutOfRangeException(nameof(count)); }
+        if (count is <= 0 or >= 50)
+        {
+            throw new ArgumentOutOfRangeException(nameof(count), count, $"{nameof(count)} value must be greater than 0 and less than 50.");
+        }
 
-        if (count >= 50) { throw new ArgumentOutOfRangeException(nameof(count), $"{nameof(count)} value must be less than 50."); }
-
-        if (offset < 0) { throw new ArgumentOutOfRangeException(nameof(offset)); }
+        if (offset < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(offset));
+        }
 
         Uri uri = new($"https://api.bing.microsoft.com/v7.0/search?q={Uri.EscapeDataString(query)}&count={count}&offset={offset}");
 
@@ -79,6 +87,7 @@ public sealed class BingConnector : IWebSearchEngineConnector
         return results == null ? Enumerable.Empty<string>() : results.Select(x => x.Snippet);
     }
 
+
     /// <summary>
     /// Sends a GET request to the specified URI.
     /// </summary>
@@ -97,6 +106,7 @@ public sealed class BingConnector : IWebSearchEngineConnector
         return await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
     }
 
+
     [SuppressMessage("Performance", "CA1812:Internal class that is apparently never instantiated",
         Justification = "Class is instantiated through deserialization.")]
     private sealed class BingSearchResponse
@@ -105,6 +115,7 @@ public sealed class BingConnector : IWebSearchEngineConnector
         public WebPages? WebPages { get; set; }
     }
 
+
     [SuppressMessage("Performance", "CA1812:Internal class that is apparently never instantiated",
         Justification = "Class is instantiated through deserialization.")]
     private sealed class WebPages
@@ -112,6 +123,7 @@ public sealed class BingConnector : IWebSearchEngineConnector
         [JsonPropertyName("value")]
         public WebPage[]? Value { get; set; }
     }
+
 
     [SuppressMessage("Performance", "CA1812:Internal class that is apparently never instantiated",
         Justification = "Class is instantiated through deserialization.")]

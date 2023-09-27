@@ -17,6 +17,7 @@ public sealed class SemanticFunctionConfig
     /// </summary>
     public IPromptTemplate PromptTemplate { get; }
 
+
     /// <summary>
     /// Constructor for SemanticFunctionConfig.
     /// </summary>

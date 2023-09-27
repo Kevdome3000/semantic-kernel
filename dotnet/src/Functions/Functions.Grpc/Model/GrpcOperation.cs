@@ -5,7 +5,7 @@ namespace Microsoft.SemanticKernel.Functions.Grpc.Model;
 /// <summary>
 /// The gRPC operation.
 /// </summary>
-internal class GrpcOperation
+internal sealed class GrpcOperation
 {
     /// <summary>
     /// Name of 'address' argument used as override for the address provided by gRPC operation.
@@ -16,6 +16,7 @@ internal class GrpcOperation
     /// Name of 'payload' argument that represents gRPC operation request message.
     /// </summary>
     internal const string PayloadArgumentName = "payload";
+
 
     /// <summary>
     /// Creates an instance of a <see cref="GrpcOperation"/> class.
@@ -35,6 +36,7 @@ internal class GrpcOperation
         this.Request = request;
         this.Response = response;
     }
+
 
     /// <summary>
     /// The service name.

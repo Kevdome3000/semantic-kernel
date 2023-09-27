@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Connectors.UnitTests;
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -10,7 +12,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
-namespace SemanticKernel.Connectors.UnitTests;
 
 internal class WebSocketTestServer : IDisposable
 {
@@ -21,13 +22,13 @@ internal class WebSocketTestServer : IDisposable
     private readonly CancellationTokenSource _socketCancellationTokenSource;
     private bool _serverIsRunning;
 
-    private Func<ArraySegment<byte>, List<ArraySegment<byte>>> _arraySegmentHandler;
+    private readonly Func<ArraySegment<byte>, List<ArraySegment<byte>>> _arraySegmentHandler;
     private readonly ConcurrentDictionary<Guid, ConcurrentQueue<byte[]>> _requestContentQueues;
     private readonly ConcurrentBag<Task> _runningTasks = new();
 
     private readonly ConcurrentDictionary<Guid, ConnectedClient> _clients = new();
 
-    private Task? _handleRequestTask = null;
+    private readonly Task? _handleRequestTask = null;
 
     public TimeSpan RequestProcessingDelay { get; set; } = TimeSpan.Zero;
     public TimeSpan SegmentMessageDelay { get; set; } = TimeSpan.Zero;
@@ -41,6 +42,7 @@ internal class WebSocketTestServer : IDisposable
                     .ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList().SelectMany(bytes => bytes).ToArray()));
         }
     }
+
 
     public WebSocketTestServer(string url, Func<ArraySegment<byte>, List<ArraySegment<byte>>> arraySegmentHandler, ILogger? logger = null)
     {
@@ -63,6 +65,7 @@ internal class WebSocketTestServer : IDisposable
         }
     }
 
+
     private async Task HandleRequestsAsync()
     {
         while (!this._mainCancellationTokenSource.IsCancellationRequested)
@@ -75,6 +78,7 @@ internal class WebSocketTestServer : IDisposable
                 {
                     var connectedClient = new ConnectedClient(Guid.NewGuid(), context);
                     this._clients[connectedClient.Id] = connectedClient;
+
                     try
                     {
                         var socketContext = await context.AcceptWebSocketAsync(subProtocol: null);
@@ -104,6 +108,7 @@ internal class WebSocketTestServer : IDisposable
         await Task.WhenAll(this._runningTasks).ConfigureAwait(false);
     }
 
+
     private async Task HandleSingleWebSocketRequestAsync(ConnectedClient connectedClient)
     {
         var buffer = WebSocket.CreateServerBuffer(4096);
@@ -116,6 +121,7 @@ internal class WebSocketTestServer : IDisposable
             while (!this._socketCancellationTokenSource.IsCancellationRequested && connectedClient.Socket != null && connectedClient.Socket.State != WebSocketState.Closed && connectedClient.Socket.State != WebSocketState.Aborted)
             {
                 WebSocketReceiveResult result = await connectedClient.Socket.ReceiveAsync(buffer, this._socketCancellationTokenSource.Token).ConfigureAwait(false);
+
                 if (!this._socketCancellationTokenSource.IsCancellationRequested && connectedClient.Socket.State != WebSocketState.Closed && connectedClient.Socket.State != WebSocketState.Aborted)
                 {
                     if (connectedClient.Socket.State == WebSocketState.CloseReceived && result.MessageType == WebSocketMessageType.Close)
@@ -186,6 +192,7 @@ internal class WebSocketTestServer : IDisposable
         }
     }
 
+
     private async Task CloseAllSocketsAsync()
     {
         // Close all active sockets before disposing
@@ -197,6 +204,7 @@ internal class WebSocketTestServer : IDisposable
             }
         }
     }
+
 
     public async ValueTask DisposeAsync()
     {
@@ -220,6 +228,7 @@ internal class WebSocketTestServer : IDisposable
             this._mainCancellationTokenSource.Dispose();
         }
     }
+
 
 #pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
     public void Dispose()

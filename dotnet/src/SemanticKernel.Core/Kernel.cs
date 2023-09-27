@@ -1,23 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Events;
-using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SemanticFunctions;
-using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.TemplateEngine;
+using Diagnostics;
+using Events;
+using Extensions.Logging;
+using Http;
+using Memory;
+using Orchestration;
+using Services;
+using TemplateEngine;
 
-namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Semantic kernel class.
@@ -65,6 +64,7 @@ public sealed class Kernel : IKernel, IDisposable
     /// <inheritdoc/>
     public event EventHandler<FunctionInvokedEventArgs>? FunctionInvoked;
 
+
     /// <summary>
     /// Kernel constructor. See KernelBuilder for an easier and less error prone approach to create kernel instances.
     /// </summary>
@@ -93,24 +93,6 @@ public sealed class Kernel : IKernel, IDisposable
         this._logger = loggerFactory.CreateLogger(typeof(Kernel));
     }
 
-    /// <inheritdoc/>
-    public ISKFunction RegisterSemanticFunction(string functionName, SemanticFunctionConfig functionConfig)
-    {
-        return this.RegisterSemanticFunction(FunctionCollection.GlobalFunctionsCollectionName, functionName, functionConfig);
-    }
-
-    /// <inheritdoc/>
-    public ISKFunction RegisterSemanticFunction(string pluginName, string functionName, SemanticFunctionConfig functionConfig)
-    {
-        // Future-proofing the name not to contain special chars
-        Verify.ValidPluginName(pluginName);
-        Verify.ValidFunctionName(functionName);
-
-        ISKFunction function = this.CreateSemanticFunction(pluginName, functionName, functionConfig);
-        this._functionCollection.AddFunction(function);
-
-        return function;
-    }
 
     /// <inheritdoc/>
     public IDictionary<string, ISKFunction> ImportFunctions(object functionsInstance, string? pluginName = null)
@@ -119,7 +101,7 @@ public sealed class Kernel : IKernel, IDisposable
 
         if (string.IsNullOrWhiteSpace(pluginName))
         {
-            pluginName = FunctionCollection.GlobalFunctionsCollectionName;
+            pluginName = FunctionCollection.GlobalFunctionsPluginName;
             this._logger.LogTrace("Importing functions from {0} to the global plugin namespace", functionsInstance.GetType().FullName);
         }
         else
@@ -133,6 +115,7 @@ public sealed class Kernel : IKernel, IDisposable
             this._logger,
             this.LoggerFactory
         );
+
         foreach (KeyValuePair<string, ISKFunction> f in functions)
         {
             f.Value.SetDefaultFunctionCollection(this.Functions);
@@ -142,6 +125,7 @@ public sealed class Kernel : IKernel, IDisposable
         return functions;
     }
 
+
     [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use Kernel.ImportPlugin instead. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
 #pragma warning disable CS1591
@@ -150,6 +134,7 @@ public sealed class Kernel : IKernel, IDisposable
         return this.ImportFunctions(functionsInstance, pluginName);
     }
 #pragma warning restore CS1591
+
 
     /// <inheritdoc/>
     public ISKFunction RegisterCustomFunction(ISKFunction customFunction)
@@ -162,37 +147,46 @@ public sealed class Kernel : IKernel, IDisposable
         return customFunction;
     }
 
+
     /// <inheritdoc/>
     public void RegisterMemory(ISemanticTextMemory memory)
     {
         this._memory = memory;
     }
 
+
     /// <inheritdoc/>
-    public Task<KernelResult> RunAsync(ISKFunction skFunction,
+    public Task<KernelResult> RunAsync(
+        ISKFunction skFunction,
         ContextVariables? variables = null,
         CancellationToken cancellationToken = default)
         => this.RunAsync(variables ?? new(), cancellationToken, skFunction);
+
 
     /// <inheritdoc/>
     public Task<KernelResult> RunAsync(params ISKFunction[] pipeline)
         => this.RunAsync(new ContextVariables(), pipeline);
 
+
     /// <inheritdoc/>
     public Task<KernelResult> RunAsync(string input, params ISKFunction[] pipeline)
         => this.RunAsync(new ContextVariables(input), pipeline);
+
 
     /// <inheritdoc/>
     public Task<KernelResult> RunAsync(ContextVariables variables, params ISKFunction[] pipeline)
         => this.RunAsync(variables, CancellationToken.None, pipeline);
 
+
     /// <inheritdoc/>
     public Task<KernelResult> RunAsync(CancellationToken cancellationToken, params ISKFunction[] pipeline)
         => this.RunAsync(new ContextVariables(), cancellationToken, pipeline);
 
+
     /// <inheritdoc/>
     public Task<KernelResult> RunAsync(string input, CancellationToken cancellationToken, params ISKFunction[] pipeline)
         => this.RunAsync(new ContextVariables(input), cancellationToken, pipeline);
+
 
     /// <inheritdoc/>
     public async Task<KernelResult> RunAsync(ContextVariables variables, CancellationToken cancellationToken, params ISKFunction[] pipeline)
@@ -206,7 +200,7 @@ public sealed class Kernel : IKernel, IDisposable
 
         foreach (ISKFunction skFunction in pipeline)
         {
-repeat:
+            repeat:
             cancellationToken.ThrowIfCancellationRequested();
 
             try
@@ -214,6 +208,7 @@ repeat:
                 var functionDetails = skFunction.Describe();
 
                 var functionInvokingArgs = this.OnFunctionInvoking(functionDetails, context);
+
                 if (functionInvokingArgs?.CancelToken.IsCancellationRequested ?? false)
                 {
                     this._logger.LogInformation("Execution was cancelled on function invoking event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
@@ -233,6 +228,7 @@ repeat:
                 allFunctionResults.Add(functionResult);
 
                 var functionInvokedArgs = this.OnFunctionInvoked(functionDetails, functionResult);
+
                 if (functionInvokedArgs?.CancelToken.IsCancellationRequested ?? false)
                 {
                     this._logger.LogInformation("Execution was cancelled on function invoked event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
@@ -257,6 +253,7 @@ repeat:
         return KernelResult.FromFunctionResults(functionResult?.Value, allFunctionResults);
     }
 
+
     /// <inheritdoc/>
     public SKContext CreateNewContext()
     {
@@ -265,10 +262,12 @@ repeat:
             functions: this._functionCollection);
     }
 
+
     /// <inheritdoc/>
     public T GetService<T>(string? name = null) where T : IAIService
     {
         var service = this._aiServiceProvider.GetService<T>(name);
+
         if (service != null)
         {
             return service;
@@ -276,6 +275,7 @@ repeat:
 
         throw new SKException($"Service of type {typeof(T)} and name {name ?? "<NONE>"} not registered.");
     }
+
 
     /// <summary>
     /// Dispose of resources.
@@ -289,6 +289,7 @@ repeat:
         if (this._functionCollection is IDisposable reg) { reg.Dispose(); }
     }
 
+
     #region private ================================================================================
 
     private readonly IFunctionCollection _functionCollection;
@@ -297,6 +298,7 @@ repeat:
     private readonly IAIServiceProvider _aiServiceProvider;
     private readonly ILogger _logger;
     private readonly IDelegatingHandlerFactory _httpHandlerFactory;
+
 
     /// <summary>
     /// Execute the OnFunctionInvoking event handlers.
@@ -317,6 +319,7 @@ repeat:
         return null;
     }
 
+
     /// <summary>
     /// Execute the OnFunctionInvoked event handlers.
     /// </summary>
@@ -336,34 +339,6 @@ repeat:
         return null;
     }
 
-    private ISKFunction CreateSemanticFunction(
-        string pluginName,
-        string functionName,
-        SemanticFunctionConfig functionConfig)
-    {
-        if (!functionConfig.PromptTemplateConfig.Type.Equals("completion", StringComparison.OrdinalIgnoreCase))
-        {
-            throw new SKException($"Function type not supported: {functionConfig.PromptTemplateConfig}");
-        }
-
-        ISKFunction func = SemanticFunction.FromSemanticConfig(
-            pluginName,
-            functionName,
-            functionConfig,
-            this.LoggerFactory
-        );
-
-        // Connect the function to the current kernel function collection, in case the function
-        // is invoked manually without a context and without a way to find other functions.
-        func.SetDefaultFunctionCollection(this.Functions);
-
-        func.SetAIConfiguration(functionConfig.PromptTemplateConfig.Completion);
-
-        // Note: the service is instantiated using the kernel configuration state when the function is invoked
-        func.SetAIService(() => this.GetService<ITextCompletion>(functionConfig.PromptTemplateConfig.Completion?.ServiceId ?? null));
-
-        return func;
-    }
 
     /// <summary>
     /// Import a native functions into the kernel function collection, so that semantic functions and pipelines can consume its functions.
@@ -380,11 +355,13 @@ repeat:
 
         // Filter out non-SKFunctions and fail if two functions have the same name
         Dictionary<string, ISKFunction> result = new(StringComparer.OrdinalIgnoreCase);
+
         foreach (MethodInfo method in methods)
         {
             if (method.GetCustomAttribute<SKFunctionAttribute>() is not null)
             {
                 ISKFunction function = SKFunction.FromNativeMethod(method, pluginInstance, pluginName, loggerFactory);
+
                 if (result.ContainsKey(function.Name))
                 {
                     throw new SKException("Function overloads are not supported, please differentiate function names");
@@ -401,6 +378,7 @@ repeat:
 
     #endregion
 
+
     #region Obsolete ===============================================================================
 
     /// <inheritdoc/>
@@ -412,4 +390,6 @@ repeat:
     }
 
     #endregion
+
+
 }

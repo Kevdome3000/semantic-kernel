@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Functions.Grpc;
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -11,23 +13,23 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using Grpc.Core;
-using Grpc.Net.Client;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Functions.Grpc.Model;
+using Diagnostics;
+using global::Grpc.Core;
+using global::Grpc.Net.Client;
+using Model;
 using ProtoBuf;
 
-namespace Microsoft.SemanticKernel.Functions.Grpc;
 
 /// <summary>
 /// Runs gRPC operation runner.
 /// </summary>
-internal class GrpcOperationRunner
+internal sealed class GrpcOperationRunner
 {
     /// <summary>
     /// An instance of the HttpClient class.
     /// </summary>
     private readonly HttpClient _httpClient;
+
 
     /// <summary>
     /// Creates an instance of a <see cref="GrpcOperationRunner"/> class.
@@ -37,6 +39,7 @@ internal class GrpcOperationRunner
     {
         this._httpClient = httpClient;
     }
+
 
     /// <summary>
     /// Runs a gRPC operation.
@@ -79,6 +82,7 @@ internal class GrpcOperationRunner
         }
     }
 
+
     /// <summary>
     /// Converts gRPC response.
     /// </summary>
@@ -95,6 +99,7 @@ internal class GrpcOperationRunner
         result.Add("contentType", "application/json; charset=utf-8");
         return result;
     }
+
 
     /// <summary>
     /// Returns address of a channel that provides connection to a gRPC server.
@@ -116,6 +121,7 @@ internal class GrpcOperationRunner
 
         return address!;
     }
+
 
     /// <summary>
     /// Creates a marshaller - a typed abstraction for gRPC message serialization and deserialization.
@@ -143,6 +149,7 @@ internal class GrpcOperationRunner
         return Marshallers.Create((instance) => Serialize(instance), (bytes) => Deserialize(bytes));
     }
 
+
     /// <summary>
     /// Creates a gRPC operation request.
     /// </summary>
@@ -160,6 +167,7 @@ internal class GrpcOperationRunner
 
         //Deserializing JSON payload to gRPC request message
         var instance = JsonSerializer.Deserialize(payload, type, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
         if (instance == null)
         {
             throw new SKException($"Impossible to create gRPC request message for the '{operation.Name}' gRPC operation.");
@@ -167,6 +175,7 @@ internal class GrpcOperationRunner
 
         return instance;
     }
+
 
     /// <summary>
     /// Builds gRPC operation data contract type.
@@ -224,6 +233,7 @@ internal class GrpcOperationRunner
         typeBuilder.SetCustomAttribute(dataContractAttributeBuilder);
 
         var type = typeBuilder.CreateTypeInfo();
+
         if (type == null)
         {
             throw new SKException($"Impossible to create type for '{dataContractMetadata.Name}' data contract.");
@@ -231,6 +241,7 @@ internal class GrpcOperationRunner
 
         return type;
     }
+
 
     /// <summary>
     /// Returns .net type that corresponds to protobuf data type name.

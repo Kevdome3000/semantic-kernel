@@ -1,17 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Plugins.Web.Google;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Google.Apis.CustomSearchAPI.v1;
-using Google.Apis.Services;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Diagnostics;
+using Diagnostics;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
+using global::Google.Apis.CustomSearchAPI.v1;
+using global::Google.Apis.Services;
 
-namespace Microsoft.SemanticKernel.Plugins.Web.Google;
 
 /// <summary>
 /// Google search connector.
@@ -22,6 +23,7 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
     private readonly ILogger _logger;
     private readonly CustomSearchAPIService _search;
     private readonly string? _searchEngineId;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GoogleConnector"/> class.
@@ -36,6 +38,7 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
     {
         Verify.NotNullOrWhiteSpace(apiKey);
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GoogleConnector"/> class.
@@ -56,6 +59,7 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(GoogleConnector)) : NullLogger.Instance;
     }
 
+
     /// <inheritdoc/>
     public async Task<IEnumerable<string>> SearchAsync(
         string query,
@@ -63,11 +67,15 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
         int offset,
         CancellationToken cancellationToken)
     {
-        if (count <= 0) { throw new ArgumentOutOfRangeException(nameof(count)); }
+        if (count is <= 0 or > 10)
+        {
+            throw new ArgumentOutOfRangeException(nameof(count), count, $"{nameof(count)} value must be must be greater than 0 and less than or equals 10.");
+        }
 
-        if (count > 10) { throw new ArgumentOutOfRangeException(nameof(count), $"{nameof(count)} value must be between 0 and 10, inclusive."); }
-
-        if (offset < 0) { throw new ArgumentOutOfRangeException(nameof(offset)); }
+        if (offset < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(offset));
+        }
 
         var search = this._search.Cse.List();
         search.Cx = this._searchEngineId;
@@ -80,6 +88,7 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
         return results.Items.Select(item => item.Snippet);
     }
 
+
     /// <summary>
     /// Disposes the resources used by the <see cref="GoogleConnector"/> instance.
     /// </summary>
@@ -91,6 +100,7 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
             this._search.Dispose();
         }
     }
+
 
     /// <summary>
     /// Disposes the <see cref="GoogleConnector"/> instance.

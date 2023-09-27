@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.UnitTests.Planning;
+
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,7 +13,6 @@ using Microsoft.SemanticKernel.Planning;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Planning;
 
 public sealed class PlanTests
 {
@@ -29,6 +30,7 @@ public sealed class PlanTests
         return Task.CompletedTask;
     }
 
+
     [Fact]
     public async Task CanExecutePlanAsync()
     {
@@ -45,6 +47,7 @@ public sealed class PlanTests
         Assert.Equal("Some input", result.Context.Result);
         Assert.Null(result.GetValue<string>());
     }
+
 
     [Fact]
     public async Task CanExecutePlanWithContextAsync()
@@ -73,6 +76,7 @@ public sealed class PlanTests
         Assert.Equal("other input", result.Context.Result);
         Assert.Null(result.GetValue<string>());
     }
+
 
     [Fact]
     public async Task CanExecutePlanWithPlanStepAsync()
@@ -107,6 +111,7 @@ public sealed class PlanTests
         mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Once);
     }
 
+
     [Fact]
     public async Task CanExecutePlanWithFunctionStepAsync()
     {
@@ -139,6 +144,7 @@ public sealed class PlanTests
         Assert.Equal($"{stepOutput}{planInput}", result.GetValue<string>());
         mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Once);
     }
+
 
     [Fact]
     public async Task CanExecutePlanWithFunctionStepsAsync()
@@ -173,6 +179,7 @@ public sealed class PlanTests
         mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
 
+
     [Fact]
     public async Task CanExecutePlanWithStepsAndFunctionAsync()
     {
@@ -206,6 +213,7 @@ public sealed class PlanTests
         mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
 
+
     [Fact]
     public async Task CanExecutePlanWithStepsAsync()
     {
@@ -238,6 +246,7 @@ public sealed class PlanTests
         Assert.Equal($"{stepOutput}{planInput}{stepOutput}{planInput}", result.GetValue<string>());
         mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
+
 
     [Fact]
     public async Task CanStepPlanWithStepsAsync()
@@ -278,6 +287,7 @@ public sealed class PlanTests
         Assert.Equal($"{stepOutput}{planInput}{stepOutput}{planInput}", result.State.ToString());
         mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
+
 
     [Fact]
     public async Task CanStepPlanWithStepsAndContextAsync()
@@ -328,6 +338,7 @@ public sealed class PlanTests
         mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
 
+
     [Fact]
     public async Task StepExceptionIsThrownAsync()
     {
@@ -354,6 +365,7 @@ public sealed class PlanTests
         await Assert.ThrowsAsync<ArgumentException>(async () => await kernel.Object.StepAsync(cv, plan));
         mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Once);
     }
+
 
     [Fact]
     public async Task PlanStepExceptionIsThrownAsync()
@@ -382,6 +394,7 @@ public sealed class PlanTests
         await Assert.ThrowsAsync<ArgumentException>(async () => await kernel.Object.StepAsync(cv, plan));
         mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Once);
     }
+
 
     [Fact]
     public async Task CanExecutePlanWithTreeStepsAsync()
@@ -443,6 +456,7 @@ public sealed class PlanTests
         childFunction3.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Once);
     }
 
+
     [Fact]
     public void CanCreatePlanWithGoalAndSteps()
     {
@@ -455,6 +469,7 @@ public sealed class PlanTests
         Assert.Equal(goal, plan.Description);
         Assert.Equal(2, plan.Steps.Count);
     }
+
 
     [Fact]
     public void CanCreatePlanWithGoalAndSubPlans()
@@ -469,6 +484,7 @@ public sealed class PlanTests
         Assert.Equal(2, plan.Steps.Count);
     }
 
+
     [Fact]
     public async Task CanExecutePlanWithOneStepAndStateAsync()
     {
@@ -482,6 +498,7 @@ public sealed class PlanTests
             .Callback<SKContext, AIRequestSettings, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update("Here is a poem about " + c.Variables.Input))
             .Returns(() => Task.FromResult(new FunctionResult("functionName", "pluginName", returnContext, returnContext.Result)));
+        mockFunction.Setup(x => x.Describe()).Returns(() => new FunctionView("functionName", "pluginName"));
 
         var plan = new Plan(mockFunction.Object);
         plan.State.Set("input", "Cleopatra");
@@ -495,6 +512,7 @@ public sealed class PlanTests
         Assert.Equal("Here is a poem about Cleopatra", result.GetValue<string>());
         mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Once);
     }
+
 
     [Fact]
     public async Task CanExecutePlanWithStateAsync()
@@ -531,6 +549,7 @@ public sealed class PlanTests
         mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Once);
     }
 
+
     [Fact]
     public async Task CanExecutePlanWithCustomContextAsync()
     {
@@ -547,6 +566,7 @@ public sealed class PlanTests
                 returnContext.Variables.Update($"Here is a {t} about " + c.Variables.Input);
             })
             .Returns(() => Task.FromResult(new FunctionResult("functionName", "pluginName", returnContext, returnContext.Result)));
+        mockFunction.Setup(x => x.Describe()).Returns(() => new FunctionView("functionName", "pluginName"));
 
         var plan = new Plan(mockFunction.Object);
         plan.State.Set("input", "Cleopatra");
@@ -578,6 +598,7 @@ public sealed class PlanTests
         Assert.Equal("Here is a joke about Medusa", result.GetValue<string>());
         mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
+
 
     [Fact]
     public async Task CanExecutePlanWithCustomStateAsync()
@@ -648,6 +669,7 @@ public sealed class PlanTests
         Assert.Equal("Here is a joke about Cleopatra", result.GetValue<string>());
         mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Exactly(3));
     }
+
 
     [Fact]
     public async Task CanExecutePlanWithJoinedResultAsync()
@@ -765,7 +787,12 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         // Assert
         Assert.Equal(expected, result.Context.Result);
         Assert.Equal(expected, result.GetValue<string>());
+        Assert.True(result.TryGetMetadataValue<string>("RESULT__CHAPTER_1", out var chapter1));
+        Assert.True(result.TryGetMetadataValue<string>("RESULT__CHAPTER_2", out var chapter2));
+        Assert.True(result.TryGetMetadataValue<string>("CHAPTER_3", out var chapter3));
+        Assert.False(result.TryGetMetadataValue<string>("CHAPTER_3_SYNOPSIS", out var chapter3Synopsis));
     }
+
 
     [Fact]
     public async Task CanExecutePlanWithExpandedAsync()

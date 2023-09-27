@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.SemanticFunctions;
+
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Text;
+using AI;
+using Text;
 
-namespace Microsoft.SemanticKernel.SemanticFunctions;
 
 /// <summary>
 /// Prompt template configuration.
@@ -41,6 +42,7 @@ public class PromptTemplateConfig
         public string DefaultValue { get; set; } = string.Empty;
     }
 
+
     /// <summary>
     /// Input configuration (list of all input parameters for a semantic function).
     /// </summary>
@@ -54,6 +56,7 @@ public class PromptTemplateConfig
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public List<InputParameter> Parameters { get; set; } = new();
     }
+
 
     /// <summary>
     /// Schema - Not currently used.
@@ -100,6 +103,7 @@ public class PromptTemplateConfig
     [JsonPropertyOrder(6)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public InputConfig Input { get; set; } = new();
+
 
     /// <summary>
     /// Creates a prompt template configuration from JSON.

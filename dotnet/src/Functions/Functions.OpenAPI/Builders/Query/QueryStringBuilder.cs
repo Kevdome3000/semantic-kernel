@@ -1,28 +1,30 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Functions.OpenAPI.Builders.Query;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Builders.Serialization;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
+using Diagnostics;
+using Model;
+using Serialization;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.Builders.Query;
 
 /// <summary>
 /// Represents a query string builder for REST API operations.
 /// </summary>
-internal class QueryStringBuilder : IQueryStringBuilder
+internal sealed class QueryStringBuilder : IQueryStringBuilder
 {
     /// <summary>
     /// Query string parameter serializers.
     /// </summary>
-    private static Dictionary<RestApiOperationParameterStyle, Func<RestApiOperationParameter, string, string>> s_queryStringParameterSerializers = new()
+    private static readonly Dictionary<RestApiOperationParameterStyle, Func<RestApiOperationParameter, string, string>> s_queryStringParameterSerializers = new()
     {
         { RestApiOperationParameterStyle.Form, FormStyleParameterSerializer.Serialize },
         { RestApiOperationParameterStyle.SpaceDelimited, SpaceDelimitedStyleParameterSerializer.Serialize },
         { RestApiOperationParameterStyle.PipeDelimited, PipeDelimitedStyleParameterSerializer.Serialize }
     };
+
 
     ///<inheritdoc/>
     public string Build(RestApiOperation operation, IDictionary<string, string> arguments)

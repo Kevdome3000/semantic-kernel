@@ -1,16 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Diagnostics;
-using System.Diagnostics.Metrics;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Planning;
-
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of Plan
 namespace Microsoft.SemanticKernel.Planners;
+
+using System;
+using System.Diagnostics;
+using System.Diagnostics.Metrics;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
+using Planning;
+
 #pragma warning restore IDE0130
+
 
 /// <summary>
 /// Instrumented planner that creates a Stepwise plan using Mrkl systems.
@@ -30,6 +32,7 @@ public class InstrumentedStepwisePlanner : IStepwisePlanner
         this._planner = planner;
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(InstrumentedStepwisePlanner)) : NullLogger.Instance;
     }
+
 
     /// <inheritdoc />
     public Plan CreatePlan(string goal)
@@ -70,6 +73,7 @@ public class InstrumentedStepwisePlanner : IStepwisePlanner
         }
     }
 
+
     #region private ================================================================================
 
     private const string PlannerType = nameof(StepwisePlanner);
@@ -80,21 +84,23 @@ public class InstrumentedStepwisePlanner : IStepwisePlanner
     /// <summary>
     /// Instance of <see cref="ActivitySource"/> for planner-related activities.
     /// </summary>
-    private static ActivitySource s_activitySource = new(typeof(InstrumentedStepwisePlanner).FullName);
+    private static readonly ActivitySource s_activitySource = new(typeof(InstrumentedStepwisePlanner).FullName);
 
     /// <summary>
     /// Instance of <see cref="Meter"/> for planner-related metrics.
     /// </summary>
-    private static Meter s_meter = new(typeof(InstrumentedStepwisePlanner).FullName);
+    private static readonly Meter s_meter = new(typeof(InstrumentedStepwisePlanner).FullName);
 
     /// <summary>
     /// Instance of <see cref="Histogram{T}"/> to record plan creation execution time.
     /// </summary>
-    private static Histogram<double> s_createPlanExecutionTime =
+    private static readonly Histogram<double> s_createPlanExecutionTime =
         s_meter.CreateHistogram<double>(
             name: $"SK.{PlannerType}.CreatePlan.ExecutionTime",
             unit: "ms",
             description: "Execution time of plan creation");
 
     #endregion
+
+
 }

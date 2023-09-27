@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Connectors.UnitTests.Oobabooga.TextCompletion;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -17,7 +19,6 @@ using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.Connectors.UnitTests.Oobabooga.TextCompletion;
 
 /// <summary>
 /// Unit tests for <see cref="OobaboogaTextCompletion"/> class.
@@ -31,10 +32,11 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     private const string CompletionText = "fake-test";
     private const string CompletionMultiText = "Hello, my name is";
 
-    private HttpMessageHandlerStub _messageHandlerStub;
-    private HttpClient _httpClient;
-    private Uri _endPointUri;
-    private string _streamCompletionResponseStub;
+    private readonly HttpMessageHandlerStub _messageHandlerStub;
+    private readonly HttpClient _httpClient;
+    private readonly Uri _endPointUri;
+    private readonly string _streamCompletionResponseStub;
+
 
     public OobaboogaTextCompletionTests(ITestOutputHelper output)
     {
@@ -46,6 +48,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
         this._endPointUri = new Uri(EndPoint);
     }
+
 
     [Fact]
     public async Task UserAgentHeaderShouldBeUsedAsync()
@@ -68,6 +71,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         Assert.Equal("Semantic-Kernel", value);
     }
 
+
     [Fact]
     public async Task ProvidedEndpointShouldBeUsedAsync()
     {
@@ -83,6 +87,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         //Assert
         Assert.StartsWith(EndPoint, this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
     }
+
 
     [Fact]
     public async Task BlockingUrlShouldBeBuiltSuccessfullyAsync()
@@ -105,6 +110,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         Assert.Equal(expectedUri.Uri, this._messageHandlerStub.RequestUri);
     }
 
+
     [Fact]
     public async Task ShouldSendPromptToServiceAsync()
     {
@@ -123,6 +129,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
 
         Assert.Equal(CompletionText, requestPayload.Prompt);
     }
+
 
     [Fact]
     public async Task ShouldHandleServiceResponseAsync()
@@ -146,6 +153,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         Assert.Equal("This is test completion response", completion);
     }
 
+
     [Fact]
     public async Task ShouldHandleStreamingServicePersistentWebSocketResponseAsync()
     {
@@ -157,6 +165,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             isPersistent: true);
     }
 
+
     [Fact]
     public async Task ShouldHandleStreamingServiceTransientWebSocketResponseAsync()
     {
@@ -166,6 +175,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             requestMessage: requestMessage,
             expectedResponse: expectedResponse);
     }
+
 
     [Fact]
     public async Task ShouldHandleConcurrentWebSocketConnectionsAsync()
@@ -224,11 +234,13 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         }
     }
 
+
     [Fact]
     public async Task ShouldHandleMultiPacketStreamingServiceTransientWebSocketResponseAsync()
     {
         await this.RunWebSocketMultiPacketStreamingTestAsync();
     }
+
 
     [Fact]
     public async Task ShouldHandleMultiPacketStreamingServicePersistentWebSocketResponseBroadcastBlockAsync()
@@ -236,17 +248,20 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         await this.RunWebSocketMultiPacketStreamingTestAsync(isPersistent: true);
     }
 
+
     [Fact]
     public async Task ShouldHandleConcurrentMultiPacketStreamingServiceTransientWebSocketResponseAsync()
     {
         await this.RunWebSocketMultiPacketStreamingTestAsync(nbConcurrentCalls: 10);
     }
 
+
     [Fact]
     public async Task ShouldHandleConcurrentMultiPacketStreamingServicePersistentWebSocketResponseAsync()
     {
         await this.RunWebSocketMultiPacketStreamingTestAsync(nbConcurrentCalls: 10, isPersistent: true);
     }
+
 
     /// <summary>
     /// This test will assess concurrent enumeration of the same long multi message (500 websocket messages) streaming result.
@@ -266,6 +281,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             enforcedConcurrentCallSemaphore: enforcedConcurrentCallSemaphore,
             maxExpectedNbClients: 20);
     }
+
 
     private async Task RunWebSocketMultiPacketStreamingTestAsync(
         string requestMessage = CompletionMultiText,
@@ -290,6 +306,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         // Counter to track the number of WebSocket clients created
         int clientCount = 0;
         var delayTimeSpan = new TimeSpan(concurrentCallsTicksDelay);
+
         if (isPersistent)
         {
             ClientWebSocket ExternalWebSocketFactory()
@@ -355,6 +372,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             callEnumerationTasks.AddRange(Enumerable.Range(0, nbConcurrentEnumeration).Select(_ => Task.Run(async () =>
             {
                 var result = new List<string>();
+
                 await foreach (var chunk in completion)
                 {
                     result.Add(chunk);
@@ -370,6 +388,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         var allResults = await Task.WhenAll(callEnumerationTasks);
 
         var elapsed = sw.ElapsedMilliseconds;
+
         if (maxExpectedNbClients > 0)
         {
             Assert.InRange(clientCount, 1, maxExpectedNbClients);
@@ -379,6 +398,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         foreach (var result in allResults)
         {
             Assert.Equal(expectedResponse.Count, result.Count);
+
             for (int i = 0; i < expectedResponse.Count; i++)
             {
                 Assert.Equal(expectedResponse[i], result[i]);
@@ -390,6 +410,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             Assert.InRange(elapsed, 0, maxTestDuration);
         }
     }
+
 
     public void Dispose()
     {

@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.IntegrationTests.Connectors.Oobabooga;
+
 using System;
 using System.Collections.Generic;
 using System.Net.WebSockets;
@@ -11,7 +13,6 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Connectors.Oobabooga;
 
 /// <summary>
 /// Integration tests for <see cref=" OobaboogaTextCompletion"/>.
@@ -23,8 +24,9 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     private const int StreamingPort = 5005;
 
     private readonly IConfigurationRoot _configuration;
-    private List<ClientWebSocket> _webSockets = new();
-    private Func<ClientWebSocket> _webSocketFactory;
+    private readonly List<ClientWebSocket> _webSockets = new();
+    private readonly Func<ClientWebSocket> _webSocketFactory;
+
 
     public OobaboogaTextCompletionTests()
     {
@@ -42,7 +44,9 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         };
     }
 
+
     private const string Input = " My name is";
+
 
     [Fact(Skip = "This test is for manual verification.")]
     public async Task OobaboogaLocalTextCompletionAsync()
@@ -62,6 +66,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         AssertAcceptableResponse(localResponse);
     }
 
+
     [Fact(Skip = "This test is for manual verification.")]
     public async Task OobaboogaLocalTextCompletionStreamingAsync()
     {
@@ -79,6 +84,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         });
 
         StringBuilder stringBuilder = new();
+
         await foreach (var result in localResponse)
         {
             stringBuilder.Append(result);
@@ -87,6 +93,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         var resultsMerged = stringBuilder.ToString();
         AssertAcceptableResponse(resultsMerged);
     }
+
 
     private static void AssertAcceptableResponse(string localResponse)
     {
@@ -99,6 +106,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         var expectedRegex = new Regex(@"\s\w+.*");
         Assert.Matches(expectedRegex, localResponse);
     }
+
 
     public void Dispose()
     {

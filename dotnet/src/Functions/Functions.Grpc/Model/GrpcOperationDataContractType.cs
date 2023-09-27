@@ -1,13 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Functions.Grpc.Model;
+
 using System.Collections.Generic;
 
-namespace Microsoft.SemanticKernel.Functions.Grpc.Model;
 
 /// <summary>
 /// The gRPC operation data contract.
 /// </summary>
-internal class GrpcOperationDataContractType
+internal sealed class GrpcOperationDataContractType
 {
     /// <summary>
     /// Creates an instance of a <see cref="GrpcOperationDataContractType"/> class.
@@ -17,6 +18,7 @@ internal class GrpcOperationDataContractType
         this.Name = name;
         this.Fields = fields;
     }
+
 
     /// <summary>
     /// Data contract name

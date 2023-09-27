@@ -1,15 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.CredentialManagers;
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Identity.Client;
-using Microsoft.Identity.Client.Extensions.Msal;
-using Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.Diagnostics;
+using Diagnostics;
+using Identity.Client;
+using Identity.Client.Extensions.Msal;
 
-namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.CredentialManagers;
 
 /// <summary>
 /// Manages acquiring and caching MSAL credentials locally.
@@ -35,6 +36,7 @@ public sealed class LocalUserMSALCredentialManager
     /// </summary>
     private readonly MsalCacheHelper _cacheHelper;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="LocalUserMSALCredentialManager"/> class.
     /// </summary>
@@ -45,6 +47,7 @@ public sealed class LocalUserMSALCredentialManager
         this._cacheHelper = cacheHelper;
         this._cacheHelper.VerifyPersistence();
     }
+
 
     /// <summary>
     /// Creates a new instance of the <see cref="LocalUserMSALCredentialManager"/> class.
@@ -72,6 +75,7 @@ public sealed class LocalUserMSALCredentialManager
         return new LocalUserMSALCredentialManager(storage, cacheHelper);
     }
 
+
     /// <summary>
     /// Acquires an access token for the specified client ID, tenant ID, scopes, and redirect URI.
     /// </summary>
@@ -88,7 +92,7 @@ public sealed class LocalUserMSALCredentialManager
         Ensure.NotNull(scopes, nameof(scopes));
 
         IPublicClientApplication app = this._publicClientApplications.GetOrAdd(
-            key: this.PublicClientApplicationsKey(clientId, tenantId),
+            key: PublicClientApplicationsKey(clientId, tenantId),
             valueFactory: _ =>
             {
                 IPublicClientApplication newPublicApp = PublicClientApplicationBuilder.Create(clientId)
@@ -102,6 +106,7 @@ public sealed class LocalUserMSALCredentialManager
         IEnumerable<IAccount> accounts = await app.GetAccountsAsync().ConfigureAwait(false);
 
         AuthenticationResult result;
+
         try
         {
             result = await app.AcquireTokenSilent(scopes, accounts.FirstOrDefault())
@@ -119,8 +124,9 @@ public sealed class LocalUserMSALCredentialManager
         return result.AccessToken;
     }
 
+
     /// <summary>
     /// Returns a key for the public client application dictionary.
     /// </summary>
-    private string PublicClientApplicationsKey(string clientId, string tenantId) => $"{clientId}_{tenantId}";
+    private static string PublicClientApplicationsKey(string clientId, string tenantId) => $"{clientId}_{tenantId}";
 }

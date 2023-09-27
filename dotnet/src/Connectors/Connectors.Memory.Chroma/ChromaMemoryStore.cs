@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Memory.Chroma;
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -9,14 +11,13 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Connectors.Memory.Chroma.Http.ApiSchema;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Text;
+using Diagnostics;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
+using Http.ApiSchema;
+using SemanticKernel.Memory;
+using Text;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Chroma;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore" /> for Chroma.
@@ -33,6 +34,7 @@ public class ChromaMemoryStore : IMemoryStore
     {
     }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ChromaMemoryStore"/> class.
     /// </summary>
@@ -43,6 +45,7 @@ public class ChromaMemoryStore : IMemoryStore
         : this(new ChromaClient(httpClient, endpoint, loggerFactory), loggerFactory)
     {
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChromaMemoryStore"/> class.
@@ -55,6 +58,7 @@ public class ChromaMemoryStore : IMemoryStore
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(ChromaMemoryStore)) : NullLogger.Instance;
     }
 
+
     /// <inheritdoc />
     public async Task CreateCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
@@ -62,6 +66,7 @@ public class ChromaMemoryStore : IMemoryStore
 
         await this._chromaClient.CreateCollectionAsync(collectionName, cancellationToken).ConfigureAwait(false);
     }
+
 
     /// <inheritdoc />
     public async Task DeleteCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
@@ -79,6 +84,7 @@ public class ChromaMemoryStore : IMemoryStore
         }
     }
 
+
     /// <inheritdoc />
     public async Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancellationToken = default)
     {
@@ -89,6 +95,7 @@ public class ChromaMemoryStore : IMemoryStore
         return collection != null;
     }
 
+
     /// <inheritdoc />
     public async Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancellationToken = default)
     {
@@ -96,6 +103,7 @@ public class ChromaMemoryStore : IMemoryStore
             .FirstOrDefaultAsync(cancellationToken)
             .ConfigureAwait(false);
     }
+
 
     /// <inheritdoc />
     public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = false, [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -117,11 +125,13 @@ public class ChromaMemoryStore : IMemoryStore
         }
     }
 
+
     /// <inheritdoc />
     public IAsyncEnumerable<string> GetCollectionsAsync(CancellationToken cancellationToken = default)
     {
         return this._chromaClient.ListCollectionsAsync(cancellationToken);
     }
+
 
     /// <inheritdoc />
     public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, ReadOnlyMemory<float> embedding, double minRelevanceScore = 0, bool withEmbedding = false, CancellationToken cancellationToken = default)
@@ -138,6 +148,7 @@ public class ChromaMemoryStore : IMemoryStore
 
         return (memoryRecord, similarityScore);
     }
+
 
     /// <inheritdoc />
     public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(string collectionName, ReadOnlyMemory<float> embedding, int limit, double minRelevanceScore = 0, bool withEmbeddings = false, [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -165,11 +176,13 @@ public class ChromaMemoryStore : IMemoryStore
         }
     }
 
+
     /// <inheritdoc />
     public async Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default)
     {
         await this.RemoveBatchAsync(collectionName, new[] { key }, cancellationToken).ConfigureAwait(false);
     }
+
 
     /// <inheritdoc />
     public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default)
@@ -180,6 +193,7 @@ public class ChromaMemoryStore : IMemoryStore
 
         await this._chromaClient.DeleteEmbeddingsAsync(collection.Id, keys.ToArray(), cancellationToken).ConfigureAwait(false);
     }
+
 
     /// <inheritdoc />
     public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default)
@@ -192,6 +206,7 @@ public class ChromaMemoryStore : IMemoryStore
 
         return key ?? string.Empty;
     }
+
 
     /// <inheritdoc />
     public async IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -222,6 +237,7 @@ public class ChromaMemoryStore : IMemoryStore
         }
     }
 
+
     #region private ================================================================================
 
     private const string IncludeMetadatas = "metadatas";
@@ -232,10 +248,11 @@ public class ChromaMemoryStore : IMemoryStore
     private readonly IChromaClient _chromaClient;
     private readonly List<string> _defaultEmbeddingIncludeTypes = new() { IncludeMetadatas };
 
-    internal static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
+    private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
     {
         Converters = { new ReadOnlyMemoryConverter() }
     };
+
 
     private async Task<ChromaCollectionModel> GetCollectionOrThrowAsync(string collectionName, CancellationToken cancellationToken)
     {
@@ -243,6 +260,7 @@ public class ChromaMemoryStore : IMemoryStore
             await this.GetCollectionAsync(collectionName, cancellationToken).ConfigureAwait(false) ??
             throw new SKException($"Collection {collectionName} does not exist");
     }
+
 
     private async Task<ChromaCollectionModel?> GetCollectionAsync(string collectionName, CancellationToken cancellationToken)
     {
@@ -257,6 +275,7 @@ public class ChromaMemoryStore : IMemoryStore
             return null;
         }
     }
+
 
     private string[] GetEmbeddingIncludeTypes(bool withEmbeddings = false, bool withDistances = false)
     {
@@ -275,10 +294,12 @@ public class ChromaMemoryStore : IMemoryStore
         return includeList.ToArray();
     }
 
+
     private MemoryRecord GetMemoryRecordFromEmbeddingsModel(ChromaEmbeddingsModel embeddingsModel, int recordIndex)
     {
         return this.GetMemoryRecordFromModel(embeddingsModel.Metadatas, embeddingsModel.Embeddings, embeddingsModel.Ids, recordIndex);
     }
+
 
     private (MemoryRecord, double) GetMemoryRecordFromQueryResultModel(ChromaQueryResultModel queryResultModel, int recordIndex)
     {
@@ -293,6 +314,7 @@ public class ChromaMemoryStore : IMemoryStore
         return (memoryRecord, similarityScore);
     }
 
+
     private MemoryRecord GetMemoryRecordFromModel(List<Dictionary<string, object>>? metadatas, List<float[]>? embeddings, List<string>? ids, int recordIndex)
     {
         var metadata = this.GetMetadataForMemoryRecord(metadatas, recordIndex);
@@ -305,6 +327,7 @@ public class ChromaMemoryStore : IMemoryStore
             key: key);
     }
 
+
     private MemoryRecordMetadata GetMetadataForMemoryRecord(List<Dictionary<string, object>>? metadatas, int recordIndex)
     {
         var serializedMetadata = metadatas != null ? JsonSerializer.Serialize(metadatas[recordIndex], s_jsonSerializerOptions) : string.Empty;
@@ -314,10 +337,12 @@ public class ChromaMemoryStore : IMemoryStore
             throw new SKException("Unable to deserialize memory record metadata.");
     }
 
+
     private ReadOnlyMemory<float> GetEmbeddingForMemoryRecord(List<float[]>? embeddings, int recordIndex)
     {
         return embeddings != null ? embeddings[recordIndex] : ReadOnlyMemory<float>.Empty;
     }
+
 
     private double GetSimilarityScore(List<double>? distances, int recordIndex)
     {
@@ -331,6 +356,7 @@ public class ChromaMemoryStore : IMemoryStore
         return similarityScore;
     }
 
+
     /// <summary>
     /// Checks if Chroma API error means that collection does not exist.
     /// </summary>
@@ -342,4 +368,6 @@ public class ChromaMemoryStore : IMemoryStore
     }
 
     #endregion
+
+
 }

@@ -71,7 +71,7 @@ public static class Example51_StepwisePlanner
 
             foreach (var er in s_executionResults.OrderByDescending(s => s.model).Where(s => s.question == question))
             {
-                Console.WriteLine($"{er.mode}\t{er.model}\t{er.timeTaken}\t{er.answer}");
+                Console.WriteLine($"{er.mode}\t{er.model}\t{er.stepsTaken}\t{er.iterations}\t{er.timeTaken}\t{er.answer}");
             }
         }
     }
@@ -83,6 +83,8 @@ public static class Example51_StepwisePlanner
         public string? model;
         public string? question;
         public string? answer;
+        public string? stepsTaken;
+        public string? iterations;
         public string? timeTaken;
     }
 
@@ -160,7 +162,9 @@ public static class Example51_StepwisePlanner
             StepwisePlanner planner = new(kernel: kernel, config: plannerConfig);
             var plan = planner.CreatePlan(question);
 
-            var result = (await kernel.RunAsync(plan)).GetValue<string>()!;
+            var kernelResult = await kernel.RunAsync(plan);
+            var planResult = kernelResult.FunctionResults.First();
+            var result = kernelResult.GetValue<string>()!;
 
             if (result.Contains("Result not found, review _stepsTaken to see what", StringComparison.OrdinalIgnoreCase))
             {
@@ -171,6 +175,23 @@ public static class Example51_StepwisePlanner
             {
                 Console.WriteLine("Result: " + result);
                 currentExecutionResult.answer = result;
+            }
+
+            if (planResult.TryGetMetadataValue("stepCount", out string stepCount))
+            {
+                Console.WriteLine("Steps Taken: " + stepCount);
+                currentExecutionResult.stepsTaken = stepCount;
+            }
+
+            if (planResult.TryGetMetadataValue("functionCount", out string functionCount))
+            {
+                Console.WriteLine("Functions Used: " + functionCount);
+            }
+
+            if (planResult.TryGetMetadataValue("iterations", out string iterations))
+            {
+                Console.WriteLine("Iterations: " + iterations);
+                currentExecutionResult.iterations = iterations;
             }
         }
 #pragma warning disable CA1031

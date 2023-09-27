@@ -1,20 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Events;
-using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SemanticFunctions;
-using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.TemplateEngine;
+using Events;
+using Extensions.Logging;
+using Http;
+using Memory;
+using Orchestration;
+using Services;
+using TemplateEngine;
 
-namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Interface for the semantic kernel.
@@ -52,27 +52,6 @@ public interface IKernel
     /// </summary>
     IDelegatingHandlerFactory HttpHandlerFactory { get; }
 
-    /// <summary>
-    /// Build and register a function in the internal function collection, in a global generic plugin.
-    /// </summary>
-    /// <param name="functionName">Name of the semantic function. The name can contain only alphanumeric chars + underscore.</param>
-    /// <param name="functionConfig">Function configuration, e.g. I/O params, AI settings, localization details, etc.</param>
-    /// <returns>A C# function wrapping AI logic, usually defined with natural language</returns>
-    ISKFunction RegisterSemanticFunction(
-        string functionName,
-        SemanticFunctionConfig functionConfig);
-
-    /// <summary>
-    /// Build and register a function in the internal function collection.
-    /// </summary>
-    /// <param name="pluginName">Name of the plugin containing the function. The name can contain only alphanumeric chars + underscore.</param>
-    /// <param name="functionName">Name of the semantic function. The name can contain only alphanumeric chars + underscore.</param>
-    /// <param name="functionConfig">Function configuration, e.g. I/O params, AI settings, localization details, etc.</param>
-    /// <returns>A C# function wrapping AI logic, usually defined with natural language</returns>
-    ISKFunction RegisterSemanticFunction(
-        string pluginName,
-        string functionName,
-        SemanticFunctionConfig functionConfig);
 
     /// <summary>
     /// Registers a custom function in the internal function collection.
@@ -80,6 +59,7 @@ public interface IKernel
     /// <param name="customFunction">The custom function to register.</param>
     /// <returns>A C# function wrapping the function execution logic.</returns>
     ISKFunction RegisterCustomFunction(ISKFunction customFunction);
+
 
     /// <summary>
     /// Import a set of functions as a plugin from the given object instance. Only the functions that have the `SKFunction` attribute will be included in the plugin.
@@ -90,17 +70,20 @@ public interface IKernel
     /// <returns>A list of all the semantic functions found in the directory, indexed by function name.</returns>
     IDictionary<string, ISKFunction> ImportFunctions(object functionsInstance, string? pluginName = null);
 
+
     [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use Kernel.ImportFunctions instead. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
 #pragma warning disable CS1591
     IDictionary<string, ISKFunction> ImportSkill(object functionsInstance, string? pluginName = null);
 #pragma warning restore CS1591
 
+
     /// <summary>
     /// Set the semantic memory to use
     /// </summary>
     /// <param name="memory">Semantic memory instance</param>
     void RegisterMemory(ISemanticTextMemory memory);
+
 
     /// <summary>
     /// Run a single synchronous or asynchronous <see cref="ISKFunction"/>.
@@ -114,6 +97,7 @@ public interface IKernel
         ContextVariables? variables = null,
         CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Run a pipeline composed of synchronous and asynchronous functions.
     /// </summary>
@@ -121,6 +105,7 @@ public interface IKernel
     /// <returns>Result of the function composition</returns>
     Task<KernelResult> RunAsync(
         params ISKFunction[] pipeline);
+
 
     /// <summary>
     /// Run a pipeline composed of synchronous and asynchronous functions.
@@ -132,6 +117,7 @@ public interface IKernel
         string input,
         params ISKFunction[] pipeline);
 
+
     /// <summary>
     /// Run a pipeline composed of synchronous and asynchronous functions.
     /// </summary>
@@ -142,6 +128,7 @@ public interface IKernel
         ContextVariables variables,
         params ISKFunction[] pipeline);
 
+
     /// <summary>
     /// Run a pipeline composed of synchronous and asynchronous functions.
     /// </summary>
@@ -151,6 +138,7 @@ public interface IKernel
     Task<KernelResult> RunAsync(
         CancellationToken cancellationToken,
         params ISKFunction[] pipeline);
+
 
     /// <summary>
     /// Run a pipeline composed of synchronous and asynchronous functions.
@@ -164,6 +152,7 @@ public interface IKernel
         CancellationToken cancellationToken,
         params ISKFunction[] pipeline);
 
+
     /// <summary>
     /// Run a pipeline composed of synchronous and asynchronous functions.
     /// </summary>
@@ -175,12 +164,14 @@ public interface IKernel
         ContextVariables variables,
         CancellationToken cancellationToken,
         params ISKFunction[] pipeline);
+
 
     /// <summary>
     /// Create a new instance of a context, linked to the kernel internal state.
     /// </summary>
     /// <returns>SK context</returns>
     SKContext CreateNewContext();
+
 
     /// <summary>
     /// Get one of the configured services. Currently limited to AI services.
@@ -189,6 +180,7 @@ public interface IKernel
     /// <typeparam name="T">Service type</typeparam>
     /// <returns>Instance of T</returns>
     T GetService<T>(string? name = null) where T : IAIService;
+
 
     /// <summary>
     /// Used for registering a function invoking event handler.
@@ -201,6 +193,7 @@ public interface IKernel
     /// Triggers after each function invocation.
     /// </summary>
     event EventHandler<FunctionInvokedEventArgs>? FunctionInvoked;
+
 
     #region Obsolete
 
@@ -216,4 +209,6 @@ public interface IKernel
     ISKFunction Func(string pluginName, string functionName);
 
     #endregion
+
+
 }
