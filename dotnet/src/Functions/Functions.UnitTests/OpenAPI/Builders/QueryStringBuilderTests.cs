@@ -1,23 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Functions.UnitTests.OpenAPI.Builders;
+
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Builders.Query;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Xunit;
 
-namespace SemanticKernel.Functions.UnitTests.OpenAPI.Builders;
+
 public class QueryStringBuilderTests
 {
-    private readonly QueryStringBuilder _sut;
-
-    public QueryStringBuilderTests()
-    {
-        this._sut = new QueryStringBuilder();
-    }
-
     [Fact]
     public void ShouldAddQueryStringParametersAndUseValuesFromArguments()
     {
@@ -54,11 +48,12 @@ public class QueryStringBuilderTests
         };
 
         // Act
-        var queryString = this._sut.Build(operation, arguments);
+        var queryString = operation.BuildQueryString(arguments);
 
         // Assert
         Assert.Equal("p1=v1&p2=v2", queryString);
     }
+
 
     [Fact]
     public void ShouldSkipNotRequiredQueryStringParametersIfTheirArgumentsMissing()
@@ -95,11 +90,12 @@ public class QueryStringBuilderTests
         };
 
         // Act
-        var queryString = this._sut.Build(operation, arguments);
+        var queryString = operation.BuildQueryString(arguments);
 
         // Assert
         Assert.Equal("p2=v2", queryString);
     }
+
 
     [Fact]
     public void ShouldThrowExceptionIfNoValueIsProvideForRequiredQueryStringParameter()
@@ -136,8 +132,9 @@ public class QueryStringBuilderTests
         };
 
         //Act and assert
-        Assert.Throws<SKException>(() => this._sut.Build(operation, arguments));
+        Assert.Throws<SKException>(() => operation.BuildQueryString(arguments));
     }
+
 
     [Theory]
     [InlineData(":", "%3a")]
@@ -166,13 +163,14 @@ public class QueryStringBuilderTests
         var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata, new Dictionary<string, string>());
 
         // Act
-        var queryString = this._sut.Build(operation, arguments);
+        var queryString = operation.BuildQueryString(arguments);
 
         // Assert
         Assert.NotNull(queryString);
 
         Assert.EndsWith(encodedEquivalent, queryString, StringComparison.Ordinal);
     }
+
 
     [Fact]
     public void ItShouldCreateAmpersandSeparatedParameterPerArrayItemForFormStyleParameters()
@@ -207,13 +205,14 @@ public class QueryStringBuilderTests
         var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata, new Dictionary<string, string>());
 
         // Act
-        var result = this._sut.Build(operation, arguments);
+        var result = operation.BuildQueryString(arguments);
 
         // Assert
         Assert.NotNull(result);
 
         Assert.Equal("p1=a&p1=b&p1=c&p2=1&p2=2&p2=3", result);
     }
+
 
     [Fact]
     public void ItShouldCreateParameterWithCommaSeparatedValuePerArrayItemForFormStyleParameters()
@@ -248,13 +247,14 @@ public class QueryStringBuilderTests
         var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata, new Dictionary<string, string>());
 
         // Act
-        var result = this._sut.Build(operation, arguments);
+        var result = operation.BuildQueryString(arguments);
 
         // Assert
         Assert.NotNull(result);
 
         Assert.Equal("p1=a,b,c&p2=1,2,3", result);
     }
+
 
     [Fact]
     public void ItShouldCreateParameterForPrimitiveValuesForFormStyleParameters()
@@ -288,13 +288,14 @@ public class QueryStringBuilderTests
         var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata, new Dictionary<string, string>());
 
         // Act
-        var result = this._sut.Build(operation, arguments);
+        var result = operation.BuildQueryString(arguments);
 
         // Assert
         Assert.NotNull(result);
 
         Assert.Equal("p1=v1&p2=true", result);
     }
+
 
     [Fact]
     public void ItShouldCreateAmpersandSeparatedParameterPerArrayItemForSpaceDelimitedStyleParameters()
@@ -329,13 +330,14 @@ public class QueryStringBuilderTests
         var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata, new Dictionary<string, string>());
 
         // Act
-        var result = this._sut.Build(operation, arguments);
+        var result = operation.BuildQueryString(arguments);
 
         // Assert
         Assert.NotNull(result);
 
         Assert.Equal("p1=a&p1=b&p1=c&p2=1&p2=2&p2=3", result);
     }
+
 
     [Fact]
     public void ItShouldCreateParameterWithSpaceSeparatedValuePerArrayItemForSpaceDelimitedStyleParameters()
@@ -370,13 +372,14 @@ public class QueryStringBuilderTests
         var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata, new Dictionary<string, string>());
 
         // Act
-        var result = this._sut.Build(operation, arguments);
+        var result = operation.BuildQueryString(arguments);
 
         // Assert
         Assert.NotNull(result);
 
         Assert.Equal("p1=a%20b%20c&p2=1%202%203", result);
     }
+
 
     [Fact]
     public void ItShouldCreateAmpersandSeparatedParameterPerArrayItemForPipeDelimitedStyleParameters()
@@ -411,13 +414,14 @@ public class QueryStringBuilderTests
         var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata, new Dictionary<string, string>());
 
         // Act
-        var result = this._sut.Build(operation, arguments);
+        var result = operation.BuildQueryString(arguments);
 
         // Assert
         Assert.NotNull(result);
 
         Assert.Equal("p1=a&p1=b&p1=c&p2=1&p2=2&p2=3", result);
     }
+
 
     [Fact]
     public void ItShouldCreateParameterWithPipeSeparatedValuePerArrayItemForPipeDelimitedStyleParameters()
@@ -452,13 +456,14 @@ public class QueryStringBuilderTests
         var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata, new Dictionary<string, string>());
 
         // Act
-        var result = this._sut.Build(operation, arguments);
+        var result = operation.BuildQueryString(arguments);
 
         // Assert
         Assert.NotNull(result);
 
         Assert.Equal("p1=a|b|c&p2=1|2|3", result);
     }
+
 
     [Fact]
     public void ItShouldMixAndMatchParametersOfDifferentTypesAndStyles()
@@ -473,19 +478,19 @@ public class QueryStringBuilderTests
             new RestApiOperationParameter(name: "p2", type: "boolean", isRequired: true, expand: false, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.Form),
 
             //'Form' style array parameter with parameter per array item
-            new RestApiOperationParameter(name : "p3", type : "array", isRequired : true, expand : true, location : RestApiOperationParameterLocation.Query, style : RestApiOperationParameterStyle.Form),
+            new RestApiOperationParameter(name: "p3", type: "array", isRequired: true, expand: true, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.Form),
 
             //'SpaceDelimited' style array parameter with space separated values
-            new RestApiOperationParameter(name : "p4", type : "array", isRequired : true, expand : false, location : RestApiOperationParameterLocation.Query, style : RestApiOperationParameterStyle.SpaceDelimited),
+            new RestApiOperationParameter(name: "p4", type: "array", isRequired: true, expand: false, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.SpaceDelimited),
 
             //'SpaceDelimited' style array parameter with parameter per array item
-            new RestApiOperationParameter(name : "p5", type : "array", isRequired : true, expand : true, location : RestApiOperationParameterLocation.Query, style : RestApiOperationParameterStyle.SpaceDelimited),
+            new RestApiOperationParameter(name: "p5", type: "array", isRequired: true, expand: true, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.SpaceDelimited),
 
             //'PipeDelimited' style array parameter with pipe separated values
-            new RestApiOperationParameter(name : "p6", type : "array", isRequired : true, expand : false, location : RestApiOperationParameterLocation.Query, style : RestApiOperationParameterStyle.PipeDelimited),
+            new RestApiOperationParameter(name: "p6", type: "array", isRequired: true, expand: false, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.PipeDelimited),
 
             //'PipeDelimited' style array parameter with parameter per array item
-            new RestApiOperationParameter(name : "p7", type : "array", isRequired : true, expand : true, location : RestApiOperationParameterLocation.Query, style : RestApiOperationParameterStyle.PipeDelimited),
+            new RestApiOperationParameter(name: "p7", type: "array", isRequired: true, expand: true, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.PipeDelimited),
         };
 
         var arguments = new Dictionary<string, string>
@@ -502,7 +507,7 @@ public class QueryStringBuilderTests
         var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata, new Dictionary<string, string>());
 
         // Act
-        var result = this._sut.Build(operation, arguments);
+        var result = operation.BuildQueryString(arguments);
 
         // Assert
         Assert.NotNull(result);

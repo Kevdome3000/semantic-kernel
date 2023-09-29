@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Functions.OpenAPI;
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -9,12 +11,10 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Builders;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
+using Authentication;
+using Diagnostics;
+using Model;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI;
 
 /// <summary>
 /// Runs REST API operation represented by RestApiOperation model class.
@@ -28,11 +28,6 @@ internal sealed class RestApiOperationRunner
     /// List of payload builders/factories.
     /// </summary>
     private readonly Dictionary<string, HttpContentFactory> _payloadFactoryByMediaType;
-
-    /// <summary>
-    /// Factory for creating builders to construct REST API operation components, such as path, query string, payload, etc.
-    /// </summary>
-    private readonly IOperationComponentBuilderFactory _componentBuilderFactory;
 
     /// <summary>
     /// An instance of the HttpClient class.
@@ -61,10 +56,10 @@ internal sealed class RestApiOperationRunner
     /// </summary>
     private readonly bool _enablePayloadNamespacing;
 
+
     /// <summary>
     /// Creates an instance of the <see cref="RestApiOperationRunner"/> class.
     /// </summary>
-    /// <param name="componentBuilderFactory">Factory for creating builders to construct REST API operation components, such as path, query string, payload, etc...</param>
     /// <param name="httpClient">An instance of the HttpClient class.</param>
     /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
     /// <param name="userAgent">Optional request-header field containing information about the user agent originating the request.</param>
@@ -74,14 +69,12 @@ internal sealed class RestApiOperationRunner
     /// <param name="enablePayloadNamespacing">Determines whether payload parameters are resolved from the arguments by
     /// full name (parameter name prefixed with the parent property name).</param>
     public RestApiOperationRunner(
-        IOperationComponentBuilderFactory componentBuilderFactory,
         HttpClient httpClient,
         AuthenticateRequestAsyncCallback? authCallback = null,
         string? userAgent = null,
         bool enableDynamicPayload = false,
         bool enablePayloadNamespacing = false)
     {
-        this._componentBuilderFactory = componentBuilderFactory;
         this._httpClient = httpClient;
         this._userAgent = userAgent ?? Telemetry.HttpUserAgent;
         this._enableDynamicPayload = enableDynamicPayload;
@@ -103,6 +96,7 @@ internal sealed class RestApiOperationRunner
             { MediaTypeTextPlain, this.BuildPlainTextPayload }
         };
     }
+
 
     /// <summary>
     /// Executes the specified <paramref name="operation"/> asynchronously, using the provided <paramref name="arguments"/>.
@@ -126,6 +120,7 @@ internal sealed class RestApiOperationRunner
 
         return this.SendAsync(url, operation.Method, headers, payload, cancellationToken);
     }
+
 
     #region private
 
@@ -178,6 +173,7 @@ internal sealed class RestApiOperationRunner
         return JsonSerializer.SerializeToNode(result);
     }
 
+
     /// <summary>
     /// Builds operation payload.
     /// </summary>
@@ -210,6 +206,7 @@ internal sealed class RestApiOperationRunner
         return payloadFactory.Invoke(operation.Payload, arguments);
     }
 
+
     /// <summary>
     /// Builds "application/json" payload.
     /// </summary>
@@ -219,7 +216,7 @@ internal sealed class RestApiOperationRunner
     private HttpContent BuildJsonPayload(RestApiOperationPayload? payloadMetadata, IDictionary<string, string> arguments)
     {
         //Build operation payload dynamically
-        if (this._enableDynamicPayload is true)
+        if (this._enableDynamicPayload)
         {
             if (payloadMetadata == null)
             {
@@ -239,6 +236,7 @@ internal sealed class RestApiOperationRunner
 
         return new StringContent(content, Encoding.UTF8, MediaTypeApplicationJson);
     }
+
 
     /// <summary>
     /// Builds a JSON object from a list of RestAPI operation payload properties.
@@ -276,6 +274,7 @@ internal sealed class RestApiOperationRunner
 
         return result;
     }
+
 
     /// <summary>
     /// Converts the JSON property value to the REST API type specified in metadata.
@@ -329,6 +328,7 @@ internal sealed class RestApiOperationRunner
         }
     }
 
+
     /// <summary>
     /// Builds "text/plain" payload.
     /// </summary>
@@ -345,6 +345,7 @@ internal sealed class RestApiOperationRunner
         return new StringContent(propertyValue, Encoding.UTF8, MediaTypeTextPlain);
     }
 
+
     /// <summary>
     /// Retrieves the argument name for a payload property.
     /// </summary>
@@ -353,13 +354,14 @@ internal sealed class RestApiOperationRunner
     /// <returns>The argument name for the payload property.</returns>
     private string GetArgumentNameForPayload(string propertyName, string? propertyNamespace)
     {
-        if (this._enablePayloadNamespacing is false)
+        if (!this._enablePayloadNamespacing)
         {
             return propertyName;
         }
 
         return string.IsNullOrEmpty(propertyNamespace) ? propertyName : $"{propertyNamespace}.{propertyName}";
     }
+
 
     /// <summary>
     /// Builds operation Url.
@@ -375,12 +377,12 @@ internal sealed class RestApiOperationRunner
 
         var urlBuilder = new UriBuilder(url);
 
-        var queryStringBuilder = this._componentBuilderFactory.CreateQueryStringBuilder();
-
-        urlBuilder.Query = queryStringBuilder.Build(operation, arguments);
+        urlBuilder.Query = operation.BuildQueryString(arguments);
 
         return urlBuilder.Uri;
     }
 
     #endregion
+
+
 }

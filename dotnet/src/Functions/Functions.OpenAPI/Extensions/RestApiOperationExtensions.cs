@@ -1,16 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace
+namespace Microsoft.SemanticKernel.Functions.OpenAPI.Model;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
-using Microsoft.SemanticKernel.Diagnostics;
+using Diagnostics;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 #pragma warning restore IDE0130
+
 
 /// <summary>
 /// Class for extensions methods for the <see cref="RestApiOperation"/> class.
@@ -76,6 +78,7 @@ internal static class RestApiOperationExtensions
         return parameters;
     }
 
+
     /// <summary>
     /// Retrieves the payload parameters for a given REST API operation.
     /// </summary>
@@ -86,7 +89,7 @@ internal static class RestApiOperationExtensions
     /// <returns>A list of <see cref="RestApiOperationParameter"/> representing the payload parameters.</returns>
     private static List<RestApiOperationParameter> GetPayloadParameters(RestApiOperation operation, bool useParametersFromMetadata, bool enableNamespacing)
     {
-        if (useParametersFromMetadata is true)
+        if (useParametersFromMetadata)
         {
             if (operation.Payload is null)
             {
@@ -104,11 +107,13 @@ internal static class RestApiOperationExtensions
         }
 
         // Adding artificial 'payload' and 'content-type' in case parameters from payload metadata are not required.
-        return new List<RestApiOperationParameter> {
+        return new List<RestApiOperationParameter>
+        {
             CreatePayloadArtificialParameter(operation),
             CreateContentTypeArtificialParameter(operation)
         };
     }
+
 
     /// <summary>
     /// Creates the 'content-type' artificial parameter for a REST API operation.
@@ -127,6 +132,7 @@ internal static class RestApiOperationExtensions
             description: "Content type of REST API request body.");
     }
 
+
     /// <summary>
     /// Creates the 'payload' artificial parameter for a REST API operation.
     /// </summary>
@@ -143,6 +149,7 @@ internal static class RestApiOperationExtensions
             RestApiOperationParameterStyle.Simple,
             description: operation.Payload?.Description ?? "REST API request body.");
     }
+
 
     /// <summary>
     /// Retrieves parameters from REST API operation payload metadata.
@@ -179,6 +186,7 @@ internal static class RestApiOperationExtensions
         return parameters;
     }
 
+
     /// <summary>
     /// Gets the property name based on the provided parameters.
     /// </summary>
@@ -188,13 +196,14 @@ internal static class RestApiOperationExtensions
     /// <returns>The property name.</returns>
     private static string GetPropertyName(RestApiOperationPayloadProperty property, string? rootPropertyName, bool enableNamespacing = false)
     {
-        if (enableNamespacing is true)
+        if (enableNamespacing)
         {
             return string.IsNullOrEmpty(rootPropertyName) ? property.Name : $"{rootPropertyName}.{property.Name}";
         }
 
         return property.Name;
     }
+
 
     private const string MediaTypeTextPlain = "text/plain";
     private static readonly Regex s_invalidSymbolsRegex = new("[^0-9A-Za-z_]+");

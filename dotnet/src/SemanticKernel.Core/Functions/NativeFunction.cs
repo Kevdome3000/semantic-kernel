@@ -42,12 +42,6 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     /// <inheritdoc/>
     public string PluginName { get; }
 
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CS1591
-    public string SkillName => this.PluginName;
-#pragma warning restore CS1591
-
     /// <inheritdoc/>
     public string Description { get; }
 
@@ -169,13 +163,6 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         // and we don't have a way to distinguish between a native function and a Plan.
         return this;
     }
-
-
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SetDefaultFunctionCollection instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CS1591
-    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) =>
-        this.SetDefaultFunctionCollection(skills);
 
 
     /// <inheritdoc/>
@@ -304,8 +291,6 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
                 functionName = functionName.Substring(0, functionName.Length - "Async".Length);
             }
         }
-
-        SKFunctionAttribute? functionAttribute = method.GetCustomAttribute<SKFunctionAttribute>(inherit: true);
 
         string? description = method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
 
@@ -544,7 +529,8 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             var parameterView = new ParameterView(
                 name,
                 parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? string.Empty,
-                defaultValue?.ToString() ?? string.Empty);
+                defaultValue?.ToString() ?? string.Empty,
+                IsRequired: !parameter.IsOptional);
 
             return (parameterFunc, parameterView);
         }
@@ -963,9 +949,20 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     #region Obsolete
 
     /// <inheritdoc/>
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public string SkillName => this.PluginName;
+
+    /// <inheritdoc/>
     [Obsolete("Kernel no longer differentiates between Semantic and Native functions. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public bool IsSemantic => false;
+    public bool IsSemantic => true;
+
+
+    /// <inheritdoc/>
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SetDefaultFunctionCollection instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) => this.SetDefaultFunctionCollection(skills);
 
     #endregion
 

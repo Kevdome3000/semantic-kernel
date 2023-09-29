@@ -417,58 +417,6 @@ public abstract class ClientBase
     }
 
 
-    private static ChatCompletionsOptions CreateChatCompletionsOptionsWithFunctionCalls(OpenAIRequestSettings requestSettings, IEnumerable<ChatMessageBase> chatHistory, FunctionDefinition? functionCall = null, IEnumerable<FunctionDefinition>? functions = null)
-    {
-        if (requestSettings.ResultsPerPrompt is < 1 or > MaxResultsPerPrompt)
-        {
-            throw new ArgumentOutOfRangeException($"{nameof(requestSettings)}.{nameof(requestSettings.ResultsPerPrompt)}", requestSettings.ResultsPerPrompt, $"The value must be in range between 1 and {MaxResultsPerPrompt}, inclusive.");
-        }
-
-        var options = new ChatCompletionsOptions
-        {
-            MaxTokens = requestSettings.MaxTokens,
-            Temperature = (float?)requestSettings.Temperature,
-            NucleusSamplingFactor = (float?)requestSettings.TopP,
-            FrequencyPenalty = (float?)requestSettings.FrequencyPenalty,
-            PresencePenalty = (float?)requestSettings.PresencePenalty,
-            ChoiceCount = requestSettings.ResultsPerPrompt
-        };
-
-        // signaling that the user wants the model to choose the function
-        if (functionCall == null)
-        {
-            options.FunctionCall = FunctionDefinition.Auto;
-        }
-
-        // signaling that this is the list of functions the user wants the model to choose from
-        if (functions != null)
-        {
-            options.Functions = new List<FunctionDefinition>(functions);
-        }
-
-        foreach (KeyValuePair<int, int> keyValue in requestSettings.TokenSelectionBiases)
-        {
-            options.TokenSelectionBiases.Add(keyValue.Key, keyValue.Value);
-        }
-
-        if (requestSettings.StopSequences is { Count: > 0 })
-        {
-            foreach (var s in requestSettings.StopSequences)
-            {
-                options.StopSequences.Add(s);
-            }
-        }
-
-        foreach (var message in chatHistory)
-        {
-            var validRole = GetValidChatRole(message.Role);
-            options.Messages.Add(new ChatMessage(validRole, message.Content));
-        }
-
-        return options;
-    }
-
-
     private static ChatRole GetValidChatRole(AuthorRole role)
     {
         var validRole = new ChatRole(role.Label);

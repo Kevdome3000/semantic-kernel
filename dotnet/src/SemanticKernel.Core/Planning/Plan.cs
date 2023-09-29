@@ -74,12 +74,6 @@ public sealed class Plan : IPlan
     [JsonPropertyName("plugin_name")]
     public string PluginName { get; set; } = string.Empty;
 
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CS1591
-    public string SkillName => this.PluginName;
-#pragma warning restore CS1591
-
     /// <inheritdoc/>
     [JsonPropertyName("description")]
     public string Description { get; set; } = string.Empty;
@@ -341,7 +335,7 @@ public sealed class Plan : IPlan
                 var matchingParameter = stepParameters.FirstOrDefault(sp => sp.Value.Equals($"${p.Key}", StringComparison.OrdinalIgnoreCase));
                 var stepDescription = stepDescriptions.FirstOrDefault(sd => sd.Name.Equals(matchingParameter.Key, StringComparison.OrdinalIgnoreCase));
 
-                return new ParameterView(p.Key, stepDescription?.Description, stepDescription?.DefaultValue, stepDescription?.Type);
+                return new ParameterView(p.Key, stepDescription?.Description, stepDescription?.DefaultValue, stepDescription?.Type, stepDescription?.IsRequired);
             }
         ).ToList();
 
@@ -396,13 +390,6 @@ public sealed class Plan : IPlan
     {
         return this.Function is not null ? this.Function.SetDefaultFunctionCollection(functions) : this;
     }
-
-
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SetDefaultFunctionCollection instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CS1591
-    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) =>
-        this.SetDefaultFunctionCollection(skills);
 
 
     /// <inheritdoc/>
@@ -698,9 +685,21 @@ public sealed class Plan : IPlan
 
     /// <inheritdoc/>
     [JsonIgnore]
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public string SkillName => this.PluginName;
+
+    /// <inheritdoc/>
+    [JsonIgnore]
     [Obsolete("Kernel no longer differentiates between Semantic and Native functions. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public bool IsSemantic { get; private set; }
+
+
+    /// <inheritdoc/>
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SetDefaultFunctionCollection instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) => this.SetDefaultFunctionCollection(skills);
 
     #endregion
 

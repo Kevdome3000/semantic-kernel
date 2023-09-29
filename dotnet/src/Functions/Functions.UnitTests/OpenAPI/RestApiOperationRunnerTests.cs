@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Functions.UnitTests.OpenAPI;
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,13 +17,10 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.OpenAPI;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Builders;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Builders.Query;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Functions.UnitTests.OpenAPI;
 
 public sealed class RestApiOperationRunnerTests : IDisposable
 {
@@ -40,6 +39,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     /// </summary>
     private readonly HttpClient _httpClient;
 
+
     /// <summary>
     /// Creates an instance of a <see cref="RestApiOperationRunnerTests"/> class.
     /// </summary>
@@ -51,6 +51,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         this._httpClient = new HttpClient(this._httpMessageHandlerStub);
     }
+
 
     [Fact]
     public async Task ItCanRunCreateAndUpdateOperationsWithJsonPayloadSuccessfullyAsync()
@@ -84,7 +85,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             { "content-type", "application/json" }
         };
 
-        var sut = new RestApiOperationRunner(new OperationComponentBuilderFactory(), this._httpClient, this._authenticationHandlerMock.Object);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -126,6 +127,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         this._authenticationHandlerMock.Verify(x => x(It.IsAny<HttpRequestMessage>()), Times.Once);
     }
 
+
     [Fact]
     public async Task ItCanRunCreateAndUpdateOperationsWithPlainTextPayloadSuccessfullyAsync()
     {
@@ -146,10 +148,10 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var arguments = new Dictionary<string, string>
         {
             { "payload", "fake-input-value" },
-            { "content-type", "text/plain"}
+            { "content-type", "text/plain" }
         };
 
-        var sut = new RestApiOperationRunner(new OperationComponentBuilderFactory(), this._httpClient, this._authenticationHandlerMock.Object);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -181,6 +183,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         this._authenticationHandlerMock.Verify(x => x(It.IsAny<HttpRequestMessage>()), Times.Once);
     }
 
+
     [Fact]
     public async Task ItShouldAddHeadersToHttpRequestAsync()
     {
@@ -205,7 +208,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             { "fake-header", "fake-header-value" }
         };
 
-        var sut = new RestApiOperationRunner(new OperationComponentBuilderFactory(), this._httpClient, this._authenticationHandlerMock.Object);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
 
         // Act
         await sut.RunAsync(operation, arguments);
@@ -216,6 +219,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         Assert.Contains(this._httpMessageHandlerStub.RequestHeaders, h => h.Key == "fake-header" && h.Value.Contains("fake-header-value"));
     }
+
 
     [Fact]
     public async Task ItShouldAddUserAgentHeaderToHttpRequestIfConfiguredAsync()
@@ -241,7 +245,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             { "fake-header", "fake-header-value" }
         };
 
-        var sut = new RestApiOperationRunner(new OperationComponentBuilderFactory(), this._httpClient, this._authenticationHandlerMock.Object, "fake-user-agent");
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, "fake-user-agent");
 
         // Act
         await sut.RunAsync(operation, arguments);
@@ -253,6 +257,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.Contains(this._httpMessageHandlerStub.RequestHeaders, h => h.Key == "fake-header" && h.Value.Contains("fake-header-value"));
         Assert.Contains(this._httpMessageHandlerStub.RequestHeaders, h => h.Key == "User-Agent" && h.Value.Contains("fake-user-agent"));
     }
+
 
     [Fact]
     public async Task ItShouldBuildJsonPayloadDynamicallyAsync()
@@ -286,7 +291,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         arguments.Add("name", "fake-name-value");
         arguments.Add("enabled", "true");
 
-        var sut = new RestApiOperationRunner(new OperationComponentBuilderFactory(), this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -312,6 +317,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.NotNull(enabled);
         Assert.Equal("true", enabled);
     }
+
 
     [Fact]
     public async Task ItShouldBuildJsonPayloadDynamicallyUsingPayloadMetadataDataTypesAsync()
@@ -353,7 +359,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         arguments.Add("count", "1");
         arguments.Add("params", "[1,2,3]");
 
-        var sut = new RestApiOperationRunner(new OperationComponentBuilderFactory(), this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -396,6 +402,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.NotNull(parameters);
         Assert.True(parameters is JsonArray);
     }
+
 
     [Fact]
     public async Task ItShouldBuildJsonPayloadDynamicallyResolvingArgumentsByFullNamesAsync()
@@ -440,7 +447,6 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         arguments.Add("cc.upn", "fake-cc-upn");
 
         var sut = new RestApiOperationRunner(
-            new OperationComponentBuilderFactory(),
             this._httpClient,
             this._authenticationHandlerMock.Object,
             enableDynamicPayload: true,
@@ -488,6 +494,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.Equal("fake-cc-upn", ccUpn.ToString());
     }
 
+
     [Fact]
     public async Task ItShouldThrowExceptionIfPayloadMetadataDoesNotHaveContentTypeAsync()
     {
@@ -506,7 +513,6 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var arguments = new Dictionary<string, string>();
 
         var sut = new RestApiOperationRunner(
-            new OperationComponentBuilderFactory(),
             this._httpClient,
             this._authenticationHandlerMock.Object,
             enableDynamicPayload: true);
@@ -516,6 +522,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         Assert.Contains("No content type is provided", exception.Message, StringComparison.InvariantCulture);
     }
+
 
     [Fact]
     public async Task ItShouldThrowExceptionIfContentTypeArgumentIsNotProvidedAsync()
@@ -535,7 +542,6 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var arguments = new Dictionary<string, string>();
 
         var sut = new RestApiOperationRunner(
-            new OperationComponentBuilderFactory(),
             this._httpClient,
             this._authenticationHandlerMock.Object,
             enableDynamicPayload: false);
@@ -545,6 +551,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         Assert.Contains("No content type is provided", exception.Message, StringComparison.InvariantCulture);
     }
+
 
     [Fact]
     public async Task ItShouldUsePayloadArgumentForPlainTextContentTypeWhenBuildingPayloadDynamicallyAsync()
@@ -570,7 +577,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             { "payload", "fake-input-value" },
         };
 
-        var sut = new RestApiOperationRunner(new OperationComponentBuilderFactory(), this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -586,6 +593,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var payloadText = Encoding.UTF8.GetString(messageContent, 0, messageContent.Length);
         Assert.Equal("fake-input-value", payloadText);
     }
+
 
     [Theory]
     [InlineData(MediaTypeNames.Text.Plain)]
@@ -612,7 +620,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             { "content-type", $"{contentType}" },
         };
 
-        var sut = new RestApiOperationRunner(new OperationComponentBuilderFactory(), this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: false);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: false);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -628,6 +636,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var payloadText = Encoding.UTF8.GetString(messageContent, 0, messageContent.Length);
         Assert.Equal("fake-input-value", payloadText);
     }
+
 
     [Fact]
     public async Task ItShouldBuildJsonPayloadDynamicallyExcludingOptionalParametersIfTheirArgumentsNotProvidedAsync()
@@ -656,7 +665,6 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var arguments = new Dictionary<string, string>();
 
         var sut = new RestApiOperationRunner(
-            new OperationComponentBuilderFactory(),
             this._httpClient,
             this._authenticationHandlerMock.Object,
             enableDynamicPayload: true,
@@ -676,6 +684,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var senderUpn = deserializedPayload["upn"]?.ToString();
         Assert.Null(senderUpn);
     }
+
 
     [Fact]
     public async Task ItShouldBuildJsonPayloadDynamicallyIncludingOptionalParametersIfTheirArgumentsProvidedAsync()
@@ -705,7 +714,6 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         arguments.Add("upn", "fake-sender-upn");
 
         var sut = new RestApiOperationRunner(
-            new OperationComponentBuilderFactory(),
             this._httpClient,
             this._authenticationHandlerMock.Object,
             enableDynamicPayload: true,
@@ -725,6 +733,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var senderUpn = deserializedPayload["upn"]?.ToString();
         Assert.Equal("fake-sender-upn", senderUpn);
     }
+
 
     [Fact]
     public async Task ItShouldAddRequiredQueryStringParametersIfTheirArgumentsProvidedAsync()
@@ -765,7 +774,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             { "p2", "v2" },
         };
 
-        var sut = new RestApiOperationRunner(new OperationComponentBuilderFactory(), this._httpClient, this._authenticationHandlerMock.Object);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -774,6 +783,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.NotNull(this._httpMessageHandlerStub.RequestUri);
         Assert.Equal("https://fake-random-test-host/fake-path?p1=v1&p2=v2", this._httpMessageHandlerStub.RequestUri.AbsoluteUri);
     }
+
 
     [Fact]
     public async Task ItShouldAddNotRequiredQueryStringParametersIfTheirArgumentsProvidedAsync()
@@ -814,7 +824,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             { "p2", "v2" },
         };
 
-        var sut = new RestApiOperationRunner(new OperationComponentBuilderFactory(), this._httpClient, this._authenticationHandlerMock.Object);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -823,6 +833,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.NotNull(this._httpMessageHandlerStub.RequestUri);
         Assert.Equal("https://fake-random-test-host/fake-path?p1=v1&p2=v2", this._httpMessageHandlerStub.RequestUri.AbsoluteUri);
     }
+
 
     [Fact]
     public async Task ItShouldSkipNotRequiredQueryStringParametersIfNoArgumentsProvidedAsync()
@@ -862,7 +873,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             { "p2", "v2" }, //Providing argument for the required parameter only
         };
 
-        var sut = new RestApiOperationRunner(new OperationComponentBuilderFactory(), this._httpClient, this._authenticationHandlerMock.Object);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -872,42 +883,6 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.Equal("https://fake-random-test-host/fake-path?p2=v2", this._httpMessageHandlerStub.RequestUri.AbsoluteUri);
     }
 
-    [Fact]
-    public async Task ItShouldDelegateQueryStringBuildingAsync()
-    {
-        // Arrange
-        var mockQueryStringBuilder = new Mock<IQueryStringBuilder>();
-        mockQueryStringBuilder
-            .Setup(b => b.Build(It.IsAny<RestApiOperation>(), It.IsAny<IDictionary<string, string>>()))
-            .Returns("p1=v1");
-
-        var mockOperationComponentBuilderFactory = new Mock<IOperationComponentBuilderFactory>();
-        mockOperationComponentBuilderFactory
-            .Setup(f => f.CreateQueryStringBuilder())
-            .Returns(mockQueryStringBuilder.Object);
-
-        var operation = new RestApiOperation(
-            "fake-id",
-            new Uri("https://fake-random-test-host"),
-            "fake-path",
-            HttpMethod.Get,
-            "fake-description",
-            new List<RestApiOperationParameter>(),
-            new Dictionary<string, string>(),
-            payload: null
-        );
-
-        var arguments = new Dictionary<string, string>();
-
-        var sut = new RestApiOperationRunner(mockOperationComponentBuilderFactory.Object, this._httpClient, this._authenticationHandlerMock.Object);
-
-        // Act
-        var result = await sut.RunAsync(operation, arguments);
-
-        // Assert
-        Assert.NotNull(this._httpMessageHandlerStub.RequestUri);
-        Assert.Equal("https://fake-random-test-host/fake-path?p1=v1", this._httpMessageHandlerStub.RequestUri.AbsoluteUri);
-    }
 
     [Fact]
     public async Task ItShouldThrowExceptionIfNoArgumentProvidedForRequiredQueryStringParameterAsync()
@@ -936,11 +911,12 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var arguments = new Dictionary<string, string>(); //Providing no arguments
 
-        var sut = new RestApiOperationRunner(new OperationComponentBuilderFactory(), this._httpClient, this._authenticationHandlerMock.Object);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
 
         // Act and Assert
         await Assert.ThrowsAsync<SKException>(() => sut.RunAsync(operation, arguments));
     }
+
 
     /// <summary>
     /// Disposes resources used by this class.
@@ -951,6 +927,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         this._httpClient.Dispose();
     }
+
 
     private sealed class HttpMessageHandlerStub : DelegatingHandler
     {
@@ -966,6 +943,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         public HttpResponseMessage ResponseToReturn { get; set; }
 
+
         public HttpMessageHandlerStub()
         {
             this.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
@@ -973,6 +951,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
                 Content = new StringContent("{}", Encoding.UTF8, MediaTypeNames.Application.Json)
             };
         }
+
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {

@@ -1,17 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - Using the main namespace
+namespace Microsoft.SemanticKernel;
+
 using System;
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Orchestration;
+using AI;
+using AI.TextCompletion;
+using Orchestration;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using the main namespace
-namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
+
 
 /// <summary>
 /// Semantic Kernel callable function interface
@@ -28,11 +30,6 @@ public interface ISKFunction
     /// </summary>
     string PluginName { get; }
 
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SkillName instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CS1591
-    string SkillName { get; }
-
     /// <summary>
     /// Function description. The description is used in combination with embeddings when searching relevant functions.
     /// </summary>
@@ -43,11 +40,13 @@ public interface ISKFunction
     /// </summary>
     AIRequestSettings? RequestSettings { get; }
 
+
     /// <summary>
     /// Returns a description of the function, including parameters.
     /// </summary>
     /// <returns>An instance of <see cref="FunctionView"/> describing the function</returns>
     FunctionView Describe();
+
 
     /// <summary>
     /// Invoke the <see cref="ISKFunction"/>.
@@ -61,6 +60,7 @@ public interface ISKFunction
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Set the default function collection to use when the function is invoked
     /// without a context or with a context that doesn't have a collection.
@@ -69,10 +69,6 @@ public interface ISKFunction
     /// <returns>Self instance</returns>
     ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions);
 
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SetDefaultFunctionCollection instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CS1591
-    ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills);
 
     /// <summary>
     /// Set the AI service used by the semantic function, passing a factory method.
@@ -82,6 +78,7 @@ public interface ISKFunction
     /// <returns>Self instance</returns>
     ISKFunction SetAIService(Func<ITextCompletion> serviceFactory);
 
+
     /// <summary>
     /// Set the AI completion settings used with LLM requests
     /// </summary>
@@ -89,7 +86,27 @@ public interface ISKFunction
     /// <returns>Self instance</returns>
     ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings);
 
+
     #region Obsolete
+
+    /// <summary>
+    /// Name of the plugin containing the function. The name is used by the function collection and in prompt templates e.g. {{skillName.functionName}}
+    /// </summary>
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SkillName instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    string SkillName { get; }
+
+
+    /// <summary>
+    /// Set the default function collection to use when the function is invoked
+    /// without a context or with a context that doesn't have a collection.
+    /// </summary>
+    /// <param name="skills">Kernel's function collection</param>
+    /// <returns>Self instance</returns>
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SetDefaultFunctionCollection instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills);
+
 
     /// <summary>
     /// Whether the function is defined using a prompt template.
@@ -101,4 +118,6 @@ public interface ISKFunction
     bool IsSemantic { get; }
 
     #endregion
+
+
 }
