@@ -3,7 +3,9 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.FunctionCalling.Extensio
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -114,10 +116,10 @@ public static class SKFunctionCallExtensions
             try
             {
                 var resultJson = functionResult.GetValue<string>();
-
                 if (resultJson != null)
                 {
-                    result = JsonSerializer.Deserialize<T>(resultJson, serializerOptions);
+                    using var stream = new MemoryStream(Encoding.UTF8.GetBytes(resultJson));
+                    result = await JsonSerializer.DeserializeAsync<T>(stream, serializerOptions, cancellationToken).ConfigureAwait(false);
                 }
             }
             catch (JsonException ex)
