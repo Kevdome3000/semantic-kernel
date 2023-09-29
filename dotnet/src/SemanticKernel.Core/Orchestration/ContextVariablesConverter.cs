@@ -21,8 +21,13 @@ public class ContextVariablesConverter : JsonConverter<ContextVariables>
     /// <returns>The deserialized <see cref="ContextVariables"/>.</returns>
     public override ContextVariables Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        var keyValuePairs = JsonSerializer.Deserialize<IEnumerable<KeyValuePair<string, string>>>(ref reader, options);
+        IEnumerable<KeyValuePair<string, string>>? keyValuePairs = JsonSerializer.Deserialize<IEnumerable<KeyValuePair<string, string>>>(ref reader, options);
         var context = new ContextVariables();
+        if(keyValuePairs == null)
+        {
+            return context;
+        }
+
 
         foreach (var kvp in keyValuePairs!)
         {

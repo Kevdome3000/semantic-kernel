@@ -20,6 +20,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Functions\Functions.Semantic\Functions.Semantic.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj"/>
   </ItemGroup>
 
@@ -27,10 +28,10 @@
     <PackageReference Include="Azure.AI.OpenAI" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="Microsoft.SemanticKernel.Core">
-      <HintPath>bin\Debug\netstandard2.0\Microsoft.SemanticKernel.Core.dll</HintPath>
-    </Reference>
-  </ItemGroup>
+<!--  <ItemGroup>-->
+<!--    <Reference Include="Microsoft.SemanticKernel.Core">-->
+<!--      <HintPath>bin\Debug\netstandard2.0\Microsoft.SemanticKernel.Core.dll</HintPath>-->
+<!--    </Reference>-->
+<!--  </ItemGroup>-->
 
 </Project>
