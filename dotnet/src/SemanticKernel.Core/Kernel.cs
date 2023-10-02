@@ -225,9 +225,15 @@ public sealed class Kernel : IKernel, IDisposable
 
                 context = functionResult.Context;
 
-                allFunctionResults.Add(functionResult);
-
                 var functionInvokedArgs = this.OnFunctionInvoked(functionDetails, functionResult);
+
+                if (functionInvokedArgs is not null)
+                {
+                    // All changes to the SKContext by invoked handlers may reflect in the original function result
+                    functionResult = new FunctionResult(functionDetails.Name, functionDetails.PluginName, functionInvokedArgs.SKContext, functionInvokedArgs.SKContext.Result);
+                }
+
+                allFunctionResults.Add(functionResult);
 
                 if (functionInvokedArgs?.CancelToken.IsCancellationRequested ?? false)
                 {

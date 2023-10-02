@@ -11,11 +11,13 @@ using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
 using RepoUtils;
 
+
 // ReSharper disable once InconsistentNaming
 public static class Example57_FunctionEventHandlers
 {
     private static string? s_openAIModelId;
     private static string? s_openAIApiKey;
+
 
     public static async Task RunAsync()
     {
@@ -42,6 +44,7 @@ public static class Example57_FunctionEventHandlers
 
         await RepeatFunctionsAsync();
     }
+
 
     private static async Task GetUsageAsync()
     {
@@ -88,19 +91,20 @@ public static class Example57_FunctionEventHandlers
 
         const string Input = "I missed the F1 final race";
         var result = await kernel.RunAsync(Input, excuseFunction);
-        Console.WriteLine($"Function Result: {result}");
+        Console.WriteLine($"Function Result: {result.GetValue<string>()}");
     }
+
 
     private static async Task ChangingResultAsync()
     {
         Console.WriteLine("\n======== Changing/Filtering Function Result ========\n");
 
         IKernel kernel = new KernelBuilder()
-           .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-           .WithOpenAIChatCompletionService(
-               modelId: s_openAIModelId!,
-               apiKey: s_openAIApiKey!)
-           .Build();
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
+            .WithOpenAIChatCompletionService(
+                modelId: s_openAIModelId!,
+                apiKey: s_openAIApiKey!)
+            .Build();
 
         const string FunctionPrompt = "Write a paragraph about Handlers.";
 
@@ -124,19 +128,20 @@ public static class Example57_FunctionEventHandlers
 
         var result = await kernel.RunAsync(writerFunction);
 
-        Console.WriteLine($"Function Result: {result}");
+        Console.WriteLine($"Function Result: {result.GetValue<string>()}");
     }
+
 
     private static async Task BeforeInvokeCancellationAsync()
     {
         Console.WriteLine("\n======== Cancelling Pipeline Execution - Invoking event ========\n");
 
         IKernel kernel = new KernelBuilder()
-           .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-           .WithOpenAIChatCompletionService(
-               modelId: s_openAIModelId!,
-               apiKey: s_openAIApiKey!)
-           .Build();
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
+            .WithOpenAIChatCompletionService(
+                modelId: s_openAIModelId!,
+                apiKey: s_openAIApiKey!)
+            .Build();
 
         const string FunctionPrompt = "Write a paragraph about: Cancellation.";
 
@@ -164,16 +169,17 @@ public static class Example57_FunctionEventHandlers
         Console.WriteLine($"Function Invocation Times: {functionInvokedCount}");
     }
 
+
     private static async Task AfterInvokeCancellationAsync()
     {
         Console.WriteLine("\n======== Cancelling Pipeline Execution - Invoked event ========\n");
 
         IKernel kernel = new KernelBuilder()
-           .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-           .WithOpenAIChatCompletionService(
-               modelId: s_openAIModelId!,
-               apiKey: s_openAIApiKey!)
-           .Build();
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
+            .WithOpenAIChatCompletionService(
+                modelId: s_openAIModelId!,
+                apiKey: s_openAIApiKey!)
+            .Build();
 
         int functionInvokingCount = 0;
         int functionInvokedCount = 0;
@@ -199,16 +205,17 @@ public static class Example57_FunctionEventHandlers
         Console.WriteLine($"Function Invoking Times: {functionInvokingCount}");
     }
 
+
     private static async Task SkippingFunctionsAsync()
     {
         Console.WriteLine("\n======== Skipping a Function in the Pipeline ========\n");
 
         IKernel kernel = new KernelBuilder()
-           .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-           .WithOpenAIChatCompletionService(
-               modelId: s_openAIModelId!,
-               apiKey: s_openAIApiKey!)
-           .Build();
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
+            .WithOpenAIChatCompletionService(
+                modelId: s_openAIModelId!,
+                apiKey: s_openAIApiKey!)
+            .Build();
 
         var skipMeFunction = kernel.CreateSemanticFunction("Write a paragraph about Skipping",
             pluginName: "MyPlugin",
@@ -242,16 +249,17 @@ public static class Example57_FunctionEventHandlers
         Console.WriteLine($"Final result: {result.GetValue<string>()}");
     }
 
+
     private static async Task RepeatFunctionsAsync()
     {
         Console.WriteLine("\n======== Repeating a Function in the Pipeline ========");
 
         IKernel kernel = new KernelBuilder()
-           .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-           .WithOpenAIChatCompletionService(
-               modelId: s_openAIModelId!,
-               apiKey: s_openAIApiKey!)
-           .Build();
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
+            .WithOpenAIChatCompletionService(
+                modelId: s_openAIModelId!,
+                apiKey: s_openAIApiKey!)
+            .Build();
 
         var repeatSubjects = new Queue<string>(new[] { "Life", "Work", "Leisure" });
 
