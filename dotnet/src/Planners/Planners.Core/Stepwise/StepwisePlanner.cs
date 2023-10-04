@@ -14,7 +14,6 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using AI;
 using AI.ChatCompletion;
 using AI.TextCompletion;
 using Diagnostics;
@@ -62,11 +61,7 @@ public class StepwisePlanner : IStepwisePlanner
         this._promptConfig = this.Config.PromptUserConfig ?? LoadPromptConfigFromResource();
 
         // Set MaxTokens for the prompt config
-        if (this._promptConfig.Completion is null)
-        {
-            this._promptConfig.Completion = new AIRequestSettings();
-        }
-        this._promptConfig.Completion.ExtensionData["MaxTokens"] = this.Config.MaxCompletionTokens;
+        this._promptConfig.SetMaxTokens(this.Config.MaxCompletionTokens);
 
         // Initialize prompt renderer
         this._promptRenderer = new PromptTemplateEngine(this._kernel.LoggerFactory);
@@ -421,7 +416,7 @@ public class StepwisePlanner : IStepwisePlanner
     {
         if (aiService is IChatCompletion chatCompletion)
         {
-            var llmResponse = (await chatCompletion.GenerateMessageAsync(chatHistory, this._promptConfig.Completion, token).ConfigureAwait(false));
+            var llmResponse = (await chatCompletion.GenerateMessageAsync(chatHistory, this._promptConfig.GetDefaultRequestSettings(), token).ConfigureAwait(false));
             return llmResponse;
         }
         else if (aiService is ITextCompletion textCompletion)
@@ -436,7 +431,7 @@ public class StepwisePlanner : IStepwisePlanner
             }
 
             thoughtProcess = $"{thoughtProcess}\n";
-            IReadOnlyList<ITextResult> results = await textCompletion.GetCompletionsAsync(thoughtProcess, this._promptConfig.Completion, token).ConfigureAwait(false);
+            IReadOnlyList<ITextResult> results = await textCompletion.GetCompletionsAsync(thoughtProcess, this._promptConfig.GetDefaultRequestSettings(), token).ConfigureAwait(false);
 
             if (results.Count == 0)
             {

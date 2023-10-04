@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-
-
 // ReSharper disable StringLiteralTypo
 
 namespace SemanticKernel.Functions.UnitTests.SemanticFunctions;
@@ -60,10 +58,10 @@ public class SemanticFunctionTests
             .Build();
 
         var templateConfig = new PromptTemplateConfig();
-        templateConfig.Completion = new OpenAIRequestSettings()
+        templateConfig.ModelSettings.Add(new OpenAIRequestSettings()
         {
             ChatSystemPrompt = providedSystemChatPrompt
-        };
+        });
 
         var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
 
@@ -137,7 +135,7 @@ public class SemanticFunctionTests
             .Build();
 
         var templateConfig = new PromptTemplateConfig();
-        templateConfig.Completion = new AIRequestSettings() { ServiceId = "service1" };
+        templateConfig.ModelSettings.Add(new AIRequestSettings() { ServiceId = "service1" });
         var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
 
         // Act
@@ -162,7 +160,7 @@ public class SemanticFunctionTests
             .Build();
 
         var templateConfig = new PromptTemplateConfig();
-        templateConfig.Completion = new AIRequestSettings() { ServiceId = "service3" };
+        templateConfig.ModelSettings.Add(new AIRequestSettings() { ServiceId = "service3" });
         var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
 
         // Act
