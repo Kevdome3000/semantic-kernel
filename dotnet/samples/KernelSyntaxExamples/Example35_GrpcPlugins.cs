@@ -32,6 +32,6 @@ public static class Example35_GrpcPlugins
         // Run
         var result = await kernel.RunAsync(contextVariables, plugin["<operation-name>"]);
 
-        Console.WriteLine("Plugin response: {0}", result);
+        Console.WriteLine("Plugin response: {0}", result.GetValue<string>());
     }
 }

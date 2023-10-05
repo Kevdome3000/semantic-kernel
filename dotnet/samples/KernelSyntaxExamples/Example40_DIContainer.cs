@@ -8,10 +8,10 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Services;
-
 using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Prompt;
 using RepoUtils;
+
 
 /**
  * The following examples show how to use SK SDK in applications using DI/IoC containers.
@@ -24,6 +24,7 @@ public static class Example40_DIContainer
 
         await UseKernelInDIPowerApp_AdvancedScenarioAsync();
     }
+
 
     /// <summary>
     /// This example shows how to register a Kernel in a DI container using KernelBuilder instead of
@@ -43,9 +44,9 @@ public static class Example40_DIContainer
         collection.AddTransient<IKernel>((serviceProvider) =>
         {
             return Kernel.Builder
-            .WithLoggerFactory(serviceProvider.GetRequiredService<LoggerFactory>())
-            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
-            .Build();
+                .WithLoggerFactory(serviceProvider.GetRequiredService<LoggerFactory>())
+                .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
+                .Build();
         });
 
         //Registering class that uses Kernel to execute a plugin
@@ -62,6 +63,7 @@ public static class Example40_DIContainer
         await kernelClient.SummarizeAsync("What's the tallest building in South America?");
     }
 
+
     /// <summary>
     /// This example shows how to registered Kernel and all its dependencies in DI container.
     /// </summary>
@@ -74,8 +76,8 @@ public static class Example40_DIContainer
         //Registering AI services Kernel is going to use
         var aiServicesCollection = new AIServiceCollection();
         aiServicesCollection.SetService<IChatCompletion>(() => new AzureChatCompletion(TestConfiguration.OpenAI.ChatModelId,
-                        TestConfiguration.AzureOpenAI.Endpoint,
-                        TestConfiguration.AzureOpenAI.ApiKey));
+            TestConfiguration.AzureOpenAI.Endpoint,
+            TestConfiguration.AzureOpenAI.ApiKey));
 
         //Registering Kernel dependencies
         var collection = new ServiceCollection();
@@ -102,6 +104,7 @@ public static class Example40_DIContainer
         await kernelClient.SummarizeAsync("What's the tallest building in South America?");
     }
 
+
     /// <summary>
     /// Class that uses/references Kernel.
     /// </summary>
@@ -112,11 +115,13 @@ public static class Example40_DIContainer
         private readonly IKernel _kernel;
         private readonly ILogger _logger;
 
+
         public KernelClient(IKernel kernel, ILogger logger)
         {
             this._kernel = kernel;
             this._logger = logger;
         }
+
 
         public async Task SummarizeAsync(string ask)
         {
@@ -126,7 +131,7 @@ public static class Example40_DIContainer
 
             var result = await this._kernel.RunAsync(ask, summarizeFunctions["Summarize"]);
 
-            this._logger.LogWarning("Result - {0}", result);
+            this._logger.LogWarning("Result - {0}", result.GetValue<string>());
         }
     }
 }

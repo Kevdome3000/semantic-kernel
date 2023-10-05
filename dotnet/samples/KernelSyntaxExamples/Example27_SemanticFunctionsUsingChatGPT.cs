@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using RepoUtils;
 
+
 /**
  * This example shows how to use GPT3.5 Chat model for prompts and semantic functions.
  */
@@ -25,7 +26,7 @@ public static class Example27_SemanticFunctionsUsingChatGPT
             "List the two planets closest to '{{$input}}', excluding moons, using bullet points.");
 
         var result = await func.InvokeAsync("Jupiter", kernel);
-        Console.WriteLine(result);
+        Console.WriteLine(result.GetValue<string>());
 
         /*
         Output:

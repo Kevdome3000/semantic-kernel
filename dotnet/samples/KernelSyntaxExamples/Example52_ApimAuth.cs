@@ -15,6 +15,7 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using RepoUtils;
 
+
 // ReSharper disable once InconsistentNaming
 public static class Example52_ApimAuth
 {
@@ -77,15 +78,17 @@ public static class Example52_ApimAuth
             "I have no homework",
             funFunctions["Excuses"]
         );
-        Console.WriteLine(result);
+        Console.WriteLine(result.GetValue<string>());
 
         httpClient.Dispose();
     }
 }
 
+
 public class BearerTokenCredential : TokenCredential
 {
     private readonly AccessToken _accessToken;
+
 
     // Constructor that takes a Bearer token string and its expiration date
     public BearerTokenCredential(AccessToken accessToken)
@@ -93,10 +96,12 @@ public class BearerTokenCredential : TokenCredential
         this._accessToken = accessToken;
     }
 
+
     public override AccessToken GetToken(TokenRequestContext requestContext, CancellationToken cancellationToken)
     {
         return this._accessToken;
     }
+
 
     public override ValueTask<AccessToken> GetTokenAsync(TokenRequestContext requestContext, CancellationToken cancellationToken)
     {

@@ -1,15 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace Microsoft.SemanticKernel;
+
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Orchestration;
+using AI;
+using Extensions.Logging;
+using Orchestration;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
-namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130 // Namespace does not match folder structure
+
 
 /// <summary>
 /// Class that holds extension methods for objects implementing ISKFunction.
@@ -27,6 +29,7 @@ public static class SKFunctionExtensions
         return skFunction.SetAIConfiguration(requestSettings);
     }
 
+
     /// <summary>
     /// Execute a function allowing to pass the main input separately from the rest of the context.
     /// </summary>
@@ -36,23 +39,23 @@ public static class SKFunctionExtensions
     /// <param name="functions">Collection of functions that this function can access</param>
     /// <param name="culture">Culture to use for the function execution</param>
     /// <param name="requestSettings">LLM completion settings (for semantic functions only)</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function execution</returns>
-    public static Task<FunctionResult> InvokeAsync(this ISKFunction function,
+    public static Task<FunctionResult> InvokeAsync(
+        this ISKFunction function,
         IKernel kernel,
         ContextVariables? variables = null,
         IReadOnlyFunctionCollection? functions = null,
         CultureInfo? culture = null,
         AIRequestSettings? requestSettings = null,
+        ILoggerFactory? loggerFactory = null,
         CancellationToken cancellationToken = default)
     {
-        var context = new SKContext(kernel, variables, functions ?? kernel.Functions)
-        {
-            Culture = culture!
-        };
-
+        var context = kernel.CreateNewContext(variables, functions, loggerFactory, culture);
         return function.InvokeAsync(context, requestSettings ?? function.RequestSettings, cancellationToken);
     }
+
 
     /// <summary>
     /// Execute a function allowing to pass the main input separately from the rest of the context.
@@ -63,16 +66,20 @@ public static class SKFunctionExtensions
     /// <param name="functions">Collection of functions that this function can access</param>
     /// <param name="culture">Culture to use for the function execution</param>
     /// <param name="requestSettings">LLM completion settings (for semantic functions only)</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function execution</returns>
-    public static Task<FunctionResult> InvokeAsync(this ISKFunction function,
+    public static Task<FunctionResult> InvokeAsync(
+        this ISKFunction function,
         string input,
         IKernel kernel,
         IReadOnlyFunctionCollection? functions = null,
         CultureInfo? culture = null,
         AIRequestSettings? requestSettings = null,
+        ILoggerFactory? loggerFactory = null,
         CancellationToken cancellationToken = default)
-        => function.InvokeAsync(kernel, new ContextVariables(input), functions, culture, requestSettings, cancellationToken);
+        => function.InvokeAsync(kernel, new ContextVariables(input), functions, culture, requestSettings, loggerFactory, cancellationToken);
+
 
     /// <summary>
     /// Returns decorated instance of <see cref="ISKFunction"/> with enabled instrumentation.

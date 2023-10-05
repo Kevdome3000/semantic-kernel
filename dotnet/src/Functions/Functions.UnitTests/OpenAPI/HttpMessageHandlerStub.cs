@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Functions.UnitTests.OpenAPI;
+
 using System;
 using System.IO;
 using System.Net.Http;
@@ -9,7 +11,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SemanticKernel.Functions.UnitTests.OpenAPI;
 
 internal sealed class HttpMessageHandlerStub : DelegatingHandler
 {
@@ -25,17 +26,27 @@ internal sealed class HttpMessageHandlerStub : DelegatingHandler
 
     public HttpResponseMessage ResponseToReturn { get; set; }
 
+
+    public HttpMessageHandlerStub()
+    {
+        this.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
+        this.ResponseToReturn.Content = new StringContent("{}", Encoding.UTF8, MediaTypeNames.Application.Json);
+    }
+
+
     public HttpMessageHandlerStub(Stream responseToReturn)
     {
         this.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
         this.ResponseToReturn.Content = new StreamContent(responseToReturn);
     }
 
+
     public void ResetResponse()
     {
         this.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
         this.ResponseToReturn.Content = new StringContent("{}", Encoding.UTF8, MediaTypeNames.Application.Json);
     }
+
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {

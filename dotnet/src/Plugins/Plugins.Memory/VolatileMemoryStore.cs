@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Plugins.Memory;
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -8,11 +10,11 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Memory.Collections;
+using AI.Embeddings.VectorOperations;
+using Collections;
+using Diagnostics;
+using SemanticKernel.Memory;
 
-namespace Microsoft.SemanticKernel.Memory;
 
 /// <summary>
 /// A simple volatile memory embeddings store.
@@ -28,17 +30,20 @@ public class VolatileMemoryStore : IMemoryStore
         return Task.CompletedTask;
     }
 
+
     /// <inheritdoc/>
     public Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancellationToken = default)
     {
         return Task.FromResult(this._store.ContainsKey(collectionName));
     }
 
+
     /// <inheritdoc/>
     public IAsyncEnumerable<string> GetCollectionsAsync(CancellationToken cancellationToken = default)
     {
         return this._store.Keys.ToAsyncEnumerable();
     }
+
 
     /// <inheritdoc/>
     public Task DeleteCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
@@ -50,6 +55,7 @@ public class VolatileMemoryStore : IMemoryStore
 
         return Task.CompletedTask;
     }
+
 
     /// <inheritdoc/>
     public Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default)
@@ -70,6 +76,7 @@ public class VolatileMemoryStore : IMemoryStore
         return Task.FromResult(record.Key);
     }
 
+
     /// <inheritdoc/>
     public async IAsyncEnumerable<string> UpsertBatchAsync(
         string collectionName,
@@ -81,6 +88,7 @@ public class VolatileMemoryStore : IMemoryStore
             yield return await this.UpsertAsync(collectionName, r, cancellationToken).ConfigureAwait(false);
         }
     }
+
 
     /// <inheritdoc/>
     public Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancellationToken = default)
@@ -95,6 +103,7 @@ public class VolatileMemoryStore : IMemoryStore
 
         return Task.FromResult<MemoryRecord?>(null);
     }
+
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(
@@ -114,6 +123,7 @@ public class VolatileMemoryStore : IMemoryStore
         }
     }
 
+
     /// <inheritdoc/>
     public Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default)
     {
@@ -125,11 +135,13 @@ public class VolatileMemoryStore : IMemoryStore
         return Task.CompletedTask;
     }
 
+
     /// <inheritdoc/>
     public Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
         return Task.WhenAll(keys.Select(k => this.RemoveAsync(collectionName, k, cancellationToken)));
     }
+
 
     /// <summary>
     /// Retrieves the nearest matches to the given embedding in the specified collection.
@@ -155,6 +167,7 @@ public class VolatileMemoryStore : IMemoryStore
         }
 
         ICollection<MemoryRecord>? embeddingCollection = null;
+
         if (this.TryGetCollection(collectionName, out var collectionDict))
         {
             embeddingCollection = collectionDict.Values;
@@ -174,6 +187,7 @@ public class VolatileMemoryStore : IMemoryStore
                 double similarity = embedding
                     .Span
                     .CosineSimilarity(record.Embedding.Span);
+
                 if (similarity >= minRelevanceScore)
                 {
                     var entry = withEmbeddings ? record : MemoryRecord.FromMetadata(record.Metadata, ReadOnlyMemory<float>.Empty, record.Key, record.Timestamp);
@@ -186,6 +200,7 @@ public class VolatileMemoryStore : IMemoryStore
 
         return embeddings.Select(x => (x.Value, x.Score)).ToAsyncEnumerable();
     }
+
 
     /// <inheritdoc/>
     public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(
@@ -204,7 +219,9 @@ public class VolatileMemoryStore : IMemoryStore
             cancellationToken: cancellationToken).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
     }
 
+
     #region protected ================================================================================
+
     /// <summary>
     /// Tries to get the collection with the specified name.
     /// </summary>
@@ -235,10 +252,13 @@ public class VolatileMemoryStore : IMemoryStore
 
     #endregion
 
+
     #region private ================================================================================
 
     private readonly ConcurrentDictionary<string,
         ConcurrentDictionary<string, MemoryRecord>> _store = new();
 
     #endregion
+
+
 }

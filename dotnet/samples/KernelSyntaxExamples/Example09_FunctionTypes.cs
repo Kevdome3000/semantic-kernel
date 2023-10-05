@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using RepoUtils;
 
+
 // ReSharper disable once InconsistentNaming
 public static class Example09_FunctionTypes
 {
@@ -20,7 +21,7 @@ public static class Example09_FunctionTypes
             .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
 
-        var fakeContext = new SKContext(kernel);
+        var variables = new ContextVariables();
 
         // Load native plugin into the kernel function collection, sharing its functions with prompt templates
         var testFunctions = kernel.ImportFunctions(new LocalExamplePlugin(), "test");
@@ -60,17 +61,17 @@ public static class Example09_FunctionTypes
         await kernel.RunAsync(testFunctions["type03"]);
         await kernel.RunAsync(kernel.Functions.GetFunction("test", "type03"));
 
-        await kernel.RunAsync(testFunctions["type04"], fakeContext.Variables);
-        await kernel.RunAsync(fakeContext.Variables, kernel.Functions.GetFunction("test", "type04"));
+        await kernel.RunAsync(testFunctions["type04"], variables);
+        await kernel.RunAsync(variables, kernel.Functions.GetFunction("test", "type04"));
 
-        await kernel.RunAsync(testFunctions["type05"], fakeContext.Variables);
-        await kernel.RunAsync(fakeContext.Variables, kernel.Functions.GetFunction("test", "type05"));
+        await kernel.RunAsync(testFunctions["type05"], variables);
+        await kernel.RunAsync(variables, kernel.Functions.GetFunction("test", "type05"));
 
-        await kernel.RunAsync(testFunctions["type06"], fakeContext.Variables);
-        await kernel.RunAsync(fakeContext.Variables, kernel.Functions.GetFunction("test", "type06"));
+        await kernel.RunAsync(testFunctions["type06"], variables);
+        await kernel.RunAsync(variables, kernel.Functions.GetFunction("test", "type06"));
 
-        await kernel.RunAsync(testFunctions["type07"], fakeContext.Variables);
-        await kernel.RunAsync(fakeContext.Variables, kernel.Functions.GetFunction("test", "type07"));
+        await kernel.RunAsync(testFunctions["type07"], variables);
+        await kernel.RunAsync(variables, kernel.Functions.GetFunction("test", "type07"));
 
         await kernel.RunAsync("", testFunctions["type08"]);
         await kernel.RunAsync("", kernel.Functions.GetFunction("test", "type08"));
@@ -84,13 +85,14 @@ public static class Example09_FunctionTypes
         await kernel.RunAsync("", testFunctions["type11"]);
         await kernel.RunAsync("", kernel.Functions.GetFunction("test", "type11"));
 
-        await kernel.RunAsync(fakeContext.Variables, testFunctions["type12"]);
-        await kernel.RunAsync(fakeContext.Variables, kernel.Functions.GetFunction("test", "type12"));
+        await kernel.RunAsync(variables, testFunctions["type12"]);
+        await kernel.RunAsync(variables, kernel.Functions.GetFunction("test", "type12"));
 
         await kernel.RunAsync(testFunctions["type18"]);
         await kernel.RunAsync(kernel.Functions.GetFunction("test", "type18"));
     }
 }
+
 
 public class LocalExamplePlugin
 {
@@ -100,12 +102,14 @@ public class LocalExamplePlugin
         Console.WriteLine("Running function type 1");
     }
 
+
     [SKFunction]
     public string Type02()
     {
         Console.WriteLine("Running function type 2");
         return "";
     }
+
 
     [SKFunction]
     public async Task<string> Type03Async()
@@ -115,11 +119,13 @@ public class LocalExamplePlugin
         return "";
     }
 
+
     [SKFunction]
     public void Type04(SKContext context)
     {
         Console.WriteLine("Running function type 4");
     }
+
 
     [SKFunction]
     public string Type05(SKContext context)
@@ -128,15 +134,17 @@ public class LocalExamplePlugin
         return "";
     }
 
+
     [SKFunction]
     public async Task<string> Type06Async(SKContext context)
     {
         var summarizer = context.Functions.GetFunction("SummarizePlugin", "Summarize");
-        var summary = await context.Kernel.RunAsync("blah blah blah", summarizer);
+        var summary = await context.Runner.RunAsync(summarizer, new ContextVariables("blah blah blah"));
 
-        Console.WriteLine($"Running function type 6 [{summary}]");
+        Console.WriteLine($"Running function type 6 [{summary.GetValue<string>()}]");
         return "";
     }
+
 
     [SKFunction]
     public async Task<SKContext> Type07Async(SKContext context)
@@ -146,11 +154,13 @@ public class LocalExamplePlugin
         return context;
     }
 
+
     [SKFunction]
     public void Type08(string x)
     {
         Console.WriteLine("Running function type 8");
     }
+
 
     [SKFunction]
     public string Type09(string x)
@@ -158,6 +168,7 @@ public class LocalExamplePlugin
         Console.WriteLine("Running function type 9");
         return "";
     }
+
 
     [SKFunction]
     public async Task<string> Type10Async(string x)
@@ -167,11 +178,13 @@ public class LocalExamplePlugin
         return "";
     }
 
+
     [SKFunction]
     public void Type11(string x, SKContext context)
     {
         Console.WriteLine("Running function type 11");
     }
+
 
     [SKFunction]
     public string Type12(string x, SKContext context)
@@ -179,6 +192,7 @@ public class LocalExamplePlugin
         Console.WriteLine("Running function type 12");
         return "";
     }
+
 
     [SKFunction]
     public async Task<string> Type13Async(string x, SKContext context)
@@ -188,6 +202,7 @@ public class LocalExamplePlugin
         return "";
     }
 
+
     [SKFunction]
     public async Task<SKContext> Type14Async(string x, SKContext context)
     {
@@ -196,12 +211,14 @@ public class LocalExamplePlugin
         return context;
     }
 
+
     [SKFunction]
     public async Task Type15Async(string x)
     {
         await Task.Delay(0);
         Console.WriteLine("Running function type 15");
     }
+
 
     [SKFunction]
     public async Task Type16Async(SKContext context)
@@ -210,12 +227,14 @@ public class LocalExamplePlugin
         Console.WriteLine("Running function type 16");
     }
 
+
     [SKFunction]
     public async Task Type17Async(string x, SKContext context)
     {
         await Task.Delay(0);
         Console.WriteLine("Running function type 17");
     }
+
 
     [SKFunction]
     public async Task Type18Async()

@@ -1,15 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Plugins.Core;
+
 using System.ComponentModel;
 using System.Globalization;
 
-namespace Microsoft.SemanticKernel.Plugins.Core;
 
 /// <summary>
 /// TextPlugin provides a set of functions to manipulate strings.
 /// </summary>
 /// <example>
-/// Usage: kernel.ImportPlugin("text", new TextPlugin());
+/// Usage: kernel.ImportFunctions(new TextPlugin(), "text");
 ///
 /// Examples:
 /// SKContext.Variables["input"] = "  hello world  "
@@ -35,6 +36,7 @@ public sealed class TextPlugin
     [SKFunction, Description("Trim whitespace from the start and end of a string.")]
     public string Trim(string input) => input.Trim();
 
+
     /// <summary>
     /// Trim whitespace from the start of a string.
     /// </summary>
@@ -47,6 +49,7 @@ public sealed class TextPlugin
     [SKFunction, Description("Trim whitespace from the start of a string.")]
     public string TrimStart(string input) => input.TrimStart();
 
+
     /// <summary>
     /// Trim whitespace from the end of a string.
     /// </summary>
@@ -58,6 +61,7 @@ public sealed class TextPlugin
     /// <returns> The trimmed string. </returns>
     [SKFunction, Description("Trim whitespace from the end of a string.")]
     public string TrimEnd(string input) => input.TrimEnd();
+
 
     /// <summary>
     /// Convert a string to uppercase.
@@ -72,6 +76,7 @@ public sealed class TextPlugin
     [SKFunction, Description("Convert a string to uppercase.")]
     public string Uppercase(string input, CultureInfo? cultureInfo = null) => input.ToUpper(cultureInfo);
 
+
     /// <summary>
     /// Convert a string to lowercase.
     /// </summary>
@@ -85,6 +90,7 @@ public sealed class TextPlugin
     [SKFunction, Description("Convert a string to lowercase.")]
     public string Lowercase(string input, CultureInfo? cultureInfo = null) => input.ToLower(cultureInfo);
 
+
     /// <summary>
     /// Get the length of a string. Returns 0 if null or empty
     /// </summary>
@@ -96,6 +102,7 @@ public sealed class TextPlugin
     /// <returns>The length size of string (0) if null or empty.</returns>
     [SKFunction, Description("Get the length of a string.")]
     public int Length(string input) => input?.Length ?? 0;
+
 
     /// <summary>
     /// Concatenate two strings into one
@@ -110,9 +117,12 @@ public sealed class TextPlugin
     /// <returns>Concatenation result from both inputs.</returns>
     [SKFunction, Description("Concat two strings into one.")]
     public string Concat(
-        [Description("First input to concatenate with")] string input,
-        [Description("Second input to concatenate with")] string input2) =>
+        [Description("First input to concatenate with")]
+        string input,
+        [Description("Second input to concatenate with")]
+        string input2) =>
         string.Concat(input, input2);
+
 
     /// <summary>
     /// Echo the input string. Useful for capturing plan input for use in multiple functions.
@@ -121,7 +131,7 @@ public sealed class TextPlugin
     /// <returns>The input string.</returns>
     [SKFunction, Description("Echo the input string. Useful for capturing plan input for use in multiple functions.")]
     public string Echo(
-      [Description("Input string to echo.")] string text)
+        [Description("Input string to echo.")] string text)
     {
         return text;
     }

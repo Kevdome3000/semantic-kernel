@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.TemplateEngine.Prompt;
 using RepoUtils;
 
+
 // ReSharper disable once InconsistentNaming
 public static class Example56_TemplateNativeFunctionsWithMultipleArguments
 {
@@ -65,7 +66,7 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
         // Show the result
         Console.WriteLine("--- Semantic Function result");
         var result = await kernel.RunAsync(context.Variables, haiku);
-        Console.WriteLine(result);
+        Console.WriteLine(result.GetValue<string>());
 
         /* OUTPUT:
 

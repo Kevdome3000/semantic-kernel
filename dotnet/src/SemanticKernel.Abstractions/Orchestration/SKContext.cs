@@ -1,13 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Orchestration;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Diagnostics;
+using Diagnostics;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
 
-namespace Microsoft.SemanticKernel.Orchestration;
 
 /// <summary>
 /// Semantic Kernel context.
@@ -53,69 +55,35 @@ public sealed class SKContext
     public ILoggerFactory LoggerFactory { get; }
 
     /// <summary>
-    /// Kernel context reference
+    /// Executes functions using the current resources loaded in the context
     /// </summary>
-    public IKernel Kernel => this.GetKernelContext();
+    public IFunctionRunner Runner { get; }
 
-    /// <summary>
-    /// Spawns the kernel for the context.
-    /// </summary>
-    /// <remarks>
-    /// The kernel context is a lightweight instance of the main kernel with its services.
-    /// </remarks>
-    /// <returns>Kernel reference</returns>
-    private IKernel GetKernelContext()
-        => this._originalKernel; // TODO: Clone a lightweight kernel instead of returning the same instance
 
     /// <summary>
     /// Constructor for the context.
     /// </summary>
-    /// <param name="kernel">Kernel reference</param>
+    /// <param name="functionRunner">Function runner reference</param>
     /// <param name="variables">Context variables to include in context.</param>
     /// <param name="functions">Functions to include in context.</param>
-    public SKContext(
-        IKernel kernel,
+    /// <param name="loggerFactory">Logger factory to be used in context</param>
+    /// <param name="culture">Culture related to the context</param>
+    internal SKContext(
+        IFunctionRunner functionRunner,
         ContextVariables? variables = null,
-        IReadOnlyFunctionCollection? functions = null)
+        IReadOnlyFunctionCollection? functions = null,
+        ILoggerFactory? loggerFactory = null,
+        CultureInfo? culture = null)
     {
-        Verify.NotNull(kernel, nameof(kernel));
+        Verify.NotNull(functionRunner, nameof(functionRunner));
 
-        this._originalKernel = kernel;
+        this.Runner = functionRunner;
         this.Variables = variables ?? new();
         this.Functions = functions ?? NullReadOnlyFunctionCollection.Instance;
-        this.LoggerFactory = kernel.LoggerFactory;
-        this._culture = CultureInfo.CurrentCulture;
+        this.LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
+        this._culture = culture ?? CultureInfo.CurrentCulture;
     }
 
-    /// <summary>
-    /// Constructor for the context.
-    /// </summary>
-    /// <param name="kernel">Kernel instance parameter</param>
-    /// <param name="variables">Context variables to include in context.</param>
-    public SKContext(
-        IKernel kernel,
-        ContextVariables? variables = null) : this(kernel, variables, kernel.Functions)
-    {
-    }
-
-    /// <summary>
-    /// Constructor for the context.
-    /// </summary>
-    /// <param name="kernel">Kernel instance parameter</param>
-    /// <param name="functions">Functions to include in context.</param>
-    public SKContext(
-        IKernel kernel,
-        IReadOnlyFunctionCollection? functions = null) : this(kernel, null, functions)
-    {
-    }
-
-    /// <summary>
-    /// Constructor for the context.
-    /// </summary>
-    /// <param name="kernel">Kernel instance parameter</param>
-    public SKContext(IKernel kernel) : this(kernel, null, kernel.Functions)
-    {
-    }
 
     /// <summary>
     /// Print the processed input, aka the current data after any processing occurred.
@@ -126,30 +94,38 @@ public sealed class SKContext
         return this.Result;
     }
 
+
     /// <summary>
     /// Create a clone of the current context, using the same kernel references (memory, functions, logger)
     /// and a new set variables, so that variables can be modified without affecting the original context.
     /// </summary>
-    /// <returns>A new context copied from the current one</returns>
+    /// <returns>A new context cloned from the current one</returns>
     public SKContext Clone()
+        => this.Clone(null, null);
+
+
+    /// <summary>
+    /// Create a clone of the current context, using the same kernel references (memory, functions, logger)
+    /// and optionally allows overriding the variables and functions.
+    /// </summary>
+    /// <param name="variables">Override the variables with the provided ones</param>
+    /// <param name="functions">Override the functions with the provided ones</param>
+    /// <returns>A new context cloned from the current one</returns>
+    public SKContext Clone(ContextVariables? variables, IReadOnlyFunctionCollection? functions)
     {
         return new SKContext(
-            kernel: this._originalKernel,
-            variables: this.Variables.Clone())
-        {
-            Culture = this.Culture,
-        };
+            this.Runner,
+            variables ?? this.Variables.Clone(),
+            functions ?? this.Functions,
+            this.LoggerFactory,
+            this.Culture);
     }
+
 
     /// <summary>
     /// The culture currently associated with this context.
     /// </summary>
     private CultureInfo _culture;
-
-    /// <summary>
-    /// Kernel instance reference for this context.
-    /// </summary>
-    private readonly IKernel _originalKernel;
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay

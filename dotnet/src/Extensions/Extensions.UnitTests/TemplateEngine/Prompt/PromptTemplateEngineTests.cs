@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Extensions.UnitTests.TemplateEngine.Prompt;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -12,11 +14,10 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine.Prompt;
 using Microsoft.SemanticKernel.TemplateEngine.Prompt.Blocks;
 using Moq;
-using SemanticKernel.Extensions.UnitTests.XunitHelpers;
 using Xunit;
 using Xunit.Abstractions;
+using XunitHelpers;
 
-namespace SemanticKernel.Extensions.UnitTests.TemplateEngine.Prompt;
 
 public sealed class PromptTemplateEngineTests
 {
@@ -26,6 +27,8 @@ public sealed class PromptTemplateEngineTests
     private readonly Mock<IReadOnlyFunctionCollection> _functions;
     private readonly ITestOutputHelper _logger;
     private readonly Mock<IKernel> _kernel;
+    private readonly Mock<IFunctionRunner> _functionRunner;
+
 
     public PromptTemplateEngineTests(ITestOutputHelper testOutputHelper)
     {
@@ -34,7 +37,9 @@ public sealed class PromptTemplateEngineTests
         this._variables = new ContextVariables(Guid.NewGuid().ToString("X"));
         this._functions = new Mock<IReadOnlyFunctionCollection>();
         this._kernel = new Mock<IKernel>();
+        this._functionRunner = new Mock<IFunctionRunner>();
     }
+
 
     [Fact]
     public void ItRendersVariables()
@@ -137,6 +142,7 @@ public sealed class PromptTemplateEngineTests
         Assert.Equal(BlockTypes.Code, updatedBlocks[9].Type);
     }
 
+
     [Fact]
     public async Task ItRendersCodeUsingInputAsync()
     {
@@ -165,6 +171,7 @@ public sealed class PromptTemplateEngineTests
         // Assert
         Assert.Equal("foo-F(INPUT-BAR)-baz", result);
     }
+
 
     [Fact]
     public async Task ItRendersCodeUsingVariablesAsync()
@@ -195,6 +202,7 @@ public sealed class PromptTemplateEngineTests
         Assert.Equal("foo-F(BAR)-baz", result);
     }
 
+
     [Fact]
     public async Task ItRendersCodeUsingNamedVariablesAsync()
     {
@@ -202,7 +210,8 @@ public sealed class PromptTemplateEngineTests
         string MyFunctionAsync(
             [Description("Name"), SKName("input")] string name,
             [Description("Age"), SKName("age")] int age,
-            [Description("Slogan"), SKName("slogan")] string slogan,
+            [Description("Slogan"), SKName("slogan")]
+            string slogan,
             [Description("Date"), SKName("date")] DateTime date)
         {
             var dateStr = date.ToString(PromptTemplateEngineTests.DateFormat, CultureInfo.InvariantCulture);
@@ -230,6 +239,7 @@ public sealed class PromptTemplateEngineTests
         Assert.Equal("foo-[8/25/2023] Mario (42): \"Let's-a go!\"-baz", result);
     }
 
+
     [Fact]
     public async Task ItHandlesSyntaxErrorsAsync()
     {
@@ -237,7 +247,8 @@ public sealed class PromptTemplateEngineTests
         string MyFunctionAsync(
             [Description("Name"), SKName("input")] string name,
             [Description("Age"), SKName("age")] int age,
-            [Description("Slogan"), SKName("slogan")] string slogan,
+            [Description("Slogan"), SKName("slogan")]
+            string slogan,
             [Description("Date"), SKName("date")] DateTime date)
         {
             var dateStr = date.ToString(PromptTemplateEngineTests.DateFormat, CultureInfo.InvariantCulture);
@@ -263,14 +274,17 @@ public sealed class PromptTemplateEngineTests
         Assert.Equal($"Named argument values need to be prefixed with a quote or {Symbols.VarPrefix}.", result.Message);
     }
 
+
     [Fact]
     public async Task ItRendersCodeUsingImplicitInputAndNamedVariablesAsync()
     {
         // Arrange
         string MyFunctionAsync(
-            [Description("Input"), SKName("input")] string name,
+            [Description("Input"), SKName("input")]
+            string name,
             [Description("Age"), SKName("age")] int age,
-            [Description("Slogan"), SKName("slogan")] string slogan,
+            [Description("Slogan"), SKName("slogan")]
+            string slogan,
             [Description("Date"), SKName("date")] DateTime date)
         {
             this._logger.WriteLine("MyFunction call received, name: {0}, age: {1}, slogan: {2}, date: {3}", name, age, slogan, date);
@@ -297,6 +311,7 @@ public sealed class PromptTemplateEngineTests
         // Assert
         Assert.Equal("foo-[8/25/2023] Mario (42): \"Let's-a go!\"-baz", result);
     }
+
 
     [Fact]
     public async Task ItRendersAsyncCodeUsingVariablesAsync()
@@ -329,6 +344,7 @@ public sealed class PromptTemplateEngineTests
         Assert.Equal("foo-BAR-baz", result);
     }
 
+
     [Fact]
     public async Task ItRendersAsyncCodeUsingImmutableVariablesAsync()
     {
@@ -343,6 +359,7 @@ public sealed class PromptTemplateEngineTests
             context.Variables.Update("foo");
             return "F(OUTPUT-FOO)";
         }
+
         string MyFunction2Async(SKContext context)
         {
             // Input value should be "BAR" because the variable $input is immutable in MyFunction1
@@ -350,6 +367,7 @@ public sealed class PromptTemplateEngineTests
             context.Variables.Set("myVar", "bar");
             return context.Variables.Input;
         }
+
         string MyFunction3Async(SKContext context)
         {
             // Input value should be "BAZ" because the variable $myVar is immutable in MyFunction2
@@ -379,16 +397,18 @@ public sealed class PromptTemplateEngineTests
         Assert.Equal("F(OUTPUT-FOO) BAR BAZ", result);
     }
 
+
     private static MethodInfo Method(Delegate method)
     {
         return method.Method;
     }
 
+
     private SKContext MockContext()
     {
         return new SKContext(
-            this._kernel.Object,
+            this._functionRunner.Object,
             this._variables,
-            functions: this._functions.Object);
+            this._functions.Object);
     }
 }

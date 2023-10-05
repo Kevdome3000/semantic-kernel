@@ -3,6 +3,7 @@
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.Planners.Sequential.UnitTests;
 
+using System.Globalization;
 using AI;
 using Diagnostics;
 using Extensions.Logging;
@@ -61,21 +62,20 @@ public sealed class SequentialPlannerTests
         }
 
         functions.Setup(x => x.GetFunctionViews()).Returns(functionsView);
+        var functionRunner = new Mock<IFunctionRunner>();
+        kernel.Setup(x => x.LoggerFactory).Returns(new Mock<ILoggerFactory>().Object);
 
         var expectedFunctions = input.Select(x => x.name).ToList();
         var expectedPlugins = input.Select(x => x.pluginName).ToList();
 
         var context = new SKContext(
-            kernel.Object,
-            new ContextVariables(),
-            functions.Object
-        );
+            functionRunner.Object,
+            new ContextVariables());
 
         var returnContext = new SKContext(
-            kernel.Object,
-            new ContextVariables(),
-            functions.Object
-        );
+            functionRunner.Object,
+            new ContextVariables());
+
         var planString =
             @"
 <plan>
@@ -98,7 +98,8 @@ public sealed class SequentialPlannerTests
 
         // Mock Plugins
         kernel.Setup(x => x.Functions).Returns(functions.Object);
-        kernel.Setup(x => x.CreateNewContext()).Returns(context);
+        kernel.Setup(x => x.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<ILoggerFactory>(), It.IsAny<CultureInfo>()))
+            .Returns(context);
 
         kernel.Setup(x => x.RegisterCustomFunction(It.IsAny<ISKFunction>()))
             .Returns(mockFunctionFlowFunction.Object);
@@ -150,23 +151,16 @@ public sealed class SequentialPlannerTests
     public async Task InvalidXMLThrowsAsync()
     {
         // Arrange
+        var functionRunner = new Mock<IFunctionRunner>();
         var kernel = new Mock<IKernel>();
         var functions = new Mock<IFunctionCollection>();
 
         functions.Setup(x => x.GetFunctionViews()).Returns(new List<FunctionView>());
 
         var planString = "<plan>notvalid<</plan>";
-        var returnContext = new SKContext(
-            kernel.Object,
-            new ContextVariables(planString),
-            functions.Object
-        );
+        var returnContext = new SKContext(functionRunner.Object, new ContextVariables(planString));
 
-        var context = new SKContext(
-            kernel.Object,
-            new ContextVariables(),
-            functions.Object
-        );
+        var context = new SKContext(functionRunner.Object, new ContextVariables());
 
         var mockFunctionFlowFunction = new Mock<ISKFunction>();
         mockFunctionFlowFunction.Setup(x => x.InvokeAsync(
@@ -179,13 +173,15 @@ public sealed class SequentialPlannerTests
 
         // Mock Plugins
         kernel.Setup(x => x.Functions).Returns(functions.Object);
-        kernel.Setup(x => x.CreateNewContext()).Returns(context);
         kernel.Setup(x => x.RunAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()))
             .Returns<ISKFunction, ContextVariables, CancellationToken>(async (function, vars, cancellationToken) =>
             {
                 var functionResult = await function.InvokeAsync(kernel.Object, vars, cancellationToken: cancellationToken);
                 return KernelResult.FromFunctionResults(functionResult.GetValue<string>(), new List<FunctionResult> { functionResult });
             });
+
+        kernel.Setup(x => x.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<ILoggerFactory>(), It.IsAny<CultureInfo>()))
+            .Returns(context);
 
         kernel.Setup(x => x.RegisterCustomFunction(It.IsAny<ISKFunction>()))
             .Returns(mockFunctionFlowFunction.Object);

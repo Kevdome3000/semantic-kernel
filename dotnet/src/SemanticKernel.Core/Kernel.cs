@@ -5,6 +5,7 @@ namespace Microsoft.SemanticKernel;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -126,7 +127,7 @@ public sealed class Kernel : IKernel, IDisposable
     }
 
 
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use Kernel.ImportPlugin instead. This will be removed in a future release.")]
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use Kernel.ImportFunctions instead. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
 #pragma warning disable CS1591
     public IDictionary<string, ISKFunction> ImportSkill(object functionsInstance, string? pluginName = null)
@@ -191,7 +192,7 @@ public sealed class Kernel : IKernel, IDisposable
     /// <inheritdoc/>
     public async Task<KernelResult> RunAsync(ContextVariables variables, CancellationToken cancellationToken, params ISKFunction[] pipeline)
     {
-        var context = new SKContext(this, variables);
+        var context = this.CreateNewContext(variables);
 
         FunctionResult? functionResult = null;
 
@@ -261,11 +262,18 @@ public sealed class Kernel : IKernel, IDisposable
 
 
     /// <inheritdoc/>
-    public SKContext CreateNewContext()
+    public SKContext CreateNewContext(
+        ContextVariables? variables = null,
+        IReadOnlyFunctionCollection? functions = null,
+        ILoggerFactory? loggerFactory = null,
+        CultureInfo? culture = null)
     {
         return new SKContext(
-            this,
-            functions: this._functionCollection);
+            new FunctionRunner(this),
+            variables,
+            functions ?? this.Functions,
+            loggerFactory ?? this.LoggerFactory,
+            culture);
     }
 
 

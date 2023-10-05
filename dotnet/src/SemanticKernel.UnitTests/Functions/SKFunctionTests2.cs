@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.UnitTests.Functions;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -13,7 +15,6 @@ using Microsoft.SemanticKernel.Orchestration;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Functions;
 
 public sealed class SKFunctionTests2
 {
@@ -24,6 +25,7 @@ public sealed class SKFunctionTests2
     private static string s_expected = string.Empty;
     private static string s_actual = string.Empty;
 
+
     public SKFunctionTests2()
     {
         this._logger = new Mock<ILoggerFactory>();
@@ -32,6 +34,7 @@ public sealed class SKFunctionTests2
 
         s_expected = Guid.NewGuid().ToString("D");
     }
+
 
     [Fact]
     public async Task ItSupportsStaticVoidVoidAsync()
@@ -53,6 +56,7 @@ public sealed class SKFunctionTests2
         // Assert
         Assert.Equal(s_expected, s_actual);
     }
+
 
     [Fact]
     public async Task ItSupportsStaticVoidStringAsync()
@@ -78,6 +82,7 @@ public sealed class SKFunctionTests2
         Assert.Equal(s_expected, result.GetValue<string>());
     }
 
+
     [Fact]
     public async Task ItSupportsStaticVoidTaskStringAsync()
     {
@@ -101,6 +106,7 @@ public sealed class SKFunctionTests2
         Assert.Equal(s_expected, context.Result);
         Assert.Equal(s_expected, result.GetValue<string>());
     }
+
 
     [Fact]
     public async Task ItSupportsStaticVoidValueTaskStringAsync()
@@ -127,6 +133,7 @@ public sealed class SKFunctionTests2
         Assert.Equal(s_expected, result.GetValue<string>());
     }
 
+
     [Fact]
     public async Task ItSupportsStaticContextVoidAsync()
     {
@@ -150,6 +157,7 @@ public sealed class SKFunctionTests2
         Assert.Equal(s_expected, s_actual);
         Assert.Equal(s_expected, context.Variables["canary"]);
     }
+
 
     [Fact]
     public async Task ItSupportsStaticContextStringAsync()
@@ -175,6 +183,7 @@ public sealed class SKFunctionTests2
         Assert.Equal("abc", context.Result);
         Assert.Equal("abc", result.GetValue<string>());
     }
+
 
     [Fact]
     public async Task ItSupportsInstanceContextStringNullableAsync()
@@ -206,6 +215,7 @@ public sealed class SKFunctionTests2
         Assert.Equal("abc", result.GetValue<string>());
     }
 
+
     [Fact]
     public async Task ItSupportsInstanceContextTaskStringAsync()
     {
@@ -236,6 +246,7 @@ public sealed class SKFunctionTests2
         Assert.Equal(s_actual, result.GetValue<string>());
         Assert.Equal(s_expected, context.Variables["canary"]);
     }
+
 
     [Fact]
     public async Task ItSupportsInstanceContextTaskContextAsync()
@@ -270,6 +281,7 @@ public sealed class SKFunctionTests2
         Assert.Equal("foo", result.GetValue<string>());
     }
 
+
     [Fact]
     public async Task ItSupportsInstanceStringVoidAsync()
     {
@@ -295,6 +307,7 @@ public sealed class SKFunctionTests2
         Assert.Equal(1, invocationCount);
         Assert.Equal(s_expected + ".blah", s_actual);
     }
+
 
     [Fact]
     public async Task ItSupportsInstanceStringStringAsync()
@@ -325,6 +338,7 @@ public sealed class SKFunctionTests2
         Assert.Equal("foo-bar", result.GetValue<string>());
     }
 
+
     [Fact]
     public async Task ItSupportsInstanceStringTaskStringAsync()
     {
@@ -353,6 +367,7 @@ public sealed class SKFunctionTests2
         Assert.Equal("hello there", context.Result);
         Assert.Equal("hello there", result.GetValue<string>());
     }
+
 
     [Fact]
     public async Task ItSupportsInstanceStringContextVoidAsync()
@@ -385,6 +400,7 @@ public sealed class SKFunctionTests2
         Assert.Null(result.GetValue<string>());
     }
 
+
     [Fact]
     public async Task ItSupportsInstanceContextStringVoidAsync()
     {
@@ -416,6 +432,7 @@ public sealed class SKFunctionTests2
         Assert.Null(result.GetValue<string>());
     }
 
+
     [Fact]
     public async Task ItSupportsStaticStringContextStringAsync()
     {
@@ -444,6 +461,7 @@ public sealed class SKFunctionTests2
         Assert.Equal("new data", result.GetValue<string>());
     }
 
+
     [Fact]
     public async Task ItSupportsStaticStringContextTaskStringAsync()
     {
@@ -458,7 +476,6 @@ public sealed class SKFunctionTests2
         }
 
         var context = this.MockContext("");
-
         // Act
         var function = SKFunction.FromNativeMethod(Method(Test), loggerFactory: this._logger.Object);
         Assert.NotNull(function);
@@ -472,6 +489,7 @@ public sealed class SKFunctionTests2
         Assert.Equal("new data", result.GetValue<string>());
     }
 
+
     [Fact]
     public async Task ItSupportsStaticStringContextTaskContextAsync()
     {
@@ -482,12 +500,10 @@ public sealed class SKFunctionTests2
             context.Variables["canary"] = s_expected;
             context.Variables.Update("x y z");
 
-            // This value should overwrite "x y z". Contexts are merged.
-            var newContext = new SKContext(
-                context.Kernel,
-                new ContextVariables(input),
-                functions: new Mock<IReadOnlyFunctionCollection>().Object);
+            var newContext = context.Clone();
+            newContext.Variables.Clear();
 
+            // This value should overwrite "x y z". Contexts are merged.
             newContext.Variables.Update("new data");
             newContext.Variables["canary2"] = "222";
 
@@ -502,7 +518,6 @@ public sealed class SKFunctionTests2
         Assert.NotNull(function);
 
         FunctionResult result = await function.InvokeAsync(oldContext);
-
         var newContext = result.Context;
 
         // Assert
@@ -526,6 +541,7 @@ public sealed class SKFunctionTests2
         Assert.Equal("new data", result.GetValue<string>());
     }
 
+
     [Fact]
     public async Task ItSupportsStaticContextValueTaskContextAsync()
     {
@@ -533,10 +549,8 @@ public sealed class SKFunctionTests2
         static ValueTask<SKContext> Test(string input, SKContext context)
         {
             // This value should overwrite "x y z". Contexts are merged.
-            var newCx = new SKContext(
-                context.Kernel,
-                new ContextVariables(input + "abc"),
-                functions: new Mock<IReadOnlyFunctionCollection>().Object);
+            var newCx = context.Clone();
+            newCx.Variables.Update(input + "abc");
 
             return new ValueTask<SKContext>(newCx);
         }
@@ -552,6 +566,7 @@ public sealed class SKFunctionTests2
         // Assert
         Assert.Equal("testabc", result.Context.Variables.Input);
     }
+
 
     [Fact]
     public async Task ItSupportsStaticStringTaskAsync()
@@ -575,6 +590,7 @@ public sealed class SKFunctionTests2
         Assert.Equal(s_expected, s_actual);
     }
 
+
     [Fact]
     public async Task ItSupportsStaticStringValueTaskAsync()
     {
@@ -596,6 +612,7 @@ public sealed class SKFunctionTests2
         // Assert
         Assert.Equal(s_expected, s_actual);
     }
+
 
     [Fact]
     public async Task ItSupportsStaticContextTaskAsync()
@@ -624,6 +641,7 @@ public sealed class SKFunctionTests2
         Assert.Null(result.GetValue<string>());
     }
 
+
     [Fact]
     public async Task ItSupportsStaticStringContextTaskAsync()
     {
@@ -651,6 +669,7 @@ public sealed class SKFunctionTests2
         Assert.Null(result.GetValue<string>());
     }
 
+
     [Fact]
     public async Task ItSupportsStaticVoidTaskAsync()
     {
@@ -673,6 +692,7 @@ public sealed class SKFunctionTests2
         Assert.Equal(s_expected, s_actual);
     }
 
+
     [Fact]
     public async Task ItSupportsUsingNamedInputValueFromContextAsync()
     {
@@ -690,6 +710,7 @@ public sealed class SKFunctionTests2
         Assert.Equal("Result: input value", result.Context.Variables.Input);
     }
 
+
     [Fact]
     public async Task ItSupportsUsingNonNamedInputValueFromContextAsync()
     {
@@ -706,6 +727,7 @@ public sealed class SKFunctionTests2
         // Assert
         Assert.Equal("Result: input value", result.Context.Variables.Input);
     }
+
 
     [Fact]
     public async Task ItSupportsUsingNonNamedInputValueFromContextEvenWhenThereAreMultipleParametersAsync()
@@ -725,6 +747,7 @@ public sealed class SKFunctionTests2
         Assert.Equal("Result: 50", result.Context.Variables.Input);
     }
 
+
     [Fact]
     public async Task ItSupportsPreferringNamedValueOverInputFromContextAsync()
     {
@@ -742,6 +765,7 @@ public sealed class SKFunctionTests2
         // Assert
         Assert.Equal("Result: other value", result.Context.Variables.Input);
     }
+
 
     [Fact]
     public async Task ItSupportsOverridingNameWithAttributeAsync()
@@ -761,6 +785,7 @@ public sealed class SKFunctionTests2
         Assert.Equal("Result: input value", result.Context.Variables.Input);
     }
 
+
     [Fact]
     public async Task ItSupportNullDefaultValuesOverInputAsync()
     {
@@ -777,6 +802,7 @@ public sealed class SKFunctionTests2
         // Assert
         Assert.Equal("Result: True", result.Context.Variables.Input);
     }
+
 
     [Fact]
     public async Task ItSupportsConvertingFromManyTypesAsync()
@@ -802,6 +828,7 @@ public sealed class SKFunctionTests2
         Assert.Equal("1 -2 1234 7e08cc00-1d71-4558-81ed-69929499dea1 Thu, 25 May 2023 20:17:30 GMT Monday", result.Context.Variables.Input);
     }
 
+
     [Fact]
     public async Task ItSupportsConvertingFromTypeConverterAttributedTypesAsync()
     {
@@ -820,21 +847,26 @@ public sealed class SKFunctionTests2
         Assert.Equal("84", result.Context.Variables.Input);
     }
 
+
     [TypeConverter(typeof(MyCustomTypeConverter))]
     private sealed class MyCustomType
     {
         public int Value { get; set; }
     }
 
+
 #pragma warning disable CA1812 // Instantiated by reflection
     private sealed class MyCustomTypeConverter : TypeConverter
     {
         public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType) =>
             sourceType == typeof(string);
+
+
         public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value) =>
             new MyCustomType { Value = int.Parse((string)value, culture) };
     }
 #pragma warning restore CA1812
+
 
     [Fact]
     public async Task ItSupportsConvertingFromToManyTypesAsync()
@@ -873,6 +905,7 @@ public sealed class SKFunctionTests2
         await AssertResult((Uri input) => new Uri(input, "kernel"), context, "http://example.com/kernel");
     }
 
+
     [Fact]
     public async Task ItUsesContextCultureForParsingFormattingAsync()
     {
@@ -903,6 +936,7 @@ public sealed class SKFunctionTests2
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => func.InvokeAsync(context));
     }
 
+
     [Fact]
     public async Task ItThrowsWhenItFailsToConvertAnArgumentAsync()
     {
@@ -921,6 +955,7 @@ public sealed class SKFunctionTests2
         AssertExtensions.AssertIsArgumentOutOfRange(ex, "g", context.Variables["g"]);
     }
 
+
     [Fact]
     public void ItExposesMetadataFromDelegate()
     {
@@ -938,6 +973,7 @@ public sealed class SKFunctionTests2
         Assert.Equal("old", function.Describe().Parameters[2].Name);
     }
 
+
     [Fact]
     public void ItExposesMetadataFromMethodInfo()
     {
@@ -954,6 +990,7 @@ public sealed class SKFunctionTests2
         Assert.Equal("name", function.Describe().Parameters[1].Name);
         Assert.Equal("old", function.Describe().Parameters[2].Name);
     }
+
 
     [Fact]
     public async Task ItCanReturnBasicTypesAsync()
@@ -982,6 +1019,7 @@ public sealed class SKFunctionTests2
         Assert.True(result4.GetValue<bool>());
     }
 
+
     [Fact]
     public async Task ItCanReturnComplexTypeAsync()
     {
@@ -1002,6 +1040,7 @@ public sealed class SKFunctionTests2
         Assert.NotNull(actualInstance);
         Assert.Equal(42, actualInstance.Value);
     }
+
 
     [Fact]
     public async Task ItCanReturnAsyncEnumerableTypeAsync()
@@ -1042,16 +1081,20 @@ public sealed class SKFunctionTests2
         Assert.True(assertResult.SequenceEqual(new List<int> { 1, 2, 3 }));
     }
 
+
     private static MethodInfo Method(Delegate method)
     {
         return method.Method;
     }
 
+
     private SKContext MockContext(string input)
     {
+        var functionRunner = new Mock<IFunctionRunner>();
+
         return new SKContext(
-            this._kernel.Object,
-            new ContextVariables(input),
-            functions: this._functions.Object);
+            functionRunner.Object,
+            new ContextVariables(input)
+        );
     }
 }

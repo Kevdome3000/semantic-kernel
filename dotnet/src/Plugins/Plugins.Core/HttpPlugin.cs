@@ -1,18 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Plugins.Core;
+
 using System.ComponentModel;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Diagnostics;
+using Diagnostics;
 
-namespace Microsoft.SemanticKernel.Plugins.Core;
 
 /// <summary>
 /// A plugin that provides HTTP functionality.
 /// </summary>
 /// <example>
-/// Usage: kernel.ImportPlugin("http", new HttpPlugin());
+/// Usage: kernel.ImportFunctions(new HttpPlugin(), "http");
 /// Examples:
 /// SKContext.Variables["url"] = "https://www.bing.com"
 /// {{http.getAsync $url}}
@@ -26,12 +27,14 @@ public sealed class HttpPlugin
 {
     private readonly HttpClient _client;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="HttpPlugin"/> class.
     /// </summary>
     public HttpPlugin() : this(new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false))
     {
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HttpPlugin"/> class.
@@ -43,6 +46,7 @@ public sealed class HttpPlugin
     public HttpPlugin(HttpClient client) =>
         this._client = client;
 
+
     /// <summary>
     /// Sends an HTTP GET request to the specified URI and returns the response body as a string.
     /// </summary>
@@ -51,9 +55,11 @@ public sealed class HttpPlugin
     /// <returns>The response body as a string.</returns>
     [SKFunction, Description("Makes a GET request to a uri")]
     public Task<string> GetAsync(
-        [Description("The URI of the request")] string uri,
+        [Description("The URI of the request")]
+        string uri,
         CancellationToken cancellationToken = default) =>
         this.SendRequestAsync(uri, HttpMethod.Get, requestContent: null, cancellationToken);
+
 
     /// <summary>
     /// Sends an HTTP POST request to the specified URI and returns the response body as a string.
@@ -64,10 +70,13 @@ public sealed class HttpPlugin
     /// <returns>The response body as a string.</returns>
     [SKFunction, Description("Makes a POST request to a uri")]
     public Task<string> PostAsync(
-        [Description("The URI of the request")] string uri,
-        [Description("The body of the request")] string body,
+        [Description("The URI of the request")]
+        string uri,
+        [Description("The body of the request")]
+        string body,
         CancellationToken cancellationToken = default) =>
         this.SendRequestAsync(uri, HttpMethod.Post, new StringContent(body), cancellationToken);
+
 
     /// <summary>
     /// Sends an HTTP PUT request to the specified URI and returns the response body as a string.
@@ -78,10 +87,13 @@ public sealed class HttpPlugin
     /// <returns>The response body as a string.</returns>
     [SKFunction, Description("Makes a PUT request to a uri")]
     public Task<string> PutAsync(
-        [Description("The URI of the request")] string uri,
-        [Description("The body of the request")] string body,
+        [Description("The URI of the request")]
+        string uri,
+        [Description("The body of the request")]
+        string body,
         CancellationToken cancellationToken = default) =>
         this.SendRequestAsync(uri, HttpMethod.Put, new StringContent(body), cancellationToken);
+
 
     /// <summary>
     /// Sends an HTTP DELETE request to the specified URI and returns the response body as a string.
@@ -91,9 +103,11 @@ public sealed class HttpPlugin
     /// <returns>The response body as a string.</returns>
     [SKFunction, Description("Makes a DELETE request to a uri")]
     public Task<string> DeleteAsync(
-        [Description("The URI of the request")] string uri,
+        [Description("The URI of the request")]
+        string uri,
         CancellationToken cancellationToken = default) =>
         this.SendRequestAsync(uri, HttpMethod.Delete, requestContent: null, cancellationToken);
+
 
     /// <summary>Sends an HTTP request and returns the response content as a string.</summary>
     /// <param name="uri">The URI of the request.</param>

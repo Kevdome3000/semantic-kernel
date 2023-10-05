@@ -19,10 +19,10 @@ using AI.TextCompletion;
 using Diagnostics;
 using Extensions.Logging;
 using Orchestration;
+using Orchestration.Microsoft.SemanticKernel.Planners;
 using Planning;
 using SemanticFunctions;
 using Services;
-using Stepwise;
 using TemplateEngine.Prompt;
 
 #pragma warning restore IDE0130
@@ -53,9 +53,9 @@ public class StepwisePlanner : IStepwisePlanner
         this.Config.ExcludedPlugins.Add(RestrictedPluginName);
 
         // Set up prompt templates
-        this._promptTemplate = this.Config.GetPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Plugin.StepwiseStep.skprompt.txt");
-        this._manualTemplate = EmbeddedResource.Read("Plugin.RenderFunctionManual.skprompt.txt");
-        this._questionTemplate = EmbeddedResource.Read("Plugin.RenderQuestion.skprompt.txt");
+        this._promptTemplate = this.Config.GetPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Stepwise.Plugin.StepwiseStep.skprompt.txt");
+        this._manualTemplate = EmbeddedResource.Read("Stepwise.Plugin.RenderFunctionManual.skprompt.txt");
+        this._questionTemplate = EmbeddedResource.Read("Stepwise.Plugin.RenderQuestion.skprompt.txt");
 
         // Load or use default PromptConfig
         this._promptConfig = this.Config.PromptUserConfig ?? LoadPromptConfigFromResource();
@@ -585,7 +585,7 @@ public class StepwisePlanner : IStepwisePlanner
 
     private static PromptTemplateConfig LoadPromptConfigFromResource()
     {
-        string promptConfigString = EmbeddedResource.Read("Plugin.StepwiseStep.config.json");
+        string promptConfigString = EmbeddedResource.Read("Stepwise.Plugin.StepwiseStep.config.json");
         return !string.IsNullOrEmpty(promptConfigString) ? PromptTemplateConfig.FromJson(promptConfigString) : new PromptTemplateConfig();
     }
 

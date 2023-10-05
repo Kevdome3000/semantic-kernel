@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Plugins.UnitTests.Memory.Collections;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.SemanticKernel.Memory.Collections;
+using Microsoft.SemanticKernel.Plugins.Memory.Collections;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Memory.Collections;
 
 /// <summary>
 /// Contains tests for the <see cref="MinHeap{T}"/> class.
@@ -14,6 +15,7 @@ namespace SemanticKernel.UnitTests.Memory.Collections;
 public class MinHeapTests
 {
     private const int MinValue = 1;
+
 
     [Fact]
     public void ItThrowsExceptionWhenCapacityIsInvalid()
@@ -33,6 +35,7 @@ public class MinHeapTests
         Assert.Equal(-1, exception.ActualValue);
     }
 
+
     [Fact]
     public void ItAddsItemsInCorrectOrder()
     {
@@ -48,6 +51,7 @@ public class MinHeapTests
         Assert.Equal(ExpectedCount, minHeap.Count);
     }
 
+
     [Fact]
     public void ItErasesItemsCorrectly()
     {
@@ -61,6 +65,7 @@ public class MinHeapTests
         // Assert
         Assert.Equal(ExpectedCount, minHeap.Count);
     }
+
 
     [Fact]
     public void ItReturnsItemsOnBufferDetaching()
@@ -78,6 +83,7 @@ public class MinHeapTests
         Assert.Equal(ExpectedHeapCount, minHeap.Count);
     }
 
+
     [Fact]
     public void ItThrowsExceptionOnAddingItemsAtInvalidIndex()
     {
@@ -87,7 +93,10 @@ public class MinHeapTests
         var items = new List<int> { 3, 1, 2 };
         var minHeap = new MinHeap<int>(MinValue);
 
-        void action() { minHeap.Add(items, StartIndex); }
+        void action()
+        {
+            minHeap.Add(items, StartIndex);
+        }
 
         // Act
         var exception = Assert.Throws<ArgumentOutOfRangeException>("startAt", () => action());
@@ -95,6 +104,7 @@ public class MinHeapTests
         // Assert
         Assert.Equal(StartIndex, exception.ActualValue);
     }
+
 
     [Fact]
     public void ItRemovesTopItemCorrectly()
@@ -112,6 +122,7 @@ public class MinHeapTests
         Assert.Equal(ExpectedTopItem, minHeap.Top);
         Assert.Equal(ExpectedHeapCount, minHeap.Count);
     }
+
 
     [Fact]
     public void ItRemovesAllItemsCorrectly()
@@ -131,6 +142,7 @@ public class MinHeapTests
 
         Assert.Equal(ExpectedHeapCount, minHeap.Count);
     }
+
 
     [Fact]
     public void ItEnsuresCapacityToExpectedValue()

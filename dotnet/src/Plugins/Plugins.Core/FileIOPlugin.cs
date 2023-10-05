@@ -1,18 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Plugins.Core;
+
 using System;
 using System.ComponentModel;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Plugins.Core;
 
 /// <summary>
 /// Read and write from a file.
 /// </summary>
 /// <example>
-/// Usage: kernel.ImportPlugin("file", new FileIOPlugin());
+/// Usage: kernel.ImportFunctions(new FileIOPlugin(), "file");
 /// Examples:
 /// {{file.readAsync $path }} => "hello world"
 /// {{file.writeAsync}}
@@ -34,6 +35,7 @@ public sealed class FileIOPlugin
         return await reader.ReadToEndAsync().ConfigureAwait(false);
     }
 
+
     /// <summary>
     /// Write a file
     /// </summary>
@@ -49,6 +51,7 @@ public sealed class FileIOPlugin
         [Description("File content")] string content)
     {
         byte[] text = Encoding.UTF8.GetBytes(content);
+
         if (File.Exists(path) && File.GetAttributes(path).HasFlag(FileAttributes.ReadOnly))
         {
             // Most environments will throw this with OpenWrite, but running inside docker on Linux will not.

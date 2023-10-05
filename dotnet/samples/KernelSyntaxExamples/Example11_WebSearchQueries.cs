@@ -6,6 +6,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Web;
 using RepoUtils;
 
+
 // ReSharper disable once InconsistentNaming
 public static class Example11_WebSearchQueries
 {
@@ -27,6 +28,6 @@ public static class Example11_WebSearchQueries
         );
 
         Console.WriteLine(ask + "\n");
-        Console.WriteLine(result);
+        Console.WriteLine(result.GetValue<string>());
     }
 }

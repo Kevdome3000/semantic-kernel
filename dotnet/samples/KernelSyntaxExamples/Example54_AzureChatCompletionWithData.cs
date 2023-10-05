@@ -6,6 +6,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 
+
 /**
  * This example shows how to use Azure OpenAI Chat Completion with data.
  * More information: <see href="https://learn.microsoft.com/en-us/azure/ai-services/openai/use-your-data-quickstart"/>
@@ -25,6 +26,7 @@ public static class Example54_AzureChatCompletionWithData
         await ExampleWithChatCompletionAsync();
         await ExampleWithKernelAsync();
     }
+
 
     private static async Task ExampleWithChatCompletionAsync()
     {
@@ -82,6 +84,7 @@ public static class Example54_AzureChatCompletionWithData
         Console.WriteLine(Environment.NewLine);
     }
 
+
     private static async Task ExampleWithKernelAsync()
     {
         Console.WriteLine("=== Example with Kernel ===");
@@ -103,7 +106,7 @@ public static class Example54_AzureChatCompletionWithData
         // Ask: How did Emily and David meet?
         // Response: Emily and David, both passionate scientists, met during a research expedition to Antarctica.
         Console.WriteLine($"Ask: {ask}");
-        Console.WriteLine($"Response: {response}");
+        Console.WriteLine($"Response: {response.GetValue<string>()}");
         Console.WriteLine();
 
         // Second question based on uploaded content.
@@ -115,9 +118,10 @@ public static class Example54_AzureChatCompletionWithData
         // Response: They are passionate scientists who study glaciology,
         // a branch of geology that deals with the study of ice and its effects.
         Console.WriteLine($"Ask: {ask}");
-        Console.WriteLine($"Response: {response}");
+        Console.WriteLine($"Response: {response.GetValue<string>()}");
         Console.WriteLine();
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureChatCompletionWithDataConfig"/> class.

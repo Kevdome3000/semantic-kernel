@@ -1,14 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Plugins.Core;
+
 using System.ComponentModel;
 
-namespace Microsoft.SemanticKernel.Plugins.Core;
 
 /// <summary>
 /// MathPlugin provides a set of functions to make Math calculations.
 /// </summary>
 /// <example>
-/// Usage: kernel.ImportPlugin("math", new MathPlugin());
+/// Usage: kernel.ImportFunctions(new MathPlugin(), "math");
 /// Examples:
 /// {{math.Add}}         => Returns the sum of FirstNumber and SecondNumber (provided in the SKContext)
 /// </example>
@@ -25,6 +26,7 @@ public sealed class MathPlugin
         [Description("The value to add")] int value,
         [Description("Amount to add")] int amount) =>
         value + amount;
+
 
     /// <summary>
     /// Returns the Sum of two SKContext numbers provided.

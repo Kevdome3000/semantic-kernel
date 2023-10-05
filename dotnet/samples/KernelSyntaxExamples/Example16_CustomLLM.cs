@@ -15,6 +15,7 @@ using RepoUtils;
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 
+
 /**
  * The following example shows how to plug into SK a custom text completion model.
  *
@@ -37,11 +38,13 @@ public class MyTextCompletionService : ITextCompletion
         });
     }
 
+
     public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(string text, AIRequestSettings? requestSettings, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         yield return new MyTextCompletionStreamingResult();
     }
 }
+
 
 public class MyTextCompletionStreamingResult : ITextStreamingResult
 {
@@ -62,6 +65,7 @@ providing personalized recommendations, entertainment, and assistance. AI is awe
 
     public ModelResult ModelResult => this._modelResult;
 
+
     public async Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
     {
         // Forcing a 2 sec delay (Simulating custom LLM lag)
@@ -70,12 +74,14 @@ providing personalized recommendations, entertainment, and assistance. AI is awe
         return Text;
     }
 
+
     public async IAsyncEnumerable<string> GetCompletionStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         yield return Environment.NewLine;
 
         // Your model logic here
         var streamedOutput = Text.Split(' ');
+
         foreach (string word in streamedOutput)
         {
             await Task.Delay(50, cancellationToken);
@@ -83,6 +89,7 @@ providing personalized recommendations, entertainment, and assistance. AI is awe
         }
     }
 }
+
 
 // ReSharper disable StringLiteralTypo
 // ReSharper disable once InconsistentNaming
@@ -95,6 +102,7 @@ public static class Example16_CustomLLM
         await CustomTextCompletionAsync();
         await CustomTextCompletionStreamAsync();
     }
+
 
     private static async Task CustomTextCompletionWithSKFunctionAsync()
     {
@@ -113,7 +121,7 @@ public static class Example16_CustomLLM
         var textValidationFunction = kernel.CreateSemanticFunction(FunctionDefinition);
 
         var result = await textValidationFunction.InvokeAsync("I mised the training session this morning", kernel);
-        Console.WriteLine(result);
+        Console.WriteLine(result.GetValue<string>());
 
         // Details of the my custom model response
         Console.WriteLine(JsonSerializer.Serialize(
@@ -121,6 +129,7 @@ public static class Example16_CustomLLM
             new JsonSerializerOptions() { WriteIndented = true }
         ));
     }
+
 
     private static async Task CustomTextCompletionAsync()
     {
@@ -132,6 +141,7 @@ public static class Example16_CustomLLM
         Console.WriteLine(result);
     }
 
+
     private static async Task CustomTextCompletionStreamAsync()
     {
         Console.WriteLine("======== Custom LLM  - Text Completion - Raw Streaming ========");
@@ -142,6 +152,7 @@ public static class Example16_CustomLLM
         var prompt = "Write one paragraph why AI is awesome";
         await TextCompletionStreamAsync(prompt, textCompletion);
     }
+
 
     private static async Task TextCompletionStreamAsync(string prompt, ITextCompletion textCompletion)
     {
@@ -155,6 +166,7 @@ public static class Example16_CustomLLM
         };
 
         Console.WriteLine("Prompt: " + prompt);
+
         await foreach (string message in textCompletion.CompleteStreamAsync(prompt, requestSettings))
         {
             Console.Write(message);

@@ -7,6 +7,7 @@ using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using RepoUtils;
 
+
 // ReSharper disable once InconsistentNaming
 public static class Example04_CombineLLMPromptsAndNativeCode
 {
@@ -28,6 +29,7 @@ public static class Example04_CombineLLMPromptsAndNativeCode
             .Build();
 
         string bingApiKey = TestConfiguration.Bing.ApiKey;
+
         if (bingApiKey == null)
         {
             Console.WriteLine("Bing credentials not found. Skipping example.");
@@ -64,8 +66,8 @@ public static class Example04_CombineLLMPromptsAndNativeCode
         );
 
         Console.WriteLine(ask + "\n");
-        Console.WriteLine("Bing Answer: " + result1 + "\n");
-        Console.WriteLine("Summary: " + result2 + "\n");
-        Console.WriteLine("Notes: " + result3 + "\n");
+        Console.WriteLine("Bing Answer: " + result1.GetValue<string>() + "\n");
+        Console.WriteLine("Summary: " + result2.GetValue<string>() + "\n");
+        Console.WriteLine("Notes: " + result3.GetValue<string>() + "\n");
     }
 }

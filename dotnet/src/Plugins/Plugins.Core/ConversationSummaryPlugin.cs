@@ -1,13 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Plugins.Core;
+
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Text;
+using AI;
+using Orchestration;
+using Text;
 
-namespace Microsoft.SemanticKernel.Plugins.Core;
 
 /// <summary>
 /// <para>Semantic plugin that enables conversations summarization.</para>
@@ -15,7 +16,7 @@ namespace Microsoft.SemanticKernel.Plugins.Core;
 /// <example>
 /// <code>
 /// var kernel Kernel.Builder.Build();
-/// kernel.ImportPlugin(new ConversationSummaryPlugin(kernel));
+/// kernel.ImportFunctions(new ConversationSummaryPlugin(kernel));
 /// </code>
 /// </example>
 public class ConversationSummaryPlugin
@@ -28,6 +29,7 @@ public class ConversationSummaryPlugin
     private readonly ISKFunction _summarizeConversationFunction;
     private readonly ISKFunction _conversationActionItemsFunction;
     private readonly ISKFunction _conversationTopicsFunction;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ConversationSummaryPlugin"/> class.
@@ -78,6 +80,7 @@ public class ConversationSummaryPlugin
             });
     }
 
+
     /// <summary>
     /// Given a long conversation transcript, summarize the conversation.
     /// </summary>
@@ -85,7 +88,8 @@ public class ConversationSummaryPlugin
     /// <param name="context">The SKContext for function execution.</param>
     [SKFunction, Description("Given a long conversation transcript, summarize the conversation.")]
     public Task<SKContext> SummarizeConversationAsync(
-        [Description("A long conversation transcript.")] string input,
+        [Description("A long conversation transcript.")]
+        string input,
         SKContext context)
     {
         List<string> lines = TextChunker.SplitPlainTextLines(input, MaxTokens);
@@ -95,6 +99,7 @@ public class ConversationSummaryPlugin
             .AggregatePartitionedResultsAsync(paragraphs, context);
     }
 
+
     /// <summary>
     /// Given a long conversation transcript, identify action items.
     /// </summary>
@@ -102,7 +107,8 @@ public class ConversationSummaryPlugin
     /// <param name="context">The SKContext for function execution.</param>
     [SKFunction, Description("Given a long conversation transcript, identify action items.")]
     public Task<SKContext> GetConversationActionItemsAsync(
-        [Description("A long conversation transcript.")] string input,
+        [Description("A long conversation transcript.")]
+        string input,
         SKContext context)
     {
         List<string> lines = TextChunker.SplitPlainTextLines(input, MaxTokens);
@@ -112,6 +118,7 @@ public class ConversationSummaryPlugin
             .AggregatePartitionedResultsAsync(paragraphs, context);
     }
 
+
     /// <summary>
     /// Given a long conversation transcript, identify topics.
     /// </summary>
@@ -119,7 +126,8 @@ public class ConversationSummaryPlugin
     /// <param name="context">The SKContext for function execution.</param>
     [SKFunction, Description("Given a long conversation transcript, identify topics worth remembering.")]
     public Task<SKContext> GetConversationTopicsAsync(
-        [Description("A long conversation transcript.")] string input,
+        [Description("A long conversation transcript.")]
+        string input,
         SKContext context)
     {
         List<string> lines = TextChunker.SplitPlainTextLines(input, MaxTokens);

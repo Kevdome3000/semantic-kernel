@@ -1,21 +1,23 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Plugins.Core;
+
 using System.ComponentModel;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Plugins.Core;
 
 /// <summary>
 /// WaitPlugin provides a set of functions to wait before making the rest of operations.
 /// </summary>
 /// <example>
-/// Usage: kernel.ImportPlugin("wait", new WaitPlugin());
+/// Usage: kernel.ImportFunctions(new WaitPlugin(), "wait");
 /// Examples:
 /// {{wait.seconds 10}}         => Wait 10 seconds
 /// </example>
 public sealed class WaitPlugin
 {
     private readonly IWaitProvider _waitProvider;
+
 
     /// <summary>
     /// Interface for providing wait functionality.
@@ -30,6 +32,7 @@ public sealed class WaitPlugin
         Task DelayAsync(int milliSeconds);
     }
 
+
     private sealed class WaitProvider : IWaitProvider
     {
         public Task DelayAsync(int milliSeconds)
@@ -37,6 +40,7 @@ public sealed class WaitPlugin
             return Task.Delay(milliSeconds);
         }
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WaitPlugin"/> class.
@@ -46,6 +50,7 @@ public sealed class WaitPlugin
     {
         this._waitProvider = waitProvider ?? new WaitProvider();
     }
+
 
     /// <summary>
     /// Wait a given amount of seconds

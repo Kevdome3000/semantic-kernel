@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Memory.Collections;
+namespace SemanticKernel.Plugins.UnitTests.Memory.Collections;
+
+using Microsoft.SemanticKernel.Plugins.Memory.Collections;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Memory.Collections;
 
 /// <summary>
 /// Contains tests for the <see cref="TopNCollection{T}"/> class.
@@ -11,6 +12,7 @@ namespace SemanticKernel.UnitTests.Memory.Collections;
 public class TopNCollectionTests
 {
     private const int MaxItemsCount = 5;
+
 
     [Fact]
     public void ItResetsCollectionCorrectly()
@@ -27,6 +29,7 @@ public class TopNCollectionTests
         Assert.Equal(ExpectedItemsCount, topNCollection.Count);
     }
 
+
     [Fact]
     public void ItKeepsMaxItemsCountWhenMoreItemsWereAdded()
     {
@@ -40,6 +43,7 @@ public class TopNCollectionTests
         Assert.Equal(ExpectedCollectionCount, topNCollection.Count);
     }
 
+
     [Fact]
     public void ItSortsCollectionByScoreInDescendingOrder()
     {
@@ -50,11 +54,14 @@ public class TopNCollectionTests
         topNCollection.SortByScore();
 
         // Assert
+        var items = topNCollection.ToList();
+
         for (var i = 0; i < topNCollection.Count - 1; i++)
         {
-            Assert.True(topNCollection[i].Score > topNCollection[i + 1].Score);
+            Assert.True(items[i].Score > items[i + 1].Score);
         }
     }
+
 
     private TopNCollection<int> GetTestCollection(int maxItemsCount)
     {

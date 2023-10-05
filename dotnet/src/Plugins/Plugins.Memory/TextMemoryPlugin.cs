@@ -2,22 +2,22 @@
 
 namespace Microsoft.SemanticKernel.Plugins.Core;
 
+namespace Microsoft.SemanticKernel.Plugins.Memory;
+
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Diagnostics;
 using Extensions.Logging;
-using Memory;
 
 
 /// <summary>
 /// TextMemoryPlugin provides a plugin to save or recall information from the long or short term memory.
 /// </summary>
 /// <example>
-/// Usage: kernel.ImportPlugin("memory", new TextMemoryPlugin());
+/// Usage: kernel.ImportFunctions(new TextMemoryPlugin(), "memory");
 /// Examples:
 /// SKContext.Variables["input"] = "what is the capital of France?"
 /// {{memory.recall $input }} => "Paris"
