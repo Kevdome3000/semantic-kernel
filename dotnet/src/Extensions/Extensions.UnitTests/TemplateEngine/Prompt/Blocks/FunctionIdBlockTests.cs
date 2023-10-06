@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Extensions.UnitTests.TemplateEngine.Prompt.Blocks;
+
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.TemplateEngine.Prompt.Blocks;
+using Microsoft.SemanticKernel.TemplateEngine.Basic.Blocks;
 using Xunit;
 
-namespace SemanticKernel.Extensions.UnitTests.TemplateEngine.Prompt.Blocks;
 
 public class FunctionIdBlockTests
 {
@@ -19,12 +20,14 @@ public class FunctionIdBlockTests
         Assert.Equal(BlockTypes.FunctionId, target.Type);
     }
 
+
     [Fact]
     public void ItTrimsSpaces()
     {
         // Act + Assert
         Assert.Equal("aa", new FunctionIdBlock("  aa  ", NullLoggerFactory.Instance).Content);
     }
+
 
     [Theory]
     [InlineData("0", true)]
@@ -79,6 +82,7 @@ public class FunctionIdBlockTests
         // Act + Assert
         Assert.Equal(isValid, target.IsValid(out _));
     }
+
 
     [Fact]
     public void ItAllowsOnlyOneDot()

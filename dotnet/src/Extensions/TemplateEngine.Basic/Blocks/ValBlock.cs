@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Orchestration;
+namespace Microsoft.SemanticKernel.TemplateEngine.Basic.Blocks;
 
-namespace Microsoft.SemanticKernel.TemplateEngine.Prompt.Blocks;
+using Extensions.Logging;
+using Orchestration;
+
 
 internal sealed class ValBlock : Block, ITextRendering
 {
@@ -15,6 +16,7 @@ internal sealed class ValBlock : Block, ITextRendering
 
     // Content, excluding start/end quote chars
     private readonly string _value = string.Empty;
+
 
     /// <summary>
     /// Create an instance
@@ -34,6 +36,7 @@ internal sealed class ValBlock : Block, ITextRendering
         this._last = this.Content[this.Content.Length - 1];
         this._value = this.Content.Substring(1, this.Content.Length - 2);
     }
+
 
 #pragma warning disable CA2254 // error strings are used also internally, not just for logging
     // ReSharper disable TemplateIsNotCompileTimeConstantProblem
@@ -61,10 +64,12 @@ internal sealed class ValBlock : Block, ITextRendering
     }
 #pragma warning restore CA2254
 
+
     public string Render(ContextVariables? variables)
     {
         return this._value;
     }
+
 
     public static bool HasValPrefix(string? text)
     {

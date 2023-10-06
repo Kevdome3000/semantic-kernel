@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.IntegrationTests.TemplateLanguage;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -7,22 +9,22 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.TemplateEngine.Prompt;
+using Microsoft.SemanticKernel.TemplateEngine.Basic;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.TemplateLanguage;
-
 #pragma warning disable VSTHRD103 // ok to use WriteLine synchronously
 #pragma warning disable CA1849 // ok to use WriteLine synchronously
+
 
 public sealed class PromptTemplateEngineTests : IDisposable
 {
     public PromptTemplateEngineTests(ITestOutputHelper output)
     {
         this._logger = new RedirectOutput(output);
-        this._target = new PromptTemplateEngine();
+        this._target = new BasicPromptTemplateEngine();
     }
+
 
     [Fact]
     public async Task ItSupportsVariablesAsync()
@@ -47,6 +49,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
         Assert.Equal(expected, result);
     }
 
+
     [Fact]
     public async Task ItSupportsValuesAsync()
     {
@@ -63,6 +66,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
         // Assert
         Assert.Equal(Expected, result);
     }
+
 
     [Fact]
     public async Task ItAllowsToPassVariablesToFunctionsAsync()
@@ -81,6 +85,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
         Assert.Equal("== 123 ok ==", result);
     }
 
+
     [Fact]
     public async Task ItAllowsToPassValuesToFunctionsAsync()
     {
@@ -96,6 +101,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
         // Assert
         Assert.Equal("== 234 != 123 ==", result);
     }
+
 
     [Fact]
     public async Task ItAllowsToPassEscapedValues1ToFunctionsAsync()
@@ -114,6 +120,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
         Assert.Equal("== a'b != 123 ==", result);
     }
 
+
     [Fact]
     public async Task ItAllowsToPassEscapedValues2ToFunctionsAsync()
     {
@@ -130,6 +137,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
         // Assert
         Assert.Equal("== a\"b != 123 ==", result);
     }
+
 
     [Fact]
     public async Task ItHandlesNamedArgsAsync()
@@ -148,6 +156,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
         Assert.Equal("Output: Mario is 42 today. Wow, that's surprising!", result);
     }
 
+
     [Theory]
     [MemberData(nameof(GetTemplateLanguageTests))]
     public async Task ItHandleEdgeCasesAsync(string template, string expectedResult)
@@ -159,6 +168,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
         // Act
         this._logger.WriteLine("template: " + template);
         this._logger.WriteLine("expected: " + expectedResult);
+
         if (expectedResult.StartsWith("ERROR", StringComparison.OrdinalIgnoreCase))
         {
             await Assert.ThrowsAsync<SKException>(
@@ -174,10 +184,12 @@ public sealed class PromptTemplateEngineTests : IDisposable
         }
     }
 
+
     public static IEnumerable<object[]> GetTemplateLanguageTests()
     {
         return GetTestData("TemplateLanguage/tests.txt");
     }
+
 
     public class MyPlugin
     {
@@ -187,11 +199,13 @@ public sealed class PromptTemplateEngineTests : IDisposable
             return input == "123" ? "123 ok" : input + " != 123";
         }
 
+
         [SKFunction, Description("This is a test"), SKName("asis")]
         public string? MyFunction2(string? input = null)
         {
             return input;
         }
+
 
         [SKFunction, Description("This is a test"), SKName("sayAge")]
         public string MyFunction3(string name, DateTime birthdate, string exclamation)
@@ -203,10 +217,12 @@ public sealed class PromptTemplateEngineTests : IDisposable
         }
     }
 
+
     #region internals
 
     private readonly RedirectOutput _logger;
-    private readonly PromptTemplateEngine _target;
+    private readonly BasicPromptTemplateEngine _target;
+
 
     private static IEnumerable<string[]> GetTestData(string file)
     {
@@ -214,6 +230,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
 
         var content = File.ReadLines(file);
         var key = string.Empty;
+
         foreach (string value in content)
         {
             if (string.IsNullOrEmpty(value) || value.StartsWith('#')) { continue; }
@@ -225,10 +242,12 @@ public sealed class PromptTemplateEngineTests : IDisposable
             else
             {
                 yield return new string[] { key, value };
+
                 key = string.Empty;
             }
         }
     }
+
 
     public void Dispose()
     {
@@ -236,6 +255,8 @@ public sealed class PromptTemplateEngineTests : IDisposable
     }
 
     #endregion
+
+
 }
 
 #pragma warning restore VSTHRD103

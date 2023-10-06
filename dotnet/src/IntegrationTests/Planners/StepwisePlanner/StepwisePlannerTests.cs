@@ -70,7 +70,7 @@ public sealed class StepwisePlannerTests : IDisposable
     }
 
 
-    [RetryTheory]
+    [RetryTheory(maxRetries: 3)]
     [InlineData(false, "What is the tallest mountain on Earth? How tall is it divided by 2", "Everest")]
     [InlineData(true, "What is the tallest mountain on Earth? How tall is it divided by 2", "Everest")]
     [InlineData(false, "What is the weather in Seattle?", "Seattle")]
@@ -126,7 +126,7 @@ public sealed class StepwisePlannerTests : IDisposable
     }
 
 
-    [Fact(Skip = "Temporary skip this test.")]
+    [Fact]
     public async Task ExecutePlanSucceedsWithAlmostTooManyFunctionsAsync()
     {
         // Arrange

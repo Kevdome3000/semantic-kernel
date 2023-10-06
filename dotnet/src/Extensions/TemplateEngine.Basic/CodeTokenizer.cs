@@ -1,14 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.TemplateEngine.Basic;
+
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.TemplateEngine.Prompt.Blocks;
+using Blocks;
+using Diagnostics;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
 
-namespace Microsoft.SemanticKernel.TemplateEngine.Prompt;
 
 /// <summary>
 /// Simple tokenizer used for default SK template code language.
@@ -45,12 +46,15 @@ internal sealed class CodeTokenizer
         NamedArg = 4,
     }
 
+
     private readonly ILoggerFactory _loggerFactory;
+
 
     public CodeTokenizer(ILoggerFactory? loggerFactory = null)
     {
         this._loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
     }
+
 
     /// <summary>
     /// Tokenize a code block, without checking for syntax errors
@@ -107,6 +111,7 @@ internal sealed class CodeTokenizer
         }
 
         bool skipNextChar = false;
+
         for (int nextCharCursor = 1; nextCharCursor < text.Length; nextCharCursor++)
         {
             char currentChar = nextChar;
@@ -189,6 +194,7 @@ internal sealed class CodeTokenizer
                 else if (currentTokenType == TokenTypes.FunctionId)
                 {
                     var tokenContent = currentTokenContent.ToString();
+
                     // This isn't an expected block at this point but the TemplateTokenizer should throw an error when
                     // a named arg is used without a function call
                     if (CodeTokenizer.IsValidNamedArg(tokenContent))
@@ -229,6 +235,7 @@ internal sealed class CodeTokenizer
                 else
                 {
                     namedArgValuePrefix = currentChar;
+
                     if (!IsQuote((char)namedArgValuePrefix) && namedArgValuePrefix != Symbols.VarPrefix)
                     {
                         throw new SKException($"Named argument values need to be prefixed with a quote or {Symbols.VarPrefix}.");
@@ -274,6 +281,7 @@ internal sealed class CodeTokenizer
 
         // Capture last token
         currentTokenContent.Append(nextChar);
+
         switch (currentTokenType)
         {
             case TokenTypes.Value:
@@ -286,6 +294,7 @@ internal sealed class CodeTokenizer
 
             case TokenTypes.FunctionId:
                 var tokenContent = currentTokenContent.ToString();
+
                 // This isn't an expected block at this point but the TemplateTokenizer should throw an error when
                 // a named arg is used without a function call
                 if (CodeTokenizer.IsValidNamedArg(tokenContent))
@@ -309,28 +318,33 @@ internal sealed class CodeTokenizer
         return blocks;
     }
 
+
     private static bool IsVarPrefix(char c)
     {
         return (c == Symbols.VarPrefix);
     }
+
 
     private static bool IsBlankSpace(char c)
     {
         return c is Symbols.Space or Symbols.NewLine or Symbols.CarriageReturn or Symbols.Tab;
     }
 
+
     private static bool IsQuote(char c)
     {
         return c is Symbols.DblQuote or Symbols.SglQuote;
     }
+
 
     private static bool CanBeEscaped(char c)
     {
         return c is Symbols.DblQuote or Symbols.SglQuote or Symbols.EscapeChar;
     }
 
+
     [SuppressMessage("Design", "CA1031:Modify to catch a more specific allowed exception type, or rethrow exception",
-    Justification = "Does not throw an exception by design.")]
+        Justification = "Does not throw an exception by design.")]
     private static bool IsValidNamedArg(string tokenContent)
     {
         try

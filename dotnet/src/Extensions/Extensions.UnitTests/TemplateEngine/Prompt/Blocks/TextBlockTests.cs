@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.TemplateEngine.Prompt.Blocks;
+namespace SemanticKernel.Extensions.UnitTests.TemplateEngine.Prompt.Blocks;
+
+using Microsoft.SemanticKernel.TemplateEngine.Basic.Blocks;
 using Xunit;
 
-namespace SemanticKernel.Extensions.UnitTests.TemplateEngine.Prompt.Blocks;
 
 public class TextBlockTests
 {
@@ -17,6 +18,7 @@ public class TextBlockTests
         Assert.Equal(BlockTypes.Text, target.Type);
     }
 
+
     [Fact]
     public void ItPreservesEmptyValues()
     {
@@ -27,6 +29,7 @@ public class TextBlockTests
         Assert.Equal("  ", new TextBlock("  ").Content);
         Assert.Equal(" \n", new TextBlock(" \n").Content);
     }
+
 
     [Fact]
     public void ItIsAlwaysValid()
@@ -39,6 +42,7 @@ public class TextBlockTests
         Assert.True(new TextBlock(" \n").IsValid(out _));
         Assert.True(new TextBlock(" \nabc").IsValid(out _));
     }
+
 
     [Fact]
     public void ItRendersTheContentAsIs()

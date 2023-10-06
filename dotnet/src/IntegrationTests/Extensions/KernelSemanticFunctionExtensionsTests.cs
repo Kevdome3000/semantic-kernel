@@ -12,7 +12,7 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.TemplateEngine.Prompt;
+using Microsoft.SemanticKernel.TemplateEngine.Basic;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -22,7 +22,7 @@ public sealed class KernelSemanticFunctionExtensionsTests : IDisposable
     public KernelSemanticFunctionExtensionsTests(ITestOutputHelper output)
     {
         this._logger = new RedirectOutput(output);
-        this._target = new PromptTemplateEngine();
+        this._target = new BasicPromptTemplateEngine();
     }
 
 
@@ -67,7 +67,7 @@ public sealed class KernelSemanticFunctionExtensionsTests : IDisposable
 
 
     private readonly RedirectOutput _logger;
-    private readonly PromptTemplateEngine _target;
+    private readonly BasicPromptTemplateEngine _target;
 
 
     public void Dispose()

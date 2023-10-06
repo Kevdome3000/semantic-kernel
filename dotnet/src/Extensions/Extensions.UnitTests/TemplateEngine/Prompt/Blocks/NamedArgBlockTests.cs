@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Extensions.UnitTests.TemplateEngine.Prompt.Blocks;
+
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.TemplateEngine.Prompt.Blocks;
+using Microsoft.SemanticKernel.TemplateEngine.Basic.Blocks;
 using Xunit;
 
-namespace SemanticKernel.Extensions.UnitTests.TemplateEngine.Prompt.Blocks;
 
 public class NamedArgBlockTests
 {
@@ -20,6 +21,7 @@ public class NamedArgBlockTests
         Assert.Equal(BlockTypes.NamedArg, target.Type);
     }
 
+
     [Theory]
     [InlineData("  a=$b  ", "a=$b")]
     [InlineData(" a =  $b ", "a=$b")]
@@ -32,6 +34,7 @@ public class NamedArgBlockTests
         // Act + Assert
         Assert.Equal(expected, new NamedArgBlock(input, NullLoggerFactory.Instance).Content);
     }
+
 
     [Theory]
     [InlineData("0='val'", true)]
@@ -88,6 +91,7 @@ public class NamedArgBlockTests
         Assert.Equal(isValid, target.IsValid(out _));
     }
 
+
     [Theory]
     [InlineData("name   ='value'")]
     [InlineData("name=   'value'")]
@@ -102,6 +106,7 @@ public class NamedArgBlockTests
         Assert.Equal("value", target.GetValue(null));
     }
 
+
     [Fact]
     public void ArgValueNeedsQuoteOrDollarSignPrefix()
     {
@@ -112,6 +117,7 @@ public class NamedArgBlockTests
         Assert.False(target.IsValid(out var error));
         Assert.Equal("There was an issue with the named argument value for 'a': A value must have single quotes or double quotes on both sides", error);
     }
+
 
     [Fact]
     public void ArgNameShouldBeNonEmpty()
@@ -124,11 +130,13 @@ public class NamedArgBlockTests
         Assert.Equal("A named argument must have a name", error);
     }
 
+
     [Fact]
     public void ArgValueShouldBeNonEmpty()
     {
         Assert.Throws<SKException>(() => new NamedArgBlock("a="));
     }
+
 
     [Theory]
     [InlineData("!@#^='b'", "The argument name '!@#^' contains invalid characters. Only alphanumeric chars and underscore are allowed.")]
@@ -142,6 +150,7 @@ public class NamedArgBlockTests
         Assert.False(target.IsValid(out var error));
         Assert.Equal(expectedError, error);
     }
+
 
     [Theory]
     [InlineData("0='val'", true)]
@@ -157,6 +166,7 @@ public class NamedArgBlockTests
         // Act + Assert
         Assert.Equal(isValid, target.IsValid(out _));
     }
+
 
     [Theory]
     [InlineData("0", true)]
@@ -212,6 +222,7 @@ public class NamedArgBlockTests
         // Act + Assert
         Assert.Equal(isValid, target.IsValid(out _));
     }
+
 
     [Fact]
     public void ItRequiresOneEquals()

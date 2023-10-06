@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.TemplateEngine.Prompt.Blocks;
+namespace SemanticKernel.Extensions.UnitTests.TemplateEngine.Prompt.Blocks;
+
+using Microsoft.SemanticKernel.TemplateEngine.Basic.Blocks;
 using Xunit;
 
-namespace SemanticKernel.Extensions.UnitTests.TemplateEngine.Prompt.Blocks;
 
 public class ValBlockTests
 {
@@ -17,6 +18,7 @@ public class ValBlockTests
         Assert.Equal(BlockTypes.Value, target.Type);
     }
 
+
     [Fact]
     public void ItTrimsSpaces()
     {
@@ -24,6 +26,7 @@ public class ValBlockTests
         Assert.Equal("' '", new ValBlock("  ' '  ").Content);
         Assert.Equal("\"  \"", new ValBlock("  \"  \"  ").Content);
     }
+
 
     [Fact]
     public void ItChecksIfAValueStartsWithQuote()
@@ -41,6 +44,7 @@ public class ValBlockTests
         Assert.False(ValBlock.HasValPrefix("v"));
         Assert.False(ValBlock.HasValPrefix("-"));
     }
+
 
     [Fact]
     public void ItRequiresConsistentQuotes()

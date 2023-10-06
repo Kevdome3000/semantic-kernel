@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Orchestration;
+namespace Microsoft.SemanticKernel.TemplateEngine.Basic.Blocks;
 
-namespace Microsoft.SemanticKernel.TemplateEngine.Prompt.Blocks;
+using Orchestration;
+
 
 /// <summary>
 /// Interface of static blocks that don't need async IO to be rendered.

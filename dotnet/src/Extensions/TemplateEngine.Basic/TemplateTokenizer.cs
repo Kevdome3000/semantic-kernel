@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.TemplateEngine.Prompt.Blocks;
+namespace Microsoft.SemanticKernel.TemplateEngine.Basic;
 
-namespace Microsoft.SemanticKernel.TemplateEngine.Prompt;
+using System.Collections.Generic;
+using Blocks;
+using Diagnostics;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
+
 
 /// <summary>
 /// Simple tokenizer used for default SK template language.
@@ -44,6 +45,7 @@ internal sealed class TemplateTokenizer
         this._codeTokenizer = new CodeTokenizer(loggerFactory);
     }
 
+
     /// <summary>
     /// Extract blocks from the given text
     /// </summary>
@@ -80,6 +82,7 @@ internal sealed class TemplateTokenizer
 
         bool skipNextChar = false;
         char nextChar = text[0];
+
         for (int nextCharCursor = 1; nextCharCursor < text.Length; nextCharCursor++)
         {
             int currentCharPos = nextCharCursor - 1;
@@ -202,20 +205,24 @@ internal sealed class TemplateTokenizer
         return blocks;
     }
 
+
     #region private ================================================================================
 
     private readonly ILoggerFactory _loggerFactory;
     private readonly CodeTokenizer _codeTokenizer;
+
 
     private static string SubStr(string text, int startIndex, int stopIndex)
     {
         return text.Substring(startIndex, stopIndex - startIndex);
     }
 
+
     private static bool IsQuote(char c)
     {
         return c is Symbols.DblQuote or Symbols.SglQuote;
     }
+
 
     private static bool CanBeEscaped(char c)
     {
@@ -223,4 +230,6 @@ internal sealed class TemplateTokenizer
     }
 
     #endregion
+
+
 }

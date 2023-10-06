@@ -1,22 +1,24 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.TemplateEngine.Basic.Blocks;
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Orchestration;
-
-namespace Microsoft.SemanticKernel.TemplateEngine.Prompt.Blocks;
+using Diagnostics;
+using Extensions.Logging;
+using Orchestration;
 
 #pragma warning disable CA2254 // error strings are used also internally, not just for logging
 #pragma warning disable CA1031 // IsCriticalException is an internal utility and should not be used by extensions
+
 
 // ReSharper disable TemplateIsNotCompileTimeConstantProblem
 internal sealed class CodeBlock : Block, ICodeRendering
 {
     internal override BlockTypes Type => BlockTypes.Code;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CodeBlock"/> class.
@@ -27,6 +29,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
         : this(new CodeTokenizer(loggerFactory).Tokenize(content), content?.Trim(), loggerFactory)
     {
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CodeBlock"/> class.
@@ -39,6 +42,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
     {
         this._tokens = tokens;
     }
+
 
     /// <inheritdoc/>
     public override bool IsValid(out string errorMsg)
@@ -71,6 +75,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
         return true;
     }
 
+
     /// <inheritdoc/>
     public async Task<string> RenderCodeAsync(SKContext context, CancellationToken cancellationToken = default)
     {
@@ -94,10 +99,12 @@ internal sealed class CodeBlock : Block, ICodeRendering
         throw new SKException($"Unexpected first token type: {this._tokens[0].Type:G}");
     }
 
+
     #region private ================================================================================
 
     private bool _validated;
     private readonly List<Block> _tokens;
+
 
     private async Task<string> RenderFunctionCallAsync(FunctionIdBlock fBlock, SKContext context)
     {
@@ -135,6 +142,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
         return contextClone.Result;
     }
 
+
     private bool GetFunction(
         IReadOnlyFunctionCollection functions,
         FunctionIdBlock fBlock,
@@ -150,9 +158,11 @@ internal sealed class CodeBlock : Block, ICodeRendering
         return functions.TryGetFunction(fBlock.PluginName, fBlock.FunctionName, out function);
     }
 
+
     private bool IsValidFunctionCall(out string errorMsg)
     {
         errorMsg = "";
+
         if (this._tokens[0].Type != BlockTypes.FunctionId)
         {
             errorMsg = $"Unexpected second token found: {this._tokens[1].Content}";
@@ -180,6 +190,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
         return true;
     }
 
+
     private SKContext PopulateContextWithFunctionArguments(SKContext context)
     {
         // Clone the context to avoid unexpected and hard to test input mutation
@@ -190,6 +201,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
         this.Logger.LogTrace("Passing variable/value: `{Content}`", firstArg.Content);
 
         var namedArgsStartIndex = 1;
+
         if (firstArg.Type is not BlockTypes.NamedArg)
         {
             string input = ((ITextRendering)this._tokens[1]).Render(contextClone.Variables);
@@ -218,7 +230,10 @@ internal sealed class CodeBlock : Block, ICodeRendering
 
         return contextClone;
     }
+
     #endregion
+
+
 }
 // ReSharper restore TemplateIsNotCompileTimeConstantProblem
 #pragma warning restore CA2254

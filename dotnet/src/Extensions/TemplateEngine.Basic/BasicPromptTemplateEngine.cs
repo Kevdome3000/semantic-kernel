@@ -1,17 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.TemplateEngine.Basic;
+
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.TemplateEngine.Prompt.Blocks;
+using Blocks;
+using Diagnostics;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
+using Orchestration;
 
-namespace Microsoft.SemanticKernel.TemplateEngine.Prompt;
 
 /// <summary>
 /// Given a prompt, that might contain references to variables and functions:
@@ -23,22 +24,24 @@ namespace Microsoft.SemanticKernel.TemplateEngine.Prompt;
 ///     - Functions do not receive the context variables, unless specified using a special variable
 ///     - Functions can be invoked in order and in parallel so the context variables must be immutable when invoked within the template
 /// </summary>
-public class PromptTemplateEngine : IPromptTemplateEngine
+public class BasicPromptTemplateEngine : IPromptTemplateEngine
 {
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger _logger;
     private readonly TemplateTokenizer _tokenizer;
 
+
     /// <summary>
-    /// Initializes a new instance of the <see cref="PromptTemplateEngine"/> class.
+    /// Initializes a new instance of the <see cref="BasicPromptTemplateEngine"/> class.
     /// </summary>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public PromptTemplateEngine(ILoggerFactory? loggerFactory = null)
+    public BasicPromptTemplateEngine(ILoggerFactory? loggerFactory = null)
     {
         this._loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
-        this._logger = this._loggerFactory.CreateLogger(typeof(PromptTemplateEngine));
+        this._logger = this._loggerFactory.CreateLogger(typeof(BasicPromptTemplateEngine));
         this._tokenizer = new TemplateTokenizer(loggerFactory);
     }
+
 
     /// <inheritdoc/>
     public async Task<string> RenderAsync(string templateText, SKContext context, CancellationToken cancellationToken = default)
@@ -47,6 +50,7 @@ public class PromptTemplateEngine : IPromptTemplateEngine
         var blocks = this.ExtractBlocks(templateText);
         return await this.RenderAsync(blocks, context, cancellationToken).ConfigureAwait(false);
     }
+
 
     /// <summary>
     /// Given a prompt template string, extract all the blocks (text, variables, function calls)
@@ -73,6 +77,7 @@ public class PromptTemplateEngine : IPromptTemplateEngine
         return blocks;
     }
 
+
     /// <summary>
     /// Given a list of blocks render each block and compose the final result.
     /// </summary>
@@ -84,6 +89,7 @@ public class PromptTemplateEngine : IPromptTemplateEngine
     {
         this._logger.LogTrace("Rendering list of {0} blocks", blocks.Count);
         var tasks = new List<Task<string>>(blocks.Count);
+
         foreach (var block in blocks)
         {
             switch (block)
@@ -104,6 +110,7 @@ public class PromptTemplateEngine : IPromptTemplateEngine
         }
 
         var result = new StringBuilder();
+
         foreach (Task<string> t in tasks)
         {
             result.Append(await t.ConfigureAwait(false));
@@ -114,6 +121,7 @@ public class PromptTemplateEngine : IPromptTemplateEngine
 
         return result.ToString();
     }
+
 
     /// <summary>
     /// Given a list of blocks, render the Variable Blocks, replacing placeholders with the actual value in memory.

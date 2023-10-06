@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Core;
-using Microsoft.SemanticKernel.TemplateEngine.Prompt;
+using Microsoft.SemanticKernel.TemplateEngine.Basic;
 using RepoUtils;
 
 
@@ -22,7 +22,7 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
 
         string serviceId = TestConfiguration.AzureOpenAI.ServiceId;
         string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
-        string deploymentName = TestConfiguration.AzureOpenAI.DeploymentName;
+        string deploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName;
         string endpoint = TestConfiguration.AzureOpenAI.Endpoint;
 
         if (serviceId == null || apiKey == null || deploymentName == null || endpoint == null)
@@ -56,7 +56,7 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
 
         // This allows to see the prompt before it's sent to OpenAI
         Console.WriteLine("--- Rendered Prompt");
-        var promptRenderer = new PromptTemplateEngine();
+        var promptRenderer = new BasicPromptTemplateEngine();
         var renderedPrompt = await promptRenderer.RenderAsync(FunctionDefinition, context);
         Console.WriteLine(renderedPrompt);
 

@@ -15,6 +15,7 @@ using RepoUtils;
 
 #pragma warning disable RCS1192 // (Unnecessary usage of verbatim string literal)
 
+
 // ReSharper disable once InconsistentNaming
 public static class Example43_GetModelResult
 {
@@ -75,7 +76,7 @@ public static class Example43_GetModelResult
         }
         catch (Exception ex)
         {
-            Console.WriteLine(OutputExceptionDetail(ex.InnerException));
+            Console.WriteLine(OutputExceptionDetail(ex));
         }
 #pragma warning restore CA1031 // Do not catch general exception types
 
@@ -84,7 +85,7 @@ public static class Example43_GetModelResult
             return exception switch
             {
                 HttpOperationException httpException => new { StatusCode = httpException.StatusCode?.ToString(), Message = httpException.Message, Response = httpException.ResponseContent }.AsJson(),
-                { } e => new { e.Message }.AsJson(),
+                { } e => e.Message,
                 _ => string.Empty
             };
         }

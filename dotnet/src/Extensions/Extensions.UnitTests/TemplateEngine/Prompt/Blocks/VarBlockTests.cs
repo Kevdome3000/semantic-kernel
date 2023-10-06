@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Extensions.UnitTests.TemplateEngine.Prompt.Blocks;
+
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.TemplateEngine.Prompt.Blocks;
+using Microsoft.SemanticKernel.TemplateEngine.Basic.Blocks;
 using Xunit;
 
-namespace SemanticKernel.Extensions.UnitTests.TemplateEngine.Prompt.Blocks;
 
 public class VarBlockTests
 {
@@ -19,12 +20,14 @@ public class VarBlockTests
         Assert.Equal(BlockTypes.Variable, target.Type);
     }
 
+
     [Fact]
     public void ItTrimsSpaces()
     {
         // Act + Assert
         Assert.Equal("$", new VarBlock("  $  ").Content);
     }
+
 
     [Fact]
     public void ItIgnoresSpacesAround()
@@ -35,6 +38,7 @@ public class VarBlockTests
         // Assert
         Assert.Equal("$var", target.Content);
     }
+
 
     [Fact]
     public void ItRendersToEmptyStringWithoutVariables()
@@ -48,6 +52,7 @@ public class VarBlockTests
         // Assert
         Assert.Equal(string.Empty, result);
     }
+
 
     [Fact]
     public void ItRendersToEmptyStringIfVariableIsMissing()
@@ -65,6 +70,7 @@ public class VarBlockTests
         // Assert
         Assert.Equal(string.Empty, result);
     }
+
 
     [Fact]
     public void ItRendersToVariableValueWhenAvailable()
@@ -84,6 +90,7 @@ public class VarBlockTests
         Assert.Equal("able", result);
     }
 
+
     [Fact]
     public void ItThrowsIfTheVarNameIsEmpty()
     {
@@ -98,6 +105,7 @@ public class VarBlockTests
         // Act + Assert
         Assert.Throws<SKException>(() => target.Render(variables));
     }
+
 
     [Theory]
     [InlineData("0", true)]
@@ -155,6 +163,7 @@ public class VarBlockTests
 
         // Assert
         Assert.Equal(isValid, target.IsValid(out _));
+
         if (isValid) { Assert.Equal("value", result); }
     }
 }
