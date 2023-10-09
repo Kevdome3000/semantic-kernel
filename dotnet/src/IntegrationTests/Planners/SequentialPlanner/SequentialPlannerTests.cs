@@ -9,6 +9,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Planners;
 using Microsoft.SemanticKernel.Plugins.Memory;
 using TestSettings;
@@ -88,14 +90,17 @@ public sealed class SequentialPlannerTests : IDisposable
     {
         // Arrange
         bool useEmbeddings = true;
+
         IKernel kernel = this.InitializeKernel(useEmbeddings);
+        ISemanticTextMemory memory = this.InitializeMemory(kernel.GetService<ITextEmbeddingGeneration>());
+
         kernel.ImportFunctions(new EmailPluginFake());
 
         // Import all sample plugins available for demonstration purposes.
         TestHelpers.ImportAllSamplePlugins(kernel);
 
         var planner = new Microsoft.SemanticKernel.Planners.SequentialPlanner(kernel,
-            new SequentialPlannerConfig { SemanticMemoryConfig = new() { RelevancyThreshold = 0.65, MaxRelevantFunctions = 30, Memory = kernel.Memory } });
+            new SequentialPlannerConfig { SemanticMemoryConfig = new() { RelevancyThreshold = 0.65, MaxRelevantFunctions = 30, Memory = memory } });
 
         // Act
         var plan = await planner.CreatePlanAsync(prompt);
@@ -137,15 +142,26 @@ public sealed class SequentialPlannerTests : IDisposable
         if (useEmbeddings)
         {
             builder.WithAzureTextEmbeddingGenerationService(
-                    deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
-                    endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
-                    apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey)
-                .WithMemoryStorage(new VolatileMemoryStore());
+                deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
+                endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
+                apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
         }
 
         var kernel = builder.Build();
 
         return kernel;
+    }
+
+
+    private ISemanticTextMemory InitializeMemory(ITextEmbeddingGeneration textEmbeddingGeneration)
+    {
+        var builder = new MemoryBuilder();
+
+        builder.WithLoggerFactory(this._logger);
+        builder.WithMemoryStore(new VolatileMemoryStore());
+        builder.WithTextEmbeddingGeneration(textEmbeddingGeneration);
+
+        return builder.Build();
     }
 
 

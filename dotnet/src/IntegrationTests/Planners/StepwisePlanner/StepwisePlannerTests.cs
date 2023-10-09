@@ -12,7 +12,6 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Planners;
 using Microsoft.SemanticKernel.Plugins.Core;
-using Microsoft.SemanticKernel.Plugins.Memory;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using TestSettings;
@@ -175,10 +174,9 @@ public sealed class StepwisePlannerTests : IDisposable
         if (useEmbeddings)
         {
             builder.WithAzureTextEmbeddingGenerationService(
-                    deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
-                    endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
-                    apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey)
-                .WithMemoryStorage(new VolatileMemoryStore());
+                deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
+                endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
+                apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
         }
 
         var kernel = builder.Build();

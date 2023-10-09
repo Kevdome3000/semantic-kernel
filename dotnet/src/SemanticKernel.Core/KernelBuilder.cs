@@ -3,6 +3,7 @@
 namespace Microsoft.SemanticKernel;
 
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -62,7 +63,9 @@ public sealed class KernelBuilder
         // TODO: decouple this from 'UseMemory' kernel extension
         if (this._memoryStorageFactory != null)
         {
+#pragma warning disable CS0618 // This will be removed in a future release.
             instance.UseMemory(this._memoryStorageFactory.Invoke());
+#pragma warning restore CS0618 // This will be removed in a future release.
         }
 
         return instance;
@@ -87,6 +90,8 @@ public sealed class KernelBuilder
     /// </summary>
     /// <param name="memory">Semantic text memory entity to add.</param>
     /// <returns>Updated kernel builder including the semantic text memory entity.</returns>
+    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. See sample dotnet/samples/KernelSyntaxExamples/Example14_SemanticMemory.cs in the semantic-kernel repository.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public KernelBuilder WithMemory(ISemanticTextMemory memory)
     {
         Verify.NotNull(memory);
@@ -100,6 +105,8 @@ public sealed class KernelBuilder
     /// </summary>
     /// <param name="factory">The store factory.</param>
     /// <returns>Updated kernel builder including the semantic text memory entity.</returns>
+    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. See sample dotnet/samples/KernelSyntaxExamples/Example14_SemanticMemory.cs in the semantic-kernel repository.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public KernelBuilder WithMemory<TStore>(Func<ILoggerFactory, TStore> factory) where TStore : ISemanticTextMemory
     {
         Verify.NotNull(factory);
@@ -113,6 +120,8 @@ public sealed class KernelBuilder
     /// </summary>
     /// <param name="storage">Storage to add.</param>
     /// <returns>Updated kernel builder including the memory storage.</returns>
+    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. See sample dotnet/samples/KernelSyntaxExamples/Example14_SemanticMemory.cs in the semantic-kernel repository.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public KernelBuilder WithMemoryStorage(IMemoryStore storage)
     {
         Verify.NotNull(storage);
@@ -126,6 +135,8 @@ public sealed class KernelBuilder
     /// </summary>
     /// <param name="factory">The storage factory.</param>
     /// <returns>Updated kernel builder including the memory storage.</returns>
+    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. See sample dotnet/samples/KernelSyntaxExamples/Example14_SemanticMemory.cs in the semantic-kernel repository.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public KernelBuilder WithMemoryStorage<TStore>(Func<ILoggerFactory, TStore> factory) where TStore : IMemoryStore
     {
         Verify.NotNull(factory);
@@ -139,6 +150,8 @@ public sealed class KernelBuilder
     /// </summary>
     /// <param name="factory">The storage factory.</param>
     /// <returns>Updated kernel builder including the memory storage.</returns>
+    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. See sample dotnet/samples/KernelSyntaxExamples/Example14_SemanticMemory.cs in the semantic-kernel repository.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public KernelBuilder WithMemoryStorage<TStore>(Func<ILoggerFactory, IDelegatingHandlerFactory, TStore> factory) where TStore : IMemoryStore
     {
         Verify.NotNull(factory);

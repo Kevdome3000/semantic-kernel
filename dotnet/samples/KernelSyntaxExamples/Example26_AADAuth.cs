@@ -7,6 +7,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using RepoUtils;
 
+
 /**
  * This example shows how to connect your app to Azure OpenAI using
  * Azure Active Directory (AAD) authentication, as opposed to API keys.
@@ -30,13 +31,16 @@ public static class Example26_AADAuth
         // Optional: choose which authentication to support
         var authOptions = new DefaultAzureCredentialOptions
         {
-            ExcludeEnvironmentCredential = false,
-            ExcludeManagedIdentityCredential = false,
-            ExcludeSharedTokenCacheCredential = false,
+            ExcludeEnvironmentCredential = true,
+            ExcludeManagedIdentityCredential = true,
+            ExcludeSharedTokenCacheCredential = true,
             ExcludeAzureCliCredential = true,
             ExcludeVisualStudioCredential = true,
             ExcludeVisualStudioCodeCredential = true,
-            ExcludeInteractiveBrowserCredential = true,
+            ExcludeInteractiveBrowserCredential = false,
+            ExcludeAzureDeveloperCliCredential = true,
+            ExcludeWorkloadIdentityCredential = true,
+            ExcludeAzurePowerShellCredential = true
         };
 
         IKernel kernel = new KernelBuilder()
@@ -44,7 +48,7 @@ public static class Example26_AADAuth
             // Add Azure chat completion service using DefaultAzureCredential AAD auth
             .WithAzureChatCompletionService(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
-                "https://....openai.azure.com/",
+                TestConfiguration.AzureOpenAI.Endpoint,
                 new DefaultAzureCredential(authOptions))
             .Build();
 
