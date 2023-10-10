@@ -7,10 +7,10 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Numerics.Tensors;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using AI.Embeddings.VectorOperations;
 using Collections;
 using Diagnostics;
 using SemanticKernel.Memory;
@@ -184,9 +184,7 @@ public class VolatileMemoryStore : IMemoryStore
         {
             if (record != null)
             {
-                double similarity = embedding
-                    .Span
-                    .CosineSimilarity(record.Embedding.Span);
+                double similarity = TensorPrimitives.CosineSimilarity(embedding.Span, record.Embedding.Span);
 
                 if (similarity >= minRelevanceScore)
                 {

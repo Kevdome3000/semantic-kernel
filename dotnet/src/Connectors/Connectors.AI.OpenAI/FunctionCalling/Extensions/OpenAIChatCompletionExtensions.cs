@@ -17,6 +17,26 @@ using SemanticKernel.AI.ChatCompletion;
 public static class OpenAIChatCompletionExtensions
 {
     /// <summary>
+    /// Generate a function call from a chat history
+    /// </summary>
+    /// <param name="chatCompletion"></param>
+    /// <param name="chat"></param>
+    /// <param name="requestSettings"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public static async Task<string> GenerateFunctionCallAsync(
+        this IChatCompletion chatCompletion,
+        ChatHistory chat,
+        FunctionCallRequestSettings requestSettings,
+        CancellationToken cancellationToken = default)
+    {
+        IReadOnlyList<IChatResult>? chatResults = await chatCompletion.GetChatCompletionsAsync(chat, requestSettings, cancellationToken).ConfigureAwait(false);
+        var firstChatMessage = await chatResults[0].GetChatMessageAsync(cancellationToken).ConfigureAwait(false);
+        return firstChatMessage.Content;
+    }
+
+
+    /// <summary>
     /// Generate a new chat message
     /// </summary>
     /// <param name="chatCompletion">Target interface to extend</param>
@@ -35,10 +55,8 @@ public static class OpenAIChatCompletionExtensions
         FunctionDefinition? functionCall = null,
         CancellationToken cancellationToken = default)
     {
-        FunctionCallRequestSettings functionCallRequestSettings = requestSettings.ToFunctionCallRequestSettings(callableFunctions, functionCall ?? FunctionDefinition.Auto);
-        IReadOnlyList<IChatResult>? chatResults = await chatCompletion.GetChatCompletionsAsync(chat, functionCallRequestSettings, cancellationToken).ConfigureAwait(false);
-        var firstChatMessage = await chatResults[0].GetChatMessageAsync(cancellationToken).ConfigureAwait(false);
-        return firstChatMessage.Content;
+        var functionCallRequestSettings = requestSettings.ToFunctionCallRequestSettings(callableFunctions, functionCall ?? FunctionDefinition.Auto);
+        return await GenerateFunctionCallAsync(chatCompletion, chat, functionCallRequestSettings, cancellationToken).ConfigureAwait(false);
     }
 
 
@@ -64,7 +82,7 @@ public static class OpenAIChatCompletionExtensions
         IReadOnlyList<IChatResult>? chatResults = await chatCompletion.GetChatCompletionsAsync(chat, requestSettings, cancellationToken).ConfigureAwait(false);
         var firstChatMessage = await chatResults[0].GetChatMessageAsync(cancellationToken).ConfigureAwait(false);
         T? result = default;
-        string content = firstChatMessage.Content;
+        var content = firstChatMessage.Content;
 
         try
         {
@@ -99,6 +117,34 @@ public static class OpenAIChatCompletionExtensions
 
 
     /// <summary>
+    ///  Returns the content of the first result as a <typeparamref name="T"/> object.
+    /// </summary>
+    /// <param name="chatCompletion"></param>
+    /// <param name="chat"></param>
+    /// <param name="requestSettings"></param>
+    /// <param name="callableFunctions"></param>
+    /// <param name="functionCall"></param>
+    /// <param name="options"></param>
+    /// <param name="deserializationFallback"></param>
+    /// <param name="cancellationToken"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public static async Task<T?> GenerateResponseAsync<T>(
+        this IChatCompletion chatCompletion,
+        ChatHistory chat,
+        OpenAIRequestSettings requestSettings,
+        IEnumerable<FunctionDefinition> callableFunctions,
+        FunctionDefinition? functionCall = null,
+        JsonSerializerOptions? options = null,
+        Func<string, T>? deserializationFallback = null,
+        CancellationToken cancellationToken = default)
+    {
+        var functionCallRequestSettings = requestSettings.ToFunctionCallRequestSettings(callableFunctions, functionCall ?? FunctionDefinition.Auto);
+        return await GenerateResponseAsync(chatCompletion, chat, functionCallRequestSettings, options, deserializationFallback, cancellationToken).ConfigureAwait(false);
+    }
+
+
+    /// <summary>
     ///  Converts the <see cref="OpenAIRequestSettings"/> to <see cref="FunctionCallRequestSettings"/>
     /// </summary>
     /// <param name="settings"></param>
@@ -122,7 +168,7 @@ public static class OpenAIChatCompletionExtensions
             FrequencyPenalty = settings.FrequencyPenalty,
             StopSequences = settings.StopSequences,
             MaxTokens = settings.MaxTokens,
-            FunctionCall = targetFunctionCall ?? FunctionDefinition.Auto,
+            TargetFunctionCall = targetFunctionCall ?? FunctionDefinition.Auto,
             CallableFunctions = distinctCallableFunctions
         };
 

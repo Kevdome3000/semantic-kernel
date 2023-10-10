@@ -3,17 +3,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics.Tensors;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 using Microsoft.SemanticKernel.Memory;
 
 #pragma warning disable CA2201 // System.Exception is not sufficiently specific - this is a sample
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 #pragma warning disable CA1851 // Possible multiple enumerations of 'IEnumerable' collection
+
 
 // ReSharper disable once InconsistentNaming
 /// <summary>
@@ -33,6 +34,7 @@ public static class Example25_ReadOnlyMemoryStore
 
         Console.WriteLine("Reading data from custom read-only memory store");
         var memoryRecord = await store.GetAsync("collection", "key3");
+
         if (memoryRecord != null)
         {
             Console.WriteLine("ID = {0}, Embedding = {1}", memoryRecord.Metadata.Id, string.Join(", ", MemoryMarshal.ToEnumerable(memoryRecord.Embedding)));
@@ -40,16 +42,19 @@ public static class Example25_ReadOnlyMemoryStore
 
         Console.WriteLine("Getting most similar vector to {0}", string.Join(", ", MemoryMarshal.ToEnumerable(embedding)));
         var result = await store.GetNearestMatchAsync("collection", embedding, 0.0);
+
         if (result.HasValue)
         {
             Console.WriteLine("Embedding = {0}, Similarity = {1}", string.Join(", ", MemoryMarshal.ToEnumerable(result.Value.Item1.Embedding)), result.Value.Item2);
         }
     }
 
+
     private sealed class ReadOnlyMemoryStore : IMemoryStore
     {
         private readonly MemoryRecord[]? _memoryRecords = null;
         private readonly int _vectorSize = 3;
+
 
         public ReadOnlyMemoryStore(string valueString)
         {
@@ -63,26 +68,31 @@ public static class Example25_ReadOnlyMemoryStore
             }
         }
 
+
         public Task CreateCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
         {
             throw new System.NotImplementedException();
         }
+
 
         public Task DeleteCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
         {
             throw new System.NotImplementedException();
         }
 
+
         public Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancellationToken = default)
         {
             throw new System.NotImplementedException();
         }
+
 
         public Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancellationToken = default)
         {
             // Note: with this simple implementation, the MemoryRecord will always contain the embedding.
             return Task.FromResult(this._memoryRecords?.FirstOrDefault(x => x.Key == key));
         }
+
 
         public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = false, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
@@ -99,22 +109,28 @@ public static class Example25_ReadOnlyMemoryStore
             }
         }
 
+
         public IAsyncEnumerable<string> GetCollectionsAsync(CancellationToken cancellationToken = default)
         {
             throw new System.NotImplementedException();
         }
 
-        public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, ReadOnlyMemory<float> embedding, double minRelevanceScore = 0,
-            bool withEmbedding = false, CancellationToken cancellationToken = default)
+
+        public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(
+            string collectionName,
+            ReadOnlyMemory<float> embedding,
+            double minRelevanceScore = 0,
+            bool withEmbedding = false,
+            CancellationToken cancellationToken = default)
         {
             // Note: with this simple implementation, the MemoryRecord will always contain the embedding.
             await foreach (var item in this.GetNearestMatchesAsync(
-                collectionName: collectionName,
-                embedding: embedding,
-                limit: 1,
-                minRelevanceScore: minRelevanceScore,
-                withEmbeddings: withEmbedding,
-                cancellationToken: cancellationToken).ConfigureAwait(false))
+                               collectionName: collectionName,
+                               embedding: embedding,
+                               limit: 1,
+                               minRelevanceScore: minRelevanceScore,
+                               withEmbeddings: withEmbedding,
+                               cancellationToken: cancellationToken).ConfigureAwait(false))
             {
                 return item;
             }
@@ -122,8 +138,14 @@ public static class Example25_ReadOnlyMemoryStore
             return default;
         }
 
-        public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(string collectionName, ReadOnlyMemory<float> embedding, int limit,
-            double minRelevanceScore = 0, bool withEmbeddings = false, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+
+        public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(
+            string collectionName,
+            ReadOnlyMemory<float> embedding,
+            int limit,
+            double minRelevanceScore = 0,
+            bool withEmbeddings = false,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             // Note: with this simple implementation, the MemoryRecord will always contain the embedding.
             if (this._memoryRecords == null || this._memoryRecords.Length == 0)
@@ -140,7 +162,8 @@ public static class Example25_ReadOnlyMemoryStore
 
             foreach (var item in this._memoryRecords)
             {
-                double similarity = embedding.Span.CosineSimilarity(item.Embedding.Span);
+                double similarity = TensorPrimitives.CosineSimilarity(embedding.Span, item.Embedding.Span);
+
                 if (similarity >= minRelevanceScore)
                 {
                     embeddings.Add(new(item, similarity));
@@ -153,26 +176,31 @@ public static class Example25_ReadOnlyMemoryStore
             }
         }
 
+
         public Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default)
         {
             throw new System.NotImplementedException();
         }
+
 
         public Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default)
         {
             throw new System.NotImplementedException();
         }
 
+
         public Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default)
         {
             throw new System.NotImplementedException();
         }
+
 
         public IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> records, CancellationToken cancellationToken = default)
         {
             throw new System.NotImplementedException();
         }
     }
+
 
     private static string s_jsonVectorEntries = @"[
         {

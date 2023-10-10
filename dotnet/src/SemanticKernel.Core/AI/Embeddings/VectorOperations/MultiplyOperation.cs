@@ -1,14 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
+
 using System;
+using System.ComponentModel;
 using System.Numerics;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 
 /// <summary>
 /// Extension methods to multiply a vector by a scalar.
 /// </summary>
+[Obsolete("Numerical operations will be removed in a future release. Use System.Numerics.Tensors.TensorPrimitives instead.")]
+[EditorBrowsable(EditorBrowsableState.Never)]
 public static class MultiplyOperation
 {
     /// <summary>
@@ -37,6 +41,7 @@ public static class MultiplyOperation
         }
     }
 
+
     /// <summary>
     /// Multiplies all elements of a vector by the scalar <paramref name="multiplier"/> in-place.
     /// Does not allocate new memory.
@@ -49,6 +54,7 @@ public static class MultiplyOperation
     {
         vector.AsSpan().MultiplyByInPlace(multiplier);
     }
+
 
     #region private ================================================================================
 
@@ -64,6 +70,7 @@ public static class MultiplyOperation
             {
                 Vector<float> multiplierVec = new(multiplier);
                 float* pxOneVectorFromEnd = pxEnd - Vector<float>.Count;
+
                 do
                 {
                     *(Vector<float>*)px *= multiplierVec;
@@ -79,6 +86,7 @@ public static class MultiplyOperation
         }
     }
 
+
     private static unsafe void MultiplyByInPlaceImplementation(Span<double> x, double multiplier)
     {
         fixed (double* pxBuffer = x)
@@ -91,6 +99,7 @@ public static class MultiplyOperation
             {
                 Vector<double> multiplierVec = new(multiplier);
                 double* pxOneVectorFromEnd = pxEnd - Vector<double>.Count;
+
                 do
                 {
                     *(Vector<double>*)px *= multiplierVec;
@@ -107,4 +116,6 @@ public static class MultiplyOperation
     }
 
     #endregion
+
+
 }

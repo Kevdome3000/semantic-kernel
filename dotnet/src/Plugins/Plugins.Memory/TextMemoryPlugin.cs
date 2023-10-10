@@ -1,16 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Plugins.Core;
-
 namespace Microsoft.SemanticKernel.Plugins.Memory;
 
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Diagnostics;
 using Extensions.Logging;
+using SemanticKernel.Memory;
 
 
 /// <summary>

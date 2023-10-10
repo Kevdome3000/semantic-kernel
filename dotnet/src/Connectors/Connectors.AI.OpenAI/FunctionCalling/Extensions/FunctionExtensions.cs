@@ -231,6 +231,7 @@ public static class FunctionExtensions
     {
         T? result = default;
         ILogger logger = context.LoggerFactory.CreateLogger("FunctionCallResult");
+
         try
         {
             using var document = JsonDocument.Parse(context.Result.Trim());
@@ -250,8 +251,7 @@ public static class FunctionExtensions
         }
         catch (JsonException ex)
         {
-            logger.LogError("Error while converting \'{ContextResult}\' to a \'{Unknown}\': {Ex}", context.Result, typeof(T), ex);
-            // Console.WriteLine($"Error while converting '{context.Result}' to a '{typeof(T)}': {ex}");
+            logger.LogError("Error while converting \'{ContextResult}\' to a \'{Unknown}\': {Ex}", context.Result, typeof(T), ex.Message);
         }
 
         return result;

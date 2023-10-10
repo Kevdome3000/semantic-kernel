@@ -62,7 +62,6 @@ public static class SKFunctionCallExtensions
         var config = new PromptTemplateConfig
         {
             Description = description ?? "Function call",
-            Type = "completion",
             Completion = new OpenAIRequestSettings()
             {
                 MaxTokens = maxTokens,
@@ -116,6 +115,7 @@ public static class SKFunctionCallExtensions
             try
             {
                 var resultJson = functionResult.GetValue<string>();
+
                 if (resultJson != null)
                 {
                     using var stream = new MemoryStream(Encoding.UTF8.GetBytes(resultJson));

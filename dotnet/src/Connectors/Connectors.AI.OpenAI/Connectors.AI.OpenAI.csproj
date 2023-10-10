@@ -20,6 +20,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+      <ProjectReference Include="..\..\Functions\Functions.Semantic\Functions.Semantic.csproj"/>
     <ProjectReference Include="..\..\Plugins\Plugins.Memory\Plugins.Memory.csproj"/>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj"/>
   </ItemGroup>

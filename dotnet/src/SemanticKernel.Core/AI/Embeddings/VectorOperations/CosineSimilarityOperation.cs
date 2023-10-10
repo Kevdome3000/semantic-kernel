@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
+
 using System;
+using System.ComponentModel;
 using System.Numerics;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 
 /// <summary>
 /// Extension methods to calculate the cosine similarity between two vectors.
@@ -12,6 +14,8 @@ namespace Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 /// <remarks>
 /// https://en.wikipedia.org/wiki/Cosine_similarity
 /// </remarks>
+[Obsolete("Numerical operations will be removed in a future release. Use System.Numerics.Tensors.TensorPrimitives instead.")]
+[EditorBrowsable(EditorBrowsableState.Never)]
 public static class CosineSimilarityOperation
 {
     /// <summary>
@@ -39,6 +43,7 @@ public static class CosineSimilarityOperation
         throw new NotSupportedException();
     }
 
+
     /// <summary>
     /// Calculate the cosine similarity between two vectors of type <typeparamref name="TNumber"/>.
     /// </summary>
@@ -51,6 +56,7 @@ public static class CosineSimilarityOperation
         return x.AsReadOnlySpan().CosineSimilarity(y.AsReadOnlySpan());
     }
 
+
     /// <summary>
     /// Calculate the cosine similarity between two vectors of type <typeparamref name="TNumber"/>.
     /// </summary>
@@ -62,6 +68,7 @@ public static class CosineSimilarityOperation
     {
         return x.AsReadOnlySpan().CosineSimilarity(y.AsReadOnlySpan());
     }
+
 
     #region private ================================================================================
 
@@ -83,6 +90,7 @@ public static class CosineSimilarityOperation
                 x.Length >= Vector<double>.Count)
             {
                 double* pxOneVectorFromEnd = pxEnd - Vector<double>.Count;
+
                 do
                 {
                     Vector<double> xVec = *(Vector<double>*)px;
@@ -116,6 +124,7 @@ public static class CosineSimilarityOperation
         }
     }
 
+
     private static unsafe double CosineSimilarityImplementation(ReadOnlySpan<float> x, ReadOnlySpan<float> y)
     {
         if (x.Length != y.Length)
@@ -134,6 +143,7 @@ public static class CosineSimilarityOperation
                 x.Length >= Vector<float>.Count)
             {
                 float* pxOneVectorFromEnd = pxEnd - Vector<float>.Count;
+
                 do
                 {
                     Vector<float> xVec = *(Vector<float>*)px;
@@ -168,4 +178,6 @@ public static class CosineSimilarityOperation
     }
 
     #endregion
+
+
 }

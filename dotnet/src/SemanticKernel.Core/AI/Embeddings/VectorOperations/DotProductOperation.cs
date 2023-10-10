@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
+
 using System;
+using System.ComponentModel;
 using System.Numerics;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 
 /// <summary>
 /// Extension methods for vector dot product.
@@ -12,6 +14,8 @@ namespace Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 /// <remarks>
 /// https://en.wikipedia.org/wiki/Dot_product
 /// </remarks>
+[Obsolete("Numerical operations will be removed in a future release. Use System.Numerics.Tensors.TensorPrimitives instead.")]
+[EditorBrowsable(EditorBrowsableState.Never)]
 public static class DotProductOperation
 {
     /// <summary>
@@ -42,6 +46,7 @@ public static class DotProductOperation
         }
     }
 
+
     /// <summary>
     /// Calculate the dot products of two vectors of type <typeparamref name="TNumber"/>.
     /// </summary>
@@ -55,6 +60,7 @@ public static class DotProductOperation
         return x.AsReadOnlySpan().DotProduct(y.AsReadOnlySpan());
     }
 
+
     /// <summary>
     /// Calculate the dot products of two vectors of type <typeparamref name="TNumber"/>.
     /// </summary>
@@ -67,6 +73,7 @@ public static class DotProductOperation
     {
         return x.AsReadOnlySpan().DotProduct(y.AsReadOnlySpan());
     }
+
 
     #region private ================================================================================
 
@@ -88,6 +95,7 @@ public static class DotProductOperation
                 x.Length >= Vector<double>.Count)
             {
                 double* pxOneVectorFromEnd = pxEnd - Vector<double>.Count;
+
                 do
                 {
                     dotSum += Vector.Dot(*(Vector<double>*)px, *(Vector<double>*)py); // Dot product
@@ -109,6 +117,7 @@ public static class DotProductOperation
         }
     }
 
+
     private static unsafe double DotProductImplementation(ReadOnlySpan<float> x, ReadOnlySpan<float> y)
     {
         if (x.Length != y.Length)
@@ -127,6 +136,7 @@ public static class DotProductOperation
                 x.Length >= Vector<float>.Count)
             {
                 float* pxOneVectorFromEnd = pxEnd - Vector<float>.Count;
+
                 do
                 {
                     dotSum += Vector.Dot(*(Vector<float>*)px, *(Vector<float>*)py); // Dot product
@@ -149,4 +159,6 @@ public static class DotProductOperation
     }
 
     #endregion
+
+
 }

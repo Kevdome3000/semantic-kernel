@@ -380,7 +380,7 @@ public abstract class ClientBase
                 FrequencyPenalty = (float?)functionCallRequestSettings.FrequencyPenalty,
                 PresencePenalty = (float?)functionCallRequestSettings.PresencePenalty,
                 ChoiceCount = requestSettings.ResultsPerPrompt,
-                FunctionCall = functionCallRequestSettings.FunctionCall,
+                FunctionCall = functionCallRequestSettings.TargetFunctionCall,
                 Functions = functionCallRequestSettings.CallableFunctions
             },
             _ => new ChatCompletionsOptions

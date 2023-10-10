@@ -1,14 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
+
 using System;
+using System.ComponentModel;
 using System.Numerics;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 
 /// <summary>
 /// Extension methods for vector division.
 /// </summary>
+[Obsolete("Numerical operations will be removed in a future release. Use System.Numerics.Tensors.TensorPrimitives instead.")]
+[EditorBrowsable(EditorBrowsableState.Never)]
 public static class DivideOperation
 {
     /// <summary>
@@ -36,6 +40,7 @@ public static class DivideOperation
         }
     }
 
+
     /// <summary>
     /// Divide all elements of an array of type <typeparamref name="TNumber"/> by <paramref name="divisor"/>.
     /// </summary>
@@ -47,6 +52,7 @@ public static class DivideOperation
     {
         vector.AsSpan().DivideByInPlace(divisor);
     }
+
 
     #region private ================================================================================
 
@@ -62,6 +68,7 @@ public static class DivideOperation
             {
                 Vector<float> divisorVec = new(divisor);
                 float* pxOneVectorFromEnd = pxEnd - Vector<float>.Count;
+
                 do
                 {
                     *(Vector<float>*)px /= divisorVec;
@@ -77,6 +84,7 @@ public static class DivideOperation
         }
     }
 
+
     private static unsafe void DivideByInPlaceImplementation(Span<double> x, double divisor)
     {
         fixed (double* pxBuffer = x)
@@ -89,6 +97,7 @@ public static class DivideOperation
             {
                 Vector<double> divisorVec = new(divisor);
                 double* pxOneVectorFromEnd = pxEnd - Vector<double>.Count;
+
                 do
                 {
                     *(Vector<double>*)px /= divisorVec;
@@ -105,4 +114,6 @@ public static class DivideOperation
     }
 
     #endregion
+
+
 }

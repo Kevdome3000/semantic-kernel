@@ -1,12 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-
 namespace Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
+
+using System;
+using System.ComponentModel;
+
 
 /// <summary>
 /// Extension methods to calculate the Euclidean length of a vector.
 /// </summary>
+[Obsolete("Numerical operations will be removed in a future release. Use System.Numerics.Tensors.TensorPrimitives instead.")]
+[EditorBrowsable(EditorBrowsableState.Never)]
 public static class EuclideanLengthOperation
 {
     /// <summary>
@@ -21,6 +25,7 @@ public static class EuclideanLengthOperation
         return Math.Sqrt(x.DotProduct(x));
     }
 
+
     /// <summary>
     /// Calculate the Euclidean length of a vector of type <typeparamref name="TNumber"/>.
     /// </summary>
@@ -33,6 +38,7 @@ public static class EuclideanLengthOperation
         var readOnly = x.AsReadOnlySpan();
         return readOnly.EuclideanLength();
     }
+
 
     /// <summary>
     /// Calculate the Euclidean length of a vector of type <typeparamref name="TNumber"/>.

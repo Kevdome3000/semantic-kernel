@@ -13,7 +13,7 @@ public class FunctionCallRequestSettings : OpenAIRequestSettings
     /// <summary>
     ///  The function to call
     /// </summary>
-    public FunctionDefinition? FunctionCall { get; set; }
+    public FunctionDefinition? TargetFunctionCall { get; set; }
 
     /// <summary>
     ///  The functions that can be called by the LLM

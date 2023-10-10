@@ -250,7 +250,7 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
             FrequencyPenalty = openAIRequestSettings.FrequencyPenalty,
             StopSequences = openAIRequestSettings.StopSequences,
             MaxTokens = openAIRequestSettings.MaxTokens,
-            FunctionCall = _targetFunctionDefinition,
+            TargetFunctionCall = _targetFunctionDefinition,
             CallableFunctions = distinctCallableFunctions
         };
 
