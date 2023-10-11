@@ -86,20 +86,26 @@ public static class OpenAIChatCompletionExtensions
 
         try
         {
+
             using var document = JsonDocument.Parse(content);
-
             var root = document.RootElement;
-
-            var propertyEnumerator = root.EnumerateObject();
-
-            if (propertyEnumerator.MoveNext())
+            var rootJsonString = root.GetRawText().Trim();
+            try
             {
-                var firstProperty = propertyEnumerator.Current.Value;
-                var firstElementJsonString = firstProperty.GetRawText().Trim();
-
-                result = JsonSerializer.Deserialize<T>(firstElementJsonString, options ?? new JsonSerializerOptions(JsonSerializerDefaults.Web) { WriteIndented = true });
+                // Try to deserialize the entire response
+                result = JsonSerializer.Deserialize<T>(rootJsonString, options ?? new JsonSerializerOptions(JsonSerializerDefaults.Web) { WriteIndented = true });
             }
-
+            catch (JsonException)
+            {
+                // If the entire response can't be deserialized, try to deserialize the first element
+                var propertyEnumerator = root.EnumerateObject();
+                if (propertyEnumerator.MoveNext())
+                {
+                    var firstProperty = propertyEnumerator.Current.Value;
+                    var firstElementJsonString = firstProperty.GetRawText().Trim();
+                    result = JsonSerializer.Deserialize<T>(firstElementJsonString, options ?? new JsonSerializerOptions(JsonSerializerDefaults.Web) { WriteIndented = true });
+                }
+            }
         }
 
         catch (JsonException ex)
