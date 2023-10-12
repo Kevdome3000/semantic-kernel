@@ -1,14 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Plugins.UnitTests.Core;
+
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Core;
-using Moq;
 using SemanticKernel.UnitTests;
 using Xunit;
 
-namespace SemanticKernel.Plugins.UnitTests.Core;
 
 // TODO: allow clock injection and test all functions
 public class WaitPluginTests
@@ -20,6 +20,7 @@ public class WaitPluginTests
         var _ = new WaitPlugin();
     }
 
+
     [Fact]
     public void ItCanBeImported()
     {
@@ -29,6 +30,7 @@ public class WaitPluginTests
         // Act - Assert no exception occurs e.g. due to reflection
         kernel.ImportFunctions(new WaitPlugin(), "wait");
     }
+
 
     [Theory]
     [InlineData("0", 0)]
@@ -43,15 +45,26 @@ public class WaitPluginTests
     public async Task ItWaitSecondsWhenValidParametersSucceedAsync(string textSeconds, int expectedMilliseconds)
     {
         // Arrange
-        var waitProviderMock = new Mock<WaitPlugin.IWaitProvider>();
-        var target = new WaitPlugin(waitProviderMock.Object);
+        var timeProvider = new FakeTimeProvider();
+        var target = new WaitPlugin(timeProvider);
+        var expectedTimeSpan = TimeSpan.FromMilliseconds(expectedMilliseconds);
 
-        // Act
-        var context = await FunctionHelpers.CallViaKernelAsync(target, "Seconds", ("input", textSeconds));
+        // Act and Assert
+        long startingTime = timeProvider.GetTimestamp();
+        Task wait = FunctionHelpers.CallViaKernelAsync(target, "Seconds", ("input", textSeconds));
 
-        // Assert
-        waitProviderMock.Verify(w => w.DelayAsync(It.IsIn(expectedMilliseconds)), Times.Once);
+        if (expectedMilliseconds > 0)
+        {
+            timeProvider.Advance(TimeSpan.FromMilliseconds(expectedMilliseconds - 1));
+            Assert.False(wait.IsCompleted);
+        }
+
+        timeProvider.Advance(TimeSpan.FromMilliseconds(1));
+        await wait;
+
+        Assert.InRange(timeProvider.GetElapsedTime(startingTime).TotalMilliseconds, expectedMilliseconds, double.MaxValue);
     }
+
 
     [Theory]
     [InlineData("$0")]
@@ -68,8 +81,7 @@ public class WaitPluginTests
     public async Task ItWaitSecondsWhenInvalidParametersFailsAsync(string textSeconds)
     {
         // Arrange
-        var waitProviderMock = new Mock<WaitPlugin.IWaitProvider>();
-        var target = new WaitPlugin(waitProviderMock.Object);
+        var target = new WaitPlugin();
 
         // Act
         var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => FunctionHelpers.CallViaKernelAsync(target, "Seconds", ("input", textSeconds)));

@@ -8,13 +8,11 @@ using System.Threading.Tasks;
 using Fakes;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using TestSettings;
 using Xunit;
-using Xunit.Abstractions;
 
 
 public sealed class PlanTests : IDisposable
@@ -526,7 +524,9 @@ public sealed class PlanTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
 
-        var builder = Kernel.Builder.WithLoggerFactory(this._loggerFactory);
+        var builder = Kernel.Builder
+            .WithLoggerFactory(this._loggerFactory)
+            .WithRetryBasic();
 
         if (useChatModel)
         {

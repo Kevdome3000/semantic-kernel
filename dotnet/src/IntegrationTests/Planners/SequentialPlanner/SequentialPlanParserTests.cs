@@ -9,7 +9,6 @@ using Microsoft.SemanticKernel.Planners.Sequential;
 using Microsoft.SemanticKernel.Planning;
 using TestSettings;
 using Xunit;
-using Xunit.Abstractions;
 
 
 public class SequentialPlanParserTests
@@ -34,6 +33,7 @@ public class SequentialPlanParserTests
         Assert.NotNull(azureOpenAIConfiguration);
 
         IKernel kernel = Kernel.Builder
+            .WithRetryBasic()
             .WithAzureTextCompletionService(
                 deploymentName: azureOpenAIConfiguration.DeploymentName,
                 endpoint: azureOpenAIConfiguration.Endpoint,

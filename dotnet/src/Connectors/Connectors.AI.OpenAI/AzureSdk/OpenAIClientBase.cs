@@ -5,9 +5,6 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using System;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
-using Azure.AI.OpenAI;
-using Azure.Core;
-using Azure.Core.Pipeline;
 using Diagnostics;
 using Extensions.Logging;
 
@@ -43,12 +40,7 @@ public abstract class OpenAIClientBase : ClientBase
 
         ModelId = modelId;
 
-        var options = GetClientOptions();
-
-        if (httpClient != null)
-        {
-            options.Transport = new HttpClientTransport(httpClient);
-        }
+        var options = GetClientOptions(httpClient);
 
         if (!string.IsNullOrWhiteSpace(organization))
         {
@@ -103,13 +95,25 @@ public abstract class OpenAIClientBase : ClientBase
     /// <summary>
     /// Options used by the OpenAI client, e.g. User Agent.
     /// </summary>
-    /// <returns>An instance of <see cref="OpenAIClientOptions"/> with the configured options.</returns>
-    private static OpenAIClientOptions GetClientOptions() => new()
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <returns>An instance of <see cref="OpenAIClientOptions"/>.</returns>
+    private static OpenAIClientOptions GetClientOptions(HttpClient? httpClient)
     {
-        Diagnostics =
+        var options = new OpenAIClientOptions
         {
-            IsTelemetryEnabled = Telemetry.IsTelemetryEnabled,
-            ApplicationId = Telemetry.HttpUserAgent
+            Diagnostics =
+            {
+                IsTelemetryEnabled = Telemetry.IsTelemetryEnabled,
+                ApplicationId = Telemetry.HttpUserAgent,
+            }
+        };
+
+        if (httpClient != null)
+        {
+            options.Transport = new HttpClientTransport(httpClient);
+            options.RetryPolicy = new RetryPolicy(maxRetries: 0); //Disabling Azure SDK retry policy to use the one provided by the custom HTTP client.
         }
-    };
+
+        return options;
+    }
 }
