@@ -118,6 +118,14 @@ public static class OpenAIChatCompletionExtensions
             }
         }
 
+        if (result is not null)
+        {
+            return result;
+        }
+
+        Console.WriteLine($"Error while converting '{content}' to a '{typeof(T)}': {nameof(result)} is null. Emitting damaged response.");
+        requestSettings.EmitDamagedResponse?.Invoke(content);
+
         return result;
     }
 

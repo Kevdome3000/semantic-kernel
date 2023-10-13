@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.FunctionCalling;
 
+using System;
 using System.Collections.Generic;
 using Azure.AI.OpenAI;
 
@@ -13,10 +14,13 @@ public class FunctionCallRequestSettings : OpenAIRequestSettings
     /// <summary>
     ///  The function to call
     /// </summary>
-    public FunctionDefinition? TargetFunctionCall { get; set; }
+    public FunctionDefinition? TargetFunctionCall { get; init; }
 
     /// <summary>
     ///  The functions that can be called by the LLM
     /// </summary>
-    public List<FunctionDefinition>? CallableFunctions { get; set; }
+    public List<FunctionDefinition>? CallableFunctions { get; init; }
+
+    public Action<string>? EmitDamagedResponse { get; set; }
 }
+
