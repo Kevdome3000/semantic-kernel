@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Orchestration;
+
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.SemanticKernel.Orchestration;
 
 /// <summary>
 /// Kernel result after execution.
@@ -19,6 +20,7 @@ public sealed class KernelResult
     /// Kernel result object.
     /// </summary>
     internal object? Value { get; private set; } = null;
+
 
     /// <summary>
     /// Returns kernel result value.
@@ -40,6 +42,7 @@ public sealed class KernelResult
         throw new InvalidCastException($"Cannot cast {this.Value.GetType()} to {typeof(T)}");
     }
 
+
     /// <summary>
     /// Creates instance of <see cref="KernelResult"/> based on function results.
     /// </summary>
@@ -53,4 +56,8 @@ public sealed class KernelResult
             FunctionResults = functionResults
         };
     }
+
+
+    /// <inheritdoc/>
+    public override string ToString() => this.Value?.ToString() ?? base.ToString();
 }
