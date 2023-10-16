@@ -12,7 +12,7 @@ using Diagnostics;
 /// Implements the classic 'heap' data structure. By default, the item with the lowest value is at the top of the heap.
 /// </summary>
 /// <typeparam name="T">Data type.</typeparam>
-public sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
+internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 {
     private const int DefaultCapacity = 7;
     private const int MinCapacity = 0;

@@ -1,13 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Text.Json;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Text;
-
 #pragma warning disable CA1024
 
 namespace Microsoft.SemanticKernel.Orchestration;
+
+using System;
+using System.Text.Json;
+using Diagnostics;
+using Text;
+
 
 /// <summary>
 /// Represents a result from a model execution.
@@ -15,6 +16,7 @@ namespace Microsoft.SemanticKernel.Orchestration;
 public sealed class ModelResult
 {
     private readonly object _result;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ModelResult"/> class with the specified result object.
@@ -27,11 +29,13 @@ public sealed class ModelResult
         this._result = result;
     }
 
+
     /// <summary>
     /// Gets the raw result object stored in the <see cref="ModelResult"/>instance.
     /// </summary>
     /// <returns>The raw result object.</returns>
     public object GetRawResult() => this._result;
+
 
     /// <summary>
     /// Gets the result object stored in the <see cref="ModelResult"/> instance, cast to the specified type.
@@ -49,12 +53,13 @@ public sealed class ModelResult
         throw new InvalidCastException($"Cannot cast {this._result.GetType()} to {typeof(T)}");
     }
 
+
     /// <summary>
     /// Gets the result object stored in the ModelResult instance as a JSON element.
     /// </summary>
     /// <returns>The result object as a JSON element.</returns>
     public JsonElement GetJsonResult()
     {
-        return Json.Deserialize<JsonElement>(this._result.ToJson());
+        return Json.Deserialize<JsonElement>(Json.Serialize(this._result));
     }
 }

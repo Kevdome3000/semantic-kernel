@@ -18,7 +18,7 @@ using Diagnostics;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
 using Orchestration;
-using SemanticFunctions;
+using TemplateEngine;
 
 #pragma warning restore IDE0130
 #pragma warning disable format
@@ -45,7 +45,7 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
     /// <summary>
     /// List of function parameters
     /// </summary>
-    public IReadOnlyList<ParameterView> Parameters => this._promptTemplate.Parameters;
+    public IReadOnlyList<ParameterView> Parameters => _promptTemplate.Parameters;
 
 
     /// <summary>
@@ -53,27 +53,30 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
     /// </summary>
     /// <param name="pluginName">Name of the plugin to which the function being created belongs.</param>
     /// <param name="functionName">Name of the function to create.</param>
-    /// <param name="functionConfig">Semantic function configuration.</param>
+    /// <param name="promptTemplateConfig">Prompt template configuration.</param>
+    /// <param name="promptTemplate">Prompt template.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>SK function instance.</returns>
     public static ISKFunction FromSemanticConfig(
         string pluginName,
         string functionName,
-        SemanticFunctionConfig functionConfig,
+        PromptTemplateConfig promptTemplateConfig,
+        IPromptTemplate promptTemplate,
         ILoggerFactory? loggerFactory = null,
         CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(functionConfig);
+        Verify.NotNull(promptTemplateConfig);
+        Verify.NotNull(promptTemplate);
 
         var func = new SemanticFunction(
-            template: functionConfig.PromptTemplate,
-            description: functionConfig.PromptTemplateConfig.Description,
+            template: promptTemplate,
+            description: promptTemplateConfig.Description,
             pluginName: pluginName,
             functionName: functionName,
             loggerFactory: loggerFactory
         );
-        func.SetAIConfiguration(functionConfig.PromptTemplateConfig.GetDefaultRequestSettings());
+        func.SetAIConfiguration(promptTemplateConfig.GetDefaultRequestSettings());
 
         return func;
     }
@@ -82,7 +85,7 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
     /// <inheritdoc/>
     public FunctionView Describe()
     {
-        return new FunctionView(this.Name, this.PluginName, this.Description) { Parameters = this.Parameters };
+        return new FunctionView(Name, PluginName, Description) { Parameters = Parameters };
     }
 
 
@@ -92,17 +95,9 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        this.AddDefaultValues(context.Variables);
+        AddDefaultValues(context.Variables);
 
-        return await this.RunPromptAsync(this._aiService?.Value, requestSettings ?? this.RequestSettings, context, cancellationToken).ConfigureAwait(false);
-    }
-
-
-    /// <inheritdoc/>
-    public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions)
-    {
-        this._functionCollection = functions;
-        return this;
+        return await RunPromptAsync(_aiService?.Value, requestSettings ?? RequestSettings, context, cancellationToken).ConfigureAwait(false);
     }
 
 
@@ -110,7 +105,7 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
     public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
     {
         Verify.NotNull(serviceFactory);
-        this._aiService = new Lazy<ITextCompletion>(serviceFactory);
+        _aiService = new Lazy<ITextCompletion>(serviceFactory);
         return this;
     }
 
@@ -118,7 +113,7 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
     /// <inheritdoc/>
     public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
     {
-        this.RequestSettings = requestSettings;
+        RequestSettings = requestSettings;
         return this;
     }
 
@@ -128,7 +123,7 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
     /// </summary>
     public void Dispose()
     {
-        if (this._aiService is { IsValueCreated: true } aiService)
+        if (_aiService is { IsValueCreated: true } aiService)
         {
             (aiService.Value as IDisposable)?.Dispose();
         }
@@ -139,7 +134,7 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
     /// JSON serialized string representation of the function.
     /// </summary>
     public override string ToString()
-        => this.ToString(false);
+        => ToString(false);
 
 
     /// <summary>
@@ -160,16 +155,16 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
         Verify.ValidPluginName(pluginName);
         Verify.ValidFunctionName(functionName);
 
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(SemanticFunction)) : NullLogger.Instance;
+        _logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(SemanticFunction)) : NullLogger.Instance;
 
-        this._promptTemplate = template;
-        Verify.ParametersUniqueness(this.Parameters);
+        _promptTemplate = template;
+        Verify.ParametersUniqueness(Parameters);
 
-        this.Name = functionName;
-        this.PluginName = pluginName;
-        this.Description = description;
+        Name = functionName;
+        PluginName = pluginName;
+        Description = description;
 
-        this._view = new(() => new(functionName, pluginName, description, this.Parameters));
+        _view = new(() => new(functionName, pluginName, description, Parameters));
     }
 
 
@@ -178,7 +173,6 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
     private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
     private readonly ILogger _logger;
-    private IReadOnlyFunctionCollection? _functionCollection;
     private Lazy<ITextCompletion>? _aiService;
     private readonly Lazy<FunctionView> _view;
     public IPromptTemplate _promptTemplate { get; }
@@ -192,13 +186,13 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
 
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private string DebuggerDisplay => $"{this.Name} ({this.Description})";
+    private string DebuggerDisplay => $"{Name} ({Description})";
 
 
     /// <summary>Add default values to the context variables if the variable is not defined</summary>
     private void AddDefaultValues(ContextVariables variables)
     {
-        foreach (var parameter in this.Parameters)
+        foreach (var parameter in Parameters)
         {
             if (!variables.ContainsKey(parameter.Name) && parameter.DefaultValue != null)
             {
@@ -220,7 +214,7 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
 
         try
         {
-            string renderedPrompt = await this._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
+            string renderedPrompt = await _promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
             IReadOnlyList<ITextResult> completionResults = await client.GetCompletionsAsync(renderedPrompt, requestSettings, cancellationToken).ConfigureAwait(false);
             string completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
 
@@ -229,13 +223,13 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
 
             var modelResults = completionResults.Select(c => c.ModelResult).ToArray();
 
-            result = new FunctionResult(this.Name, this.PluginName, context, completion);
+            result = new FunctionResult(Name, PluginName, context, completion);
 
             result.Metadata.Add(AIFunctionResultExtensions.ModelResultsMetadataKey, modelResults);
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
-            this._logger?.LogError(ex, "Semantic function {Plugin}.{Name} execution failed with error {Error}", this.PluginName, this.Name, ex.Message);
+            _logger?.LogError(ex, "Semantic function {Plugin}.{Name} execution failed with error {Error}", PluginName, Name, ex.Message);
             throw;
         }
 
@@ -250,7 +244,7 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
     /// <inheritdoc/>
     [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public string SkillName => this.PluginName;
+    public string SkillName => PluginName;
 
     /// <inheritdoc/>
     [Obsolete("Kernel no longer differentiates between Semantic and Native functions. This will be removed in a future release.")]
@@ -259,9 +253,15 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
 
 
     /// <inheritdoc/>
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SetDefaultFunctionCollection instead. This will be removed in a future release.")]
+    [Obsolete("This method is a nop and will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) => this.SetDefaultFunctionCollection(skills);
+    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) => this;
+
+
+    /// <inheritdoc/>
+    [Obsolete("This method is a nop and will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions) => this;
 
     #endregion
 

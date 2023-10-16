@@ -7,11 +7,11 @@ namespace Microsoft.SemanticKernel;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Diagnostics;
 using Extensions.Logging;
-using Extensions.Logging.Abstractions;
 
 #pragma warning restore IDE0130
 
@@ -35,36 +35,27 @@ public class FunctionCollection : IFunctionCollection
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionCollection"/> class.
     /// </summary>
-    /// <param name="readOnlyFunctionCollection">Optional skill collection to copy from</param>
-    /// <param name="loggerFactory">The logger factory.</param>
-    public FunctionCollection(IReadOnlyFunctionCollection? readOnlyFunctionCollection = null, ILoggerFactory? loggerFactory = null)
+    public FunctionCollection() : this((IReadOnlyFunctionCollection?)null)
     {
-        this._logger = loggerFactory?.CreateLogger(typeof(FunctionCollection)) ?? NullLogger.Instance;
+    }
 
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="FunctionCollection"/> class.
+    /// </summary>
+    /// <param name="readOnlyFunctionCollection">Collection of functions with which to populate this instance.</param>
+    public FunctionCollection(IReadOnlyFunctionCollection? readOnlyFunctionCollection)
+    {
         // Important: names are case insensitive
         this._functionCollection = new(StringComparer.OrdinalIgnoreCase);
 
         if (readOnlyFunctionCollection is not null)
         {
-            this.Populate(readOnlyFunctionCollection);
+            foreach (var functionView in readOnlyFunctionCollection.GetFunctionViews())
+            {
+                this.AddFunction(readOnlyFunctionCollection.GetFunction(functionView.PluginName, functionView.Name));
+            }
         }
-    }
-
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="FunctionCollection"/> class.
-    /// </summary>
-    /// <param name="loggerFactory">The logger factory.</param>
-    public FunctionCollection(ILoggerFactory? loggerFactory = null) : this(null, loggerFactory)
-    {
-    }
-
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="FunctionCollection"/> class.
-    /// </summary>
-    public FunctionCollection() : this(null, null)
-    {
     }
 
 
@@ -94,7 +85,7 @@ public class FunctionCollection : IFunctionCollection
     {
         if (!this.TryGetFunction(pluginName, functionName, out ISKFunction? functionInstance))
         {
-            this.ThrowFunctionNotAvailable(pluginName, functionName);
+            throw new SKException($"Function not available {pluginName}.{functionName}");
         }
 
         return functionInstance;
@@ -143,31 +134,34 @@ public class FunctionCollection : IFunctionCollection
     internal string DebuggerDisplay => $"Count = {this._functionCollection.Count}";
 
 
-    #region private ================================================================================
+    #region Obsolete to be removed
 
     /// <summary>
-    /// Populates the current functions collection from another.
+    /// Initializes a new instance of the <see cref="FunctionCollection"/> class.
     /// </summary>
-    /// <param name="readOnlyCollection">The target read only functions collection</param>
-    /// <returns>A new editable functions collection copy</returns>
-    private void Populate(IReadOnlyFunctionCollection readOnlyCollection)
+    /// <param name="readOnlyFunctionCollection">Optional skill collection to copy from</param>
+    /// <param name="loggerFactory">The logger factory.</param>
+    [Obsolete("Use a constructor that doesn't accept an ILoggerFactory. This constructor will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public FunctionCollection(IReadOnlyFunctionCollection? readOnlyFunctionCollection = null, ILoggerFactory? loggerFactory = null) : this(readOnlyFunctionCollection)
     {
-        foreach (var functionView in readOnlyCollection.GetFunctionViews())
-        {
-            this.AddFunction(readOnlyCollection.GetFunction(functionView.PluginName, functionView.Name));
-        }
     }
 
 
-    [DoesNotReturn]
-    private void ThrowFunctionNotAvailable(string pluginName, string functionName)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="FunctionCollection"/> class.
+    /// </summary>
+    /// <param name="loggerFactory">The logger factory.</param>
+    [Obsolete("Use a constructor that doesn't accept an ILoggerFactory. This constructor will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public FunctionCollection(ILoggerFactory? loggerFactory = null) : this()
     {
-        this._logger.LogError("Function not available: plugin:{PluginName} function:{FunctionName}", pluginName, functionName);
-        throw new SKException($"Function not available {pluginName}.{functionName}");
     }
 
+    #endregion
 
-    private readonly ILogger _logger;
+
+    #region private ================================================================================
 
     private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, ISKFunction>> _functionCollection;
 

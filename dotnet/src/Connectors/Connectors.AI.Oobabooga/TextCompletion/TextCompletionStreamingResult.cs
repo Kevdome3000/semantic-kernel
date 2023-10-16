@@ -1,22 +1,26 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
+
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Orchestration;
+using Orchestration;
+using SemanticKernel.AI.TextCompletion;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
 
+[Obsolete("This functionality is available as part of new NuGet package: https://www.nuget.org/packages/MyIA.SemanticKernel.Connectors.AI.Oobabooga/. This will be removed in a future release.")]
 internal sealed class TextCompletionStreamingResult : ITextStreamingResult
 {
     private readonly List<TextCompletionStreamingResponse> _modelResponses;
     private readonly Channel<string> _responseChannel;
 
     public ModelResult ModelResult { get; }
+
 
     public TextCompletionStreamingResult()
     {
@@ -30,16 +34,19 @@ internal sealed class TextCompletionStreamingResult : ITextStreamingResult
         });
     }
 
+
     public void AppendResponse(TextCompletionStreamingResponse response)
     {
         this._modelResponses.Add(response);
         this._responseChannel.Writer.TryWrite(response.Text);
     }
 
+
     public void SignalStreamEnd()
     {
         this._responseChannel.Writer.Complete();
     }
+
 
     public async Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
     {
@@ -52,6 +59,7 @@ internal sealed class TextCompletionStreamingResult : ITextStreamingResult
 
         return resultBuilder.ToString();
     }
+
 
     public async IAsyncEnumerable<string> GetCompletionStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {

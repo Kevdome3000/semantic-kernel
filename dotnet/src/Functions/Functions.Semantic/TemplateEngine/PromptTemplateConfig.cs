@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.SemanticFunctions;
+namespace Microsoft.SemanticKernel.TemplateEngine;
 
 using System;
 using System.Collections.Generic;

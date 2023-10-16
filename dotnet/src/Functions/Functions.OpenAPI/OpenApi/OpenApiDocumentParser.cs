@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -11,16 +13,15 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
+using Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Readers;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
-using Microsoft.SemanticKernel.Text;
+using Model;
+using Text;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
 
 /// <summary>
 /// Parser for OpenAPI documents.
@@ -36,12 +37,13 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(OpenApiDocumentParser)) : NullLogger.Instance;
     }
 
+
     /// <inheritdoc/>
     public async Task<IList<RestApiOperation>> ParseAsync(Stream stream, bool ignoreNonCompliantErrors = false, CancellationToken cancellationToken = default)
     {
         var jsonObject = await this.DowngradeDocumentVersionToSupportedOneAsync(stream, cancellationToken).ConfigureAwait(false);
 
-        using var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(jsonObject.ToJson()));
+        using var memoryStream = new MemoryStream(Json.SerializeToUtf8Bytes(jsonObject));
 
         var result = await this._openApiReader.ReadAsync(memoryStream, cancellationToken).ConfigureAwait(false);
 
@@ -49,6 +51,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 
         return ExtractRestApiOperations(result.OpenApiDocument);
     }
+
 
     #region private
 
@@ -79,6 +82,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     private readonly OpenApiStreamReader _openApiReader = new();
     private readonly ILogger _logger;
 
+
     /// <summary>
     /// Downgrades the version of an OpenAPI document to the latest supported one - 3.0.1.
     /// This class relies on Microsoft.OpenAPI.NET library to work with OpenApi documents.
@@ -92,6 +96,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     private async Task<JsonObject> DowngradeDocumentVersionToSupportedOneAsync(Stream stream, CancellationToken cancellationToken)
     {
         var jsonObject = await ConvertContentToJsonAsync(stream, cancellationToken).ConfigureAwait(false);
+
         if (jsonObject == null)
         {
             // The document is malformed.
@@ -124,6 +129,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
         return jsonObject;
     }
 
+
     /// <summary>
     /// Converts YAML content to JSON content.
     /// The method uses SharpYaml library that comes as a not-direct dependency of Microsoft.OpenAPI.NET library.
@@ -142,6 +148,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 
         return await JsonSerializer.DeserializeAsync<JsonObject>(memoryStream, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
+
 
     /// <summary>
     /// Parses an OpenApi document and extracts REST API operations.
@@ -163,6 +170,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 
         return result;
     }
+
 
     /// <summary>
     /// Creates REST API operation.
@@ -197,6 +205,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 
         return operations;
     }
+
 
     /// <summary>
     /// Creates REST API operation parameters.
@@ -238,6 +247,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
         return result;
     }
 
+
     /// <summary>
     /// Creates REST API operation headers.
     /// </summary>
@@ -247,6 +257,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     {
         return parameters.Where(p => p.In == ParameterLocation.Header).ToDictionary(p => p.Name, p => string.Empty);
     }
+
 
     /// <summary>
     /// Creates REST API operation payload.
@@ -262,6 +273,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
         }
 
         var mediaType = s_supportedMediaTypes.FirstOrDefault(smt => requestBody.Content.ContainsKey(smt));
+
         if (mediaType == null)
         {
             throw new SKException($"Neither of the media types of {operationId} is supported.");
@@ -274,6 +286,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
         return new RestApiOperationPayload(mediaType, payloadProperties, requestBody.Description);
     }
 
+
     /// <summary>
     /// Returns REST API operation payload properties.
     /// </summary>
@@ -282,7 +295,10 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     /// <param name="requiredProperties">List of required properties.</param>
     /// <param name="level">Current level in OpenApi schema.</param>
     /// <returns>The REST API operation payload properties.</returns>
-    private static List<RestApiOperationPayloadProperty> GetPayloadProperties(string operationId, OpenApiSchema? schema, ISet<string> requiredProperties,
+    private static List<RestApiOperationPayloadProperty> GetPayloadProperties(
+        string operationId,
+        OpenApiSchema? schema,
+        ISet<string> requiredProperties,
         int level = 0)
     {
         if (schema == null)
@@ -315,6 +331,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 
         return result;
     }
+
 
     /// <summary>
     /// Returns parameter value.
@@ -380,6 +397,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
         }
     }
 
+
     /// <summary>
     /// Asserts the successful reading of OpenAPI document.
     /// </summary>
@@ -404,4 +422,6 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     }
 
     #endregion
+
+
 }

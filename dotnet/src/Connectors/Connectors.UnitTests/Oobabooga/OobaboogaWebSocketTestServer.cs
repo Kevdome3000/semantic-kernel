@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Connectors.UnitTests.Oobabooga;
+
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -7,7 +9,6 @@ using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
 
-namespace SemanticKernel.Connectors.UnitTests.Oobabooga;
 
 /// <summary>
 /// Represents a WebSocket test server specifically designed for the Oobabooga text completion service.
@@ -15,12 +16,14 @@ namespace SemanticKernel.Connectors.UnitTests.Oobabooga;
 /// The server accepts WebSocket connections, receives requests, and generates responses based on the Oobabooga text completion logic.
 /// The OobaboogaWebSocketTestServer class uses a delegate to handle the request and response logic, allowing customization of the behavior.
 /// </summary>
+[Obsolete("This functionality is available as part of new NuGet package: https://www.nuget.org/packages/MyIA.SemanticKernel.Connectors.AI.Oobabooga/. This will be removed in a future release.")]
 internal sealed class OobaboogaWebSocketTestServer : WebSocketTestServer
 {
     public OobaboogaWebSocketTestServer(string url, Func<string, List<string>> stringHandler, ILogger? logger = null)
         : base(url, bytes => HandleRequest(bytes, stringHandler), logger: logger)
     {
     }
+
 
     private static List<ArraySegment<byte>> HandleRequest(ArraySegment<byte> request, Func<string, List<string>> stringHandler)
     {
@@ -31,6 +34,7 @@ internal sealed class OobaboogaWebSocketTestServer : WebSocketTestServer
 
         var responseSegments = new List<ArraySegment<byte>>();
         int messageNum = 0;
+
         foreach (var responseChunk in responseList)
         {
             var responseObj = new TextCompletionStreamingResponse

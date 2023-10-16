@@ -5,7 +5,7 @@
 namespace Microsoft.SemanticKernel.Planners;
 
 using AI;
-using SemanticFunctions;
+using TemplateEngine;
 
 #pragma warning restore IDE0130
 

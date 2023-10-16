@@ -1,17 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
+
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.AI;
+using SemanticKernel.AI;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
 
 /// <summary>
 /// HTTP schema to perform oobabooga completion request. Contains many parameters, some of which are specific to certain kinds of models.
 /// See <see href="https://github.com/oobabooga/text-generation-webui/blob/main/docs/Generation-parameters.md"/> and subsequent links for additional information.
 /// </summary>
 [Serializable]
+[Obsolete("This functionality is available as part of new NuGet package: https://www.nuget.org/packages/MyIA.SemanticKernel.Connectors.AI.Oobabooga/. This will be removed in a future release.")]
 public sealed class TextCompletionRequest : AIRequestSettings
 {
     /// <summary>

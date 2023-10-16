@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.SemanticFunctions;
+namespace Microsoft.SemanticKernel.TemplateEngine;
 
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Orchestration;
-using TemplateEngine;
 
 
 /// <summary>
@@ -46,11 +45,11 @@ public sealed class PromptTemplate : IPromptTemplate
         PromptTemplateConfig promptTemplateConfig,
         IPromptTemplateEngine promptTemplateEngine)
     {
-        this._template = template;
-        this._templateEngine = promptTemplateEngine;
-        this._promptConfig = promptTemplateConfig;
+        _template = template;
+        _templateEngine = promptTemplateEngine;
+        _promptConfig = promptTemplateConfig;
 
-        this._params = new(() => this.InitParameters());
+        _params = new(() => InitParameters());
     }
 
 
@@ -59,7 +58,7 @@ public sealed class PromptTemplate : IPromptTemplate
     /// </summary>
     /// <returns>List of parameters</returns>
     public IReadOnlyList<ParameterView> Parameters
-        => this._params.Value;
+        => _params.Value;
 
 
     /// <summary>
@@ -70,7 +69,7 @@ public sealed class PromptTemplate : IPromptTemplate
     /// <returns>Prompt rendered to string</returns>
     public async Task<string> RenderAsync(SKContext executionContext, CancellationToken cancellationToken)
     {
-        return await this._templateEngine.RenderAsync(this._template, executionContext, cancellationToken).ConfigureAwait(false);
+        return await _templateEngine.RenderAsync(_template, executionContext, cancellationToken).ConfigureAwait(false);
     }
 
 
@@ -80,9 +79,9 @@ public sealed class PromptTemplate : IPromptTemplate
     private List<ParameterView> InitParameters()
     {
         // Parameters from config.json
-        Dictionary<string, ParameterView> result = new(this._promptConfig.Input.Parameters.Count, StringComparer.OrdinalIgnoreCase);
+        Dictionary<string, ParameterView> result = new(_promptConfig.Input.Parameters.Count, StringComparer.OrdinalIgnoreCase);
 
-        foreach (var p in this._promptConfig.Input.Parameters)
+        foreach (var p in _promptConfig.Input.Parameters)
         {
             result[p.Name] = new ParameterView(p.Name, p.Description, p.DefaultValue);
         }

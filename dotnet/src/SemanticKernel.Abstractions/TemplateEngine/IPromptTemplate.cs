@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.TemplateEngine;
+
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Orchestration;
+using Orchestration;
 
-namespace Microsoft.SemanticKernel.SemanticFunctions;
 
 /// <summary>
 /// Interface for prompt template.
@@ -16,6 +17,7 @@ public interface IPromptTemplate
     /// The list of parameters required by the template, using configuration and template info.
     /// </summary>
     IReadOnlyList<ParameterView> Parameters { get; }
+
 
     /// <summary>
     /// Render the template using the information in the context

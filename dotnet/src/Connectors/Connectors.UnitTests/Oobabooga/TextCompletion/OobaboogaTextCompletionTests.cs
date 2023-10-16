@@ -23,6 +23,7 @@ using Xunit.Abstractions;
 /// <summary>
 /// Unit tests for <see cref="OobaboogaTextCompletion"/> class.
 /// </summary>
+[Obsolete("This functionality is available as part of new NuGet package: https://www.nuget.org/packages/MyIA.SemanticKernel.Connectors.AI.Oobabooga/. This will be removed in a future release.")]
 public sealed class OobaboogaTextCompletionTests : IDisposable
 {
     private readonly XunitLogger<OobaboogaTextCompletion> _logger;

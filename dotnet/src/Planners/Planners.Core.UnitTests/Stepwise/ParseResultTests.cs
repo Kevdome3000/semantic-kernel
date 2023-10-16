@@ -1,12 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.Logging;
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace Microsoft.SemanticKernel.Planners.Stepwise.UnitTests;
+
+using Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
-namespace Microsoft.SemanticKernel.Planners.Stepwise.UnitTests;
 #pragma warning restore IDE0130 // Namespace does not match folder structure
+
 
 public sealed class ParseResultTests
 {
@@ -25,7 +27,7 @@ public sealed class ParseResultTests
     {
         // Arrange
         var kernel = new Mock<IKernel>();
-        kernel.Setup(x => x.LoggerFactory).Returns(new Mock<ILoggerFactory>().Object);
+        kernel.Setup(x => x.LoggerFactory).Returns(NullLoggerFactory.Instance);
 
         var planner = new StepwisePlanner(kernel.Object);
 
@@ -35,6 +37,7 @@ public sealed class ParseResultTests
         // Assert
         Assert.Equal(expected, result.FinalAnswer);
     }
+
 
     [Theory]
     [InlineData("To answer the first part of the question, I need to search.\n[ACTION]\n{\n  \"action\": \"Search\",\n  \"action_variables\": {\"input\": \"something to search\"}\n}", "To answer the first part of the question, I need to search.", "Search", "input", "something to search")]
@@ -69,6 +72,7 @@ public sealed class ParseResultTests
     public void ParseActionReturnsAction(string input, string expectedThought, string expectedAction, params string[] expectedVariables)
     {
         Dictionary<string, string>? expectedDictionary = null;
+
         for (int i = 0; i < expectedVariables.Length; i += 2)
         {
             expectedDictionary ??= new Dictionary<string, string>();
@@ -77,7 +81,7 @@ public sealed class ParseResultTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-        kernel.Setup(x => x.LoggerFactory).Returns(new Mock<ILoggerFactory>().Object);
+        kernel.Setup(x => x.LoggerFactory).Returns(NullLoggerFactory.Instance);
 
         var planner = new StepwisePlanner(kernel.Object);
 
@@ -89,6 +93,7 @@ public sealed class ParseResultTests
         Assert.Equal(expectedDictionary, result.ActionVariables);
         Assert.Equal(expectedThought ?? string.Empty, result.Thought);
     }
+
 
     // Method to create Mock<ISKFunction> objects
     private static Mock<ISKFunction> CreateMockFunction(FunctionView functionView)
