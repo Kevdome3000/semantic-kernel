@@ -12,8 +12,9 @@ using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Microsoft.Extensions.Logging;
 using Orchestration;
-using SemanticFunctions;
+using SemanticKernel.AI;
 using SemanticKernel.AI.TextCompletion;
+using TemplateEngine;
 
 
 /// <summary>
@@ -62,14 +63,17 @@ public static class SKFunctionCallExtensions
         var config = new PromptTemplateConfig
         {
             Description = description ?? "Function call",
-            Completion = new OpenAIRequestSettings()
+            ModelSettings = new List<AIRequestSettings>()
             {
-                MaxTokens = maxTokens,
-                Temperature = temperature,
-                TopP = topP,
-                PresencePenalty = presencePenalty,
-                FrequencyPenalty = frequencyPenalty,
-                StopSequences = stopSequences?.ToList() ?? new List<string>()
+                new OpenAIRequestSettings()
+                {
+                    MaxTokens = maxTokens,
+                    Temperature = temperature,
+                    TopP = topP,
+                    PresencePenalty = presencePenalty,
+                    FrequencyPenalty = frequencyPenalty,
+                    StopSequences = stopSequences?.ToList() ?? new List<string>()
+                }
             }
         };
 

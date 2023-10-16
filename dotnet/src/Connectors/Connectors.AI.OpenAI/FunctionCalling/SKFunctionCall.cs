@@ -12,10 +12,10 @@ using Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Orchestration;
-using SemanticFunctions;
 using SemanticKernel.AI;
 using SemanticKernel.AI.ChatCompletion;
 using SemanticKernel.AI.TextCompletion;
+using TemplateEngine;
 
 #pragma warning disable format
 /// <summary>
