@@ -7,13 +7,11 @@ namespace Microsoft.SemanticKernel;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Diagnostics.Metrics;
 using System.Threading;
 using System.Threading.Tasks;
 using AI;
 using AI.TextCompletion;
 using Extensions.Logging;
-using Extensions.Logging.Abstractions;
 using Orchestration;
 
 #pragma warning restore IDE0130

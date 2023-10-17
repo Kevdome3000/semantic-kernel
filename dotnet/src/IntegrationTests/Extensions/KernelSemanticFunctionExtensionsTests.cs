@@ -14,7 +14,6 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine.Basic;
 using Xunit;
-using Xunit.Abstractions;
 
 
 public sealed class KernelSemanticFunctionExtensionsTests : IDisposable

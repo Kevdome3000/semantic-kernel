@@ -18,8 +18,6 @@ using Microsoft.SemanticKernel.Connectors.Memory.Sqlite;
 using Microsoft.SemanticKernel.Connectors.Memory.Weaviate;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Plugins.Memory;
-using Npgsql;
-using Pgvector.Npgsql;
 using RepoUtils;
 using StackExchange.Redis;
 

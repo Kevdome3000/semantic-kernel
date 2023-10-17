@@ -1,13 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.Orchestration;
-
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using the namespace of IKernel
 namespace Microsoft.SemanticKernel;
+
+using System.Threading.Tasks;
+using Connectors.AI.OpenAI;
+using Orchestration;
+
 #pragma warning restore IDE0130
+
 
 /// <summary>
 /// Class for extension methods for <see cref="IKernel"/> using OpenAI request settings.
@@ -41,6 +43,7 @@ public static class KernelOpenAIExtensions
             description,
             requestSettings);
     }
+
 
     /// <summary>
     /// Invoke a semantic function using the provided prompt template.

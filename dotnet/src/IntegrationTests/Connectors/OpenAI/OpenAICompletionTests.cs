@@ -16,7 +16,6 @@ using Microsoft.SemanticKernel.Reliability.Basic;
 using Microsoft.SemanticKernel.TemplateEngine;
 using TestSettings;
 using Xunit;
-using Xunit.Abstractions;
 
 #pragma warning disable xUnit1004 // Contains test methods used in manual verification. Disable warning for this file only.
 
