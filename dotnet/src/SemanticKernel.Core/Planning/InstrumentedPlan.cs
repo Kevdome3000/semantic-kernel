@@ -18,7 +18,7 @@ using Orchestration;
 /// <summary>
 /// Standard Semantic Kernel callable plan with instrumentation.
 /// </summary>
-public sealed class InstrumentedPlan : IPlan
+internal sealed class InstrumentedPlan : IPlan
 {
     /// <inheritdoc/>
     public string Name => this._plan.Name;

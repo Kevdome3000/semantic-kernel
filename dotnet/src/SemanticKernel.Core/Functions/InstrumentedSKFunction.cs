@@ -22,7 +22,7 @@ using Orchestration;
 /// <summary>
 /// Standard Semantic Kernel callable function with instrumentation.
 /// </summary>
-public sealed class InstrumentedSKFunction : ISKFunction
+internal sealed class InstrumentedSKFunction : ISKFunction
 {
     /// <inheritdoc/>
     public string Name => this._function.Name;
