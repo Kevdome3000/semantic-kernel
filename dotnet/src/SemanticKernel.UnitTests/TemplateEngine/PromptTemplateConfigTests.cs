@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Functions.UnitTests.SemanticFunctions;
+namespace SemanticKernel.UnitTests.TemplateEngine;
 
 using System.Text.Json;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
