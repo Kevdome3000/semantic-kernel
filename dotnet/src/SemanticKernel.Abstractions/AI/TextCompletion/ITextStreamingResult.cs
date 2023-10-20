@@ -1,15 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.AI.TextCompletion;
+
 using System.Collections.Generic;
 using System.Threading;
 
-namespace Microsoft.SemanticKernel.AI.TextCompletion;
 
 /// <summary>
 /// Interface for text completion streaming results.
 /// Provides an asynchronous enumerable of text completion results.
 /// </summary>
-public interface ITextStreamingResult : ITextResult
+public interface ITextStreamingResult : IResultBase
 {
     /// <summary>
     /// Gets an asynchronous enumerable of text completion results.

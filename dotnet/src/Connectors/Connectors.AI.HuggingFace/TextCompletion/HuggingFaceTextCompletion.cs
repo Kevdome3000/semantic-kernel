@@ -1,17 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
+
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
+using Diagnostics;
+using SemanticKernel.AI;
+using SemanticKernel.AI.TextCompletion;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
 
 /// <summary>
 /// HuggingFace text completion service.
@@ -26,6 +26,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
     private readonly string? _endpoint;
     private readonly HttpClient _httpClient;
     private readonly string? _apiKey;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HuggingFaceTextCompletion"/> class.
@@ -43,6 +44,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
 
         this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HuggingFaceTextCompletion"/> class.
@@ -63,17 +65,17 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
         this._endpoint = endpoint;
     }
 
+
     /// <inheritdoc/>
-    public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
+    [Obsolete("Streaming capability is not supported, use GetCompletionsAsync instead")]
+    public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
         string text,
         AIRequestSettings? requestSettings = null,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default)
     {
-        foreach (var completion in await this.ExecuteGetCompletionsAsync(text, cancellationToken).ConfigureAwait(false))
-        {
-            yield return completion;
-        }
+        throw new NotSupportedException("Streaming capability is not supported");
     }
+
 
     /// <inheritdoc/>
     public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
@@ -84,9 +86,10 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
         return await this.ExecuteGetCompletionsAsync(text, cancellationToken).ConfigureAwait(false);
     }
 
+
     #region private ================================================================================
 
-    private async Task<IReadOnlyList<ITextStreamingResult>> ExecuteGetCompletionsAsync(string text, CancellationToken cancellationToken = default)
+    private async Task<IReadOnlyList<ITextResult>> ExecuteGetCompletionsAsync(string text, CancellationToken cancellationToken = default)
     {
         var completionRequest = new TextCompletionRequest
         {
@@ -96,6 +99,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
         using var httpRequestMessage = HttpRequest.CreatePostRequest(this.GetRequestUri(), completionRequest);
 
         httpRequestMessage.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
+
         if (!string.IsNullOrEmpty(this._apiKey))
         {
             httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");
@@ -115,8 +119,9 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
             };
         }
 
-        return completionResponse.ConvertAll(c => new TextCompletionStreamingResult(c));
+        return completionResponse.ConvertAll(c => new TextCompletionResult(c));
     }
+
 
     /// <summary>
     /// Retrieves the request URI based on the provided endpoint and model information.
@@ -141,4 +146,6 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
     }
 
     #endregion
+
+
 }

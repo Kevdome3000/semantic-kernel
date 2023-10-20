@@ -14,7 +14,7 @@ using SemanticKernel.AI.TextCompletion;
 
 
 [Obsolete("This functionality is available as part of new NuGet package: https://www.nuget.org/packages/MyIA.SemanticKernel.Connectors.AI.Oobabooga/. This will be removed in a future release.")]
-internal sealed class TextCompletionStreamingResult : ITextStreamingResult
+internal sealed class TextCompletionStreamingResult : ITextStreamingResult, ITextResult
 {
     private readonly List<TextCompletionStreamingResponse> _modelResponses;
     private readonly Channel<string> _responseChannel;

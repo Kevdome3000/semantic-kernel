@@ -1,22 +1,24 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Orchestration;
+using AzureSdk;
+using Diagnostics;
+using Orchestration;
+using SemanticKernel.AI.ChatCompletion;
+using SemanticKernel.AI.TextCompletion;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 
-internal sealed class ChatWithDataStreamingResult : IChatStreamingResult, ITextStreamingResult
+internal sealed class ChatWithDataStreamingResult : IChatStreamingResult, ITextStreamingResult, IChatResult, ITextResult
 {
     public ModelResult ModelResult { get; }
+
 
     public ChatWithDataStreamingResult(ChatWithDataStreamingResponse response, ChatWithDataStreamingChoice choice)
     {
@@ -31,6 +33,7 @@ internal sealed class ChatWithDataStreamingResult : IChatStreamingResult, ITextS
         this._choice = choice;
     }
 
+
     public async Task<ChatMessageBase> GetChatMessageAsync(CancellationToken cancellationToken = default)
     {
         var message = this._choice.Messages.FirstOrDefault(this.IsValidMessage);
@@ -39,6 +42,7 @@ internal sealed class ChatWithDataStreamingResult : IChatStreamingResult, ITextS
 
         return await Task.FromResult<ChatMessageBase>(result).ConfigureAwait(false);
     }
+
 
     public async IAsyncEnumerable<ChatMessageBase> GetStreamingChatMessageAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -49,6 +53,7 @@ internal sealed class ChatWithDataStreamingResult : IChatStreamingResult, ITextS
             yield return message;
         }
     }
+
 
     public async IAsyncEnumerable<string> GetCompletionStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -61,6 +66,7 @@ internal sealed class ChatWithDataStreamingResult : IChatStreamingResult, ITextS
         }
     }
 
+
     public async Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
     {
         var message = await this.GetChatMessageAsync(cancellationToken).ConfigureAwait(false);
@@ -68,15 +74,18 @@ internal sealed class ChatWithDataStreamingResult : IChatStreamingResult, ITextS
         return message.Content;
     }
 
+
     #region private ================================================================================
 
     private readonly ChatWithDataStreamingChoice _choice;
 
+
     private bool IsValidMessage(ChatWithDataStreamingMessage message)
     {
         return !message.EndTurn &&
-            (message.Delta.Role is null || !message.Delta.Role.Equals(AuthorRole.Tool.Label, StringComparison.Ordinal));
+               (message.Delta.Role is null || !message.Delta.Role.Equals(AuthorRole.Tool.Label, StringComparison.Ordinal));
     }
+
 
     private string? GetToolContent(ChatWithDataStreamingChoice choice)
     {
@@ -87,4 +96,6 @@ internal sealed class ChatWithDataStreamingResult : IChatStreamingResult, ITextS
     }
 
     #endregion
+
+
 }

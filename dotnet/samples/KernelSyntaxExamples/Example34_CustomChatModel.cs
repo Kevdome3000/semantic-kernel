@@ -10,6 +10,7 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 
+
 /**
  * The following example shows how to plug use a custom chat model.
  *
@@ -32,13 +33,15 @@ public sealed class MyChatCompletionService : IChatCompletion
         return chatHistory;
     }
 
+
     public Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(ChatHistory chat, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
     {
         return Task.FromResult<IReadOnlyList<IChatResult>>(new List<IChatResult>
         {
-            new MyChatStreamingResult(MyRoles.Bot, "Hi I'm your SK Custom Assistant and I'm here to help you to create custom chats like this. :)")
+            new MyChatResult(MyRoles.Bot, "Hi I'm your SK Custom Assistant and I'm here to help you to create custom chats like this. :)")
         });
     }
+
 
     public IAsyncEnumerable<IChatStreamingResult> GetStreamingChatCompletionsAsync(ChatHistory chat, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
     {
@@ -49,11 +52,13 @@ public sealed class MyChatCompletionService : IChatCompletion
     }
 }
 
+
 public class MyChatStreamingResult : IChatStreamingResult
 {
     private readonly ChatMessageBase _message;
     private readonly MyRoles _role;
     public ModelResult ModelResult { get; private set; }
+
 
     public MyChatStreamingResult(MyRoles role, string content)
     {
@@ -62,14 +67,11 @@ public class MyChatStreamingResult : IChatStreamingResult
         this.ModelResult = new ModelResult(content);
     }
 
-    public Task<ChatMessageBase> GetChatMessageAsync(CancellationToken cancellationToken = default)
-    {
-        return Task.FromResult(this._message);
-    }
 
     public async IAsyncEnumerable<ChatMessageBase> GetStreamingChatMessageAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var streamedOutput = this._message.Content.Split(' ');
+
         foreach (string word in streamedOutput)
         {
             await Task.Delay(100, cancellationToken);
@@ -78,12 +80,36 @@ public class MyChatStreamingResult : IChatStreamingResult
     }
 }
 
+
+public class MyChatResult : IChatResult
+{
+    private readonly ChatMessageBase _message;
+    private readonly MyRoles _role;
+    public ModelResult ModelResult { get; private set; }
+
+
+    public MyChatResult(MyRoles role, string content)
+    {
+        this._role = role;
+        this._message = new MyChatMessage(role, content);
+        this.ModelResult = new ModelResult(content);
+    }
+
+
+    public Task<ChatMessageBase> GetChatMessageAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(this._message);
+    }
+}
+
+
 public class MyChatMessage : ChatMessageBase
 {
     public MyChatMessage(MyRoles role, string content) : base(new AuthorRole(role.ToString()), content)
     {
     }
 }
+
 
 public class MyChatHistory : ChatHistory
 {
@@ -93,12 +119,14 @@ public class MyChatHistory : ChatHistory
     }
 }
 
+
 public enum MyRoles
 {
     SuperUser,
     User,
     Bot
 }
+
 
 // ReSharper disable once InconsistentNaming
 public static class Example34_CustomChatModel
@@ -121,6 +149,7 @@ public static class Example34_CustomChatModel
         */
     }
 
+
     private static async Task CustomChatSampleAsync()
     {
         Console.WriteLine("======== Custom LLM - Chat Completion ========");
@@ -129,6 +158,7 @@ public static class Example34_CustomChatModel
 
         await StartChatAsync(customChat);
     }
+
 
     private static async Task StartChatAsync(IChatCompletion customChat)
     {
@@ -147,6 +177,7 @@ public static class Example34_CustomChatModel
         await MessageOutputAsync(chatHistory);
     }
 
+
     private static async Task CustomChatStreamSampleAsync()
     {
         Console.WriteLine("======== Custom LLM - Chat Completion Streaming ========");
@@ -155,6 +186,7 @@ public static class Example34_CustomChatModel
 
         await StartStreamingChatAsync(customChat);
     }
+
 
     private static async Task StartStreamingChatAsync(IChatCompletion customChat)
     {
@@ -172,6 +204,7 @@ public static class Example34_CustomChatModel
         await StreamMessageOutputAsync(customChat, chatHistory);
     }
 
+
     /// <summary>
     /// Outputs the last message of the chat history
     /// </summary>
@@ -184,6 +217,7 @@ public static class Example34_CustomChatModel
 
         return Task.CompletedTask;
     }
+
 
     private static async Task StreamMessageOutputAsync(IChatCompletion customChat, MyChatHistory chatHistory, MyRoles myModelRole = MyRoles.Bot)
     {
