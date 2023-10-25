@@ -152,6 +152,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         }
     }
 
+
     /// <summary>
     /// Dispose of resources.
     /// </summary>
@@ -916,6 +917,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     [Obsolete("Use ISKFunction.RequestSettingsFactory instead. This will be removed in a future release.")]
     public AIRequestSettings? RequestSettings { get; }
 
+
     /// <inheritdoc/>
     [Obsolete("Use ISKFunction.SetAIServiceFactory instead. This will be removed in a future release.")]
     public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
@@ -924,6 +926,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         return this;
     }
 
+
     /// <inheritdoc/>
     [Obsolete("Use ISKFunction.SetAIRequestSettingsFactory instead. This will be removed in a future release.")]
     public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
@@ -931,6 +934,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         this.ThrowNotSemantic();
         return this;
     }
+
 
     /// <inheritdoc/>
     [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]

@@ -9,12 +9,12 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.TemplateEngine;
-using Microsoft.SemanticKernel.Text;
+using AI;
+using Diagnostics;
+using Extensions.Logging;
+using Orchestration;
+using TemplateEngine;
+using Text;
 
 #pragma warning restore IDE0130
 

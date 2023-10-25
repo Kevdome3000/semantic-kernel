@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Functions;
+
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Services;
+using AI;
+using Diagnostics;
+using Services;
 
-namespace Microsoft.SemanticKernel.Functions;
 
 /// <summary>
 /// Implementation of <see cref="IAIServiceSelector"/> that selects the AI service based on the order of the model settings.
@@ -20,6 +21,7 @@ internal class OrderedIAIServiceSelector : IAIServiceSelector
         if (modelSettings is null || modelSettings.Count == 0)
         {
             var service = serviceProvider.GetService<T>(null);
+
             if (service is not null)
             {
                 return (service, null);
@@ -28,11 +30,13 @@ internal class OrderedIAIServiceSelector : IAIServiceSelector
         else
         {
             AIRequestSettings? defaultRequestSettings = null;
+
             foreach (var model in modelSettings)
             {
                 if (!string.IsNullOrEmpty(model.ServiceId))
                 {
                     var service = serviceProvider.GetService<T>(model.ServiceId);
+
                     if (service is not null)
                     {
                         return (service, model);
@@ -48,6 +52,7 @@ internal class OrderedIAIServiceSelector : IAIServiceSelector
             if (defaultRequestSettings is not null)
             {
                 var service = serviceProvider.GetService<T>(null);
+
                 if (service is not null)
                 {
                     return (service, defaultRequestSettings);

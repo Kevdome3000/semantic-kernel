@@ -1,16 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using static KernelHttpServer.Config.Constants;
+
+namespace KernelHttpServer;
+
 using System.Collections.Generic;
 using System.Linq;
-using KernelHttpServer.Config;
-using KernelHttpServer.Utils;
+using Config;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Memory;
-using static KernelHttpServer.Config.Constants;
+using Utils;
 
-namespace KernelHttpServer;
 
 internal static class SemanticKernelFactory
 {
@@ -40,6 +42,7 @@ internal static class SemanticKernelFactory
         builder = _ConfigureKernelBuilder(apiConfig, builder, memoryStore);
         return _CompleteKernelSetup(req, builder, logger, skillsToLoad);
     }
+
 
     private static KernelBuilder _ConfigureKernelBuilder(ApiKeyConfig config, KernelBuilder builder, IMemoryStore? memoryStore)
     {
@@ -84,6 +87,7 @@ internal static class SemanticKernelFactory
 
         return builder;
     }
+
 
     private static IKernel _CompleteKernelSetup(HttpRequestData req, KernelBuilder builder, ILogger logger, IEnumerable<string>? skillsToLoad = null)
     {

@@ -1,17 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Globalization;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Services;
-using Moq;
-using Xunit;
-
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.Planners.Sequential.UnitTests;
+
+using System.Globalization;
+using AI;
+using Diagnostics;
+using Extensions.Logging;
+using Moq;
+using Orchestration;
+using Services;
+using Xunit;
+
 #pragma warning restore IDE0130 // Namespace does not match folder structure
+
 
 public sealed class SequentialPlannerTests
 {
@@ -39,6 +41,7 @@ public sealed class SequentialPlannerTests
 
         var functionsView = new List<FunctionView>();
         var functions = new Mock<IFunctionCollection>();
+
         foreach (var (name, pluginName, description, isSemantic) in input)
         {
             var functionView = new FunctionView(name, pluginName, description);
@@ -134,6 +137,7 @@ public sealed class SequentialPlannerTests
         }
     }
 
+
     [Fact]
     public async Task EmptyGoalThrowsAsync()
     {
@@ -145,6 +149,7 @@ public sealed class SequentialPlannerTests
         // Act
         await Assert.ThrowsAsync<SKException>(async () => await planner.CreatePlanAsync(""));
     }
+
 
     [Fact]
     public async Task InvalidXMLThrowsAsync()
@@ -192,6 +197,7 @@ public sealed class SequentialPlannerTests
         await Assert.ThrowsAsync<SKException>(async () => await planner.CreatePlanAsync("goal"));
     }
 
+
     [Fact]
     public void UsesPromptDelegateWhenProvided()
     {
@@ -209,6 +215,7 @@ public sealed class SequentialPlannerTests
         // Assert
         getPromptTemplateMock.Verify(x => x(), Times.Once());
     }
+
 
     // Method to create Mock<ISKFunction> objects
     private static Mock<ISKFunction> CreateMockFunction(FunctionView functionView)

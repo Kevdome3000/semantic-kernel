@@ -1,20 +1,21 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.IntegrationTests.Extensions;
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Fakes;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine.Basic;
-using SemanticKernel.IntegrationTests.Fakes;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.Extensions;
 
 public sealed class KernelSemanticFunctionExtensionsTests : IDisposable
 {
@@ -24,12 +25,13 @@ public sealed class KernelSemanticFunctionExtensionsTests : IDisposable
         this._target = new BasicPromptTemplateEngine();
     }
 
+
     [Fact]
     public async Task ItSupportsFunctionCallsAsync()
     {
         var builder = new KernelBuilder()
-                .WithAIService<ITextCompletion>(null, new RedirectTextCompletion(), true)
-                .WithLoggerFactory(this._logger);
+            .WithAIService<ITextCompletion>(null, new RedirectTextCompletion(), true)
+            .WithLoggerFactory(this._logger);
         IKernel target = builder.Build();
 
         var emailFunctions = target.ImportFunctions(new EmailPluginFake());
@@ -43,12 +45,13 @@ public sealed class KernelSemanticFunctionExtensionsTests : IDisposable
         Assert.Equal("Hey johndoe1234@example.com", actual.GetValue<string>());
     }
 
+
     [Fact]
     public async Task ItSupportsFunctionCallsWithInputAsync()
     {
         var builder = new KernelBuilder()
-                .WithAIService<ITextCompletion>(null, new RedirectTextCompletion(), true)
-                .WithLoggerFactory(this._logger);
+            .WithAIService<ITextCompletion>(null, new RedirectTextCompletion(), true)
+            .WithLoggerFactory(this._logger);
         IKernel target = builder.Build();
 
         var emailFunctions = target.ImportFunctions(new EmailPluginFake());
@@ -62,13 +65,16 @@ public sealed class KernelSemanticFunctionExtensionsTests : IDisposable
         Assert.Equal("Hey a person@example.com", actual.GetValue<string>());
     }
 
+
     private readonly RedirectOutput _logger;
     private readonly BasicPromptTemplateEngine _target;
+
 
     public void Dispose()
     {
         this._logger.Dispose();
     }
+
 
     private sealed class RedirectTextCompletion : ITextCompletion
     {
@@ -77,22 +83,27 @@ public sealed class KernelSemanticFunctionExtensionsTests : IDisposable
             return Task.FromResult<IReadOnlyList<ITextResult>>(new List<ITextResult> { new RedirectTextCompletionResult(text) });
         }
 
+
         IAsyncEnumerable<ITextStreamingResult> ITextCompletion.GetStreamingCompletionsAsync(string text, AIRequestSettings? requestSettings, CancellationToken cancellationToken)
         {
             throw new NotImplementedException(); // TODO
         }
     }
 
+
     internal sealed class RedirectTextCompletionResult : ITextResult
     {
         private readonly string _completion;
+
 
         public RedirectTextCompletionResult(string completion)
         {
             this._completion = completion;
         }
 
+
         public ModelResult ModelResult => new(this._completion);
+
 
         public Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
         {

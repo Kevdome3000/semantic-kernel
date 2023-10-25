@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace OpenApiPluginsExample;
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -18,7 +20,6 @@ using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
 
-namespace OpenApiPluginsExample;
 
 /// <summary>
 /// The chat example below is meant to demonstrate the use of an OpenAPI-based plugin (e.g., GitHub),
@@ -49,7 +50,7 @@ internal sealed class Program
 
         // Initialize semantic kernel
         AIServiceOptions aiOptions = configuration.GetRequiredSection(AIServiceOptions.PropertyName).Get<AIServiceOptions>()
-            ?? throw new InvalidOperationException($"Missing configuration for {AIServiceOptions.PropertyName}.");
+                                     ?? throw new InvalidOperationException($"Missing configuration for {AIServiceOptions.PropertyName}.");
 
         KernelBuilder builder = new KernelBuilder()
             .WithLogger(loggerFactory.CreateLogger<IKernel>());
@@ -70,7 +71,7 @@ internal sealed class Program
 
         // Register the GitHub plugin using an OpenAPI definition containing only pull request GET operations.
         GitHubPluginOptions gitHubOptions = configuration.GetRequiredSection(GitHubPluginOptions.PropertyName).Get<GitHubPluginOptions>()
-            ?? throw new InvalidOperationException($"Missing configuration for {GitHubPluginOptions.PropertyName}.");
+                                            ?? throw new InvalidOperationException($"Missing configuration for {GitHubPluginOptions.PropertyName}.");
 
         BearerAuthenticationProvider authenticationProvider = new(() => Task.FromResult(gitHubOptions.Key));
 
@@ -86,6 +87,7 @@ internal sealed class Program
         // Chat loop
         IChatCompletion chatGPT = kernel.GetService<IChatCompletion>();
         OpenAIChatHistory chatHistory = (OpenAIChatHistory)chatGPT.CreateNewChat("You are a helpful, friendly, intelligent assistant that is good at conversation.");
+
         while (true)
         {
             Console.WriteLine("----------------");
@@ -100,6 +102,7 @@ internal sealed class Program
             // Add GitHub's response, if any, to the chat history.
             int planResultTokenAllowance = (int)(aiOptions.TokenLimit * 0.25); // Allow up to 25% of our token limit to be from GitHub.
             string planResult = await PlanGitHubPluginAsync(gitHubOptions, planner, chatHistory, input, planResultTokenAllowance, logger);
+
             if (!string.IsNullOrWhiteSpace(planResult))
             {
                 chatHistory.AddUserMessage(planResult);
@@ -111,6 +114,7 @@ internal sealed class Program
             // Remove earlier messages until we are back within our token limit.
             // (Note this sample does not implement long-term memory)
             int tokenCount = CountTokens(JsonSerializer.Serialize(chatHistory));
+
             while (tokenCount > aiOptions.TokenLimit)
             {
                 chatHistory.Messages.RemoveAt(1);
@@ -127,11 +131,17 @@ internal sealed class Program
         }
     }
 
+
     /// <summary>
     /// Run the planner to decide whether to run the GitHub plugin function and add the result to the chat history.
     /// </summary>
     private static async Task<string> PlanGitHubPluginAsync(
-        GitHubPluginOptions gitHubOptions, ActionPlanner planner, OpenAIChatHistory chatHistory, string input, int tokenAllowance, ILogger logger)
+        GitHubPluginOptions gitHubOptions,
+        ActionPlanner planner,
+        OpenAIChatHistory chatHistory,
+        string input,
+        int tokenAllowance,
+        ILogger logger)
     {
         // Ask the planner to create a plan based off the user's input. If the plan elicits no steps, continue normally.
         Plan plan = await planner.CreatePlanAsync(input);
@@ -142,6 +152,7 @@ internal sealed class Program
 
         // Run the plan
         SKContext planContext = await plan.InvokeAsync(logger: logger);
+
         if (planContext.ErrorOccurred)
         {
             logger.LogError(planContext.LastException!, "Unexpected failure executing plan");
@@ -161,6 +172,7 @@ internal sealed class Program
         return OptimizeGitHubPullRequestResponse(planResult, tokenAllowance);
     }
 
+
     /// <summary>
     /// Reduce the size of GitHub PullRequest responses.
     /// </summary>
@@ -168,6 +180,7 @@ internal sealed class Program
     {
         string result;
         List<PullRequest> pullRequests = new();
+
         if (JsonDocument.Parse(planResult).RootElement.ValueKind == JsonValueKind.Array)
         {
             pullRequests.AddRange(JsonSerializer.Deserialize<PullRequest[]>(planResult)!);
@@ -175,6 +188,7 @@ internal sealed class Program
             // tokens
             result = JsonSerializer.Serialize(pullRequests);
             int tokensUsed = CountTokens(result);
+
             while (tokensUsed > tokenAllowance)
             {
                 pullRequests.RemoveAt(pullRequests.Count - 1);
@@ -191,6 +205,7 @@ internal sealed class Program
         return result;
     }
 
+
     /// <summary>
     /// Try to extract json from the planner response as if it were from an OpenAPI plugin.
     /// </summary>
@@ -200,9 +215,11 @@ internal sealed class Program
         {
             JsonNode? jsonNode = JsonNode.Parse(openApiPluginResponse);
             string contentType = jsonNode?["contentType"]?.ToString() ?? string.Empty;
+
             if (contentType.StartsWith("application/json", StringComparison.InvariantCultureIgnoreCase))
             {
                 var content = jsonNode?["content"]?.ToString() ?? string.Empty;
+
                 if (!string.IsNullOrWhiteSpace(content))
                 {
                     json = content;
@@ -222,6 +239,7 @@ internal sealed class Program
         json = string.Empty;
         return false;
     }
+
 
     /// <summary>
     /// Custom token counter.

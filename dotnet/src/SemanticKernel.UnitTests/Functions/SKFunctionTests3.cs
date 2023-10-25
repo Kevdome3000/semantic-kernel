@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.UnitTests.Functions;
+
 using System;
 using System.ComponentModel;
 using System.Linq;
@@ -11,7 +13,6 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Functions;
 
 public sealed class SKFunctionTests3
 {
@@ -32,6 +33,7 @@ public sealed class SKFunctionTests3
         Assert.All(functions, Assert.NotNull);
     }
 
+
     [Fact]
     public void ItDoesNotThrowForValidFunctionsViaPlugin()
     {
@@ -49,6 +51,7 @@ public sealed class SKFunctionTests3
         Assert.All(functions, f => Assert.NotNull(f));
     }
 
+
     [Fact]
     public void ItThrowsForInvalidFunctions()
     {
@@ -61,6 +64,7 @@ public sealed class SKFunctionTests3
 
         // Act - Assert that no exception occurs
         var count = 0;
+
         foreach (var method in methods)
         {
             try
@@ -76,6 +80,7 @@ public sealed class SKFunctionTests3
         // Assert
         Assert.Equal(4, count);
     }
+
 
     [Fact]
     public async Task ItCanImportNativeFunctionsAsync()
@@ -108,6 +113,7 @@ public sealed class SKFunctionTests3
         Assert.Equal("YES", context.Variables["canary"]);
         Assert.Equal("YES", result.Context.Variables["canary"]);
     }
+
 
     [Fact]
     public async Task ItCanImportNativeFunctionsWithExternalReferencesAsync()
@@ -143,6 +149,7 @@ public sealed class SKFunctionTests3
         Assert.Equal("YES", result.Context.Variables["canary"]);
     }
 
+
     private sealed class InvalidPlugin
     {
         [SKFunction]
@@ -150,23 +157,30 @@ public sealed class SKFunctionTests3
         {
         }
 
+
         [SKFunction]
         public void Invalid2(string y, CustomUnknownType n)
         {
         }
+
 
         [SKFunction]
         public void Invalid3(SKContext context1, SKContext context2)
         {
         }
 
+
         [SKFunction]
         public void Invalid4(CancellationToken ct1, CancellationToken ct2)
         {
         }
 
-        public struct CustomUnknownType { }
+
+        public struct CustomUnknownType
+        {
+        }
     }
+
 
     private sealed class LocalExamplePlugin
     {
@@ -175,17 +189,20 @@ public sealed class SKFunctionTests3
         {
         }
 
+
         [SKFunction]
         public string Type02()
         {
             return "";
         }
 
+
         [SKFunction]
         public string? Type02Nullable()
         {
             return null;
         }
+
 
         [SKFunction]
         public async Task<string> Type03Async()
@@ -194,6 +211,7 @@ public sealed class SKFunctionTests3
             return "";
         }
 
+
         [SKFunction]
         public async Task<string?> Type03NullableAsync()
         {
@@ -201,15 +219,18 @@ public sealed class SKFunctionTests3
             return null;
         }
 
+
         [SKFunction]
         public void Type04(SKContext context)
         {
         }
 
+
         [SKFunction]
         public void Type04Nullable(SKContext? context)
         {
         }
+
 
         [SKFunction]
         public string Type05(SKContext context)
@@ -217,11 +238,13 @@ public sealed class SKFunctionTests3
             return "";
         }
 
+
         [SKFunction]
         public string? Type05Nullable(SKContext? context)
         {
             return null;
         }
+
 
         [SKFunction]
         public async Task<string> Type06Async(SKContext context)
@@ -230,6 +253,7 @@ public sealed class SKFunctionTests3
             return "";
         }
 
+
         [SKFunction]
         public async Task<SKContext> Type07Async(SKContext context)
         {
@@ -237,15 +261,18 @@ public sealed class SKFunctionTests3
             return context;
         }
 
+
         [SKFunction]
         public void Type08(string input)
         {
         }
 
+
         [SKFunction]
         public void Type08Nullable(string? input)
         {
         }
+
 
         [SKFunction]
         public string Type09(string input)
@@ -253,11 +280,13 @@ public sealed class SKFunctionTests3
             return "";
         }
 
+
         [SKFunction]
         public string? Type09Nullable(string? input = null)
         {
             return "";
         }
+
 
         [SKFunction]
         public async Task<string> Type10Async(string input)
@@ -266,6 +295,7 @@ public sealed class SKFunctionTests3
             return "";
         }
 
+
         [SKFunction]
         public async Task<string?> Type10NullableAsync(string? input)
         {
@@ -273,21 +303,25 @@ public sealed class SKFunctionTests3
             return "";
         }
 
+
         [SKFunction]
         public void Type11(string input, SKContext context)
         {
         }
+
 
         [SKFunction]
         public void Type11Nullable(string? input = null, SKContext? context = null)
         {
         }
 
+
         [SKFunction]
         public string Type12(string input, SKContext context)
         {
             return "";
         }
+
 
         [SKFunction]
         public async Task<string> Type13Async(string input, SKContext context)
@@ -296,6 +330,7 @@ public sealed class SKFunctionTests3
             return "";
         }
 
+
         [SKFunction]
         public async Task<SKContext> Type14Async(string input, SKContext context)
         {
@@ -303,11 +338,13 @@ public sealed class SKFunctionTests3
             return context;
         }
 
+
         [SKFunction]
         public async Task Type15Async(string input)
         {
             await Task.Delay(0);
         }
+
 
         [SKFunction]
         public async Task Type16Async(SKContext context)
@@ -315,11 +352,13 @@ public sealed class SKFunctionTests3
             await Task.Delay(0);
         }
 
+
         [SKFunction]
         public async Task Type17Async(string input, SKContext context)
         {
             await Task.Delay(0);
         }
+
 
         [SKFunction]
         public async Task Type18Async()
@@ -327,11 +366,13 @@ public sealed class SKFunctionTests3
             await Task.Delay(0);
         }
 
+
         [SKFunction]
         public async ValueTask ReturnsValueTaskAsync()
         {
             await Task.Delay(0);
         }
+
 
         [SKFunction]
         public async ValueTask<string> ReturnsValueTaskStringAsync()
@@ -340,12 +381,14 @@ public sealed class SKFunctionTests3
             return "hello world";
         }
 
+
         [SKFunction]
         public async ValueTask<SKContext> ReturnsValueTaskContextAsync(SKContext context)
         {
             await Task.Delay(0);
             return context;
         }
+
 
         [SKFunction]
         public string WithPrimitives(

@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Plugins.UnitTests.Core;
+
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -7,7 +9,6 @@ using Microsoft.SemanticKernel.Plugins.Core;
 using SemanticKernel.UnitTests;
 using Xunit;
 
-namespace SemanticKernel.Plugins.UnitTests.Core;
 
 public class MathPluginTests
 {
@@ -18,6 +19,7 @@ public class MathPluginTests
         var _ = new MathPlugin();
     }
 
+
     [Fact]
     public void ItCanBeImported()
     {
@@ -27,6 +29,7 @@ public class MathPluginTests
         // Act - Assert no exception occurs e.g. due to reflection
         kernel.ImportFunctions(new MathPlugin(), "math");
     }
+
 
     [Theory]
     [InlineData(10, 10, 20)]
@@ -49,6 +52,7 @@ public class MathPluginTests
         Assert.Equal(expectedResult, result.GetValue<int>());
     }
 
+
     [Theory]
     [InlineData(10, 10, 0)]
     [InlineData(0, 10, -10)]
@@ -64,11 +68,12 @@ public class MathPluginTests
         var target = new MathPlugin();
 
         // Act
-        var result = await FunctionHelpers.CallViaKernelAsync(target, "Subtract", ("input", initialValue), ("amount", amount));    // Assert
+        var result = await FunctionHelpers.CallViaKernelAsync(target, "Subtract", ("input", initialValue), ("amount", amount)); // Assert
 
         // Assert
         Assert.Equal(expectedResult, result.GetValue<int>());
     }
+
 
     [Theory]
     [InlineData("$0")]
@@ -94,6 +99,7 @@ public class MathPluginTests
         AssertExtensions.AssertIsArgumentOutOfRange(ex, "value", initialValue);
     }
 
+
     [Theory]
     [InlineData("$0")]
     [InlineData("one hundred")]
@@ -118,6 +124,7 @@ public class MathPluginTests
         AssertExtensions.AssertIsArgumentOutOfRange(ex, "amount", amount);
     }
 
+
     [Theory]
     [InlineData("$0")]
     [InlineData("one hundred")]
@@ -141,6 +148,7 @@ public class MathPluginTests
         // Assert
         AssertExtensions.AssertIsArgumentOutOfRange(ex, "value", initialValue);
     }
+
 
     [Theory]
     [InlineData("$0")]

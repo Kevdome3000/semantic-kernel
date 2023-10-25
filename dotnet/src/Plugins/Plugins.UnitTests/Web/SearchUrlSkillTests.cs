@@ -1,16 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Plugins.UnitTests.Web;
+
 using System.Text.Encodings.Web;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Xunit;
 
-namespace SemanticKernel.Plugins.UnitTests.Web;
 
 public class SearchUrlPluginTests
 {
     private const string AnyInput = "<something to search for>";
     private readonly string _encodedInput = UrlEncoder.Default.Encode(AnyInput);
+
 
     [Fact]
     public void ItCanBeInstantiated()
@@ -18,6 +20,7 @@ public class SearchUrlPluginTests
         // Act - Assert no exception occurs
         var _ = new SearchUrlPlugin();
     }
+
 
     [Fact]
     public void ItCanBeImported()
@@ -28,6 +31,7 @@ public class SearchUrlPluginTests
         // Act - Assert no exception occurs e.g. due to reflection
         kernel.ImportFunctions(new SearchUrlPlugin(), "search");
     }
+
 
     [Fact]
     public void AmazonSearchUrlSucceeds()
@@ -42,6 +46,7 @@ public class SearchUrlPluginTests
         Assert.Equal($"https://www.amazon.com/s?k={this._encodedInput}", actual);
     }
 
+
     [Fact]
     public void BingSearchUrlSucceeds()
     {
@@ -54,6 +59,7 @@ public class SearchUrlPluginTests
         // Assert
         Assert.Equal($"https://www.bing.com/search?q={this._encodedInput}", actual);
     }
+
 
     [Fact]
     public void BingImagesSearchUrlSucceeds()
@@ -68,6 +74,7 @@ public class SearchUrlPluginTests
         Assert.Equal($"https://www.bing.com/images/search?q={this._encodedInput}", actual);
     }
 
+
     [Fact]
     public void BingMapsSearchUrl()
     {
@@ -80,6 +87,7 @@ public class SearchUrlPluginTests
         // Assert
         Assert.Equal($"https://www.bing.com/maps?q={this._encodedInput}", actual);
     }
+
 
     [Fact]
     public void BingShoppingSearchUrl()
@@ -94,6 +102,7 @@ public class SearchUrlPluginTests
         Assert.Equal($"https://www.bing.com/shop?q={this._encodedInput}", actual);
     }
 
+
     [Fact]
     public void BingNewsSearchUrl()
     {
@@ -106,6 +115,7 @@ public class SearchUrlPluginTests
         // Assert
         Assert.Equal($"https://www.bing.com/news/search?q={this._encodedInput}", actual);
     }
+
 
     [Fact]
     public void BingTravelSearchUrl()
@@ -120,6 +130,7 @@ public class SearchUrlPluginTests
         Assert.Equal($"https://www.bing.com/travel/search?q={this._encodedInput}", actual);
     }
 
+
     [Fact]
     public void FacebookSearchUrl()
     {
@@ -132,6 +143,7 @@ public class SearchUrlPluginTests
         // Assert
         Assert.Equal($"https://www.facebook.com/search/top/?q={this._encodedInput}", actual);
     }
+
 
     [Fact]
     public void GitHubSearchUrl()
@@ -146,6 +158,7 @@ public class SearchUrlPluginTests
         Assert.Equal($"https://github.com/search?q={this._encodedInput}", actual);
     }
 
+
     [Fact]
     public void LinkedInSearchUrl()
     {
@@ -159,6 +172,7 @@ public class SearchUrlPluginTests
         Assert.Equal($"https://www.linkedin.com/search/results/index/?keywords={this._encodedInput}", actual);
     }
 
+
     [Fact]
     public void TwitterSearchUrl()
     {
@@ -171,6 +185,7 @@ public class SearchUrlPluginTests
         // Assert
         Assert.Equal($"https://twitter.com/search?q={this._encodedInput}", actual);
     }
+
 
     [Fact]
     public void WikipediaSearchUrl()

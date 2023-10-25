@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Planning;
+
 using System;
 
-namespace Microsoft.SemanticKernel.Planning;
 
 /// <summary>
 /// Interface for standard Semantic Kernel callable plan.

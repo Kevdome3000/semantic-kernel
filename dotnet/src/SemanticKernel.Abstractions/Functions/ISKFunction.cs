@@ -35,6 +35,7 @@ public interface ISKFunction
     /// </summary>
     string Description { get; }
 
+
     /// <summary>
     /// Returns a description of the function, including parameters.
     /// </summary>
@@ -54,6 +55,7 @@ public interface ISKFunction
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default);
 
+
     #region Obsolete
 
     /// <summary>
@@ -61,6 +63,7 @@ public interface ISKFunction
     /// </summary>
     [Obsolete("Use PromptTemplateConfig.ModelSettings instead. This will be removed in a future release.")]
     AIRequestSettings? RequestSettings { get; }
+
 
     /// <summary>
     /// Set the AI service used by the semantic function, passing a factory method.
@@ -79,6 +82,7 @@ public interface ISKFunction
     /// <returns>Self instance</returns>
     [Obsolete("Use implementation of IAIServiceConfigurationProvider instead. This will be removed in a future release.")]
     ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings);
+
 
     /// <summary>
     /// Name of the plugin containing the function. The name is used by the function collection and in prompt templates e.g. {{skillName.functionName}}

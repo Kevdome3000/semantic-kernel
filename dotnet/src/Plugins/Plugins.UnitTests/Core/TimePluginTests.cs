@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Plugins.UnitTests.Core;
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -9,7 +11,6 @@ using Microsoft.SemanticKernel.Plugins.Core;
 using SemanticKernel.UnitTests;
 using Xunit;
 
-namespace SemanticKernel.Plugins.UnitTests.Core;
 
 // TODO: allow clock injection and test all functions
 public class TimePluginTests
@@ -21,6 +22,7 @@ public class TimePluginTests
         var _ = new TimePlugin();
     }
 
+
     [Fact]
     public void ItCanBeImported()
     {
@@ -30,6 +32,7 @@ public class TimePluginTests
         // Act - Assert no exception occurs e.g. due to reflection
         kernel.ImportFunctions(new TimePlugin(), "time");
     }
+
 
     [Fact]
     public void DaysAgo()
@@ -44,6 +47,7 @@ public class TimePluginTests
         Assert.Equal(expected.Year, returned.Year);
     }
 
+
     [Fact]
     public void Day()
     {
@@ -53,6 +57,7 @@ public class TimePluginTests
         Assert.Equal(expected, result);
         Assert.True(int.TryParse(result, out _));
     }
+
 
     [Fact]
     public async Task LastMatchingDayBadInputAsync()
@@ -64,12 +69,14 @@ public class TimePluginTests
         AssertExtensions.AssertIsArgumentOutOfRange(ex, "input", "not a day name");
     }
 
+
     [Theory]
     [MemberData(nameof(DayOfWeekEnumerator))]
     public void LastMatchingDay(DayOfWeek dayName)
     {
         int steps = 0;
         DateTime date = DateTime.Now.Date.AddDays(-1);
+
         while (date.DayOfWeek != dayName && steps <= 7)
         {
             date = date.AddDays(-1);
@@ -85,6 +92,7 @@ public class TimePluginTests
         Assert.Equal(date.Month, returned.Month);
         Assert.Equal(date.Year, returned.Year);
     }
+
 
     public static IEnumerable<object[]> DayOfWeekEnumerator()
     {

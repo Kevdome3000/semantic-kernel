@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Connectors.UnitTests.OpenAI;
+
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.OpenAI;
 
 /// <summary>
 /// Unit tests of <see cref="OpenAIKernelBuilderExtensions"/>.
@@ -25,6 +26,7 @@ public class AIServicesOpenAIExtensionsTests
         Assert.NotNull(targetKernel.GetService<ITextEmbeddingGeneration>("azure"));
     }
 
+
     [Fact]
     public void ItTellsIfAServiceIsAvailable()
     {
@@ -41,6 +43,7 @@ public class AIServicesOpenAIExtensionsTests
         Assert.NotNull(targetKernel.GetService<ITextEmbeddingGeneration>("azure"));
         Assert.NotNull(targetKernel.GetService<ITextCompletion>("oai"));
     }
+
 
     [Fact]
     public void ItCanOverwriteServices()

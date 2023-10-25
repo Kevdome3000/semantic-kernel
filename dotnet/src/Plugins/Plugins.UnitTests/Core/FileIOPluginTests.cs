@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Plugins.UnitTests.Core;
+
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -7,7 +9,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Xunit;
 
-namespace SemanticKernel.Plugins.UnitTests.Core;
 
 public class FileIOPluginTests
 {
@@ -17,6 +18,7 @@ public class FileIOPluginTests
         // Act - Assert no exception occurs
         _ = new FileIOPlugin();
     }
+
 
     [Fact]
     public void ItCanBeImported()
@@ -30,6 +32,7 @@ public class FileIOPluginTests
         // Assert no exception occurs e.g. due to reflection
         Assert.NotNull(functions);
     }
+
 
     [Fact]
     public async Task ItCanReadAsync()
@@ -45,6 +48,7 @@ public class FileIOPluginTests
         // Assert
         Assert.Equal("hello world", result);
     }
+
 
     [Fact]
     public async Task ItCannotReadAsync()
@@ -64,6 +68,7 @@ public class FileIOPluginTests
         _ = await Assert.ThrowsAsync<FileNotFoundException>(Fn);
     }
 
+
     [Fact]
     public async Task ItCanWriteAsync()
     {
@@ -77,6 +82,7 @@ public class FileIOPluginTests
         // Assert
         Assert.Equal("hello world", await File.ReadAllTextAsync(path));
     }
+
 
     [Fact]
     public async Task ItCannotWriteAsync()

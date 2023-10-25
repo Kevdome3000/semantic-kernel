@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.UnitTests.Functions;
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -11,7 +13,7 @@ using Microsoft.SemanticKernel.Functions;
 using Microsoft.SemanticKernel.Services;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Functions;
+
 public class OrderedIAIServiceConfigurationProviderTests
 {
     [Fact]
@@ -27,6 +29,7 @@ public class OrderedIAIServiceConfigurationProviderTests
         // Assert
         Assert.Throws<SKException>(() => configurationProvider.SelectAIService<ITextCompletion>(serviceProvider, modelSettings));
     }
+
 
     [Fact]
     public void ItGetsAIServiceConfigurationForSingleAIService()
@@ -46,6 +49,7 @@ public class OrderedIAIServiceConfigurationProviderTests
         Assert.Null(defaultRequestSettings);
     }
 
+
     [Fact]
     public void ItGetsAIServiceConfigurationForSingleTextCompletion()
     {
@@ -63,6 +67,7 @@ public class OrderedIAIServiceConfigurationProviderTests
         Assert.NotNull(aiService);
         Assert.Null(defaultRequestSettings);
     }
+
 
     [Fact]
     public void ItAIServiceConfigurationForTextCompletionByServiceId()
@@ -83,6 +88,7 @@ public class OrderedIAIServiceConfigurationProviderTests
         Assert.Null(defaultRequestSettings);
     }
 
+
     [Fact]
     public void ItThrowsAnSKExceptionForNotFoundService()
     {
@@ -102,6 +108,7 @@ public class OrderedIAIServiceConfigurationProviderTests
         Assert.Throws<SKException>(() => configurationProvider.SelectAIService<ITextCompletion>(serviceProvider, modelSettings));
     }
 
+
     [Fact]
     public void ItUsesDefaultServiceForNullModelSettings()
     {
@@ -119,6 +126,7 @@ public class OrderedIAIServiceConfigurationProviderTests
         Assert.Equal(serviceProvider.GetService<ITextCompletion>("service2"), aiService);
         Assert.Null(defaultRequestSettings);
     }
+
 
     [Fact]
     public void ItUsesDefaultServiceForEmptyModelSettings()
@@ -138,6 +146,7 @@ public class OrderedIAIServiceConfigurationProviderTests
         Assert.Equal(serviceProvider.GetService<ITextCompletion>("service2"), aiService);
         Assert.Null(defaultRequestSettings);
     }
+
 
     [Fact]
     public void ItUsesDefaultServiceAndSettings()
@@ -161,6 +170,7 @@ public class OrderedIAIServiceConfigurationProviderTests
         Assert.Equal(modelSettings[0], defaultRequestSettings);
     }
 
+
     [Fact]
     public void ItUsesDefaultServiceAndSettingsEmptyServiceId()
     {
@@ -183,6 +193,7 @@ public class OrderedIAIServiceConfigurationProviderTests
         Assert.Equal(modelSettings[0], defaultRequestSettings);
     }
 
+
     [Theory]
     [InlineData(new string[] { "service1" }, "service1")]
     [InlineData(new string[] { "service2" }, "service2")]
@@ -197,6 +208,7 @@ public class OrderedIAIServiceConfigurationProviderTests
         serviceCollection.SetService<ITextCompletion>("service3", new TextCompletion());
         var serviceProvider = serviceCollection.Build();
         var modelSettings = new List<AIRequestSettings>();
+
         foreach (var serviceId in serviceIds)
         {
             modelSettings.Add(new AIRequestSettings() { ServiceId = serviceId });
@@ -211,10 +223,13 @@ public class OrderedIAIServiceConfigurationProviderTests
         Assert.Equal(expectedServiceId, defaultRequestSettings!.ServiceId);
     }
 
+
     #region private
+
     private sealed class AIService : IAIService
     {
     }
+
 
     private sealed class TextCompletion : ITextCompletion
     {
@@ -223,10 +238,14 @@ public class OrderedIAIServiceConfigurationProviderTests
             throw new NotImplementedException();
         }
 
+
         public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(string text, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
     }
+
     #endregion
+
+
 }

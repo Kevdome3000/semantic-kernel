@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.UnitTests.Functions;
+
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -10,7 +12,7 @@ using Microsoft.SemanticKernel.TemplateEngine;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Functions;
+
 public class MultipleModelTests
 {
     [Fact]
@@ -42,6 +44,7 @@ public class MultipleModelTests
         mockTextCompletion2.Verify(a => a.GetCompletionsAsync("template", It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Never());
     }
 
+
     [Fact]
     public async Task ItFailsIfInvalidServiceIdIsProvidedAsync()
     {
@@ -64,6 +67,7 @@ public class MultipleModelTests
         // Assert
         Assert.Equal("Service of type Microsoft.SemanticKernel.AI.TextCompletion.ITextCompletion and name service3 not registered.", exception.Message);
     }
+
 
     [Theory]
     [InlineData(new string[] { "service1" }, 1, new int[] { 1, 0, 0 })]
@@ -90,6 +94,7 @@ public class MultipleModelTests
             .Build();
 
         var templateConfig = new PromptTemplateConfig();
+
         foreach (var serviceId in serviceIds)
         {
             templateConfig.ModelSettings.Add(new AIRequestSettings() { ServiceId = serviceId });
@@ -104,6 +109,7 @@ public class MultipleModelTests
         mockTextCompletion2.Verify(a => a.GetCompletionsAsync("template", It.Is<AIRequestSettings>(settings => settings.ServiceId == "service2"), It.IsAny<CancellationToken>()), Times.Exactly(callCount[1]));
         mockTextCompletion3.Verify(a => a.GetCompletionsAsync("template", It.Is<AIRequestSettings>(settings => settings.ServiceId == "service3"), It.IsAny<CancellationToken>()), Times.Exactly(callCount[2]));
     }
+
 
     [Fact]
     public async Task ItUsesServiceIdWithJsonPromptTemplateConfigAsync()

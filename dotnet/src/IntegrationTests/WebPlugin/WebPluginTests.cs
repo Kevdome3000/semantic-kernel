@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.IntegrationTests.WebPlugin;
+
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -11,11 +13,11 @@ using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.WebPlugin;
 
 public sealed class WebPluginTests : IDisposable
 {
     private readonly string _bingApiKey;
+
 
     public WebPluginTests(ITestOutputHelper output)
     {
@@ -37,6 +39,7 @@ public sealed class WebPluginTests : IDisposable
         Assert.NotNull(bingApiKeyCandidate);
         this._bingApiKey = bingApiKeyCandidate;
     }
+
 
     [Theory(Skip = "Bing search results not consistent enough for testing.")]
     [InlineData("What is generally recognized as the tallest building in Seattle, Washington, USA?", "Columbia Center")]
@@ -62,6 +65,7 @@ public sealed class WebPluginTests : IDisposable
         Assert.Contains(expectedAnswerContains, result.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
 
+
     [Fact]
     public async Task WebFileDownloadPluginFileTestAsync()
     {
@@ -84,11 +88,13 @@ public sealed class WebPluginTests : IDisposable
         File.Delete(fileWhereToSaveWebPage);
     }
 
+
     #region internals
 
     private readonly ITestOutputHelper _output;
     private readonly XunitLogger<Kernel> _logger;
     private readonly RedirectOutput _testOutputHelper;
+
 
     public void Dispose()
     {
@@ -96,10 +102,12 @@ public sealed class WebPluginTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
+
     ~WebPluginTests()
     {
         this.Dispose(false);
     }
+
 
     private void Dispose(bool disposing)
     {
@@ -111,4 +119,6 @@ public sealed class WebPluginTests : IDisposable
     }
 
     #endregion
+
+
 }

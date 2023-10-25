@@ -658,6 +658,7 @@ public sealed class Plan : ISKFunction
     [Obsolete("Use ISKFunction.ModelSettings instead. This will be removed in a future release.")]
     public AIRequestSettings? RequestSettings { get; private set; }
 
+
     /// <inheritdoc/>
     [Obsolete("Use ISKFunction.SetAIServiceFactory instead. This will be removed in a future release.")]
     public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
@@ -665,12 +666,14 @@ public sealed class Plan : ISKFunction
         return this.Function is not null ? this.Function.SetAIService(serviceFactory) : this;
     }
 
+
     /// <inheritdoc/>
     [Obsolete("Use ISKFunction.SetAIRequestSettingsFactory instead. This will be removed in a future release.")]
     public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
     {
         return this.Function is not null ? this.Function.SetAIConfiguration(requestSettings) : this;
     }
+
 
     /// <inheritdoc/>
     [JsonIgnore]

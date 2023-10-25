@@ -1,12 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System.Collections.Generic;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Services;
-
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using the main namespace
 namespace Microsoft.SemanticKernel;
+
+using System.Collections.Generic;
+using AI;
+using Services;
+
 #pragma warning restore IDE0130
+
 
 /// <summary>
 /// Selector which will return a tuple containing instances of <see cref="IAIService"/> and <see cref="AIRequestSettings"/> from the specified provider based on the model settings.

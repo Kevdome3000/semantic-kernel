@@ -139,12 +139,12 @@ In the above screenshot, you can see the extension in action:
 
 If you like Semantic Kernel, you may also be interested in other repos the Semantic Kernel team supports:
 
-| Repo                                                                              | Description                                                                                   |
-| --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| [Chat Copilot](https://github.com/microsoft/chat-copilot)                         | A reference application that demonstrates how to build a chatbot with Semantic Kernel.        |
-| [Semantic Kernel Docs](https://github.com/MicrosoftDocs/semantic-kernel-docs)     | The home for Semantic Kernel documentation that appears on the Microsoft learn site.          |
-| [Semantic Kernel Starters](https://github.com/microsoft/semantic-kernel-starters) | Starter projects for Semantic Kernel to make it easier to get started.                        |
-| [Kernel Memory](https://github.com/microsoft/kernel-memory)                       | A scalable Memory service to store information and ask questions using the RAG pattern.       |
+| Repo                                                                              | Description                                                                             |
+|-----------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------|
+| [Chat Copilot](https://github.com/microsoft/chat-copilot)                         | A reference application that demonstrates how to build a chatbot with Semantic Kernel.  |
+| [Semantic Kernel Docs](https://github.com/MicrosoftDocs/semantic-kernel-docs)     | The home for Semantic Kernel documentation that appears on the Microsoft learn site.    |
+| [Semantic Kernel Starters](https://github.com/microsoft/semantic-kernel-starters) | Starter projects for Semantic Kernel to make it easier to get started.                  |
+| [Kernel Memory](https://github.com/microsoft/kernel-memory)                       | A scalable Memory service to store information and ask questions using the RAG pattern. |
 
 ## Join the community
 

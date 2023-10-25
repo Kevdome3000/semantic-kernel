@@ -33,6 +33,7 @@ internal sealed class InstrumentedSKFunction : ISKFunction
     /// <inheritdoc/>
     public string Description => this._function.Description;
 
+
     /// <summary>
     /// Initialize a new instance of the <see cref="InstrumentedSKFunction"/> class.
     /// </summary>
@@ -78,6 +79,7 @@ internal sealed class InstrumentedSKFunction : ISKFunction
         return await this.InvokeWithInstrumentationAsync(() =>
             this._function.InvokeAsync(context, requestSettings, cancellationToken)).ConfigureAwait(false);
     }
+
 
     #region private ================================================================================
 
@@ -173,15 +175,18 @@ internal sealed class InstrumentedSKFunction : ISKFunction
     [Obsolete("Use ISKFunction.RequestSettingsFactory instead. This will be removed in a future release.")]
     public AIRequestSettings? RequestSettings => this._function.RequestSettings;
 
+
     /// <inheritdoc/>
     [Obsolete("Use ISKFunction.SetAIRequestSettingsFactory instead. This will be removed in a future release.")]
     public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings) =>
         this._function.SetAIConfiguration(requestSettings);
 
+
     /// <inheritdoc/>
     [Obsolete("Use ISKFunction.SetAIServiceFactory instead. This will be removed in a future release.")]
     public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory) =>
         this._function.SetAIService(serviceFactory);
+
 
     /// <inheritdoc/>
     [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]

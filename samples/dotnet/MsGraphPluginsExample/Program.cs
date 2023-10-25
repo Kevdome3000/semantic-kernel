@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace MsGraphPluginsExample;
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -20,7 +22,6 @@ using Microsoft.SemanticKernel.Skills.MsGraph.Connectors.Client;
 using Microsoft.SemanticKernel.Skills.MsGraph.Connectors.CredentialManagers;
 using DayOfWeek = System.DayOfWeek;
 
-namespace MsGraphPluginsExample;
 
 /// <summary>
 /// The static plan below is meant to emulate a plan generated from the following request:
@@ -32,6 +33,8 @@ public sealed class Program
     // ReSharper disable once InconsistentNaming
     public static async Task Main()
     {
+
+
         #region Initialization
 
         // Load configuration
@@ -58,6 +61,7 @@ public sealed class Program
         // Workaround for nested types not working IConfigurationSection.Get<T>()
         // See https://github.com/dotnet/runtime/issues/77677
         configuration.GetSection("MsGraph:Scopes").Bind(candidateGraphApiConfig.Scopes);
+
         if (candidateGraphApiConfig.Scopes == null)
         {
             throw new InvalidOperationException("Missing Scopes configuration for Microsoft Graph API.");
@@ -66,18 +70,21 @@ public sealed class Program
         MsGraphConfiguration graphApiConfiguration = candidateGraphApiConfig;
 
         string? defaultCompletionServiceId = configuration["DefaultCompletionServiceId"];
+
         if (string.IsNullOrWhiteSpace(defaultCompletionServiceId))
         {
             throw new InvalidOperationException("'DefaultCompletionServiceId' is not set in configuration.");
         }
 
         string? currentAssemblyDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
         if (string.IsNullOrWhiteSpace(currentAssemblyDirectory))
         {
             throw new InvalidOperationException("Unable to determine current assembly directory.");
         }
 
         #endregion
+
 
         // Initialize the Graph API client with interactive authentication and local caching.
         // Note that LocalUserMSALCredentialManager is NOT safe for multi-user and cloud-service deployments.
@@ -113,20 +120,22 @@ public sealed class Program
         if (configuration.GetSection("AzureOpenAI:ServiceId").Value != null)
         {
             AzureOpenAIConfiguration? azureOpenAIConfiguration = configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
+
             if (azureOpenAIConfiguration != null)
             {
                 builder.WithAzureChatCompletionService(
-                        deploymentName: azureOpenAIConfiguration.DeploymentName,
-                        endpoint: azureOpenAIConfiguration.Endpoint,
-                        apiKey: azureOpenAIConfiguration.ApiKey,
-                        serviceId: azureOpenAIConfiguration.ServiceId,
-                        setAsDefault: azureOpenAIConfiguration.ServiceId == defaultCompletionServiceId);
+                    deploymentName: azureOpenAIConfiguration.DeploymentName,
+                    endpoint: azureOpenAIConfiguration.Endpoint,
+                    apiKey: azureOpenAIConfiguration.ApiKey,
+                    serviceId: azureOpenAIConfiguration.ServiceId,
+                    setAsDefault: azureOpenAIConfiguration.ServiceId == defaultCompletionServiceId);
             }
         }
 
         if (configuration.GetSection("OpenAI:ServiceId").Value != null)
         {
             OpenAIConfiguration? openAIConfiguration = configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
+
             if (openAIConfiguration != null)
             {
                 builder.WithOpenAIChatCompletionService(
@@ -153,6 +162,7 @@ public sealed class Program
         // "Summarize the content of cheese.txt and send me an email with the summary and a link to the file. Then add a reminder to follow-up next week."
         //
         string? pathToFile = configuration["OneDrivePathToFile"];
+
         if (string.IsNullOrWhiteSpace(pathToFile))
         {
             throw new InvalidOperationException("OneDrivePathToFile is not set in configuration.");
@@ -162,6 +172,7 @@ public sealed class Program
         SKContext fileContentResult = await sk.RunAsync(pathToFile,
             onedrive["GetFileContent"],
             summarizeSkills["Summarize"]);
+
         if (fileContentResult.ErrorOccurred)
         {
             throw new InvalidOperationException("Failed to get file content.", fileContentResult.LastException!);
@@ -192,6 +203,7 @@ public sealed class Program
 
         logger.LogInformation("Done!");
     }
+
 
     /// <summary>
     /// Create a delegated authentication callback for the Graph API client.

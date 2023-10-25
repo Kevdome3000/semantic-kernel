@@ -120,6 +120,7 @@ John: You're welcome. I'm glad we could help. Goodbye!
 Jane: Goodbye!
 ";
 
+
     public static async Task RunAsync()
     {
         await ConversationSummaryPluginAsync();
@@ -127,13 +128,14 @@ Jane: Goodbye!
         await GetConversationTopicsAsync();
     }
 
+
     private static async Task ConversationSummaryPluginAsync()
     {
         Console.WriteLine("======== SamplePlugins - Conversation Summary Plugin - Summarize ========");
         IKernel kernel = InitializeKernel();
 
         IDictionary<string, ISKFunction> conversationSummaryPlugin =
-             kernel.ImportFunctions(new ConversationSummaryPlugin(kernel));
+            kernel.ImportFunctions(new ConversationSummaryPlugin(kernel));
 
         KernelResult summary = await kernel.RunAsync(
             ChatTranscript,
@@ -143,13 +145,14 @@ Jane: Goodbye!
         Console.WriteLine(summary.GetValue<string>());
     }
 
+
     private static async Task GetConversationActionItemsAsync()
     {
         Console.WriteLine("======== SamplePlugins - Conversation Summary Plugin - Action Items ========");
         IKernel kernel = InitializeKernel();
 
         IDictionary<string, ISKFunction> conversationSummary =
-             kernel.ImportFunctions(new ConversationSummaryPlugin(kernel));
+            kernel.ImportFunctions(new ConversationSummaryPlugin(kernel));
 
         KernelResult summary = await kernel.RunAsync(
             ChatTranscript,
@@ -159,13 +162,14 @@ Jane: Goodbye!
         Console.WriteLine(summary.GetValue<string>());
     }
 
+
     private static async Task GetConversationTopicsAsync()
     {
         Console.WriteLine("======== SamplePlugins - Conversation Summary Plugin - Topics ========");
         IKernel kernel = InitializeKernel();
 
         IDictionary<string, ISKFunction> conversationSummary =
-             kernel.ImportFunctions(new ConversationSummaryPlugin(kernel));
+            kernel.ImportFunctions(new ConversationSummaryPlugin(kernel));
 
         KernelResult summary = await kernel.RunAsync(
             ChatTranscript,
@@ -175,6 +179,7 @@ Jane: Goodbye!
         Console.WriteLine(summary.GetValue<string>());
     }
 
+
     private static IKernel InitializeKernel()
     {
         IKernel kernel = new KernelBuilder()
@@ -183,11 +188,12 @@ Jane: Goodbye!
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
-        .Build();
+            .Build();
 
         return kernel;
     }
 }
+
 
 // ReSharper disable CommentTypo
 /* Example Output:

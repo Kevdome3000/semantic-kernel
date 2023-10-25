@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Planning;
+
 using System;
 using System.Linq;
-using Microsoft.Extensions.Logging;
+using Extensions.Logging;
 
-namespace Microsoft.SemanticKernel.Planning;
 
 /// <summary>
 /// Extension methods for <see cref="Plan"/> type.
@@ -34,6 +35,7 @@ public static class PlanExtensions
         return planString;
     }
 
+
     /// <summary>
     /// Constructs string representation of <see cref="Plan"/>.
     /// </summary>
@@ -49,12 +51,14 @@ public static class PlanExtensions
                 string stepName = step.Name;
 
                 string parameters = string.Join(" ", step.Parameters.Select(param => $"{param.Key}='{param.Value}'"));
+
                 if (!string.IsNullOrEmpty(parameters))
                 {
                     parameters = $" {parameters}";
                 }
 
                 string? outputs = step.Outputs.FirstOrDefault();
+
                 if (!string.IsNullOrEmpty(outputs))
                 {
                     outputs = $" => {outputs}";
@@ -69,6 +73,7 @@ public static class PlanExtensions
         return planString;
     }
 
+
     /// <summary>
     /// Returns decorated instance of <see cref="IPlan"/> with enabled instrumentation.
     /// </summary>
@@ -79,6 +84,7 @@ public static class PlanExtensions
     {
         throw new NotSupportedException("This method is obsolete, use concrete class Plan WithInstrumentation instead");
     }
+
 
     /// <summary>
     /// Returns decorated instance of <see cref="ISKFunction"/> with plan enabled instrumentation.

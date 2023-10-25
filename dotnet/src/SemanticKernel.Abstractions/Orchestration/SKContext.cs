@@ -6,9 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using Diagnostics;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
-using Diagnostics;
 using Services;
 
 
@@ -64,6 +64,7 @@ public sealed class SKContext
     /// AI service provider
     /// </summary>
     public IAIServiceProvider ServiceProvider { get; }
+
 
     /// <summary>
     /// Constructor for the context.

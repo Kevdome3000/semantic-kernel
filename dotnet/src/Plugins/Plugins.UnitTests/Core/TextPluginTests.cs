@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Plugins.UnitTests.Core;
+
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Xunit;
 
-namespace SemanticKernel.Plugins.UnitTests.Core;
 
 public class TextPluginTests
 {
@@ -15,6 +16,7 @@ public class TextPluginTests
         var _ = new TextPlugin();
     }
 
+
     [Fact]
     public void ItCanBeImported()
     {
@@ -24,6 +26,7 @@ public class TextPluginTests
         // Act - Assert no exception occurs e.g. due to reflection
         kernel.ImportFunctions(new TextPlugin(), "text");
     }
+
 
     [Fact]
     public void ItCanTrim()
@@ -38,6 +41,7 @@ public class TextPluginTests
         Assert.Equal("hello world", result);
     }
 
+
     [Fact]
     public void ItCanTrimStart()
     {
@@ -50,6 +54,7 @@ public class TextPluginTests
         // Assert
         Assert.Equal("hello world  ", result);
     }
+
 
     [Fact]
     public void ItCanTrimEnd()
@@ -64,6 +69,7 @@ public class TextPluginTests
         Assert.Equal("  hello world", result);
     }
 
+
     [Fact]
     public void ItCanUppercase()
     {
@@ -77,6 +83,7 @@ public class TextPluginTests
         Assert.Equal("HELLO WORLD", result);
     }
 
+
     [Fact]
     public void ItCanLowercase()
     {
@@ -89,6 +96,7 @@ public class TextPluginTests
         // Assert
         Assert.Equal("hello world", result);
     }
+
 
     [Theory]
     [InlineData("hello world ", 12)]
@@ -109,6 +117,7 @@ public class TextPluginTests
         // Assert
         Assert.Equal(expectedLength, result);
     }
+
 
     [Theory]
     [InlineData("hello world", "hello world")]

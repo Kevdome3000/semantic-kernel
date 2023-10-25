@@ -15,9 +15,9 @@ using System.Threading.Tasks;
 using AI;
 using AI.TextCompletion;
 using Diagnostics;
-using Functions;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
+using Functions;
 using Orchestration;
 using TemplateEngine;
 
@@ -232,6 +232,7 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
     [Obsolete("Use ISKFunction.ModelSettings instead. This will be removed in a future release.")]
     public AIRequestSettings? RequestSettings => this._modelSettings?.FirstOrDefault<AIRequestSettings>();
 
+
     /// <inheritdoc/>
     [Obsolete("Use ISKFunction.SetAIServiceFactory instead. This will be removed in a future release.")]
     public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
@@ -251,6 +252,7 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
         return this;
     }
 
+
     /// <inheritdoc/>
     [Obsolete("Use ISKFunction.SetAIRequestSettingsFactory instead. This will be removed in a future release.")]
     public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
@@ -267,6 +269,7 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
         }
         return this;
     }
+
 
     /// <inheritdoc/>
     [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]

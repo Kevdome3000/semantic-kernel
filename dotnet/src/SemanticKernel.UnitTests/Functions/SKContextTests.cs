@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.UnitTests.Functions;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -12,11 +14,11 @@ using Microsoft.SemanticKernel.Services;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Functions;
 
 public class SKContextTests
 {
     private readonly Mock<IReadOnlyFunctionCollection> _functions = new();
+
 
     [Fact]
     public void ItHasHelpersForContextVariables()
@@ -41,6 +43,7 @@ public class SKContextTests
         Assert.Equal(target.Variables["INPUT"], target.Variables.ToString());
     }
 
+
     [Fact]
     public async Task ItHasHelpersForFunctionCollectionAsync()
     {
@@ -61,6 +64,7 @@ public class SKContextTests
         Assert.Equal("ciao", result.GetValue<string>());
     }
 
+
     private (Mock<IKernel> kernelMock, Mock<IFunctionRunner> functionRunnerMock, Mock<IAIServiceProvider> serviceProviderMock) SetupKernelMock(IReadOnlyFunctionCollection? functions = null)
     {
         functions ??= new Mock<IFunctionCollection>().Object;
@@ -72,12 +76,13 @@ public class SKContextTests
         kernel.SetupGet(x => x.Functions).Returns(functions);
         kernel.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<ILoggerFactory>(), It.IsAny<CultureInfo>()))
             .Returns<ContextVariables, IReadOnlyFunctionCollection, ILoggerFactory, CultureInfo>((contextVariables, skills, loggerFactory, culture) =>
-        {
-            return new SKContext(functionRunner.Object, serviceProvider.Object, contextVariables);
-        });
+            {
+                return new SKContext(functionRunner.Object, serviceProvider.Object, contextVariables);
+            });
 
         return (kernel, functionRunner, serviceProvider);
     }
+
 
     private sealed class Parrot
     {
