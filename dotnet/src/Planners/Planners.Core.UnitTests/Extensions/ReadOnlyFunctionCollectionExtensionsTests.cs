@@ -1,15 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
-namespace Microsoft.SemanticKernel.Planners.UnitTests;
-
-using Memory;
+using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Services;
 using Moq;
-using Orchestration;
 using Xunit;
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace Microsoft.SemanticKernel.Planners.UnitTests;
 #pragma warning restore IDE0130 // Namespace does not match folder structure
-
 
 public class ReadOnlyFunctionCollectionExtensionsTests
 {
@@ -20,7 +19,6 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         return config;
     }
 
-
     private async IAsyncEnumerable<T> GetAsyncEnumerableAsync<T>(IEnumerable<T> results)
     {
         foreach (T result in results)
@@ -28,7 +26,6 @@ public class ReadOnlyFunctionCollectionExtensionsTests
             yield return await Task.FromResult(result);
         }
     }
-
 
     [Theory]
     [InlineData(typeof(ActionPlannerConfig))]
@@ -61,9 +58,10 @@ public class ReadOnlyFunctionCollectionExtensionsTests
             .Returns(asyncEnumerable);
 
         var functionRunner = new Mock<IFunctionRunner>();
+        var serviceProvider = new Mock<IAIServiceProvider>();
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(functionRunner.Object, variables);
+        var context = new SKContext(functionRunner.Object, serviceProvider.Object, variables);
         var config = InitializeConfig(t);
         var semanticQuery = "test";
 
@@ -98,7 +96,6 @@ public class ReadOnlyFunctionCollectionExtensionsTests
             x => x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()),
             Times.Once);
     }
-
 
     [Theory]
     [InlineData(typeof(ActionPlannerConfig))]
@@ -141,9 +138,10 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         functions.Setup(x => x.GetFunctionViews()).Returns(functionsView);
 
         var functionRunner = new Mock<IFunctionRunner>();
+        var serviceProvider = new Mock<IAIServiceProvider>();
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(functionRunner.Object, variables, functions.Object);
+        var context = new SKContext(functionRunner.Object, serviceProvider.Object, variables, functions.Object);
         var config = InitializeConfig(t);
         var semanticQuery = "test";
 
@@ -168,7 +166,6 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         Assert.Equal(functionView, result[0]);
         Assert.Equal(nativeFunctionView, result[1]);
     }
-
 
     [Theory]
     [InlineData(typeof(ActionPlannerConfig))]
@@ -212,9 +209,10 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         functions.Setup(x => x.GetFunctionViews()).Returns(functionsView);
 
         var functionRunner = new Mock<IFunctionRunner>();
+        var serviceProvider = new Mock<IAIServiceProvider>();
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(functionRunner.Object, variables, functions.Object);
+        var context = new SKContext(functionRunner.Object, serviceProvider.Object, variables, functions.Object);
         var config = InitializeConfig(t);
         config.SemanticMemoryConfig = new() { RelevancyThreshold = 0.78, Memory = memory.Object };
         var semanticQuery = "test";
@@ -240,7 +238,6 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         Assert.Equal(nativeFunctionView, result[1]);
     }
 
-
     [Theory]
     [InlineData(typeof(ActionPlannerConfig))]
     [InlineData(typeof(SequentialPlannerConfig))]
@@ -250,6 +247,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         // Arrange
         var kernel = new Mock<IKernel>();
         var functionRunner = new Mock<IFunctionRunner>();
+        var serviceProvider = new Mock<IAIServiceProvider>();
 
         var variables = new ContextVariables();
         var functions = new FunctionCollection();
@@ -274,7 +272,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
             .Returns(asyncEnumerable);
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(functionRunner.Object, variables);
+        var context = new SKContext(functionRunner.Object, serviceProvider.Object, variables);
         var config = InitializeConfig(t);
         config.SemanticMemoryConfig = new() { RelevancyThreshold = 0.78, Memory = memory.Object };
         var semanticQuery = "test";

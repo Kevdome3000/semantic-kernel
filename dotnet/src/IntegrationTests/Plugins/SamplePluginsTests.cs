@@ -27,8 +27,6 @@ public class SamplePluginsTests
         {
             var function = kernel.Functions.GetFunction(view.PluginName, view.Name);
             Assert.NotNull(function);
-            Assert.NotNull(function.RequestSettings);
-            Assert.True(function.RequestSettings.ExtensionData.ContainsKey("max_tokens"));
         });
     }
 
@@ -52,8 +50,6 @@ public class SamplePluginsTests
         {
             var function = kernel.Functions.GetFunction(view.PluginName, view.Name);
             Assert.NotNull(function);
-            Assert.NotNull(function.RequestSettings);
-            Assert.True(function.RequestSettings.ExtensionData.ContainsKey("max_tokens"));
         });
     }
 }

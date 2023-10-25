@@ -2,7 +2,7 @@
 
 // ==========================================================================================================
 // The easier way to instantiate the Semantic Kernel is to use KernelBuilder.
-// You can access the builder using either Kernel.Builder or KernelBuilder.
+// You can access the builder using new KernelBuilder().
 
 #pragma warning disable CA1852
 
@@ -23,10 +23,10 @@ using Microsoft.SemanticKernel.Plugins.Memory;
 using Microsoft.SemanticKernel.Reliability.Basic;
 using Microsoft.SemanticKernel.Reliability.Polly;
 using Microsoft.SemanticKernel.Services;
+
 using Microsoft.SemanticKernel.TemplateEngine.Basic;
 using Polly;
 using Polly.Retry;
-
 
 // ReSharper disable once InconsistentNaming
 public static class Example42_KernelBuilder
@@ -39,20 +39,20 @@ public static class Example42_KernelBuilder
         string azureOpenAIEmbeddingDeployment = TestConfiguration.AzureOpenAIEmbeddings.DeploymentName;
 
 #pragma warning disable CA1852 // Seal internal types
-        IKernel kernel1 = Kernel.Builder.Build();
+        IKernel kernel1 = new KernelBuilder().Build();
 #pragma warning restore CA1852 // Seal internal types
 
-        IKernel kernel2 = Kernel.Builder.Build();
+        IKernel kernel2 = new KernelBuilder().Build();
 
         // ==========================================================================================================
-        // Kernel.Builder returns a new builder instance, in case you want to configure the builder differently.
+        // new KernelBuilder() returns a new builder instance, in case you want to configure the builder differently.
         // The following are 3 distinct builder instances.
 
         var builder1 = new KernelBuilder();
 
-        var builder2 = Kernel.Builder;
+        var builder2 = new KernelBuilder();
 
-        var builder3 = Kernel.Builder;
+        var builder3 = new KernelBuilder();
 
         // ==========================================================================================================
         // A builder instance can create multiple kernel instances, e.g. in case you need
@@ -89,14 +89,12 @@ public static class Example42_KernelBuilder
         using var httpHandler = httpHandlerFactory.Create(loggerFactory);
         using var httpClient = new HttpClient(httpHandler);
         var aiServices = new AIServiceCollection();
-
         ITextCompletion Factory() => new AzureChatCompletion(
             modelId: azureOpenAIChatCompletionDeployment,
             endpoint: azureOpenAIEndpoint,
             apiKey: azureOpenAIKey,
             httpClient,
             loggerFactory);
-
         aiServices.SetService("foo", Factory);
         IAIServiceProvider aiServiceProvider = aiServices.Build();
 
@@ -110,7 +108,7 @@ public static class Example42_KernelBuilder
         // ==========================================================================================================
         // The AI services are defined with the builder
 
-        var kernel7 = Kernel.Builder
+        var kernel7 = new KernelBuilder()
             .WithAzureChatCompletionService(
                 deploymentName: azureOpenAIChatCompletionDeployment,
                 endpoint: azureOpenAIEndpoint,
@@ -123,17 +121,17 @@ public static class Example42_KernelBuilder
         // The default behavior can be configured or a custom retry handler can be injected that will apply to all
         // AI requests (when using the kernel).
 
-        var kernel8 = Kernel.Builder.WithRetryBasic(
-                new BasicRetryConfig
-                {
-                    MaxRetryCount = 3,
-                    UseExponentialBackoff = true,
-                    //  MinRetryDelay = TimeSpan.FromSeconds(2),
-                    //  MaxRetryDelay = TimeSpan.FromSeconds(8),
-                    //  MaxTotalRetryTime = TimeSpan.FromSeconds(30),
-                    //  RetryableStatusCodes = new[] { HttpStatusCode.TooManyRequests, HttpStatusCode.RequestTimeout },
-                    //  RetryableExceptions = new[] { typeof(HttpRequestException) }
-                })
+        var kernel8 = new KernelBuilder().WithRetryBasic(
+            new BasicRetryConfig
+            {
+                MaxRetryCount = 3,
+                UseExponentialBackoff = true,
+                //  MinRetryDelay = TimeSpan.FromSeconds(2),
+                //  MaxRetryDelay = TimeSpan.FromSeconds(8),
+                //  MaxTotalRetryTime = TimeSpan.FromSeconds(30),
+                //  RetryableStatusCodes = new[] { HttpStatusCode.TooManyRequests, HttpStatusCode.RequestTimeout },
+                //  RetryableExceptions = new[] { typeof(HttpRequestException) }
+            })
             .Build();
 
         var logger = loggerFactory.CreateLogger<PollyHttpRetryHandlerFactory>();
@@ -149,15 +147,14 @@ public static class Example42_KernelBuilder
                 (ex, timespan, retryCount, _)
                     => logger?.LogWarning(ex, "Error executing action [attempt {RetryCount} of 3], pausing {PausingMilliseconds}ms", retryCount, timespan.TotalMilliseconds));
 
-        var kernel9 = Kernel.Builder.WithHttpHandlerFactory(new PollyHttpRetryHandlerFactory(retryThreeTimesPolicy)).Build();
+        var kernel9 = new KernelBuilder().WithHttpHandlerFactory(new PollyHttpRetryHandlerFactory(retryThreeTimesPolicy)).Build();
 
-        var kernel10 = Kernel.Builder.WithHttpHandlerFactory(new PollyRetryThreeTimesFactory()).Build();
+        var kernel10 = new KernelBuilder().WithHttpHandlerFactory(new PollyRetryThreeTimesFactory()).Build();
 
-        var kernel11 = Kernel.Builder.WithHttpHandlerFactory(new MyCustomHandlerFactory()).Build();
+        var kernel11 = new KernelBuilder().WithHttpHandlerFactory(new MyCustomHandlerFactory()).Build();
 
         return Task.CompletedTask;
     }
-
 
     // Example using the PollyHttpRetryHandler from Reliability.Polly extension
     public class PollyRetryThreeTimesFactory : HttpHandlerFactory<PollyHttpRetryHandler>
@@ -170,31 +167,28 @@ public static class Example42_KernelBuilder
             return base.Create(loggerFactory);
         }
 
-
         private static AsyncRetryPolicy GetPolicy(ILogger? logger)
         {
             return Policy
-                .Handle<HttpOperationException>(ex
-                    => ex.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
-                .WaitAndRetryAsync(new[]
-                    {
-                        TimeSpan.FromSeconds(2),
-                        TimeSpan.FromSeconds(4),
-                        TimeSpan.FromSeconds(8)
-                    },
-                    (ex, timespan, retryCount, _)
-                        => logger?.LogWarning(ex, "Error executing action [attempt {RetryCount} of 3], pausing {PausingMilliseconds}ms",
-                            retryCount,
-                            timespan.TotalMilliseconds));
+            .Handle<HttpOperationException>(ex
+                => ex.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+            .WaitAndRetryAsync(new[]
+                {
+                    TimeSpan.FromSeconds(2),
+                    TimeSpan.FromSeconds(4),
+                    TimeSpan.FromSeconds(8)
+                },
+                (ex, timespan, retryCount, _)
+                    => logger?.LogWarning(ex, "Error executing action [attempt {RetryCount} of 3], pausing {PausingMilliseconds}ms",
+                    retryCount,
+                    timespan.TotalMilliseconds));
         }
     }
-
 
     // Basic custom retry handler factory
     public class MyCustomHandlerFactory : HttpHandlerFactory<MyCustomHandler>
     {
     }
-
 
     // Basic custom empty retry handler
     public class MyCustomHandler : DelegatingHandler

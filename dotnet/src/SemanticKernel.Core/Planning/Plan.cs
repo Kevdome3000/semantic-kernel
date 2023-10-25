@@ -23,7 +23,7 @@ using Orchestration;
 /// Plan is used to create trees of <see cref="ISKFunction"/>s.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-public sealed class Plan : IPlan
+public sealed class Plan : ISKFunction
 {
     /// <summary>
     /// State of the plan
@@ -79,8 +79,8 @@ public sealed class Plan : IPlan
     public string Description { get; set; } = string.Empty;
 
     /// <inheritdoc/>
-    [JsonIgnore]
-    public AIRequestSettings? RequestSettings { get; private set; }
+    [JsonPropertyName("model_settings")]
+    public List<AIRequestSettings>? ModelSettings { get; private set; }
 
     #endregion ISKFunction implementation
 
@@ -376,20 +376,6 @@ public sealed class Plan : IPlan
         return result;
     }
 
-
-    /// <inheritdoc/>
-    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
-    {
-        return this.Function is not null ? this.Function.SetAIService(serviceFactory) : this;
-    }
-
-
-    /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
-    {
-        return this.Function is not null ? this.Function.SetAIConfiguration(requestSettings) : this;
-    }
-
     #endregion ISKFunction implementation
 
 
@@ -626,9 +612,9 @@ public sealed class Plan : IPlan
         this.Name = function.Name;
         this.PluginName = function.PluginName;
         this.Description = function.Description;
-        this.RequestSettings = function.RequestSettings;
 
 #pragma warning disable CS0618 // Type or member is obsolete
+        this.RequestSettings = function.RequestSettings;
         this.IsSemantic = function.IsSemantic;
 #pragma warning restore CS0618 // Type or member is obsolete
     }
@@ -667,6 +653,24 @@ public sealed class Plan : IPlan
 
 
     #region Obsolete
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.ModelSettings instead. This will be removed in a future release.")]
+    public AIRequestSettings? RequestSettings { get; private set; }
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.SetAIServiceFactory instead. This will be removed in a future release.")]
+    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
+    {
+        return this.Function is not null ? this.Function.SetAIService(serviceFactory) : this;
+    }
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.SetAIRequestSettingsFactory instead. This will be removed in a future release.")]
+    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
+    {
+        return this.Function is not null ? this.Function.SetAIConfiguration(requestSettings) : this;
+    }
 
     /// <inheritdoc/>
     [JsonIgnore]

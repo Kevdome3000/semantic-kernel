@@ -1,30 +1,27 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
-namespace Microsoft.SemanticKernel.Planners.Sequential.UnitTests;
-
 using System.Globalization;
-using Diagnostics;
-using Extensions.Logging;
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Services;
+using Microsoft.SemanticKernel.TemplateEngine;
 using Moq;
-using Orchestration;
-using TemplateEngine;
 using Xunit;
 using Xunit.Abstractions;
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace Microsoft.SemanticKernel.Planners.Sequential.UnitTests;
 #pragma warning restore IDE0130 // Namespace does not match folder structure
-
 
 public class SequentialPlanParserTests
 {
     private readonly ITestOutputHelper _testOutputHelper;
 
-
     public SequentialPlanParserTests(ITestOutputHelper testOutputHelper)
     {
         this._testOutputHelper = testOutputHelper;
     }
-
 
     private Mock<IKernel> CreateKernelMock(
         out Mock<IReadOnlyFunctionCollection> mockFunctionCollection,
@@ -40,14 +37,13 @@ public class SequentialPlanParserTests
         return kernelMock;
     }
 
-
     private SKContext CreateSKContext(
         IFunctionRunner functionRunner,
+        IAIServiceProvider serviceProvider,
         ContextVariables? variables = null)
     {
-        return new SKContext(functionRunner, variables);
+        return new SKContext(functionRunner, serviceProvider, variables);
     }
-
 
     private static Mock<ISKFunction> CreateMockFunction(FunctionView functionView, string result = "")
     {
@@ -58,25 +54,23 @@ public class SequentialPlanParserTests
         return mockFunction;
     }
 
-
-    private void CreateKernelAndFunctionCreateMocks(
-        List<(string name, string pluginName, string description, bool isSemantic, string result)> functions,
+    private void CreateKernelAndFunctionCreateMocks(List<(string name, string pluginName, string description, bool isSemantic, string result)> functions,
         out IKernel kernel)
     {
         var kernelMock = this.CreateKernelMock(out var functionCollection, out _);
         kernel = kernelMock.Object;
 
         var functionRunnerMock = new Mock<IFunctionRunner>();
+        var serviceProviderMock = new Mock<IAIServiceProvider>();
 
         // For Create
         kernelMock.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<ILoggerFactory>(), It.IsAny<CultureInfo>()))
             .Returns<ContextVariables, IReadOnlyFunctionCollection, ILoggerFactory, CultureInfo>((contextVariables, skills, loggerFactory, culture) =>
             {
-                return this.CreateSKContext(functionRunnerMock.Object, contextVariables);
+                return this.CreateSKContext(functionRunnerMock.Object, serviceProviderMock.Object, contextVariables);
             });
 
         var functionsView = new List<FunctionView>();
-
         foreach (var (name, pluginName, description, isSemantic, resultString) in functions)
         {
             var functionView = new FunctionView(name, pluginName, description)
@@ -86,7 +80,7 @@ public class SequentialPlanParserTests
             var mockFunction = CreateMockFunction(functionView);
             functionsView.Add(functionView);
 
-            var result = this.CreateSKContext(functionRunnerMock.Object);
+            var result = this.CreateSKContext(functionRunnerMock.Object, serviceProviderMock.Object);
             result.Variables.Update(resultString);
             mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new FunctionResult(name, pluginName, result));
@@ -97,7 +91,8 @@ public class SequentialPlanParserTests
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<PromptTemplateConfig>(),
-                    It.IsAny<IPromptTemplate>()
+                    It.IsAny<IPromptTemplate>(),
+                    It.IsAny<IAIServiceSelector>()
                 )).Returns(mockFunction.Object);
             }
             else
@@ -112,7 +107,6 @@ public class SequentialPlanParserTests
 
         functionCollection.Setup(x => x.GetFunctionViews()).Returns(functionsView);
     }
-
 
     [Fact]
     public void CanCallToPlanFromXml()
@@ -175,9 +169,7 @@ public class SequentialPlanParserTests
         );
     }
 
-
     private const string GoalText = "Solve the equation x^2 = 2.";
-
 
     [Fact]
     public void InvalidPlanExecutePlanReturnsInvalidResult()
@@ -189,7 +181,6 @@ public class SequentialPlanParserTests
         // Act
         Assert.Throws<SKException>(() => planString.ToPlanFromXml(GoalText, kernel.Functions.GetFunctionCallback()));
     }
-
 
     // Test that contains a #text node in the plan
     [Theory]
@@ -218,7 +209,6 @@ public class SequentialPlanParserTests
         Assert.Equal("Echo", plan.Steps[0].Name);
     }
 
-
     [Theory]
     [InlineData("Test the functionFlowRunner", @"<goal>Test the functionFlowRunner</goal>
     <plan>
@@ -242,7 +232,6 @@ public class SequentialPlanParserTests
         Assert.Equal("MockPlugin", plan.Steps[0].PluginName);
         Assert.Equal("Echo", plan.Steps[0].Name);
     }
-
 
     [Theory]
     [InlineData("Test the functionFlowRunner", @"<goal>Test the functionFlowRunner</goal>
@@ -268,7 +257,6 @@ public class SequentialPlanParserTests
         Assert.Equal(FunctionCollection.GlobalFunctionsPluginName, plan.Steps[0].PluginName);
         Assert.Equal("Echo", plan.Steps[0].Name);
     }
-
 
     // Test that contains a #text node in the plan
     [Theory]
@@ -315,7 +303,6 @@ public class SequentialPlanParserTests
         }
     }
 
-
     [Theory]
     [InlineData("Test the functionFlowRunner", @"Possible result: <goal>Test the functionFlowRunner</goal>
     <plan>
@@ -356,7 +343,6 @@ public class SequentialPlanParserTests
         Assert.Equal("Echo", plan.Steps[0].Name);
     }
 
-
     [Theory]
     [InlineData(@"<plan> <function.CodeSearch.codesearchresults_post organization=""MyOrg"" project=""Proj"" api_version=""7.1-preview.1"" server_url=""https://faketestorg.dev.azure.com/"" payload=""{&quot;searchText&quot;:&quot;test&quot;,&quot;$top&quot;:3,&quot;filters&quot;:{&quot;Repository/Project&quot;:[&quot;Proj&quot;],&quot;Repository/Repository&quot;:[&quot;Repo&quot;]}}"" content_type=""application/json"" appendToResult=""RESULT__TOP_THREE_RESULTS"" /> </plan>")]
     [InlineData("<plan>\n  <function.CodeSearch.codesearchresults_post organization=\"MyOrg\" project=\"MyProject\" api_version=\"7.1-preview.1\" payload=\"{&quot;searchText&quot;: &quot;MySearchText&quot;, &quot;filters&quot;: {&quot;pathFilters&quot;: [&quot;MyRepo&quot;]} }\" setContextVariable=\"SEARCH_RESULTS\"/>\n</plan><!-- END -->")]
@@ -379,7 +365,6 @@ public class SequentialPlanParserTests
         Assert.Equal("CodeSearch", plan.Steps[0].PluginName);
         Assert.Equal("codesearchresults_post", plan.Steps[0].Name);
     }
-
 
     // test that a <tag> that is not <function> will just get skipped
     [Theory]

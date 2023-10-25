@@ -9,13 +9,12 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
-using AI;
-using AI.TextCompletion;
-using Diagnostics;
-using Extensions.Logging;
-using Orchestration;
-using TemplateEngine;
-using Text;
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.TemplateEngine;
+using Microsoft.SemanticKernel.Text;
 
 #pragma warning restore IDE0130
 
@@ -32,12 +31,14 @@ public static class KernelSemanticFunctionExtensions
     /// <param name="functionName">Name of the semantic function. The name can contain only alphanumeric chars + underscore.</param>
     /// <param name="promptTemplateConfig">Prompt template configuration.</param>
     /// <param name="promptTemplate">Prompt template.</param>
+    /// <param name="serviceSelector">Optional, AI service selector.</param>
     /// <returns>A C# function wrapping AI logic, usually defined with natural language</returns>
     public static ISKFunction RegisterSemanticFunction(
         this IKernel kernel,
         string functionName,
         PromptTemplateConfig promptTemplateConfig,
-        IPromptTemplate promptTemplate)
+        IPromptTemplate promptTemplate,
+        IAIServiceSelector? serviceSelector = null)
     {
         return kernel.RegisterSemanticFunction(FunctionCollection.GlobalFunctionsPluginName, functionName, promptTemplateConfig, promptTemplate);
     }
@@ -51,13 +52,15 @@ public static class KernelSemanticFunctionExtensions
     /// <param name="functionName">Name of the semantic function. The name can contain only alphanumeric chars + underscore.</param>
     /// <param name="promptTemplateConfig">Prompt template configuration.</param>
     /// <param name="promptTemplate">Prompt template.</param>
+    /// <param name="serviceSelector">Optional, AI service selector.</param>
     /// <returns>A C# function wrapping AI logic, usually defined with natural language</returns>
     public static ISKFunction RegisterSemanticFunction(
         this IKernel kernel,
         string pluginName,
         string functionName,
         PromptTemplateConfig promptTemplateConfig,
-        IPromptTemplate promptTemplate)
+        IPromptTemplate promptTemplate,
+        IAIServiceSelector? serviceSelector = null)
     {
         // Future-proofing the name not to contain special chars
         Verify.ValidFunctionName(functionName);
@@ -296,21 +299,16 @@ public static class KernelSemanticFunctionExtensions
         string pluginName,
         string functionName,
         PromptTemplateConfig promptTemplateConfig,
-        IPromptTemplate promptTemplate)
+        IPromptTemplate promptTemplate,
+        IAIServiceSelector? serviceSelector = null)
     {
-        ISKFunction func = SemanticFunction.FromSemanticConfig(
+        return SemanticFunction.FromSemanticConfig(
             pluginName,
             functionName,
             promptTemplateConfig,
             promptTemplate,
+            serviceSelector,
             kernel.LoggerFactory
         );
-
-        func.SetAIConfiguration(promptTemplateConfig.GetDefaultRequestSettings());
-
-        // Note: the service is instantiated using the kernel configuration state when the function is invoked
-        func.SetAIService(() => kernel.GetService<ITextCompletion>(promptTemplateConfig.GetDefaultRequestSettings()?.ServiceId ?? null));
-
-        return func;
     }
 }

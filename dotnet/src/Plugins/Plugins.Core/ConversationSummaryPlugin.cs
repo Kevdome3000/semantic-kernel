@@ -15,7 +15,7 @@ using Text;
 /// </summary>
 /// <example>
 /// <code>
-/// var kernel Kernel.Builder.Build();
+/// var kernel = new KernelBuilder().Build();
 /// kernel.ImportFunctions(new ConversationSummaryPlugin(kernel));
 /// </code>
 /// </example>

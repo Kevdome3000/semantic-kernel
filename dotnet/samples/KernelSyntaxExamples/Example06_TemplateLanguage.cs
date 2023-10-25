@@ -29,7 +29,7 @@ public static class Example06_TemplateLanguage
             return;
         }
 
-        IKernel kernel = Kernel.Builder
+        IKernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAIChatCompletionService(
                 modelId: openAIModelId,

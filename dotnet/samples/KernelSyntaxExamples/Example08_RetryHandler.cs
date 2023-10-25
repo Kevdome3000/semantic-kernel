@@ -13,7 +13,6 @@ using Microsoft.SemanticKernel.Reliability.Basic;
 using Polly;
 using RepoUtils;
 
-
 // ReSharper disable once InconsistentNaming
 public static class Example08_RetryHandler
 {
@@ -28,7 +27,6 @@ public static class Example08_RetryHandler
         await CustomHandlerAsync();
     }
 
-
     private static async Task DefaultNoRetryAsync()
     {
         InfoLogger.Logger.LogInformation("============================== Kernel default behavior: No Retry ==============================");
@@ -37,7 +35,6 @@ public static class Example08_RetryHandler
 
         await ImportAndExecutePluginAsync(kernel);
     }
-
 
     private static async Task ReliabilityBasicExtensionAsync()
     {
@@ -56,7 +53,6 @@ public static class Example08_RetryHandler
         await ImportAndExecutePluginAsync(kernel);
     }
 
-
     private static async Task ReliabilityPollyExtensionAsync()
     {
         InfoLogger.Logger.LogInformation("============================== Using Reliability.Polly extension ==============================");
@@ -67,26 +63,23 @@ public static class Example08_RetryHandler
         await ImportAndExecutePluginAsync(kernel);
     }
 
-
     private static async Task CustomHandlerAsync()
     {
         InfoLogger.Logger.LogInformation("============================== Using a Custom Http Handler ==============================");
         var kernel = InitializeKernelBuilder()
-            .WithHttpHandlerFactory(new MyCustomHandlerFactory())
-            .Build();
+                        .WithHttpHandlerFactory(new MyCustomHandlerFactory())
+                        .Build();
 
         await ImportAndExecutePluginAsync(kernel);
     }
 
-
     private static KernelBuilder InitializeKernelBuilder()
     {
-        return Kernel.Builder
-            .WithLoggerFactory(InfoLogger.LoggerFactory)
-            // OpenAI settings - you can set the OpenAI.ApiKey to an invalid value to see the retry policy in play
-            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, "BAD_KEY");
+        return new KernelBuilder()
+                    .WithLoggerFactory(InfoLogger.LoggerFactory)
+                    // OpenAI settings - you can set the OpenAI.ApiKey to an invalid value to see the retry policy in play
+                    .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, "BAD_KEY");
     }
-
 
     private static AsyncPolicy<HttpResponseMessage> GetPollyPolicy(ILoggerFactory? logger)
     {
@@ -111,7 +104,6 @@ public static class Example08_RetryHandler
                         timespan.TotalMilliseconds,
                         outcome.Result.StatusCode));
     }
-
 
     private static async Task ImportAndExecutePluginAsync(IKernel kernel)
     {
@@ -141,12 +133,10 @@ public static class Example08_RetryHandler
 #pragma warning restore CA1031 // Do not catch general exception types
     }
 
-
     // Basic custom retry handler factory
     public sealed class MyCustomHandlerFactory : HttpHandlerFactory<MyCustomHandler>
     {
     }
-
 
     // Basic custom empty retry handler
     public sealed class MyCustomHandler : DelegatingHandler
@@ -154,7 +144,6 @@ public static class Example08_RetryHandler
         public MyCustomHandler(ILoggerFactory loggerFactory)
         {
         }
-
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
@@ -166,13 +155,11 @@ public static class Example08_RetryHandler
         }
     }
 
-
     private static class InfoLogger
     {
         internal static ILogger Logger => LoggerFactory.CreateLogger("Example08_RetryHandler");
         internal static ILoggerFactory LoggerFactory => s_loggerFactory.Value;
         private static readonly Lazy<ILoggerFactory> s_loggerFactory = new(LogBuilder);
-
 
         private static ILoggerFactory LogBuilder()
         {

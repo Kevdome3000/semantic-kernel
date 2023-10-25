@@ -45,9 +45,6 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     /// <inheritdoc/>
     public string Description { get; }
 
-    /// <inheritdoc/>
-    public AIRequestSettings? RequestSettings { get; }
-
     /// <summary>
     /// List of function parameters
     /// </summary>
@@ -154,23 +151,6 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             throw;
         }
     }
-
-
-    /// <inheritdoc/>
-    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
-    {
-        this.ThrowNotSemantic();
-        return this;
-    }
-
-
-    /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
-    {
-        this.ThrowNotSemantic();
-        return this;
-    }
-
 
     /// <summary>
     /// Dispose of resources.
@@ -931,6 +911,26 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
 
     #region Obsolete
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.RequestSettingsFactory instead. This will be removed in a future release.")]
+    public AIRequestSettings? RequestSettings { get; }
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.SetAIServiceFactory instead. This will be removed in a future release.")]
+    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
+    {
+        this.ThrowNotSemantic();
+        return this;
+    }
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.SetAIRequestSettingsFactory instead. This will be removed in a future release.")]
+    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
+    {
+        this.ThrowNotSemantic();
+        return this;
+    }
 
     /// <inheritdoc/>
     [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]

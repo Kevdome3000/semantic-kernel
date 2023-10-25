@@ -6,9 +6,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using Diagnostics;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
+using Diagnostics;
+using Services;
 
 
 /// <summary>
@@ -21,7 +22,7 @@ public sealed class SKContext
     /// Print the processed input, aka the current data after any processing occurred.
     /// </summary>
     /// <returns>Processed input, aka result</returns>
-    public string Result => this.Variables.ToString();
+    public string Result => Variables.ToString();
 
     /// <summary>
     /// When a prompt is processed, aka the current data after any model results processing occurred.
@@ -35,8 +36,8 @@ public sealed class SKContext
     /// </summary>
     public CultureInfo Culture
     {
-        get => this._culture;
-        set => this._culture = value ?? CultureInfo.CurrentCulture;
+        get => _culture;
+        set => _culture = value ?? CultureInfo.CurrentCulture;
     }
 
     /// <summary>
@@ -59,17 +60,23 @@ public sealed class SKContext
     /// </summary>
     public IFunctionRunner Runner { get; }
 
+    /// <summary>
+    /// AI service provider
+    /// </summary>
+    public IAIServiceProvider ServiceProvider { get; }
 
     /// <summary>
     /// Constructor for the context.
     /// </summary>
     /// <param name="functionRunner">Function runner reference</param>
+    /// <param name="serviceProvider">AI service provider</param>
     /// <param name="variables">Context variables to include in context.</param>
     /// <param name="functions">Functions to include in context.</param>
     /// <param name="loggerFactory">Logger factory to be used in context</param>
     /// <param name="culture">Culture related to the context</param>
     internal SKContext(
         IFunctionRunner functionRunner,
+        IAIServiceProvider serviceProvider,
         ContextVariables? variables = null,
         IReadOnlyFunctionCollection? functions = null,
         ILoggerFactory? loggerFactory = null,
@@ -77,11 +84,12 @@ public sealed class SKContext
     {
         Verify.NotNull(functionRunner, nameof(functionRunner));
 
-        this.Runner = functionRunner;
-        this.Variables = variables ?? new();
-        this.Functions = functions ?? NullReadOnlyFunctionCollection.Instance;
-        this.LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
-        this._culture = culture ?? CultureInfo.CurrentCulture;
+        Runner = functionRunner;
+        this.ServiceProvider = serviceProvider;
+        Variables = variables ?? new();
+        Functions = functions ?? NullReadOnlyFunctionCollection.Instance;
+        LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
+        _culture = culture ?? CultureInfo.CurrentCulture;
     }
 
 
@@ -91,7 +99,7 @@ public sealed class SKContext
     /// <returns>Processed input, aka result.</returns>
     public override string ToString()
     {
-        return this.Result;
+        return Result;
     }
 
 
@@ -101,7 +109,7 @@ public sealed class SKContext
     /// </summary>
     /// <returns>A new context cloned from the current one</returns>
     public SKContext Clone()
-        => this.Clone(null, null);
+        => Clone(null, null);
 
 
     /// <summary>
@@ -114,11 +122,12 @@ public sealed class SKContext
     public SKContext Clone(ContextVariables? variables, IReadOnlyFunctionCollection? functions)
     {
         return new SKContext(
-            this.Runner,
-            variables ?? this.Variables.Clone(),
-            functions ?? this.Functions,
-            this.LoggerFactory,
-            this.Culture);
+            Runner,
+            this.ServiceProvider,
+            variables ?? Variables.Clone(),
+            functions ?? Functions,
+            LoggerFactory,
+            Culture);
     }
 
 
@@ -132,15 +141,15 @@ public sealed class SKContext
     {
         get
         {
-            string display = this.Variables.DebuggerDisplay;
+            string display = Variables.DebuggerDisplay;
 
-            if (this.Functions is IReadOnlyFunctionCollection functions)
+            if (Functions is IReadOnlyFunctionCollection functions)
             {
                 var view = functions.GetFunctionViews();
                 display += $", Functions = {view.Count}";
             }
 
-            display += $", Culture = {this.Culture.EnglishName}";
+            display += $", Culture = {Culture.EnglishName}";
 
             return display;
         }

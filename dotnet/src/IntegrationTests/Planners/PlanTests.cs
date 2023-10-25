@@ -524,7 +524,7 @@ public sealed class PlanTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
 
-        var builder = Kernel.Builder
+        var builder = new KernelBuilder()
             .WithLoggerFactory(this._loggerFactory)
             .WithRetryBasic();
 
