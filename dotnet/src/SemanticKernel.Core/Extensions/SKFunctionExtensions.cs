@@ -4,6 +4,10 @@ using System;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.Orchestration;
 
 #pragma warning restore IDE0130 // Namespace does not match folder structure
 

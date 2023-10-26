@@ -5,7 +5,6 @@ namespace Microsoft.SemanticKernel.TemplateEngine;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json.Serialization;
 using AI;
 using Text;
 
@@ -96,7 +95,7 @@ public class PromptTemplateConfig
     /// </summary>
     public AIRequestSettings GetDefaultRequestSettings()
     {
-        return this.ModelSettings.FirstOrDefault<AIRequestSettings>();
+        return this.ModelSettings.FirstOrDefault<AIRequestSettings>() ?? new();
     }
 
 
