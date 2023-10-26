@@ -6,10 +6,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.AI.OpenAI;
 using Microsoft.Extensions.Logging;
 using Orchestration;
 using SemanticKernel.AI;
@@ -67,6 +65,7 @@ public static class SKFunctionCallExtensions
             {
                 new OpenAIRequestSettings()
                 {
+                    ChatSystemPrompt = promptTemplate,
                     MaxTokens = maxTokens,
                     Temperature = temperature,
                     TopP = topP,

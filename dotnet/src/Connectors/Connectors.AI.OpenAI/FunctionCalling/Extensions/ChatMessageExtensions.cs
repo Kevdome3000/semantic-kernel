@@ -4,9 +4,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.FunctionCalling.Extensio
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Text.RegularExpressions;
-using Azure.AI.OpenAI;
 using SemanticKernel.AI.ChatCompletion;
 
 
@@ -31,16 +29,6 @@ public static class ChatMessageExtensions
 
 
     /// <summary>
-    ///  Checks if any of the choices is a function call
-    /// </summary>
-    /// <param name="response"></param>
-    /// <param name="names"></param>
-    /// <returns></returns>
-    public static bool IsFunctionCallResponse(this ChatCompletions response, IEnumerable<string> names) =>
-        response.Choices.Any(choice => choice.IsFunctionCall(names));
-
-
-    /// <summary>
     ///  Checks if the chat choice is a function call with a name in the list
     /// </summary>
     /// <param name="chatChoice"></param>
@@ -48,6 +36,16 @@ public static class ChatMessageExtensions
     /// <returns></returns>
     public static bool IsFunctionCall(this ChatChoice chatChoice, IEnumerable<string> names)
         => names.Any(chatChoice.IsFunctionCall);
+
+
+    /// <summary>
+    ///  Checks if any of the choices is a function call
+    /// </summary>
+    /// <param name="response"></param>
+    /// <param name="names"></param>
+    /// <returns></returns>
+    public static bool IsFunctionCallResponse(this ChatCompletions response, IEnumerable<string> names) =>
+        response.Choices.Any(choice => choice.IsFunctionCall(names));
 
 
     /// <summary>
@@ -77,6 +75,7 @@ public static class ChatMessageExtensions
     /// <returns></returns>
     public static string CleanJson(string strInput)
     {
+        strInput = strInput.Trim('\'');
         var json = strInput;
 
         json = Regex.Replace(json, @"(\\w+): (.*)", @"$1: ""$2""",
@@ -85,7 +84,7 @@ public static class ChatMessageExtensions
         json = Regex.Replace(json, @"\[([^\]]*)\]", "[$1]",
             RegexOptions.Multiline);
 
-        json = json.Replace(@"\", @"");
+        json = json.Replace(@"\", "");
         return json;
     }
 

@@ -6,11 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.AI.OpenAI;
 using Diagnostics;
 using Extensions;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Orchestration;
 using SemanticKernel.AI;
 using SemanticKernel.AI.ChatCompletion;
@@ -45,7 +43,7 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
     public bool IsSemantic => true;
 
     /// <inheritdoc />
-    public AIRequestSettings RequestSettings { get; private set; } = new();
+    public AIRequestSettings RequestSettings { get; private set; }
 
     /// <summary>
     ///  The callable functions for this SKFunctionCall instance
@@ -78,6 +76,7 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
 
         var func = new SKFunctionCall(
             functionConfig.PromptTemplate,
+            functionConfig.PromptTemplateConfig.GetDefaultRequestSettings(),
             skillName,
             functionName,
             functionConfig.PromptTemplateConfig.Description,
@@ -190,6 +189,7 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
 
     internal SKFunctionCall(
         IPromptTemplate template,
+        AIRequestSettings requestSettings,
         string skillName,
         string functionName,
         string description,
@@ -204,8 +204,8 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
 
         _logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(SKFunctionCall)) : NullLogger.Instance;
 
+        RequestSettings = requestSettings;
         _promptTemplate = template;
-
         Name = functionName;
         PluginName = skillName;
         SkillName = skillName;
@@ -258,68 +258,11 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
     }
 
 
-    private static async Task<FunctionCallResult?> GetFunctionCallResponseAsync(IReadOnlyList<IChatResult> completions, CancellationToken cancellationToken = default)
-    {
-        // To avoid any unexpected behavior we only take the first completion result (when running from the Kernel)
-        //check if the first completion is a function call
-        var message = await completions[0].GetChatMessageAsync(cancellationToken).ConfigureAwait(false);
-
-        return message?.ToFunctionCallResult();
-    }
-
-
     private static async Task<string> GetCompletionsResultContentAsync(IReadOnlyList<IChatResult> completions, CancellationToken cancellationToken = default)
     {
         // To avoid any unexpected behavior we only take the first completion result (when running from the Kernel)
         var message = await completions[0].GetChatMessageAsync(cancellationToken).ConfigureAwait(false);
         return message.Content;
-    }
-
-
-    private async Task<IReadOnlyList<IChatResult>> GetChatResults(
-        IChatCompletion? client,
-        FunctionCallRequestSettings? requestSettings,
-        SKContext context,
-        CancellationToken cancellationToken)
-    {
-        Verify.NotNull(client);
-        Verify.NotNull(requestSettings);
-
-        try
-        {
-            var renderedPrompt = await _promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
-
-            if (client is null)
-            {
-                throw new SKException(" Must be an OpenAI model");
-            }
-
-            IReadOnlyList<IChatResult>? completionResults = await client.GetChatCompletionsAsync(
-                    client.CreateNewChat(renderedPrompt),
-                    requestSettings, cancellationToken)
-                .ConfigureAwait(false);
-
-            if (completionResults is null)
-            {
-                throw new SKException("The completion results are null");
-            }
-            return completionResults;
-        }
-        catch (HttpOperationException ex)
-        {
-            const string MESSAGE = "Something went wrong while rendering the semantic function" +
-                                   " or while executing the text completion. Function: {SkillName}.{FunctionName} - {Message}. {ResponseContent}";
-            _logger.LogError(ex, MESSAGE, SkillName, Name, ex.Message, ex.ResponseContent);
-            throw;
-        }
-        catch (Exception ex) when (!ex.IsCriticalException())
-        {
-            const string MESSAGE = "Something went wrong while rendering the semantic function" +
-                                   " or while executing the text completion. Function: {SkillName}.{FunctionName} - {Message}";
-            _logger.LogError(ex, MESSAGE, SkillName, Name, ex.Message);
-            throw;
-        }
-
     }
 
 
@@ -337,6 +280,7 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
         try
         {
             var renderedPrompt = await _promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
+            _logger.LogInformation("SKFunctionCall: Calling function {Plugin}.{Name} with prompt {Prompt}", PluginName, Name, renderedPrompt);
             IReadOnlyList<IChatResult> completionResults = await client.GetChatCompletionsAsync(client.CreateNewChat(renderedPrompt), requestSettings, cancellationToken).ConfigureAwait(false);
 
             if (completionResults is null)
@@ -345,6 +289,7 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
             }
 
             var completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
+            _logger.LogInformation("SKFunctionCall: Function {Plugin}.{Name} completed with result {Result}", PluginName, Name, completion);
             // Update the result with the completion
             context.Variables.Update(completion);
 
