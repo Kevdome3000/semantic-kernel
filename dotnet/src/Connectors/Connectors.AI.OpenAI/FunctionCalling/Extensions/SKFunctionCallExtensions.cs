@@ -81,9 +81,7 @@ public static class SKFunctionCallExtensions
         var template = new PromptTemplate(promptTemplate, config, kernel.PromptTemplateEngine);
 
         SKFunctionCallConfig functionConfig = new(template, config, targetFunction, callableFunctions, callFunctionsAutomatically);
-        var functionCall = SKFunctionCall.FromConfig(skillName ?? "sk_function_call", functionName, functionConfig, loggerFactory);
-        functionCall.SetAIService(() => kernel.GetService<ITextCompletion>());
-        functionCall.SetDefaultFunctionCollection(kernel.Functions);
+        ISKFunction functionCall = SKFunctionCall.FromConfig(skillName ?? "sk_function_call", functionName, functionConfig, loggerFactory);
         return functionCall;
     }
 

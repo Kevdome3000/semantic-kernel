@@ -21,7 +21,7 @@ using TemplateEngine;
 /// <summary>
 /// A semantic function that calls other functions
 /// </summary>
-public sealed class SKFunctionCall : ISKFunction, IDisposable
+public sealed class SKFunctionCall : ISKFunction
 {
 
     /// <summary>
@@ -100,16 +100,19 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
     /// <inheritdoc />
     public async Task<FunctionResult> InvokeAsync(SKContext context, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
     {
+        SetCallableFunctions(context.Functions);
 
-        if (_skillCollection is null)
+        IChatCompletion? chatCompletion = context.ServiceProvider.GetService<IChatCompletion>();
+
+        if(chatCompletion is null)
         {
-            SetDefaultFunctionCollection(context.Functions);
+            throw new SKException("The chat completion service is null");
         }
 
         var settings = GetRequestSettings(requestSettings ?? RequestSettings);
 
         // trim any skills from the 
-        var result = await RunPromptAsync(_aiService?.Value, settings, context, cancellationToken).ConfigureAwait(false);
+        var result = await RunPromptAsync(chatCompletion, settings, context, cancellationToken).ConfigureAwait(false);
 
         if (!CallFunctionsAutomatically)
         {
@@ -127,22 +130,19 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
     }
 
 
-    /// <inheritdoc />
-    public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions)
+    private void SetCallableFunctions(IReadOnlyFunctionCollection functions)
     {
-        _skillCollection = functions;
-        CallableFunctions.Clear();
-
         if (_targetFunctionDefinition != FunctionDefinition.Auto)
         {
             CallableFunctions.Add(_targetFunctionDefinition);
         }
 
         List<FunctionDefinition> functionDefinitions = functions.GetFunctionDefinitions(new[] { PluginName }).Take(MaxCallableFunctions - 1).ToList();
-        CallableFunctions.AddRange(functionDefinitions);
-
-        return this;
+        //for each functionDefinition not in callableFunctions, add it to the list
+        CallableFunctions.AddRange(functionDefinitions.Where(functionDefinition => CallableFunctions.TrueForAll(f => f.Name != functionDefinition.Name)));
     }
+    /// <inheritdoc />
+    public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions) => this;
 
 
     /// <inheritdoc />
@@ -150,20 +150,7 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
 
 
     /// <inheritdoc />
-    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
-    {
-        Verify.NotNull(serviceFactory);
-        var textService = serviceFactory();
-
-        // Mainly check if the service returned by the factory could be cast as IChatCompletion
-        if (textService is not IChatCompletion chatService)
-        {
-            throw new SKException("The service factory must return an IOpenAIChatCompletion");
-        }
-        _aiService = new Lazy<IChatCompletion>(() => chatService);
-        return this;
-
-    }
+    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory) => this;
 
 
     /// <inheritdoc/>
@@ -173,19 +160,6 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
         RequestSettings = requestSettings;
         return this;
     }
-
-
-    /// <summary>
-    /// Dispose of resources.
-    /// </summary>
-    public void Dispose()
-    {
-        if (_aiService is { IsValueCreated: true } aiService)
-        {
-            (aiService.Value as IDisposable)?.Dispose();
-        }
-    }
-
 
     internal SKFunctionCall(
         IPromptTemplate template,
@@ -224,10 +198,7 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
     #region private
 
     private readonly ILogger _logger;
-    private IReadOnlyFunctionCollection? _skillCollection;
-    private Lazy<IChatCompletion>? _aiService;
     private readonly FunctionDefinition _targetFunctionDefinition;
-    private ISKFunction? _functionToCall;
     private readonly IPromptTemplate _promptTemplate;
 
 
@@ -280,6 +251,7 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
         try
         {
             var renderedPrompt = await _promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
+            requestSettings.ChatSystemPrompt = renderedPrompt;
             _logger.LogInformation("SKFunctionCall: Calling function {Plugin}.{Name} with prompt {Prompt}", PluginName, Name, renderedPrompt);
             IReadOnlyList<IChatResult> completionResults = await client.GetChatCompletionsAsync(client.CreateNewChat(renderedPrompt), requestSettings, cancellationToken).ConfigureAwait(false);
 
@@ -301,7 +273,7 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
-            _logger?.LogError(ex, "Semantic function {Plugin}.{Name} execution failed with error {Error}", PluginName, Name, ex.Message);
+            _logger.LogError(ex, "Semantic function {Plugin}.{Name} execution failed with error {Error}", PluginName, Name, ex.Message);
             throw;
         }
 
@@ -318,7 +290,7 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
             throw new SKException("The function call result is null");
         }
 
-        if (!_skillCollection!.TryGetFunction(functionCallResult, out _functionToCall))
+        if (!context.Functions.TryGetFunction(functionCallResult, out ISKFunction? functionToCall))
         {
             throw new SKException($"The function {functionCallResult.Function} is not available");
         }
@@ -329,9 +301,9 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
             context.Variables[item.Key] = item.Value;
         }
 
-        if (_functionToCall != null)
+        if (functionToCall != null)
         {
-            return await _functionToCall.InvokeAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
+            return await functionToCall.InvokeAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         return null;
