@@ -107,7 +107,6 @@ public static class FunctionExtensions
         }, new JsonSerializerOptions()
             { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
 
-        // Console.WriteLine($"Parameters: {JsonSerializer.Deserialize()}");
         var functionName = string.IsNullOrEmpty(functionView.PluginName)
             ? functionView.Name
             : $"{functionView.PluginName}.{functionView.Name}";

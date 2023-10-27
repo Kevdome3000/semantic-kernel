@@ -6,9 +6,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.AI.OpenAI;
 using Diagnostics;
 using Extensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Orchestration;
 using SemanticKernel.AI;
 using SemanticKernel.AI.ChatCompletion;
@@ -63,14 +65,12 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
     /// <param name="functionName"></param>
     /// <param name="functionConfig"></param>
     /// <param name="loggerFactory"></param>
-    /// <param name="cancellationToken"></param>
     /// <returns></returns>
     public static ISKFunction FromConfig(
         string skillName,
         string functionName,
         SKFunctionCallConfig functionConfig,
-        ILoggerFactory? loggerFactory = null,
-        CancellationToken cancellationToken = default)
+        ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(functionConfig);
 
