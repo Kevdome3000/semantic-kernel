@@ -2,18 +2,20 @@
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.FunctionCalling;
 
 using System;
+using System.Text.Json.Serialization;
 
 
 /// <summary>
 ///  A parameter for a function call
 /// </summary>
-public class FunctionCallParameter
+public sealed class FunctionCallParameter
 {
     /// <summary>
     ///  Constructor
     /// </summary>
     /// <param name="name"></param>
     /// <param name="value"></param>
+    [JsonConstructor]
     public FunctionCallParameter(string name, string value)
     {
         Name = name;
@@ -24,25 +26,36 @@ public class FunctionCallParameter
     /// <summary>
     ///  Name of the parameter
     /// </summary>
-    public string Name { get; set; }
+    [JsonPropertyName("name")]
+    public string Name { get; init; }
 
     /// <summary>
     ///  Value of the parameter
     /// </summary>
-    public string Value { get; set; }
+    [JsonPropertyName("value")]
+    public string Value { get; init; }
 
 
+    /// <summary>
+    ///  Compare two FunctionCallParameters
+    /// </summary>
+    /// <param name="obj"></param>
+    /// <returns></returns>
     public override bool Equals(object? obj)
     {
-        if (obj is FunctionCallParameter other)
+        if (obj is not FunctionCallParameter other)
         {
-            var nameEquality = Name.Trim().Equals(other.Name.Trim(), StringComparison.Ordinal);
-            var valueEquality = Value.Trim().Equals(other.Value.Trim(), StringComparison.Ordinal);
-            return nameEquality && valueEquality;
+            return false;
         }
-        return base.Equals(obj);
+        var nameEquality = Name.Trim().Equals(other.Name.Trim(), StringComparison.Ordinal);
+        var valueEquality = Value.Trim().Equals(other.Value.Trim(), StringComparison.Ordinal);
+        return nameEquality && valueEquality;
+
     }
 
-
+    /// <summary>
+    ///  Get a hash code for the FunctionCallParameter
+    /// </summary>
+    /// <returns></returns>
     public override int GetHashCode() => HashCode.Combine(Name, Value);
 }

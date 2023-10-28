@@ -1,8 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.FunctionCalling;
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 
 
 /// <summary>
@@ -14,11 +16,13 @@ public class FunctionCallResult
     /// <summary>
     /// Name of the function chosen
     /// </summary>
-    public string Function { get; set; } = string.Empty;
+    [JsonPropertyName("function")]
+    public string? Function { get; set; }
 
     /// <summary>
     ///  Parameter values
     /// </summary>
+    [JsonPropertyName("parameters")]
     public List<FunctionCallParameter> Parameters { get; set; } = new();
 
 
@@ -34,10 +38,22 @@ public class FunctionCallResult
             return false;
         }
         // You might need to adjust this comparison depending on what makes two FunctionCallResult equal in your context
-        bool functionEquality = otherFunctionCallResult.Function.Trim().Equals(Function.Trim(), System.StringComparison.Ordinal);
+        bool functionEquality = otherFunctionCallResult.Function != null && otherFunctionCallResult.Function.Trim().Equals(Function?.Trim(), System.StringComparison.Ordinal);
         bool parametersEquality = otherFunctionCallResult.Parameters.SequenceEqual(Parameters);
         return functionEquality && parametersEquality;
+    }
 
+
+    /// <inheritdoc />
+    public override int GetHashCode()
+    {
+        var hashCode = new HashCode();
+        hashCode.Add(Function);
+        foreach (var parameter in Parameters)
+        {
+            hashCode.Add(parameter);
+        }
+        return hashCode.ToHashCode();
     }
 
 }

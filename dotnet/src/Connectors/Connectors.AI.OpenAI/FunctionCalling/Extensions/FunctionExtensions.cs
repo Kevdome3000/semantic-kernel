@@ -72,6 +72,14 @@ public static class FunctionExtensions
             }, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase })
     };
 
+    /// <summary>
+    ///  Check if the value is the default value for the type
+    /// </summary>
+    /// <param name="value"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public static bool IsDefault<T>(this T value) => Equals(value, default(T));
+
 
     /// <summary>
     ///  Convert FunctionView to FunctionDefinition
@@ -85,8 +93,8 @@ public static class FunctionExtensions
 
         foreach (var param in functionView.Parameters)
         {
-            string descriptionString = param.Description!;
-            string defaultValue = param.DefaultValue ?? string.Empty;
+            var descriptionString = param.Description!;
+            var defaultValue = param.DefaultValue ?? string.Empty;
 
             if (!string.IsNullOrEmpty(defaultValue))
             {
