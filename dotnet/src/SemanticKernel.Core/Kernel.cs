@@ -12,6 +12,7 @@ using Diagnostics;
 using Events;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
+using Functions;
 using Http;
 using Memory;
 using Orchestration;
@@ -65,15 +66,18 @@ public sealed class Kernel : IKernel, IDisposable
     /// <param name="aiServiceProvider">AI Service Provider</param>
     /// <param name="promptTemplateEngine">Prompt template engine</param>
     /// <param name="memory">Semantic text Memory</param>
-    /// <param name="httpHandlerFactory"></param>
+    /// <param name="httpHandlerFactory">HTTP handler factory</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <param name="serviceSelector">AI service selector</param>
     public Kernel(
         IFunctionCollection functionCollection,
         IAIServiceProvider aiServiceProvider,
         IPromptTemplateEngine promptTemplateEngine,
         ISemanticTextMemory memory,
         IDelegatingHandlerFactory httpHandlerFactory,
-        ILoggerFactory? loggerFactory)
+        ILoggerFactory? loggerFactory,
+        IAIServiceSelector? serviceSelector = null
+    )
     {
         loggerFactory ??= NullLoggerFactory.Instance;
 
@@ -84,6 +88,7 @@ public sealed class Kernel : IKernel, IDisposable
         this._aiServiceProvider = aiServiceProvider;
         this._promptTemplateEngine = promptTemplateEngine;
         this._functionCollection = functionCollection;
+        this._aiServiceSelector = serviceSelector ?? new OrderedIAIServiceSelector();
 
         this._logger = loggerFactory.CreateLogger(typeof(Kernel));
     }
@@ -182,6 +187,7 @@ public sealed class Kernel : IKernel, IDisposable
         return new SKContext(
             new FunctionRunner(this),
             this._aiServiceProvider,
+            this._aiServiceSelector,
             variables,
             functions ?? this.Functions,
             loggerFactory ?? this.LoggerFactory,
@@ -222,6 +228,7 @@ public sealed class Kernel : IKernel, IDisposable
     private ISemanticTextMemory _memory;
     private readonly IPromptTemplateEngine _promptTemplateEngine;
     private readonly IAIServiceProvider _aiServiceProvider;
+    private readonly IAIServiceSelector _aiServiceSelector;
     private readonly ILogger _logger;
 
 

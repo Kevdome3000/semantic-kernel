@@ -63,7 +63,12 @@ public sealed class SKContext
     /// <summary>
     /// AI service provider
     /// </summary>
-    public IAIServiceProvider ServiceProvider { get; }
+    internal IAIServiceProvider ServiceProvider { get; }
+
+    /// <summary>
+    /// AIService selector implementation
+    /// </summary>
+    internal IAIServiceSelector ServiceSelector { get; }
 
 
     /// <summary>
@@ -71,6 +76,7 @@ public sealed class SKContext
     /// </summary>
     /// <param name="functionRunner">Function runner reference</param>
     /// <param name="serviceProvider">AI service provider</param>
+    /// <param name="serviceSelector">AI service selector</param>
     /// <param name="variables">Context variables to include in context.</param>
     /// <param name="functions">Functions to include in context.</param>
     /// <param name="loggerFactory">Logger factory to be used in context</param>
@@ -78,6 +84,7 @@ public sealed class SKContext
     internal SKContext(
         IFunctionRunner functionRunner,
         IAIServiceProvider serviceProvider,
+        IAIServiceSelector serviceSelector,
         ContextVariables? variables = null,
         IReadOnlyFunctionCollection? functions = null,
         ILoggerFactory? loggerFactory = null,
@@ -86,7 +93,8 @@ public sealed class SKContext
         Verify.NotNull(functionRunner, nameof(functionRunner));
 
         Runner = functionRunner;
-        this.ServiceProvider = serviceProvider;
+        ServiceProvider = serviceProvider;
+        ServiceSelector = serviceSelector;
         Variables = variables ?? new();
         Functions = functions ?? NullReadOnlyFunctionCollection.Instance;
         LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
@@ -125,6 +133,7 @@ public sealed class SKContext
         return new SKContext(
             Runner,
             this.ServiceProvider,
+            this.ServiceSelector,
             variables ?? Variables.Clone(),
             functions ?? Functions,
             LoggerFactory,

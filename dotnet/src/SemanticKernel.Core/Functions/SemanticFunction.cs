@@ -53,7 +53,6 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
     /// <param name="functionName">Name of the function to create.</param>
     /// <param name="promptTemplateConfig">Prompt template configuration.</param>
     /// <param name="promptTemplate">Prompt template.</param>
-    /// <param name="serviceSelector">AI service selector</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>SK function instance.</returns>
@@ -62,7 +61,6 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
         string functionName,
         PromptTemplateConfig promptTemplateConfig,
         IPromptTemplate promptTemplate,
-        IAIServiceSelector? serviceSelector = null,
         ILoggerFactory? loggerFactory = null,
         CancellationToken cancellationToken = default)
     {
@@ -74,7 +72,6 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
             description: promptTemplateConfig.Description,
             pluginName: pluginName,
             functionName: functionName,
-            serviceSelector: serviceSelector,
             loggerFactory: loggerFactory
         )
         {
@@ -100,8 +97,7 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
     {
         AddDefaultValues(context.Variables);
 
-        (var textCompletion, var defaultRequestSettings) = this._serviceSelector.SelectAIService<ITextCompletion>(context.ServiceProvider, this._modelSettings);
-        return await this.RunPromptAsync(textCompletion, requestSettings ?? defaultRequestSettings, context, cancellationToken).ConfigureAwait(false);
+        return await this.RunPromptAsync(requestSettings, context, cancellationToken).ConfigureAwait(false);
     }
 
 
@@ -132,7 +128,6 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
         string pluginName,
         string functionName,
         string description,
-        IAIServiceSelector? serviceSelector = null,
         ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(template);
@@ -148,8 +143,6 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
         PluginName = pluginName;
         Description = description;
 
-        this._serviceSelector = serviceSelector ?? new OrderedIAIServiceSelector();
-
         this._view = new(() => new(functionName, pluginName, description, this.Parameters));
     }
 
@@ -159,7 +152,7 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
     private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
     private readonly ILogger _logger;
-    private IAIServiceSelector _serviceSelector;
+    private IAIServiceSelector? _serviceSelector;
     public List<AIRequestSettings>? _modelSettings;
     private readonly Lazy<FunctionView> _view;
     public IPromptTemplate _promptTemplate { get; }
@@ -190,19 +183,20 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
 
 
     private async Task<FunctionResult> RunPromptAsync(
-        ITextCompletion? client,
         AIRequestSettings? requestSettings,
         SKContext context,
         CancellationToken cancellationToken)
     {
-        Verify.NotNull(client);
-
         FunctionResult result;
 
         try
         {
             string renderedPrompt = await _promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
-            IReadOnlyList<ITextResult> completionResults = await client.GetCompletionsAsync(renderedPrompt, requestSettings, cancellationToken).ConfigureAwait(false);
+            // For backward compatibility, use the service selector from the class if it exists, otherwise use the one from the context
+            var serviceSelector = this._serviceSelector ?? context.ServiceSelector;
+            (var textCompletion, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(renderedPrompt, context.ServiceProvider, this._modelSettings);
+            Verify.NotNull(textCompletion);
+            IReadOnlyList<ITextResult> completionResults = await textCompletion.GetCompletionsAsync(renderedPrompt, requestSettings ?? defaultRequestSettings, cancellationToken).ConfigureAwait(false);
             string completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
 
             // Update the result with the completion

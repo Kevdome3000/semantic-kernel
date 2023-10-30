@@ -32,6 +32,7 @@ public sealed class PromptTemplateEngineTests
     private readonly Mock<IKernel> _kernel;
     private readonly Mock<IFunctionRunner> _functionRunner;
     private readonly Mock<IAIServiceProvider> _serviceProvider;
+    private readonly Mock<IAIServiceSelector> _serviceSelector;
 
 
     public PromptTemplateEngineTests(ITestOutputHelper testOutputHelper)
@@ -43,6 +44,7 @@ public sealed class PromptTemplateEngineTests
         this._kernel = new Mock<IKernel>();
         this._functionRunner = new Mock<IFunctionRunner>();
         this._serviceProvider = new Mock<IAIServiceProvider>();
+        this._serviceSelector = new Mock<IAIServiceSelector>();
     }
 
 
@@ -396,7 +398,7 @@ public sealed class PromptTemplateEngineTests
         this._functionRunner.Setup(r => r.RunAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()))
             .Returns<string, string, ContextVariables, CancellationToken>((pluginName, functionName, variables, cancellationToken) =>
             {
-                var context = new SKContext(this._functionRunner.Object, this._serviceProvider.Object, variables);
+                var context = new SKContext(this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object, variables);
                 return function.InvokeAsync(context, null, cancellationToken);
             });
     }
@@ -407,7 +409,7 @@ public sealed class PromptTemplateEngineTests
         this._functionRunner.Setup(r => r.RunAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()))
             .Returns<string, string, ContextVariables, CancellationToken>((pluginName, functionName, variables, cancellationToken) =>
             {
-                var context = new SKContext(this._functionRunner.Object, this._serviceProvider.Object, variables);
+                var context = new SKContext(this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object, variables);
                 var function = functions.First(f => f.PluginName == functionName);
 
                 return function.InvokeAsync(context, null, cancellationToken);
@@ -420,6 +422,7 @@ public sealed class PromptTemplateEngineTests
         return new SKContext(
             this._functionRunner.Object,
             this._serviceProvider.Object,
+            this._serviceSelector.Object,
             this._variables,
             this._functions.Object);
     }

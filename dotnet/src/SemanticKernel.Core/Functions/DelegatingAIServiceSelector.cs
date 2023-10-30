@@ -20,7 +20,7 @@ internal class DelegatingAIServiceSelector : IAIServiceSelector
 
 
     /// <inheritdoc/>
-    public (T?, AIRequestSettings?) SelectAIService<T>(IAIServiceProvider serviceProvider, IReadOnlyList<AIRequestSettings>? modelSettings) where T : IAIService
+    public (T?, AIRequestSettings?) SelectAIService<T>(string renderedPrompt, IAIServiceProvider serviceProvider, IReadOnlyList<AIRequestSettings>? modelSettings) where T : IAIService
     {
         return ((T?)this.ServiceFactory?.Invoke() ?? serviceProvider.GetService<T>(null), this.RequestSettings ?? modelSettings?[0]);
     }
