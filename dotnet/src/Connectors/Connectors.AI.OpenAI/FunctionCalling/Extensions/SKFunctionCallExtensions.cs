@@ -13,7 +13,6 @@ using Azure.AI.OpenAI;
 using Microsoft.Extensions.Logging;
 using Orchestration;
 using SemanticKernel.AI;
-using SemanticKernel.AI.TextCompletion;
 using TemplateEngine;
 
 

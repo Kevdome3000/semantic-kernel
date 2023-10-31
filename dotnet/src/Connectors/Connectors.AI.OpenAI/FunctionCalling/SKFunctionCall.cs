@@ -1,4 +1,3 @@
-// Copyright (c) Microsoft. All rights reserved.
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.FunctionCalling;
 
 using System;
@@ -104,7 +103,7 @@ public sealed class SKFunctionCall : ISKFunction
 
         IChatCompletion? chatCompletion = context.ServiceProvider.GetService<IChatCompletion>();
 
-        if(chatCompletion is null)
+        if (chatCompletion is null)
         {
             throw new SKException("The chat completion service is null");
         }
@@ -141,6 +140,8 @@ public sealed class SKFunctionCall : ISKFunction
         //for each functionDefinition not in callableFunctions, add it to the list
         CallableFunctions.AddRange(functionDefinitions.Where(functionDefinition => CallableFunctions.TrueForAll(f => f.Name != functionDefinition.Name)));
     }
+
+
     /// <inheritdoc />
     public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions) => this;
 
@@ -160,6 +161,7 @@ public sealed class SKFunctionCall : ISKFunction
         RequestSettings = requestSettings;
         return this;
     }
+
 
     internal SKFunctionCall(
         IPromptTemplate template,
