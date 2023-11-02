@@ -2,7 +2,9 @@
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
+using System;
 using System.Text.Json.Serialization;
+using Azure.AI.OpenAI;
 using SemanticKernel.AI.ChatCompletion;
 
 
@@ -11,6 +13,8 @@ using SemanticKernel.AI.ChatCompletion;
 /// </summary>
 public class SKChatMessage : ChatMessageBase
 {
+    private readonly ChatMessage? _message;
+
     /// <summary>
     ///  The name of the function call if the message is a function call.
     /// </summary>
@@ -22,8 +26,12 @@ public class SKChatMessage : ChatMessageBase
     /// Initializes a new instance of the <see cref="SKChatMessage"/> class.
     /// </summary>
     /// <param name="message">OpenAI SDK chat message representation</param>
-    public SKChatMessage(Azure.AI.OpenAI.ChatMessage message)
-        : base(new AuthorRole(message.Role.ToString()), message.Content) => FunctionName = message.Name;
+    public SKChatMessage(ChatMessage message)
+        : base(new AuthorRole(message.Role.ToString()), message.Content)
+    {
+        _message = message;
+        FunctionName = message.Name;
+    }
 
 
     /// <summary>
@@ -37,4 +45,11 @@ public class SKChatMessage : ChatMessageBase
     {
         FunctionName = functionName;
     }
+
+
+    /// <summary>
+    /// Exposes the underlying OpenAI SDK function call chat message representation
+    /// </summary>
+    public FunctionCall FunctionCall
+        => this._message?.FunctionCall ?? throw new NotSupportedException("Function call is not supported");
 }

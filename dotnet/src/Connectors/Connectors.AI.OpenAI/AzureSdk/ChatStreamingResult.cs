@@ -18,21 +18,18 @@ using static FunctionCalling.Extensions.ChatMessageExtensions;
 
 internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreamingResult, IChatResult, ITextResult
 {
-    private readonly ModelResult _modelResult;
     private readonly StreamingChatChoice _choice;
     private readonly bool _isFunctionCall;
+    public ModelResult ModelResult { get; }
 
 
     public ChatStreamingResult(StreamingChatCompletions resultData, StreamingChatChoice choice, bool isFunctionCall = false)
     {
         Verify.NotNull(choice);
         _choice = choice;
-        _modelResult = new ModelResult(resultData);
+        ModelResult = new ModelResult(resultData);
         _isFunctionCall = isFunctionCall;
     }
-
-
-    public ModelResult ModelResult => _modelResult;
 
 
     /// <inheritdoc/>
