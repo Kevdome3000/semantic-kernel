@@ -108,10 +108,8 @@ public static class OpenAIChatCompletionExtensions
             }
         }
 
-        catch (JsonException ex)
+        catch (JsonException)
         {
-            Console.WriteLine($"Error while converting '{content}' to a '{typeof(T)}': {ex}");
-
             if (deserializationFallback != null)
             {
                 result = deserializationFallback.Invoke(content);
@@ -123,7 +121,7 @@ public static class OpenAIChatCompletionExtensions
             return result;
         }
 
-        Console.WriteLine($"Error while converting '{content}' to a '{typeof(T)}': {nameof(result)} is null. Emitting damaged response.");
+        Console.WriteLine($"Error while converting response to a '{typeof(T)}': {nameof(result)} is null. Emitting damaged response.");
         requestSettings.EmitDamagedResponse?.Invoke(content);
 
         return result;
