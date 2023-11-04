@@ -19,6 +19,7 @@ using AI.TextCompletion;
 using Diagnostics;
 using Extensions.Logging;
 using Orchestration;
+using Orchestration.Microsoft.SemanticKernel.Planners;
 using Planning;
 using Services;
 using TemplateEngine;
