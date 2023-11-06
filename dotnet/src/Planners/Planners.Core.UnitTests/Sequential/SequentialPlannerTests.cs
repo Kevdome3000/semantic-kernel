@@ -7,6 +7,7 @@ using System.Globalization;
 using AI;
 using Diagnostics;
 using Extensions.Logging;
+using Extensions.Logging.Abstractions;
 using Moq;
 using Orchestration;
 using Services;
@@ -22,8 +23,7 @@ public sealed class SequentialPlannerTests
     public async Task ItCanCreatePlanAsync(string goal)
     {
         // Arrange
-        var kernel = new Mock<IKernel>();
-        kernel.Setup(x => x.LoggerFactory).Returns(new Mock<ILoggerFactory>().Object);
+        var kernel = CreateMockKernel();
         kernel.Setup(x => x.RunAsync(It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>(), It.IsAny<ISKFunction>()))
             .Returns<ContextVariables, CancellationToken, ISKFunction[]>(async (vars, cancellationToken, functions) =>
             {
@@ -66,7 +66,6 @@ public sealed class SequentialPlannerTests
         var functionRunner = new Mock<IFunctionRunner>();
         var serviceProvider = new Mock<IAIServiceProvider>();
         var serviceSelector = new Mock<IAIServiceSelector>();
-        kernel.Setup(x => x.LoggerFactory).Returns(new Mock<ILoggerFactory>().Object);
 
         var expectedFunctions = input.Select(x => x.name).ToList();
         var expectedPlugins = input.Select(x => x.pluginName).ToList();
@@ -145,7 +144,7 @@ public sealed class SequentialPlannerTests
     public async Task EmptyGoalThrowsAsync()
     {
         // Arrange
-        var kernel = new Mock<IKernel>();
+        var kernel = CreateMockKernel();
 
         var planner = new SequentialPlanner(kernel.Object);
 
@@ -206,7 +205,7 @@ public sealed class SequentialPlannerTests
     public void UsesPromptDelegateWhenProvided()
     {
         // Arrange
-        var kernel = new Mock<IKernel>();
+        var kernel = CreateMockKernel();
         var getPromptTemplateMock = new Mock<Func<string>>();
         var config = new SequentialPlannerConfig()
         {
@@ -229,5 +228,15 @@ public sealed class SequentialPlannerTests
         mockFunction.Setup(x => x.Name).Returns(functionView.Name);
         mockFunction.Setup(x => x.PluginName).Returns(functionView.PluginName);
         return mockFunction;
+    }
+
+
+    // Method to create Mock<IKernel> objects
+    private static Mock<IKernel> CreateMockKernel()
+    {
+        var kernel = new Mock<IKernel>();
+        kernel.Setup(x => x.LoggerFactory).Returns(NullLoggerFactory.Instance);
+
+        return kernel;
     }
 }

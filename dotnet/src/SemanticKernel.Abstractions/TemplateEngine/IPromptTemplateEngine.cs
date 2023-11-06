@@ -1,14 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.TemplateEngine;
+
+using System;
+using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Orchestration;
+using Orchestration;
 
-namespace Microsoft.SemanticKernel.TemplateEngine;
 
 /// <summary>
 /// Prompt template engine interface.
 /// </summary>
+[Obsolete("PromptTemplateEngine has been replaced with PromptTemplateFactory and will be null. If you pass an PromptTemplateEngine instance when creating a Kernel it will be wrapped in an instance of IPromptTemplateFactory. This will be removed in a future release.")]
+[EditorBrowsable(EditorBrowsableState.Never)]
 public interface IPromptTemplateEngine
 {
     /// <summary>

@@ -4,6 +4,7 @@ namespace SemanticKernel.Plugins.UnitTests.Core;
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Time.Testing;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Core;
 using SemanticKernel.UnitTests;

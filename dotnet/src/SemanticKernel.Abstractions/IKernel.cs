@@ -28,11 +28,6 @@ public interface IKernel
     ILoggerFactory LoggerFactory { get; }
 
     /// <summary>
-    /// Reference to the engine rendering prompt templates
-    /// </summary>
-    IPromptTemplateEngine PromptTemplateEngine { get; }
-
-    /// <summary>
     /// Reference to the read-only function collection containing all the imported functions
     /// </summary>
     IReadOnlyFunctionCollection Functions { get; }
@@ -102,6 +97,13 @@ public interface IKernel
 
 
     #region Obsolete
+
+    /// <summary>
+    /// Reference to the engine rendering prompt templates
+    /// </summary>
+    [Obsolete("PromptTemplateEngine has been replaced with PromptTemplateFactory and will be null. If you pass an PromptTemplateEngine instance when creating a Kernel it will be wrapped in an instance of IPromptTemplateFactory. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    IPromptTemplateEngine? PromptTemplateEngine { get; }
 
     /// <summary>
     /// Semantic memory instance

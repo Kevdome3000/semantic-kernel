@@ -7,13 +7,16 @@ using System.Threading.Tasks;
 using Fakes;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Planners;
 using Microsoft.SemanticKernel.Plugins.Memory;
 using TestSettings;
+using xRetry;
 using Xunit;
+using Xunit.Abstractions;
 
 
 public sealed class SequentialPlannerTests : IDisposable

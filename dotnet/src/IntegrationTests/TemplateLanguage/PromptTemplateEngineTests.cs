@@ -17,6 +17,8 @@ using Xunit.Abstractions;
 #pragma warning disable CA1849 // ok to use WriteLine synchronously
 
 
+[Obsolete("Use BasicPromptTemplateFactory instead. This will be removed in a future release.")]
+[EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class PromptTemplateEngineTests : IDisposable
 {
     public PromptTemplateEngineTests(ITestOutputHelper output)

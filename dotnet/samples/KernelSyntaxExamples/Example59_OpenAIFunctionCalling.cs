@@ -70,7 +70,7 @@ public static class Example59_OpenAIFunctionCalling
         chatHistory.AddUserMessage(ask);
 
         // Send request
-        var chatResult = (await chatCompletion.GetChatCompletionsAsync(chatHistory, requestSettings))[0];
+        IChatResult chatResult = (await chatCompletion.GetChatCompletionsAsync(chatHistory, requestSettings))[0];
 
         // Check for message response
         var chatMessage = await chatResult.GetChatMessageAsync();
@@ -84,7 +84,7 @@ public static class Example59_OpenAIFunctionCalling
         }
 
         // Check for function response
-        OpenAIFunctionResponse? functionResponse = chatResult.GetOpenAIFunctionResponse();
+        OpenAIFunctionResponse? functionResponse = chatResult.GetFunctionResponse();
 
         if (functionResponse is not null)
         {

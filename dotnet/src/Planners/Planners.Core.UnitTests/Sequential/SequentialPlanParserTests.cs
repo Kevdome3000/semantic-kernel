@@ -6,6 +6,7 @@ namespace Microsoft.SemanticKernel.Planners.Sequential.UnitTests;
 using System.Globalization;
 using Diagnostics;
 using Extensions.Logging;
+using Extensions.Logging.Abstractions;
 using Moq;
 using Orchestration;
 using Services;
@@ -36,7 +37,7 @@ public class SequentialPlanParserTests
 
         var kernelMock = new Mock<IKernel>();
         kernelMock.SetupGet(k => k.Functions).Returns(mockFunctionCollection.Object);
-        kernelMock.SetupGet(k => k.LoggerFactory).Returns(new Mock<ILoggerFactory>().Object);
+        kernelMock.SetupGet(k => k.LoggerFactory).Returns(NullLoggerFactory.Instance);
 
         return kernelMock;
     }

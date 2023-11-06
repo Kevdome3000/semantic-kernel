@@ -13,6 +13,7 @@ using Orchestration;
 /// <summary>
 /// Prompt template.
 /// </summary>
+[Obsolete("IPromptTemplateEngine is being replaced with IPromptTemplateFactory. This will be removed in a future release.")]
 public sealed class PromptTemplate : IPromptTemplate
 {
     private readonly string _template;
@@ -20,18 +21,6 @@ public sealed class PromptTemplate : IPromptTemplate
 
     // ReSharper disable once NotAccessedField.Local
     private readonly PromptTemplateConfig _promptConfig;
-
-
-    /// <summary>
-    /// Constructor for PromptTemplate.
-    /// </summary>
-    /// <param name="template">Template.</param>
-    /// <param name="promptTemplateConfig">Prompt template configuration.</param>
-    /// <param name="kernel">Kernel in which template is to take effect.</param>
-    public PromptTemplate(string template, PromptTemplateConfig promptTemplateConfig, IKernel kernel)
-        : this(template, promptTemplateConfig, kernel.PromptTemplateEngine)
-    {
-    }
 
 
     /// <summary>

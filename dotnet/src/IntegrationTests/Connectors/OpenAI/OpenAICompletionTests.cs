@@ -14,8 +14,10 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Reliability.Basic;
 using Microsoft.SemanticKernel.TemplateEngine;
+using Microsoft.SemanticKernel.TemplateEngine.Basic;
 using TestSettings;
 using Xunit;
+using Xunit.Abstractions;
 
 #pragma warning disable xUnit1004 // Contains test methods used in manual verification. Disable warning for this file only.
 
@@ -353,6 +355,7 @@ public sealed class OpenAICompletionTests : IDisposable
     {
         // Arrange
         var builder = this._kernelBuilder.WithLoggerFactory(this._logger);
+        var promptTemplateFactory = new BasicPromptTemplateFactory();
         this.ConfigureAzureOpenAI(builder);
         this.ConfigureInvalidAzureOpenAI(builder);
 
@@ -372,11 +375,11 @@ public sealed class OpenAICompletionTests : IDisposable
         var defaultFunc = target.RegisterSemanticFunction(
             "WherePlugin", "FishMarket1",
             defaultConfig,
-            new PromptTemplate(prompt, defaultConfig, target.PromptTemplateEngine));
+            promptTemplateFactory.Create(prompt, defaultConfig));
         var azureFunc = target.RegisterSemanticFunction(
             "WherePlugin", "FishMarket2",
             azureConfig,
-            new PromptTemplate(prompt, azureConfig, target.PromptTemplateEngine));
+            promptTemplateFactory.Create(prompt, defaultConfig));
 
         // Act
         await Assert.ThrowsAsync<HttpOperationException>(() => target.RunAsync(defaultFunc));

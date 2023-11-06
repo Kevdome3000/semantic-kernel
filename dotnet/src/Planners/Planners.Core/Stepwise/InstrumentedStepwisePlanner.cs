@@ -6,7 +6,9 @@ namespace Microsoft.SemanticKernel.Planners;
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using Extensions.Logging;
+using Extensions.Logging.Abstractions;
 using Planning;
 
 #pragma warning restore IDE0130

@@ -5,10 +5,12 @@ namespace SemanticKernel.IntegrationTests.Planners.SequentialPlanner;
 using Fakes;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Planners;
 using Microsoft.SemanticKernel.Planners.Sequential;
 using Microsoft.SemanticKernel.Planning;
 using TestSettings;
 using Xunit;
+using Xunit.Abstractions;
 
 
 public class SequentialPlanParserTests

@@ -1,10 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 #pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using NS of SKContext
-namespace Microsoft.SemanticKernel.Orchestration;
-
-#pragma warning disable IDE0130
 namespace Microsoft.SemanticKernel.Planners;
 
 using System;
@@ -13,6 +9,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
+using Memory;
 
 #pragma warning restore IDE0130
 

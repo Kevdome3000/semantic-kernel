@@ -8,11 +8,13 @@ using System.Threading.Tasks;
 using Fakes;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using TestSettings;
 using Xunit;
+using Xunit.Abstractions;
 
 
 public sealed class PlanTests : IDisposable
