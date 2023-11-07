@@ -117,7 +117,7 @@ public sealed class Program
 
         var kernel = new KernelBuilder()
             .WithLoggerFactory(loggerFactory)
-            .WithAzureChatCompletionService(
+            .WithAzureOpenAIChatCompletionService(
                 Env.Var("AzureOpenAI__ChatDeploymentName"),
                 Env.Var("AzureOpenAI__Endpoint"),
                 Env.Var("AzureOpenAI__ApiKey"))

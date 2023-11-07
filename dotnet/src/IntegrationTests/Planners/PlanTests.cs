@@ -532,7 +532,7 @@ public sealed class PlanTests : IDisposable
 
         if (useChatModel)
         {
-            builder.WithAzureChatCompletionService(
+            builder.WithAzureOpenAIChatCompletionService(
                 deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
                 endpoint: azureOpenAIConfiguration.Endpoint,
                 apiKey: azureOpenAIConfiguration.ApiKey);
@@ -548,7 +548,7 @@ public sealed class PlanTests : IDisposable
         if (useEmbeddings)
         {
             builder
-                .WithAzureTextEmbeddingGenerationService(
+                .WithAzureOpenAITextEmbeddingGenerationService(
                     deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
                     endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
                     apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);

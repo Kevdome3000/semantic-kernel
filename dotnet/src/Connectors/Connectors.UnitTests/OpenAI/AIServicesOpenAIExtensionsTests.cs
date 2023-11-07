@@ -19,7 +19,7 @@ public class AIServicesOpenAIExtensionsTests
     {
         KernelBuilder targetBuilder = new();
         targetBuilder.WithAzureTextCompletionService("depl", "https://url", "key", "azure");
-        targetBuilder.WithAzureTextEmbeddingGenerationService("depl2", "https://url", "key", "azure");
+        targetBuilder.WithAzureOpenAITextEmbeddingGenerationService("depl2", "https://url", "key", "azure");
 
         IKernel targetKernel = targetBuilder.Build();
         Assert.NotNull(targetKernel.GetService<ITextCompletion>("azure"));
@@ -33,7 +33,7 @@ public class AIServicesOpenAIExtensionsTests
         KernelBuilder targetBuilder = new();
         targetBuilder.WithAzureTextCompletionService("depl", "https://url", "key", serviceId: "azure");
         targetBuilder.WithOpenAITextCompletionService("model", "apikey", serviceId: "oai");
-        targetBuilder.WithAzureTextEmbeddingGenerationService("depl2", "https://url2", "key", serviceId: "azure");
+        targetBuilder.WithAzureOpenAITextEmbeddingGenerationService("depl2", "https://url2", "key", serviceId: "azure");
         targetBuilder.WithOpenAITextEmbeddingGenerationService("model2", "apikey2", serviceId: "oai2");
 
         // Assert
@@ -58,14 +58,14 @@ public class AIServicesOpenAIExtensionsTests
         targetBuilder.WithOpenAITextCompletionService("model", "key", serviceId: "one");
         targetBuilder.WithOpenAITextCompletionService("model", "key", serviceId: "one");
 
-        targetBuilder.WithAzureTextEmbeddingGenerationService("dep", "https://localhost", "key", serviceId: "one");
-        targetBuilder.WithAzureTextEmbeddingGenerationService("dep", "https://localhost", "key", serviceId: "one");
+        targetBuilder.WithAzureOpenAITextEmbeddingGenerationService("dep", "https://localhost", "key", serviceId: "one");
+        targetBuilder.WithAzureOpenAITextEmbeddingGenerationService("dep", "https://localhost", "key", serviceId: "one");
 
         targetBuilder.WithOpenAITextEmbeddingGenerationService("model", "key", serviceId: "one");
         targetBuilder.WithOpenAITextEmbeddingGenerationService("model", "key", serviceId: "one");
 
-        targetBuilder.WithAzureChatCompletionService("dep", "https://localhost", "key", serviceId: "one");
-        targetBuilder.WithAzureChatCompletionService("dep", "https://localhost", "key", serviceId: "one");
+        targetBuilder.WithAzureOpenAIChatCompletionService("dep", "https://localhost", "key", serviceId: "one");
+        targetBuilder.WithAzureOpenAIChatCompletionService("dep", "https://localhost", "key", serviceId: "one");
 
         targetBuilder.WithOpenAIChatCompletionService("model", "key", serviceId: "one");
         targetBuilder.WithOpenAIChatCompletionService("model", "key", serviceId: "one");

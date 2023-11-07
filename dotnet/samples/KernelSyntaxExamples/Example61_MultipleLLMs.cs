@@ -23,7 +23,7 @@ public static class Example61_MultipleLLMs
 
         if (apiKey == null || chatDeploymentName == null || endpoint == null)
         {
-            Console.WriteLine("Azure endpoint, apiKey, or deploymentName not found. Skipping example.");
+            Console.WriteLine("AzureOpenAI endpoint, apiKey, or deploymentName not found. Skipping example.");
             return;
         }
 
@@ -38,7 +38,7 @@ public static class Example61_MultipleLLMs
 
         IKernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureChatCompletionService(
+            .WithAzureOpenAIChatCompletionService(
                 deploymentName: chatDeploymentName,
                 endpoint: endpoint,
                 serviceId: "AzureOpenAIChat",

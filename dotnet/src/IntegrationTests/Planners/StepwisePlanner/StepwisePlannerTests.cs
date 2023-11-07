@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.IntegrationTests.Planners.StepwisePlanner;
-
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -14,16 +12,16 @@ using Microsoft.SemanticKernel.Planners;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
-using TestSettings;
+using SemanticKernel.IntegrationTests.TestSettings;
 using xRetry;
 using Xunit;
 using Xunit.Abstractions;
 
+namespace SemanticKernel.IntegrationTests.Planners.StepwisePlanner;
 
 public sealed class StepwisePlannerTests : IDisposable
 {
     private readonly string _bingApiKey;
-
 
     public StepwisePlannerTests(ITestOutputHelper output)
     {
@@ -42,7 +40,6 @@ public sealed class StepwisePlannerTests : IDisposable
         Assert.NotNull(bingApiKeyCandidate);
         this._bingApiKey = bingApiKeyCandidate;
     }
-
 
     [Theory]
     [InlineData(false, "Who is the current president of the United States? What is his current age divided by 2", "ExecutePlan", "StepwisePlanner")]
@@ -67,7 +64,6 @@ public sealed class StepwisePlannerTests : IDisposable
         Assert.Equal(expectedFunction, plan.Name);
         Assert.Contains(expectedPlugin, plan.PluginName, StringComparison.OrdinalIgnoreCase);
     }
-
 
     [RetryTheory(maxRetries: 3)]
     [InlineData(false, "What is the tallest mountain on Earth? How tall is it divided by 2", "Everest")]
@@ -99,7 +95,6 @@ public sealed class StepwisePlannerTests : IDisposable
         Assert.True(int.Parse(iterations, System.Globalization.CultureInfo.InvariantCulture) <= 10);
     }
 
-
     [Fact]
     public async Task ExecutePlanFailsWithTooManyFunctionsAsync()
     {
@@ -124,7 +119,6 @@ public sealed class StepwisePlannerTests : IDisposable
         Assert.Equal("ChatHistory is too long to get a completion. Try reducing the available functions.", ex.Message);
     }
 
-
     [Fact]
     public async Task ExecutePlanSucceedsWithAlmostTooManyFunctionsAsync()
     {
@@ -145,7 +139,6 @@ public sealed class StepwisePlannerTests : IDisposable
         Assert.DoesNotContain("Result not found, review 'stepsTaken' to see what happened", result, StringComparison.OrdinalIgnoreCase);
     }
 
-
     private IKernel InitializeKernel(bool useEmbeddings = false, bool useChatModel = false)
     {
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
@@ -160,7 +153,7 @@ public sealed class StepwisePlannerTests : IDisposable
 
         if (useChatModel)
         {
-            builder.WithAzureChatCompletionService(
+            builder.WithAzureOpenAIChatCompletionService(
                 deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
                 endpoint: azureOpenAIConfiguration.Endpoint,
                 apiKey: azureOpenAIConfiguration.ApiKey);
@@ -175,10 +168,10 @@ public sealed class StepwisePlannerTests : IDisposable
 
         if (useEmbeddings)
         {
-            builder.WithAzureTextEmbeddingGenerationService(
-                deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
-                endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
-                apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
+            builder.WithAzureOpenAITextEmbeddingGenerationService(
+                    deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
+                    endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
+                    apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
         }
 
         var kernel = builder.Build();
@@ -186,11 +179,9 @@ public sealed class StepwisePlannerTests : IDisposable
         return kernel;
     }
 
-
     private readonly ILoggerFactory _loggerFactory;
     private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
-
 
     public void Dispose()
     {
@@ -198,12 +189,10 @@ public sealed class StepwisePlannerTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
-
     ~StepwisePlannerTests()
     {
         this.Dispose(false);
     }
-
 
     private void Dispose(bool disposing)
     {

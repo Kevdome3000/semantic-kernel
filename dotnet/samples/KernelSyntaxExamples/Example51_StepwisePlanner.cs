@@ -213,7 +213,7 @@ public static class Example51_StepwisePlanner
 
         if (useChat)
         {
-            builder.WithAzureChatCompletionService(
+            builder.WithAzureOpenAIChatCompletionService(
                 model ?? ChatModelOverride ?? TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey,

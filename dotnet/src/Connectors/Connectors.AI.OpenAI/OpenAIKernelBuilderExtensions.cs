@@ -173,7 +173,7 @@ public static class OpenAIKernelBuilderExtensions
     /// <param name="setAsDefault">Whether the service should be the default for its type.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <returns>Self instance</returns>
-    public static KernelBuilder WithAzureTextEmbeddingGenerationService(
+    public static KernelBuilder WithAzureOpenAITextEmbeddingGenerationService(
         this KernelBuilder builder,
         string deploymentName,
         string endpoint,
@@ -183,7 +183,7 @@ public static class OpenAIKernelBuilderExtensions
         HttpClient? httpClient = null)
     {
         builder.WithAIService<ITextEmbeddingGeneration>(serviceId, (loggerFactory, httpHandlerFactory) =>
-                new AzureTextEmbeddingGeneration(
+            new AzureOpenAITextEmbeddingGeneration(
                     deploymentName,
                     endpoint,
                     apiKey,
@@ -206,7 +206,7 @@ public static class OpenAIKernelBuilderExtensions
     /// <param name="setAsDefault">Whether the service should be the default for its type.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <returns>Self instance</returns>
-    public static KernelBuilder WithAzureTextEmbeddingGenerationService(
+    public static KernelBuilder WithAzureOpenAITextEmbeddingGenerationService(
         this KernelBuilder builder,
         string deploymentName,
         string endpoint,
@@ -216,7 +216,7 @@ public static class OpenAIKernelBuilderExtensions
         HttpClient? httpClient = null)
     {
         builder.WithAIService<ITextEmbeddingGeneration>(serviceId, (loggerFactory, httpHandlerFactory) =>
-                new AzureTextEmbeddingGeneration(
+            new AzureOpenAITextEmbeddingGeneration(
                     deploymentName,
                     endpoint,
                     credential,
@@ -277,7 +277,7 @@ public static class OpenAIKernelBuilderExtensions
     /// <param name="setAsDefault">Whether the service should be the default for its type.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <returns>Self instance</returns>
-    public static KernelBuilder WithAzureChatCompletionService(
+    public static KernelBuilder WithAzureOpenAIChatCompletionService(
         this KernelBuilder builder,
         string deploymentName,
         string endpoint,
@@ -287,7 +287,7 @@ public static class OpenAIKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        AzureChatCompletion Factory(ILoggerFactory loggerFactory, IDelegatingHandlerFactory httpHandlerFactory)
+        AzureOpenAIChatCompletion Factory(ILoggerFactory loggerFactory, IDelegatingHandlerFactory httpHandlerFactory)
         {
             OpenAIClient client = CreateAzureOpenAIClient(loggerFactory, httpHandlerFactory, deploymentName, endpoint, new AzureKeyCredential(apiKey), httpClient);
 
@@ -299,7 +299,7 @@ public static class OpenAIKernelBuilderExtensions
         builder.WithAIService<IChatCompletion>(serviceId, Factory, setAsDefault);
 
         // If the class implements the text completion interface, allow to use it also for semantic functions
-        if (alsoAsTextCompletion && typeof(ITextCompletion).IsAssignableFrom(typeof(AzureChatCompletion)))
+        if (alsoAsTextCompletion && typeof(ITextCompletion).IsAssignableFrom(typeof(AzureOpenAIChatCompletion)))
         {
             builder.WithAIService<ITextCompletion>(serviceId, Factory, setAsDefault);
         }
@@ -321,7 +321,7 @@ public static class OpenAIKernelBuilderExtensions
     /// <param name="setAsDefault">Whether the service should be the default for its type.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <returns>Self instance</returns>
-    public static KernelBuilder WithAzureChatCompletionService(
+    public static KernelBuilder WithAzureOpenAIChatCompletionService(
         this KernelBuilder builder,
         string deploymentName,
         string endpoint,
@@ -331,7 +331,7 @@ public static class OpenAIKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        AzureChatCompletion Factory(ILoggerFactory loggerFactory, IDelegatingHandlerFactory httpHandlerFactory)
+        AzureOpenAIChatCompletion Factory(ILoggerFactory loggerFactory, IDelegatingHandlerFactory httpHandlerFactory)
         {
             OpenAIClient client = CreateAzureOpenAIClient(loggerFactory, httpHandlerFactory, deploymentName, endpoint, credentials, httpClient);
 
@@ -343,7 +343,7 @@ public static class OpenAIKernelBuilderExtensions
         builder.WithAIService<IChatCompletion>(serviceId, Factory, setAsDefault);
 
         // If the class implements the text completion interface, allow to use it also for semantic functions
-        if (alsoAsTextCompletion && typeof(ITextCompletion).IsAssignableFrom(typeof(AzureChatCompletion)))
+        if (alsoAsTextCompletion && typeof(ITextCompletion).IsAssignableFrom(typeof(AzureOpenAIChatCompletion)))
         {
             builder.WithAIService<ITextCompletion>(serviceId, Factory, setAsDefault);
         }
@@ -363,22 +363,22 @@ public static class OpenAIKernelBuilderExtensions
     /// <param name="setAsDefault">Whether the service should be the default for its type.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <returns>Self instance</returns>
-    public static KernelBuilder WithAzureChatCompletionService(
+    public static KernelBuilder WithAzureOpenAIChatCompletionService(
         this KernelBuilder builder,
-        AzureChatCompletionWithDataConfig config,
+        AzureOpenAIChatCompletionWithDataConfig config,
         bool alsoAsTextCompletion = true,
         string? serviceId = null,
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        AzureChatCompletionWithData Factory(ILoggerFactory loggerFactory, IDelegatingHandlerFactory httpHandlerFactory) => new(
+        AzureOpenAIChatCompletionWithData Factory(ILoggerFactory loggerFactory, IDelegatingHandlerFactory httpHandlerFactory) => new(
             config,
             HttpClientProvider.GetHttpClient(httpHandlerFactory, httpClient, loggerFactory),
             loggerFactory);
 
         builder.WithAIService<IChatCompletion>(serviceId, Factory, setAsDefault);
 
-        if (alsoAsTextCompletion && typeof(ITextCompletion).IsAssignableFrom(typeof(AzureChatCompletionWithData)))
+        if (alsoAsTextCompletion && typeof(ITextCompletion).IsAssignableFrom(typeof(AzureOpenAIChatCompletionWithData)))
         {
             builder.WithAIService<ITextCompletion>(serviceId, Factory, setAsDefault);
         }
@@ -440,7 +440,7 @@ public static class OpenAIKernelBuilderExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="setAsDefault">Whether the service should be the default for its type.</param>
     /// <returns>Self instance</returns>
-    public static KernelBuilder WithAzureChatCompletionService(
+    public static KernelBuilder WithAzureOpenAIChatCompletionService(
         this KernelBuilder builder,
         string deploymentName,
         OpenAIClient openAIClient,
@@ -448,7 +448,7 @@ public static class OpenAIKernelBuilderExtensions
         string? serviceId = null,
         bool setAsDefault = false)
     {
-        AzureChatCompletion Factory(ILoggerFactory loggerFactory)
+        AzureOpenAIChatCompletion Factory(ILoggerFactory loggerFactory)
         {
             return new(deploymentName, openAIClient, loggerFactory);
         }
@@ -458,7 +458,7 @@ public static class OpenAIKernelBuilderExtensions
         builder.WithAIService<IChatCompletion>(serviceId, Factory, setAsDefault);
 
         // If the class implements the text completion interface, allow to use it also for semantic functions
-        if (alsoAsTextCompletion && typeof(ITextCompletion).IsAssignableFrom(typeof(AzureChatCompletion)))
+        if (alsoAsTextCompletion && typeof(ITextCompletion).IsAssignableFrom(typeof(AzureOpenAIChatCompletion)))
         {
             builder.WithAIService<ITextCompletion>(serviceId, Factory, setAsDefault);
         }
@@ -496,7 +496,7 @@ public static class OpenAIKernelBuilderExtensions
         builder.WithAIService<IChatCompletion>(serviceId, Factory, setAsDefault);
 
         // If the class implements the text completion interface, allow to use it also for semantic functions
-        if (alsoAsTextCompletion && typeof(ITextCompletion).IsAssignableFrom(typeof(AzureChatCompletion)))
+        if (alsoAsTextCompletion && typeof(ITextCompletion).IsAssignableFrom(typeof(AzureOpenAIChatCompletion)))
         {
             builder.WithAIService<ITextCompletion>(serviceId, Factory, setAsDefault);
         }
