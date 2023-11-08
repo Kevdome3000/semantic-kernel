@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
+
 using System;
 using System.Threading.Tasks;
 using Azure;
@@ -9,17 +11,17 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Reliability.Basic;
-using SemanticKernel.IntegrationTests.TestSettings;
+using TestSettings;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
 public sealed class AzureOpenAICompletionTests : IDisposable
 {
     private readonly IConfigurationRoot _configuration;
     private readonly XunitLogger<Kernel> _logger;
     private readonly RedirectOutput _testOutputHelper;
+
 
     public AzureOpenAICompletionTests(ITestOutputHelper output)
     {
@@ -36,6 +38,7 @@ public sealed class AzureOpenAICompletionTests : IDisposable
             .Build();
     }
 
+
     [Theory]
     [InlineData("Where is the most famous fish market in Seattle, Washington, USA?")]
     public async Task AzureOpenAIChatNoHttpRetryPolicyTestShouldThrowAsync(string prompt)
@@ -48,10 +51,10 @@ public sealed class AzureOpenAICompletionTests : IDisposable
         BasicHttpRetryHandlerFactory defaultHttpRetryHandlerFactory = new(httpRetryConfig);
 
         var target = new KernelBuilder()
-             .WithLoggerFactory(this._logger)
-             .WithAzureOpenAIChatCompletionService(configuration.ChatDeploymentName!, configuration.Endpoint, configuration.ApiKey)
-             .WithHttpHandlerFactory(defaultHttpRetryHandlerFactory)
-             .Build();
+            .WithLoggerFactory(this._logger)
+            .WithAzureOpenAIChatCompletionService(configuration.ChatDeploymentName!, configuration.Endpoint, configuration.ApiKey)
+            .WithHttpHandlerFactory(defaultHttpRetryHandlerFactory)
+            .Build();
 
         // Act
         var func = target.CreateSemanticFunction(prompt);
@@ -61,6 +64,7 @@ public sealed class AzureOpenAICompletionTests : IDisposable
         // Assert
         Assert.NotNull(exception);
     }
+
 
     [Theory]
     [InlineData("Where is the most famous fish market in Seattle, Washington, USA?")]
@@ -77,9 +81,9 @@ public sealed class AzureOpenAICompletionTests : IDisposable
         var openAIClient = new OpenAIClient(new Uri(configuration.Endpoint), new AzureKeyCredential(configuration.ApiKey), clientOptions);
 
         var target = new KernelBuilder()
-             .WithLoggerFactory(this._logger)
-             .WithAzureOpenAIChatCompletionService(configuration.ChatDeploymentName!, openAIClient)
-             .Build();
+            .WithLoggerFactory(this._logger)
+            .WithAzureOpenAIChatCompletionService(configuration.ChatDeploymentName!, openAIClient)
+            .Build();
 
         // Act
         var func = target.CreateSemanticFunction(prompt);
@@ -90,16 +94,19 @@ public sealed class AzureOpenAICompletionTests : IDisposable
         Assert.NotNull(exception);
     }
 
+
     public void Dispose()
     {
         this.Dispose(true);
         GC.SuppressFinalize(this);
     }
 
+
     ~AzureOpenAICompletionTests()
     {
         this.Dispose(false);
     }
+
 
     private void Dispose(bool disposing)
     {

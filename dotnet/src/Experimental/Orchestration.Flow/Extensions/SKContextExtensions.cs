@@ -1,13 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
-using Microsoft.SemanticKernel.Orchestration;
-
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 // ReSharper disable once CheckNamespace
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
+
+using AI.ChatCompletion;
+using Execution;
+using SemanticKernel.Orchestration;
+
 #pragma warning restore IDE0130 // Namespace does not match folder structure
+
 
 /// <summary>
 /// Extension methods for <see cref="SKContext"/>
@@ -30,6 +32,7 @@ public static class SKContextExtensions
         return null;
     }
 
+
     /// <summary>
     /// Get latest chat input from context.
     /// </summary>
@@ -45,6 +48,7 @@ public static class SKContextExtensions
         return string.Empty;
     }
 
+
     /// <summary>
     /// Signal the orchestrator to prompt user for input with current function response.
     /// </summary>
@@ -57,6 +61,7 @@ public static class SKContextExtensions
             context.Variables.Set(Constants.ChatPluginVariables.PromptInputName, Constants.ChatPluginVariables.DefaultValue);
         }
     }
+
 
     /// <summary>
     /// Signal the orchestrator to exit out of the AtLeastOnce or ZeroOrMore loop. If response is non-null, that value will be outputted to the user.
@@ -72,6 +77,7 @@ public static class SKContextExtensions
         }
     }
 
+
     /// <summary>
     /// Signal the orchestrator to go to the next iteration of the loop in the AtLeastOnce or ZeroOrMore step.
     /// </summary>
@@ -80,6 +86,7 @@ public static class SKContextExtensions
     {
         context.Variables.Set(Constants.ChatPluginVariables.ContinueLoopName, Constants.ChatPluginVariables.DefaultValue);
     }
+
 
     /// <summary>
     /// Signal the orchestrator to terminate the flow.

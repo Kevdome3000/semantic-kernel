@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel.AI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using RepoUtils;
 
+
 /**
  * The following example shows how to use Semantic Kernel with OpenAI Dall-E 2 to create images
  */
@@ -20,6 +21,7 @@ public static class Example18_DallE
         await OpenAIDallEAsync();
         await AzureOpenAIDallEAsync();
     }
+
 
     private static async Task OpenAIDallEAsync()
     {
@@ -89,6 +91,7 @@ public static class Example18_DallE
 
         */
     }
+
 
     public static async Task AzureOpenAIDallEAsync()
     {

@@ -1,13 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Linq;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
-
 #pragma warning disable IDE0130
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
+
+using System;
+using System.Linq;
+using Abstractions;
+using Diagnostics;
+
 #pragma warning restore IDE0130
+
 
 /// <summary>
 /// The flow validator
@@ -26,6 +28,7 @@ public class FlowValidator : IFlowValidator
         this.ValidatePassthroughVariables(flow);
     }
 
+
     private void ValidateStartingMessage(Flow flow)
     {
         foreach (var step in flow.Steps)
@@ -39,6 +42,7 @@ public class FlowValidator : IFlowValidator
         }
     }
 
+
     private void ValidateNonEmpty(Flow flow)
     {
         if (flow.Steps.Count == 0)
@@ -46,6 +50,7 @@ public class FlowValidator : IFlowValidator
             throw new ArgumentException("Flow must contain at least one flow step.");
         }
     }
+
 
     private void ValidatePartialOrder(Flow flow)
     {
@@ -58,6 +63,7 @@ public class FlowValidator : IFlowValidator
             throw new ArgumentException("Flow steps must be a partial order set.", ex);
         }
     }
+
 
     private void ValidateReferenceStep(Flow flow)
     {
@@ -85,6 +91,7 @@ public class FlowValidator : IFlowValidator
             }
         }
     }
+
 
     private void ValidatePassthroughVariables(Flow flow)
     {

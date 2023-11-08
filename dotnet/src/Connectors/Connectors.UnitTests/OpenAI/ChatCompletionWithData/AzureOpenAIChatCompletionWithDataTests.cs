@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Connectors.UnitTests.OpenAI.ChatCompletionWithData;
+
 using System;
 using System.Net.Http;
 using System.Text;
@@ -8,7 +10,6 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.OpenAI.ChatCompletionWithData;
 
 /// <summary>
 /// Unit tests for <see cref="AzureOpenAIChatCompletionWithData"/>
@@ -20,6 +21,7 @@ public sealed class AzureOpenAIChatCompletionWithDataTests : IDisposable
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
 
+
     public AzureOpenAIChatCompletionWithDataTests()
     {
         this._config = this.GetConfig();
@@ -27,6 +29,7 @@ public sealed class AzureOpenAIChatCompletionWithDataTests : IDisposable
         this._messageHandlerStub = new HttpMessageHandlerStub();
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
     }
+
 
     [Fact]
     public async Task SpecifiedConfigurationShouldBeUsedAsync()
@@ -51,6 +54,7 @@ public sealed class AzureOpenAIChatCompletionWithDataTests : IDisposable
         Assert.Contains("fake-data-source-index", actualRequestContent, StringComparison.OrdinalIgnoreCase);
     }
 
+
     [Fact]
     public async Task DefaultApiVersionShouldBeUsedAsync()
     {
@@ -69,11 +73,13 @@ public sealed class AzureOpenAIChatCompletionWithDataTests : IDisposable
         Assert.Contains("2023-06-01-preview", actualUri, StringComparison.OrdinalIgnoreCase);
     }
 
+
     public void Dispose()
     {
         this._httpClient.Dispose();
         this._messageHandlerStub.Dispose();
     }
+
 
     private AzureOpenAIChatCompletionWithDataConfig GetConfig()
     {

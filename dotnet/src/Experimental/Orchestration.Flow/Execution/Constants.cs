@@ -14,6 +14,7 @@ internal static class Constants
     /// </summary>
     public const string StopAndPromptParameterName = "prompt";
 
+
     internal static class ActionVariableNames
     {
         /// <summary>
@@ -31,6 +32,7 @@ internal static class Constants
         /// </summary>
         public static readonly string[] All = new[] { ChatHistory, ChatInput };
     }
+
 
     internal static class ChatPluginVariables
     {

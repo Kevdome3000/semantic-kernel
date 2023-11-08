@@ -4,6 +4,7 @@
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 #pragma warning restore IDE0130
 
+
 /// <summary>
 /// The flow step which references another flow.
 /// </summary>
@@ -18,12 +19,14 @@ public sealed class ReferenceFlowStep : FlowStep
         this.FlowName = flowName;
     }
 
+
     /// <summary>
     /// Only for deserialization.
     /// </summary>
     public ReferenceFlowStep() : this(string.Empty)
     {
     }
+
 
     /// <summary>
     /// Name of reference <see cref="Flow"/>.

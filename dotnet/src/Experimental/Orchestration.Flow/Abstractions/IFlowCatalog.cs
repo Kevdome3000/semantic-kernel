@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
+
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
 
 /// <summary>
 /// Interface for flow catalog, which provides functionality of flow registration, enumeration and search.
@@ -16,12 +17,14 @@ public interface IFlowCatalog
     /// <returns>flows</returns>
     Task<IEnumerable<Flow>> GetFlowsAsync();
 
+
     /// <summary>
     /// Get <see cref="Flow"/> by name
     /// </summary>
     /// <param name="flowName">the flow name</param>
     /// <returns>flow given the name</returns>
     Task<Flow?> GetFlowAsync(string flowName);
+
 
     /// <summary>
     /// Register flow in the catalog

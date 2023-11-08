@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
+
 using System;
 using System.Linq;
 using System.Text.Json;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
+using AI.ChatCompletion;
 
-namespace Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 
 internal static class ChatHistorySerializer
 {
@@ -18,6 +19,7 @@ internal static class ChatHistorySerializer
 
         var messages = JsonSerializer.Deserialize<SerializableChatMessage[]>(input) ?? Array.Empty<SerializableChatMessage>();
         ChatHistory history = new();
+
         foreach (var message in messages)
         {
             history.AddMessage(new AuthorRole(message.Role!), message.Content!);
@@ -25,6 +27,7 @@ internal static class ChatHistorySerializer
 
         return history;
     }
+
 
     internal static string Serialize(ChatHistory? history)
     {
@@ -41,6 +44,7 @@ internal static class ChatHistorySerializer
 
         return JsonSerializer.Serialize(messages);
     }
+
 
     private class SerializableChatMessage
     {

@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests;
+
 using System.ComponentModel;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 
-namespace SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests;
 
 public sealed class SendEmailPlugin
 {
@@ -29,6 +30,7 @@ public sealed class SendEmailPlugin
 
         return "Here's the API contract I will post to mail server: " + emailPayload;
     }
+
 
     private sealed class Email
     {

@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests;
+
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -10,16 +12,16 @@ using Microsoft.SemanticKernel.Experimental.Orchestration;
 using Microsoft.SemanticKernel.Plugins.Memory;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
-using SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests.TestSettings;
+using TestSettings;
 using xRetry;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests;
 
 public sealed class FlowOrchestratorTests : IDisposable
 {
     private readonly string _bingApiKey;
+
 
     public FlowOrchestratorTests(ITestOutputHelper output)
     {
@@ -38,6 +40,7 @@ public sealed class FlowOrchestratorTests : IDisposable
         Assert.NotNull(bingApiKeyCandidate);
         this._bingApiKey = bingApiKeyCandidate;
     }
+
 
     [RetryFact(maxRetries: 3)]
     public async Task CanExecuteFlowAsync()
@@ -99,6 +102,7 @@ steps:
         Assert.Contains("Everest", emailPayload, StringComparison.InvariantCultureIgnoreCase);
     }
 
+
     private KernelBuilder InitializeKernelBuilder()
     {
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
@@ -116,9 +120,11 @@ steps:
         return builder;
     }
 
+
     private readonly ILoggerFactory _logger;
     private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
+
 
     public void Dispose()
     {
@@ -126,10 +132,12 @@ steps:
         GC.SuppressFinalize(this);
     }
 
+
     ~FlowOrchestratorTests()
     {
         this.Dispose(false);
     }
+
 
     private void Dispose(bool disposing)
     {

@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Experimental.Orchestration.Flow.UnitTests.XunitHelpers;
+
 using System;
 using Microsoft.Extensions.Logging;
 
-namespace SemanticKernel.Experimental.Orchestration.Flow.UnitTests.XunitHelpers;
 
 /// <summary>
 /// Basic logger printing to console
@@ -14,6 +15,7 @@ internal static class TestConsoleLogger
 
     internal static ILoggerFactory LoggerFactory => s_loggerFactory.Value;
     private static readonly Lazy<ILoggerFactory> s_loggerFactory = new(LogBuilder);
+
 
     private static ILoggerFactory LogBuilder()
     {

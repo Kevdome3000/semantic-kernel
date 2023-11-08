@@ -1,13 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Linq;
-using Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
-using Microsoft.SemanticKernel.Orchestration;
-
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 // ReSharper disable once CheckNamespace
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
+
+using System.Linq;
+using Execution;
+using SemanticKernel.Orchestration;
+
 #pragma warning restore IDE0130 // Namespace does not match folder structure
+
 
 /// <summary>
 /// Extension methods for <see cref="SKContext"/>
@@ -25,6 +27,7 @@ public static class ContextVariablesExtensions
                && promptInput == Constants.ChatPluginVariables.DefaultValue;
     }
 
+
     /// <summary>
     /// Check if we should force the next iteration loop based on current context.
     /// </summary>
@@ -35,6 +38,7 @@ public static class ContextVariablesExtensions
                && continueLoop == Constants.ChatPluginVariables.DefaultValue;
     }
 
+
     /// <summary>
     /// Check if we should terminate flow based on current context.
     /// </summary>
@@ -44,6 +48,7 @@ public static class ContextVariablesExtensions
         return context.TryGetValue(Constants.ChatPluginVariables.StopFlowName, out string? stopFlow)
                && stopFlow == Constants.ChatPluginVariables.DefaultValue;
     }
+
 
     /// <summary>
     /// Check if all variables to be provided with the flow is available in the context

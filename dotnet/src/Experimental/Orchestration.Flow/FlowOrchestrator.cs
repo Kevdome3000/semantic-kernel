@@ -1,17 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0130
+namespace Microsoft.SemanticKernel.Experimental.Orchestration;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
-using Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
-using Microsoft.SemanticKernel.Orchestration;
+using Abstractions;
+using Diagnostics;
+using Execution;
+using SemanticKernel.Orchestration;
 
-#pragma warning disable IDE0130
-namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 #pragma warning restore IDE0130
+
 
 /// <summary>
 /// A flow orchestrator that using semantic kernel for execution.
@@ -27,6 +29,7 @@ public class FlowOrchestrator
     private readonly IFlowValidator _flowValidator;
 
     private readonly FlowOrchestratorConfig? _config;
+
 
     /// <summary>
     /// Initialize a new instance of the <see cref="FlowOrchestrator"/> class.
@@ -51,6 +54,7 @@ public class FlowOrchestrator
         this._flowValidator = validator ?? new FlowValidator();
         this._config = config;
     }
+
 
     /// <summary>
     /// Execute a given flow.

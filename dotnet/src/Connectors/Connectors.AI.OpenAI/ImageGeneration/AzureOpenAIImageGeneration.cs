@@ -1,17 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
+
 using System;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI.ImageGeneration;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.CustomClient;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Text;
+using CustomClient;
+using Diagnostics;
+using Extensions.Logging;
+using SemanticKernel.AI.ImageGeneration;
+using Text;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 
 /// <summary>
 /// Azure OpenAI Image generation
@@ -49,6 +50,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
     /// </summary>
     private readonly string _apiVersion;
 
+
     /// <summary>
     /// Create a new instance of Azure OpenAI image generation service
     /// </summary>
@@ -69,6 +71,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         this._maxRetryCount = maxRetryCount;
         this._apiVersion = apiVersion;
     }
+
 
     /// <summary>
     /// Create a new instance of Azure OpenAI image generation service
@@ -98,6 +101,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         this._apiVersion = apiVersion;
     }
 
+
     /// <inheritdoc/>
     public async Task<string> GenerateImageAsync(string description, int width, int height, CancellationToken cancellationToken = default)
     {
@@ -117,6 +121,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         return result.Result.Images.First().Url;
     }
 
+
     /// <summary>
     /// Start an image generation task
     /// </summary>
@@ -128,6 +133,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
     private async Task<string> StartImageGenerationAsync(string description, int width, int height, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(description);
+
         if (width != height || (width != 256 && width != 512 && width != 1024))
         {
             throw new ArgumentOutOfRangeException(nameof(width), width, "OpenAI can generate only square images of size 256x256, 512x512, or 1024x1024.");
@@ -150,6 +156,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 
         return result.Id;
     }
+
 
     /// <summary>
     /// Retrieve the results of an image generation operation.
@@ -193,11 +200,13 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         }
     }
 
+
     private string GetUri(string operation, params string[] parameters)
     {
         var uri = new Azure.Core.RequestUriBuilder();
         uri.Reset(new Uri(this._endpoint));
         uri.AppendPath(operation, false);
+
         foreach (var parameter in parameters)
         {
             uri.AppendPath("/" + parameter, false);
@@ -206,12 +215,14 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         return uri.ToString();
     }
 
+
     private bool IsFailedOrCancelled(string status)
     {
         return status.Equals(AzureOpenAIImageOperationStatus.Failed, StringComparison.OrdinalIgnoreCase)
-            || status.Equals(AzureOpenAIImageOperationStatus.Cancelled, StringComparison.OrdinalIgnoreCase)
-            || status.Equals(AzureOpenAIImageOperationStatus.Deleted, StringComparison.OrdinalIgnoreCase);
+               || status.Equals(AzureOpenAIImageOperationStatus.Cancelled, StringComparison.OrdinalIgnoreCase)
+               || status.Equals(AzureOpenAIImageOperationStatus.Deleted, StringComparison.OrdinalIgnoreCase);
     }
+
 
     /// <summary>Adds headers to use for Azure OpenAI HTTP requests.</summary>
     private protected override void AddRequestHeaders(HttpRequestMessage request)

@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests.TestSettings;
+
 using System.Diagnostics.CodeAnalysis;
 
-namespace SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests.TestSettings;
 
 [SuppressMessage("Performance", "CA1812:Internal class that is apparently never instantiated",
     Justification = "Configuration classes are instantiated through IConfiguration.")]
@@ -17,6 +18,7 @@ internal sealed class AzureOpenAIConfiguration
     public string Endpoint { get; set; }
 
     public string ApiKey { get; set; }
+
 
     public AzureOpenAIConfiguration(string serviceId, string deploymentName, string endpoint, string apiKey, string? chatDeploymentName = null)
     {

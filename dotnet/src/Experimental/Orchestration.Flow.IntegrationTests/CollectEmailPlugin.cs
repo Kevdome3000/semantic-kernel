@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests;
+
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -12,7 +14,6 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Experimental.Orchestration;
 using Microsoft.SemanticKernel.Orchestration;
 
-namespace SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests;
 
 public sealed class CollectEmailPlugin
 {
@@ -34,6 +35,7 @@ Do not expose the regex unless asked.
 
     private readonly AIRequestSettings _chatRequestSettings;
 
+
     public CollectEmailPlugin(IKernel kernel)
     {
         this._chat = kernel.GetService<IChatCompletion>();
@@ -44,6 +46,7 @@ Do not expose the regex unless asked.
             Temperature = 0
         };
     }
+
 
     [SKFunction]
     [Description("Useful to assist in configuration of email address, must be called after email provided")]
@@ -57,6 +60,7 @@ Do not expose the regex unless asked.
         chat.AddUserMessage(Goal);
 
         ChatHistory? chatHistory = context.GetChatHistory();
+
         if (chatHistory?.Any() ?? false)
         {
             chat.Messages.AddRange(chatHistory);
@@ -74,6 +78,7 @@ Do not expose the regex unless asked.
         context.PromptInput();
         return await this._chat.GenerateMessageAsync(chat, this._chatRequestSettings).ConfigureAwait(false);
     }
+
 
     private static bool IsValidEmail(string email)
     {

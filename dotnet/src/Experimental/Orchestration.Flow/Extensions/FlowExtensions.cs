@@ -1,16 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+// ReSharper disable once CheckNamespace
+namespace Microsoft.SemanticKernel.Experimental.Orchestration;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
+using Abstractions;
+using Diagnostics;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
-// ReSharper disable once CheckNamespace
-namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 #pragma warning restore IDE0130 // Namespace does not match folder structure
+
 
 /// <summary>
 /// Extension methods for <see cref="Flow"/>.
@@ -38,6 +40,7 @@ public static class FlowExtensions
         return sortedSteps;
     }
 
+
     /// <summary>
     /// Hydrate the reference steps in the flow.
     /// </summary>
@@ -53,6 +56,7 @@ public static class FlowExtensions
         {
             flow.Steps.Remove(step);
             var referencedFlow = await flowRepository.GetFlowAsync(step.FlowName).ConfigureAwait(false);
+
             if (referencedFlow is null)
             {
                 throw new ArgumentException($"Referenced flow {step.FlowName} is not found");

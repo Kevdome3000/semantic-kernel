@@ -9,6 +9,7 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
+
 /**
  * The following example shows how to use Semantic Kernel with Multiple Results Text Completion as streaming
  */
@@ -17,11 +18,13 @@ public static class Example45_MultiStreamingChatCompletion
 {
     private static readonly object s_lockObject = new();
 
+
     public static async Task RunAsync()
     {
         await AzureOpenAIMultiStreamingChatCompletionAsync();
         await OpenAIMultiStreamingChatCompletionAsync();
     }
+
 
     private static async Task AzureOpenAIMultiStreamingChatCompletionAsync()
     {
@@ -35,6 +38,7 @@ public static class Example45_MultiStreamingChatCompletion
         await StreamingChatCompletionAsync(azureOpenAIChatCompletion);
     }
 
+
     private static async Task OpenAIMultiStreamingChatCompletionAsync()
     {
         Console.WriteLine("======== Open AI - Multiple Text Completion - Raw Streaming ========");
@@ -45,6 +49,7 @@ public static class Example45_MultiStreamingChatCompletion
 
         await StreamingChatCompletionAsync(openAIChatCompletion);
     }
+
 
     private static async Task StreamingChatCompletionAsync(IChatCompletion chatCompletion)
     {
@@ -70,6 +75,7 @@ public static class Example45_MultiStreamingChatCompletion
 
         List<Task> resultTasks = new();
         int currentResult = 0;
+
         await foreach (var completionResult in chatCompletion.GetStreamingChatCompletionsAsync(chatHistory, requestSettings))
         {
             resultTasks.Add(ProcessStreamAsyncEnumerableAsync(completionResult, currentResult++, consoleLinesPerResult));
@@ -82,6 +88,7 @@ public static class Example45_MultiStreamingChatCompletion
         Console.SetCursorPosition(0, requestSettings.ResultsPerPrompt * consoleLinesPerResult);
         Console.WriteLine();
     }
+
 
     private static async Task ProcessStreamAsyncEnumerableAsync(IChatStreamingResult result, int resultNumber, int linesPerResult)
     {
@@ -100,6 +107,7 @@ public static class Example45_MultiStreamingChatCompletion
         }
     }
 
+
     /// <summary>
     /// Break enough lines as the current console window size to display the results
     /// </summary>
@@ -110,6 +118,7 @@ public static class Example45_MultiStreamingChatCompletion
             Console.WriteLine();
         }
     }
+
 
     /// <summary>
     /// Outputs the last message of the chat history
