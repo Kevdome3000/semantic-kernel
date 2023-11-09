@@ -20,6 +20,7 @@ using System.Threading.Tasks;
 using AI;
 using AI.TextCompletion;
 using Diagnostics;
+using Events;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
 using Orchestration;
@@ -132,7 +133,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
     /// <inheritdoc/>
     public FunctionView Describe()
-        => this._view.Value;
+        => _view.Value;
 
 
     /// <inheritdoc/>
@@ -143,13 +144,68 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     {
         try
         {
-            return await this._function(null, requestSettings, context, cancellationToken).ConfigureAwait(false);
+            CallFunctionInvoking(context);
+
+            if (SKFunction.IsInvokingCancelOrSkipRequested(context))
+            {
+                return new FunctionResult(Name, PluginName, context);
+            }
+
+            var invokeResult = await _function(null, requestSettings, context, cancellationToken).ConfigureAwait(false);
+
+            var finalResult = CallFunctionInvoked(invokeResult, context);
+
+            if (SKFunction.IsInvokedCancelRequested(context))
+            {
+                return new FunctionResult(Name, PluginName, context, finalResult.Value);
+            }
+
+            return finalResult;
         }
         catch (Exception e) when (!e.IsCriticalException())
         {
-            this._logger.LogError(e, "Native function {Plugin}.{Name} execution failed with error {Error}", this.PluginName, this.Name, e.Message);
+            _logger.LogError(e, "Native function {Plugin}.{Name} execution failed with error {Error}", PluginName, Name, e.Message);
             throw;
         }
+    }
+
+
+    private void CallFunctionInvoking(SKContext context)
+    {
+        var eventWrapper = context.FunctionInvokingHandler;
+
+        if (eventWrapper?.Handler is null)
+        {
+            return;
+        }
+
+        eventWrapper.EventArgs = new FunctionInvokingEventArgs(Describe(), context);
+        eventWrapper.Handler.Invoke(this, eventWrapper.EventArgs);
+    }
+
+
+    private FunctionResult CallFunctionInvoked(FunctionResult result, SKContext context)
+    {
+        var eventWrapper = context.FunctionInvokedHandler;
+
+        if (eventWrapper?.Handler is null)
+        {
+            // No handlers registered, return the result as is.
+            return result;
+        }
+
+        eventWrapper.EventArgs = new FunctionInvokedEventArgs(Describe(), result);
+        eventWrapper.Handler.Invoke(this, eventWrapper.EventArgs);
+
+        // Apply any changes from the event handlers to final result.
+        var functionResult = new FunctionResult(Name, PluginName, eventWrapper.EventArgs.SKContext, eventWrapper.EventArgs.SKContext.Result)
+        {
+            // Updates the eventArgs metadata during invoked handler execution
+            // will reflect in the result metadata
+            Metadata = eventWrapper.EventArgs.Metadata
+        };
+
+        return functionResult;
     }
 
 
@@ -165,7 +221,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     /// JSON serialized string representation of the function.
     /// </summary>
     public override string ToString()
-        => this.ToString(false);
+        => ToString(false);
 
 
     /// <summary>
@@ -204,17 +260,17 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         Verify.ValidPluginName(pluginName);
         Verify.ValidFunctionName(functionName);
 
-        this._logger = logger;
+        _logger = logger;
 
-        this._function = delegateFunction;
-        this.Parameters = parameters.ToArray();
-        Verify.ParametersUniqueness(this.Parameters);
+        _function = delegateFunction;
+        Parameters = parameters.ToArray();
+        Verify.ParametersUniqueness(Parameters);
 
-        this.Name = functionName;
-        this.PluginName = pluginName;
-        this.Description = description;
+        Name = functionName;
+        PluginName = pluginName;
+        Description = description;
 
-        this._view = new(() => new(functionName, pluginName, description) { Parameters = this.Parameters });
+        _view = new(() => new(functionName, pluginName, description) { Parameters = Parameters });
     }
 
 
@@ -225,7 +281,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     [DoesNotReturn]
     private void ThrowNotSemantic()
     {
-        this._logger.LogError("The function is not semantic");
+        _logger.LogError("The function is not semantic");
         throw new SKException("Invalid operation, the method requires a semantic function");
     }
 
@@ -376,25 +432,25 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         if (type == typeof(SKContext))
         {
             TrackUniqueParameterType(ref hasSKContextParam, method, $"At most one {nameof(SKContext)} parameter is permitted.");
-            return (static (SKContext context, CancellationToken _) => context, null);
+            return (static (context, _) => context, null);
         }
 
         if (type == typeof(ILogger) || type == typeof(ILoggerFactory))
         {
             TrackUniqueParameterType(ref hasLoggerParam, method, $"At most one {nameof(ILogger)}/{nameof(ILoggerFactory)} parameter is permitted.");
-            return type == typeof(ILogger) ? ((SKContext context, CancellationToken _) => context.LoggerFactory.CreateLogger(method?.DeclaringType ?? typeof(SKFunction)), null) : ((SKContext context, CancellationToken _) => context.LoggerFactory, null);
+            return type == typeof(ILogger) ? ((context, _) => context.LoggerFactory.CreateLogger(method?.DeclaringType ?? typeof(SKFunction)), null) : ((context, _) => context.LoggerFactory, null);
         }
 
         if (type == typeof(CultureInfo) || type == typeof(IFormatProvider))
         {
             TrackUniqueParameterType(ref hasCultureParam, method, $"At most one {nameof(CultureInfo)}/{nameof(IFormatProvider)} parameter is permitted.");
-            return (static (SKContext context, CancellationToken _) => context.Culture, null);
+            return (static (context, _) => context.Culture, null);
         }
 
         if (type == typeof(CancellationToken))
         {
             TrackUniqueParameterType(ref hasCancellationTokenParam, method, $"At most one {nameof(CancellationToken)} parameter is permitted.");
-            return (static (SKContext _, CancellationToken cancellationToken) => cancellationToken, null);
+            return (static (_, cancellationToken) => cancellationToken, null);
         }
 
         // Handle context variables. These are supplied from the SKContext's Variables dictionary.
@@ -887,7 +943,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private string DebuggerDisplay => $"{this.Name} ({this.Description})";
+    private string DebuggerDisplay => $"{Name} ({Description})";
 
 
     /// <summary>
@@ -922,7 +978,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     [Obsolete("Use ISKFunction.SetAIServiceFactory instead. This will be removed in a future release.")]
     public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
     {
-        this.ThrowNotSemantic();
+        ThrowNotSemantic();
         return this;
     }
 
@@ -931,7 +987,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     [Obsolete("Use ISKFunction.SetAIRequestSettingsFactory instead. This will be removed in a future release.")]
     public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
     {
-        this.ThrowNotSemantic();
+        ThrowNotSemantic();
         return this;
     }
 
@@ -939,7 +995,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     /// <inheritdoc/>
     [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public string SkillName => this.PluginName;
+    public string SkillName => PluginName;
 
     /// <inheritdoc/>
     [Obsolete("Kernel no longer differentiates between Semantic and Native functions. This will be removed in a future release.")]

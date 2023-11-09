@@ -147,7 +147,7 @@ public class QueryStringBuilderTests
         // Arrange
         var metadata = new List<RestApiOperationParameter>
         {
-            new RestApiOperationParameter(
+            new(
                 name: "p1",
                 type: "string",
                 isRequired: false,
@@ -179,7 +179,7 @@ public class QueryStringBuilderTests
         // Arrange
         var metadata = new List<RestApiOperationParameter>
         {
-            new RestApiOperationParameter(
+            new(
                 name: "p1",
                 type: "array",
                 isRequired: false,
@@ -187,7 +187,7 @@ public class QueryStringBuilderTests
                 location: RestApiOperationParameterLocation.Query,
                 style: RestApiOperationParameterStyle.Form,
                 arrayItemType: "string"),
-            new RestApiOperationParameter(
+            new(
                 name: "p2",
                 type: "array",
                 isRequired: false,
@@ -221,7 +221,7 @@ public class QueryStringBuilderTests
         // Arrange
         var metadata = new List<RestApiOperationParameter>
         {
-            new RestApiOperationParameter(
+            new(
                 name: "p1",
                 type: "array",
                 isRequired: false,
@@ -229,7 +229,7 @@ public class QueryStringBuilderTests
                 location: RestApiOperationParameterLocation.Query,
                 style: RestApiOperationParameterStyle.Form,
                 arrayItemType: "string"),
-            new RestApiOperationParameter(
+            new(
                 name: "p2",
                 type: "array",
                 isRequired: false,
@@ -263,7 +263,7 @@ public class QueryStringBuilderTests
         // Arrange
         var metadata = new List<RestApiOperationParameter>
         {
-            new RestApiOperationParameter(
+            new(
                 name: "p1",
                 type: "string",
                 isRequired: false,
@@ -271,7 +271,7 @@ public class QueryStringBuilderTests
                 location: RestApiOperationParameterLocation.Query,
                 style: RestApiOperationParameterStyle.Form,
                 arrayItemType: "string"),
-            new RestApiOperationParameter(
+            new(
                 name: "p2",
                 type: "boolean",
                 isRequired: false,
@@ -304,7 +304,7 @@ public class QueryStringBuilderTests
         // Arrange
         var metadata = new List<RestApiOperationParameter>
         {
-            new RestApiOperationParameter(
+            new(
                 name: "p1",
                 type: "array",
                 isRequired: false,
@@ -312,7 +312,7 @@ public class QueryStringBuilderTests
                 location: RestApiOperationParameterLocation.Query,
                 style: RestApiOperationParameterStyle.SpaceDelimited,
                 arrayItemType: "string"),
-            new RestApiOperationParameter(
+            new(
                 name: "p2",
                 type: "array",
                 isRequired: false,
@@ -346,7 +346,7 @@ public class QueryStringBuilderTests
         // Arrange
         var metadata = new List<RestApiOperationParameter>
         {
-            new RestApiOperationParameter(
+            new(
                 name: "p1",
                 type: "array",
                 isRequired: false,
@@ -354,7 +354,7 @@ public class QueryStringBuilderTests
                 location: RestApiOperationParameterLocation.Query,
                 style: RestApiOperationParameterStyle.SpaceDelimited,
                 arrayItemType: "string"),
-            new RestApiOperationParameter(
+            new(
                 name: "p2",
                 type: "array",
                 isRequired: false,
@@ -388,7 +388,7 @@ public class QueryStringBuilderTests
         // Arrange
         var metadata = new List<RestApiOperationParameter>
         {
-            new RestApiOperationParameter(
+            new(
                 name: "p1",
                 type: "array",
                 isRequired: false,
@@ -396,7 +396,7 @@ public class QueryStringBuilderTests
                 location: RestApiOperationParameterLocation.Query,
                 style: RestApiOperationParameterStyle.PipeDelimited,
                 arrayItemType: "string"),
-            new RestApiOperationParameter(
+            new(
                 name: "p2",
                 type: "array",
                 isRequired: false,
@@ -430,7 +430,7 @@ public class QueryStringBuilderTests
         // Arrange
         var metadata = new List<RestApiOperationParameter>
         {
-            new RestApiOperationParameter(
+            new(
                 name: "p1",
                 type: "array",
                 isRequired: false,
@@ -438,7 +438,7 @@ public class QueryStringBuilderTests
                 location: RestApiOperationParameterLocation.Query,
                 style: RestApiOperationParameterStyle.PipeDelimited,
                 arrayItemType: "string"),
-            new RestApiOperationParameter(
+            new(
                 name: "p2",
                 type: "array",
                 isRequired: false,
@@ -473,25 +473,25 @@ public class QueryStringBuilderTests
         var metadata = new List<RestApiOperationParameter>
         {
             //'Form' style array parameter with comma separated values
-            new RestApiOperationParameter(name: "p1", type: "array", isRequired: true, expand: false, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.Form, arrayItemType: "string"),
+            new(name: "p1", type: "array", isRequired: true, expand: false, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.Form, arrayItemType: "string"),
 
             //'Form' style primitive boolean parameter
-            new RestApiOperationParameter(name: "p2", type: "boolean", isRequired: true, expand: false, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.Form),
+            new(name: "p2", type: "boolean", isRequired: true, expand: false, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.Form),
 
             //'Form' style array parameter with parameter per array item
-            new RestApiOperationParameter(name: "p3", type: "array", isRequired: true, expand: true, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.Form),
+            new(name: "p3", type: "array", isRequired: true, expand: true, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.Form),
 
             //'SpaceDelimited' style array parameter with space separated values
-            new RestApiOperationParameter(name: "p4", type: "array", isRequired: true, expand: false, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.SpaceDelimited),
+            new(name: "p4", type: "array", isRequired: true, expand: false, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.SpaceDelimited),
 
             //'SpaceDelimited' style array parameter with parameter per array item
-            new RestApiOperationParameter(name: "p5", type: "array", isRequired: true, expand: true, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.SpaceDelimited),
+            new(name: "p5", type: "array", isRequired: true, expand: true, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.SpaceDelimited),
 
             //'PipeDelimited' style array parameter with pipe separated values
-            new RestApiOperationParameter(name: "p6", type: "array", isRequired: true, expand: false, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.PipeDelimited),
+            new(name: "p6", type: "array", isRequired: true, expand: false, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.PipeDelimited),
 
             //'PipeDelimited' style array parameter with parameter per array item
-            new RestApiOperationParameter(name: "p7", type: "array", isRequired: true, expand: true, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.PipeDelimited),
+            new(name: "p7", type: "array", isRequired: true, expand: true, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.PipeDelimited),
         };
 
         var arguments = new Dictionary<string, string>

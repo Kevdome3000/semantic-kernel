@@ -143,43 +143,23 @@ public sealed class Kernel : IKernel, IDisposable
             {
                 var functionDetails = skFunction.Describe();
 
-                var functionInvokingArgs = this.OnFunctionInvoking(functionDetails, context);
+                functionResult = await skFunction.InvokeAsync(context, null, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-                if (functionInvokingArgs?.CancelToken.IsCancellationRequested ?? false)
+                if (this.IsCancelRequested(skFunction, functionResult.Context, pipelineStepCount))
                 {
-                    this._logger.LogInformation("Execution was cancelled on function invoking event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
                     break;
                 }
 
-                if (functionInvokingArgs?.IsSkipRequested ?? false)
+                if (this.IsSkipRequested(skFunction, functionResult.Context, pipelineStepCount))
                 {
-                    this._logger.LogInformation("Execution was skipped on function invoking event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
                     continue;
                 }
 
-                functionResult = await skFunction.InvokeAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
+                // Only non-stop results are considered as Kernel results
+                allFunctionResults.Add(functionResult!);
 
-                context = functionResult.Context;
-
-                var functionInvokedArgs = this.OnFunctionInvoked(functionDetails, functionResult);
-
-                if (functionInvokedArgs is not null)
+                if (this.IsRepeatRequested(skFunction, functionResult.Context, pipelineStepCount))
                 {
-                    // All changes to the SKContext by invoked handlers may reflect in the original function result
-                    functionResult = new FunctionResult(functionDetails.Name, functionDetails.PluginName, functionInvokedArgs.SKContext, functionInvokedArgs.SKContext.Result);
-                }
-
-                allFunctionResults.Add(functionResult);
-
-                if (functionInvokedArgs?.CancelToken.IsCancellationRequested ?? false)
-                {
-                    this._logger.LogInformation("Execution was cancelled on function invoked event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
-                    break;
-                }
-
-                if (functionInvokedArgs?.IsRepeatRequested ?? false)
-                {
-                    this._logger.LogInformation("Execution repeat request on function invoked event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
                     goto repeat;
                 }
             }
@@ -192,7 +172,7 @@ public sealed class Kernel : IKernel, IDisposable
             pipelineStepCount++;
         }
 
-        return KernelResult.FromFunctionResults(functionResult?.Value, allFunctionResults);
+        return KernelResult.FromFunctionResults(allFunctionResults.LastOrDefault()?.Value, allFunctionResults);
     }
 
 
@@ -209,6 +189,8 @@ public sealed class Kernel : IKernel, IDisposable
             this._aiServiceSelector,
             variables,
             functions ?? this.Functions,
+            new EventHandlerWrapper<FunctionInvokingEventArgs>(this.FunctionInvoking),
+            new EventHandlerWrapper<FunctionInvokedEventArgs>(this.FunctionInvoked),
             loggerFactory ?? this.LoggerFactory,
             culture);
     }
@@ -251,42 +233,64 @@ public sealed class Kernel : IKernel, IDisposable
 
 
     /// <summary>
-    /// Execute the OnFunctionInvoking event handlers.
+    /// Checks if the handler requested to skip the function execution.
     /// </summary>
-    /// <param name="functionView">Function view details</param>
-    /// <param name="context">SKContext before function invocation</param>
-    /// <returns>FunctionInvokingEventArgs if the event was handled, null otherwise</returns>
-    private FunctionInvokingEventArgs? OnFunctionInvoking(FunctionView functionView, SKContext context)
+    /// <param name="skFunction">Target function</param>
+    /// <param name="context">Context of execution</param>
+    /// <param name="pipelineStepCount">Current pipeline step</param>
+    /// <returns></returns>
+    private bool IsSkipRequested(ISKFunction skFunction, SKContext context, int pipelineStepCount)
     {
-        if (this.FunctionInvoking is not null)
+        if (SKFunction.IsInvokingSkipRequested(context))
         {
-            var args = new FunctionInvokingEventArgs(functionView, context);
-            this.FunctionInvoking.Invoke(this, args);
-
-            return args;
+            this._logger.LogInformation("Execution was skipped on function invoking event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
+            return true;
         }
 
-        return null;
+        return false;
     }
 
 
     /// <summary>
-    /// Execute the OnFunctionInvoked event handlers.
+    /// Checks if the handler requested to cancel the function execution.
     /// </summary>
-    /// <param name="functionView">Function view details</param>
-    /// <param name="result">Function result after invocation</param>
-    /// <returns>FunctionInvokedEventArgs if the event was handled, null otherwise</returns>
-    private FunctionInvokedEventArgs? OnFunctionInvoked(FunctionView functionView, FunctionResult result)
+    /// <param name="skFunction">Target function</param>
+    /// <param name="context">Context of execution</param>
+    /// <param name="pipelineStepCount">Current pipeline step</param>
+    /// <returns></returns>
+    private bool IsCancelRequested(ISKFunction skFunction, SKContext context, int pipelineStepCount)
     {
-        if (this.FunctionInvoked is not null)
+        if (SKFunction.IsInvokingCancelRequested(context))
         {
-            var args = new FunctionInvokedEventArgs(functionView, result);
-            this.FunctionInvoked.Invoke(this, args);
-
-            return args;
+            this._logger.LogInformation("Execution was cancelled on function invoking event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
+            return true;
         }
 
-        return null;
+        if (SKFunction.IsInvokedCancelRequested(context))
+        {
+            this._logger.LogInformation("Execution was cancelled on function invoked event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
+            return true;
+        }
+
+        return false;
+    }
+
+
+    /// <summary>
+    /// Checks if the handler requested to repeat the function execution.
+    /// </summary>
+    /// <param name="skFunction">Target function</param>
+    /// <param name="context">Context of execution</param>
+    /// <param name="pipelineStepCount">Current pipeline step</param>
+    /// <returns></returns>
+    private bool IsRepeatRequested(ISKFunction skFunction, SKContext context, int pipelineStepCount)
+    {
+        if (context.FunctionInvokedHandler?.EventArgs?.IsRepeatRequested ?? false)
+        {
+            this._logger.LogInformation("Execution repeat request on function invoked event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
+            return true;
+        }
+        return false;
     }
 
     #endregion

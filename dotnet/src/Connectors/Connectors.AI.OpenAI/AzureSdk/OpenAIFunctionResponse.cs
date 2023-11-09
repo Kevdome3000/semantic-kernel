@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using Azure.AI.OpenAI;
+using Text;
 
 
 /// <summary>
@@ -27,6 +28,14 @@ public class OpenAIFunctionResponse
     /// Parameter values
     /// </summary>
     public Dictionary<string, object> Parameters { get; set; } = new();
+
+    /// <summary>
+    /// Fully qualified name of the function. This is the concatenation of the plugin name and the function name,
+    /// separated by the value of <see cref="OpenAIFunction.NameSeparator"/>.
+    /// If there is no plugin name, this is the same as the function name.
+    /// </summary>
+    public string FullyQualifiedName =>
+        this.PluginName.IsNullOrEmpty() ? this.FunctionName : $"{this.PluginName}{OpenAIFunction.NameSeparator}{this.FunctionName}";
 
 
     /// <summary>

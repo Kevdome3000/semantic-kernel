@@ -1,15 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Orchestration;
-
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using main namespace
 namespace Microsoft.SemanticKernel;
+
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using AI;
+using Orchestration;
+
 #pragma warning restore IDE0130
+
 
 /// <summary>
 /// Class with extension methods for semantic functions.
@@ -35,13 +37,13 @@ public static class SKFunctionTextExtensions
         CancellationToken cancellationToken = default)
     {
         var results = new List<string>();
+
         foreach (var partition in partitionedInput)
         {
             context.Variables.Update(partition);
-
             var result = await func.InvokeAsync(context, settings, cancellationToken).ConfigureAwait(false);
 
-            context = result.Context;
+            context = result!.Context;
 
             results.Add(context.Variables.ToString());
         }

@@ -59,7 +59,10 @@ public class CodeBlockTests
         var context = new SKContext(this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object, functions: this._functions.Object);
         var function = new Mock<ISKFunction>();
         function
-            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<AIRequestSettings?>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.InvokeAsync(
+                It.IsAny<SKContext>(),
+                It.IsAny<AIRequestSettings?>(),
+                It.IsAny<CancellationToken>()))
             .Throws(new RuntimeWrappedException("error"));
 
         this.MockFunctionRunner(function.Object);
@@ -233,8 +236,14 @@ public class CodeBlockTests
         var canary2 = string.Empty;
         var function = new Mock<ISKFunction>();
         function
-            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<AIRequestSettings?>(), It.IsAny<CancellationToken>()))
-            .Callback<SKContext, object?, CancellationToken>((context, _, _) =>
+            .Setup(x => x.InvokeAsync(
+                It.IsAny<SKContext>(),
+                It.IsAny<AIRequestSettings?>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<
+                SKContext,
+                object?,
+                CancellationToken>((context, _, _) =>
             {
                 canary0 = context!.Variables["input"];
                 canary1 = context.Variables["var1"];
@@ -244,7 +253,10 @@ public class CodeBlockTests
                 context.Variables["var1"] = "overridden";
                 context.Variables["var2"] = "overridden";
             })
-            .ReturnsAsync((SKContext inputcontext, object _, CancellationToken _) => new FunctionResult(Func, Plugin, inputcontext));
+            .ReturnsAsync((
+                SKContext inputcontext,
+                object _,
+                CancellationToken _) => new FunctionResult(Func, Plugin, inputcontext));
 
         this.MockFunctionRunner(function.Object);
 
@@ -281,12 +293,21 @@ public class CodeBlockTests
         var canary = string.Empty;
         var function = new Mock<ISKFunction>();
         function
-            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<AIRequestSettings?>(), It.IsAny<CancellationToken>()))
-            .Callback<SKContext, object?, CancellationToken>((context, _, _) =>
+            .Setup(x => x.InvokeAsync(
+                It.IsAny<SKContext>(),
+                It.IsAny<AIRequestSettings?>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<
+                SKContext,
+                object?,
+                CancellationToken>((context, _, _) =>
             {
                 canary = context!.Variables["input"];
             })
-            .ReturnsAsync((SKContext inputcontext, object _, CancellationToken _) => new FunctionResult(Func, Plugin, inputcontext));
+            .ReturnsAsync((
+                SKContext inputcontext,
+                object _,
+                CancellationToken _) => new FunctionResult(Func, Plugin, inputcontext));
 
         this.MockFunctionRunner(function.Object);
 
@@ -315,12 +336,21 @@ public class CodeBlockTests
         var canary = string.Empty;
         var function = new Mock<ISKFunction>();
         function
-            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<AIRequestSettings?>(), It.IsAny<CancellationToken>()))
-            .Callback<SKContext, object?, CancellationToken>((context, _, _) =>
+            .Setup(x => x.InvokeAsync(
+                It.IsAny<SKContext>(),
+                It.IsAny<AIRequestSettings?>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<
+                SKContext,
+                object?,
+                CancellationToken>((context, _, _) =>
             {
                 canary = context!.Variables["input"];
             })
-            .ReturnsAsync((SKContext inputcontext, object _, CancellationToken _) => new FunctionResult(Func, Plugin, inputcontext));
+            .ReturnsAsync((
+                SKContext inputcontext,
+                object _,
+                CancellationToken _) => new FunctionResult(Func, Plugin, inputcontext));
 
         this.MockFunctionRunner(function.Object);
 
@@ -356,13 +386,22 @@ public class CodeBlockTests
         var baz = string.Empty;
         var function = new Mock<ISKFunction>();
         function
-            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<AIRequestSettings?>(), It.IsAny<CancellationToken>()))
-            .Callback<SKContext, object?, CancellationToken>((context, _, _) =>
+            .Setup(x => x.InvokeAsync(
+                It.IsAny<SKContext>(),
+                It.IsAny<AIRequestSettings?>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<
+                SKContext,
+                object?,
+                CancellationToken>((context, _, _) =>
             {
                 foo = context!.Variables["foo"];
                 baz = context!.Variables["baz"];
             })
-            .ReturnsAsync((SKContext inputcontext, object _, CancellationToken _) => new FunctionResult(Func, Plugin, inputcontext));
+            .ReturnsAsync((
+                SKContext inputcontext,
+                object _,
+                CancellationToken _) => new FunctionResult(Func, Plugin, inputcontext));
 
         this.MockFunctionRunner(function.Object);
 
@@ -380,10 +419,10 @@ public class CodeBlockTests
     private void MockFunctionRunner(ISKFunction function)
     {
         this._functionRunner.Setup(r => r.RunAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()))
-            .Returns<string, string, ContextVariables, CancellationToken>((pluginName, functionName, variables, cancellationToken) =>
+            .Returns<string, string, ContextVariables, CancellationToken>(async (pluginName, functionName, variables, cancellationToken) =>
             {
                 var context = new SKContext(this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object, variables);
-                return function.InvokeAsync(context, null, cancellationToken);
+                return (FunctionResult?)await function.InvokeAsync(context, null, cancellationToken);
             });
     }
 }

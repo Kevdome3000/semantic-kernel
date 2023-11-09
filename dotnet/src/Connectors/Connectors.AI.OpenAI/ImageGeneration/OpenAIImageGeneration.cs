@@ -1,17 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
+
 using System;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI.ImageGeneration;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.CustomClient;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Text;
+using CustomClient;
+using Diagnostics;
+using Extensions.Logging;
+using SemanticKernel.AI.ImageGeneration;
+using Text;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
+
 /// <summary>
 /// A class for generating images using OpenAI's API.
 /// </summary>
@@ -32,6 +34,7 @@ public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
     /// </summary>
     private readonly string _authorizationHeaderValue;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIImageGeneration"/> class.
     /// </summary>
@@ -51,22 +54,26 @@ public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         this._organizationHeaderValue = organization;
     }
 
+
     /// <summary>Adds headers to use for OpenAI HTTP requests.</summary>
-    private protected override void AddRequestHeaders(HttpRequestMessage request)
+    protected private override void AddRequestHeaders(HttpRequestMessage request)
     {
         base.AddRequestHeaders(request);
 
         request.Headers.Add("Authorization", this._authorizationHeaderValue);
+
         if (!string.IsNullOrEmpty(this._organizationHeaderValue))
         {
             request.Headers.Add("OpenAI-Organization", this._organizationHeaderValue);
         }
     }
 
+
     /// <inheritdoc/>
     public Task<string> GenerateImageAsync(string description, int width, int height, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(description);
+
         if (width != height || (width != 256 && width != 512 && width != 1024))
         {
             throw new ArgumentOutOfRangeException(nameof(width), width, "OpenAI can generate only square images of size 256x256, 512x512, or 1024x1024.");
@@ -75,10 +82,13 @@ public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         return this.GenerateImageAsync(description, width, height, "url", x => x.Url, cancellationToken);
     }
 
+
     private async Task<string> GenerateImageAsync(
         string description,
-        int width, int height,
-        string format, Func<ImageGenerationResponse.Image, string> extractResponse,
+        int width,
+        int height,
+        string format,
+        Func<ImageGenerationResponse.Image, string> extractResponse,
         CancellationToken cancellationToken)
     {
         Debug.Assert(width == height);

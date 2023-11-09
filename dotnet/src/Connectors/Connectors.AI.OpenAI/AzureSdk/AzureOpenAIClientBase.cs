@@ -21,7 +21,7 @@ public abstract class AzureOpenAIClientBase : ClientBase
     /// <summary>
     /// OpenAI / Azure OpenAI Client
     /// </summary>
-    private protected override OpenAIClient Client { get; }
+    protected private override OpenAIClient Client { get; }
 
 
     /// <summary>
@@ -32,7 +32,7 @@ public abstract class AzureOpenAIClientBase : ClientBase
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    private protected AzureOpenAIClientBase(
+    protected private AzureOpenAIClientBase(
         string modelId,
         string endpoint,
         string apiKey,
@@ -59,7 +59,7 @@ public abstract class AzureOpenAIClientBase : ClientBase
     /// <param name="credential">Token credential, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    private protected AzureOpenAIClientBase(
+    protected private AzureOpenAIClientBase(
         string modelId,
         string endpoint,
         TokenCredential credential,
@@ -85,7 +85,7 @@ public abstract class AzureOpenAIClientBase : ClientBase
     /// <param name="modelId">Azure OpenAI model ID or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    private protected AzureOpenAIClientBase(
+    protected private AzureOpenAIClientBase(
         string modelId,
         OpenAIClient openAIClient,
         ILoggerFactory? loggerFactory = null) : base(loggerFactory)
@@ -128,7 +128,7 @@ public abstract class AzureOpenAIClientBase : ClientBase
     /// Logs Azure OpenAI action details.
     /// </summary>
     /// <param name="callerMemberName">Caller member name. Populated automatically by runtime.</param>
-    private protected void LogActionDetails([CallerMemberName] string? callerMemberName = default)
+    protected private void LogActionDetails([CallerMemberName] string? callerMemberName = default)
     {
         this.Logger.LogInformation("Action: {Action}. Azure OpenAI Deployment Name: {DeploymentName}.", callerMemberName, this.ModelId);
     }

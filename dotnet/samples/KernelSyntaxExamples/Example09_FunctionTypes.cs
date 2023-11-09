@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-// ReSharper disable once InconsistentNaming
-
 using System;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using RepoUtils;
+// ReSharper disable once InconsistentNaming
+using Microsoft.SemanticKernel;
 
 
 // ReSharper disable once InconsistentNaming
@@ -141,7 +140,7 @@ public class LocalExamplePlugin
         var summarizer = context.Functions.GetFunction("SummarizePlugin", "Summarize");
         var summary = await context.Runner.RunAsync(summarizer, new ContextVariables("blah blah blah"));
 
-        Console.WriteLine($"Running function type 6 [{summary.GetValue<string>()}]");
+        Console.WriteLine($"Running function type 6 [{summary?.GetValue<string>()}]");
         return "";
     }
 

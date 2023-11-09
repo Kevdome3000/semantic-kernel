@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Functions.UnitTests.OpenAPI;
+
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -7,7 +9,6 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Xunit;
 
-namespace SemanticKernel.Functions.UnitTests.OpenAPI;
 
 public class RestApiOperationTests
 {
@@ -33,6 +34,7 @@ public class RestApiOperationTests
         // Assert
         Assert.Equal("https://fake-random-test-host/", url.OriginalString);
     }
+
 
     [Fact]
     public void ItShouldUseHostUrlOverrideIfProvided()
@@ -60,6 +62,7 @@ public class RestApiOperationTests
         Assert.Equal("https://fake-random-test-host-override/", url.OriginalString);
     }
 
+
     [Fact]
     public void ItShouldReplacePathParametersByValuesFromArguments()
     {
@@ -85,6 +88,7 @@ public class RestApiOperationTests
         // Assert
         Assert.Equal("https://fake-random-test-host/fake-path-value/other_fake_path_section", url.OriginalString);
     }
+
 
     [Fact]
     public void ItShouldReplacePathParametersByDefaultValues()
@@ -115,6 +119,7 @@ public class RestApiOperationTests
         // Assert
         Assert.Equal("https://fake-random-test-host/fake-default-path/other_fake_path_section", url.OriginalString);
     }
+
 
     [Fact]
     public void ShouldBuildResourceUrlWithoutQueryString()
@@ -157,6 +162,7 @@ public class RestApiOperationTests
         Assert.Equal("https://fake-random-test-host-override/fake-path-value/", url.OriginalString);
     }
 
+
     [Fact]
     public void ItShouldRenderHeaderValuesFromArguments()
     {
@@ -188,6 +194,7 @@ public class RestApiOperationTests
         Assert.Equal("fake_header_two_value", headerTwo);
     }
 
+
     [Fact]
     public void ItShouldUseHeaderValuesIfTheyAreAlreadyProvided()
     {
@@ -214,6 +221,7 @@ public class RestApiOperationTests
         Assert.Equal("fake_header_two_value", headerTwo);
     }
 
+
     [Fact]
     public void ItShouldThrowExceptionIfHeadersHaveNoValuesAndHeadersMetadataNotSupplied()
     {
@@ -235,6 +243,7 @@ public class RestApiOperationTests
         Assert.Throws<SKException>(Act);
     }
 
+
     [Fact]
     public void ShouldThrowExceptionIfNoValueProvidedForRequiredHeader()
     {
@@ -248,7 +257,7 @@ public class RestApiOperationTests
         var metadata = new List<RestApiOperationParameter>
         {
             new(name: "fake_header_one", type: "string", isRequired: true, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple),
-            new(name: "fake_header_two", type : "string", isRequired : false, expand : false, location : RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple)
+            new(name: "fake_header_two", type: "string", isRequired: false, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple)
         };
 
         var sut = new RestApiOperation("fake_id", new Uri("http://fake_url"), "fake_path", HttpMethod.Get, "fake_description", metadata, rawHeaders);
@@ -259,6 +268,7 @@ public class RestApiOperationTests
         // Assert
         Assert.Throws<SKException>(Act);
     }
+
 
     [Fact]
     public void ItShouldSkipOptionalHeaderHavingNeitherValueNorDefaultValue()
@@ -272,8 +282,8 @@ public class RestApiOperationTests
 
         var metadata = new List<RestApiOperationParameter>
         {
-            new RestApiOperationParameter(name: "fake_header_one", type : "string", isRequired : true, expand : false, location : RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple),
-            new RestApiOperationParameter(name : "fake_header_two", type : "string", isRequired : false, expand : false, location : RestApiOperationParameterLocation.Header, style : RestApiOperationParameterStyle.Simple)
+            new(name: "fake_header_one", type: "string", isRequired: true, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple),
+            new(name: "fake_header_two", type: "string", isRequired: false, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple)
         };
 
         var arguments = new Dictionary<string, string>
@@ -293,6 +303,7 @@ public class RestApiOperationTests
         Assert.Equal("fake_header_one_value", headerOne);
     }
 
+
     [Fact]
     public void ShouldUseDefaultValueForOptionalHeaderIfNoValueProvided()
     {
@@ -305,8 +316,8 @@ public class RestApiOperationTests
 
         var metadata = new List<RestApiOperationParameter>
         {
-            new(name : "fake_header_one", type : "string", isRequired : true, expand : false, location : RestApiOperationParameterLocation.Header, style : RestApiOperationParameterStyle.Simple),
-            new(name: "fake_header_two", type : "string", isRequired : false, expand : false, location : RestApiOperationParameterLocation.Header, style : RestApiOperationParameterStyle.Simple, defaultValue: "fake_header_two_default_value")
+            new(name: "fake_header_one", type: "string", isRequired: true, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple),
+            new(name: "fake_header_two", type: "string", isRequired: false, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple, defaultValue: "fake_header_two_default_value")
         };
 
         var arguments = new Dictionary<string, string>

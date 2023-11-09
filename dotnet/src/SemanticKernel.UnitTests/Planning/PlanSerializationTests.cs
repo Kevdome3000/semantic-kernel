@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
@@ -99,7 +100,7 @@ public sealed class PlanSerializationTests
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, dynamic, CancellationToken>((c, s, ct) =>
+            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
             .Returns(() => Task.FromResult(new FunctionResult("functionName", "pluginName", returnContext)));
 
@@ -135,7 +136,7 @@ public sealed class PlanSerializationTests
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, dynamic, CancellationToken>((c, s, ct) =>
+            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
             .Returns(() => Task.FromResult(new FunctionResult("functionName", "pluginName", returnContext)));
 
@@ -171,7 +172,7 @@ public sealed class PlanSerializationTests
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, dynamic, CancellationToken>((c, s, ct) =>
+            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
             .Returns(() => Task.FromResult(new FunctionResult("functionName", "pluginName", returnContext)));
 
@@ -207,7 +208,7 @@ public sealed class PlanSerializationTests
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, dynamic, CancellationToken>((c, s, ct) =>
+            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
             .Returns(() => Task.FromResult(new FunctionResult("functionName", "pluginName", returnContext)));
 
@@ -242,7 +243,7 @@ public sealed class PlanSerializationTests
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, dynamic, CancellationToken>((c, s, ct) =>
+            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
             .Returns(() => Task.FromResult(new FunctionResult("functionName", "pluginName", returnContext)));
 
@@ -283,7 +284,7 @@ public sealed class PlanSerializationTests
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, dynamic, CancellationToken>((c, s, ct) =>
+            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
             .Returns(() => Task.FromResult(new FunctionResult("functionName", "pluginName", returnContext)));
 
@@ -293,7 +294,7 @@ public sealed class PlanSerializationTests
                 var c = new SKContext(new Mock<IFunctionRunner>().Object, this._serviceProvider.Object, this._serviceSelector.Object, variables);
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input);
                 var functionResult = new FunctionResult(function.Name, function.PluginName, returnContext);
-                return Task.FromResult(functionResult);
+                return Task.FromResult<FunctionResult?>(functionResult);
             });
 
         mockFunction.Setup(x => x.Describe()).Returns(() => new FunctionView("functionName", "pluginName"));
@@ -358,7 +359,7 @@ public sealed class PlanSerializationTests
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, dynamic, CancellationToken>((c, s, ct) =>
+            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
             {
                 c.Variables.TryGetValue("variables", out string? v);
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
@@ -376,7 +377,7 @@ public sealed class PlanSerializationTests
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
                 var functionResult = new FunctionResult(function.Name, function.PluginName, returnContext);
 
-                return Task.FromResult(functionResult);
+                return Task.FromResult<FunctionResult?>(functionResult);
             });
 
         mockFunction.Setup(x => x.Describe()).Returns(new FunctionView("functionName", "pluginName")
@@ -450,7 +451,7 @@ public sealed class PlanSerializationTests
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, dynamic, CancellationToken>((c, s, ct) =>
+            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
             {
                 c.Variables.TryGetValue("variables", out string? v);
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
@@ -479,7 +480,7 @@ public sealed class PlanSerializationTests
 
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
                 var functionResult = new FunctionResult(function.Name, function.PluginName, returnContext);
-                return Task.FromResult(functionResult);
+                return Task.FromResult<FunctionResult?>(functionResult);
             });
 
         var serializedPlan = plan.ToJson();
@@ -544,7 +545,7 @@ public sealed class PlanSerializationTests
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, dynamic, CancellationToken>((c, s, ct) =>
+            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
             .Returns(() => Task.FromResult(new FunctionResult("functionName", "pluginName", returnContext)));
 
@@ -600,7 +601,7 @@ public sealed class PlanSerializationTests
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, dynamic, CancellationToken>((c, s, ct) =>
+            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
             .Returns(() => Task.FromResult(new FunctionResult("functionName", "pluginName", returnContext)));
 

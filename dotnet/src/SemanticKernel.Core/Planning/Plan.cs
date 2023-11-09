@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using AI;
 using AI.TextCompletion;
 using Diagnostics;
+using Events;
 using Orchestration;
 
 
@@ -36,7 +37,7 @@ public sealed class Plan : ISKFunction
     /// Steps of the plan
     /// </summary>
     [JsonPropertyName("steps")]
-    public IReadOnlyList<Plan> Steps => this._steps.AsReadOnly();
+    public IReadOnlyList<Plan> Steps => _steps.AsReadOnly();
 
     /// <summary>
     /// Parameters for the plan, used to pass information to the next step
@@ -55,7 +56,7 @@ public sealed class Plan : ISKFunction
     /// Gets whether the plan has a next step.
     /// </summary>
     [JsonIgnore]
-    public bool HasNextStep => this.NextStepIndex < this.Steps.Count;
+    public bool HasNextStep => NextStepIndex < Steps.Count;
 
     /// <summary>
     /// Gets the next step index.
@@ -91,9 +92,9 @@ public sealed class Plan : ISKFunction
     /// <param name="goal">The goal of the plan used as description.</param>
     public Plan(string goal)
     {
-        this.Name = GetRandomPlanName();
-        this.Description = goal;
-        this.PluginName = nameof(Plan);
+        Name = GetRandomPlanName();
+        Description = goal;
+        PluginName = nameof(Plan);
     }
 
 
@@ -104,7 +105,7 @@ public sealed class Plan : ISKFunction
     /// <param name="steps">The steps to add.</param>
     public Plan(string goal, params ISKFunction[] steps) : this(goal)
     {
-        this.AddSteps(steps);
+        AddSteps(steps);
     }
 
 
@@ -115,7 +116,7 @@ public sealed class Plan : ISKFunction
     /// <param name="steps">The steps to add.</param>
     public Plan(string goal, params Plan[] steps) : this(goal)
     {
-        this.AddSteps(steps);
+        AddSteps(steps);
     }
 
 
@@ -125,7 +126,7 @@ public sealed class Plan : ISKFunction
     /// <param name="function">The function to execute.</param>
     public Plan(ISKFunction function)
     {
-        this.SetFunction(function);
+        SetFunction(function);
     }
 
 
@@ -151,15 +152,15 @@ public sealed class Plan : ISKFunction
         IList<string> outputs,
         IReadOnlyList<Plan> steps)
     {
-        this.Name = name;
-        this.PluginName = pluginName;
-        this.Description = description;
-        this.NextStepIndex = nextStepIndex;
-        this.State = state;
-        this.Parameters = parameters;
-        this.Outputs = outputs;
-        this._steps.Clear();
-        this.AddSteps(steps.ToArray());
+        Name = name;
+        PluginName = pluginName;
+        Description = description;
+        NextStepIndex = nextStepIndex;
+        State = state;
+        Parameters = parameters;
+        Outputs = outputs;
+        _steps.Clear();
+        AddSteps(steps.ToArray());
     }
 
 
@@ -190,10 +191,7 @@ public sealed class Plan : ISKFunction
     /// </summary>
     /// <param name="indented">Whether to emit indented JSON</param>
     /// <returns>Plan serialized using JSON format</returns>
-    public string ToJson(bool indented = false)
-    {
-        return JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = indented });
-    }
+    public string ToJson(bool indented = false) => JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = indented });
 
 
     /// <summary>
@@ -205,7 +203,7 @@ public sealed class Plan : ISKFunction
     /// </remarks>
     public void AddSteps(params Plan[] steps)
     {
-        this._steps.AddRange(steps);
+        _steps.AddRange(steps);
     }
 
 
@@ -218,7 +216,7 @@ public sealed class Plan : ISKFunction
     /// </remarks>
     public void AddSteps(params ISKFunction[] steps)
     {
-        this._steps.AddRange(steps.Select(step => step is Plan plan ? plan : new Plan(step)));
+        _steps.AddRange(steps.Select(step => step is Plan plan ? plan : new Plan(step)));
     }
 
 
@@ -238,7 +236,7 @@ public sealed class Plan : ISKFunction
     {
         var context = kernel.CreateNewContext(variables);
 
-        return this.InvokeNextStepAsync(context, cancellationToken);
+        return InvokeNextStepAsync(context, cancellationToken);
     }
 
 
@@ -251,54 +249,9 @@ public sealed class Plan : ISKFunction
     /// <exception cref="SKException">If an error occurs while running the plan</exception>
     public async Task<Plan> InvokeNextStepAsync(SKContext context, CancellationToken cancellationToken = default)
     {
-        if (this.HasNextStep)
+        if (HasNextStep)
         {
-            var step = this.Steps[this.NextStepIndex];
-
-            // Merge the state with the current context variables for step execution
-            var functionVariables = this.GetNextStepVariables(context.Variables, step);
-
-            // Execute the step
-            var result = await context.Runner.RunAsync(step, functionVariables, cancellationToken).ConfigureAwait(false);
-
-            var resultValue = result.Context.Result.Trim();
-
-
-            #region Update State
-
-            // Update state with result
-            this.State.Update(resultValue);
-
-            // Update Plan Result in State with matching outputs (if any)
-            if (this.Outputs.Intersect(step.Outputs).Any())
-            {
-                if (this.State.TryGetValue(DefaultResultKey, out string? currentPlanResult))
-                {
-                    this.State.Set(DefaultResultKey, $"{currentPlanResult}\n{resultValue}");
-                }
-                else
-                {
-                    this.State.Set(DefaultResultKey, resultValue);
-                }
-            }
-
-            // Update state with outputs (if any)
-            foreach (var item in step.Outputs)
-            {
-                if (result.Context.Variables.TryGetValue(item, out string? val))
-                {
-                    this.State.Set(item, val);
-                }
-                else
-                {
-                    this.State.Set(item, resultValue);
-                }
-            }
-
-            #endregion Update State
-
-
-            this.NextStepIndex++;
+            await InternalInvokeNextStepAsync(context, cancellationToken).ConfigureAwait(false);
         }
 
         return this;
@@ -310,28 +263,28 @@ public sealed class Plan : ISKFunction
     /// <inheritdoc/>
     public FunctionView Describe()
     {
-        if (this.Function is not null)
+        if (Function is not null)
         {
-            return this.Function.Describe();
+            return Function.Describe();
         }
 
         // The parameter mapping definitions from Plan -> Function
-        var stepParameters = this.Steps.SelectMany(s => s.Parameters);
+        IEnumerable<KeyValuePair<string, string>> stepParameters = Steps.SelectMany(s => s.Parameters);
 
         // The parameter descriptions from the Function
-        var stepDescriptions = this.Steps.SelectMany(s => s.Describe().Parameters);
+        IEnumerable<ParameterView> stepDescriptions = Steps.SelectMany(s => s.Describe().Parameters);
 
         // The parameters for the Plan
-        var parameters = this.Parameters.Select(p =>
+        List<ParameterView> parameters = Parameters.Select(p =>
             {
-                var matchingParameter = stepParameters.FirstOrDefault(sp => sp.Value.Equals($"${p.Key}", StringComparison.OrdinalIgnoreCase));
+                KeyValuePair<string, string> matchingParameter = stepParameters.FirstOrDefault(sp => sp.Value.Equals($"${p.Key}", StringComparison.OrdinalIgnoreCase));
                 var stepDescription = stepDescriptions.FirstOrDefault(sd => sd.Name.Equals(matchingParameter.Key, StringComparison.OrdinalIgnoreCase));
 
                 return new ParameterView(p.Key, stepDescription?.Description, stepDescription?.DefaultValue, stepDescription?.Type, stepDescription?.IsRequired);
             }
         ).ToList();
 
-        return new(this.Name, this.PluginName, this.Description, parameters);
+        return new FunctionView(Name, PluginName, Description, parameters);
     }
 
 
@@ -341,35 +294,62 @@ public sealed class Plan : ISKFunction
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        var result = new FunctionResult(this.Name, this.PluginName, context);
+        var result = new FunctionResult(Name, PluginName, context);
 
-        if (this.Function is not null)
+        if (Function is not null)
         {
             // Merge state with the current context variables.
             // Then filter the variables to only those needed for the next step.
             // This is done to prevent the function from having access to variables that it shouldn't.
-            AddVariablesToContext(this.State, context);
-            var functionVariables = this.GetNextStepVariables(context.Variables, this);
+            AddVariablesToContext(State, context);
+            var functionVariables = GetNextStepVariables(context.Variables, this);
             var functionContext = context.Clone(functionVariables, context.Functions);
 
             // Execute the step
-            result = await this.Function
+            result = await Function
                 .WithInstrumentation(context.LoggerFactory)
                 .InvokeAsync(functionContext, requestSettings, cancellationToken)
                 .ConfigureAwait(false);
-            this.UpdateFunctionResultWithOutputs(result);
+            UpdateFunctionResultWithOutputs(result);
         }
         else
         {
-            // loop through steps and execute until completion
-            while (this.HasNextStep)
-            {
-                AddVariablesToContext(this.State, context);
-                await this.InvokeNextStepAsync(context, cancellationToken).ConfigureAwait(false);
-                this.UpdateContextWithOutputs(context);
+            CallFunctionInvoking(context);
 
-                result = new FunctionResult(this.Name, this.PluginName, context, context.Result);
-                this.UpdateFunctionResultWithOutputs(result);
+            if (SKFunction.IsInvokingCancelOrSkipRequested(context))
+            {
+                return new FunctionResult(Name, PluginName, context);
+            }
+
+            // loop through steps and execute until completion
+            while (HasNextStep)
+            {
+                AddVariablesToContext(State, context);
+                var stepResult = await InternalInvokeNextStepAsync(context, cancellationToken).ConfigureAwait(false);
+
+                // If a step was cancelled before invocation
+                // Return the last result state of the plan.
+                if (stepResult is null)
+                {
+                    if (context.FunctionInvokingHandler?.EventArgs?.IsSkipRequested ?? false)
+                    {
+                        continue;
+                    }
+
+                    return result;
+                }
+
+                UpdateContextWithOutputs(context);
+
+                result = new FunctionResult(Name, PluginName, context, context.Result);
+                UpdateFunctionResultWithOutputs(result);
+            }
+
+            CallFunctionInvoked(result, context);
+
+            if (SKFunction.IsInvokedCancelRequested(context))
+            {
+                return new FunctionResult(Name, PluginName, context, result.Value);
             }
         }
 
@@ -389,11 +369,11 @@ public sealed class Plan : ISKFunction
     {
         var result = input;
         var matches = s_variablesRegex.Matches(input);
-        var orderedMatches = matches.Cast<Match>().Select(m => m.Groups["var"].Value).Distinct().OrderByDescending(m => m.Length);
+        IOrderedEnumerable<string> orderedMatches = matches.Cast<Match>().Select(m => m.Groups["var"].Value).Distinct().OrderByDescending(m => m.Length);
 
         foreach (var varName in orderedMatches)
         {
-            if (variables.TryGetValue(varName, out string? value) || this.State.TryGetValue(varName, out value))
+            if (variables.TryGetValue(varName, out var value) || State.TryGetValue(varName, out value))
             {
                 result = result.Replace($"${varName}", value);
             }
@@ -443,9 +423,9 @@ public sealed class Plan : ISKFunction
     private static void AddVariablesToContext(ContextVariables vars, SKContext context)
     {
         // Loop through vars and add anything missing to context
-        foreach (var item in vars)
+        foreach (KeyValuePair<string, string> item in vars)
         {
-            if (!context.Variables.TryGetValue(item.Key, out string? value) || string.IsNullOrEmpty(value))
+            if (!context.Variables.TryGetValue(item.Key, out var value) || string.IsNullOrEmpty(value))
             {
                 context.Variables.Set(item.Key, item.Value);
             }
@@ -460,13 +440,13 @@ public sealed class Plan : ISKFunction
     /// <returns>The updated context.</returns>
     private SKContext UpdateContextWithOutputs(SKContext context)
     {
-        var resultString = this.State.TryGetValue(DefaultResultKey, out string? result) ? result : this.State.ToString();
+        var resultString = State.TryGetValue(DefaultResultKey, out var result) ? result : State.ToString();
         context.Variables.Update(resultString);
 
         // copy previous step's variables to the next step
-        foreach (var item in this._steps[this.NextStepIndex - 1].Outputs)
+        foreach (var item in _steps[NextStepIndex - 1].Outputs)
         {
-            if (this.State.TryGetValue(item, out string? val))
+            if (State.TryGetValue(item, out var val))
             {
                 context.Variables.Set(item, val);
             }
@@ -485,11 +465,16 @@ public sealed class Plan : ISKFunction
     /// </summary>
     /// <param name="functionResult">The function result to update.</param>
     /// <returns>The updated function result.</returns>
-    private FunctionResult UpdateFunctionResultWithOutputs(FunctionResult functionResult)
+    private FunctionResult? UpdateFunctionResultWithOutputs(FunctionResult? functionResult)
     {
-        foreach (var output in this.Outputs)
+        if (functionResult is null)
         {
-            if (this.State.TryGetValue(output, out var value))
+            return null;
+        }
+
+        foreach (var output in Outputs)
+        {
+            if (State.TryGetValue(output, out var value))
             {
                 functionResult.Metadata[output] = value;
             }
@@ -522,23 +507,23 @@ public sealed class Plan : ISKFunction
 
         if (!string.IsNullOrEmpty(step.Parameters.Input))
         {
-            input = this.ExpandFromVariables(variables, step.Parameters.Input!);
+            input = ExpandFromVariables(variables, step.Parameters.Input!);
         }
         else if (!string.IsNullOrEmpty(variables.Input))
         {
             input = variables.Input;
         }
-        else if (!string.IsNullOrEmpty(this.State.Input))
+        else if (!string.IsNullOrEmpty(State.Input))
         {
-            input = this.State.Input;
+            input = State.Input;
         }
         else if (step.Steps.Count > 0)
         {
             input = string.Empty;
         }
-        else if (!string.IsNullOrEmpty(this.Description))
+        else if (!string.IsNullOrEmpty(Description))
         {
-            input = this.Description;
+            input = Description;
         }
 
         var stepVariables = new ContextVariables(input);
@@ -556,17 +541,17 @@ public sealed class Plan : ISKFunction
                 continue;
             }
 
-            if (variables.TryGetValue(param.Name, out string? value))
+            if (variables.TryGetValue(param.Name, out var value))
             {
                 stepVariables.Set(param.Name, value);
             }
-            else if (this.State.TryGetValue(param.Name, out value) && !string.IsNullOrEmpty(value))
+            else if (State.TryGetValue(param.Name, out value) && !string.IsNullOrEmpty(value))
             {
                 stepVariables.Set(param.Name, value);
             }
         }
 
-        foreach (var item in step.Parameters)
+        foreach (KeyValuePair<string, string> item in step.Parameters)
         {
             // Don't overwrite variable values that are already set
             if (stepVariables.ContainsKey(item.Key))
@@ -574,17 +559,17 @@ public sealed class Plan : ISKFunction
                 continue;
             }
 
-            var expandedValue = this.ExpandFromVariables(variables, item.Value);
+            var expandedValue = ExpandFromVariables(variables, item.Value);
 
             if (!expandedValue.Equals(item.Value, StringComparison.OrdinalIgnoreCase))
             {
                 stepVariables.Set(item.Key, expandedValue);
             }
-            else if (variables.TryGetValue(item.Key, out string? value))
+            else if (variables.TryGetValue(item.Key, out var value))
             {
                 stepVariables.Set(item.Key, value);
             }
-            else if (this.State.TryGetValue(item.Key, out value))
+            else if (State.TryGetValue(item.Key, out value))
             {
                 stepVariables.Set(item.Key, value);
             }
@@ -608,14 +593,14 @@ public sealed class Plan : ISKFunction
 
     private void SetFunction(ISKFunction function)
     {
-        this.Function = function;
-        this.Name = function.Name;
-        this.PluginName = function.PluginName;
-        this.Description = function.Description;
+        Function = function;
+        Name = function.Name;
+        PluginName = function.PluginName;
+        Description = function.Description;
 
 #pragma warning disable CS0618 // Type or member is obsolete
-        this.RequestSettings = function.RequestSettings;
-        this.IsSemantic = function.IsSemantic;
+        RequestSettings = function.RequestSettings;
+        IsSemantic = function.IsSemantic;
 #pragma warning restore CS0618 // Type or member is obsolete
     }
 
@@ -635,16 +620,16 @@ public sealed class Plan : ISKFunction
     {
         get
         {
-            string display = this.Description;
+            var display = Description;
 
-            if (!string.IsNullOrWhiteSpace(this.Name))
+            if (!string.IsNullOrWhiteSpace(Name))
             {
-                display = $"{this.Name} ({display})";
+                display = $"{Name} ({display})";
             }
 
-            if (this._steps.Count > 0)
+            if (_steps.Count > 0)
             {
-                display += $", Steps = {this._steps.Count}, NextStep = {this.NextStepIndex}";
+                display += $", Steps = {_steps.Count}, NextStep = {NextStepIndex}";
             }
 
             return display;
@@ -661,25 +646,124 @@ public sealed class Plan : ISKFunction
 
     /// <inheritdoc/>
     [Obsolete("Use ISKFunction.SetAIServiceFactory instead. This will be removed in a future release.")]
-    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
-    {
-        return this.Function is not null ? this.Function.SetAIService(serviceFactory) : this;
-    }
+    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory) => Function is not null ? Function.SetAIService(serviceFactory) : this;
 
 
     /// <inheritdoc/>
     [Obsolete("Use ISKFunction.SetAIRequestSettingsFactory instead. This will be removed in a future release.")]
-    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
-    {
-        return this.Function is not null ? this.Function.SetAIConfiguration(requestSettings) : this;
-    }
+    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings) => Function is not null ? Function.SetAIConfiguration(requestSettings) : this;
 
 
     /// <inheritdoc/>
     [JsonIgnore]
     [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public string SkillName => this.PluginName;
+    public string SkillName => PluginName;
+
+
+    /// <summary>
+    /// Invoke the next step of the plan
+    /// </summary>
+    /// <param name="context">Context to use</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Next step result</returns>
+    /// <exception cref="SKException">If an error occurs while running the plan</exception>
+    private async Task<FunctionResult?> InternalInvokeNextStepAsync(SKContext context, CancellationToken cancellationToken = default)
+    {
+        if (HasNextStep)
+        {
+            var step = Steps[NextStepIndex];
+
+            // Merge the state with the current context variables for step execution
+            var functionVariables = GetNextStepVariables(context.Variables, step);
+
+            // Execute the step
+            var result = await context.Runner.RunAsync(step, functionVariables, cancellationToken).ConfigureAwait(false);
+
+            if (result is null)
+            {
+                // Step was cancelled
+                return null;
+            }
+
+            var resultValue = result.Context.Result.Trim();
+
+
+            #region Update State
+
+            // Update state with result
+            State.Update(resultValue);
+
+            // Update Plan Result in State with matching outputs (if any)
+            if (Outputs.Intersect(step.Outputs).Any())
+            {
+                if (State.TryGetValue(DefaultResultKey, out var currentPlanResult))
+                {
+                    State.Set(DefaultResultKey, $"{currentPlanResult}\n{resultValue}");
+                }
+                else
+                {
+                    State.Set(DefaultResultKey, resultValue);
+                }
+            }
+
+            // Update state with outputs (if any)
+            foreach (var item in step.Outputs)
+            {
+                if (result.Context.Variables.TryGetValue(item, out var val))
+                {
+                    State.Set(item, val);
+                }
+                else
+                {
+                    State.Set(item, resultValue);
+                }
+            }
+
+            #endregion Update State
+
+
+            NextStepIndex++;
+
+            return result;
+        }
+
+        throw new InvalidOperationException("There isn't a next step");
+    }
+
+
+    private void CallFunctionInvoking(SKContext context)
+    {
+        EventHandlerWrapper<FunctionInvokingEventArgs>? eventWrapper = context.FunctionInvokingHandler;
+
+        if (eventWrapper?.Handler is null)
+        {
+            return;
+        }
+
+        eventWrapper.EventArgs = new FunctionInvokingEventArgs(Describe(), context);
+        eventWrapper.Handler.Invoke(this, eventWrapper.EventArgs);
+    }
+
+
+    private void CallFunctionInvoked(FunctionResult result, SKContext context)
+    {
+        EventHandlerWrapper<FunctionInvokedEventArgs>? eventWrapper = context.FunctionInvokedHandler;
+
+        // Not handlers registered, return the result as is
+        if (eventWrapper?.Handler is null)
+        {
+            return;
+        }
+
+        eventWrapper.EventArgs = new FunctionInvokedEventArgs(Describe(), result);
+        eventWrapper.Handler.Invoke(this, eventWrapper.EventArgs);
+
+        // Updates the eventArgs metadata during invoked handler execution
+        // will reflect in the result metadata
+        result.Metadata = eventWrapper.EventArgs.Metadata;
+    }
+
 
     /// <inheritdoc/>
     [JsonIgnore]

@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using AI;
 using AI.TextCompletion;
 using Diagnostics;
+using Events;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
 using Functions;
@@ -97,7 +98,7 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
     {
         AddDefaultValues(context.Variables);
 
-        return await this.RunPromptAsync(requestSettings, context, cancellationToken).ConfigureAwait(false);
+        return await RunPromptAsync(requestSettings, context, cancellationToken).ConfigureAwait(false);
     }
 
 
@@ -143,7 +144,7 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
         PluginName = pluginName;
         Description = description;
 
-        this._view = new(() => new(functionName, pluginName, description, this.Parameters));
+        _view = new(() => new(functionName, pluginName, description, Parameters));
     }
 
 
@@ -185,17 +186,26 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
     private async Task<FunctionResult> RunPromptAsync(
         AIRequestSettings? requestSettings,
         SKContext context,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default)
     {
         FunctionResult result;
 
         try
         {
             string renderedPrompt = await _promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
-            // For backward compatibility, use the service selector from the class if it exists, otherwise use the one from the context
-            var serviceSelector = this._serviceSelector ?? context.ServiceSelector;
-            (var textCompletion, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(renderedPrompt, context.ServiceProvider, this._modelSettings);
+            var serviceSelector = _serviceSelector ?? context.ServiceSelector;
+            (var textCompletion, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(renderedPrompt, context.ServiceProvider, _modelSettings);
             Verify.NotNull(textCompletion);
+
+            CallFunctionInvoking(context, renderedPrompt);
+
+            if (SKFunction.IsInvokingCancelOrSkipRequested(context))
+            {
+                return new FunctionResult(Name, PluginName, context);
+            }
+
+            renderedPrompt = GetPromptFromEventArgsMetadataOrDefault(context, renderedPrompt);
+
             IReadOnlyList<ITextResult> completionResults = await textCompletion.GetCompletionsAsync(renderedPrompt, requestSettings ?? defaultRequestSettings, cancellationToken).ConfigureAwait(false);
             string completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
 
@@ -207,6 +217,14 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
             result = new FunctionResult(Name, PluginName, context, completion);
 
             result.Metadata.Add(AIFunctionResultExtensions.ModelResultsMetadataKey, modelResults);
+            result.Metadata.Add(SKEventArgsExtensions.RenderedPromptMetadataKey, renderedPrompt);
+
+            CallFunctionInvoked(result, context, renderedPrompt);
+
+            if (SKFunction.IsInvokedCancelRequested(context))
+            {
+                return new FunctionResult(Name, PluginName, context, result.Value);
+            }
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
@@ -217,6 +235,78 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
         return result;
     }
 
+
+    /// <summary>
+    /// Handles the FunctionInvoking event
+    /// </summary>
+    /// <param name="context">Execution context</param>
+    /// <param name="renderedPrompt">Rendered prompt</param>
+    private void CallFunctionInvoking(SKContext context, string renderedPrompt)
+    {
+        var eventWrapper = context.FunctionInvokingHandler;
+
+        if (eventWrapper?.Handler is null)
+        {
+            return;
+        }
+
+        eventWrapper.EventArgs = new FunctionInvokingEventArgs(Describe(), context)
+        {
+            Metadata =
+            {
+                [SKEventArgsExtensions.RenderedPromptMetadataKey] = renderedPrompt
+            }
+        };
+        eventWrapper.Handler.Invoke(this, eventWrapper.EventArgs);
+    }
+
+
+    /// <summary>
+    /// Handles the FunctionInvoked event
+    /// </summary>
+    /// <param name="result">Current function result</param>
+    /// <param name="context">Execution context</param>
+    /// <param name="prompt">Prompt used by the function</param>
+    private void CallFunctionInvoked(FunctionResult result, SKContext context, string prompt)
+    {
+        var eventWrapper = context.FunctionInvokedHandler;
+
+        result.Metadata[SKEventArgsExtensions.RenderedPromptMetadataKey] = prompt;
+
+        // Not handlers registered, return the result as is
+        if (eventWrapper?.Handler is null)
+        {
+            return;
+        }
+
+        eventWrapper.EventArgs = new FunctionInvokedEventArgs(Describe(), result);
+        eventWrapper.Handler.Invoke(this, eventWrapper.EventArgs);
+
+        // Updates the eventArgs metadata during invoked handler execution
+        // will reflect in the result metadata
+        result.Metadata = eventWrapper.EventArgs.Metadata;
+    }
+
+
+    /// <summary>
+    /// Try to get the prompt from the event args metadata.
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="defaultPrompt">Default prompt if none is found in metadata</param>
+    /// <returns></returns>
+    private string GetPromptFromEventArgsMetadataOrDefault(SKContext context, string defaultPrompt)
+    {
+        var eventArgs = context.FunctionInvokingHandler?.EventArgs;
+
+        if (eventArgs is null || !eventArgs.Metadata.TryGetValue(SKEventArgsExtensions.RenderedPromptMetadataKey, out var renderedPromptFromMetadata))
+        {
+            return defaultPrompt;
+        }
+
+        // If prompt key exists and was modified to null default to an empty string
+        return renderedPromptFromMetadata?.ToString() ?? string.Empty;
+    }
+
     #endregion
 
 
@@ -224,7 +314,7 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
 
     /// <inheritdoc/>
     [Obsolete("Use ISKFunction.ModelSettings instead. This will be removed in a future release.")]
-    public AIRequestSettings? RequestSettings => this._modelSettings?.FirstOrDefault<AIRequestSettings>();
+    public AIRequestSettings? RequestSettings => _modelSettings?.FirstOrDefault();
 
 
     /// <inheritdoc/>
@@ -233,7 +323,7 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
     {
         Verify.NotNull(serviceFactory);
 
-        if (this._serviceSelector is DelegatingAIServiceSelector delegatingProvider)
+        if (_serviceSelector is DelegatingAIServiceSelector delegatingProvider)
         {
             delegatingProvider.ServiceFactory = serviceFactory;
         }
@@ -241,7 +331,7 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
         {
             var serviceSelector = new DelegatingAIServiceSelector();
             serviceSelector.ServiceFactory = serviceFactory;
-            this._serviceSelector = serviceSelector;
+            _serviceSelector = serviceSelector;
         }
         return this;
     }
@@ -251,7 +341,7 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
     [Obsolete("Use ISKFunction.SetAIRequestSettingsFactory instead. This will be removed in a future release.")]
     public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
     {
-        if (this._serviceSelector is DelegatingAIServiceSelector delegatingProvider)
+        if (_serviceSelector is DelegatingAIServiceSelector delegatingProvider)
         {
             delegatingProvider.RequestSettings = requestSettings;
         }
@@ -259,7 +349,7 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
         {
             var configurationProvider = new DelegatingAIServiceSelector();
             configurationProvider.RequestSettings = requestSettings;
-            this._serviceSelector = configurationProvider;
+            _serviceSelector = configurationProvider;
         }
         return this;
     }

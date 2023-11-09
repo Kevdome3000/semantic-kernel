@@ -225,7 +225,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 
 
     /// <summary>Adds headers to use for Azure OpenAI HTTP requests.</summary>
-    private protected override void AddRequestHeaders(HttpRequestMessage request)
+    protected private override void AddRequestHeaders(HttpRequestMessage request)
     {
         request.Headers.Add("api-key", this._apiKey);
     }

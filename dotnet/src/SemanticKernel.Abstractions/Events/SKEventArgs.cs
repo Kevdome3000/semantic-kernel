@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Orchestration;
-
 namespace Microsoft.SemanticKernel.Events;
+
+using System;
+using System.Collections.Generic;
+using Diagnostics;
+using Orchestration;
+
 
 /// <summary>
 /// Base arguments for events.
@@ -23,7 +25,9 @@ public abstract class SKEventArgs : EventArgs
 
         this.FunctionView = functionView;
         this.SKContext = context;
+        this.Metadata = new();
     }
+
 
     /// <summary>
     /// Function view details.
@@ -34,4 +38,9 @@ public abstract class SKEventArgs : EventArgs
     /// Context related to the event.
     /// </summary>
     public SKContext SKContext { get; }
+
+    /// <summary>
+    /// Metadata for storing additional information about function execution result.
+    /// </summary>
+    public Dictionary<string, object> Metadata { get; protected set; }
 }
