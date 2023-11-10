@@ -383,7 +383,7 @@ public abstract class ClientBase
     }
 
 
-    private static ChatCompletionsOptions CreateChatCompletionsOptions(OpenAIRequestSettings requestSettings, IEnumerable<ChatMessageBase> chatHistory)
+    internal static ChatCompletionsOptions CreateChatCompletionsOptions(OpenAIRequestSettings requestSettings, IEnumerable<ChatMessageBase> chatHistory)
     {
         if (requestSettings.ResultsPerPrompt is < 1 or > MaxResultsPerPrompt)
         {
@@ -443,7 +443,6 @@ public abstract class ClientBase
 
             options.Messages.Add(azureMessage);
         }
-
         return options;
     }
 

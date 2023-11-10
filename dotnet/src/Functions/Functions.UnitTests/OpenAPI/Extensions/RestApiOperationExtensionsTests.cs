@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Functions.UnitTests.OpenAPI.Extensions;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,57 +10,9 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Xunit;
 
-namespace SemanticKernel.Functions.UnitTests.OpenAPI.Extensions;
+
 public class RestApiOperationExtensionsTests
 {
-    [Theory]
-    [InlineData("PUT")]
-    [InlineData("POST")]
-    [InlineData("GET")]
-    public void ItShouldAddServerUrlParameterWithDefaultValueFromOperation(string method)
-    {
-        //Arrange
-        var payload = CreateTestJsonPayload();
-
-        var operation = CreateTestOperation(method, payload, new Uri("https://fake-random-test-host"));
-
-        //Act
-        var parameters = operation.GetParameters();
-
-        //Assert
-        Assert.NotNull(parameters);
-
-        var serverUrl = parameters.FirstOrDefault(p => p.Name == "server-url");
-        Assert.NotNull(serverUrl);
-        Assert.Equal("string", serverUrl.Type);
-        Assert.False(serverUrl.IsRequired);
-        Assert.Equal("https://fake-random-test-host/", serverUrl.DefaultValue);
-    }
-
-    [Theory]
-    [InlineData("PUT")]
-    [InlineData("POST")]
-    [InlineData("GET")]
-    public void ItShouldAddServerUrlParameterWithDefaultValueFromOverrideParameter(string method)
-    {
-        //Arrange
-        var payload = CreateTestJsonPayload();
-
-        var operation = CreateTestOperation(method, payload);
-
-        //Act
-        var parameters = operation.GetParameters(serverUrlOverride: new Uri("https://fake-random-test-host"));
-
-        //Assert
-        Assert.NotNull(parameters);
-
-        var serverUrl = parameters.FirstOrDefault(p => p.Name == "server-url");
-        Assert.NotNull(serverUrl);
-        Assert.Equal("string", serverUrl.Type);
-        Assert.False(serverUrl.IsRequired);
-        Assert.Equal("https://fake-random-test-host/", serverUrl.DefaultValue);
-    }
-
     [Theory]
     [InlineData("PUT")]
     [InlineData("POST")]
@@ -87,6 +41,7 @@ public class RestApiOperationExtensionsTests
         Assert.False(contentTypeParam.IsRequired);
         Assert.Equal("Content type of REST API request body.", contentTypeParam.Description);
     }
+
 
     [Theory]
     [InlineData("PUT")]
@@ -117,6 +72,7 @@ public class RestApiOperationExtensionsTests
         Assert.Equal("Content type of REST API request body.", contentTypeProp.Description);
     }
 
+
     [Theory]
     [InlineData("PUT")]
     [InlineData("POST")]
@@ -145,6 +101,7 @@ public class RestApiOperationExtensionsTests
         Assert.False(contentTypeParam.IsRequired);
         Assert.Equal("Content type of REST API request body.", contentTypeParam.Description);
     }
+
 
     [Theory]
     [InlineData("PUT")]
@@ -175,6 +132,7 @@ public class RestApiOperationExtensionsTests
         Assert.Equal("Content type of REST API request body.", contentTypeParam.Description);
     }
 
+
     [Theory]
     [InlineData("PUT")]
     [InlineData("POST")]
@@ -191,7 +149,7 @@ public class RestApiOperationExtensionsTests
         //Assert
         Assert.NotNull(parameters);
 
-        Assert.Equal(6, parameters.Count); //5(props from payload) + 1('server-url' property)
+        Assert.Equal(5, parameters.Count); //5 props from payload
 
         var name = parameters.FirstOrDefault(p => p.Name == "name");
         Assert.NotNull(name);
@@ -224,6 +182,7 @@ public class RestApiOperationExtensionsTests
         Assert.Null(hasMagicWards.Description);
     }
 
+
     [Theory]
     [InlineData("PUT")]
     [InlineData("POST")]
@@ -240,7 +199,7 @@ public class RestApiOperationExtensionsTests
         //Assert
         Assert.NotNull(parameters);
 
-        Assert.Equal(6, parameters.Count); //5(props from payload) + 1('server-url' property)
+        Assert.Equal(5, parameters.Count); //5 props from payload
 
         var name = parameters.FirstOrDefault(p => p.Name == "name");
         Assert.NotNull(name);
@@ -273,6 +232,7 @@ public class RestApiOperationExtensionsTests
         Assert.Null(hasMagicWards.Description);
     }
 
+
     [Theory]
     [InlineData("PUT")]
     [InlineData("POST")]
@@ -285,22 +245,6 @@ public class RestApiOperationExtensionsTests
         Assert.Throws<SKException>(() => operation.GetParameters(addPayloadParamsFromMetadata: true, enablePayloadNamespacing: true));
     }
 
-    [Fact]
-    public void ItShouldSetAlternativeNameToParametersForGetOperation()
-    {
-        //Arrange
-        var operation = CreateTestOperation("GET");
-
-        //Act
-        var parameters = operation.GetParameters(addPayloadParamsFromMetadata: true);
-
-        //Assert
-        Assert.NotNull(parameters);
-
-        var serverUrlProp = parameters.FirstOrDefault(p => p.Name == "server-url");
-        Assert.NotNull(serverUrlProp);
-        Assert.Equal("server_url", serverUrlProp.AlternativeName);
-    }
 
     [Theory]
     [InlineData("PUT")]
@@ -321,10 +265,6 @@ public class RestApiOperationExtensionsTests
         //Assert
         Assert.NotNull(parameters);
 
-        var serverUrlProp = parameters.FirstOrDefault(p => p.Name == "server-url");
-        Assert.NotNull(serverUrlProp);
-        Assert.Equal("server_url", serverUrlProp.AlternativeName);
-
         var placeProp = parameters.FirstOrDefault(p => p.Name == "place");
         Assert.NotNull(placeProp);
         Assert.Equal("place", placeProp.AlternativeName);
@@ -334,18 +274,20 @@ public class RestApiOperationExtensionsTests
         Assert.Equal("location_latitude", personNameProp.AlternativeName);
     }
 
+
     private static RestApiOperation CreateTestOperation(string method, RestApiOperationPayload? payload = null, Uri? url = null)
     {
         return new RestApiOperation(
-                    id: "fake-id",
-                    serverUrl: url,
-                    path: "fake-path",
-                    method: new HttpMethod(method),
-                    description: "fake-description",
-                    parameters: new List<RestApiOperationParameter>(),
-                    headers: new Dictionary<string, string>(),
-                    payload: payload);
+            id: "fake-id",
+            serverUrl: url,
+            path: "fake-path",
+            method: new HttpMethod(method),
+            description: "fake-description",
+            parameters: new List<RestApiOperationParameter>(),
+            headers: new Dictionary<string, string>(),
+            payload: payload);
     }
+
 
     private static RestApiOperationPayload CreateTestJsonPayload()
     {
@@ -364,6 +306,7 @@ public class RestApiOperationExtensionsTests
 
         return new RestApiOperationPayload("application/json", new[] { name, location, rulingCouncil, population, hasMagicWards });
     }
+
 
     private static RestApiOperationPayload CreateTestTextPayload()
     {

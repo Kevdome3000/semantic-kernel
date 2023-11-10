@@ -1,24 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Functions.OpenAPI.Model;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
-using Microsoft.SemanticKernel.Diagnostics;
+using Diagnostics;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 
 /// <summary>
 /// The REST API operation.
 /// </summary>
 public sealed class RestApiOperation
 {
-    /// <summary>
-    /// An artificial parameter that is added to be able to override REST API operation server url.
-    /// </summary>
-    public const string ServerUrlArgumentName = "server-url";
-
     /// <summary>
     /// An artificial parameter to be used for operation having "text/plain" payload media type.
     /// </summary>
@@ -69,6 +65,7 @@ public sealed class RestApiOperation
     /// </summary>
     public RestApiOperationPayload? Payload { get; }
 
+
     /// <summary>
     /// Creates an instance of a <see cref="RestApiOperation"/> class.
     /// </summary>
@@ -100,6 +97,7 @@ public sealed class RestApiOperation
         this.Payload = payload;
     }
 
+
     /// <summary>
     /// Builds operation Url.
     /// </summary>
@@ -109,12 +107,13 @@ public sealed class RestApiOperation
     /// <returns>The operation Url.</returns>
     public Uri BuildOperationUrl(IDictionary<string, string> arguments, Uri? serverUrlOverride = null, Uri? apiHostUrl = null)
     {
-        var serverUrl = this.GetServerUrl(arguments, serverUrlOverride, apiHostUrl);
+        var serverUrl = this.GetServerUrl(serverUrlOverride, apiHostUrl);
 
         var path = this.ReplacePathParameters(this.Path, arguments);
 
         return new Uri(serverUrl, $"{path.TrimStart('/')}");
     }
+
 
     /// <summary>
     /// Renders operation request headers.
@@ -167,6 +166,7 @@ public sealed class RestApiOperation
         return headers;
     }
 
+
     #region private
 
     /// <summary>
@@ -189,6 +189,7 @@ public sealed class RestApiOperation
 
             //A try to find default value for the parameter
             var parameterMetadata = this.Parameters.First(p => p.Location == RestApiOperationParameterLocation.Path && p.Name == parameterName);
+
             if (parameterMetadata?.DefaultValue == null)
             {
                 throw new SKException($"No argument found for parameter - '{parameterName}' for operation - '{this.Id}'");
@@ -200,25 +201,20 @@ public sealed class RestApiOperation
         return s_urlParameterMatch.Replace(path, ReplaceParameter);
     }
 
+
     /// <summary>
     /// Returns operation server Url.
     /// </summary>
-    /// <param name="arguments">The operation arguments.</param>
     /// <param name="serverUrlOverride">Override for REST API operation server url.</param>
     /// <param name="apiHostUrl">The URL of REST API host.</param>
     /// <returns>The operation server url.</returns>
-    private Uri GetServerUrl(IDictionary<string, string> arguments, Uri? serverUrlOverride, Uri? apiHostUrl)
+    private Uri GetServerUrl(Uri? serverUrlOverride, Uri? apiHostUrl)
     {
         string serverUrlString;
 
         if (serverUrlOverride is not null)
         {
             serverUrlString = serverUrlOverride.AbsoluteUri;
-        }
-        else if (arguments.TryGetValue(ServerUrlArgumentName, out string serverUrlFromArgument))
-        {
-            // Override defined server url - https://api.example.com/v1 by the one from arguments.
-            serverUrlString = serverUrlFromArgument;
         }
         else
         {
@@ -237,7 +233,10 @@ public sealed class RestApiOperation
         return new Uri(serverUrlString);
     }
 
+
     private static readonly Regex s_urlParameterMatch = new(@"\{([\w-]+)\}");
 
     # endregion
+
+
 }

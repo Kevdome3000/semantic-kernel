@@ -5,6 +5,7 @@
 namespace Microsoft.SemanticKernel;
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
@@ -34,6 +35,11 @@ public interface ISKFunction
     /// Function description. The description is used in combination with embeddings when searching relevant functions.
     /// </summary>
     string Description { get; }
+
+    /// <summary>
+    /// Model request settings.
+    /// </summary>
+    IEnumerable<AIRequestSettings> ModelSettings { get; }
 
 
     /// <summary>

@@ -32,14 +32,14 @@ public class OpenAIRequestSettings : AIRequestSettings
     /// The higher the temperature, the more random the completion.
     /// </summary>
     [JsonPropertyName("temperature")]
-    public double Temperature { get; set; } = 0;
+    public double Temperature { get; set; }
 
     /// <summary>
     /// TopP controls the diversity of the completion.
     /// The higher the TopP, the more diverse the completion.
     /// </summary>
     [JsonPropertyName("top_p")]
-    public double TopP { get; set; } = 0;
+    public double TopP { get; set; }
 
     /// <summary>
     /// Number between -2.0 and 2.0. Positive values penalize new tokens
@@ -47,7 +47,7 @@ public class OpenAIRequestSettings : AIRequestSettings
     /// model's likelihood to talk about new topics.
     /// </summary>
     [JsonPropertyName("presence_penalty")]
-    public double PresencePenalty { get; set; } = 0;
+    public double PresencePenalty { get; set; }
 
     /// <summary>
     /// Number between -2.0 and 2.0. Positive values penalize new tokens
@@ -55,7 +55,7 @@ public class OpenAIRequestSettings : AIRequestSettings
     /// the model's likelihood to repeat the same line verbatim.
     /// </summary>
     [JsonPropertyName("frequency_penalty")]
-    public double FrequencyPenalty { get; set; } = 0;
+    public double FrequencyPenalty { get; set; }
 
     /// <summary>
     /// The maximum number of tokens to generate in the completion.
@@ -89,7 +89,7 @@ public class OpenAIRequestSettings : AIRequestSettings
         {
             if (string.IsNullOrEmpty(value))
             {
-                value = OpenAIRequestSettings.DefaultChatSystemPrompt;
+                value = DefaultChatSystemPrompt;
             }
             this._chatSystemPrompt = value;
         }
@@ -106,12 +106,37 @@ public class OpenAIRequestSettings : AIRequestSettings
     /// or the name of a specific function that OpenAI should use to respond to the chat
     /// request. If the latter, this function must exist in <see cref="OpenAIRequestSettings.Functions"/>.
     /// </summary>
-    public string? FunctionCall { get; set; } = null;
+    public string? FunctionCall { get; set; }
 
     /// <summary>
     /// The set of functions to choose from if function calling is enabled by the model.
     /// </summary>
-    public IList<OpenAIFunction>? Functions { get; set; } = null;
+    public IList<OpenAIFunction>? Functions { get; set; }
+
+    /// <summary>
+    /// An object specifying the format that the model must output.
+    /// Setting to <see cref="ChatResponseFormat.Json"/> enables JSON mode,
+    /// which guarantees the message the model generates is valid JSON.
+    /// </summary>
+    /// <remarks>
+    /// Important: When using JSON mode you must still instruct the model to produce JSON yourself via some conversation message,
+    /// for example via your system message. If you don't do this, the model may generate an unending stream of
+    /// whitespace until the generation reaches the token limit, which may take a lot of time and give the appearance
+    /// of a "stuck" request. Also note that the message content may be partial (i.e. cut off) if finish_reason="length",
+    /// which indicates the generation exceeded max_tokens or the conversation exceeded the max context length.
+    /// </remarks>
+    [JsonPropertyName("response_format")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public ResponseFormat? ResponseFormat { get; set; }
+
+    /// <summary>
+    /// This feature is in Beta. If specified, our system will make a best effort to sample deterministically,
+    /// such that repeated requests with the same seed and parameters should return the same result.
+    /// Determinism is not guaranteed, and you should refer to the system_fingerprint response parameter to
+    /// monitor changes in the backend.
+    /// </summary>
+    [JsonPropertyName("seed")]
+    public int? Seed { get; set; }
 
     /// <summary>
     /// Default value for chat system property.
@@ -134,7 +159,7 @@ public class OpenAIRequestSettings : AIRequestSettings
     {
         if (requestSettings is null)
         {
-            return new OpenAIRequestSettings()
+            return new OpenAIRequestSettings
             {
                 MaxTokens = defaultMaxTokens
             };
@@ -159,7 +184,7 @@ public class OpenAIRequestSettings : AIRequestSettings
 
     #region private ================================================================================
 
-    private string _chatSystemPrompt = OpenAIRequestSettings.DefaultChatSystemPrompt;
+    private string _chatSystemPrompt = DefaultChatSystemPrompt;
 
     private static readonly JsonSerializerOptions s_options = CreateOptions();
 
@@ -173,7 +198,7 @@ public class OpenAIRequestSettings : AIRequestSettings
             AllowTrailingCommas = true,
             PropertyNameCaseInsensitive = true,
             ReadCommentHandling = JsonCommentHandling.Skip,
-            Converters = { new OpenAIRequestSettingsConverter() }
+            Converters = { new OpenAIRequestSettingsConverter(), new JsonStringEnumConverter() }
         };
 
         return options;

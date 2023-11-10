@@ -3,9 +3,9 @@
 namespace Microsoft.SemanticKernel.Functions;
 
 using System;
-using System.Collections.Generic;
 using AI;
 using AI.TextCompletion;
+using Orchestration;
 using Services;
 
 
@@ -20,8 +20,8 @@ internal class DelegatingAIServiceSelector : IAIServiceSelector
 
 
     /// <inheritdoc/>
-    public (T?, AIRequestSettings?) SelectAIService<T>(string renderedPrompt, IAIServiceProvider serviceProvider, IReadOnlyList<AIRequestSettings>? modelSettings) where T : IAIService
+    public (T?, AIRequestSettings?) SelectAIService<T>(SKContext context, ISKFunction skfunction) where T : IAIService
     {
-        return ((T?)this.ServiceFactory?.Invoke() ?? serviceProvider.GetService<T>(null), this.RequestSettings ?? modelSettings?[0]);
+        return ((T?)this.ServiceFactory?.Invoke() ?? context.ServiceProvider.GetService<T>(null), this.RequestSettings ?? skfunction.RequestSettings);
     }
 }

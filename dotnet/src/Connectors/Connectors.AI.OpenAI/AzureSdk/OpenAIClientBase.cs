@@ -81,7 +81,7 @@ public abstract class OpenAIClientBase : ClientBase
     /// <param name="callerMemberName">Caller member name. Populated automatically by runtime.</param>
     protected private void LogActionDetails([CallerMemberName] string? callerMemberName = default)
     {
-        Logger.LogInformation("Action: {Action}. OpenAI Model ID: {ModelId}.", callerMemberName, ModelId);
+        Logger.LogInformation("Action: {Action}. OpenAI Model ID: {ModelId}", callerMemberName, ModelId);
     }
 
 

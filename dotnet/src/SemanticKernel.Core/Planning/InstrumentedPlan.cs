@@ -3,6 +3,7 @@
 namespace Microsoft.SemanticKernel.Planning;
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
@@ -28,6 +29,9 @@ internal sealed class InstrumentedPlan : ISKFunction
 
     /// <inheritdoc/>
     public string Description => this._plan.Description;
+
+    /// <inheritdoc/>
+    public IEnumerable<AIRequestSettings> ModelSettings => this._plan.ModelSettings;
 
 
     /// <summary>

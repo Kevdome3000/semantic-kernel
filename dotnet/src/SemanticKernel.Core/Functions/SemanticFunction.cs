@@ -39,7 +39,10 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
     public string PluginName { get; }
 
     /// <inheritdoc/>
-    public string Description { get; }
+    public string Description => this._promptTemplateConfig.Description;
+
+    /// <inheritdoc/>
+    public IEnumerable<AIRequestSettings> ModelSettings => this._promptTemplateConfig.ModelSettings.AsReadOnly();
 
     /// <summary>
     /// List of function parameters
@@ -68,18 +71,13 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
         Verify.NotNull(promptTemplateConfig);
         Verify.NotNull(promptTemplate);
 
-        var func = new SemanticFunction(
+        return new SemanticFunction(
             template: promptTemplate,
-            description: promptTemplateConfig.Description,
+            promptTemplateConfig: promptTemplateConfig,
             pluginName: pluginName,
             functionName: functionName,
             loggerFactory: loggerFactory
-        )
-        {
-            _modelSettings = promptTemplateConfig.ModelSettings
-        };
-
-        return func;
+        );
     }
 
 
@@ -126,9 +124,9 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
 
     internal SemanticFunction(
         IPromptTemplate template,
+        PromptTemplateConfig promptTemplateConfig,
         string pluginName,
         string functionName,
-        string description,
         ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(template);
@@ -138,13 +136,13 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
         _logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(SemanticFunction)) : NullLogger.Instance;
 
         _promptTemplate = template;
+        this._promptTemplateConfig = promptTemplateConfig;
         Verify.ParametersUniqueness(Parameters);
 
-        Name = functionName;
-        PluginName = pluginName;
-        Description = description;
+        this.Name = functionName;
+        this.PluginName = pluginName;
 
-        _view = new(() => new(functionName, pluginName, description, Parameters));
+        _view = new(() => new(functionName, pluginName, promptTemplateConfig.Description, Parameters));
     }
 
 
@@ -154,7 +152,7 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
     private readonly ILogger _logger;
     private IAIServiceSelector? _serviceSelector;
-    private List<AIRequestSettings>? _modelSettings;
+    private readonly PromptTemplateConfig _promptTemplateConfig;
     private readonly Lazy<FunctionView> _view;
     private readonly IPromptTemplate _promptTemplate;
 
@@ -192,9 +190,10 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
 
         try
         {
-            string renderedPrompt = await _promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
-            var serviceSelector = _serviceSelector ?? context.ServiceSelector;
-            (var textCompletion, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(renderedPrompt, context.ServiceProvider, _modelSettings);
+            string renderedPrompt = await this._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
+
+            var serviceSelector = this._serviceSelector ?? context.ServiceSelector;
+            (var textCompletion, var defaultRequestSettings) = serviceSelector.SelectAIService<ITextCompletion>(context, this);
             Verify.NotNull(textCompletion);
 
             CallFunctionInvoking(context, renderedPrompt);
@@ -314,7 +313,7 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
 
     /// <inheritdoc/>
     [Obsolete("Use ISKFunction.ModelSettings instead. This will be removed in a future release.")]
-    public AIRequestSettings? RequestSettings => _modelSettings?.FirstOrDefault();
+    public AIRequestSettings? RequestSettings => this._promptTemplateConfig.ModelSettings?.FirstOrDefault<AIRequestSettings>();
 
 
     /// <inheritdoc/>
