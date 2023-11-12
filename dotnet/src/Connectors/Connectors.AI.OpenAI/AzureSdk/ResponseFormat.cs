@@ -11,8 +11,7 @@ public sealed class ResponseFormat
 
     [JsonInclude]
     [JsonPropertyName("type")]
-
-    public ChatResponseFormat Type { get; private set; }
+    public ChatResponseFormat Type { get; init; }
 
     public static implicit operator ChatResponseFormat(ResponseFormat format) => format.Type;
 
