@@ -20,8 +20,8 @@ internal sealed class TextStreamingResult : ITextStreamingResult, ITextResult
 
     public TextStreamingResult(StreamingCompletions resultData, StreamingChoice choice)
     {
-        this.ModelResult = new ModelResult(resultData);
-        this._choice = choice;
+        ModelResult = new ModelResult(resultData);
+        _choice = choice;
     }
 
 
@@ -29,7 +29,7 @@ internal sealed class TextStreamingResult : ITextStreamingResult, ITextResult
     {
         var fullMessage = new StringBuilder();
 
-        await foreach (var message in this._choice.GetTextStreaming(cancellationToken).ConfigureAwait(false))
+        await foreach (var message in _choice.GetTextStreaming(cancellationToken).ConfigureAwait(false))
         {
             fullMessage.Append(message);
         }
@@ -38,8 +38,5 @@ internal sealed class TextStreamingResult : ITextStreamingResult, ITextResult
     }
 
 
-    public IAsyncEnumerable<string> GetCompletionStreamingAsync(CancellationToken cancellationToken = default)
-    {
-        return this._choice.GetTextStreaming(cancellationToken);
-    }
+    public IAsyncEnumerable<string> GetCompletionStreamingAsync(CancellationToken cancellationToken = default) => _choice.GetTextStreaming(cancellationToken);
 }

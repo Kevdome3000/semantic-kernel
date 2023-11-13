@@ -61,7 +61,7 @@ public class OpenAIFunction
     /// If there is no plugin name, this is the same as the function name.
     /// </summary>
     public string FullyQualifiedName =>
-        this.PluginName.IsNullOrEmpty() ? this.FunctionName : string.Join(NameSeparator, this.PluginName, this.FunctionName);
+        PluginName.IsNullOrEmpty() ? FunctionName : string.Join(NameSeparator, PluginName, FunctionName);
 
     /// <summary>
     /// Description of the function
@@ -84,14 +84,14 @@ public class OpenAIFunction
 
         var paramProperties = new Dictionary<string, object>();
 
-        foreach (var param in this.Parameters)
+        foreach (var param in Parameters)
         {
             paramProperties.Add(
                 param.Name,
                 new
                 {
                     type = param.Type,
-                    description = param.Description,
+                    description = param.Description
                 });
 
             if (param.IsRequired)
@@ -101,15 +101,15 @@ public class OpenAIFunction
         }
         return new FunctionDefinition
         {
-            Name = this.FullyQualifiedName,
-            Description = this.Description,
+            Name = FullyQualifiedName,
+            Description = Description,
             Parameters = BinaryData.FromObjectAsJson(
                 new
                 {
                     type = "object",
                     properties = paramProperties,
-                    required = requiredParams,
-                }),
+                    required = requiredParams
+                })
         };
     }
 }

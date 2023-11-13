@@ -2,7 +2,6 @@
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
-using System;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using Azure.AI.OpenAI;
@@ -87,18 +86,8 @@ public abstract class OpenAIClientBase : ClientBase
     /// <param name="callerMemberName">Caller member name. Populated automatically by runtime.</param>
     protected private void LogActionDetails([CallerMemberName] string? callerMemberName = default)
     {
-        Logger.LogInformation("Action: {Action}. OpenAI Model ID: {ModelId}.", callerMemberName, DeploymentOrModelName);
+        Logger.LogInformation("Action: {Action}. OpenAI Model ID: {ModelId}", callerMemberName, DeploymentOrModelName);
     }
-
-
-    /// <summary>
-    ///  Checks if the model supports OpenAI functions.
-    /// </summary>
-    /// <returns></returns>
-    protected bool SupportsOpenAIFunctions() => ModelId.StartsWith("gpt-4-0613", StringComparison.OrdinalIgnoreCase) ||
-                                                ModelId.StartsWith("gpt-4-32k-0613", StringComparison.OrdinalIgnoreCase) ||
-                                                ModelId.StartsWith("gpt-3.5-turbo-0613", StringComparison.OrdinalIgnoreCase) ||
-                                                ModelId.StartsWith("gpt-3.5-turbo-16k-0613", StringComparison.OrdinalIgnoreCase);
 
 
     /// <summary>
@@ -113,14 +102,14 @@ public abstract class OpenAIClientBase : ClientBase
             Diagnostics =
             {
                 IsTelemetryEnabled = Telemetry.IsTelemetryEnabled,
-                ApplicationId = Telemetry.HttpUserAgent,
+                ApplicationId = Telemetry.HttpUserAgent
             }
         };
 
         if (httpClient != null)
         {
             options.Transport = new HttpClientTransport(httpClient);
-            options.RetryPolicy = new RetryPolicy(maxRetries: 0); //Disabling Azure SDK retry policy to use the one provided by the custom HTTP client.
+            options.RetryPolicy = new RetryPolicy(0); //Disabling Azure SDK retry policy to use the one provided by the custom HTTP client.
         }
 
         return options;

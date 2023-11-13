@@ -36,7 +36,7 @@ public static class FunctionViewExtensions
             FunctionName = functionView.Name,
             PluginName = functionView.PluginName,
             Description = functionView.Description,
-            Parameters = openAIParams,
+            Parameters = openAIParams
         };
     }
 }

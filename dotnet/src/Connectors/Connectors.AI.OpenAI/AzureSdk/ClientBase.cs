@@ -57,7 +57,7 @@ public abstract class ClientBase
     /// <summary>
     /// Storage for AI service attributes.
     /// </summary>
-    private protected Dictionary<string, string> InternalAttributes = new();
+    protected private Dictionary<string, string> InternalAttributes = new();
 
     /// <summary>
     /// Instance of <see cref="Meter"/> for metrics.
@@ -297,13 +297,10 @@ public abstract class ClientBase
     /// </summary>
     /// <param name="chatHistory">Instance of <see cref="ChatHistory"/>.</param>
     /// <returns>Chat object</returns>
-    private protected static OpenAIChatHistory InternalCreateNewChat(ChatHistory chatHistory)
-    {
-        return new OpenAIChatHistory(chatHistory);
-    }
+    protected private static OpenAIChatHistory InternalCreateNewChat(ChatHistory chatHistory) => new(chatHistory);
 
 
-    private protected async Task<IReadOnlyList<ITextResult>> InternalGetChatResultsAsTextAsync(
+    protected private async Task<IReadOnlyList<ITextResult>> InternalGetChatResultsAsTextAsync(
         string text,
         AIRequestSettings? requestSettings,
         CancellationToken cancellationToken = default)
@@ -338,7 +335,7 @@ public abstract class ClientBase
     {
         if (!string.IsNullOrEmpty(value))
         {
-            this.InternalAttributes.Add(key, value!);
+            InternalAttributes.Add(key, value!);
         }
     }
 

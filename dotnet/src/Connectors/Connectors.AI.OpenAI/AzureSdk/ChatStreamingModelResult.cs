@@ -35,9 +35,9 @@ public class ChatStreamingModelResult
     /// <param name="choiceData"> A choice object to populate the fields relative to the resulting choice.</param>
     internal ChatStreamingModelResult(StreamingChatCompletions completionsData, StreamingChatChoice choiceData)
     {
-        this.Id = completionsData.Id;
-        this.Created = completionsData.Created;
-        this.PromptFilterResults = completionsData.PromptFilterResults;
-        this.Choice = choiceData;
+        Id = completionsData.Id;
+        Created = completionsData.Created;
+        PromptFilterResults = completionsData.PromptFilterResults;
+        Choice = choiceData;
     }
 }

@@ -35,7 +35,7 @@ public class OpenAIFunctionResponse
     /// If there is no plugin name, this is the same as the function name.
     /// </summary>
     public string FullyQualifiedName =>
-        this.PluginName.IsNullOrEmpty() ? this.FunctionName : $"{this.PluginName}{OpenAIFunction.NameSeparator}{this.FunctionName}";
+        PluginName.IsNullOrEmpty() ? FunctionName : $"{PluginName}{OpenAIFunction.NameSeparator}{FunctionName}";
 
 
     /// <summary>
@@ -49,7 +49,7 @@ public class OpenAIFunctionResponse
 
         if (functionCall.Name.Contains(OpenAIFunction.NameSeparator))
         {
-            var parts = functionCall.Name.Split(new string[] { OpenAIFunction.NameSeparator }, StringSplitOptions.RemoveEmptyEntries);
+            var parts = functionCall.Name.Split(new[] { OpenAIFunction.NameSeparator }, StringSplitOptions.RemoveEmptyEntries);
             response.PluginName = parts[0];
             response.FunctionName = parts[1];
         }

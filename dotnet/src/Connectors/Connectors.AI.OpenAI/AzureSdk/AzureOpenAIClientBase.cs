@@ -118,14 +118,14 @@ public abstract class AzureOpenAIClientBase : ClientBase
             Diagnostics =
             {
                 IsTelemetryEnabled = Telemetry.IsTelemetryEnabled,
-                ApplicationId = Telemetry.HttpUserAgent,
+                ApplicationId = Telemetry.HttpUserAgent
             }
         };
 
         if (httpClient != null)
         {
             options.Transport = new HttpClientTransport(httpClient);
-            options.RetryPolicy = new RetryPolicy(maxRetries: 0); //Disabling Azure SDK retry policy to use the one provided by the custom HTTP client.
+            options.RetryPolicy = new RetryPolicy(0); //Disabling Azure SDK retry policy to use the one provided by the custom HTTP client.
         }
 
         return options;

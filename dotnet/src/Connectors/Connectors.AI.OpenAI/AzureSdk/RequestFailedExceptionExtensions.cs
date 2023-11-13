@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+
 using System.Net;
 using Azure;
-using Microsoft.SemanticKernel.Diagnostics;
+using Diagnostics;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
 /// <summary>
 /// Provides extension methods for the <see cref="RequestFailedException"/> class.
@@ -27,7 +28,9 @@ public static class RequestFailedExceptionExtensions
             responseContent = exception.GetRawResponse()?.Content?.ToString();
         }
 #pragma warning disable CA1031 // Do not catch general exception types
-        catch { } // We want to suppress any exceptions that occur while reading the content, ensuring that an HttpOperationException is thrown instead.
+        catch
+        {
+        } // We want to suppress any exceptions that occur while reading the content, ensuring that an HttpOperationException is thrown instead.
 #pragma warning restore CA1031
 
         return new HttpOperationException(
