@@ -13,6 +13,7 @@ using Diagnostics;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
 using ImageGeneration;
+using Services;
 using Text;
 using TextEmbedding;
 
@@ -21,15 +22,27 @@ using TextEmbedding;
 public abstract class OpenAIClientBase
 {
     /// <summary>
+    /// Key used to store the organizarion in the <see cref="IAIService.Attributes"/> dictionary.
+    /// </summary>
+    public const string OrganizationKey = "Organization";
+
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIClientBase"/> class.
     /// </summary>
     /// <param name="httpClient">The HttpClient used for making HTTP requests.</param>
     /// <param name="loggerFactory">The ILoggerFactory used to create a logger for logging. If null, no logging will be performed.</param>
     protected private OpenAIClientBase(HttpClient? httpClient, ILoggerFactory? loggerFactory = null)
     {
-        this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(this.GetType()) : NullLogger.Instance;
+        _httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, false);
+        _logger = loggerFactory is not null ? loggerFactory.CreateLogger(GetType()) : NullLogger.Instance;
     }
+
+
+    /// <summary>
+    /// Storage for AI service attributes.
+    /// </summary>
+    protected private Dictionary<string, string> InternalAttributes = new();
 
 
     /// <summary>Adds headers to use for OpenAI HTTP requests.</summary>
@@ -51,7 +64,7 @@ public abstract class OpenAIClientBase
         string requestBody,
         CancellationToken cancellationToken = default)
     {
-        var result = await this.ExecutePostRequestAsync<TextEmbeddingResponse>(url, requestBody, cancellationToken).ConfigureAwait(false);
+        var result = await ExecutePostRequestAsync<TextEmbeddingResponse>(url, requestBody, cancellationToken).ConfigureAwait(false);
 
         if (result.Embeddings is not { Count: >= 1 })
         {
@@ -76,8 +89,22 @@ public abstract class OpenAIClientBase
         Func<ImageGenerationResponse.Image, string> extractResponseFunc,
         CancellationToken cancellationToken = default)
     {
-        var result = await this.ExecutePostRequestAsync<ImageGenerationResponse>(url, requestBody, cancellationToken).ConfigureAwait(false);
+        var result = await ExecutePostRequestAsync<ImageGenerationResponse>(url, requestBody, cancellationToken).ConfigureAwait(false);
         return result.Images.Select(extractResponseFunc).ToList();
+    }
+
+
+    /// <summary>
+    /// Add attribute to the internal attribute dictionary if the value is not null or empty.
+    /// </summary>
+    /// <param name="key">Attribute key</param>
+    /// <param name="value">Attribute value</param>
+    protected private void AddAttribute(string key, string? value)
+    {
+        if (!string.IsNullOrEmpty(value))
+        {
+            InternalAttributes.Add(key, value!);
+        }
     }
 
 
@@ -97,9 +124,9 @@ public abstract class OpenAIClientBase
     protected private async Task<T> ExecutePostRequestAsync<T>(string url, string requestBody, CancellationToken cancellationToken = default)
     {
         using var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
-        using var response = await this.ExecuteRequestAsync(url, HttpMethod.Post, content, cancellationToken).ConfigureAwait(false);
-        string responseJson = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
-        T result = this.JsonDeserialize<T>(responseJson);
+        using var response = await ExecuteRequestAsync(url, HttpMethod.Post, content, cancellationToken).ConfigureAwait(false);
+        var responseJson = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
+        var result = JsonDeserialize<T>(responseJson);
         return result;
     }
 
@@ -121,16 +148,16 @@ public abstract class OpenAIClientBase
     {
         using var request = new HttpRequestMessage(method, url);
 
-        this.AddRequestHeaders(request);
+        AddRequestHeaders(request);
 
         if (content != null)
         {
             request.Content = content;
         }
 
-        var response = await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
+        var response = await _httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
 
-        this._logger.LogDebug("HTTP response: {0} {1}", (int)response.StatusCode, response.StatusCode.ToString("G"));
+        _logger.LogDebug("HTTP response: {0} {1}", (int)response.StatusCode, response.StatusCode.ToString("G"));
 
         return response;
     }

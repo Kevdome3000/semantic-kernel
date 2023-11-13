@@ -11,6 +11,7 @@ using Azure.Core;
 using Azure.Core.Pipeline;
 using Diagnostics;
 using Extensions.Logging;
+using Services;
 
 
 /// <summary>
@@ -18,6 +19,11 @@ using Extensions.Logging;
 /// </summary>
 public abstract class AzureOpenAIClientBase : ClientBase
 {
+    /// <summary>
+    /// Key used to store the deployment name in the <see cref="IAIService.Attributes"/> dictionary.
+    /// </summary>
+    public const string DeploymentNameKey = "DeploymentName";
+
     /// <summary>
     /// OpenAI / Azure OpenAI Client
     /// </summary>
@@ -27,53 +33,53 @@ public abstract class AzureOpenAIClientBase : ClientBase
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureOpenAIClientBase"/> class using API Key authentication.
     /// </summary>
-    /// <param name="modelId">Azure OpenAI model ID or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     protected private AzureOpenAIClientBase(
-        string modelId,
+        string deploymentName,
         string endpoint,
         string apiKey,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null) : base(loggerFactory)
     {
-        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(deploymentName);
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
         Verify.NotNullOrWhiteSpace(apiKey);
 
         var options = GetClientOptions(httpClient);
 
-        this.ModelId = modelId;
-        this.Client = new OpenAIClient(new Uri(endpoint), new AzureKeyCredential(apiKey), options);
+        DeploymentOrModelName = deploymentName;
+        Client = new OpenAIClient(new Uri(endpoint), new AzureKeyCredential(apiKey), options);
     }
 
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureOpenAIClientBase"/> class supporting AAD authentication.
     /// </summary>
-    /// <param name="modelId">Azure OpenAI model ID or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="credential">Token credential, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     protected private AzureOpenAIClientBase(
-        string modelId,
+        string deploymentName,
         string endpoint,
         TokenCredential credential,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null) : base(loggerFactory)
     {
-        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(deploymentName);
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
 
         var options = GetClientOptions(httpClient);
 
-        this.ModelId = modelId;
-        this.Client = new OpenAIClient(new Uri(endpoint), credential, options);
+        DeploymentOrModelName = deploymentName;
+        Client = new OpenAIClient(new Uri(endpoint), credential, options);
     }
 
 
@@ -82,19 +88,21 @@ public abstract class AzureOpenAIClientBase : ClientBase
     /// Note: instances created this way might not have the default diagnostics settings,
     /// it's up to the caller to configure the client.
     /// </summary>
-    /// <param name="modelId">Azure OpenAI model ID or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     protected private AzureOpenAIClientBase(
-        string modelId,
+        string deploymentName,
         OpenAIClient openAIClient,
         ILoggerFactory? loggerFactory = null) : base(loggerFactory)
     {
-        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(deploymentName);
         Verify.NotNull(openAIClient);
 
-        this.ModelId = modelId;
-        this.Client = openAIClient;
+        DeploymentOrModelName = deploymentName;
+        Client = openAIClient;
+
+        AddAttribute(DeploymentNameKey, deploymentName);
     }
 
 
@@ -130,6 +138,6 @@ public abstract class AzureOpenAIClientBase : ClientBase
     /// <param name="callerMemberName">Caller member name. Populated automatically by runtime.</param>
     protected private void LogActionDetails([CallerMemberName] string? callerMemberName = default)
     {
-        this.Logger.LogInformation("Action: {Action}. Azure OpenAI Deployment Name: {DeploymentName}.", callerMemberName, this.ModelId);
+        Logger.LogInformation("Action: {Action}. Azure OpenAI Deployment Name: {DeploymentName}.", callerMemberName, DeploymentOrModelName);
     }
 }

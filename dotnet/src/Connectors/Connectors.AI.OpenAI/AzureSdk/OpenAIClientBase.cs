@@ -10,6 +10,7 @@ using Azure.Core;
 using Azure.Core.Pipeline;
 using Diagnostics;
 using Extensions.Logging;
+using Services;
 
 
 /// <summary>
@@ -17,6 +18,11 @@ using Extensions.Logging;
 /// </summary>
 public abstract class OpenAIClientBase : ClientBase
 {
+    /// <summary>
+    /// Attribute name used to store the orhanization in the <see cref="IAIService.Attributes"/> dictionary.
+    /// </summary>
+    public const string OrganizationKey = "Organization";
+
     /// <summary>
     /// OpenAI / Azure OpenAI Client
     /// </summary>
@@ -41,7 +47,7 @@ public abstract class OpenAIClientBase : ClientBase
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        ModelId = modelId;
+        DeploymentOrModelName = modelId;
 
         var options = GetClientOptions(httpClient);
 
@@ -70,7 +76,7 @@ public abstract class OpenAIClientBase : ClientBase
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
-        ModelId = modelId;
+        DeploymentOrModelName = modelId;
         Client = openAIClient;
     }
 
@@ -81,7 +87,7 @@ public abstract class OpenAIClientBase : ClientBase
     /// <param name="callerMemberName">Caller member name. Populated automatically by runtime.</param>
     protected private void LogActionDetails([CallerMemberName] string? callerMemberName = default)
     {
-        Logger.LogInformation("Action: {Action}. OpenAI Model ID: {ModelId}", callerMemberName, ModelId);
+        Logger.LogInformation("Action: {Action}. OpenAI Model ID: {ModelId}.", callerMemberName, DeploymentOrModelName);
     }
 
 

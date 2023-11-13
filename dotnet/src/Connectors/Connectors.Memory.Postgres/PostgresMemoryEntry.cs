@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Memory.Postgres;
+
 using System;
 using Pgvector;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Postgres;
 
 /// <summary>
 /// A postgres memory entry.
@@ -16,7 +17,7 @@ public record struct PostgresMemoryEntry
     public string Key { get; set; }
 
     /// <summary>
-    /// Metadata as a string.
+    /// Attributes as a string.
     /// </summary>
     public string MetadataString { get; set; }
 

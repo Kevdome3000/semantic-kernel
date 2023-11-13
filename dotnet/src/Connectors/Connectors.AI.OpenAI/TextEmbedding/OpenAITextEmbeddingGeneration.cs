@@ -1,15 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
+
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+using AzureSdk;
+using Extensions.Logging;
+using SemanticKernel.AI.Embeddings;
+using Services;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 
 /// <summary>
 /// OpenAI text embedding service.
@@ -32,7 +34,13 @@ public sealed class OpenAITextEmbeddingGeneration : OpenAIClientBase, ITextEmbed
         ILoggerFactory? loggerFactory = null
     ) : base(modelId, apiKey, organization, httpClient, loggerFactory)
     {
+        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
     }
+
+
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
+
 
     /// <summary>
     /// Generates an embedding from the given <paramref name="data"/>.

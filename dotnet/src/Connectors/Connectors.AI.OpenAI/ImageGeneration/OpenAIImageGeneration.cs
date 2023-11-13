@@ -3,6 +3,7 @@
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Threading;
@@ -52,11 +53,17 @@ public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         Verify.NotNullOrWhiteSpace(apiKey);
         this._authorizationHeaderValue = $"Bearer {apiKey}";
         this._organizationHeaderValue = organization;
+
+        this.AddAttribute(OrganizationKey, organization!);
     }
 
 
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
+
+
     /// <summary>Adds headers to use for OpenAI HTTP requests.</summary>
-    protected private override void AddRequestHeaders(HttpRequestMessage request)
+    private protected override void AddRequestHeaders(HttpRequestMessage request)
     {
         base.AddRequestHeaders(request);
 

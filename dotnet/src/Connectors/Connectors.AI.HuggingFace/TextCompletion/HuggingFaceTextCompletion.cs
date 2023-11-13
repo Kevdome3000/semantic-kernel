@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Diagnostics;
 using SemanticKernel.AI;
 using SemanticKernel.AI.TextCompletion;
+using Services;
 
 
 /// <summary>
@@ -26,6 +27,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
     private readonly string? _endpoint;
     private readonly HttpClient _httpClient;
     private readonly string? _apiKey;
+    private readonly Dictionary<string, string> _attributes = new();
 
 
     /// <summary>
@@ -39,8 +41,10 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
         Verify.NotNull(endpoint);
         Verify.NotNullOrWhiteSpace(model);
 
-        this._endpoint = endpoint.AbsoluteUri;
         this._model = model;
+        this._endpoint = endpoint.AbsoluteUri;
+        this._attributes.Add(IAIServiceExtensions.ModelIdKey, this._model);
+        this._attributes.Add(IAIServiceExtensions.EndpointKey, this._endpoint);
 
         this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
     }
@@ -63,7 +67,13 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
         this._apiKey = apiKey;
         this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
         this._endpoint = endpoint;
+        this._attributes.Add(IAIServiceExtensions.ModelIdKey, this._model);
+        this._attributes.Add(IAIServiceExtensions.EndpointKey, this._endpoint ?? HuggingFaceApiEndpoint);
     }
+
+
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, string> Attributes => this._attributes;
 
 
     /// <inheritdoc/>

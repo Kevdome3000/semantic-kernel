@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Services;
+
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
-namespace Microsoft.SemanticKernel.Services;
 
 /// <summary>
 /// Provides named services of type <typeparamref name="TService"/>. Allows for the registration and retrieval of services by name.
@@ -16,6 +18,7 @@ public class NamedServiceProvider<TService> : INamedServiceProvider<TService>
 
     // A dictionary that maps a service type to the name of the default service
     private readonly Dictionary<Type, string> _defaultIds;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="NamedServiceProvider{TService}"/> class.
@@ -30,11 +33,13 @@ public class NamedServiceProvider<TService> : INamedServiceProvider<TService>
         this._defaultIds = defaultIds;
     }
 
+
     /// <inheritdoc/>
     public T? GetService<T>(string? name = null) where T : TService
     {
         // Return the service, casting or invoking the factory if needed
         var factory = this.GetServiceFactory<T>(name);
+
         if (factory is Func<T>)
         {
             return factory.Invoke();
@@ -43,11 +48,13 @@ public class NamedServiceProvider<TService> : INamedServiceProvider<TService>
         return default;
     }
 
+
     /// <inheritdoc/>
     private string? GetDefaultServiceName<T>() where T : TService
     {
         // Returns the name of the default service for the given type, or null if none
         var type = typeof(T);
+
         if (this._defaultIds.TryGetValue(type, out var name))
         {
             return name;
@@ -55,6 +62,37 @@ public class NamedServiceProvider<TService> : INamedServiceProvider<TService>
 
         return null;
     }
+
+
+    /// <inheritdoc/>
+    public ICollection<T> GetServices<T>() where T : TService
+    {
+        if (typeof(T) == typeof(TService))
+        {
+            return this.GetAllServices<T>();
+        }
+
+        if (this._services.TryGetValue(typeof(T), out var namedServices))
+        {
+            return namedServices.Values.Select(f => f.Invoke()).Cast<T>().ToList();
+        }
+
+        return Array.Empty<T>();
+    }
+
+
+    private HashSet<T> GetAllServices<T>()
+    {
+        HashSet<T> services = new();
+
+        foreach (var namedServices in this._services.Values)
+        {
+            services.UnionWith(namedServices.Values.Select(f => f.Invoke()).Cast<T>());
+        }
+
+        return services;
+    }
+
 
     private Func<T>? GetServiceFactory<T>(string? name = null) where T : TService
     {
@@ -65,6 +103,7 @@ public class NamedServiceProvider<TService> : INamedServiceProvider<TService>
 
             // If the name is not specified, try to load the default factory
             name ??= this.GetDefaultServiceName<T>();
+
             if (name != null)
             {
                 // Check if there is a service registered with the given name

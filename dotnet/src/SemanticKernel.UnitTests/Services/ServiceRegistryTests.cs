@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.UnitTests.Services;
+
+using System.Collections.Generic;
 using Microsoft.SemanticKernel.Services;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Services;
 
 /// <summary>
 /// Unit tests of <see cref="AIServiceCollection"/>.
@@ -26,6 +28,7 @@ public class ServiceRegistryTests
         Assert.Same(service, result);
     }
 
+
     [Fact]
     public void ItCanSetAndRetrieveServiceInstanceWithName()
     {
@@ -44,6 +47,7 @@ public class ServiceRegistryTests
         Assert.Same(service2, provider.GetService<IAIService>("bar"));
     }
 
+
     [Fact]
     public void ItCanSetAndRetrieveServiceFactory()
     {
@@ -58,6 +62,7 @@ public class ServiceRegistryTests
         // Assert
         Assert.Same(service, provider.GetService<IAIService>());
     }
+
 
     [Fact]
     public void ItCanSetAndRetrieveServiceFactoryWithName()
@@ -77,6 +82,7 @@ public class ServiceRegistryTests
         Assert.Same(service2, provider.GetService<IAIService>("bar"));
     }
 
+
     [Fact]
     public void ItCanSetAndRetrieveServiceFactoryWithServiceProvider()
     {
@@ -91,6 +97,7 @@ public class ServiceRegistryTests
         // Assert
         Assert.Same(service, provider.GetService<IAIService>());
     }
+
 
     [Fact]
     public void ItCanSetAndRetrieveServiceFactoryWithServiceProviderAndName()
@@ -110,6 +117,7 @@ public class ServiceRegistryTests
         Assert.Same(service2, provider.GetService<IAIService>("bar"));
     }
 
+
     [Fact]
     public void ItCanSetDefaultService()
     {
@@ -126,6 +134,7 @@ public class ServiceRegistryTests
         // Assert
         Assert.Same(service2, provider.GetService<IAIService>());
     }
+
 
     [Fact]
     public void ItCanSetDefaultServiceFactory()
@@ -144,6 +153,7 @@ public class ServiceRegistryTests
         Assert.Same(service2, provider.GetService<IAIService>());
     }
 
+
     [Fact]
     public void ItCanSetDefaultServiceFactoryWithServiceProvider()
     {
@@ -160,6 +170,7 @@ public class ServiceRegistryTests
         // Assert
         Assert.Same(service2, provider.GetService<IAIService>());
     }
+
 
     [Fact]
     public void ItCanTryGetService()
@@ -178,6 +189,7 @@ public class ServiceRegistryTests
         Assert.Same(service, retrieved);
     }
 
+
     [Fact]
     public void ItCanTryGetServiceWithName()
     {
@@ -194,6 +206,7 @@ public class ServiceRegistryTests
         Assert.True(result);
         Assert.Same(service, retrieved);
     }
+
 
     [Fact]
     public void ItReturnsFalseIfTryGetServiceWithInvalidName()
@@ -212,8 +225,12 @@ public class ServiceRegistryTests
         Assert.Null(retrieved);
     }
 
+
     // A test service implementation
     private sealed class TestService : IAIService
     {
+        public string? ModelId { get; }
+
+        public IReadOnlyDictionary<string, string> Attributes => new Dictionary<string, string>();
     }
 }

@@ -73,7 +73,7 @@ public static class Example42_KernelBuilder
         var loggerFactory = NullLoggerFactory.Instance;
         var memoryStorage = new VolatileMemoryStore();
         var textEmbeddingGenerator = new AzureOpenAITextEmbeddingGeneration(
-            modelId: azureOpenAIEmbeddingDeployment,
+            deploymentName: azureOpenAIEmbeddingDeployment,
             endpoint: azureOpenAIEndpoint,
             apiKey: azureOpenAIKey,
             loggerFactory: loggerFactory);
@@ -89,11 +89,11 @@ public static class Example42_KernelBuilder
         var aiServices = new AIServiceCollection();
 
         ITextCompletion Factory() => new AzureOpenAIChatCompletion(
-            modelId: azureOpenAIChatCompletionDeployment,
+            deploymentName: azureOpenAIChatCompletionDeployment,
             endpoint: azureOpenAIEndpoint,
             apiKey: azureOpenAIKey,
-            httpClient,
-            loggerFactory);
+            httpClient: httpClient,
+            loggerFactory: loggerFactory);
 
         aiServices.SetService("foo", Factory);
         IAIServiceProvider aiServiceProvider = aiServices.Build();

@@ -7,14 +7,12 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Diagnostics;
 using Events;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
-using Functions;
 using Http;
 using Memory;
 using Orchestration;
@@ -40,7 +38,7 @@ public sealed class Kernel : IKernel, IDisposable
     public ILoggerFactory LoggerFactory { get; }
 
     /// <inheritdoc/>
-    public IReadOnlyFunctionCollection Functions => this._functionCollection;
+    public IReadOnlyFunctionCollection Functions => _functionCollection;
 
     /// <summary>
     /// Return a new instance of the kernel builder, used to build and configure kernel instances.
@@ -79,7 +77,7 @@ public sealed class Kernel : IKernel, IDisposable
         ILoggerFactory? loggerFactory,
         IAIServiceSelector? serviceSelector = null) : this(functionCollection, aiServiceProvider, memory, httpHandlerFactory, loggerFactory, serviceSelector)
     {
-        this.PromptTemplateEngine = promptTemplateEngine ?? this.CreateDefaultPromptTemplateEngine(loggerFactory);
+        PromptTemplateEngine = promptTemplateEngine;
     }
 
 
@@ -102,14 +100,14 @@ public sealed class Kernel : IKernel, IDisposable
     {
         loggerFactory ??= NullLoggerFactory.Instance;
 
-        this.LoggerFactory = loggerFactory;
-        this.HttpHandlerFactory = httpHandlerFactory;
-        this._memory = memory;
-        this._aiServiceProvider = aiServiceProvider;
-        this._functionCollection = functionCollection;
-        this._aiServiceSelector = serviceSelector ?? new OrderedIAIServiceSelector();
+        LoggerFactory = loggerFactory;
+        HttpHandlerFactory = httpHandlerFactory;
+        _memory = memory;
+        _aiServiceProvider = aiServiceProvider;
+        _functionCollection = functionCollection;
+        _aiServiceSelector = serviceSelector ?? new OrderedIAIServiceSelector();
 
-        this._logger = loggerFactory.CreateLogger(typeof(Kernel));
+        _logger = loggerFactory.CreateLogger(typeof(Kernel));
     }
 
 
@@ -118,7 +116,7 @@ public sealed class Kernel : IKernel, IDisposable
     {
         Verify.NotNull(customFunction);
 
-        this._functionCollection.AddFunction(customFunction);
+        _functionCollection.AddFunction(customFunction);
 
         return customFunction;
     }
@@ -127,7 +125,7 @@ public sealed class Kernel : IKernel, IDisposable
     /// <inheritdoc/>
     public async Task<KernelResult> RunAsync(ContextVariables variables, CancellationToken cancellationToken, params ISKFunction[] pipeline)
     {
-        var context = this.CreateNewContext(variables);
+        var context = CreateNewContext(variables);
 
         FunctionResult? functionResult = null;
 
@@ -143,14 +141,14 @@ public sealed class Kernel : IKernel, IDisposable
             {
                 var functionDetails = skFunction.Describe();
 
-                functionResult = await skFunction.InvokeAsync(context, null, cancellationToken: cancellationToken).ConfigureAwait(false);
+                functionResult = await skFunction.InvokeAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-                if (this.IsCancelRequested(skFunction, functionResult.Context, pipelineStepCount))
+                if (IsCancelRequested(skFunction, functionResult.Context, pipelineStepCount))
                 {
                     break;
                 }
 
-                if (this.IsSkipRequested(skFunction, functionResult.Context, pipelineStepCount))
+                if (IsSkipRequested(skFunction, functionResult.Context, pipelineStepCount))
                 {
                     continue;
                 }
@@ -158,14 +156,14 @@ public sealed class Kernel : IKernel, IDisposable
                 // Only non-stop results are considered as Kernel results
                 allFunctionResults.Add(functionResult!);
 
-                if (this.IsRepeatRequested(skFunction, functionResult.Context, pipelineStepCount))
+                if (IsRepeatRequested(skFunction, functionResult.Context, pipelineStepCount))
                 {
                     goto repeat;
                 }
             }
             catch (Exception ex)
             {
-                this._logger.LogError("Plugin {Plugin} function {Function} call fail during pipeline step {Step} with error {Error}:", skFunction.PluginName, skFunction.Name, pipelineStepCount, ex.Message);
+                _logger.LogError("Plugin {Plugin} function {Function} call fail during pipeline step {Step} with error {Error}:", skFunction.PluginName, skFunction.Name, pipelineStepCount, ex.Message);
                 throw;
             }
 
@@ -185,13 +183,13 @@ public sealed class Kernel : IKernel, IDisposable
     {
         return new SKContext(
             new FunctionRunner(this),
-            this._aiServiceProvider,
-            this._aiServiceSelector,
+            _aiServiceProvider,
+            _aiServiceSelector,
             variables,
-            functions ?? this.Functions,
-            new EventHandlerWrapper<FunctionInvokingEventArgs>(this.FunctionInvoking),
-            new EventHandlerWrapper<FunctionInvokedEventArgs>(this.FunctionInvoked),
-            loggerFactory ?? this.LoggerFactory,
+            functions ?? Functions,
+            new EventHandlerWrapper<FunctionInvokingEventArgs>(FunctionInvoking),
+            new EventHandlerWrapper<FunctionInvokedEventArgs>(FunctionInvoked),
+            loggerFactory ?? LoggerFactory,
             culture);
     }
 
@@ -199,7 +197,7 @@ public sealed class Kernel : IKernel, IDisposable
     /// <inheritdoc/>
     public T GetService<T>(string? name = null) where T : IAIService
     {
-        var service = this._aiServiceProvider.GetService<T>(name);
+        var service = _aiServiceProvider.GetService<T>(name);
 
         if (service != null)
         {
@@ -216,10 +214,10 @@ public sealed class Kernel : IKernel, IDisposable
     public void Dispose()
     {
         // ReSharper disable once SuspiciousTypeConversion.Global
-        if (this._memory is IDisposable mem) { mem.Dispose(); }
+        if (_memory is IDisposable mem) { mem.Dispose(); }
 
         // ReSharper disable once SuspiciousTypeConversion.Global
-        if (this._functionCollection is IDisposable reg) { reg.Dispose(); }
+        if (_functionCollection is IDisposable reg) { reg.Dispose(); }
     }
 
 
@@ -243,7 +241,7 @@ public sealed class Kernel : IKernel, IDisposable
     {
         if (SKFunction.IsInvokingSkipRequested(context))
         {
-            this._logger.LogInformation("Execution was skipped on function invoking event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
+            _logger.LogInformation("Execution was skipped on function invoking event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
             return true;
         }
 
@@ -262,13 +260,13 @@ public sealed class Kernel : IKernel, IDisposable
     {
         if (SKFunction.IsInvokingCancelRequested(context))
         {
-            this._logger.LogInformation("Execution was cancelled on function invoking event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
+            _logger.LogInformation("Execution was cancelled on function invoking event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
             return true;
         }
 
         if (SKFunction.IsInvokedCancelRequested(context))
         {
-            this._logger.LogInformation("Execution was cancelled on function invoked event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
+            _logger.LogInformation("Execution was cancelled on function invoked event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
             return true;
         }
 
@@ -287,7 +285,7 @@ public sealed class Kernel : IKernel, IDisposable
     {
         if (context.FunctionInvokedHandler?.EventArgs?.IsRepeatRequested ?? false)
         {
-            this._logger.LogInformation("Execution repeat request on function invoked event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
+            _logger.LogInformation("Execution repeat request on function invoked event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
             return true;
         }
         return false;
@@ -306,12 +304,12 @@ public sealed class Kernel : IKernel, IDisposable
     /// <inheritdoc/>
     [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. See sample dotnet/samples/KernelSyntaxExamples/Example14_SemanticMemory.cs in the semantic-kernel repository.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public ISemanticTextMemory Memory => this._memory;
+    public ISemanticTextMemory Memory => _memory;
 
     [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use Kernel.Functions instead. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
 #pragma warning disable CS1591
-    public IReadOnlyFunctionCollection Skills => this._functionCollection;
+    public IReadOnlyFunctionCollection Skills => _functionCollection;
 #pragma warning restore CS1591
 
 
@@ -320,7 +318,7 @@ public sealed class Kernel : IKernel, IDisposable
     [EditorBrowsable(EditorBrowsableState.Never)]
     public ISKFunction Func(string pluginName, string functionName)
     {
-        return this.Functions.GetFunction(pluginName, functionName);
+        return Functions.GetFunction(pluginName, functionName);
     }
 
 
@@ -329,7 +327,7 @@ public sealed class Kernel : IKernel, IDisposable
     [EditorBrowsable(EditorBrowsableState.Never)]
     public void RegisterMemory(ISemanticTextMemory memory)
     {
-        this._memory = memory;
+        _memory = memory;
     }
 
 
@@ -345,86 +343,4 @@ public sealed class Kernel : IKernel, IDisposable
     #endregion
 
 
-    #region Private ====================================================================================
-
-    private static bool s_promptTemplateEngineInitialized = false;
-    private static Type? s_promptTemplateEngineType = null;
-
-
-    /// <summary>
-    /// Create a default prompt template engine.
-    ///
-    /// This is a temporary solution to avoid breaking existing clients.
-    /// There will be a separate task to add support for registering instances of IPromptTemplateEngine and obsoleting the current approach.
-    ///
-    /// </summary>
-    /// <param name="loggerFactory">Logger factory to be used by the template engine</param>
-    /// <returns>Instance of <see cref="IPromptTemplateEngine"/>.</returns>
-    [Obsolete("Provided for backward compatibility. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    private IPromptTemplateEngine CreateDefaultPromptTemplateEngine(ILoggerFactory? loggerFactory = null)
-    {
-        if (!s_promptTemplateEngineInitialized)
-        {
-            s_promptTemplateEngineType = this.GetPromptTemplateEngineType();
-            s_promptTemplateEngineInitialized = true;
-        }
-
-        if (s_promptTemplateEngineType is not null)
-        {
-            var constructor = s_promptTemplateEngineType.GetConstructor(new Type[] { typeof(ILoggerFactory) });
-
-            if (constructor is not null)
-            {
-#pragma warning disable CS8601 // Null logger factory is OK
-                return (IPromptTemplateEngine)constructor.Invoke(new object[] { loggerFactory });
-#pragma warning restore CS8601
-            }
-        }
-
-        return new NullPromptTemplateEngine();
-    }
-
-
-    /// <summary>
-    /// Get the prompt template engine type if available
-    /// </summary>
-    /// <returns>The type for the prompt template engine if available</returns>
-    [Obsolete("Provided for backward compatibility. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    private Type? GetPromptTemplateEngineType()
-    {
-        try
-        {
-            var assembly = Assembly.Load("Microsoft.SemanticKernel.TemplateEngine.Basic");
-
-            return assembly.ExportedTypes.Single(type =>
-                type.Name.Equals("BasicPromptTemplateEngine", StringComparison.Ordinal) &&
-                type.GetInterface(nameof(IPromptTemplateEngine)) is not null);
-        }
-        catch (Exception ex) when (!ex.IsCriticalException())
-        {
-            return null;
-        }
-    }
-
-    #endregion
-
-
-}
-
-
-/// <summary>
-/// No-operation IPromptTemplateEngine which performs no rendering of the template.
-///
-/// This is a temporary solution to avoid breaking existing clients.
-/// </summary>
-[Obsolete("This is used for backward compatibility. This will be removed in a future release.")]
-[EditorBrowsable(EditorBrowsableState.Never)]
-internal sealed class NullPromptTemplateEngine : IPromptTemplateEngine
-{
-    public Task<string> RenderAsync(string templateText, SKContext context, CancellationToken cancellationToken = default)
-    {
-        return Task.FromResult(templateText);
-    }
 }

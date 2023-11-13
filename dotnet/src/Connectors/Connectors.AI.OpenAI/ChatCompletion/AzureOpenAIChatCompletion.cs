@@ -13,6 +13,7 @@ using Extensions.Logging;
 using SemanticKernel.AI;
 using SemanticKernel.AI.ChatCompletion;
 using SemanticKernel.AI.TextCompletion;
+using Services;
 
 
 /// <summary>
@@ -24,51 +25,64 @@ public sealed class AzureOpenAIChatCompletion : AzureOpenAIClientBase, IChatComp
     /// <summary>
     /// Create an instance of the <see cref="AzureOpenAIChatCompletion"/> connector with API key auth.
     /// </summary>
-    /// <param name="modelId">Azure OpenAI model ID or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public AzureOpenAIChatCompletion(
-        string modelId,
+        string deploymentName,
         string endpoint,
         string apiKey,
+        string? modelId = null,
         HttpClient? httpClient = null,
-        ILoggerFactory? loggerFactory = null) : base(modelId, endpoint, apiKey, httpClient, loggerFactory)
+        ILoggerFactory? loggerFactory = null) : base(deploymentName, endpoint, apiKey, httpClient, loggerFactory)
     {
+        AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
     }
 
 
     /// <summary>
     /// Create an instance of the <see cref="AzureOpenAIChatCompletion"/> connector with AAD auth.
     /// </summary>
-    /// <param name="modelId">Azure OpenAI model ID or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="credentials">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
+    /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public AzureOpenAIChatCompletion(
-        string modelId,
+        string deploymentName,
         string endpoint,
         TokenCredential credentials,
+        string? modelId = null,
         HttpClient? httpClient = null,
-        ILoggerFactory? loggerFactory = null) : base(modelId, endpoint, credentials, httpClient, loggerFactory)
+        ILoggerFactory? loggerFactory = null) : base(deploymentName, endpoint, credentials, httpClient, loggerFactory)
     {
+        AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
     }
 
 
     /// <summary>
     /// Creates a new <see cref="AzureOpenAIChatCompletion"/> client instance using the specified <see cref="OpenAIClient"/>.
     /// </summary>
-    /// <param name="modelId">Azure OpenAI model ID or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
+    /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public AzureOpenAIChatCompletion(
-        string modelId,
+        string deploymentName,
         OpenAIClient openAIClient,
-        ILoggerFactory? loggerFactory = null) : base(modelId, openAIClient, loggerFactory)
+        string? modelId = null,
+        ILoggerFactory? loggerFactory = null) : base(deploymentName, openAIClient, loggerFactory)
     {
+        AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
     }
+
+
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, string> Attributes => InternalAttributes;
 
 
     /// <inheritdoc/>

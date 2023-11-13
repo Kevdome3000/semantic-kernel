@@ -3,6 +3,7 @@
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -11,6 +12,7 @@ using CustomClient;
 using Diagnostics;
 using Extensions.Logging;
 using SemanticKernel.AI.ImageGeneration;
+using Services;
 using Text;
 
 
@@ -70,6 +72,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         this._apiKey = apiKey;
         this._maxRetryCount = maxRetryCount;
         this._apiVersion = apiVersion;
+        this.AddAttribute(IAIServiceExtensions.EndpointKey, endpoint);
     }
 
 
@@ -99,7 +102,13 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         this._apiKey = apiKey;
         this._maxRetryCount = maxRetryCount;
         this._apiVersion = apiVersion;
+        this.AddAttribute(IAIServiceExtensions.EndpointKey, endpoint);
+        this.AddAttribute(IAIServiceExtensions.ApiVersionKey, apiVersion);
     }
+
+
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
 
 
     /// <inheritdoc/>
@@ -225,7 +234,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 
 
     /// <summary>Adds headers to use for Azure OpenAI HTTP requests.</summary>
-    protected private override void AddRequestHeaders(HttpRequestMessage request)
+    private protected override void AddRequestHeaders(HttpRequestMessage request)
     {
         request.Headers.Add("api-key", this._apiKey);
     }

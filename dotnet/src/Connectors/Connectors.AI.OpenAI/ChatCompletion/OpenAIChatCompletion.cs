@@ -12,6 +12,7 @@ using Extensions.Logging;
 using SemanticKernel.AI;
 using SemanticKernel.AI.ChatCompletion;
 using SemanticKernel.AI.TextCompletion;
+using Services;
 
 
 /// <summary>
@@ -35,6 +36,8 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null) : base(modelId, apiKey, organization, httpClient, loggerFactory)
     {
+        AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        AddAttribute(OrganizationKey, organization!);
     }
 
 
@@ -49,7 +52,12 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
         OpenAIClient openAIClient,
         ILoggerFactory? loggerFactory = null) : base(modelId, openAIClient, loggerFactory)
     {
+        AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
     }
+
+
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, string> Attributes => InternalAttributes;
 
 
     /// <inheritdoc/>

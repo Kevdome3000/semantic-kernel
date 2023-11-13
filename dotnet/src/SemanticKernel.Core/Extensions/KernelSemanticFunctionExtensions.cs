@@ -10,6 +10,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using AI;
 using Diagnostics;
@@ -378,7 +379,7 @@ public static class KernelSemanticFunctionExtensions
             }
         }
 
-        throw new SKException($"Unable to create default prompt template factory. Please provide an implementation of IPromptTemplateFactory or depend on {BasicTemplateFactoryAssemblyName}");
+        return new NullPromptTemplateFactory();
     }
 
 
@@ -399,6 +400,36 @@ public static class KernelSemanticFunctionExtensions
         catch (Exception ex) when (!ex.IsCriticalException())
         {
             return null;
+        }
+    }
+
+
+    private sealed class NullPromptTemplateFactory : IPromptTemplateFactory
+    {
+        public IPromptTemplate Create(string templateString, PromptTemplateConfig promptTemplateConfig)
+        {
+            return new NullPromptTemplate(templateString);
+        }
+    }
+
+
+    private sealed class NullPromptTemplate : IPromptTemplate
+    {
+        private readonly string _templateText;
+
+
+        public NullPromptTemplate(string templateText)
+        {
+            this._templateText = templateText;
+        }
+
+
+        public IReadOnlyList<ParameterView> Parameters => Array.Empty<ParameterView>();
+
+
+        public Task<string> RenderAsync(SKContext executionContext, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(this._templateText);
         }
     }
 

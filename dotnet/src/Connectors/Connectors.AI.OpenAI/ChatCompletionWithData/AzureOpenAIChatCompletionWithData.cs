@@ -18,6 +18,7 @@ using Extensions.Logging.Abstractions;
 using SemanticKernel.AI;
 using SemanticKernel.AI.ChatCompletion;
 using SemanticKernel.AI.TextCompletion;
+using Services;
 using Text;
 
 
@@ -38,13 +39,18 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this.ValidateConfig(config);
+        ValidateConfig(config);
 
-        this._config = config;
+        _config = config;
 
-        this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(this.GetType()) : NullLogger.Instance;
+        _httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
+        _logger = loggerFactory is not null ? loggerFactory.CreateLogger(GetType()) : NullLogger.Instance;
+        _attributes.Add(IAIServiceExtensions.ModelIdKey, config.CompletionModelId);
     }
+
+
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, string> Attributes => _attributes;
 
 
     /// <inheritdoc/>
@@ -66,7 +72,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
 
         ValidateMaxTokens(chatRequestSettings.MaxTokens);
 
-        return await this.ExecuteCompletionRequestAsync(chat, chatRequestSettings, cancellationToken).ConfigureAwait(false);
+        return await ExecuteCompletionRequestAsync(chat, chatRequestSettings, cancellationToken).ConfigureAwait(false);
     }
 
 
@@ -82,7 +88,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
 
         ValidateMaxTokens(chatRequestSettings.MaxTokens);
 
-        return this.ExecuteCompletionStreamingRequestAsync(chat, chatRequestSettings, cancellationToken);
+        return ExecuteCompletionStreamingRequestAsync(chat, chatRequestSettings, cancellationToken);
     }
 
 
@@ -94,9 +100,9 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
     {
         OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
 
-        var chat = this.PrepareChatHistory(text, chatRequestSettings);
+        var chat = PrepareChatHistory(text, chatRequestSettings);
 
-        return (await this.GetChatCompletionsAsync(chat, chatRequestSettings, cancellationToken).ConfigureAwait(false))
+        return (await GetChatCompletionsAsync(chat, chatRequestSettings, cancellationToken).ConfigureAwait(false))
             .OfType<ITextResult>()
             .ToList();
     }
@@ -110,9 +116,9 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
     {
         OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
 
-        var chat = this.PrepareChatHistory(text, chatRequestSettings);
+        var chat = PrepareChatHistory(text, chatRequestSettings);
 
-        IAsyncEnumerable<IChatStreamingResult> results = this.GetStreamingChatCompletionsAsync(chat, chatRequestSettings, cancellationToken);
+        IAsyncEnumerable<IChatStreamingResult> results = GetStreamingChatCompletionsAsync(chat, chatRequestSettings, cancellationToken);
 
         await foreach (var result in results)
         {
@@ -129,6 +135,8 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
 
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
+
+    private readonly Dictionary<string, string> _attributes = new();
 
 
     private void ValidateConfig(AzureOpenAIChatCompletionWithDataConfig config)
@@ -158,12 +166,12 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         OpenAIRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
     {
-        using var request = this.GetRequest(chat, requestSettings, isStreamEnabled: false);
-        using var response = await this.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+        using var request = GetRequest(chat, requestSettings, isStreamEnabled: false);
+        using var response = await SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
         var body = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
 
-        var chatWithDataResponse = this.DeserializeResponse<ChatWithDataResponse>(body);
+        var chatWithDataResponse = DeserializeResponse<ChatWithDataResponse>(body);
 
         return chatWithDataResponse.Choices.Select(choice => new ChatWithDataResult(chatWithDataResponse, choice)).ToList();
     }
@@ -174,10 +182,10 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         OpenAIRequestSettings requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        using var request = this.GetRequest(chat, requestSettings, isStreamEnabled: true);
-        using var response = await this.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+        using var request = GetRequest(chat, requestSettings, isStreamEnabled: true);
+        using var response = await SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
-        await foreach (var result in this.GetStreamingResultsAsync(response))
+        await foreach (var result in GetStreamingResultsAsync(response))
         {
             yield return result;
         }
@@ -189,15 +197,15 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         CancellationToken cancellationToken = default)
     {
         request.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
-        request.Headers.Add("Api-Key", this._config.CompletionApiKey);
+        request.Headers.Add("Api-Key", _config.CompletionApiKey);
 
         try
         {
-            return await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
+            return await _httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
         }
         catch (HttpOperationException ex)
         {
-            this._logger.LogError(
+            _logger.LogError(
                 "Error occurred on chat completion with data request execution: {ExceptionMessage}", ex.Message);
 
             throw;
@@ -226,7 +234,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
                 body = body.Substring(ServerEventPayloadPrefix.Length);
             }
 
-            var chatWithDataResponse = this.DeserializeResponse<ChatWithDataStreamingResponse>(body);
+            var chatWithDataResponse = DeserializeResponse<ChatWithDataStreamingResponse>(body);
 
             foreach (var choice in chatWithDataResponse.Choices)
             {
@@ -244,7 +252,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         {
             const string ErrorMessage = "Error occurred on chat completion with data response deserialization";
 
-            this._logger.LogError(ErrorMessage);
+            _logger.LogError(ErrorMessage);
 
             throw new SKException(ErrorMessage);
         }
@@ -268,11 +276,11 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
             PresencePenalty = requestSettings.PresencePenalty,
             FrequencyPenalty = requestSettings.FrequencyPenalty,
             TokenSelectionBiases = requestSettings.TokenSelectionBiases,
-            DataSources = this.GetDataSources(),
-            Messages = this.GetMessages(chat)
+            DataSources = GetDataSources(),
+            Messages = GetMessages(chat)
         };
 
-        return HttpRequest.CreatePostRequest(this.GetRequestUri(), payload);
+        return HttpRequest.CreatePostRequest(GetRequestUri(), payload);
     }
 
 
@@ -284,9 +292,9 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
             {
                 Parameters = new ChatWithDataSourceParameters
                 {
-                    Endpoint = this._config.DataSourceEndpoint,
-                    ApiKey = this._config.DataSourceApiKey,
-                    IndexName = this._config.DataSourceIndex
+                    Endpoint = _config.DataSourceEndpoint,
+                    ApiKey = _config.DataSourceApiKey,
+                    IndexName = _config.DataSourceIndex
                 }
             }
         };
@@ -307,7 +315,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
 
     private ChatHistory PrepareChatHistory(string text, OpenAIRequestSettings requestSettings)
     {
-        var chat = this.CreateNewChat(requestSettings.ChatSystemPrompt);
+        var chat = CreateNewChat(requestSettings.ChatSystemPrompt);
 
         chat.AddUserMessage(text);
 
@@ -319,7 +327,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
     {
         const string EndpointUriFormat = "{0}/openai/deployments/{1}/extensions/chat/completions?api-version={2}";
 
-        var apiVersion = this._config.CompletionApiVersion;
+        var apiVersion = _config.CompletionApiVersion;
 
         if (string.IsNullOrWhiteSpace(apiVersion))
         {
@@ -329,8 +337,8 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         return string.Format(
             CultureInfo.InvariantCulture,
             EndpointUriFormat,
-            this._config.CompletionEndpoint.TrimEnd('/'),
-            this._config.CompletionModelId,
+            _config.CompletionEndpoint.TrimEnd('/'),
+            _config.CompletionModelId,
             apiVersion);
     }
 
