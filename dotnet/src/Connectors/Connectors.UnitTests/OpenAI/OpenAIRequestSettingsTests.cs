@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Connectors.UnitTests.OpenAI;
+
 using System;
 using System.Collections.Generic;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.Text;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.OpenAI;
 
 /// <summary>
 /// Unit tests of OpenAIRequestSettings
@@ -33,6 +33,7 @@ public class OpenAIRequestSettingsTests
         Assert.Null(requestSettings.ServiceId);
         Assert.Equal(128, requestSettings.MaxTokens);
     }
+
 
     [Fact]
     public void ItUsesExistingOpenAIRequestSettings()
@@ -60,6 +61,7 @@ public class OpenAIRequestSettingsTests
         Assert.Equal(actualSettings, requestSettings);
     }
 
+
     [Fact]
     public void ItCanUseOpenAIRequestSettings()
     {
@@ -77,6 +79,7 @@ public class OpenAIRequestSettingsTests
         Assert.Equal(actualSettings.ServiceId, requestSettings.ServiceId);
     }
 
+
     [Fact]
     public void ItCreatesOpenAIRequestSettingsFromExtraPropertiesSnakeCase()
     {
@@ -91,7 +94,7 @@ public class OpenAIRequestSettingsTests
                 { "frequency_penalty", 0.7 },
                 { "presence_penalty", 0.7 },
                 { "results_per_prompt", 2 },
-                { "stop_sequences", new [] { "foo", "bar" } },
+                { "stop_sequences", new[] { "foo", "bar" } },
                 { "chat_system_prompt", "chat system prompt" },
                 { "max_tokens", 128 },
                 { "service_id", "service" },
@@ -105,6 +108,7 @@ public class OpenAIRequestSettingsTests
         // Assert
         AssertRequestSettings(requestSettings);
     }
+
 
     [Fact]
     public void ItCreatesOpenAIRequestSettingsFromExtraPropertiesPascalCase()
@@ -135,6 +139,7 @@ public class OpenAIRequestSettingsTests
         AssertRequestSettings(requestSettings);
     }
 
+
     [Fact]
     public void ItCreatesOpenAIRequestSettingsFromJsonSnakeCase()
     {
@@ -151,7 +156,7 @@ public class OpenAIRequestSettingsTests
   ""service_id"": ""service"",
   ""max_tokens"": 128
 }";
-        var actualSettings = Json.Deserialize<AIRequestSettings>(json);
+        var actualSettings = Microsoft.SemanticKernel.Text.Json.Deserialize<AIRequestSettings>(json);
 
         // Act
         OpenAIRequestSettings requestSettings = OpenAIRequestSettings.FromRequestSettings(actualSettings);
@@ -159,6 +164,7 @@ public class OpenAIRequestSettingsTests
         // Assert
         AssertRequestSettings(requestSettings);
     }
+
 
     [Fact]
     public void ItCreatesOpenAIRequestSettingsFromJsonPascalCase()
@@ -176,7 +182,7 @@ public class OpenAIRequestSettingsTests
   ""ServiceId"": ""service"",
   ""MaxTokens"": 128
 }";
-        var actualSettings = Json.Deserialize<AIRequestSettings>(json);
+        var actualSettings = Microsoft.SemanticKernel.Text.Json.Deserialize<AIRequestSettings>(json);
 
         // Act
         OpenAIRequestSettings requestSettings = OpenAIRequestSettings.FromRequestSettings(actualSettings);
@@ -184,6 +190,7 @@ public class OpenAIRequestSettingsTests
         // Assert
         AssertRequestSettings(requestSettings);
     }
+
 
     private static void AssertRequestSettings(OpenAIRequestSettings requestSettings)
     {

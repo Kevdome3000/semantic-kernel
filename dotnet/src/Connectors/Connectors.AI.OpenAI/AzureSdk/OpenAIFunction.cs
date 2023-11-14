@@ -4,12 +4,17 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using Azure.AI.OpenAI;
+using Extensions;
+using Json.More;
+using Json.Schema;
+using Json.Schema.Generation;
 using Text;
 
 
 /// <summary>
-/// Represents a function parameter that can be pass to the OpenAI API
+/// Represents a function parameter that can be passed to the OpenAI API
 /// </summary>
 public class OpenAIFunctionParameter
 {
@@ -32,11 +37,43 @@ public class OpenAIFunctionParameter
     /// Whether the parameter is required or not.
     /// </summary>
     public bool IsRequired { get; set; } = false;
+
+    /// <summary>
+    /// The Json Schema of the parameter.
+    /// </summary>
+    public JsonDocument? Schema { get; set; } = null;
+
+    /// <summary>
+    /// The parameter Type.
+    /// </summary>
+    public Type? ParameterType { get; set; } = null;
 }
 
 
 /// <summary>
-/// Represents a function that can be pass to the OpenAI API
+/// Represents a return parameter of a function that can be passed to the OpenAI API
+/// </summary>
+public class OpenAIFunctionReturnParameter
+{
+    /// <summary>
+    /// Description of the parameter.
+    /// </summary>
+    public string Description { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The Json Schema of the parameter.
+    /// </summary>
+    public JsonDocument? Schema { get; set; } = null;
+
+    /// <summary>
+    /// The <see cref="Type"/> of the return parameter.
+    /// </summary>
+    public Type? ParameterType { get; set; } = null;
+}
+
+
+/// <summary>
+/// Represents a function that can be passed to the OpenAI API
 /// </summary>
 public class OpenAIFunction
 {
@@ -73,6 +110,11 @@ public class OpenAIFunction
     /// </summary>
     public IList<OpenAIFunctionParameter> Parameters { get; set; } = new List<OpenAIFunctionParameter>();
 
+    /// <summary>
+    /// The return parameter of the function.
+    /// </summary>
+    public OpenAIFunctionReturnParameter ReturnParameter { get; set; } = new OpenAIFunctionReturnParameter();
+
 
     /// <summary>
     /// Converts the <see cref="OpenAIFunction"/> to OpenAI's <see cref="FunctionDefinition"/>.
@@ -80,36 +122,24 @@ public class OpenAIFunction
     /// <returns>A <see cref="FunctionDefinition"/> containing all the function information.</returns>
     public FunctionDefinition ToFunctionDefinition()
     {
-        var requiredParams = new List<string>();
-
-        var paramProperties = new Dictionary<string, object>();
-
-        foreach (var param in Parameters)
+        JsonDocument schemaBuilderDelegate(Type type, string description)
         {
-            paramProperties.Add(
-                param.Name,
-                new
-                {
-                    type = param.Type,
-                    description = param.Description
-                });
+            var schema = new JsonSchemaBuilder()
+                .FromType(type)
+                .Description(description ?? string.Empty)
+                .Build()
+                .ToJsonDocument();
 
-            if (param.IsRequired)
-            {
-                requiredParams.Add(param.Name);
-            }
+            return schema;
         }
+
+        JsonSchemaFunctionManual jsonSchemaManual = this.ToFunctionView().ToJsonSchemaManual(schemaBuilderDelegate, false);
+
         return new FunctionDefinition
         {
-            Name = FullyQualifiedName,
-            Description = Description,
-            Parameters = BinaryData.FromObjectAsJson(
-                new
-                {
-                    type = "object",
-                    properties = paramProperties,
-                    required = requiredParams
-                })
+            Name = this.FullyQualifiedName,
+            Description = this.Description,
+            Parameters = BinaryData.FromObjectAsJson(jsonSchemaManual.Parameters),
         };
     }
 }

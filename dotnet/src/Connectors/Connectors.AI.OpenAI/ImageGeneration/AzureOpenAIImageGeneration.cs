@@ -10,10 +10,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using CustomClient;
 using Diagnostics;
-using Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using SemanticKernel.AI.ImageGeneration;
 using Services;
-using Text;
 
 
 /// <summary>
@@ -148,7 +147,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
             throw new ArgumentOutOfRangeException(nameof(width), width, "OpenAI can generate only square images of size 256x256, 512x512, or 1024x1024.");
         }
 
-        var requestBody = Json.Serialize(new ImageGenerationRequest
+        var requestBody = Microsoft.SemanticKernel.Text.Json.Serialize(new ImageGenerationRequest
         {
             Prompt = description,
             Size = $"{width}x{height}",

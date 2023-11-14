@@ -10,9 +10,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using CustomClient;
 using Diagnostics;
-using Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using SemanticKernel.AI.ImageGeneration;
-using Text;
 
 
 /// <summary>
@@ -103,7 +102,7 @@ public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         Debug.Assert(format is "url" or "b64_json");
         Debug.Assert(extractResponse is not null);
 
-        var requestBody = Json.Serialize(new ImageGenerationRequest
+        var requestBody = Microsoft.SemanticKernel.Text.Json.Serialize(new ImageGenerationRequest
         {
             Prompt = description,
             Size = $"{width}x{height}",

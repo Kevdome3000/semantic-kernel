@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.Model;
+
+using System.Collections.Generic;
+using System.Text.Json;
+
 
 /// <summary>
 /// The REST API operation payload property.
@@ -35,6 +37,12 @@ public sealed class RestApiOperationPayloadProperty
     public IList<RestApiOperationPayloadProperty> Properties { get; }
 
     /// <summary>
+    /// The schema of the parameter.
+    /// </summary>
+    public JsonDocument? Schema { get; }
+
+
+    /// <summary>
     /// Creates an instance of a <see cref="RestApiOperationPayloadProperty"/> class.
     /// </summary>
     /// <param name="name">Property name.</param>
@@ -42,17 +50,20 @@ public sealed class RestApiOperationPayloadProperty
     /// <param name="isRequired">Flag specifying if the property is required or not.</param>
     /// <param name="properties">Properties.</param>
     /// <param name="description">Property description.</param>
+    /// <param name="schema">The schema of the payload property.</param>
     public RestApiOperationPayloadProperty(
         string name,
         string type,
         bool isRequired,
         IList<RestApiOperationPayloadProperty> properties,
-        string? description = null)
+        string? description = null,
+        JsonDocument? schema = null)
     {
         this.Name = name;
         this.Type = type;
         this.IsRequired = isRequired;
         this.Description = description;
         this.Properties = properties;
+        this.Schema = schema;
     }
 }

@@ -12,5 +12,14 @@
         "#"
       ]
     }
-  ]
+  ],
+  "input": {
+    "parameters": [
+      {
+        "name": "input",
+        "description": "the input string to generate an acronym from",
+        "defaultValue": ""
+      }
+    ]
+  }
 }

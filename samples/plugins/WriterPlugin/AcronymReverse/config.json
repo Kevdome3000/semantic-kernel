@@ -12,5 +12,14 @@
         "#END#"
       ]
     }
-  ]
+  ],
+  "input": {
+    "parameters": [
+      {
+        "name": "input",
+        "description": "The input text to expand.",
+        "defaultValue": ""
+      }
+    ]
+  }
 }
