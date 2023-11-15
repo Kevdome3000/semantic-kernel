@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Diagnostics;
 using ImageGeneration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Services;
 using Text;
 using TextEmbedding;

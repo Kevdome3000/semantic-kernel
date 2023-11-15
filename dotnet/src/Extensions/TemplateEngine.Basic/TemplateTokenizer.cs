@@ -5,8 +5,8 @@ namespace Microsoft.SemanticKernel.TemplateEngine.Basic;
 using System.Collections.Generic;
 using Blocks;
 using Diagnostics;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 
 /// <summary>

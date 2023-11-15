@@ -5,10 +5,10 @@ namespace Microsoft.SemanticKernel;
 using System;
 using System.ComponentModel;
 using Diagnostics;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
 using Http;
 using Memory;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Services;
 using TemplateEngine;
 

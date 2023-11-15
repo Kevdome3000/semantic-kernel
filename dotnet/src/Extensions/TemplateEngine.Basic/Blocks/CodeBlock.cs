@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Diagnostics;
-using Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Orchestration;
 
 #pragma warning disable CA2254 // error strings are used also internally, not just for logging

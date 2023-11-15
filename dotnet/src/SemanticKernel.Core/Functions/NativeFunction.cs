@@ -21,6 +21,8 @@ using AI;
 using AI.TextCompletion;
 using Diagnostics;
 using Events;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Orchestration;
 
 #pragma warning restore IDE0130

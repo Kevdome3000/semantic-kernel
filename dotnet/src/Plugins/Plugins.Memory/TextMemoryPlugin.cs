@@ -9,7 +9,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Diagnostics;
-using Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using SemanticKernel.Memory;
 
 

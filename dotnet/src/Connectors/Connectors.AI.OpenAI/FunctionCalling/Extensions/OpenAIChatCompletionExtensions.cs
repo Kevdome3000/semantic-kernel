@@ -90,6 +90,7 @@ public static class OpenAIChatCompletionExtensions
             using var document = JsonDocument.Parse(content);
             var root = document.RootElement;
             var rootJsonString = root.GetRawText().Trim();
+
             try
             {
                 // Try to deserialize the entire response
@@ -99,6 +100,7 @@ public static class OpenAIChatCompletionExtensions
             {
                 // If the entire response can't be deserialized, try to deserialize the first element
                 var propertyEnumerator = root.EnumerateObject();
+
                 if (propertyEnumerator.MoveNext())
                 {
                     var firstProperty = propertyEnumerator.Current.Value;

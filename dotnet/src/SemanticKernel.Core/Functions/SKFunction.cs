@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
-using Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Orchestration;
 
 #pragma warning restore IDE0130

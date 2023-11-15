@@ -10,7 +10,7 @@ using Azure.AI.OpenAI;
 using Azure.Core;
 using Azure.Core.Pipeline;
 using Diagnostics;
-using Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Services;
 
 

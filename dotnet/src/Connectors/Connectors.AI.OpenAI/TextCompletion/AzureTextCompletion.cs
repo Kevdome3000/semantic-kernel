@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Azure.Core;
 using AzureSdk;
-using Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using SemanticKernel.AI;
 using SemanticKernel.AI.TextCompletion;
 using Services;

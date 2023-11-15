@@ -2,7 +2,7 @@
 
 namespace Microsoft.SemanticKernel.TemplateEngine.Basic.Blocks;
 
-using Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Orchestration;
 
 

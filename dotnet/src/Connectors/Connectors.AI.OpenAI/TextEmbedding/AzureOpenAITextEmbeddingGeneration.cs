@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure.Core;
 using AzureSdk;
-using Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using SemanticKernel.AI.Embeddings;
 using Services;
 

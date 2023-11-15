@@ -11,7 +11,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Diagnostics;
-using Extensions.Logging;
+using Microsoft.Extensions.Logging;
 
 #pragma warning restore IDE0130
 

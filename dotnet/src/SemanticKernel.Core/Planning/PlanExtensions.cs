@@ -4,7 +4,7 @@ namespace Microsoft.SemanticKernel.Planning;
 
 using System;
 using System.Linq;
-using Extensions.Logging;
+using Microsoft.Extensions.Logging;
 
 
 /// <summary>

@@ -19,8 +19,8 @@ using Connectors.AI.OpenAI.ChatCompletionWithData;
 using Connectors.AI.OpenAI.ImageGeneration;
 using Connectors.AI.OpenAI.TextCompletion;
 using Connectors.AI.OpenAI.TextEmbedding;
-using Extensions.Logging;
 using Http;
+using Microsoft.Extensions.Logging;
 
 #pragma warning restore IDE0130
 
@@ -509,8 +509,6 @@ public static class OpenAIKernelBuilderExtensions
         {
             return new(deploymentName, openAIClient, loggerFactory);
         }
-
-        ;
 
         builder.WithAIService<IChatCompletion>(serviceId, Factory, setAsDefault);
 

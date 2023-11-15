@@ -7,8 +7,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Blocks;
 using Diagnostics;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 
 /// <summary>

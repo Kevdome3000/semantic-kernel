@@ -5,9 +5,9 @@ namespace Microsoft.SemanticKernel.Plugins.Memory;
 using System;
 using AI.Embeddings;
 using Diagnostics;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
 using Http;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using SemanticKernel.Memory;
 
 

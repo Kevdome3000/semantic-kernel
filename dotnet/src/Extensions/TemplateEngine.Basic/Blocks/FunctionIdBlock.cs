@@ -5,7 +5,7 @@ namespace Microsoft.SemanticKernel.TemplateEngine.Basic.Blocks;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Diagnostics;
-using Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Orchestration;
 
 

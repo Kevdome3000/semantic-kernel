@@ -14,7 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AI;
 using Diagnostics;
-using Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Orchestration;
 using TemplateEngine;
 using Text;
