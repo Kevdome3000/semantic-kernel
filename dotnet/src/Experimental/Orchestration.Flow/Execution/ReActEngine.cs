@@ -9,7 +9,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using AI.ChatCompletion;
-using Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using SemanticKernel.Orchestration;
 using TemplateEngine;
 using TemplateEngine.Basic;

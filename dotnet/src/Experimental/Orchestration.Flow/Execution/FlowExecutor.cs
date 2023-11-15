@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using Abstractions;
 using AI.ChatCompletion;
 using Diagnostics;
-using Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using SemanticKernel.Orchestration;
 using TemplateEngine;
 using TemplateEngine.Basic;

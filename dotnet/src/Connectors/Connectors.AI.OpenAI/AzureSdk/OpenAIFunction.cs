@@ -98,7 +98,7 @@ public class OpenAIFunction
     /// If there is no plugin name, this is the same as the function name.
     /// </summary>
     public string FullyQualifiedName =>
-        PluginName.IsNullOrEmpty() ? FunctionName : string.Join(NameSeparator, PluginName, FunctionName);
+        PluginName.IsNullOrEmpty() ? FunctionName : $"{PluginName}{NameSeparator}{FunctionName}";
 
     /// <summary>
     /// Description of the function
@@ -137,8 +137,8 @@ public class OpenAIFunction
 
         return new FunctionDefinition
         {
-            Name = this.FullyQualifiedName,
-            Description = this.Description,
+            Name = FullyQualifiedName,
+            Description = Description,
             Parameters = BinaryData.FromObjectAsJson(jsonSchemaManual.Parameters),
         };
     }

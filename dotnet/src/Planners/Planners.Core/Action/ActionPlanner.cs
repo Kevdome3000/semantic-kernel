@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 using Action;
 using AI;
 using Diagnostics;
-using Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Orchestration;
 using Planning;
 
@@ -41,6 +41,15 @@ public sealed class ActionPlanner : IActionPlanner
     /// The regular expression for extracting serialized plan.
     /// </summary>
     private static readonly Regex s_planRegex = new("^[^{}]*(((?'Open'{)[^{}]*)+((?'Close-Open'})[^{}]*)+)*(?(Open)(?!))", RegexOptions.Singleline | RegexOptions.Compiled);
+
+    /// <summary>Deserialization options for use with <see cref="ActionPlanResponse"/>.</summary>
+    private static readonly JsonSerializerOptions s_actionPlayResponseOptions = new()
+    {
+        AllowTrailingCommas = true,
+        DictionaryKeyPolicy = null,
+        DefaultIgnoreCondition = JsonIgnoreCondition.Never,
+        PropertyNameCaseInsensitive = true,
+    };
 
     // Planner semantic function
     private readonly ISKFunction _plannerFunction;
@@ -276,13 +285,7 @@ Goal: tell me a joke.
 
             try
             {
-                return JsonSerializer.Deserialize<ActionPlanResponse?>(planJson, new JsonSerializerOptions
-                {
-                    AllowTrailingCommas = true,
-                    DictionaryKeyPolicy = null,
-                    DefaultIgnoreCondition = JsonIgnoreCondition.Never,
-                    PropertyNameCaseInsensitive = true,
-                });
+                return JsonSerializer.Deserialize<ActionPlanResponse?>(planJson, s_actionPlayResponseOptions);
             }
             catch (Exception e)
             {

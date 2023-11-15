@@ -5,8 +5,8 @@ namespace Microsoft.SemanticKernel.Planners.Sequential.UnitTests;
 
 using System.Globalization;
 using Diagnostics;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Orchestration;
 using Services;

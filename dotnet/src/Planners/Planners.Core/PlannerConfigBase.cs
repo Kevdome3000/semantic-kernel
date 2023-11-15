@@ -6,7 +6,6 @@ namespace Microsoft.SemanticKernel.Planners;
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -47,7 +46,7 @@ public abstract class PlannerConfigBase
     /// If set, this function takes precedence over <see cref="Memory"/>.
     /// Setting <see cref="ExcludedPlugins"/>, <see cref="ExcludedFunctions"/> will be used to filter the results.
     /// </summary>
-    public Func<PlannerConfigBase, string?, CancellationToken, Task<IOrderedEnumerable<FunctionView>>>? GetAvailableFunctionsAsync { get; set; }
+    public Func<PlannerConfigBase, string?, CancellationToken, Task<IEnumerable<FunctionView>>>? GetAvailableFunctionsAsync { get; set; }
 
     /// <summary>
     /// Callback to get a function by name (optional).

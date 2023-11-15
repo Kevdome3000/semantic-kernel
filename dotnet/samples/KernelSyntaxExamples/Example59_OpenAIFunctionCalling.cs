@@ -78,7 +78,7 @@ public static class Example59_OpenAIFunctionCalling
         await PrintChatResultAsync(chatResult);
 
         // Check for function response
-        OpenAIFunctionResponse? functionResponse = chatResult.GetOpenAIFunctionResponse();
+        OpenAIFunctionResponse? functionResponse = chatResult.GetFunctionResponse();
 
         if (functionResponse is not null)
         {
@@ -131,7 +131,7 @@ public static class Example59_OpenAIFunctionCalling
         }
 
         // Check for function response
-        OpenAIFunctionResponse? functionResponse = chatResult.GetOpenAIFunctionResponse();
+        OpenAIFunctionResponse? functionResponse = chatResult.GetFunctionResponse();
 
         if (functionResponse is not null)
         {

@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 using AI.ChatCompletion;
 using AI.TextCompletion;
 using Diagnostics;
-using Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Orchestration;
 using Planning;
 using Services;
