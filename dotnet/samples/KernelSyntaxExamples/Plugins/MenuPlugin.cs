@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Plugins;
+
 using System.ComponentModel;
 using Microsoft.SemanticKernel;
 
-namespace Plugins;
 
 public sealed class MenuPlugin
 {
@@ -18,10 +19,11 @@ Special Drink: Chai Tea
 ";
     }
 
+
     [SKFunction, Description("Provides the price of the requested menu item.")]
     public string GetItemPrice(
         [Description("The name of the menu item.")]
-            string menuItem)
+        string menuItem)
     {
         return "$9.99";
     }

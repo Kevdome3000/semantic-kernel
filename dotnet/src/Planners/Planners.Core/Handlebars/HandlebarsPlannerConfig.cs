@@ -22,6 +22,7 @@ public sealed class HandlebarsPlannerConfig : PlannerConfigBase
     /// </summary>
     public bool AllowLoops { get; set; } = true;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="HandlebarsPlannerConfig"/> class.
     /// </summary>

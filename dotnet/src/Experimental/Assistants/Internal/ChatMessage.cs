@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Experimental.Assistants.Internal;
+
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Microsoft.SemanticKernel.Experimental.Assistants.Models;
+using Models;
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 
 /// <summary>
 /// Represents a message that is part of an assistant thread.
@@ -26,6 +27,7 @@ internal sealed class ChatMessage : IChatMessage
 
     /// <inheritdoc/>
     public ReadOnlyDictionary<string, object> Properties { get; }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatMessage"/> class.

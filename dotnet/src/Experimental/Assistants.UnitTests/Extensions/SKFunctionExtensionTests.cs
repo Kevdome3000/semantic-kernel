@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Experimental.Assistants.UnitTests.Extensions;
+
 using System.Collections.Generic;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Experimental.Assistants.UnitTests.Extensions;
 
 [Trait("Category", "Unit Tests")]
 [Trait("Feature", "Assistant")]
@@ -14,6 +15,7 @@ public sealed class SKFunctionExtensionTests
 {
     private const string ToolName = "Bogus";
     private const string PluginName = "Fake";
+
 
     [Fact]
     public static void GetSinglePartName()
@@ -26,6 +28,7 @@ public sealed class SKFunctionExtensionTests
         Assert.Equal(ToolName, qualifiedName);
     }
 
+
     [Fact]
     public static void GetTwoPartName()
     {
@@ -37,6 +40,7 @@ public sealed class SKFunctionExtensionTests
 
         Assert.Equal($"{PluginName}-{ToolName}", qualifiedName);
     }
+
 
     [Fact]
     public static void GetToolModelFromFunction()

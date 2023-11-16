@@ -558,6 +558,7 @@ public class StepwisePlanner : IStepwisePlanner
             if (resultObject is not null)
             {
                 var converter = TypeDescriptor.GetConverter(resultObject);
+
                 if (converter.CanConvertTo(typeof(string)))
                 {
                     result = converter.ConvertToString(resultObject);

@@ -11,6 +11,7 @@ using Microsoft.SemanticKernel.Orchestration;
 using Plugins;
 using Resources;
 
+
 // ReSharper disable once InconsistentNaming
 /// <summary>
 /// Showcase Open AI Assistant integration with semantic kernel.
@@ -18,6 +19,7 @@ using Resources;
 public static class Example70_Assistant
 {
     private const string OpenAIFunctionEnabledModel = "gpt-3.5-turbo-1106";
+
 
     /// <summary>
     /// Show how to define an use a single assistant using multiple patterns.
@@ -41,6 +43,7 @@ public static class Example70_Assistant
         await RunAsFunctionAsync();
     }
 
+
     private static async Task RunSimpleChatAsync()
     {
         Console.WriteLine("======== Run:SimpleChat ========");
@@ -51,6 +54,7 @@ public static class Example70_Assistant
             "I came, I saw, I conquered.",
             "Practice makes perfect.");
     }
+
 
     private static async Task RunWithNativeFunctionsAsync()
     {
@@ -68,6 +72,7 @@ public static class Example70_Assistant
             "What is the special drink?",
             "Thank you!");
     }
+
 
     private static async Task RunWithSemanticFunctionsAsync()
     {
@@ -93,6 +98,7 @@ public static class Example70_Assistant
             "What is the special soup?",
             "Thank you!");
     }
+
 
     private static async Task RunAsFunctionAsync()
     {
@@ -120,12 +126,14 @@ public static class Example70_Assistant
             $"No response from assistant: {assistant.Id}");
     }
 
+
     private static Task ChatAsync(
-         string resourcePath,
-         params string[] messages)
+        string resourcePath,
+        params string[] messages)
     {
         return ChatAsync(resourcePath, null, messages);
     }
+
 
     private static async Task ChatAsync(
         string resourcePath,
@@ -144,6 +152,7 @@ public static class Example70_Assistant
         Console.WriteLine($"[{assistant.Id}]");
 
         var thread = await assistant.NewThreadAsync();
+
         foreach (var message in messages)
         {
             var messageUser = await thread.AddUserMessageAsync(message).ConfigureAwait(true);
@@ -154,6 +163,7 @@ public static class Example70_Assistant
         }
     }
 
+
     private static void DisplayMessages(IEnumerable<IChatMessage> messages)
     {
         foreach (var message in messages)
@@ -161,6 +171,7 @@ public static class Example70_Assistant
             DisplayMessage(message);
         }
     }
+
 
     private static void DisplayMessage(IChatMessage message)
     {

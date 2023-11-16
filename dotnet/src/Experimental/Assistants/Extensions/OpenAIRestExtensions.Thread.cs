@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
+
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Experimental.Assistants.Internal;
-using Microsoft.SemanticKernel.Experimental.Assistants.Models;
+using Internal;
+using Models;
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 
 /// <summary>
 /// Supported OpenAI REST API actions for threads.
@@ -13,6 +14,7 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 internal static partial class OpenAIRestExtensions
 {
     internal const string BaseThreadUrl = $"{BaseUrl}/threads";
+
 
     /// <summary>
     /// Create a new thread.
@@ -29,6 +31,7 @@ internal static partial class OpenAIRestExtensions
                 BaseThreadUrl,
                 cancellationToken);
     }
+
 
     /// <summary>
     /// Retrieve an thread by identifier.
@@ -48,6 +51,7 @@ internal static partial class OpenAIRestExtensions
                 cancellationToken);
     }
 
+
     /// <summary>
     /// Delete an existing thread.
     /// </summary>
@@ -61,6 +65,7 @@ internal static partial class OpenAIRestExtensions
     {
         return context.ExecuteDeleteAsync(GetThreadUrl(id), cancellationToken);
     }
+
 
     internal static string GetThreadUrl(string threadId)
     {

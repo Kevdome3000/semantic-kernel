@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 #define DISABLEHOST // Comment line to enable
+namespace SemanticKernel.Experimental.Assistants.UnitTests.Integration;
+
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Experimental.Assistants;
@@ -9,7 +11,6 @@ using Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.Experimental.Assistants.UnitTests.Integration;
 
 /// <summary>
 /// Dev harness for manipulating threads.
@@ -30,6 +31,7 @@ public sealed class ThreadHarness
 
     private readonly ITestOutputHelper _output;
 
+
     /// <summary>
     /// Test constructor.
     /// </summary>
@@ -37,6 +39,7 @@ public sealed class ThreadHarness
     {
         this._output = output;
     }
+
 
     /// <summary>
     /// Verify creation and retrieval of thread.

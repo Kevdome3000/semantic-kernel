@@ -1,26 +1,28 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - Using NS of Plan
+namespace Microsoft.SemanticKernel.Planners;
+
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using AI.ChatCompletion;
+using Connectors.AI.OpenAI;
+using Connectors.AI.OpenAI.AzureSdk;
+using Diagnostics;
+using Functions.OpenAPI.Model;
 using Json.More;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.TemplateEngine;
-using Microsoft.SemanticKernel.TemplateEngine.Basic;
+using Orchestration;
+using TemplateEngine;
+using TemplateEngine.Basic;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using NS of Plan
-namespace Microsoft.SemanticKernel.Planners;
 #pragma warning restore IDE0130
+
 
 /// <summary>
 /// A planner that uses OpenAI function calling in a stepwise manner to fulfill a user goal or question.
@@ -53,6 +55,7 @@ public sealed class FunctionCallingStepwisePlanner
         // Create context and logger
         this._logger = this._kernel.LoggerFactory.CreateLogger(this.GetType());
     }
+
 
     /// <summary>
     /// Execute a plan
@@ -149,20 +152,23 @@ public sealed class FunctionCallingStepwisePlanner
         };
     }
 
+
     #region private
 
     private async Task<IChatResult> GetCompletionWithFunctionsAsync(
-            ChatHistory chatHistory,
-            CancellationToken cancellationToken)
+        ChatHistory chatHistory,
+        CancellationToken cancellationToken)
     {
         var requestSettings = this.PrepareOpenAIRequestSettingsWithFunctions();
         return (await this._chatCompletion.GetChatCompletionsAsync(chatHistory, requestSettings, cancellationToken).ConfigureAwait(false))[0];
     }
 
+
     private async Task<string> GetFunctionsManualAsync(CancellationToken cancellationToken)
     {
         return await this._kernel.Functions.GetJsonSchemaFunctionsManualAsync(this.Config, null, this._logger, false, cancellationToken).ConfigureAwait(false);
     }
+
 
     private OpenAIRequestSettings PrepareOpenAIRequestSettingsWithFunctions()
     {
@@ -171,6 +177,7 @@ public sealed class FunctionCallingStepwisePlanner
         requestSettings.Functions = this._kernel.Functions.GetFunctionViews().Select(f => f.ToOpenAIFunction()).ToList();
         return requestSettings;
     }
+
 
     private async Task<ChatHistory> BuildChatHistoryForInitialPlanAsync(
         string goal,
@@ -188,6 +195,7 @@ public sealed class FunctionCallingStepwisePlanner
 
         return chatHistory;
     }
+
 
     private async Task<ChatHistory> BuildChatHistoryForStepAsync(
         string goal,
@@ -207,10 +215,12 @@ public sealed class FunctionCallingStepwisePlanner
         return chatHistory;
     }
 
+
     private bool TryGetFunctionResponse(IChatResult chatResult, [NotNullWhen(true)] out OpenAIFunctionResponse? functionResponse, out string? errorMessage)
     {
         functionResponse = null;
         errorMessage = null;
+
         try
         {
             functionResponse = chatResult.GetOpenAIFunctionResponse();
@@ -222,6 +232,7 @@ public sealed class FunctionCallingStepwisePlanner
 
         return functionResponse is not null;
     }
+
 
     private bool TryFindFinalAnswer(OpenAIFunctionResponse functionResponse, out string finalAnswer, out string? errorMessage)
     {
@@ -242,6 +253,7 @@ public sealed class FunctionCallingStepwisePlanner
         }
         return false;
     }
+
 
     private static string ParseObjectAsString(object? valueObj)
     {
@@ -273,6 +285,7 @@ public sealed class FunctionCallingStepwisePlanner
 
         return resultStr;
     }
+
 
     /// <summary>
     /// The configuration for the StepwisePlanner
@@ -315,6 +328,7 @@ public sealed class FunctionCallingStepwisePlanner
     private const string GoalKey = "goal";
 
     #endregion private
+
 
     /// <summary>
     /// Plugin used by the <see cref="FunctionCallingStepwisePlanner"/> to interact with the caller.

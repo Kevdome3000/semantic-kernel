@@ -74,6 +74,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
     {
         Verify.NotNullOrWhiteSpace(model);
         Verify.NotNull(httpClient);
+
         if (httpClient.BaseAddress == null && string.IsNullOrEmpty(endpoint))
         {
             throw new SKException("The HttpClient BaseAddress and endpoint are both null or empty. Please ensure at least one is provided.");

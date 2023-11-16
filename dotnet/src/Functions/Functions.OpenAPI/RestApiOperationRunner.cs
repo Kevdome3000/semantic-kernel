@@ -189,6 +189,7 @@ internal sealed class RestApiOperationRunner
         var contentType = content.Headers.ContentType;
 
         var mediaType = contentType?.MediaType;
+
         if (mediaType is null)
         {
             throw new SKException("No media type available.");

@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 #pragma warning disable CA1812
 
+namespace Microsoft.SemanticKernel.Experimental.Assistants.Models;
+
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
 /// <summary>
 /// list of run steps belonging to a run.
@@ -13,6 +14,7 @@ internal sealed class AssistantListModel : OpenAIListModel<AssistantModel>
 {
     // No specialization
 }
+
 
 /// <summary>
 /// Model of Assistant data returned from OpenAI

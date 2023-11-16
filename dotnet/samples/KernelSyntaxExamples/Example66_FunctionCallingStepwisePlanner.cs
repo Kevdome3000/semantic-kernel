@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel.Plugins.Core;
 using Plugins;
 using RepoUtils;
 
+
 // ReSharper disable once InconsistentNaming
 public static class Example66_FunctionCallingStepwisePlanner
 {
@@ -38,6 +39,7 @@ public static class Example66_FunctionCallingStepwisePlanner
             // Console.WriteLine($"Chat history:\n{result.ChatHistory?.AsJson()}");
         }
     }
+
 
     /// <summary>
     /// Initialize the kernel and load plugins.

@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.Client;
+
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -7,9 +9,8 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+using Extensions.Logging;
 
-namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.Client;
 
 /// <summary>
 /// An HTTPClient logging handler for ensuring diagnostic headers for Graph API calls are available.
@@ -34,6 +35,7 @@ public class MsGraphClientLoggingHandler : DelegatingHandler
 
     private readonly ILogger _logger;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="MsGraphClientLoggingHandler"/> class.
     /// </summary>
@@ -42,6 +44,7 @@ public class MsGraphClientLoggingHandler : DelegatingHandler
     {
         this._logger = logger;
     }
+
 
     /// <summary>
     /// Sends an HTTP request to the inner handler to send to the server as an asynchronous operation.
@@ -58,6 +61,7 @@ public class MsGraphClientLoggingHandler : DelegatingHandler
         return response;
     }
 
+
     /// <summary>
     /// Log the headers and URI of an HTTP message.
     /// </summary>
@@ -67,6 +71,7 @@ public class MsGraphClientLoggingHandler : DelegatingHandler
         {
             StringBuilder message = new();
             message.AppendLine($"{prefix} {uri}");
+
             foreach (string headerName in this._headerNamesToLog)
             {
                 if (headers.TryGetValues(headerName, out IEnumerable<string>? values))

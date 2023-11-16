@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Json.More;
-using Microsoft.SemanticKernel.Experimental.Assistants.Models;
+using Models;
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 
 internal static class ISKFunctionExtensions
 {
@@ -16,10 +17,9 @@ internal static class ISKFunctionExtensions
     public static string GetQualifiedName(this ISKFunction function)
     {
         return
-            string.IsNullOrWhiteSpace(function.PluginName) ?
-            function.Name :
-            $"{function.PluginName}-{function.Name}";
+            string.IsNullOrWhiteSpace(function.PluginName) ? function.Name : $"{function.PluginName}-{function.Name}";
     }
+
 
     /// <summary>
     /// Convert <see cref="ISKFunction"/> to an OpenAI tool model.
@@ -58,16 +58,17 @@ internal static class ISKFunctionExtensions
                         Name = function.GetQualifiedName(),
                         Description = function.Description,
                         Parameters =
-                                new OpenAIParameters
-                                {
-                                    Properties = properties,
-                                    Required = required,
-                                },
+                            new OpenAIParameters
+                            {
+                                Properties = properties,
+                                Required = required,
+                            },
                     },
             };
 
         return payload;
     }
+
 
     private static string ConvertType(Type? type)
     {

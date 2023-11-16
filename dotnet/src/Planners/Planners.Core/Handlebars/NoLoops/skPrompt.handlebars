@@ -11,41 +11,42 @@ I want you to generate 10 random numbers and send them to another helper.{{/mess
 ```handlebars
 {{!-- Step 1: initialize the variables --}}
 \{{set
-  "num1"
-  5
+"num1"
+5
 }}
 \{{set
-  "num2"
-  10
+"num2"
+10
 }}
 \{{set
-  "num3"
-  15
+"num3"
+15
 }}
 {{!-- Step 2: call the Example-AddThreeNumbers helper with the variables and store the result --}}
 \{{set
-  "sum"
-  (Example{{reservedNameDelimiter}}AddThreeNumbers
-    num1=(get
-      "num1"
-    )
-    num2=(get
-      "num2"
-    )
-    num3=(get
-      "num3"
-    )
-  )
+"sum"
+(Example{{reservedNameDelimiter}}AddThreeNumbers
+num1=(get
+"num1"
+)
+num2=(get
+"num2"
+)
+num3=(get
+"num3"
+)
+)
 }}
 {{!-- Step 3: output the result using the json helper --}}
 \{{json
-  (get
-    "sum"
-  )
+(get
+"sum"
+)
 }}
 ```{{/message}}
 {{#message role="system"}}Now let's try the real thing.{{/message}}
-{{#message role="user"}}Please show me how to write a Handlebars template that achieves the following goal with the available helpers.
+{{#message
+        role="user"}}Please show me how to write a Handlebars template that achieves the following goal with the available helpers.
 
 ## Goal
 {{goal}}
@@ -82,7 +83,7 @@ Before we get to custom helpers, let's learn about complex objects. Some helpers
 ```json
 {
 {{#each Properties}}
-    "{{Name}}": {{Type.Name}},
+"{{Name}}": {{Type.Name}},
 {{/each}}
 }
 ```
@@ -97,9 +98,9 @@ Lastly, you also have the following Handlebars helpers that you can use to accom
 ### `{{doubleOpen}}{{PluginName}}{{../reservedNameDelimiter}}{{Name}}{{doubleClose}}`
 Description: {{Description}}
 Inputs:
-  {{#each Parameters}}
-    - {{Name}}: {{#if Type}}{{Type.Name}} - {{/if}}{{Description}} {{#if IsRequired}}(required){{else}}(optional){{/if}}
-  {{/each}}
+{{#each Parameters}}
+- {{Name}}: {{#if Type}}{{Type.Name}} - {{/if}}{{Description}} {{#if IsRequired}}(required){{else}}(optional){{/if}}
+{{/each}}
 {{!-- TODO (@teresaqhoang): support return type {{ReturnType.Name}} {{../reservedNameDelimiter}} {{ReturnDescription}}--}}
 Output: string - The result of the helper.
 

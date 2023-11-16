@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Experimental.Assistants.UnitTests.Extensions;
+
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Experimental.Assistants.UnitTests.Extensions;
 
 [Trait("Category", "Unit Tests")]
 [Trait("Feature", "Assistant")]
@@ -14,6 +15,7 @@ public sealed class KernelExtensionTests
 {
     private const string SinglePartToolName = "Bogus";
     private const string TwoPartToolName = "Fake-Bogus";
+
 
     [Fact]
     public static void InvokeSinglePartTool()
@@ -28,6 +30,7 @@ public sealed class KernelExtensionTests
         kernel.Verify(x => x.Functions.GetFunction(It.IsAny<string>(), SinglePartToolName), Times.Never());
     }
 
+
     [Fact]
     public static void InvokeTwoPartTool()
     {
@@ -40,6 +43,7 @@ public sealed class KernelExtensionTests
         kernel.Verify(x => x.Functions.GetFunction(SinglePartToolName), Times.Never());
         kernel.Verify(x => x.Functions.GetFunction("Fake", SinglePartToolName), Times.Once());
     }
+
 
     [Fact]
     public static void InvokeInvalidThreePartTool()

@@ -2,10 +2,11 @@
 #pragma warning disable CA1812
 #pragma warning disable CA1852
 
+namespace Microsoft.SemanticKernel.Experimental.Assistants.Models;
+
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
 /// <summary>
 /// list of run steps belonging to a run.
@@ -14,6 +15,7 @@ internal class ThreadMessageListModel : OpenAIListModel<ThreadMessageModel>
 {
     // No specialization
 }
+
 
 /// <summary>
 /// Represents a message within a thread.
@@ -85,6 +87,7 @@ internal sealed class ThreadMessageModel
     [JsonPropertyName("metadata")]
     public Dictionary<string, object> Metadata { get; set; } = new Dictionary<string, object>();
 
+
     /// <summary>
     /// Representa contents within a message.
     /// </summary>
@@ -102,6 +105,7 @@ internal sealed class ThreadMessageModel
         [JsonPropertyName("text")]
         public TextContentModel? Text { get; set; }
     }
+
 
     /// <summary>
     /// Text content.

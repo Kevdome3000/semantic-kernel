@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 #define DISABLEHOST // Comment line to enable
+namespace SemanticKernel.Experimental.Assistants.UnitTests.Integration;
+
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -11,7 +13,6 @@ using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.Experimental.Assistants.UnitTests.Integration;
 
 /// <summary>
 /// Dev harness for manipulating assistants.
@@ -32,6 +33,7 @@ public sealed class AssistantHarness
 
     private readonly ITestOutputHelper _output;
 
+
     /// <summary>
     /// Test constructor.
     /// </summary>
@@ -39,6 +41,7 @@ public sealed class AssistantHarness
     {
         this._output = output;
     }
+
 
     /// <summary>
     /// Verify creation and retrieval of assistant.
@@ -64,6 +67,7 @@ public sealed class AssistantHarness
         this.DumpAssistant(copy);
     }
 
+
     /// <summary>
     /// Verify creation and retrieval of assistant.
     /// </summary>
@@ -86,6 +90,7 @@ public sealed class AssistantHarness
         this.DumpAssistant(copy);
     }
 
+
     /// <summary>
     /// Verify creation and retrieval of assistant.
     /// </summary>
@@ -94,11 +99,13 @@ public sealed class AssistantHarness
     {
         var context = new OpenAIRestContext(TestConfig.OpenAIApiKey);
         var assistants = await context.ListAssistantModelsAsync().ConfigureAwait(true);
+
         foreach (var assistant in assistants)
         {
             this.DumpAssistant(assistant);
         }
     }
+
 
     /// <summary>
     /// Verify creation and retrieval of assistant.
@@ -118,6 +125,7 @@ public sealed class AssistantHarness
 
         var context = new OpenAIRestContext(TestConfig.OpenAIApiKey);
         var assistants = await context.ListAssistantModelsAsync().ConfigureAwait(true);
+
         foreach (var assistant in assistants)
         {
             if (!string.IsNullOrWhiteSpace(assistant.Name) && names.Contains(assistant.Name))
@@ -128,6 +136,7 @@ public sealed class AssistantHarness
         }
     }
 
+
     private void DumpAssistant(AssistantModel assistant)
     {
         this._output.WriteLine($"# {assistant.Id}");
@@ -136,6 +145,7 @@ public sealed class AssistantHarness
         this._output.WriteLine($"# {assistant.Name}");
         this._output.WriteLine($"# {assistant.Description}{Environment.NewLine}");
     }
+
 
     private void DumpAssistant(IAssistant assistant)
     {

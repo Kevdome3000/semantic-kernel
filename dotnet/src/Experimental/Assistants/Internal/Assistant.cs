@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Experimental.Assistants.Internal;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -7,16 +9,15 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
-using Microsoft.SemanticKernel.Experimental.Assistants.Models;
-using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.Services;
+using AI.ChatCompletion;
+using AI.TextCompletion;
+using Connectors.AI.OpenAI.ChatCompletion;
+using Diagnostics;
+using Extensions;
+using Http;
+using Models;
+using Services;
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 
 /// <summary>
 /// Represents an assistant that can call the model and use tools.
@@ -57,6 +58,7 @@ internal sealed class Assistant : IAssistant
     private readonly OpenAIRestContext _restContext;
     private readonly AssistantModel _model;
 
+
     /// <summary>
     /// Create a new assistant.
     /// </summary>
@@ -80,6 +82,7 @@ internal sealed class Assistant : IAssistant
         return new Assistant(resultModel, chatService, restContext, functions);
     }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="Assistant"/> class.
     /// </summary>
@@ -94,6 +97,7 @@ internal sealed class Assistant : IAssistant
         this.Functions = new List<ISKFunction>(functions ?? Array.Empty<ISKFunction>());
 
         var functionCollection = new FunctionCollection();
+
         foreach (var function in this.Functions)
         {
             functionCollection.AddFunction(function);
@@ -111,11 +115,13 @@ internal sealed class Assistant : IAssistant
                 loggerFactory: null);
     }
 
+
     /// <inheritdoc/>
     public Task<IChatThread> NewThreadAsync(CancellationToken cancellationToken = default)
     {
         return ChatThread.CreateAsync(this._restContext, cancellationToken);
     }
+
 
     /// <summary>
     /// Marshal thread run through <see cref="ISKFunction"/> interface.

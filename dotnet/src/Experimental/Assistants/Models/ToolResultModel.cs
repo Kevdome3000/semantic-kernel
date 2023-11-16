@@ -2,9 +2,10 @@
 #pragma warning disable CA1812
 #pragma warning disable CA1852
 
+namespace Microsoft.SemanticKernel.Experimental.Assistants.Models;
+
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
 internal class ToolResultModel
 {

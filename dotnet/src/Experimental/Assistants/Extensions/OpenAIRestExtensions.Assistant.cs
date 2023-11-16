@@ -1,14 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
+
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
-using Microsoft.SemanticKernel.Experimental.Assistants.Internal;
-using Microsoft.SemanticKernel.Experimental.Assistants.Models;
+using Internal;
+using Models;
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 
 /// <summary>
 /// Supported OpenAI REST API actions for assistants.
@@ -16,6 +17,7 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 internal static partial class OpenAIRestExtensions
 {
     internal const string BaseAssistantUrl = $"{BaseUrl}assistants";
+
 
     /// <summary>
     /// Create a new assistant.
@@ -48,6 +50,7 @@ internal static partial class OpenAIRestExtensions
                 cancellationToken);
     }
 
+
     /// <summary>
     /// Retrieve an assistant by identifier.
     /// </summary>
@@ -65,6 +68,7 @@ internal static partial class OpenAIRestExtensions
                 GetAssistantUrl(assistantId),
                 cancellationToken);
     }
+
 
     /// <summary>
     /// Retrieve all assistants.
@@ -96,10 +100,12 @@ internal static partial class OpenAIRestExtensions
         var query = HttpUtility.ParseQueryString(string.Empty);
         query["limit"] = limit.ToString(CultureInfo.InvariantCulture);
         query["order"] = ascending ? "asc" : "desc";
+
         if (!string.IsNullOrWhiteSpace(after))
         {
             query["after"] = after;
         }
+
         if (!string.IsNullOrWhiteSpace(before))
         {
             query["before"] = before;
@@ -115,6 +121,7 @@ internal static partial class OpenAIRestExtensions
         return result.Data;
     }
 
+
     /// <summary>
     /// Delete an existing assistant
     /// </summary>
@@ -128,6 +135,7 @@ internal static partial class OpenAIRestExtensions
     {
         return context.ExecuteDeleteAsync(GetAssistantUrl(id), cancellationToken);
     }
+
 
     internal static string GetAssistantUrl(string assistantId)
     {

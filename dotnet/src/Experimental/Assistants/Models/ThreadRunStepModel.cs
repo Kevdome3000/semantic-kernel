@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 #pragma warning disable CA1812
 
+namespace Microsoft.SemanticKernel.Experimental.Assistants.Models;
+
 using System;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
 /// <summary>
 /// list of run steps belonging to a run.
@@ -13,6 +14,7 @@ internal sealed class ThreadRunStepListModel : OpenAIListModel<ThreadRunStepMode
 {
     // No specialization
 }
+
 
 /// <summary>
 /// Step in a run on a thread.
@@ -107,6 +109,7 @@ internal sealed class ThreadRunStepModel
     [JsonPropertyName("step_details")]
     public StepDetailsModel StepDetails { get; set; } = StepDetailsModel.Empty;
 
+
     /// <summary>
     /// Details of a run step.
     /// </summary>
@@ -136,6 +139,7 @@ internal sealed class ThreadRunStepModel
         public ToolCallsDetailsModel[] ToolCalls { get; set; } = Array.Empty<ToolCallsDetailsModel>();
     }
 
+
     /// <summary>
     /// Message creation details.
     /// </summary>
@@ -147,6 +151,7 @@ internal sealed class ThreadRunStepModel
         [JsonPropertyName("message_id")]
         public string MessageId { get; set; } = string.Empty;
     }
+
 
     /// <summary>
     /// Tool call details.
@@ -171,6 +176,7 @@ internal sealed class ThreadRunStepModel
         [JsonPropertyName("function")]
         public FunctionDetailsModel Function { get; set; } = FunctionDetailsModel.Empty;
     }
+
 
     /// <summary>
     /// Function call details.

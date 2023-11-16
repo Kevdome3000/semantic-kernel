@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
+
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Experimental.Assistants.Internal;
-using Microsoft.SemanticKernel.Experimental.Assistants.Models;
+using Internal;
+using Models;
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 
 /// <summary>
 /// Supported OpenAI REST API actions for thread runs.
@@ -46,6 +47,7 @@ internal static partial class OpenAIRestExtensions
                 cancellationToken);
     }
 
+
     /// <summary>
     /// Retrieve an run by identifier.
     /// </summary>
@@ -65,6 +67,7 @@ internal static partial class OpenAIRestExtensions
                 GetRunUrl(threadId, runId),
                 cancellationToken);
     }
+
 
     /// <summary>
     /// Retrieve run steps by identifier.
@@ -86,6 +89,7 @@ internal static partial class OpenAIRestExtensions
                 cancellationToken);
     }
 
+
     /// <summary>
     /// Add a function result for a run.
     /// </summary>
@@ -103,10 +107,10 @@ internal static partial class OpenAIRestExtensions
         CancellationToken cancellationToken = default)
     {
         var payload =
-           new
-           {
-               tool_outputs = results
-           };
+            new
+            {
+                tool_outputs = results
+            };
 
         return
             context.ExecutePostAsync<ThreadRunModel>(
@@ -115,20 +119,24 @@ internal static partial class OpenAIRestExtensions
                 cancellationToken);
     }
 
+
     internal static string GetRunUrl(string threadId)
     {
         return $"{BaseThreadUrl}/{threadId}/runs";
     }
+
 
     internal static string GetRunUrl(string threadId, string runId)
     {
         return $"{BaseThreadUrl}/{threadId}/runs/{runId}";
     }
 
+
     internal static string GetRunStepsUrl(string threadId, string runId)
     {
         return $"{BaseThreadUrl}/{threadId}/runs/{runId}/steps";
     }
+
 
     internal static string GetRunToolOutput(string threadId, string runId)
     {

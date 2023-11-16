@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics;
 
 internal static class Verify
 {
@@ -18,6 +19,7 @@ internal static class Verify
         }
     }
 
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void NotNull([NotNull] object? obj, string message)
     {
@@ -26,23 +28,28 @@ internal static class Verify
         throw new ArgumentNullException(null, message);
     }
 
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void NotNullOrEmpty([NotNull] string? str, string message)
     {
         NotNull(str, message);
+
         if (!string.IsNullOrWhiteSpace(str)) { return; }
 
         throw new ArgumentOutOfRangeException(message);
     }
 
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void ArgNotNullOrEmpty([NotNull] string? str, string paramName, [CallerMemberName] string? caller = default)
     {
         NotNull(str, paramName);
+
         if (!string.IsNullOrWhiteSpace(str)) { return; }
 
         throw new ArgumentException(paramName, $"Parameter {paramName} cannot be empty." + (!string.IsNullOrEmpty(caller) ? $"({caller})" : string.Empty));
     }
+
 
     internal static void NotNullOrEmpty<T>(IList<T> list, string message)
     {
@@ -51,6 +58,7 @@ internal static class Verify
             throw new ArgumentOutOfRangeException(message);
         }
     }
+
 
     public static void IsValidUrl(string name, string url, bool requireHttps, bool allowReservedIp, bool allowQuery)
     {

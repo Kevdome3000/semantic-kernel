@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Http;
+
 using System;
 using System.Net.Http;
-using Microsoft.Extensions.Logging;
+using Extensions.Logging;
 
-namespace Microsoft.SemanticKernel.Http;
 
 /// <summary>
 /// A factory for creating instances of <see cref="DelegatingHandler"/>.

@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Experimental.Assistants.UnitTests.Extensions;
+
 using System;
 using System.Net;
 using System.Net.Http;
@@ -12,7 +14,6 @@ using Moq;
 using Moq.Protected;
 using Xunit;
 
-namespace SemanticKernel.Experimental.Assistants.UnitTests.Extensions;
 
 [Trait("Category", "Unit Tests")]
 [Trait("Feature", "Assistant")]
@@ -26,6 +27,7 @@ public sealed class OpenAIRestExtensionsRunTests
     private readonly OpenAIRestContext _restContext;
     private readonly Mock<HttpMessageHandler> _mockHttpMessageHandler = new();
 
+
     public OpenAIRestExtensionsRunTests()
     {
         this._mockHttpMessageHandler
@@ -35,6 +37,7 @@ public sealed class OpenAIRestExtensionsRunTests
         this._restContext = new(BogusApiKey, () => new HttpClient(this._mockHttpMessageHandler.Object));
     }
 
+
     [Fact]
     public async Task CreateRunAsync()
     {
@@ -42,6 +45,7 @@ public sealed class OpenAIRestExtensionsRunTests
 
         this._mockHttpMessageHandler.VerifyMock(HttpMethod.Post, 1, OpenAIRestExtensions.GetRunUrl(TestThreadId));
     }
+
 
     [Fact]
     public async Task GetRunAsync()
@@ -51,6 +55,7 @@ public sealed class OpenAIRestExtensionsRunTests
         this._mockHttpMessageHandler.VerifyMock(HttpMethod.Get, 1, OpenAIRestExtensions.GetRunUrl(TestThreadId, TestRunId));
     }
 
+
     [Fact]
     public async Task GetRunStepsAsync()
     {
@@ -58,6 +63,7 @@ public sealed class OpenAIRestExtensionsRunTests
 
         this._mockHttpMessageHandler.VerifyMock(HttpMethod.Get, 1, OpenAIRestExtensions.GetRunStepsUrl(TestThreadId, TestRunId));
     }
+
 
     [Fact]
     public async Task AddToolOutputsAsync()

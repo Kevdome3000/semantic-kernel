@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 #pragma warning disable CA1812
 
+namespace Microsoft.SemanticKernel.Experimental.Assistants.Models;
+
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
 /// <summary>
 /// Represents an execution run on a thread.
@@ -118,6 +119,7 @@ internal sealed class ThreadRunModel
     /// </summary>
     [JsonPropertyName("metadata")]
     public Dictionary<string, object> Metadata { get; set; } = new Dictionary<string, object>();
+
 
     /// <summary>
     /// Run error information.

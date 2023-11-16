@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Diagnostics;
-
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
+
+using Diagnostics;
+
 
 internal static class IKernelExtensions
 {

@@ -1,18 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Planners.Handlebars;
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
+using Diagnostics;
 using HandlebarsDotNet;
 using HandlebarsDotNet.Compiler;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Text;
+using Orchestration;
+using Text;
 
-namespace Microsoft.SemanticKernel.Planners.Handlebars;
 
 /// <summary>
 /// Provides extension methods for rendering Handlebars templates in the context of a Semantic Kernel.
@@ -28,6 +29,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
     /// The character used to delimit the plugin name and function name in a Handlebars template.
     /// </summary>
     public const string ReservedNameDelimiter = "-";
+
 
     /// <summary>
     /// Renders a Handlebars template in the context of a Semantic Kernel.
@@ -63,6 +65,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
         var compiledTemplate = handlebarsInstance.Compile(template);
         return compiledTemplate(variables);
     }
+
 
     private static void RegisterFunctionAsHelper(
         IKernel kernel,
@@ -104,12 +107,15 @@ internal sealed class HandlebarsTemplateEngineExtensions
                 {
                     // Process positional arguments
                     var requiredParameters = functionView.Parameters.Where(p => p.IsRequired == true).ToList();
+
                     if (arguments.Length >= requiredParameters.Count && arguments.Length <= functionView.Parameters.Count)
                     {
                         var argIndex = 0;
+
                         foreach (var arg in arguments)
                         {
                             var param = functionView.Parameters[argIndex];
+
                             if (IsExpectedParameterType(param.Type.ToString() ?? "", arg.GetType().Name, arg))
                             {
                                 variables[param.Name] = arguments[argIndex];
@@ -131,6 +137,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
             foreach (var v in variables)
             {
                 var varString = v.Value?.ToString() ?? "";
+
                 if (executionContext.Variables.TryGetValue(v.Key, out var argVal))
                 {
                     executionContext.Variables[v.Key] = varString;
@@ -152,6 +159,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
             return result.GetValue<object?>();
         });
     }
+
 
     private static void RegisterSystemHelpers(
         IHandlebars handlebarsInstance,
@@ -290,6 +298,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
         {
             var name = string.Empty;
             object value = string.Empty;
+
             if (arguments[0].GetType() == typeof(HashParameterDictionary))
             {
                 // Get the parameters from the template arguments
@@ -325,6 +334,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
         });
     }
 
+
     private static bool IsNumericType(string typeStr)
     {
         Type? type = typeStr.IsNullOrEmpty() ? Type.GetType(typeStr) : null;
@@ -341,21 +351,23 @@ internal sealed class HandlebarsTemplateEngineExtensions
         };
     }
 
+
     private static bool TryParseAnyNumber(string input)
     {
         // Check if input can be parsed as any of these numeric types  
         return int.TryParse(input, out _)
-            || double.TryParse(input, out _)
-            || float.TryParse(input, out _)
-            || long.TryParse(input, out _)
-            || decimal.TryParse(input, out _)
-            || short.TryParse(input, out _)
-            || byte.TryParse(input, out _)
-            || sbyte.TryParse(input, out _)
-            || ushort.TryParse(input, out _)
-            || uint.TryParse(input, out _)
-            || ulong.TryParse(input, out _);
+               || double.TryParse(input, out _)
+               || float.TryParse(input, out _)
+               || long.TryParse(input, out _)
+               || decimal.TryParse(input, out _)
+               || short.TryParse(input, out _)
+               || byte.TryParse(input, out _)
+               || sbyte.TryParse(input, out _)
+               || ushort.TryParse(input, out _)
+               || uint.TryParse(input, out _)
+               || ulong.TryParse(input, out _);
     }
+
 
     private static double CastToNumber(object? number)
     {
@@ -373,6 +385,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
         }
     }
 
+
     /*
      * Type check will pass if:
      * Types are an exact match.
@@ -383,6 +396,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
     private static bool IsExpectedParameterType(string functionViewType, string handlebarArgumentType, object handlebarArgValue)
     {
         var isValidNumericType = IsNumericType(functionViewType) && IsNumericType(handlebarArgumentType);
+
         if (IsNumericType(functionViewType) && !IsNumericType(handlebarArgumentType))
         {
             isValidNumericType = TryParseAnyNumber(handlebarArgValue.ToString());

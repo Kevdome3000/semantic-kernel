@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Experimental.Assistants.UnitTests;
+
 using System;
 using System.Net.Http;
 using System.Threading;
 using Moq;
 using Moq.Protected;
 
-namespace SemanticKernel.Experimental.Assistants.UnitTests;
 
 internal static class MockExtensions
 {

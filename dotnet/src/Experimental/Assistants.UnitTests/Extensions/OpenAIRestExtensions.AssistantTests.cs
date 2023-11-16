@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Experimental.Assistants.UnitTests.Extensions;
+
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -11,7 +13,6 @@ using Moq;
 using Moq.Protected;
 using Xunit;
 
-namespace SemanticKernel.Experimental.Assistants.UnitTests.Extensions;
 
 [Trait("Category", "Unit Tests")]
 [Trait("Feature", "Assistant")]
@@ -24,6 +25,7 @@ public sealed class OpenAIRestExtensionsAssistantTests
     private readonly OpenAIRestContext _restContext;
     private readonly Mock<HttpMessageHandler> _mockHttpMessageHandler = new();
 
+
     public OpenAIRestExtensionsAssistantTests()
     {
         this._mockHttpMessageHandler
@@ -33,6 +35,7 @@ public sealed class OpenAIRestExtensionsAssistantTests
         this._restContext = new(BogusApiKey, () => new HttpClient(this._mockHttpMessageHandler.Object));
     }
 
+
     [Fact]
     public async Task CreateAssistantModelAsync()
     {
@@ -40,6 +43,7 @@ public sealed class OpenAIRestExtensionsAssistantTests
 
         this._mockHttpMessageHandler.VerifyMock(HttpMethod.Post, 1, OpenAIRestExtensions.BaseAssistantUrl);
     }
+
 
     [Fact]
     public async Task GetAssistantModelAsync()
@@ -49,6 +53,7 @@ public sealed class OpenAIRestExtensionsAssistantTests
         this._mockHttpMessageHandler.VerifyMock(HttpMethod.Get, 1, OpenAIRestExtensions.GetAssistantUrl(TestAssistantId));
     }
 
+
     [Fact]
     public async Task ListAssistantModelsAsync()
     {
@@ -56,6 +61,7 @@ public sealed class OpenAIRestExtensionsAssistantTests
 
         this._mockHttpMessageHandler.VerifyMock(HttpMethod.Get, 1, $"{OpenAIRestExtensions.BaseAssistantUrl}?limit=10&order=desc&after=20");
     }
+
 
     [Fact]
     public async Task DeleteAssistantModelAsync()

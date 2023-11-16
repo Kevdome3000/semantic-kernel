@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Planners.Handlebars;
+
 using System.Collections.Generic;
 using System.Threading;
-using Microsoft.SemanticKernel.Orchestration;
+using Orchestration;
 
-namespace Microsoft.SemanticKernel.Planners.Handlebars;
 
 /// <summary>
 /// Represents a Handlebars plan.
@@ -13,6 +14,7 @@ public sealed class HandlebarsPlan
 {
     private readonly IKernel _kernel;
     private readonly string _template;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HandlebarsPlan"/> class.
@@ -25,11 +27,13 @@ public sealed class HandlebarsPlan
         this._template = template;
     }
 
+
     /// <inheritdoc/>
     public override string ToString()
     {
         return this._template;
     }
+
 
     /// <summary>
     /// Invokes the Handlebars plan.

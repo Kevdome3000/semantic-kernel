@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Functions.OpenAPI.Builders.Serialization;
+
 using System.Collections.Generic;
 using System.Text.Json.Nodes;
 using System.Web;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.Builders.Serialization;
 
 /// <summary>
 /// This class provides methods for serializing values of array parameters.
@@ -29,6 +30,7 @@ internal static class ArrayParameterValueSerializer
 
         return string.Join(delimiter, segments); //id=1&id=2&id=3
     }
+
 
     /// <summary>
     /// Serializes the items of an array as one parameter with delimited values.

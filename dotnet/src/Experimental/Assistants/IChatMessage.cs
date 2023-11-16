@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Experimental.Assistants;
+
 using System.Collections.ObjectModel;
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants;
 
 /// <summary>
 /// Represents a message that is part of an assistant thread.

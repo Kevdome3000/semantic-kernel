@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Experimental.Assistants.UnitTests.Extensions;
+
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -10,7 +12,6 @@ using Moq;
 using Moq.Protected;
 using Xunit;
 
-namespace SemanticKernel.Experimental.Assistants.UnitTests.Extensions;
 
 [Trait("Category", "Unit Tests")]
 [Trait("Feature", "Assistant")]
@@ -24,6 +25,7 @@ public sealed class OpenAIRestExtensionsMessagesTests
     private readonly OpenAIRestContext _restContext;
     private readonly Mock<HttpMessageHandler> _mockHttpMessageHandler = new();
 
+
     public OpenAIRestExtensionsMessagesTests()
     {
         this._mockHttpMessageHandler
@@ -33,6 +35,7 @@ public sealed class OpenAIRestExtensionsMessagesTests
         this._restContext = new(BogusApiKey, () => new HttpClient(this._mockHttpMessageHandler.Object));
     }
 
+
     [Fact]
     public async Task CreateMessageModelAsync()
     {
@@ -40,6 +43,7 @@ public sealed class OpenAIRestExtensionsMessagesTests
 
         this._mockHttpMessageHandler.VerifyMock(HttpMethod.Post, 1, OpenAIRestExtensions.GetMessagesUrl(TestThreadId));
     }
+
 
     [Fact]
     public async Task GetMessageModelAsync()
@@ -49,6 +53,7 @@ public sealed class OpenAIRestExtensionsMessagesTests
         this._mockHttpMessageHandler.VerifyMock(HttpMethod.Get, 1, OpenAIRestExtensions.GetMessagesUrl(TestThreadId, TestMessageId));
     }
 
+
     [Fact]
     public async Task GetMessageModelsAsync()
     {
@@ -56,6 +61,7 @@ public sealed class OpenAIRestExtensionsMessagesTests
 
         this._mockHttpMessageHandler.VerifyMock(HttpMethod.Get, 1, OpenAIRestExtensions.GetMessagesUrl(TestThreadId));
     }
+
 
     [Fact]
     public async Task GetSpecificMessageModelsAsync()

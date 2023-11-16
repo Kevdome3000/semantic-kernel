@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 #pragma warning disable CA1812
 
+namespace Microsoft.SemanticKernel.Experimental.Assistants.Models;
+
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
 /// <summary>
 /// Wrapper for parameter map.
@@ -35,6 +36,7 @@ internal sealed class OpenAIParameters
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public List<string>? Required { get; set; }
 }
+
 
 /// <summary>
 /// Wrapper for parameter definition.

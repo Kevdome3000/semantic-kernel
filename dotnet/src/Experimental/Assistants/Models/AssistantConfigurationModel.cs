@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 #pragma warning disable CA1812
 
+namespace Microsoft.SemanticKernel.Experimental.Assistants.Models;
+
 using YamlDotNet.Serialization;
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
 /// <summary>
 /// Represents a yaml configuration file for an assistant.

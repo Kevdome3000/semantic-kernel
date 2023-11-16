@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
+
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Experimental.Assistants.Internal;
+using Diagnostics;
+using Internal;
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 
 internal static partial class OpenAIRestExtensions
 {
@@ -14,6 +15,7 @@ internal static partial class OpenAIRestExtensions
     private const string HeaderNameOpenAIAssistant = "OpenAI-Beta";
     private const string HeaderNameAuthorization = "Authorization";
     private const string HeaderOpenAIValueAssistant = "assistants=v1";
+
 
     private static async Task<TResult> ExecuteGetAsync<TResult>(
         this OpenAIRestContext context,
@@ -26,6 +28,7 @@ internal static partial class OpenAIRestExtensions
         request.Headers.Add(HeaderNameOpenAIAssistant, HeaderOpenAIValueAssistant);
 
         using var response = await context.GetHttpClient().SendAsync(request, cancellationToken).ConfigureAwait(false);
+
         if (!response.IsSuccessStatusCode)
         {
             throw new SKException($"Unexpected failure: {response.StatusCode} [{url}]");
@@ -37,6 +40,7 @@ internal static partial class OpenAIRestExtensions
             throw new SKException($"Null result processing: {typeof(TResult).Name}");
     }
 
+
     private static Task<TResult> ExecutePostAsync<TResult>(
         this OpenAIRestContext context,
         string url,
@@ -44,6 +48,7 @@ internal static partial class OpenAIRestExtensions
     {
         return context.ExecutePostAsync<TResult>(url, payload: null, cancellationToken);
     }
+
 
     private static async Task<TResult> ExecutePostAsync<TResult>(
         this OpenAIRestContext context,
@@ -57,6 +62,7 @@ internal static partial class OpenAIRestExtensions
         request.Headers.Add(HeaderNameOpenAIAssistant, HeaderOpenAIValueAssistant);
 
         using var response = await context.GetHttpClient().SendAsync(request, cancellationToken).ConfigureAwait(false);
+
         if (!response.IsSuccessStatusCode)
         {
             throw new SKException($"Unexpected failure: {response.StatusCode} [{url}]");
@@ -67,6 +73,7 @@ internal static partial class OpenAIRestExtensions
             JsonSerializer.Deserialize<TResult>(responseBody) ??
             throw new SKException($"Null result processing: {typeof(TResult).Name}");
     }
+
 
     private static async Task ExecuteDeleteAsync(
         this OpenAIRestContext context,
@@ -79,6 +86,7 @@ internal static partial class OpenAIRestExtensions
         request.Headers.Add(HeaderNameOpenAIAssistant, HeaderOpenAIValueAssistant);
 
         using var response = await context.GetHttpClient().SendAsync(request, cancellationToken).ConfigureAwait(false);
+
         if (!response.IsSuccessStatusCode)
         {
             throw new SKException($"Unexpected failure: {response.StatusCode} [{url}]");

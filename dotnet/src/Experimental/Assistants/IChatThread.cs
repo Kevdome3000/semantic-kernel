@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Experimental.Assistants;
+
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants;
 
 /// <summary>
 /// Represents a thread that contains messages.
@@ -16,6 +17,7 @@ public interface IChatThread
     /// </summary>
     string Id { get; }
 
+
     /// <summary>
     /// Add a textual user message to the thread.
     /// </summary>
@@ -24,6 +26,7 @@ public interface IChatThread
     /// <returns></returns>
     Task<IChatMessage> AddUserMessageAsync(string message, CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Advance the thread with the specified assistant.
     /// </summary>
@@ -31,6 +34,7 @@ public interface IChatThread
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>The resulting assistant message(s)</returns>
     Task<IEnumerable<IChatMessage>> InvokeAsync(IAssistant assistant, CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Delete existing thread.

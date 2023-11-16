@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Experimental.Assistants.Models;
+
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants.Models;
+
 /// <summary>
 /// Tool entry
 /// </summary>
@@ -20,6 +22,7 @@ internal sealed record ToolModel
     [JsonPropertyName("function")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public FunctionModel? Function { get; init; }
+
 
     /// <summary>
     /// Defines the function when ToolModel.Type == 'function'.

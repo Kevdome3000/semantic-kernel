@@ -1,17 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Experimental.Assistants.Internal;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
-using Microsoft.SemanticKernel.Experimental.Assistants.Models;
-using Microsoft.SemanticKernel.Orchestration;
+using Diagnostics;
+using Extensions;
+using Models;
+using Orchestration;
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 
 /// <summary>
 /// Represents an execution run on a thread.
@@ -41,6 +42,7 @@ internal sealed class ChatRun
     private readonly OpenAIRestContext _restContext;
     private ThreadRunModel _model;
     private readonly IKernel _kernel;
+
 
     /// <inheritdoc/>
     public async Task<IList<string>> GetResultAsync(CancellationToken cancellationToken = default)
@@ -101,6 +103,7 @@ internal sealed class ChatRun
         }
     }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatRun"/> class.
     /// </summary>
@@ -114,6 +117,7 @@ internal sealed class ChatRun
         this._restContext = restContext;
     }
 
+
     private IEnumerable<Task<ToolResultModel>> ExecuteStep(ThreadRunStepModel step, CancellationToken cancellationToken)
     {
         // Process all of the steps that require action
@@ -126,6 +130,7 @@ internal sealed class ChatRun
             }
         }
     }
+
 
     private async Task<ToolResultModel> ProcessFunctionStepAsync(string callId, ThreadRunStepModel.FunctionDetailsModel functionDetails, CancellationToken cancellationToken)
     {
@@ -143,9 +148,11 @@ internal sealed class ChatRun
             var function = this._kernel.GetAssistantTool(functionDetails.Name);
 
             var variables = new ContextVariables();
+
             if (!string.IsNullOrWhiteSpace(functionDetails.Arguments))
             {
                 var arguments = JsonSerializer.Deserialize<Dictionary<string, object>>(functionDetails.Arguments)!;
+
                 foreach (var argument in arguments)
                 {
                     variables[argument.Key] = argument.Value.ToString();

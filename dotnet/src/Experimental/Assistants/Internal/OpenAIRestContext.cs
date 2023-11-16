@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Experimental.Assistants.Internal;
+
 using System;
 using System.Net.Http;
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 
 /// <summary>
 /// Placeholder context.
@@ -11,13 +12,17 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 internal sealed class OpenAIRestContext
 {
     private static readonly HttpClient s_defaultOpenAIClient = new();
+
     /// <inheritdoc/>
     public string ApiKey { get; }
+
 
     /// <inheritdoc/>
     public HttpClient GetHttpClient() => this._clientFactory.Invoke();
 
+
     private readonly Func<HttpClient> _clientFactory;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIRestContext"/> class.

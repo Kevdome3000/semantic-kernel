@@ -11,41 +11,42 @@ I want you to generate 10 random numbers and send them to another helper.{{/mess
 ```handlebars
 {{!-- Step 1: initialize the count --}}
 \{{set
-  "count"
-  10
+"count"
+10
 }}
 {{!-- Step 2: loop using the count --}}
 \{{#each
-  (range
-    1
-    (get
-      "count"
-    )
-  )
+(range
+1
+(get
+"count"
+)
+)
 }}
-  \{{set
-    "index"
-    this
-  }}
-  {{!-- Step 3: create random number --}}
-  \{{set
-    "randomNumber"
-    (example.random
-      seed=index
-    )
-  }}
-  {{!-- Step 4: call example helper with random number and print the result to the screen --}}
-  \{{json
-    (Example{{reservedNameDelimiter}}Helper
-      input=(get
-        "randomNumber"
-      )
-    )
-  }}
+\{{set
+"index"
+this
+}}
+{{!-- Step 3: create random number --}}
+\{{set
+"randomNumber"
+(example.random
+seed=index
+)
+}}
+{{!-- Step 4: call example helper with random number and print the result to the screen --}}
+\{{json
+(Example{{reservedNameDelimiter}}Helper
+input=(get
+"randomNumber"
+)
+)
+}}
 \{{/each}}
 ```{{/message}}
 {{#message role="system"}}Now let's try the real thing.{{/message}}
-{{#message role="user"}}Please show me how to write a Handlebars template that achieves the following goal with the available helpers.
+{{#message
+        role="user"}}Please show me how to write a Handlebars template that achieves the following goal with the available helpers.
 
 ## Goal
 {{goal}}
@@ -95,7 +96,7 @@ Before we get to custom helpers, let's learn about complex objects. Some helpers
 ```json
 {
 {{#each Properties}}
-    "{{Name}}": {{Type.Name}},
+"{{Name}}": {{Type.Name}},
 {{/each}}
 }
 ```
@@ -110,9 +111,9 @@ Lastly, you also have the following Handlebars helpers that you can use to accom
 ### `{{doubleOpen}}{{PluginName}}{{../reservedNameDelimiter}}{{Name}}{{doubleClose}}`
 Description: {{Description}}
 Inputs:
-  {{#each Parameters}}
-    - {{Name}}: {{#if Type}}{{Type.Name}} - {{/if}}{{Description}} {{#if IsRequired}}(required){{else}}(optional){{/if}}
-  {{/each}}
+{{#each Parameters}}
+- {{Name}}: {{#if Type}}{{Type.Name}} - {{/if}}{{Description}} {{#if IsRequired}}(required){{else}}(optional){{/if}}
+{{/each}}
 {{!-- TODO (@teresaqhoang): support return type {{ReturnType.Name}} {{../reservedNameDelimiter}} {{ReturnDescription}}--}}
 Output: string - The result of the helper.
 

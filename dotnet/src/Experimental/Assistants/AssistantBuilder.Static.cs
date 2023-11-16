@@ -1,18 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Experimental.Assistants;
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
-using Microsoft.SemanticKernel.Experimental.Assistants.Internal;
-using Microsoft.SemanticKernel.Experimental.Assistants.Models;
+using Connectors.AI.OpenAI.ChatCompletion;
+using Diagnostics;
+using Extensions;
+using Internal;
+using Models;
 using YamlDotNet.Serialization;
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants;
 
 /// <summary>
 /// Context for interacting with OpenAI REST API.
@@ -50,6 +51,7 @@ public partial class AssistantBuilder
                 .ConfigureAwait(false);
     }
 
+
     /// <summary>
     /// Create a new assistant from a yaml template.
     /// </summary>
@@ -70,6 +72,7 @@ public partial class AssistantBuilder
 
         return FromDefinitionAsync(apiKey, model, yamlContent, functions, cancellationToken);
     }
+
 
     /// <summary>
     /// Create a new assistant.
@@ -95,6 +98,7 @@ public partial class AssistantBuilder
                 .WithDescription(description)
                 .BuildAsync().ConfigureAwait(false);
     }
+
 
     /// <summary>
     /// Retrieve an existing assistant, by identifier.
