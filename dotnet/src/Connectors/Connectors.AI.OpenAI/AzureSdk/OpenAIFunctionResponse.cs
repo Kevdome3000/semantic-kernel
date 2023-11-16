@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using Azure.AI.OpenAI;
-using Text;
 
 
 /// <summary>
@@ -35,7 +34,7 @@ public class OpenAIFunctionResponse
     /// If there is no plugin name, this is the same as the function name.
     /// </summary>
     public string FullyQualifiedName =>
-        PluginName.IsNullOrEmpty() ? FunctionName : $"{PluginName}{OpenAIFunction.NameSeparator}{FunctionName}";
+        string.IsNullOrEmpty(PluginName) ? FunctionName : $"{PluginName}{OpenAIFunction.NameSeparator}{FunctionName}";
 
 
     /// <summary>

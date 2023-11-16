@@ -5,6 +5,7 @@ namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 using System;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using Diagnostics;
 
 
@@ -51,6 +52,7 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
     /// Creates a new AuthorRole instance with the provided label.
     /// </summary>
     /// <param name="label"></param>
+    [JsonConstructor]
     public AuthorRole(string label)
     {
         Verify.NotNull(label, nameof(label));

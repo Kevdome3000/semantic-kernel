@@ -33,7 +33,7 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
 
 
     /// <inheritdoc/>
-    public async Task<ChatMessageBase> GetChatMessageAsync(CancellationToken cancellationToken = default)
+    public async Task<SemanticKernel.AI.ChatCompletion.ChatMessage> GetChatMessageAsync(CancellationToken cancellationToken = default)
     {
         var chatMessage = await _choice.GetMessageStreaming(cancellationToken)
             .LastOrDefaultAsync(cancellationToken)
@@ -46,7 +46,7 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
 
         if (!_isFunctionCall)
         {
-            return new SKChatMessage(chatMessage);
+            return new AzureOpenAIChatMessage(chatMessage);
         }
 
         var content = chatMessage.FunctionCall.Arguments;
@@ -54,7 +54,7 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
 
         if (IsValidJson(content))
         {
-            return new SKChatMessage(AuthorRole.Function.Label, content, functionName);
+            return new AzureOpenAIChatMessage(AuthorRole.Function.Label, content, functionName);
         }
 
         content = CleanJson(content);
@@ -63,12 +63,12 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
                           $"Original Version: {chatMessage.FunctionCall.Arguments} \n" +
                           $"Cleaned Version: {content}");
 
-        return new SKChatMessage(AuthorRole.Function.Label, content, functionName);
+        return new AzureOpenAIChatMessage(AuthorRole.Function.Label, content, functionName);
     }
 
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<ChatMessageBase> GetStreamingChatMessageAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<SemanticKernel.AI.ChatCompletion.ChatMessage> GetStreamingChatMessageAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         await foreach (var message in _choice.GetMessageStreaming(cancellationToken))
         {
@@ -76,7 +76,7 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
             {
                 if (!string.IsNullOrWhiteSpace(message.Content))
                 {
-                    yield return new SKChatMessage(message);
+                    yield return new AzureOpenAIChatMessage(message);
                 }
 
                 continue;
@@ -88,7 +88,7 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
             // if the contents first character is not a curly brace, then clean the json
             if (IsValidJson(content))
             {
-                yield return new SKChatMessage(AuthorRole.Function.Label, content, functionName);
+                yield return new AzureOpenAIChatMessage(AuthorRole.Function.Label, content, functionName);
 
                 continue;
             }
@@ -98,7 +98,7 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
                               $"Original Version: {message.FunctionCall.Arguments} \n" +
                               $"Cleaned Version: {content}");
 
-            yield return new SKChatMessage(AuthorRole.Function.Label, content, functionName);
+            yield return new AzureOpenAIChatMessage(AuthorRole.Function.Label, content, functionName);
 
         }
     }

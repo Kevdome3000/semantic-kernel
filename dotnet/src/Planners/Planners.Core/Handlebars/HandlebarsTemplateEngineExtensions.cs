@@ -12,7 +12,6 @@ using Diagnostics;
 using HandlebarsDotNet;
 using HandlebarsDotNet.Compiler;
 using Orchestration;
-using Text;
 
 
 /// <summary>
@@ -337,7 +336,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
 
     private static bool IsNumericType(string typeStr)
     {
-        Type? type = typeStr.IsNullOrEmpty() ? Type.GetType(typeStr) : null;
+        Type? type = string.IsNullOrEmpty(typeStr) ? Type.GetType(typeStr) : null;
 
         if (type == null)
         {

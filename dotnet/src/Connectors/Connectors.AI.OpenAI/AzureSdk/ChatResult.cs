@@ -12,6 +12,7 @@ using Orchestration;
 using SemanticKernel.AI.ChatCompletion;
 using SemanticKernel.AI.TextCompletion;
 using static FunctionCalling.Extensions.ChatMessageExtensions;
+using ChatMessage = SemanticKernel.AI.ChatCompletion.ChatMessage;
 
 
 internal sealed class ChatResult : IChatResult, ITextResult
@@ -32,11 +33,11 @@ internal sealed class ChatResult : IChatResult, ITextResult
     public ModelResult ModelResult { get; }
 
 
-    public Task<ChatMessageBase> GetChatMessageAsync(CancellationToken cancellationToken = default)
+    public Task<ChatMessage> GetChatMessageAsync(CancellationToken cancellationToken = default)
     {
         if (!_isFunctionCall)
         {
-            return Task.FromResult<ChatMessageBase>(new SKChatMessage(_choice.Message));
+            return Task.FromResult((ChatMessage)new AzureOpenAIChatMessage(_choice.Message));
         }
 
         var content = _choice.Message.FunctionCall.Arguments;
@@ -47,7 +48,7 @@ internal sealed class ChatResult : IChatResult, ITextResult
             // if the contents first character is not a curly brace, then clean the json
             if (IsValidJson(content))
             {
-                return Task.FromResult<ChatMessageBase>(new SKChatMessage(AuthorRole.Assistant.Label, content, functionName));
+                return Task.FromResult((ChatMessage)new AzureOpenAIChatMessage(AuthorRole.Assistant.Label, content, functionName));
             }
         }
         catch (JsonException e)
@@ -60,7 +61,7 @@ internal sealed class ChatResult : IChatResult, ITextResult
                               $"Cleaned Version: {content}");
         }
 
-        return Task.FromResult<ChatMessageBase>(new SKChatMessage(AuthorRole.Assistant.Label, content, functionName));
+        return Task.FromResult((ChatMessage)new AzureOpenAIChatMessage(AuthorRole.Assistant.Label, content, functionName));
     }
 
 

@@ -4,7 +4,6 @@
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
 using System.Collections.Generic;
-using Text;
 
 #pragma warning restore IDE0130
 
@@ -35,7 +34,7 @@ public static class ChatHistoryExtensions
     {
         var chatMessage = chatResult.ModelResult.GetOpenAIChatResult().Choice.Message;
 
-        if (!chatMessage.Content.IsNullOrEmpty())
+        if (!string.IsNullOrEmpty(chatMessage.Content))
         {
             chatHistory.AddAssistantMessage(chatMessage.Content);
         }

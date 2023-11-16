@@ -1,12 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using Microsoft.SemanticKernel.Functions.Grpc.Model;
+
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.SemanticKernel.Functions.Grpc.Extensions;
 
+using System.Collections.Generic;
+using Model;
+
 #pragma warning disable RCS1175 // Unused 'this' parameter 'operation'.
+
 
 /// <summary>
 /// Class for extensions methods for the <see cref="GrpcOperation"/> class.
@@ -23,12 +26,12 @@ internal static class GrpcOperationExtensions
         var parameters = new ParameterView[]
         {
             // Register the "address" parameter so that it's possible to override it if needed.
-            new ParameterView(GrpcOperation.AddressArgumentName,
+            new(GrpcOperation.AddressArgumentName,
                 "Address for gRPC channel to use.",
                 string.Empty),
 
             // Register the "payload" parameter to be used as gRPC operation request message.
-            new ParameterView(GrpcOperation.PayloadArgumentName,
+            new(GrpcOperation.PayloadArgumentName,
                 "gRPC request message.",
                 string.Empty)
         };

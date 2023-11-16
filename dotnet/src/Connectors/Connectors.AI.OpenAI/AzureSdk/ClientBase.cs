@@ -21,7 +21,6 @@ using Prompt;
 using SemanticKernel.AI;
 using SemanticKernel.AI.ChatCompletion;
 using SemanticKernel.AI.TextCompletion;
-using Text;
 
 #pragma warning disable CA2208 // Instantiate argument exceptions correctly
 
@@ -255,7 +254,7 @@ public abstract class ClientBase
     /// <param name="cancellationToken">Async cancellation token</param>
     /// <returns>Streaming of generated chat message in string format</returns>
     protected private async IAsyncEnumerable<IChatStreamingResult> InternalGetChatStreamingResultsAsync(
-        IEnumerable<ChatMessageBase> chat,
+        IEnumerable<SemanticKernel.AI.ChatCompletion.ChatMessage> chat,
         AIRequestSettings? requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -364,7 +363,7 @@ public abstract class ClientBase
 
         var options = new CompletionsOptions
         {
-            Prompts = { text.NormalizeLineEndings() },
+            Prompts = { text.Replace("\r\n", "\n") }, // normalize line endings
             MaxTokens = requestSettings.MaxTokens,
             Temperature = (float?)requestSettings.Temperature,
             NucleusSamplingFactor = (float?)requestSettings.TopP,
@@ -394,7 +393,7 @@ public abstract class ClientBase
     }
 
 
-    internal static ChatCompletionsOptions CreateChatCompletionsOptions(OpenAIRequestSettings requestSettings, IEnumerable<ChatMessageBase> chatHistory)
+    internal static ChatCompletionsOptions CreateChatCompletionsOptions(OpenAIRequestSettings requestSettings, IEnumerable<SemanticKernel.AI.ChatCompletion.ChatMessage> chatHistory)
     {
         if (requestSettings.ResultsPerPrompt is < 1 or > MaxResultsPerPrompt)
         {
@@ -440,7 +439,7 @@ public abstract class ClientBase
 
         foreach (var message in chatHistory)
         {
-            var azureMessage = new ChatMessage(new ChatRole(message.Role.Label), message.Content);
+            var azureMessage = new Azure.AI.OpenAI.ChatMessage(new ChatRole(message.Role.Label), message.Content);
 
             if (message.AdditionalProperties?.TryGetValue(NameProperty, out string? name) is true)
             {

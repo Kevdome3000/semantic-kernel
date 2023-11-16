@@ -33,14 +33,14 @@ public sealed class OpenAIChatCompletionTests : IDisposable
         {
             Functions = new List<OpenAIFunction>()
             {
-                new OpenAIFunction
+                new()
                 {
                     FunctionName = "Date",
                     PluginName = "TimePlugin",
                     Description = "TimePlugin.Date",
                     Parameters = new List<OpenAIFunctionParameter>()
                     {
-                        new OpenAIFunctionParameter
+                        new()
                         {
                             Name = "Format",
                             Description = "Date format",
@@ -49,14 +49,14 @@ public sealed class OpenAIChatCompletionTests : IDisposable
                         }
                     }
                 },
-                new OpenAIFunction
+                new()
                 {
                     FunctionName = "Now",
                     PluginName = "TimePlugin",
                     Description = "TimePlugin.Now",
                     Parameters = new List<OpenAIFunctionParameter>()
                     {
-                        new OpenAIFunctionParameter
+                        new()
                         {
                             Name = "Format",
                             Description = "Date format",

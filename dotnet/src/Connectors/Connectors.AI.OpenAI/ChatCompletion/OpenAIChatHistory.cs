@@ -3,7 +3,6 @@
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
 using SemanticKernel.AI.ChatCompletion;
-using Text;
 
 
 /// <summary>
@@ -18,9 +17,9 @@ public class OpenAIChatHistory : ChatHistory
     /// <param name="systemMessage">Optional instructions for the assistant</param>
     public OpenAIChatHistory(string? systemMessage = null)
     {
-        if (!systemMessage.IsNullOrWhitespace())
+        if (!string.IsNullOrWhiteSpace(systemMessage))
         {
-            this.AddSystemMessage(systemMessage);
+            this.AddSystemMessage(systemMessage!);
         }
     }
 

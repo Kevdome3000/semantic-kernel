@@ -6,6 +6,7 @@ namespace Microsoft.SemanticKernel.Planners.Sequential.UnitTests;
 using System.Globalization;
 using AI;
 using Diagnostics;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Orchestration;

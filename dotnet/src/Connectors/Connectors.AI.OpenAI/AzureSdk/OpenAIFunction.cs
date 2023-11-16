@@ -10,7 +10,6 @@ using Extensions;
 using Json.More;
 using Json.Schema;
 using Json.Schema.Generation;
-using Text;
 
 
 /// <summary>
@@ -98,7 +97,7 @@ public class OpenAIFunction
     /// If there is no plugin name, this is the same as the function name.
     /// </summary>
     public string FullyQualifiedName =>
-        PluginName.IsNullOrEmpty() ? FunctionName : $"{PluginName}{NameSeparator}{FunctionName}";
+        string.IsNullOrEmpty(PluginName) ? FunctionName : $"{PluginName}{NameSeparator}{FunctionName}";
 
     /// <summary>
     /// Description of the function
