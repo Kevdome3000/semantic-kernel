@@ -54,7 +54,7 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
 
         if (IsValidJson(content))
         {
-            return new SKChatMessage(AuthorRole.FunctionCall.Label, content, functionName);
+            return new SKChatMessage(AuthorRole.Function.Label, content, functionName);
         }
 
         content = CleanJson(content);
@@ -63,7 +63,7 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
                           $"Original Version: {chatMessage.FunctionCall.Arguments} \n" +
                           $"Cleaned Version: {content}");
 
-        return new SKChatMessage(AuthorRole.FunctionCall.Label, content, functionName);
+        return new SKChatMessage(AuthorRole.Function.Label, content, functionName);
     }
 
 
@@ -88,7 +88,7 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
             // if the contents first character is not a curly brace, then clean the json
             if (IsValidJson(content))
             {
-                yield return new SKChatMessage(AuthorRole.FunctionCall.Label, content, functionName);
+                yield return new SKChatMessage(AuthorRole.Function.Label, content, functionName);
 
                 continue;
             }
@@ -98,7 +98,7 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
                               $"Original Version: {message.FunctionCall.Arguments} \n" +
                               $"Cleaned Version: {content}");
 
-            yield return new SKChatMessage(AuthorRole.FunctionCall.Label, content, functionName);
+            yield return new SKChatMessage(AuthorRole.Function.Label, content, functionName);
 
         }
     }

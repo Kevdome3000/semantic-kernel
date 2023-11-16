@@ -223,7 +223,7 @@ public sealed class FunctionCallingStepwisePlanner
 
         try
         {
-            functionResponse = chatResult.GetOpenAIFunctionResponse();
+            functionResponse = chatResult.GetFunctionResponse();
         }
         catch (JsonException)
         {
