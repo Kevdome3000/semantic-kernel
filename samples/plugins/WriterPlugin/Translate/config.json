@@ -17,14 +17,14 @@
     "parameters": [
       {
         "name": "input",
-        "description": "The text to translate",
+        "description": "Text to translate",
         "defaultValue": ""
       },
-        {
-            "name": "language",
-            "description": "The language to translate to",
-            "defaultValue": "en"
-        }
+       {
+        "name": "language",
+        "description": "Language to translate to",
+        "defaultValue": ""
+      }
     ]
   }
 }

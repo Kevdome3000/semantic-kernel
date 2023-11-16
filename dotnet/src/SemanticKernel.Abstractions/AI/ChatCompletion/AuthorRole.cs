@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.AI.ChatCompletion;
-
 using System;
 using System.ComponentModel;
-using Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.SemanticKernel.Diagnostics;
 
+namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
 /// <summary>
 /// A description of the intended purpose of a message within a chat completions interaction.
@@ -36,11 +36,6 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
     /// The role that provides information about a function call result.
     /// </summary>
     public static AuthorRole Function { get; } = new("function");
-
-    /// <summary>
-    ///  The role that is a function call.
-    /// </summary>
-    public static readonly AuthorRole FunctionCall = new("function");
 
     /// <summary>
     /// Gets the label associated with this AuthorRole.
@@ -88,7 +83,7 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
 
     /// <inheritdoc/>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public override bool Equals(object obj)
+    public override bool Equals([NotNullWhen(true)] object? obj)
         => obj is AuthorRole otherRole && this == otherRole;
 
 

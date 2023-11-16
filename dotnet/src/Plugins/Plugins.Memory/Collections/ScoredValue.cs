@@ -4,6 +4,7 @@ namespace Microsoft.SemanticKernel.Plugins.Memory.Collections;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 
 /// <summary>
@@ -87,7 +88,7 @@ public readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<
 
 
     /// <inheritdoc/>
-    public override bool Equals(object obj)
+    public override bool Equals([NotNullWhen(true)] object? obj)
     {
         return (obj is ScoredValue<T> other) && this.Equals(other);
     }

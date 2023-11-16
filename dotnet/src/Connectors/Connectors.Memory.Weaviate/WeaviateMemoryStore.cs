@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Weaviate;
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -15,14 +13,15 @@ using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Diagnostics;
-using Http.ApiSchema;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Model;
-using SemanticKernel.Memory;
-using Text;
+using Microsoft.SemanticKernel.Connectors.Memory.Weaviate.Http.ApiSchema;
+using Microsoft.SemanticKernel.Connectors.Memory.Weaviate.Model;
+using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Text;
 
+namespace Microsoft.SemanticKernel.Connectors.Memory.Weaviate;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore" /> for Weaviate.
@@ -59,7 +58,6 @@ public class WeaviateMemoryStore : IMemoryStore
     private readonly string? _apiVersion;
     private readonly string? _apiKey;
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="WeaviateMemoryStore"/> class.
     /// </summary>
@@ -81,7 +79,6 @@ public class WeaviateMemoryStore : IMemoryStore
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(WeaviateMemoryStore)) : NullLogger.Instance;
         this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WeaviateMemoryStore"/> class.
@@ -111,7 +108,6 @@ public class WeaviateMemoryStore : IMemoryStore
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(WeaviateMemoryStore)) : NullLogger.Instance;
         this._httpClient = httpClient;
     }
-
 
     /// <inheritdoc />
     public async Task CreateCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
@@ -144,7 +140,6 @@ public class WeaviateMemoryStore : IMemoryStore
             throw;
         }
     }
-
 
     /// <inheritdoc />
     public async Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancellationToken = default)
@@ -187,7 +182,6 @@ public class WeaviateMemoryStore : IMemoryStore
         }
     }
 
-
     /// <inheritdoc />
     public async IAsyncEnumerable<string> GetCollectionsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -208,7 +202,6 @@ public class WeaviateMemoryStore : IMemoryStore
         }
 
         GetSchemaResponse? getSchemaResponse = JsonSerializer.Deserialize<GetSchemaResponse>(responseContent, s_jsonSerializerOptions);
-
         if (getSchemaResponse == null)
         {
             throw new SKException("Unable to deserialize list collections response");
@@ -219,7 +212,6 @@ public class WeaviateMemoryStore : IMemoryStore
             yield return @class.Class!;
         }
     }
-
 
     /// <inheritdoc />
     public async Task DeleteCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
@@ -246,7 +238,6 @@ public class WeaviateMemoryStore : IMemoryStore
         }
     }
 
-
     /// <inheritdoc />
     public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default)
     {
@@ -255,11 +246,8 @@ public class WeaviateMemoryStore : IMemoryStore
         return await this.UpsertBatchAsync(collectionName, new[] { record }, cancellationToken).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false) ?? string.Empty;
     }
 
-
     /// <inheritdoc />
-    public async IAsyncEnumerable<string> UpsertBatchAsync(
-        string collectionName,
-        IEnumerable<MemoryRecord> records,
+    public async IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> records,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(collectionName, "Collection name is empty");
@@ -268,7 +256,6 @@ public class WeaviateMemoryStore : IMemoryStore
 
         string className = ToWeaviateFriendlyClassName(collectionName);
         BatchRequest requestBuilder = BatchRequest.Create(className);
-
         foreach (MemoryRecord? record in records)
         {
             requestBuilder.Add(record);
@@ -301,7 +288,6 @@ public class WeaviateMemoryStore : IMemoryStore
         }
     }
 
-
     /// <inheritdoc />
     public async Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancellationToken = default)
     {
@@ -327,18 +313,20 @@ public class WeaviateMemoryStore : IMemoryStore
         }
 
         WeaviateObject? weaviateObject = JsonSerializer.Deserialize<WeaviateObject>(responseContent, s_jsonSerializerOptions);
-
         if (weaviateObject == null)
         {
             this._logger.LogError("Unable to deserialize response to WeaviateObject");
             return null;
         }
 
-        DateTimeOffset? timestamp = weaviateObject.Properties == null ? null :
-            weaviateObject.Properties.TryGetValue("sk_timestamp", out object value) ? Convert.ToDateTime(value.ToString(), CultureInfo.InvariantCulture) : null;
+        DateTimeOffset? timestamp = weaviateObject.Properties == null
+            ? null
+            : weaviateObject.Properties.TryGetValue("sk_timestamp", out object? value)
+                ? Convert.ToDateTime(value.ToString(), CultureInfo.InvariantCulture)
+                : null;
 
         MemoryRecord record = new(
-            key: weaviateObject.Id!,
+            key: weaviateObject.Id,
             timestamp: timestamp,
             embedding: weaviateObject.Vector,
             metadata: ToMetadata(weaviateObject));
@@ -348,18 +336,13 @@ public class WeaviateMemoryStore : IMemoryStore
         return record;
     }
 
-
     /// <inheritdoc />
-    public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(
-        string collectionName,
-        IEnumerable<string> keys,
-        bool withEmbeddings = false,
+    public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         foreach (string? key in keys)
         {
             MemoryRecord? record = await this.GetAsync(collectionName, key, withEmbeddings, cancellationToken).ConfigureAwait(false);
-
             if (record != null)
             {
                 yield return record;
@@ -370,7 +353,6 @@ public class WeaviateMemoryStore : IMemoryStore
             }
         }
     }
-
 
     /// <inheritdoc />
     public async Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default)
@@ -403,13 +385,11 @@ public class WeaviateMemoryStore : IMemoryStore
         }
     }
 
-
     /// <inheritdoc />
     public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
         await Task.WhenAll(keys.Select(async k => await this.RemoveAsync(collectionName, k, cancellationToken).ConfigureAwait(false))).ConfigureAwait(false);
     }
-
 
     /// <inheritdoc />
     public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(
@@ -436,7 +416,6 @@ public class WeaviateMemoryStore : IMemoryStore
         }.Build();
 
         List<(MemoryRecord, double)> result = new();
-
         try
         {
             (_, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
@@ -471,12 +450,10 @@ public class WeaviateMemoryStore : IMemoryStore
         }
     }
 
-
     private static MemoryRecord DeserializeToMemoryRecord(JsonNode? json)
     {
         string id = json!["_additional"]!["id"]!.GetValue<string>();
         ReadOnlyMemory<float> vector = ReadOnlyMemory<float>.Empty;
-
         if (json["_additional"]!["vector"] is JsonArray jsonArray)
         {
             vector = jsonArray.Select(a => a!.GetValue<float>()).ToArray();
@@ -501,7 +478,6 @@ public class WeaviateMemoryStore : IMemoryStore
         return memoryRecord;
     }
 
-
     /// <inheritdoc />
     public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(
         string collectionName,
@@ -523,20 +499,17 @@ public class WeaviateMemoryStore : IMemoryStore
         return (record.Item1, record.Item2);
     }
 
-
     // Get a class description, useful for checking name collisions
     private static string ToWeaviateFriendlyClassDescription(string collectionName)
     {
-        return $"{"Semantic Kernel memory store for collection:"} {collectionName}";
+        return $"Semantic Kernel memory store for collection: {collectionName}";
     }
-
 
     // Convert a collectionName to a valid Weaviate class name
     private static string ToWeaviateFriendlyClassName(string collectionName)
     {
         // Prefix class names with to ensure proper case for Weaviate Classes
         var sanitised = s_classNameRegEx.Replace(collectionName, string.Empty);
-
         if (!char.IsLetter(sanitised[0]))
         {
             throw new ArgumentException("collectionName must start with a letter.", nameof(collectionName));
@@ -547,7 +520,6 @@ public class WeaviateMemoryStore : IMemoryStore
             : sanitised;
     }
 
-
     // Execute the HTTP request
     private async Task<(HttpResponseMessage response, string responseContent)> ExecuteHttpRequestAsync(
         HttpRequestMessage request,
@@ -556,7 +528,7 @@ public class WeaviateMemoryStore : IMemoryStore
         var apiVersion = !string.IsNullOrWhiteSpace(this._apiVersion) ? this._apiVersion : DefaultApiVersion;
         var baseAddress = this._endpoint ?? this._httpClient.BaseAddress;
 
-        request.RequestUri = new Uri(baseAddress, $"{apiVersion}/{request.RequestUri}");
+        request.RequestUri = new Uri(baseAddress!, $"{apiVersion}/{request.RequestUri}");
 
         if (!string.IsNullOrEmpty(this._apiKey))
         {
@@ -580,7 +552,6 @@ public class WeaviateMemoryStore : IMemoryStore
         }
     }
 
-
     private static MemoryRecordMetadata ToMetadata(WeaviateObject weaviateObject)
     {
         if (weaviateObject.Properties == null)
@@ -593,10 +564,10 @@ public class WeaviateMemoryStore : IMemoryStore
         return new(
             false,
             string.Empty,
-            weaviateObject.Properties["sk_id"].ToString(),
-            weaviateObject.Properties["sk_description"].ToString(),
-            weaviateObject.Properties["sk_text"].ToString(),
-            weaviateObject.Properties["sk_additional_metadata"].ToString()
+            weaviateObject.Properties["sk_id"].ToString() ?? string.Empty,
+            weaviateObject.Properties["sk_description"].ToString() ?? string.Empty,
+            weaviateObject.Properties["sk_text"].ToString() ?? string.Empty,
+            weaviateObject.Properties["sk_additional_metadata"].ToString() ?? string.Empty
         );
     }
 }
