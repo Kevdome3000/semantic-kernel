@@ -1,14 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.TemplateEngine;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
-using AI;
-using Text;
+using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.Models;
+using Microsoft.SemanticKernel.Text;
 
+namespace Microsoft.SemanticKernel.TemplateEngine;
 
 /// <summary>
 /// Prompt template configuration.
@@ -19,7 +19,6 @@ public class PromptTemplateConfig
     /// Semantic Kernel template format.
     /// </summary>
     public const string SemanticKernelTemplateFormat = "semantic-kernel";
-
 
     /// <summary>
     /// Input parameter for semantic functions.
@@ -49,7 +48,6 @@ public class PromptTemplateConfig
         public string DefaultValue { get; set; } = string.Empty;
     }
 
-
     /// <summary>
     /// Input configuration (list of all input parameters for a semantic function).
     /// </summary>
@@ -63,7 +61,6 @@ public class PromptTemplateConfig
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public List<InputParameter> Parameters { get; set; } = new();
     }
-
 
     /// <summary>
     /// Format of the prompt template e.g. f-string, semantic-kernel, handlebars, ...
@@ -95,7 +92,6 @@ public class PromptTemplateConfig
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public List<AIRequestSettings> ModelSettings { get; set; } = new();
 
-
     /// <summary>
     /// Return the default <see cref="AIRequestSettings"/>
     /// </summary>
@@ -104,9 +100,7 @@ public class PromptTemplateConfig
         return this.ModelSettings.FirstOrDefault() ?? new AIRequestSettings();
     }
 
-
     #region Obsolete
-
     /// <summary>
     /// Schema - Not currently used.
     /// </summary>
@@ -147,9 +141,7 @@ public class PromptTemplateConfig
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [Obsolete("DefaultServices property is not being used. This will be removed in a future release.")]
     public List<string> DefaultServices { get; set; } = new();
-
     #endregion
-
 
     /// <summary>
     /// Creates a prompt template configuration from JSON.
@@ -161,5 +153,24 @@ public class PromptTemplateConfig
     {
         var result = Json.Deserialize<PromptTemplateConfig>(json);
         return result ?? throw new ArgumentException("Unable to deserialize prompt template config from argument. The deserialization returned null.", nameof(json));
+    }
+
+    internal static PromptTemplateConfig ToPromptTemplateConfig(PromptFunctionModel semanticFunctionConfig)
+    {
+        return new PromptTemplateConfig()
+        {
+            TemplateFormat = semanticFunctionConfig.TemplateFormat,
+            Description = semanticFunctionConfig.Description,
+            Input = new InputConfig()
+            {
+                Parameters = semanticFunctionConfig.InputParameters.Select(p => new InputParameter()
+                {
+                    Name = p.Name,
+                    Description = p.Description,
+                    DefaultValue = p.DefaultValue
+                }).ToList()
+            },
+            ModelSettings = semanticFunctionConfig.ModelSettings
+        };
     }
 }

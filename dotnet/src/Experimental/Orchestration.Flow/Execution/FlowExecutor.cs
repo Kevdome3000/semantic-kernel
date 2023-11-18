@@ -12,9 +12,11 @@ using Abstractions;
 using AI.ChatCompletion;
 using Diagnostics;
 using Microsoft.Extensions.Logging;
-using SemanticKernel.Orchestration;
-using TemplateEngine;
-using TemplateEngine.Basic;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
+using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.TemplateEngine;
 
 
 /// <summary>
@@ -715,7 +717,7 @@ internal class FlowExecutor : IFlowExecutor
 
     private ISKFunction ImportSemanticFunction(IKernel kernel, string functionName, string promptTemplate, PromptTemplateConfig config)
     {
-        var factory = new BasicPromptTemplateFactory(kernel.LoggerFactory);
+        var factory = new KernelPromptTemplateFactory(kernel.LoggerFactory);
         var template = factory.Create(promptTemplate, config);
 
         return kernel.RegisterSemanticFunction(RestrictedPluginName, functionName, config, template);

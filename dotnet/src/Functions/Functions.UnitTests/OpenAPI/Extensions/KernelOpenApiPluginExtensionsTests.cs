@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Functions.UnitTests.OpenAPI.Extensions;
-
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -15,9 +13,10 @@ using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
 using Microsoft.SemanticKernel.Orchestration;
-using TestPlugins;
+using SemanticKernel.Functions.UnitTests.OpenAPI.TestPlugins;
 using Xunit;
 
+namespace SemanticKernel.Functions.UnitTests.OpenAPI.Extensions;
 
 public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
 {
@@ -36,7 +35,6 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
     /// </summary>
     private readonly IKernel _kernel;
 
-
     /// <summary>
     /// Creates an instance of a <see cref="KernelOpenApiPluginExtensionsTests"/> class.
     /// </summary>
@@ -48,7 +46,6 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
 
         this._sut = new OpenApiDocumentParser();
     }
-
 
     [Fact]
     public async Task ItCanIncludeOpenApiOperationParameterTypesIntoFunctionParametersViewAsync()
@@ -72,7 +69,6 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
         var payloadParameter = functionView.Parameters.First(p => p.Name == "payload");
         Assert.Equal(ParameterViewType.Object, payloadParameter.Type);
     }
-
 
     [Theory]
     [InlineData(true)]
@@ -112,7 +108,6 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
         Assert.StartsWith(ServerUrlOverride, messageHandlerStub.RequestUri.AbsoluteUri, StringComparison.Ordinal);
     }
 
-
     [Theory]
     [InlineData("documentV2_0.json")]
     [InlineData("documentV3_0.json")]
@@ -142,7 +137,6 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
         Assert.NotNull(messageHandlerStub.RequestUri);
         Assert.StartsWith(ServerUrlFromDocument, messageHandlerStub.RequestUri.AbsoluteUri, StringComparison.Ordinal);
     }
-
 
     [Theory]
     [InlineData("http://localhost:3001/openapi.json", "http://localhost:3001/", "documentV2_0.json")]
@@ -180,7 +174,6 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
         Assert.NotNull(messageHandlerStub.RequestUri);
         Assert.StartsWith(expectedServerUrl, messageHandlerStub.RequestUri.AbsoluteUri, StringComparison.Ordinal);
     }
-
 
     [Fact]
     public async Task ItShouldConvertPluginComplexResponseToStringToSaveItInContextAsync()
@@ -228,12 +221,56 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
         Assert.Equal("fake-content", fakePlugin.ParameterValueFakeMethodCalledWith);
     }
 
+    [Fact]
+    public async Task ItShouldRespectRunAsyncCancellationTokenOnExecutionAsync()
+    {
+        //Arrange
+        using var messageHandlerStub = new HttpMessageHandlerStub();
+        messageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
+
+        using var httpClient = new HttpClient(messageHandlerStub, false);
+
+        var executionParameters = new OpenApiFunctionExecutionParameters
+        {
+            HttpClient = httpClient
+        };
+
+        var fakePlugin = new FakePlugin();
+
+        using var registerCancellationToken = new System.Threading.CancellationTokenSource();
+        using var executeCancellationToken = new System.Threading.CancellationTokenSource();
+
+        var openApiPlugins = await this._kernel.ImportOpenApiPluginFunctionsAsync("fakePlugin", this._openApiDocument, executionParameters, registerCancellationToken.Token);
+
+        var kernel = KernelBuilder.Create();
+
+        var arguments = new ContextVariables
+        {
+            { "secret-name", "fake-secret-name" },
+            { "api-version", "fake-api-version" }
+        };
+
+        //Act
+        registerCancellationToken.Cancel();
+        var res = await kernel.RunAsync(arguments, executeCancellationToken.Token, openApiPlugins["GetSecret"]);
+
+        //Assert
+        Assert.NotNull(res);
+
+        var openApiPluginResult = res.FunctionResults.FirstOrDefault();
+        Assert.NotNull(openApiPluginResult);
+
+        var result = openApiPluginResult.GetValue<RestApiOperationResponse>();
+
+        //Check original response
+        Assert.NotNull(result);
+        Assert.Equal("fake-content", result.Content);
+    }
 
     public void Dispose()
     {
         this._openApiDocument.Dispose();
     }
-
 
     #region private ================================================================================
 
@@ -250,11 +287,9 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
         return variables;
     }
 
-
     private sealed class FakePlugin
     {
         public string? ParameterValueFakeMethodCalledWith { get; private set; }
-
 
         [SKFunction]
         public void DoFakeAction(string parameter)
@@ -264,6 +299,4 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
     }
 
     #endregion
-
-
 }

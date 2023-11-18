@@ -17,9 +17,13 @@ using Diagnostics;
 using Functions.OpenAPI.Model;
 using Json.More;
 using Microsoft.Extensions.Logging;
-using Orchestration;
-using TemplateEngine;
-using TemplateEngine.Basic;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
+using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.TemplateEngine;
 
 #pragma warning restore IDE0130
 
@@ -43,7 +47,7 @@ public sealed class FunctionCallingStepwisePlanner
         this._chatCompletion = kernel.GetService<IChatCompletion>();
 
         // Initialize prompt renderer
-        this._promptTemplateFactory = new BasicPromptTemplateFactory(this._kernel.LoggerFactory);
+        this._promptTemplateFactory = new KernelPromptTemplateFactory(this._kernel.LoggerFactory);
 
         // Set up Config with default values and excluded plugins
         this.Config = config ?? new();
@@ -166,7 +170,7 @@ public sealed class FunctionCallingStepwisePlanner
 
     private async Task<string> GetFunctionsManualAsync(CancellationToken cancellationToken)
     {
-        return await this._kernel.Functions.GetJsonSchemaFunctionsManualAsync(this.Config, null, this._logger, false, cancellationToken).ConfigureAwait(false);
+        return await this._kernel.Functions.GetJsonSchemaFunctionsViewAsync(this.Config, null, this._logger, false, cancellationToken).ConfigureAwait(false);
     }
 
 
@@ -310,7 +314,7 @@ public sealed class FunctionCallingStepwisePlanner
     /// <summary>
     /// The prompt renderer to use for the system step
     /// </summary>
-    private readonly BasicPromptTemplateFactory _promptTemplateFactory;
+    private readonly KernelPromptTemplateFactory _promptTemplateFactory;
 
     /// <summary>
     /// The name to use when creating semantic functions that are restricted from plan creation

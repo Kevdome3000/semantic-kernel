@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,19 +12,18 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Reliability.Basic;
 using Microsoft.SemanticKernel.TemplateEngine;
-using Microsoft.SemanticKernel.TemplateEngine.Basic;
-using TestSettings;
+using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
 
-#pragma warning disable xUnit1004 // Contains test methods used in manual verification. Disable warning for this file only.
+namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
+#pragma warning disable xUnit1004 // Contains test methods used in manual verification. Disable warning for this file only.
 
 public sealed class OpenAICompletionTests : IDisposable
 {
     private readonly KernelBuilder _kernelBuilder;
     private readonly IConfigurationRoot _configuration;
-
 
     public OpenAICompletionTests(ITestOutputHelper output)
     {
@@ -45,7 +42,6 @@ public sealed class OpenAICompletionTests : IDisposable
         this._kernelBuilder = new KernelBuilder();
         this._kernelBuilder.WithRetryBasic();
     }
-
 
     [Theory(Skip = "OpenAI will often throttle requests. This test is for manual verification.")]
     [InlineData("Where is the most famous fish market in Seattle, Washington, USA?", "Pike Place Market")]
@@ -73,7 +69,6 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.Contains(expectedAnswerContains, actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
 
-
     [Theory(Skip = "OpenAI will often throttle requests. This test is for manual verification.")]
     [InlineData("Where is the most famous fish market in Seattle, Washington, USA?", "Pike Place Market")]
     public async Task OpenAIChatAsTextTestAsync(string prompt, string expectedAnswerContains)
@@ -94,7 +89,6 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.Contains(expectedAnswerContains, actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
 
-
     [Fact(Skip = "Skipping while we investigate issue with GitHub actions.")]
     public async Task CanUseOpenAiChatForTextCompletionAsync()
     {
@@ -114,7 +108,6 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.Contains("Saturn", result.GetValue<string>(), StringComparison.InvariantCultureIgnoreCase);
         Assert.Contains("Uranus", result.GetValue<string>(), StringComparison.InvariantCultureIgnoreCase);
     }
-
 
     [Theory]
     [InlineData(false, "Where is the most famous fish market in Seattle, Washington, USA?", "Pike Place")]
@@ -143,7 +136,6 @@ public sealed class OpenAICompletionTests : IDisposable
         // Assert
         Assert.Contains(expectedAnswerContains, actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
-
 
     // If the test fails, please note that SK retry logic may not be fully integrated into the underlying code using Azure SDK
     [Theory]
@@ -175,7 +167,6 @@ public sealed class OpenAICompletionTests : IDisposable
         // Assert
         Assert.Contains(expectedOutput, this._testOutputHelper.GetLogs(), StringComparison.OrdinalIgnoreCase);
     }
-
 
     // If the test fails, please note that SK retry logic may not be fully integrated into the underlying code using Azure SDK
     [Theory]
@@ -211,7 +202,6 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.Contains(expectedOutput, this._testOutputHelper.GetLogs(), StringComparison.OrdinalIgnoreCase);
     }
 
-
     [Fact]
     public async Task OpenAIHttpInvalidKeyShouldReturnErrorDetailAsync()
     {
@@ -234,7 +224,6 @@ public sealed class OpenAICompletionTests : IDisposable
 
         Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)ex).StatusCode);
     }
-
 
     [Fact]
     public async Task AzureOpenAIHttpInvalidKeyShouldReturnErrorDetailAsync()
@@ -260,7 +249,6 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)ex).StatusCode);
     }
 
-
     [Fact]
     public async Task AzureOpenAIHttpExceededMaxTokensShouldReturnErrorDetailAsync()
     {
@@ -283,7 +271,6 @@ public sealed class OpenAICompletionTests : IDisposable
         // Assert
         await Assert.ThrowsAsync<HttpOperationException>(() => plugins["Summarize"].InvokeAsync(string.Join('.', Enumerable.Range(1, 40000)), target));
     }
-
 
     [Theory(Skip = "This test is for manual verification.")]
     [InlineData("\n", AIServiceType.OpenAI)]
@@ -313,7 +300,6 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.Contains(ExpectedAnswerContains, actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
 
-
     [Fact]
     public async Task AzureOpenAIInvokePromptTestAsync()
     {
@@ -330,7 +316,6 @@ public sealed class OpenAICompletionTests : IDisposable
         // Assert
         Assert.Contains("Pike Place", actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
-
 
     [Fact]
     public async Task AzureOpenAIDefaultValueTestAsync()
@@ -349,13 +334,12 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.Contains("Bob", actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
 
-
     [Fact]
     public async Task MultipleServiceLoadPromptConfigTestAsync()
     {
         // Arrange
         var builder = this._kernelBuilder.WithLoggerFactory(this._logger);
-        var promptTemplateFactory = new BasicPromptTemplateFactory();
+        var promptTemplateFactory = new KernelPromptTemplateFactory();
         this.ConfigureAzureOpenAI(builder);
         this.ConfigureInvalidAzureOpenAI(builder);
 
@@ -390,7 +374,6 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.Contains("Pike Place", azureResult.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
 
-
     #region internals
 
     private readonly XunitLogger<Kernel> _logger;
@@ -398,19 +381,16 @@ public sealed class OpenAICompletionTests : IDisposable
 
     private readonly Dictionary<AIServiceType, Action<IKernel>> _serviceConfiguration = new();
 
-
     public void Dispose()
     {
         this.Dispose(true);
         GC.SuppressFinalize(this);
     }
 
-
     ~OpenAICompletionTests()
     {
         this.Dispose(false);
     }
-
 
     private void Dispose(bool disposing)
     {
@@ -420,7 +400,6 @@ public sealed class OpenAICompletionTests : IDisposable
             this._testOutputHelper.Dispose();
         }
     }
-
 
     private void ConfigureChatOpenAI(KernelBuilder kernelBuilder)
     {
@@ -437,7 +416,6 @@ public sealed class OpenAICompletionTests : IDisposable
             serviceId: openAIConfiguration.ServiceId,
             setAsDefault: true);
     }
-
 
     private void ConfigureAzureOpenAI(KernelBuilder kernelBuilder)
     {
@@ -456,8 +434,6 @@ public sealed class OpenAICompletionTests : IDisposable
             serviceId: azureOpenAIConfiguration.ServiceId,
             setAsDefault: true);
     }
-
-
     private void ConfigureInvalidAzureOpenAI(KernelBuilder kernelBuilder)
     {
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
@@ -473,7 +449,6 @@ public sealed class OpenAICompletionTests : IDisposable
             serviceId: $"invalid-{azureOpenAIConfiguration.ServiceId}",
             setAsDefault: true);
     }
-
 
     private void ConfigureAzureOpenAIChatAsText(KernelBuilder kernelBuilder)
     {
@@ -493,6 +468,4 @@ public sealed class OpenAICompletionTests : IDisposable
     }
 
     #endregion
-
-
 }
