@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+
 using System.Collections.Generic;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+
 /// <summary>
 /// Extensions for <see cref="FunctionView"/> specific to the OpenAI connector.
 /// </summary>

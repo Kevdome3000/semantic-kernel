@@ -1,17 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Text.RegularExpressions;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Orchestration;
-
 namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
+
+using System.Text.RegularExpressions;
+using Diagnostics;
+using Microsoft.Extensions.Logging;
+using Orchestration;
+
 
 internal sealed class VarBlock : Block, ITextRendering
 {
     internal override BlockTypes Type => BlockTypes.Variable;
 
     internal string Name { get; } = string.Empty;
+
 
     public VarBlock(string? content, ILoggerFactory? loggerFactory = null) : base(content?.Trim(), loggerFactory)
     {
@@ -23,6 +25,7 @@ internal sealed class VarBlock : Block, ITextRendering
 
         this.Name = this.Content.Substring(1);
     }
+
 
 #pragma warning disable CA2254 // error strings are used also internally, not just for logging
     // ReSharper disable TemplateIsNotCompileTimeConstantProblem
@@ -63,6 +66,7 @@ internal sealed class VarBlock : Block, ITextRendering
     }
 #pragma warning restore CA2254
 
+
     public string Render(ContextVariables? variables)
     {
         if (variables == null) { return string.Empty; }
@@ -83,6 +87,7 @@ internal sealed class VarBlock : Block, ITextRendering
 
         return string.Empty;
     }
+
 
     private static readonly Regex s_validNameRegex = new("^[a-zA-Z0-9_]*$");
 }

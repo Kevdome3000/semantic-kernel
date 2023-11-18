@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Functions.UnitTests.OpenAPI.TestResponses;
+
 using System.IO;
 using System.Resources;
 
-namespace SemanticKernel.Functions.UnitTests.OpenAPI.TestResponses;
 
 internal static class ResourceResponseProvider
 {
@@ -17,6 +18,7 @@ internal static class ResourceResponseProvider
         var type = typeof(ResourceResponseProvider);
 
         var stream = type.Assembly.GetManifestResourceStream(type, resourceName);
+
         if (stream == null)
         {
             throw new MissingManifestResourceException($"Unable to load OpenApi response from assembly resource '{resourceName}'.");

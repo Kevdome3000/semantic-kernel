@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.TemplateEngine;
+
+using Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Diagnostics;
 
-namespace Microsoft.SemanticKernel.TemplateEngine;
 
 /// <summary>
 /// Default implementation of <see cref="IPromptTemplateFactory"/> for the semantic-kernel prompt template format.
@@ -12,6 +13,7 @@ namespace Microsoft.SemanticKernel.TemplateEngine;
 public sealed class KernelPromptTemplateFactory : IPromptTemplateFactory
 {
     private readonly ILoggerFactory _loggerFactory;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelPromptTemplateFactory"/> class.
@@ -21,6 +23,7 @@ public sealed class KernelPromptTemplateFactory : IPromptTemplateFactory
     {
         this._loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
     }
+
 
     /// <inheritdoc/>
     public IPromptTemplate Create(string templateString, PromptTemplateConfig promptTemplateConfig)

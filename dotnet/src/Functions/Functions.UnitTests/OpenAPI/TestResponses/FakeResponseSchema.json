@@ -8,8 +8,15 @@
         "title": "Item",
         "type": "object",
         "properties": {
-          "attributes": { "type": "array", "itemName": { "type": "string" } },
-          "name": { "type": "string" }
+          "attributes": {
+            "type": "array",
+            "itemName": {
+              "type": "string"
+            }
+          },
+          "name": {
+            "type": "string"
+          }
         }
       }
     }

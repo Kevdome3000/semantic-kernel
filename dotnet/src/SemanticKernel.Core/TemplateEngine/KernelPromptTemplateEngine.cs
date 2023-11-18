@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.TemplateEngine;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -7,13 +9,12 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Blocks;
+using Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.TemplateEngine.Blocks;
+using Orchestration;
 
-namespace Microsoft.SemanticKernel.TemplateEngine;
 
 /// <summary>
 /// Given a prompt, that might contain references to variables and functions:
@@ -33,6 +34,7 @@ public class KernelPromptTemplateEngine : IPromptTemplateEngine
     private readonly ILogger _logger;
     private readonly TemplateTokenizer _tokenizer;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelPromptTemplateEngine"/> class.
     /// </summary>
@@ -44,6 +46,7 @@ public class KernelPromptTemplateEngine : IPromptTemplateEngine
         this._tokenizer = new TemplateTokenizer(this._loggerFactory);
     }
 
+
     /// <inheritdoc/>
     public async Task<string> RenderAsync(string templateText, SKContext context, CancellationToken cancellationToken = default)
     {
@@ -51,6 +54,7 @@ public class KernelPromptTemplateEngine : IPromptTemplateEngine
         var blocks = this.ExtractBlocks(templateText);
         return await this.RenderAsync(blocks, context, cancellationToken).ConfigureAwait(false);
     }
+
 
     /// <summary>
     /// Given a prompt template string, extract all the blocks (text, variables, function calls)
@@ -77,6 +81,7 @@ public class KernelPromptTemplateEngine : IPromptTemplateEngine
         return blocks;
     }
 
+
     /// <summary>
     /// Given a list of blocks render each block and compose the final result.
     /// </summary>
@@ -88,6 +93,7 @@ public class KernelPromptTemplateEngine : IPromptTemplateEngine
     {
         this._logger.LogTrace("Rendering list of {0} blocks", blocks.Count);
         var tasks = new List<Task<string>>(blocks.Count);
+
         foreach (var block in blocks)
         {
             switch (block)
@@ -108,6 +114,7 @@ public class KernelPromptTemplateEngine : IPromptTemplateEngine
         }
 
         var result = new StringBuilder();
+
         foreach (Task<string> t in tasks)
         {
             result.Append(await t.ConfigureAwait(false));
@@ -118,6 +125,7 @@ public class KernelPromptTemplateEngine : IPromptTemplateEngine
 
         return result.ToString();
     }
+
 
     /// <summary>
     /// Given a list of blocks, render the Variable Blocks, replacing placeholders with the actual value in memory.

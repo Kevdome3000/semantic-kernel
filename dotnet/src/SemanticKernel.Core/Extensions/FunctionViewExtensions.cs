@@ -37,10 +37,11 @@ public static class FunctionViewExtensions
         {
             var schema = parameter.Schema ?? jsonSchemaDelegate(parameter.ParameterType, parameter.Description ?? string.Empty);
 
-                if (schema is not null)
+            if (schema is not null)
             {
                 functionView.Parameters.Properties.Add(parameter.Name, schema);
             }
+
             if (parameter.IsRequired ?? false)
             {
                 requiredProperties.Add(parameter.Name);

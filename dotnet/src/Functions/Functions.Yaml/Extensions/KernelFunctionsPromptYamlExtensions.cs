@@ -1,13 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Functions.Yaml.Functions;
-using Microsoft.SemanticKernel.Models;
-using Microsoft.SemanticKernel.TemplateEngine;
-
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using the namespace of IKernel
 namespace Microsoft.SemanticKernel;
+
+using Functions.Yaml.Functions;
+using Models;
+using TemplateEngine;
+
 #pragma warning restore IDE0130
+
 
 /// <summary>
 /// Class for extensions methods to define functions using prompt YAML format.
@@ -31,6 +33,7 @@ public static class KernelFunctionsPromptYamlExtensions
         return SKFunctionYaml.FromPromptYamlResource(resourceName, pluginName, promptTemplateFactory, kernel.LoggerFactory);
     }
 
+
     /// <summary>
     /// Creates an <see cref="ISKFunction"/> instance for a semantic function using the specified YAML.
     /// </summary>
@@ -47,6 +50,7 @@ public static class KernelFunctionsPromptYamlExtensions
     {
         return SKFunctionYaml.FromPromptYaml(text, pluginName, promptTemplateFactory, kernel.LoggerFactory);
     }
+
 
     /// <summary>
     /// Creates an <see cref="ISKFunction"/> instance for a semantic function using the specified YAML resource.
@@ -65,6 +69,7 @@ public static class KernelFunctionsPromptYamlExtensions
         var skfunction = SKFunctionYaml.FromPromptYamlResource(resourceName, pluginName, promptTemplateFactory, kernel.LoggerFactory);
         return kernel.RegisterCustomFunction(skfunction);
     }
+
 
     /// <summary>
     /// Imports an <see cref="ISKFunction"/> instance for a semantic function using the specified YAML.

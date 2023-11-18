@@ -10,9 +10,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using AI.ChatCompletion;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.TemplateEngine;
+using SemanticKernel.Orchestration;
+using TemplateEngine;
 
 
 /// <summary>

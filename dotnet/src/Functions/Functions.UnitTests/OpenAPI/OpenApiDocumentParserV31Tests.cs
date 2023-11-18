@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Functions.UnitTests.OpenAPI;
+
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -10,10 +12,9 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
-using SemanticKernel.Functions.UnitTests.OpenAPI.TestPlugins;
+using TestPlugins;
 using Xunit;
 
-namespace SemanticKernel.Functions.UnitTests.OpenAPI;
 
 public sealed class OpenApiDocumentParserV31Tests : IDisposable
 {
@@ -27,6 +28,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
     /// </summary>
     private readonly Stream _openApiDocument;
 
+
     /// <summary>
     /// Creates an instance of a <see cref="OpenApiDocumentParserV31Tests"/> class.
     /// </summary>
@@ -36,6 +38,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
 
         this._sut = new OpenApiDocumentParser();
     }
+
 
     [Fact]
     public async Task ItCanParsePutOperationBodySuccessfullyAsync()
@@ -91,6 +94,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.Equal("Determines whether the object is enabled.", enabledProperty.Schema.RootElement.GetProperty("description").GetString());
     }
 
+
     [Fact]
     public async Task ItCanParsePutOperationMetadataSuccessfullyAsync()
     {
@@ -143,6 +147,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.Null(contentTypeParameter.Schema);
     }
 
+
     [Fact]
     public async Task ItCanUseOperationSummaryAsync()
     {
@@ -157,6 +162,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.NotNull(operation);
         Assert.Equal("Turn a scenario into a creative or humorous excuse to send your boss", operation.Description);
     }
+
 
     [Fact]
     public async Task ItCanExtractSimpleTypeHeaderParameterMetadataSuccessfullyAsync()
@@ -181,6 +187,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.True(apiVersion.IsRequired);
     }
 
+
     [Fact]
     public async Task ItCanExtractCsvStyleHeaderParameterMetadataSuccessfullyAsync()
     {
@@ -197,6 +204,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.Equal("The comma separated list of operation ids.", acceptParameter.Description);
         Assert.Equal("string", acceptParameter.ArrayItemType);
     }
+
 
     [Fact]
     public async Task ItCanExtractHeadersSuccessfullyAsync()
@@ -216,6 +224,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.True(operation.Headers.ContainsKey("X-Operation-Csv-Ids"));
     }
 
+
     [Fact]
     public async Task ItCanExtractAllPathsAsOperationsAsync()
     {
@@ -225,6 +234,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         // Assert
         Assert.Equal(3, operations.Count);
     }
+
 
     [Fact]
     public async Task ItCanParseOperationHavingTextPlainBodySuccessfullyAsync()
@@ -250,6 +260,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.Empty(properties);
     }
 
+
     [Fact]
     public async Task ItCanWorkWithDocumentsWithoutServersAttributeAsync()
     {
@@ -266,6 +277,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.All(operations, (op) => Assert.Null(op.ServerUrl));
     }
 
+
     [Fact]
     public async Task ItCanWorkWithDocumentsWithEmptyServersAttributeAsync()
     {
@@ -281,6 +293,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         //Assert
         Assert.All(operations, (op) => Assert.Null(op.ServerUrl));
     }
+
 
     [Theory]
     [InlineData("explodeFormParam")]
@@ -300,6 +313,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.True(explodeFormParam.Expand);
     }
 
+
     [Fact]
     public async Task ItShouldSupportsCommaSeparatedValuesForFormStyleArrayQueryStringParametersAsync()
     {
@@ -315,6 +329,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
 
         Assert.False(explodeFormParam.Expand);
     }
+
 
     [Fact]
     public async Task ItCanParseResponsesSuccessfullyAsync()
@@ -340,6 +355,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
             JsonSerializer.Serialize(response.Schema));
     }
 
+
     private static MemoryStream ModifyOpenApiDocument(Stream openApiDocument, Action<IDictionary<string, object>> transformer)
     {
         var serializer = new SharpYaml.Serialization.Serializer();
@@ -360,6 +376,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         return stream;
     }
 
+
     private static RestApiOperationParameter GetParameterMetadata(IList<RestApiOperation> operations, string operationId, RestApiOperationParameterLocation location, string name)
     {
         Assert.True(operations.Any());
@@ -375,6 +392,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
 
         return parameter;
     }
+
 
     public void Dispose()
     {

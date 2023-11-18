@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Functions.UnitTests.Yaml;
+
 using Microsoft.SemanticKernel.Functions.Yaml;
 using Microsoft.SemanticKernel.Models;
 using Xunit;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
-namespace SemanticKernel.Functions.UnitTests.Yaml;
 
 /// <summary>
 /// Tests for <see cref="AIRequestSettingsNodeDeserializer"/>.
@@ -34,6 +35,7 @@ public sealed class AIRequestSettingsNodeDeserializerTests
         Assert.Equal(2, semanticFunctionConfig.ModelSettings.Count);
         Assert.Equal("gpt-3.5", semanticFunctionConfig.ModelSettings[1].ModelId);
     }
+
 
     private readonly string _yaml = @"
     template_format: semantic-kernel

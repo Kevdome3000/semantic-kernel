@@ -113,6 +113,7 @@ public class PluginTests
         Assert.True(result.IsValid());
     }
 
+
     [Theory]
     [InlineData("https://raw.githubusercontent.com/sisbell/chatgpt-plugin-store/main/manifests/instacart.com.json",
         "Instacart",

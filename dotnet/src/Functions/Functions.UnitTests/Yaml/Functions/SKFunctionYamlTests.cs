@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Functions.UnitTests.Yaml.Functions;
+
 using Microsoft.SemanticKernel.Functions.Yaml.Functions;
 using Xunit;
 
-namespace SemanticKernel.Functions.UnitTests.Yaml.Functions;
 
 public class SKFunctionYamlTests
 {
@@ -22,6 +23,7 @@ public class SKFunctionYamlTests
         //Assert.Equal(0, skfunction.ModelSettings.Count);
     }
 
+
     [Fact]
     public void ItShouldCreateFunctionFromPromptYaml()
     {
@@ -34,6 +36,7 @@ public class SKFunctionYamlTests
         Assert.Equal("SayHello", skfunction.Name);
         Assert.Equal("Say hello to the specified person using the specified language", skfunction.Description);
     }
+
 
     [Fact]
     public void ItShouldCreateFunctionFromPromptYamlWithCustomModelSettings()
@@ -48,6 +51,7 @@ public class SKFunctionYamlTests
         Assert.Equal("Say hello to the specified person using the specified language", skfunction.Description);
         Assert.Equal(2, skfunction.Describe().Parameters.Count);
     }
+
 
     private readonly string _yamlNoModelSettings = @"
     template_format: semantic-kernel

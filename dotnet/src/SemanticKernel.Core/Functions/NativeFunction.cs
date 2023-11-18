@@ -694,10 +694,12 @@ internal sealed class NativeFunction : ISKFunction
             throw new SKException("Function returned null unexpectedly.");
     }
 
+
     /// <summary>Invokes the MethodInfo with the specified target object and arguments.</summary>
     private static object? Invoke(MethodInfo method, object? target, object?[]? arguments)
     {
         object? result = null;
+
         try
         {
             const BindingFlags BindingFlagsDoNotWrapExceptions = (BindingFlags)0x02000000; // BindingFlags.DoNotWrapExceptions on .NET Core 2.1+, ignored before then
@@ -713,6 +715,7 @@ internal sealed class NativeFunction : ISKFunction
 
         return result;
     }
+
 
     /// <summary>Gets an exception that can be thrown indicating an invalid signature.</summary>
     [DoesNotReturn]

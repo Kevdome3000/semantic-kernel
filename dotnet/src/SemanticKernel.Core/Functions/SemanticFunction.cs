@@ -50,6 +50,7 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
     /// </summary>
     public IReadOnlyList<ParameterView> Parameters => _promptTemplate.Parameters;
 
+
     /// <inheritdoc/>
     public FunctionView Describe()
     {
@@ -145,6 +146,7 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
         );
     }
 
+
     /// <summary>
     /// Create a semantic function instance, given a semantic function configuration.
     /// </summary>
@@ -157,7 +159,7 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
         PromptFunctionModel promptFunctionModel,
         string? pluginName = null,
         IPromptTemplateFactory? promptTemplateFactory = null,
-        ILoggerFactory ? loggerFactory = null)
+        ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(promptFunctionModel);
         Verify.NotNull(promptFunctionModel.Name);
@@ -175,6 +177,7 @@ public sealed class SemanticFunction : ISKFunction, IDisposable
             loggerFactory: loggerFactory
         );
     }
+
 
     #region private
 

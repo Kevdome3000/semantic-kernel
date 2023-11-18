@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
+
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Orchestration;
+using Orchestration;
 
-namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
 /// <summary>
 /// Interface of dynamic blocks that need async IO to be rendered.

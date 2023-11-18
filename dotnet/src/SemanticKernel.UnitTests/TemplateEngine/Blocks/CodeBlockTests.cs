@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.UnitTests.TemplateEngine.Blocks;
+
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -15,7 +17,6 @@ using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.TemplateEngine.Blocks;
 
 public class CodeBlockTests
 {
@@ -25,10 +26,12 @@ public class CodeBlockTests
     private readonly Mock<IAIServiceProvider> _serviceProvider = new();
     private readonly Mock<IAIServiceSelector> _serviceSelector = new();
 
+
     public CodeBlockTests()
     {
         this._functions = new Mock<IReadOnlyFunctionCollection>();
     }
+
 
     [Fact]
     public async Task ItThrowsIfAFunctionDoesntExistAsync()
@@ -47,6 +50,7 @@ public class CodeBlockTests
         // Act & Assert
         await Assert.ThrowsAsync<SKException>(() => target.RenderCodeAsync(context));
     }
+
 
     [Fact]
     public async Task ItThrowsIfAFunctionCallThrowsAsync()
@@ -69,6 +73,7 @@ public class CodeBlockTests
         await Assert.ThrowsAsync<RuntimeWrappedException>(() => target.RenderCodeAsync(context));
     }
 
+
     [Fact]
     public void ItHasTheCorrectType()
     {
@@ -79,12 +84,14 @@ public class CodeBlockTests
         Assert.Equal(BlockTypes.Code, target.Type);
     }
 
+
     [Fact]
     public void ItTrimsSpaces()
     {
         // Act + Assert
         Assert.Equal("aa", new CodeBlock("  aa  ", NullLoggerFactory.Instance).Content);
     }
+
 
     [Fact]
     public void ItChecksValidityOfInternalBlocks()
@@ -102,6 +109,7 @@ public class CodeBlockTests
         Assert.True(codeBlock1.IsValid(out _));
         Assert.False(codeBlock2.IsValid(out _));
     }
+
 
     [Fact]
     public void ItRequiresAValidFunctionCall()
@@ -146,6 +154,7 @@ public class CodeBlockTests
         Assert.Equal("Unexpected named argument found. Expected function name first.", errorMessage7);
     }
 
+
     [Fact]
     public async Task ItRendersCodeBlockConsistingOfJustAVarBlock1Async()
     {
@@ -160,6 +169,7 @@ public class CodeBlockTests
         // Assert
         Assert.Equal("foo", result);
     }
+
 
     [Fact]
     public async Task ItRendersCodeBlockConsistingOfJustAVarBlock2Async()
@@ -177,6 +187,7 @@ public class CodeBlockTests
         Assert.Equal("bar", result);
     }
 
+
     [Fact]
     public async Task ItRendersCodeBlockConsistingOfJustAValBlock1Async()
     {
@@ -190,6 +201,7 @@ public class CodeBlockTests
         // Assert
         Assert.Equal("ciao", result);
     }
+
 
     [Fact]
     public async Task ItRendersCodeBlockConsistingOfJustAValBlock2Async()
@@ -206,6 +218,7 @@ public class CodeBlockTests
         // Assert
         Assert.Equal("arrivederci", result);
     }
+
 
     [Fact]
     public async Task ItInvokesFunctionCloningAllVariablesAsync()
@@ -262,6 +275,7 @@ public class CodeBlockTests
         Assert.Equal("due", variables["var2"]);
     }
 
+
     [Fact]
     public async Task ItInvokesFunctionWithCustomVariableAsync()
     {
@@ -306,6 +320,7 @@ public class CodeBlockTests
         Assert.Equal(VarValue, canary);
     }
 
+
     [Fact]
     public async Task ItInvokesFunctionWithCustomValueAsync()
     {
@@ -347,6 +362,7 @@ public class CodeBlockTests
         Assert.Equal(Value, result);
         Assert.Equal(Value, canary);
     }
+
 
     [Fact]
     public async Task ItInvokesFunctionWithNamedArgsAsync()
@@ -398,6 +414,7 @@ public class CodeBlockTests
         Assert.Equal(BobValue, baz);
         Assert.Equal(Value, result);
     }
+
 
     private void MockFunctionRunner(ISKFunction function)
     {

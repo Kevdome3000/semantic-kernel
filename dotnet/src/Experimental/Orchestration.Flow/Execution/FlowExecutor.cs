@@ -12,11 +12,8 @@ using Abstractions;
 using AI.ChatCompletion;
 using Diagnostics;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.TemplateEngine;
+using SemanticKernel.Orchestration;
+using TemplateEngine;
 
 
 /// <summary>

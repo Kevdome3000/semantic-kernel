@@ -9,9 +9,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Models;
+using Models;
 using Orchestration;
-using Microsoft.SemanticKernel.TemplateEngine;
+using TemplateEngine;
 
 #pragma warning restore IDE0130
 
@@ -67,6 +67,7 @@ public static class SKFunction
         ILoggerFactory? loggerFactory = null) =>
         NativeFunction.Create(method, target, pluginName, functionName, description, parameters, returnParameter, loggerFactory);
 
+
     /// <summary>
     /// Creates an <see cref="ISKFunction"/> instance for a semantic function using the specified <see cref="PromptFunctionModel"/>.
     /// </summary>
@@ -82,7 +83,9 @@ public static class SKFunction
         ILoggerFactory? loggerFactory = null) =>
         SemanticFunction.Create(promptFunctionModel, pluginName, promptTemplateFactory, loggerFactory);
 
+
     #region Obsolete
+
     /// <summary>
     /// Create a native function instance, wrapping a native object method
     /// </summary>
@@ -121,9 +124,12 @@ public static class SKFunction
         IEnumerable<ParameterView>? parameters = null,
         ILoggerFactory? loggerFactory = null) =>
         Create(nativeFunction, pluginName, functionName, description, parameters, null, loggerFactory);
+
     #endregion
 
+
     #region Internal
+
     /// <summary>
     /// Default implementation to identify if a function was cancelled or skipped.
     /// </summary>
@@ -158,5 +164,8 @@ public static class SKFunction
     /// <returns>True if it was cancelled or skipped</returns>
     internal static bool IsInvokedCancelRequested(SKContext context) =>
         context.FunctionInvokedHandler?.EventArgs?.CancelToken.IsCancellationRequested == true;
+
     #endregion
+
+
 }

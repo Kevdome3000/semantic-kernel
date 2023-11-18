@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
+
 using System.Linq;
 using System.Text.RegularExpressions;
+using Diagnostics;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Orchestration;
+using Orchestration;
 
-namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
 internal sealed class FunctionIdBlock : Block, ITextRendering
 {
@@ -16,10 +17,12 @@ internal sealed class FunctionIdBlock : Block, ITextRendering
 
     internal string FunctionName { get; } = string.Empty;
 
+
     public FunctionIdBlock(string? text, ILoggerFactory? loggerFactory = null)
         : base(text?.Trim(), loggerFactory)
     {
         var functionNameParts = this.Content.Split('.');
+
         if (functionNameParts.Length > 2)
         {
             this.Logger.LogError("Invalid function name `{FunctionName}`.", this.Content);
@@ -35,6 +38,7 @@ internal sealed class FunctionIdBlock : Block, ITextRendering
 
         this.FunctionName = this.Content;
     }
+
 
     public override bool IsValid(out string errorMsg)
     {
@@ -54,10 +58,12 @@ internal sealed class FunctionIdBlock : Block, ITextRendering
         return true;
     }
 
+
     public string Render(ContextVariables? variables)
     {
         return this.Content;
     }
+
 
     private static bool HasMoreThanOneDot(string? value)
     {
@@ -66,6 +72,7 @@ internal sealed class FunctionIdBlock : Block, ITextRendering
         int count = 0;
         return value.Any(t => t == '.' && ++count > 1);
     }
+
 
     private static readonly Regex s_validContentRegex = new("^[a-zA-Z0-9_.]*$");
 }

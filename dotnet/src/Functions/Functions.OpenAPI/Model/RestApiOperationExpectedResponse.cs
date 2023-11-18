@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Functions.OpenAPI.Model;
+
 using System.Text.Json;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 
 /// <summary>
 /// The REST API operation response.
@@ -23,6 +24,7 @@ public sealed class RestApiOperationExpectedResponse
     /// The schema of the response.
     /// </summary>
     public JsonDocument? Schema { get; set; }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RestApiOperationResponse"/> class.

@@ -1,21 +1,24 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.UnitTests.TemplateEngine;
+
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.TemplateEngine;
 
 public class CodeTokenizerTests
 {
     private readonly CodeTokenizer _target;
 
+
     public CodeTokenizerTests()
     {
         this._target = new CodeTokenizer();
     }
+
 
     [Fact]
     public void ItParsesEmptyText()
@@ -26,6 +29,7 @@ public class CodeTokenizerTests
         Assert.Empty(this._target.Tokenize(" "));
         Assert.Empty(this._target.Tokenize(" \n "));
     }
+
 
     [Theory]
     [InlineData("$", "$")]
@@ -45,6 +49,7 @@ public class CodeTokenizerTests
         Assert.Equal(BlockTypes.Variable, blocks[0].Type);
     }
 
+
     [Theory]
     [InlineData("'", "'")]
     [InlineData(" \" ", "\"")]
@@ -63,6 +68,7 @@ public class CodeTokenizerTests
         Assert.Equal(BlockTypes.Value, blocks[0].Type);
     }
 
+
     [Theory]
     [InlineData("f", "f")]
     [InlineData(" x ", "x")]
@@ -80,6 +86,7 @@ public class CodeTokenizerTests
         Assert.Equal(content, blocks[0].Content);
         Assert.Equal(BlockTypes.FunctionId, blocks[0].Type);
     }
+
 
     [Fact]
     public void ItParsesFunctionCalls()
@@ -116,6 +123,7 @@ public class CodeTokenizerTests
         Assert.Equal(BlockTypes.Value, blocks3[1].Type);
     }
 
+
     [Fact]
     public void ItParsesMultiNamedArgFunctionCalls()
     {
@@ -148,6 +156,7 @@ public class CodeTokenizerTests
         Assert.Equal("bar", thirdBlock?.GetValue(parameters));
     }
 
+
     [Fact]
     public void ItSupportsEscaping()
     {
@@ -162,6 +171,7 @@ public class CodeTokenizerTests
         Assert.Equal("func", blocks[0].Content);
         Assert.Equal("'f\'oo'", blocks[1].Content);
     }
+
 
     [Fact]
     public void ItSupportsEscapingNamedArgs()
@@ -180,6 +190,7 @@ public class CodeTokenizerTests
         Assert.NotNull(namedArg);
         Assert.Equal("f'oo", namedArg.GetValue(null));
     }
+
 
     [Fact]
     public void ItSupportsSpacesInNamedArguments()
@@ -200,6 +211,7 @@ public class CodeTokenizerTests
         Assert.Equal("name", namedArg.Name);
     }
 
+
     [Theory]
     [InlineData(@"call 'f\\'xy'")]
     [InlineData(@"call 'f\\'x")]
@@ -209,6 +221,7 @@ public class CodeTokenizerTests
         // Act & Assert
         Assert.Throws<SKException>(() => this._target.Tokenize(template));
     }
+
 
     [Theory]
     [InlineData("f a =", "A function named argument must contain a quoted value or variable after the '=' character.")]

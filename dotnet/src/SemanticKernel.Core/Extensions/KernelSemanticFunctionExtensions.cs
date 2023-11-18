@@ -43,6 +43,7 @@ public static class KernelSemanticFunctionExtensions
         return kernel.RegisterSemanticFunction(functionName, promptTemplateConfig, promptTemplate);
     }
 
+
     /// <summary>
     /// Build and register a function in the internal function collection, in a global generic plugin.
     /// </summary>
@@ -346,6 +347,7 @@ public static class KernelSemanticFunctionExtensions
             kernel.LoggerFactory
         );
     }
+
     #endregion
 
 

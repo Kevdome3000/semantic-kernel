@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 
@@ -68,6 +69,7 @@ internal static class RestApiOperationExtensions
         return returnParameter;
     }
 
+
     /// <summary>
     /// Retrieves the default response for a given REST API operation.
     /// </summary>
@@ -87,6 +89,7 @@ internal static class RestApiOperationExtensions
         // If no appropriate response is found, return null or throw an exception
         return null;
     }
+
 
     /// <summary>
     /// Retrieves the payload parameters for a given REST API operation.

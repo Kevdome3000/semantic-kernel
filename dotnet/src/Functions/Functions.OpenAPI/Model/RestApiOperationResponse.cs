@@ -22,11 +22,11 @@ public sealed class RestApiOperationResponse
     /// </summary>
     public string ContentType { get; }
 
-
     /// <summary>
     /// The expected schema of the response as advertised in the OpenAPI operation.
     /// </summary>
     public JsonDocument? ExpectedSchema { get; internal set; }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RestApiOperationResponse"/> class.

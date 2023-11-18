@@ -1,14 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Functions.Yaml.Functions;
+
 using System.IO;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Models;
-using Microsoft.SemanticKernel.TemplateEngine;
+using Models;
+using TemplateEngine;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
-namespace Microsoft.SemanticKernel.Functions.Yaml.Functions;
+
 /// <summary>
 /// Factory methods for creating <seealso cref="ISKFunction"/> instances.
 /// </summary>
@@ -41,6 +43,7 @@ public static class SKFunctionYaml
             promptTemplateFactory,
             loggerFactory);
     }
+
 
     /// <summary>
     /// Creates an <see cref="ISKFunction"/> instance for a semantic function using the specified markdown text.

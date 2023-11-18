@@ -371,6 +371,7 @@ internal sealed class RestApiOperationRunner
         return null;
     }
 
+
     /// <summary>
     /// Converts the JSON property value to the REST API type specified in metadata.
     /// </summary>

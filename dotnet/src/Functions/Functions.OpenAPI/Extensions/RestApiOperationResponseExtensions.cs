@@ -1,12 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Text.Json;
-using Json.Schema;
-
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.Model;
+
+using System.Text.Json;
+using Json.Schema;
+
 #pragma warning restore IDE0130
+
 
 /// <summary>
 /// Class for extensions methods for the <see cref="RestApiOperationResponse"/> class.
@@ -52,6 +54,7 @@ public static class RestApiOperationResponseExtensions
         }
     }
 
+
     private static bool ValidateJson(RestApiOperationResponse response)
     {
         try
@@ -67,11 +70,13 @@ public static class RestApiOperationResponseExtensions
         }
     }
 
+
     private static bool ValidateXml(RestApiOperationResponse response)
     {
         // todo -- implement
         return true;
     }
+
 
     private static bool ValidateTextHtml(RestApiOperationResponse response)
     {

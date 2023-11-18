@@ -18,13 +18,10 @@ using AI.ChatCompletion;
 using AI.TextCompletion;
 using Diagnostics;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Planning;
-using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.TemplateEngine;
+using Orchestration;
+using Planning;
+using Services;
+using TemplateEngine;
 
 #pragma warning restore IDE0130
 

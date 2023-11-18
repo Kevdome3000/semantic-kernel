@@ -232,6 +232,7 @@ public static class Example59_OpenAIFunctionCalling
         }
     }
 
+
     private enum WidgetColor
     {
         Red,
@@ -239,13 +240,16 @@ public static class Example59_OpenAIFunctionCalling
         Blue
     }
 
+
     private sealed class WidgetPlugin
     {
         [SKFunction, SKName("CreateWidget"), System.ComponentModel.Description("Create a virtual widget.")]
         public string CreateWidget(
-            [System.ComponentModel.Description("Widget name")] string name,
-            [System.ComponentModel.Description("Widget color")] WidgetColor color
-            )
+            [System.ComponentModel.Description("Widget name")]
+            string name,
+            [System.ComponentModel.Description("Widget color")]
+            WidgetColor color
+        )
         {
             return $"Created a {color} widget named {name}";
         }

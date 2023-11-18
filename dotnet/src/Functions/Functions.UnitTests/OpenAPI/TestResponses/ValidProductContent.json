@@ -1,1 +1,8 @@
-{ "products": [{ "id": "1234", "name": "Laptop" }] }
+{
+  "products": [
+    {
+      "id": "1234",
+      "name": "Laptop"
+    }
+  ]
+}

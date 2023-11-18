@@ -131,6 +131,7 @@ public class OpenAIFunction
         };
     }
 
+
     /// <summary>
     /// Creates a <see cref="JsonDocument"/> that contains a Json Schema of the specified <see cref="Type"/> with the specified description.
     /// </summary>
@@ -145,10 +146,10 @@ public class OpenAIFunction
         }
 
         var schemaDocument = new JsonSchemaBuilder()
-                        .FromType(type)
-                        .Description(description ?? string.Empty)
-                        .Build()
-                        .ToJsonDocument();
+            .FromType(type)
+            .Description(description ?? string.Empty)
+            .Build()
+            .ToJsonDocument();
 
         return schemaDocument;
     }

@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Functions.UnitTests.Markdown.Functions;
+
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Functions.Markdown.Functions;
 using Xunit;
 
-namespace SemanticKernel.Functions.UnitTests.Markdown.Functions;
 
 public class SKFunctionMarkdownTests
 {
@@ -24,6 +25,7 @@ public class SKFunctionMarkdownTests
         Assert.Equal("gpt3.5", model.ModelSettings[1].ModelId);
     }
 
+
     [Fact]
     public void ItShouldCreateSemanticFunctionFromMarkdown()
     {
@@ -37,6 +39,7 @@ public class SKFunctionMarkdownTests
         Assert.NotNull(skfunction);
         Assert.Equal("TellMeAbout", skfunction.Name);
     }
+
 
     private readonly string _markdown = @"
 This is a semantic kernel prompt template
