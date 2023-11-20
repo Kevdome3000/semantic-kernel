@@ -1,16 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Services;
-using Moq;
-using Xunit;
-
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.Planning.Action.UnitTests;
+
+using AI;
+using AI.TextCompletion;
+using Diagnostics;
+using Moq;
+using Orchestration;
+using Services;
+using Xunit;
+
 #pragma warning restore IDE0130 // Namespace does not match folder structure
+
 
 public sealed class ActionPlannerTests
 {
@@ -35,6 +37,7 @@ public sealed class ActionPlannerTests
         Assert.Equal("PullsList", plan.Steps[0].Name);
     }
 
+
     [Fact]
     public async Task InvalidJsonThrowsAsync()
     {
@@ -48,6 +51,7 @@ public sealed class ActionPlannerTests
         // Act & Assert
         await Assert.ThrowsAsync<SKException>(() => planner.CreatePlanAsync("goal"));
     }
+
 
     [Fact]
     public void UsesPromptDelegateWhenProvided()
@@ -68,6 +72,7 @@ public sealed class ActionPlannerTests
         // Assert
         getPromptTemplateMock.Verify(x => x(), Times.Once());
     }
+
 
     [Fact]
     public async Task MalformedJsonThrowsAsync()
@@ -99,6 +104,7 @@ public sealed class ActionPlannerTests
         await Assert.ThrowsAsync<SKException>(async () => await planner.CreatePlanAsync("goal"));
     }
 
+
     [Fact]
     public async Task ListOfFunctionsIncludesNativeAndPromptFunctionsAsync()
     {
@@ -118,6 +124,7 @@ public sealed class ActionPlannerTests
         var expected = $"// Send an e-mail.{Environment.NewLine}email.SendEmail{Environment.NewLine}// List pull requests.{Environment.NewLine}GitHubPlugin.PullsList{Environment.NewLine}// List repositories.{Environment.NewLine}GitHubPlugin.RepoList{Environment.NewLine}";
         Assert.Equal(expected, result);
     }
+
 
     [Fact]
     public async Task ListOfFunctionsExcludesExcludedPluginsAsync()
@@ -142,6 +149,7 @@ public sealed class ActionPlannerTests
         Assert.Equal(expected, result);
     }
 
+
     [Fact]
     public async Task ListOfFunctionsExcludesExcludedFunctionsAsync()
     {
@@ -164,6 +172,7 @@ public sealed class ActionPlannerTests
         var expected = $"// Send an e-mail.{Environment.NewLine}email.SendEmail{Environment.NewLine}// List repositories.{Environment.NewLine}GitHubPlugin.RepoList{Environment.NewLine}";
         Assert.Equal(expected, result);
     }
+
 
     private Kernel CreateKernel(string testPlanString, SKPluginCollection? plugins = null)
     {
@@ -191,6 +200,7 @@ public sealed class ActionPlannerTests
         return new Kernel(serviceProvider.Object, plugins, serviceSelector.Object);
     }
 
+
     private SKPluginCollection CreatePluginCollection()
     {
         return new()
@@ -206,6 +216,7 @@ public sealed class ActionPlannerTests
             })
         };
     }
+
 
     private const string ValidPlanString =
         @"Here is a possible plan to accomplish the user intent:

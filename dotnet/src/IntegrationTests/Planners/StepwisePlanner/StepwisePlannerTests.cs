@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace SemanticKernel.IntegrationTests.Planners.Stepwise;
+
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -12,18 +15,18 @@ using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
-using SemanticKernel.IntegrationTests.TestSettings;
+using TestSettings;
 using xRetry;
 using Xunit;
 using Xunit.Abstractions;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
-namespace SemanticKernel.IntegrationTests.Planners.Stepwise;
 #pragma warning restore IDE0130
+
 
 public sealed class StepwisePlannerTests : IDisposable
 {
     private readonly string _bingApiKey;
+
 
     public StepwisePlannerTests(ITestOutputHelper output)
     {
@@ -42,6 +45,7 @@ public sealed class StepwisePlannerTests : IDisposable
         Assert.NotNull(bingApiKeyCandidate);
         this._bingApiKey = bingApiKeyCandidate;
     }
+
 
     [Theory]
     [InlineData(false, "Who is the current president of the United States? What is his current age divided by 2", "ExecutePlan", "StepwisePlanner")]
@@ -66,6 +70,7 @@ public sealed class StepwisePlannerTests : IDisposable
         Assert.Equal(expectedFunction, plan.Name);
         Assert.Contains(expectedPlugin, plan.PluginName, StringComparison.OrdinalIgnoreCase);
     }
+
 
     [RetryTheory(maxRetries: 3)]
     [InlineData(false, "What is the tallest mountain on Earth? How tall is it divided by 2", "Everest")]
@@ -97,6 +102,7 @@ public sealed class StepwisePlannerTests : IDisposable
         Assert.True(int.Parse(iterations, System.Globalization.CultureInfo.InvariantCulture) <= 10);
     }
 
+
     [Fact]
     public async Task ExecutePlanFailsWithTooManyFunctionsAsync()
     {
@@ -121,6 +127,7 @@ public sealed class StepwisePlannerTests : IDisposable
         Assert.Equal("ChatHistory is too long to get a completion. Try reducing the available functions.", ex.Message);
     }
 
+
     [Fact]
     public async Task ExecutePlanSucceedsWithAlmostTooManyFunctionsAsync()
     {
@@ -140,6 +147,7 @@ public sealed class StepwisePlannerTests : IDisposable
         Assert.NotNull(result);
         Assert.DoesNotContain("Result not found, review 'stepsTaken' to see what happened", result, StringComparison.OrdinalIgnoreCase);
     }
+
 
     private Kernel InitializeKernel(bool useEmbeddings = false, bool useChatModel = false)
     {
@@ -171,9 +179,9 @@ public sealed class StepwisePlannerTests : IDisposable
         if (useEmbeddings)
         {
             builder.WithAzureOpenAITextEmbeddingGenerationService(
-                    deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
-                    endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
-                    apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
+                deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
+                endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
+                apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
         }
 
         var kernel = builder.Build();
@@ -181,9 +189,11 @@ public sealed class StepwisePlannerTests : IDisposable
         return kernel;
     }
 
+
     private readonly ILoggerFactory _loggerFactory;
     private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
+
 
     public void Dispose()
     {
@@ -191,10 +201,12 @@ public sealed class StepwisePlannerTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
+
     ~StepwisePlannerTests()
     {
         this.Dispose(false);
     }
+
 
     private void Dispose(bool disposing)
     {

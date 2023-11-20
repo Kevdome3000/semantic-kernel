@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Orchestration;
-
 namespace Microsoft.SemanticKernel.Events;
+
+using Orchestration;
+
 
 /// <summary>
 /// Event arguments available to the Kernel.FunctionInvoking event.
@@ -14,6 +15,7 @@ public class FunctionInvokingEventArgs : SKCancelEventArgs
     /// </summary>
     public bool IsSkipRequested => this._skipRequested;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionInvokingEventArgs"/> class.
     /// </summary>
@@ -23,6 +25,7 @@ public class FunctionInvokingEventArgs : SKCancelEventArgs
     {
     }
 
+
     /// <summary>
     /// Skip the current function invoking attempt.
     /// </summary>
@@ -30,6 +33,7 @@ public class FunctionInvokingEventArgs : SKCancelEventArgs
     {
         this._skipRequested = true;
     }
+
 
     private bool _skipRequested;
 }

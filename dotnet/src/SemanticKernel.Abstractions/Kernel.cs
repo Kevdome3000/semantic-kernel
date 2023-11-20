@@ -1,16 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel;
+
 using System;
 using System.Globalization;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Events;
-using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Services;
+using Diagnostics;
+using Events;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
+using Http;
+using Orchestration;
+using Services;
 
-namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Semantic kernel class.
@@ -51,6 +52,7 @@ public sealed class Kernel
     /// </summary>
     public event EventHandler<FunctionInvokedEventArgs>? FunctionInvoked;
 
+
     /// <summary>
     /// Kernel constructor. See KernelBuilder for an easier and less error prone approach to create kernel instances.
     /// </summary>
@@ -74,6 +76,7 @@ public sealed class Kernel
 
         this._logger = this.LoggerFactory.CreateLogger(typeof(Kernel));
     }
+
 
     /// <summary>
     /// Create a new instance of a context, linked to the kernel internal state.
@@ -101,6 +104,7 @@ public sealed class Kernel
             culture);
     }
 
+
     /// <summary>
     /// Get one of the configured services. Currently limited to AI services.
     /// </summary>
@@ -110,6 +114,7 @@ public sealed class Kernel
     public T GetService<T>(string? name = null) where T : IAIService
     {
         var service = this._aiServiceProvider.GetService<T>(name);
+
         if (service != null)
         {
             return service;
@@ -118,10 +123,14 @@ public sealed class Kernel
         throw new SKException($"Service of type {typeof(T)} and name {name ?? "<NONE>"} not registered.");
     }
 
+
     #region private ================================================================================
+
     private readonly IAIServiceProvider _aiServiceProvider;
     private readonly IAIServiceSelector _aiServiceSelector;
     private readonly ILogger _logger;
 
     #endregion
+
+
 }

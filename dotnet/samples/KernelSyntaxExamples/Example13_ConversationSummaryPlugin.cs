@@ -119,12 +119,14 @@ John: You're welcome. I'm glad we could help. Goodbye!
 Jane: Goodbye!
 ";
 
+
     public static async Task RunAsync()
     {
         await ConversationSummaryPluginAsync();
         await GetConversationActionItemsAsync();
         await GetConversationTopicsAsync();
     }
+
 
     private static async Task ConversationSummaryPluginAsync()
     {
@@ -141,6 +143,7 @@ Jane: Goodbye!
         Console.WriteLine(summary.GetValue<string>());
     }
 
+
     private static async Task GetConversationActionItemsAsync()
     {
         Console.WriteLine("======== SamplePlugins - Conversation Summary Plugin - Action Items ========");
@@ -155,6 +158,7 @@ Jane: Goodbye!
         Console.WriteLine("Generated Action Items:");
         Console.WriteLine(summary.GetValue<string>());
     }
+
 
     private static async Task GetConversationTopicsAsync()
     {
@@ -171,6 +175,7 @@ Jane: Goodbye!
         Console.WriteLine(summary.GetValue<string>());
     }
 
+
     private static Kernel InitializeKernel()
     {
         Kernel kernel = new KernelBuilder()
@@ -179,11 +184,12 @@ Jane: Goodbye!
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
-        .Build();
+            .Build();
 
         return kernel;
     }
 }
+
 
 // ReSharper disable CommentTypo
 /* Example Output:

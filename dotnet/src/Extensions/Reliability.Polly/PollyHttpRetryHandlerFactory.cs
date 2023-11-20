@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Net.Http;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Http;
-using Polly;
-
 namespace Microsoft.SemanticKernel.Reliability.Polly;
+
+using System.Net.Http;
+using Diagnostics;
+using Extensions.Logging;
+using global::Polly;
+using Http;
+
 
 /// <summary>
 /// Customizable PollyHttpHandlerFactory that will create handlers with the provided policy.
@@ -15,6 +16,7 @@ public class PollyHttpRetryHandlerFactory : HttpHandlerFactory<PollyHttpRetryHan
 {
     private readonly AsyncPolicy<HttpResponseMessage>? _typedAsyncPolicy;
     private readonly AsyncPolicy? _asyncPolicy;
+
 
     /// <summary>
     /// Creates a new instance of <see cref="PollyHttpRetryHandler"/>.
@@ -27,6 +29,7 @@ public class PollyHttpRetryHandlerFactory : HttpHandlerFactory<PollyHttpRetryHan
         this._typedAsyncPolicy = typedAsyncPolicy;
     }
 
+
     /// <summary>
     /// Creates a new instance of <see cref="PollyHttpRetryHandler"/> dedicated for non-typed policies.
     /// </summary>
@@ -37,6 +40,7 @@ public class PollyHttpRetryHandlerFactory : HttpHandlerFactory<PollyHttpRetryHan
 
         this._asyncPolicy = asyncPolicy;
     }
+
 
     /// <summary>
     /// Creates a new instance of <see cref="DelegatingHandler"/> with the default configuration.

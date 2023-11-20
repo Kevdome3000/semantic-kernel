@@ -1,15 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Orchestration;
-
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of Plan
 namespace Microsoft.SemanticKernel.Planning;
+
+using System.Threading;
+using System.Threading.Tasks;
+using AI;
+using Diagnostics;
+using Orchestration;
+
 #pragma warning restore IDE0130
+
 
 /// <summary>
 /// A planner that uses semantic function to create a sequential plan.
@@ -18,6 +20,7 @@ public sealed class SequentialPlanner : IPlanner
 {
     private const string StopSequence = "<!-- END -->";
     private const string AvailableFunctionsKey = "available_functions";
+
 
     /// <summary>
     /// Initialize a new instance of the <see cref="SequentialPlanner"/> class.
@@ -54,6 +57,7 @@ public sealed class SequentialPlanner : IPlanner
         this._kernel = kernel;
     }
 
+
     /// <inheritdoc />
     public async Task<Plan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
     {
@@ -80,6 +84,7 @@ public sealed class SequentialPlanner : IPlanner
         var getFunctionCallback = this.Config.GetFunctionCallback ?? this._kernel.Plugins.GetFunctionCallback();
 
         Plan plan;
+
         try
         {
             plan = planResultString!.ToPlanFromXml(goal, getFunctionCallback, this.Config.AllowMissingFunctions);
@@ -96,6 +101,7 @@ public sealed class SequentialPlanner : IPlanner
 
         return plan;
     }
+
 
     private SequentialPlannerConfig Config { get; }
 

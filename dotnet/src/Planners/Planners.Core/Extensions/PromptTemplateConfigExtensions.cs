@@ -1,12 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 // ReSharper disable once CheckNamespace - Using the namespace of Kernel
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.TemplateEngine;
-
 #pragma warning disable IDE0130
 namespace Microsoft.SemanticKernel.Planning;
+
+using AI;
+using TemplateEngine;
+
 #pragma warning restore IDE0130
+
 
 /// <summary>
 /// Extension methods for PromptTemplateConfig
@@ -21,6 +23,7 @@ internal static class PromptTemplateConfigExtensions
     internal static void SetMaxTokens(this PromptTemplateConfig config, int maxTokens)
     {
         AIRequestSettings requestSettings = config.GetDefaultRequestSettings() ?? new();
+
         if (config.ModelSettings.Count == 0)
         {
             config.ModelSettings.Add(requestSettings);

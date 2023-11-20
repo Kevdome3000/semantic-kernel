@@ -1,14 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Orchestration;
+
 using System.Diagnostics;
 using System.Globalization;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Events;
-using Microsoft.SemanticKernel.Services;
+using Diagnostics;
+using Events;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
+using Services;
 
-namespace Microsoft.SemanticKernel.Orchestration;
 
 /// <summary>
 /// Semantic Kernel context.
@@ -71,6 +72,7 @@ public sealed class SKContext
     /// </summary>
     internal EventHandlerWrapper<FunctionInvokedEventArgs>? FunctionInvokedHandler { get; private set; }
 
+
     /// <summary>
     /// Constructor for the context.
     /// </summary>
@@ -107,6 +109,7 @@ public sealed class SKContext
         this.FunctionInvokedHandler = invokedWrapper;
     }
 
+
     /// <summary>
     /// Print the processed input, aka the current data after any processing occurred.
     /// </summary>
@@ -116,6 +119,7 @@ public sealed class SKContext
         return this.Result;
     }
 
+
     /// <summary>
     /// Create a clone of the current context, using the same kernel references (memory, plugins, logger)
     /// and a new set variables, so that variables can be modified without affecting the original context.
@@ -123,6 +127,7 @@ public sealed class SKContext
     /// <returns>A new context cloned from the current one</returns>
     public SKContext Clone()
         => this.Clone(null, null);
+
 
     /// <summary>
     /// Create a clone of the current context, using the same kernel references (memory, plugins, logger)
@@ -144,6 +149,7 @@ public sealed class SKContext
             this.LoggerFactory,
             this.Culture);
     }
+
 
     /// <summary>
     /// The culture currently associated with this context.

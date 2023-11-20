@@ -1,7 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace SemanticKernel.IntegrationTests.Planners.Sequential;
+
 using System;
 using System.Threading.Tasks;
+using Fakes;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -10,15 +14,13 @@ using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Memory;
-using SemanticKernel.IntegrationTests.Fakes;
-using SemanticKernel.IntegrationTests.TestSettings;
+using TestSettings;
 using xRetry;
 using Xunit;
 using Xunit.Abstractions;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
-namespace SemanticKernel.IntegrationTests.Planners.Sequential;
 #pragma warning restore IDE0130
+
 
 public sealed class SequentialPlannerTests : IDisposable
 {
@@ -35,6 +37,7 @@ public sealed class SequentialPlannerTests : IDisposable
             .AddUserSecrets<SequentialPlannerTests>()
             .Build();
     }
+
 
     [Theory]
     [InlineData(false, "Write a joke and send it in an e-mail to Kai.", "SendEmail", "EmailPluginFake")]
@@ -60,6 +63,7 @@ public sealed class SequentialPlannerTests : IDisposable
                 step.PluginName.Equals(expectedPlugin, StringComparison.OrdinalIgnoreCase));
     }
 
+
     [RetryTheory]
     [InlineData("Write a novel about software development that is 3 chapters long.", "NovelOutline", "WriterPlugin", "<!--===ENDPART===-->")]
     public async Task CreatePlanWithDefaultsAsync(string prompt, string expectedFunction, string expectedPlugin, string expectedDefault)
@@ -81,6 +85,7 @@ public sealed class SequentialPlannerTests : IDisposable
                 step.PluginName.Equals(expectedPlugin, StringComparison.OrdinalIgnoreCase) &&
                 step.Parameters["endMarker"].Equals(expectedDefault, StringComparison.OrdinalIgnoreCase));
     }
+
 
     [RetryTheory]
     [InlineData("Write a poem and a joke and send it in an e-mail to Kai.", "SendEmail", "EmailPluginFake")]
@@ -111,6 +116,7 @@ public sealed class SequentialPlannerTests : IDisposable
                 step.PluginName.Equals(expectedPlugin, StringComparison.OrdinalIgnoreCase));
     }
 
+
     private Kernel InitializeKernel(bool useEmbeddings = false, bool useChatModel = false)
     {
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
@@ -140,15 +146,16 @@ public sealed class SequentialPlannerTests : IDisposable
         if (useEmbeddings)
         {
             builder.WithAzureOpenAITextEmbeddingGenerationService(
-                    deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
-                    endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
-                    apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
+                deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
+                endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
+                apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
         }
 
         var kernel = builder.Build();
 
         return kernel;
     }
+
 
     private ISemanticTextMemory InitializeMemory(ITextEmbeddingGeneration textEmbeddingGeneration)
     {
@@ -161,9 +168,11 @@ public sealed class SequentialPlannerTests : IDisposable
         return builder.Build();
     }
 
+
     private readonly ILoggerFactory _logger;
     private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
+
 
     public void Dispose()
     {
@@ -171,10 +180,12 @@ public sealed class SequentialPlannerTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
+
     ~SequentialPlannerTests()
     {
         this.Dispose(false);
     }
+
 
     private void Dispose(bool disposing)
     {

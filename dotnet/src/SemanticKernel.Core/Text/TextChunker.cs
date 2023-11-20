@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Text;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-namespace Microsoft.SemanticKernel.Text;
 
 /// <summary>
 /// Split text in chunks, attempting to leave meaning intact.
@@ -22,9 +23,11 @@ public static class TextChunker
     /// <returns>The number of tokens in the input string.</returns>
     public delegate int TokenCounter(string input);
 
+
     private static readonly char[] s_spaceChar = new[] { ' ' };
     private static readonly string?[] s_plaintextSplitOptions = new[] { "\n\r", ".", "?!", ";", ":", ",", ")]}", " ", "-", null };
     private static readonly string?[] s_markdownSplitOptions = new[] { ".", "?!", ";", ":", ",", ")]}", " ", "-", "\n\r", null };
+
 
     /// <summary>
     /// Split plain text into lines.
@@ -36,6 +39,7 @@ public static class TextChunker
     public static List<string> SplitPlainTextLines(string text, int maxTokensPerLine, TokenCounter? tokenCounter = null) =>
         InternalSplitLines(text, maxTokensPerLine, trim: true, s_plaintextSplitOptions, tokenCounter);
 
+
     /// <summary>
     /// Split markdown text into lines.
     /// </summary>
@@ -45,6 +49,7 @@ public static class TextChunker
     /// <returns>List of lines.</returns>
     public static List<string> SplitMarkDownLines(string text, int maxTokensPerLine, TokenCounter? tokenCounter = null) =>
         InternalSplitLines(text, maxTokensPerLine, trim: true, s_markdownSplitOptions, tokenCounter);
+
 
     /// <summary>
     /// Split plain text into paragraphs.
@@ -58,6 +63,7 @@ public static class TextChunker
     public static List<string> SplitPlainTextParagraphs(List<string> lines, int maxTokensPerParagraph, int overlapTokens = 0, string? chunkHeader = null, TokenCounter? tokenCounter = null) =>
         InternalSplitTextParagraphs(lines, maxTokensPerParagraph, overlapTokens, chunkHeader, static (text, maxTokens, tokenCounter) => InternalSplitLines(text, maxTokens, trim: false, s_plaintextSplitOptions, tokenCounter), tokenCounter);
 
+
     /// <summary>
     /// Split markdown text into paragraphs.
     /// </summary>
@@ -69,6 +75,7 @@ public static class TextChunker
     /// <returns>List of paragraphs.</returns>
     public static List<string> SplitMarkdownParagraphs(List<string> lines, int maxTokensPerParagraph, int overlapTokens = 0, string? chunkHeader = null, TokenCounter? tokenCounter = null) =>
         InternalSplitTextParagraphs(lines, maxTokensPerParagraph, overlapTokens, chunkHeader, static (text, maxTokens, tokenCounter) => InternalSplitLines(text, maxTokens, trim: false, s_markdownSplitOptions, tokenCounter), tokenCounter);
+
 
     private static List<string> InternalSplitTextParagraphs(List<string> lines, int maxTokensPerParagraph, int overlapTokens, string? chunkHeader, Func<string, int, TokenCounter?, List<string>> longLinesSplitter, TokenCounter? tokenCounter)
     {
@@ -99,6 +106,7 @@ public static class TextChunker
         return processedParagraphs;
     }
 
+
     private static List<string> BuildParagraph(IEnumerable<string> truncatedLines, int maxTokensPerParagraph, TokenCounter? tokenCounter)
     {
         StringBuilder paragraphBuilder = new();
@@ -111,11 +119,10 @@ public static class TextChunker
                 string? paragraph = null;
 
                 int currentCount = GetTokenCount(line, tokenCounter) + 1;
+
                 if (currentCount < maxTokensPerParagraph)
                 {
-                    currentCount += tokenCounter is null ?
-                        GetDefaultTokenCount(paragraphBuilder.Length) :
-                        tokenCounter(paragraph = paragraphBuilder.ToString());
+                    currentCount += tokenCounter is null ? GetDefaultTokenCount(paragraphBuilder.Length) : tokenCounter(paragraph = paragraphBuilder.ToString());
                 }
 
                 if (currentCount >= maxTokensPerParagraph)
@@ -138,6 +145,7 @@ public static class TextChunker
 
         return paragraphs;
     }
+
 
     private static List<string> ProcessParagraphs(List<string> paragraphs, int adjustedMaxTokensPerParagraph, int overlapTokens, string? chunkHeader, Func<string, int, TokenCounter?, List<string>> longLinesSplitter, TokenCounter? tokenCounter)
     {
@@ -203,18 +211,21 @@ public static class TextChunker
         return processedParagraphs;
     }
 
+
     private static List<string> InternalSplitLines(string text, int maxTokensPerLine, bool trim, string?[] splitOptions, TokenCounter? tokenCounter)
     {
         var result = new List<string>();
 
         text = text.Replace("\r\n", "\n"); // normalize line endings
         result.Add(text);
+
         for (int i = 0; i < splitOptions.Length; i++)
         {
             int count = result.Count; // track where the original input left off
             var (splits2, inputWasSplit2) = Split(result, maxTokensPerLine, splitOptions[i].AsSpan(), trim, tokenCounter);
             result.AddRange(splits2);
             result.RemoveRange(0, count); // remove the original input
+
             if (!inputWasSplit2)
             {
                 break;
@@ -223,11 +234,13 @@ public static class TextChunker
         return result;
     }
 
+
     private static (List<string>, bool) Split(List<string> input, int maxTokens, ReadOnlySpan<char> separators, bool trim, TokenCounter? tokenCounter)
     {
         bool inputWasSplit = false;
         List<string> result = new();
         int count = input.Count;
+
         for (int i = 0; i < count; i++)
         {
             var (splits, split) = Split(input[i].AsSpan(), input[i], maxTokens, separators, trim, tokenCounter);
@@ -237,15 +250,14 @@ public static class TextChunker
         return (result, inputWasSplit);
     }
 
+
     private static (List<string>, bool) Split(ReadOnlySpan<char> input, string? inputString, int maxTokens, ReadOnlySpan<char> separators, bool trim, TokenCounter? tokenCounter)
     {
         Debug.Assert(inputString is null || input.SequenceEqual(inputString.AsSpan()));
         List<string> result = new();
         var inputWasSplit = false;
 
-        int inputTokenCount = tokenCounter is null ?
-            GetDefaultTokenCount(input.Length) :
-            tokenCounter(inputString ??= input.ToString());
+        int inputTokenCount = tokenCounter is null ? GetDefaultTokenCount(input.Length) : tokenCounter(inputString ??= input.ToString());
 
         if (inputTokenCount > maxTokens)
         {
@@ -261,9 +273,11 @@ public static class TextChunker
             else if (input.Length > 2)
             {
                 int pos = 0;
+
                 while (true)
                 {
                     int index = input.Slice(pos, input.Length - 1 - pos).IndexOfAny(separators);
+
                     if (index < 0)
                     {
                         break;
@@ -284,6 +298,7 @@ public static class TextChunker
             {
                 var firstHalf = input.Slice(0, cutPoint);
                 var secondHalf = input.Slice(cutPoint);
+
                 if (trim)
                 {
                     firstHalf = firstHalf.Trim();
@@ -312,7 +327,9 @@ public static class TextChunker
         return (result, inputWasSplit);
     }
 
+
     private static int GetTokenCount(string input, TokenCounter? tokenCounter) => tokenCounter is null ? GetDefaultTokenCount(input.Length) : tokenCounter(input);
+
 
     private static int GetDefaultTokenCount(int length)
     {

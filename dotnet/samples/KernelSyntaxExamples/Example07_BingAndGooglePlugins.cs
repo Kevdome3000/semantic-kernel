@@ -10,6 +10,7 @@ using Microsoft.SemanticKernel.Plugins.Web.Google;
 using Microsoft.SemanticKernel.TemplateEngine;
 using RepoUtils;
 
+
 /// <summary>
 /// The example shows how to use Bing and Google to search for current data
 /// you might want to import into your system, e.g. providing AI prompts with
@@ -39,6 +40,7 @@ public static class Example07_BingAndGooglePlugins
 
         // Load Bing plugin
         string bingApiKey = TestConfiguration.Bing.ApiKey;
+
         if (bingApiKey == null)
         {
             Console.WriteLine("Bing credentials not found. Skipping example.");
@@ -71,6 +73,7 @@ public static class Example07_BingAndGooglePlugins
         }
     }
 
+
     private static async Task Example1Async(Kernel kernel, string searchPluginName)
     {
         Console.WriteLine("======== Bing and Google Search Plugins ========");
@@ -96,6 +99,7 @@ public static class Example07_BingAndGooglePlugins
             factory in Everett, Washington, United States is the world's ...
        */
     }
+
 
     private static async Task Example2Async(Kernel kernel)
     {

@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
+
 using System.IO;
 using System.Text;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Writers;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 
 internal static class OpenApiSchemaExtensions
 {

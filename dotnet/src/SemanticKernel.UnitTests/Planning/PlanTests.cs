@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.UnitTests.Planning;
+
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -14,7 +16,6 @@ using Microsoft.SemanticKernel.Services;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Planning;
 
 public sealed class PlanTests
 {
@@ -32,6 +33,7 @@ public sealed class PlanTests
         return Task.CompletedTask;
     }
 
+
     [Fact]
     public async Task CanExecutePlanAsync()
     {
@@ -48,6 +50,7 @@ public sealed class PlanTests
         Assert.Equal("Some input", result.Context.Result);
         Assert.Null(result.GetValue<string>());
     }
+
 
     [Fact]
     public async Task CanExecutePlanWithContextAsync()
@@ -77,6 +80,7 @@ public sealed class PlanTests
         Assert.Equal("other input", result.Context.Result);
         Assert.Null(result.GetValue<string>());
     }
+
 
     [Fact]
     public async Task CanExecutePlanWithPlanStepAsync()
@@ -109,6 +113,7 @@ public sealed class PlanTests
         Assert.Equal(planInput, actualInput);
     }
 
+
     [Fact]
     public async Task CanExecutePlanWithFunctionStepAsync()
     {
@@ -136,6 +141,7 @@ public sealed class PlanTests
         Assert.Equal("fake result", result.Context.Result);
         Assert.Equal("fake result", result.GetValue<string>());
     }
+
 
     [Fact]
     public async Task CanExecutePlanWithFunctionStepsAsync()
@@ -171,6 +177,7 @@ public sealed class PlanTests
         Assert.Equal("fake result of function2", result.GetValue<string>());
     }
 
+
     [Fact]
     public async Task CanExecutePlanWithStepsAndFunctionAsync()
     {
@@ -205,6 +212,7 @@ public sealed class PlanTests
         Assert.Equal("fake result of function2", result.GetValue<string>());
     }
 
+
     [Fact]
     public async Task CanExecutePlanWithStepsAsync()
     {
@@ -238,6 +246,7 @@ public sealed class PlanTests
         Assert.Equal("fake result of function2", result.Context.Result);
         Assert.Equal("fake result of function2", result.GetValue<string>());
     }
+
 
     [Fact]
     public async Task CanStepPlanWithStepsAsync()
@@ -278,6 +287,7 @@ public sealed class PlanTests
         Assert.NotNull(result);
         Assert.Equal("fake result of function2", result.State.ToString());
     }
+
 
     [Fact]
     public async Task CanStepPlanWithStepsAndContextAsync()
@@ -327,6 +337,7 @@ public sealed class PlanTests
         Assert.Equal("fake result of function2", plan.State.ToString());
     }
 
+
     [Fact]
     public async Task StepExceptionIsThrownAsync()
     {
@@ -353,6 +364,7 @@ public sealed class PlanTests
         await Assert.ThrowsAsync<ArgumentException>(async () => await kernel.StepAsync(cv, plan));
         mockFunction.Verify(x => x.InvokeAsync(kernel, It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Once);
     }
+
 
     [Fact]
     public async Task PlanStepExceptionIsThrownAsync()
@@ -382,6 +394,7 @@ public sealed class PlanTests
         mockFunction.Verify(x => x.InvokeAsync(kernel, It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Once);
     }
 
+
     [Fact]
     public async Task CanExecutePlanWithTreeStepsAsync()
     {
@@ -396,28 +409,28 @@ public sealed class PlanTests
         var returnContext = new SKContext(kernel, serviceProvider.Object, serviceSelector.Object);
 
         var childFunction1 = SKFunction.FromMethod((SKContext context) =>
-        {
-            return "Child 1 output!" + context.Variables.Input;
-        },
-        "childFunction1");
+            {
+                return "Child 1 output!" + context.Variables.Input;
+            },
+            "childFunction1");
 
         var childFunction2 = SKFunction.FromMethod((SKContext context) =>
-        {
-            return "Child 2 is happy about " + context.Variables.Input;
-        },
-        "childFunction2");
+            {
+                return "Child 2 is happy about " + context.Variables.Input;
+            },
+            "childFunction2");
 
         var childFunction3 = SKFunction.FromMethod((SKContext context) =>
-        {
-            return "Child 3 heard " + context.Variables.Input;
-        },
-        "childFunction3");
+            {
+                return "Child 3 heard " + context.Variables.Input;
+            },
+            "childFunction3");
 
         var nodeFunction1 = SKFunction.FromMethod((SKContext context) =>
-        {
-            return context.Variables.Input + " - this just happened.";
-        },
-        "nodeFunction1");
+            {
+                return context.Variables.Input + " - this just happened.";
+            },
+            "nodeFunction1");
 
         subPlan.AddSteps(childFunction1, childFunction2, childFunction3);
         plan.AddSteps(subPlan);
@@ -434,6 +447,7 @@ public sealed class PlanTests
         Assert.Equal("Child 3 heard Child 2 is happy about Child 1 output!Write a poem or joke - this just happened.", plan.State.ToString());
     }
 
+
     [Fact]
     public void CanCreatePlanWithGoalAndSteps()
     {
@@ -446,6 +460,7 @@ public sealed class PlanTests
         Assert.Equal(goal, plan.Description);
         Assert.Equal(2, plan.Steps.Count);
     }
+
 
     [Fact]
     public void CanCreatePlanWithGoalAndSubPlans()
@@ -460,6 +475,7 @@ public sealed class PlanTests
         Assert.Equal(2, plan.Steps.Count);
     }
 
+
     [Fact]
     public async Task CanExecutePlanWithOneStepAndStateAsync()
     {
@@ -467,10 +483,10 @@ public sealed class PlanTests
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
         var function = SKFunction.FromMethod((SKContext context) =>
-        {
-            return "Here is a poem about " + context.Variables.Input;
-        },
-        "function");
+            {
+                return "Here is a poem about " + context.Variables.Input;
+            },
+            "function");
 
         var plan = new Plan(function);
         plan.State.Set("input", "Cleopatra");
@@ -484,6 +500,7 @@ public sealed class PlanTests
         Assert.Equal("Here is a poem about Cleopatra", result.GetValue<string>());
     }
 
+
     [Fact]
     public async Task CanExecutePlanWithStateAsync()
     {
@@ -491,11 +508,11 @@ public sealed class PlanTests
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
         var function = SKFunction.FromMethod((SKContext context) =>
-        {
-            context.Variables.TryGetValue("type", out string? t);
-            return $"Here is a {t} about " + context.Variables.Input;
-        },
-        "function");
+            {
+                context.Variables.TryGetValue("type", out string? t);
+                return $"Here is a {t} about " + context.Variables.Input;
+            },
+            "function");
 
         var planStep = new Plan(function);
         planStep.Parameters.Set("type", string.Empty);
@@ -514,6 +531,7 @@ public sealed class PlanTests
         Assert.Equal("Here is a poem about Cleopatra", result.GetValue<string>());
     }
 
+
     [Fact]
     public async Task CanExecutePlanWithCustomContextAsync()
     {
@@ -521,11 +539,11 @@ public sealed class PlanTests
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
         var function = SKFunction.FromMethod((SKContext context) =>
-        {
-            context.Variables.TryGetValue("type", out string? t);
-            return $"Here is a {t} about " + context.Variables.Input;
-        },
-        "function");
+            {
+                context.Variables.TryGetValue("type", out string? t);
+                return $"Here is a {t} about " + context.Variables.Input;
+            },
+            "function");
 
         var plan = new Plan(function);
         plan.State.Set("input", "Cleopatra");
@@ -556,6 +574,7 @@ public sealed class PlanTests
         Assert.Equal("Here is a joke about Medusa", result.GetValue<string>());
     }
 
+
     [Fact]
     public async Task CanExecutePlanWithCustomStateAsync()
     {
@@ -565,11 +584,11 @@ public sealed class PlanTests
         var returnContext = new SKContext(kernel, serviceProvider.Object, serviceSelector.Object);
 
         var function = SKFunction.FromMethod((SKContext context) =>
-        {
-            context.Variables.TryGetValue("type", out string? t);
-            return $"Here is a {t} about " + context.Variables.Input;
-        },
-        "function");
+            {
+                context.Variables.TryGetValue("type", out string? t);
+                return $"Here is a {t} about " + context.Variables.Input;
+            },
+            "function");
 
         var planStep = new Plan(function);
         planStep.Parameters.Set("type", string.Empty);
@@ -620,6 +639,7 @@ public sealed class PlanTests
         Assert.Equal("Here is a joke about Cleopatra", result.GetValue<string>());
     }
 
+
     [Fact]
     public async Task CanExecutePlanWithJoinedResultAsync()
     {
@@ -627,22 +647,22 @@ public sealed class PlanTests
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
         var outlineFunction = SKFunction.FromMethod((SKContext context) =>
-        {
-            return $"Here is a {context.Variables["chapterCount"]} chapter outline about " + context.Variables.Input;
-        },
-        "outlineFunction");
+            {
+                return $"Here is a {context.Variables["chapterCount"]} chapter outline about " + context.Variables.Input;
+            },
+            "outlineFunction");
 
         var elementAtIndexFunction = SKFunction.FromMethod((SKContext context) =>
-        {
-            return $"Outline section #{context.Variables["index"]} of {context.Variables["count"]}: " + context.Variables.Input;
-        },
-        "elementAtIndexFunction");
+            {
+                return $"Outline section #{context.Variables["index"]} of {context.Variables["count"]}: " + context.Variables.Input;
+            },
+            "elementAtIndexFunction");
 
         var novelChapterFunction = SKFunction.FromMethod((SKContext context) =>
-        {
-            return $"Chapter #{context.Variables["chapterIndex"]}: {context.Variables.Input}\nTheme:{context.Variables["theme"]}\nPreviously:{context.Variables["previousChapter"]}";
-        },
-        "novelChapterFunction");
+            {
+                return $"Chapter #{context.Variables["chapterIndex"]}: {context.Variables.Input}\nTheme:{context.Variables["theme"]}\nPreviously:{context.Variables["previousChapter"]}";
+            },
+            "novelChapterFunction");
 
         var plan = new Plan("A plan with steps that alternate appending to the plan result.");
 
@@ -732,6 +752,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         Assert.False(result.TryGetMetadataValue<string>("CHAPTER_3_SYNOPSIS", out var chapter3Synopsis));
     }
 
+
     [Fact]
     public async Task CanExecutePlanWithExpandedAsync()
     {
@@ -739,10 +760,10 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         var (kernel, serviceProvider, serviceSelector) = this.SetupKernel();
 
         var function = SKFunction.FromMethod((SKContext context) =>
-        {
-            return $"Here is a payload '{context.Variables["payload"]}' for " + context.Variables.Input;
-        },
-       "function");
+            {
+                return $"Here is a payload '{context.Variables["payload"]}' for " + context.Variables.Input;
+            },
+            "function");
 
         var plan = new Plan("A plan with steps that have variables with a $ in them but not associated with an output");
 
@@ -762,6 +783,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         Assert.Equal(expected, result.GetValue<string>());
     }
 
+
     [Fact]
     public async Task ConPlanStepsTriggerKernelEventsAsync()
     {
@@ -770,10 +792,12 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         // Arrange
         [SKName("WritePoem")]
         static string Function2() => "Poem";
+
         functions.Add(SKFunction.FromMethod(Method(Function2)));
 
         [SKName("SendEmail")]
         static string Function3() => "Sent Email";
+
         functions.Add(SKFunction.FromMethod(Method(Function3)));
 
         var goal = "Write a poem or joke and send it in an e-mail to Kai.";
@@ -791,6 +815,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         var invokedCalls = 0;
         var invokingListFunctions = new List<SKFunctionMetadata>();
         var invokedListFunctions = new List<SKFunctionMetadata>();
+
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
             invokingListFunctions.Add(e.FunctionView);
@@ -824,6 +849,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         Assert.Equal(invokedListFunctions[1].Name, functions[1].Name);
         Assert.Equal(invokedListFunctions[2].Name, plan.Name);
     }
+
 
     [Fact]
     public async Task PlanIsCancelledWhenInvokingHandlerTriggersCancelAsync()
@@ -873,6 +899,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         // Aborting at the plan level, will render no result
         Assert.Null(result.Value);
     }
+
 
     [Fact]
     public async Task PlanStopsAtTheStepWhenInvokingHandlerTriggersCancelAsync()
@@ -926,6 +953,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         // Aborting at any step of a plan, will invalidate the full plan result
         Assert.Null(result.Value);
     }
+
 
     [Fact]
     public async Task PlanStopsAtTheStepWhenInvokedHandlerTriggersCancelAsync()
@@ -981,6 +1009,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         // the plan will render no result as no step succeeded previously.
         Assert.Null(result.Value);
     }
+
 
     [Fact]
     public async Task PlanStopsAtFinalStepWhenInvokedHandlerTriggersCancelAsync()
@@ -1039,6 +1068,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         Assert.Equal("WritePoem", result.Value);
     }
 
+
     [Fact(Skip = "Skipping is currently not supported for plans")]
     public async Task PlapSkippingFirstStepShouldGiveSendStepResultAsync()
     {
@@ -1093,6 +1123,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         Assert.Equal(invokedListFunctions[0].Name, plan.Steps[1].Name);
         Assert.Equal("SendEmail", result.Value);
     }
+
 
     [Fact]
     public async Task PlanStopsAtTheMiddleStepWhenHandlerTriggersInvokingCancelAsync()
@@ -1151,6 +1182,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         Assert.Equal("WritePoem", result.Value);
     }
 
+
     private void PrepareKernelAndPlan(out Kernel kernel, out Plan plan)
     {
         kernel = new KernelBuilder().Build();
@@ -1167,10 +1199,12 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         // 3 - Plan - Step 2 - SendEmail
     }
 
+
     private static MethodInfo Method(Delegate method)
     {
         return method.Method;
     }
+
 
     private (Kernel kernel, Mock<IAIServiceProvider> serviceProviderMock, Mock<IAIServiceSelector> serviceSelectorMock) SetupKernel(ISKPluginCollection? plugins = null)
     {

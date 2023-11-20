@@ -78,9 +78,9 @@ public static class Example70_Assistant
 
         var plugin = new SKPlugin("test");
         plugin.AddFunctionFromPrompt(
-             "Correct any misspelling or gramatical errors provided in input: {{$input}}",
-              functionName: "spellChecker",
-              description: "Correct the spelling for the user input."
+            "Correct any misspelling or gramatical errors provided in input: {{$input}}",
+            functionName: "spellChecker",
+            description: "Correct the spelling for the user input."
         );
 
         await ChatAsync(

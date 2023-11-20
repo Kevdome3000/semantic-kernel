@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
+
 using System.Collections.Generic;
 
-namespace Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 
 /// <summary>
 /// Execution state
@@ -24,6 +25,7 @@ public sealed class ExecutionState
     /// </summary>
     public Dictionary<string, StepExecutionState> StepStates { get; set; } = new Dictionary<string, StepExecutionState>();
 
+
     /// <summary>
     /// Step execution state
     /// </summary>
@@ -43,6 +45,7 @@ public sealed class ExecutionState
         /// The output variables provided by the step
         /// </summary>
         public Dictionary<string, List<string>> Output { get; set; } = new Dictionary<string, List<string>>();
+
 
         /// <summary>
         /// Add or update variable for the step
@@ -67,6 +70,7 @@ public sealed class ExecutionState
             }
         }
     }
+
 
     /// <summary>
     /// The execution status enum

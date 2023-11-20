@@ -428,6 +428,7 @@ public sealed class SKFunctionTests2
         Assert.Null(result.GetValue<string>());
     }
 
+
     [Fact]
     public async Task ItSupportsInstanceContextStringVoidAsync()
     {

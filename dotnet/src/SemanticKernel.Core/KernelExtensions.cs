@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -8,19 +10,21 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.TemplateEngine;
-using Microsoft.SemanticKernel.Text;
+using AI;
+using Diagnostics;
+using Extensions.Logging;
+using Orchestration;
+using TemplateEngine;
+using Text;
 
-namespace Microsoft.SemanticKernel;
 
 /// <summary>Extension methods for interacting with <see cref="Kernel"/>.</summary>
 public static class KernelExtensions
 {
+
+
     #region CreateFunctionFromMethod
+
     /// <summary>
     /// Creates an <see cref="ISKFunction"/> instance for a method, specified via a delegate.
     /// </summary>
@@ -43,6 +47,7 @@ public static class KernelExtensions
 
         return SKFunction.FromMethod(method.Method, method.Target, functionName, description, parameters, returnParameter, kernel.LoggerFactory);
     }
+
 
     /// <summary>
     /// Creates an <see cref="ISKFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
@@ -69,10 +74,14 @@ public static class KernelExtensions
 
         return SKFunction.FromMethod(method, target, functionName, description, parameters, returnParameter, kernel.LoggerFactory);
     }
+
     #endregion
 
+
     #region CreateFunctionFromPrompt
+
     // TODO: Revise these CreateFunctionFromPrompt method XML comments
+
 
     /// <summary>
     /// Creates a string-to-string semantic function, with no direct support for input context.
@@ -97,6 +106,7 @@ public static class KernelExtensions
         return SKFunction.FromPrompt(promptTemplate, requestSettings, functionName, description, kernel.LoggerFactory);
     }
 
+
     /// <summary>
     /// Creates a semantic function passing in the definition in natural language, i.e. the prompt template.
     /// </summary>
@@ -118,6 +128,7 @@ public static class KernelExtensions
         return SKFunction.FromPrompt(promptTemplate, promptTemplateConfig, functionName, promptTemplateFactory, kernel.LoggerFactory);
     }
 
+
     /// <summary>
     /// Allow to define a semantic function passing in the definition in natural language, i.e. the prompt template.
     /// </summary>
@@ -136,9 +147,12 @@ public static class KernelExtensions
 
         return SKFunction.FromPrompt(promptTemplate, promptTemplateConfig, functionName, kernel.LoggerFactory);
     }
+
     #endregion
 
+
     #region CreatePluginFromObject
+
     /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/>.</summary>
     /// <typeparam name="T">Specifies the type of the object to wrap.</typeparam>
     /// <param name="kernel">The kernel.</param>
@@ -156,6 +170,7 @@ public static class KernelExtensions
         return SKPlugin.FromObject<T>(pluginName, kernel.LoggerFactory);
     }
 
+
     /// <summary>Creates a plugin that wraps the specified target object.</summary>
     /// <param name="kernel">The kernel.</param>
     /// <param name="target">The instance of the class to be wrapped.</param>
@@ -171,9 +186,12 @@ public static class KernelExtensions
 
         return SKPlugin.FromObject(target, pluginName, kernel.LoggerFactory);
     }
+
     #endregion
 
+
     #region ImportPluginFromObject
+
     /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/> and imports it into the <paramref name="kernel"/>'s plugin collection.</summary>
     /// <typeparam name="T">Specifies the type of the object to wrap.</typeparam>
     /// <param name="kernel">The kernel.</param>
@@ -191,6 +209,7 @@ public static class KernelExtensions
         return plugin;
     }
 
+
     /// <summary>Creates a plugin that wraps the specified target object and imports it into the <paramref name="kernel"/>'s plugin collection.</summary>
     /// <param name="kernel">The kernel.</param>
     /// <param name="target">The instance of the class to be wrapped.</param>
@@ -206,7 +225,9 @@ public static class KernelExtensions
         kernel.Plugins.Add(plugin);
         return plugin;
     }
+
     #endregion
+
 
     /// <summary>Creates a plugin containing one function per child directory of the specified <paramref name="pluginDirectory"/>.</summary>
     /// <remarks>
@@ -263,6 +284,7 @@ public static class KernelExtensions
 
             // Continue only if prompt template exists
             var promptPath = Path.Combine(functionDirectory, PromptFile);
+
             if (!File.Exists(promptPath))
             {
                 continue;
@@ -270,9 +292,7 @@ public static class KernelExtensions
 
             // Load prompt configuration. Note: the configuration is optional.
             var configPath = Path.Combine(functionDirectory, ConfigFile);
-            var promptTemplateConfig = File.Exists(configPath) ?
-                PromptTemplateConfig.FromJson(File.ReadAllText(configPath)) :
-                new PromptTemplateConfig();
+            var promptTemplateConfig = File.Exists(configPath) ? PromptTemplateConfig.FromJson(File.ReadAllText(configPath)) : new PromptTemplateConfig();
 
             if (logger.IsEnabled(LogLevel.Trace))
             {
@@ -294,7 +314,9 @@ public static class KernelExtensions
         return plugin;
     }
 
+
     #region ImportPluginFromPromptDirectory
+
     /// <summary>
     /// Creates a plugin containing one function per child directory of the specified <paramref name="pluginDirectory"/>
     /// and imports it into the <paramref name="kernel"/>'s plugin collection.
@@ -339,9 +361,12 @@ public static class KernelExtensions
         kernel.Plugins.Add(plugin);
         return plugin;
     }
+
     #endregion
 
+
     #region InvokePromptAsync
+
     /// <summary>
     /// Invoke a semantic function using the provided prompt template.
     /// </summary>
@@ -362,7 +387,9 @@ public static class KernelExtensions
             requestSettings,
             functionName,
             description));
+
     #endregion
+
 
     /// <summary>
     /// Run a single synchronous or asynchronous <see cref="ISKFunction"/>.
@@ -383,6 +410,7 @@ public static class KernelExtensions
         return kernel.RunAsync(variables ?? new(), cancellationToken, skFunction);
     }
 
+
     /// <summary>
     /// Run a pipeline composed of synchronous and asynchronous functions.
     /// </summary>
@@ -397,6 +425,7 @@ public static class KernelExtensions
 
         return kernel.RunAsync(new ContextVariables(), pipeline);
     }
+
 
     /// <summary>
     /// Run a pipeline composed of synchronous and asynchronous functions.
@@ -415,6 +444,7 @@ public static class KernelExtensions
         return kernel.RunAsync(new ContextVariables(input), pipeline);
     }
 
+
     /// <summary>
     /// Run a pipeline composed of synchronous and asynchronous functions.
     /// </summary>
@@ -432,6 +462,7 @@ public static class KernelExtensions
         return kernel.RunAsync(variables, CancellationToken.None, pipeline);
     }
 
+
     /// <summary>
     /// Run a pipeline composed of synchronous and asynchronous functions.
     /// </summary>
@@ -448,6 +479,7 @@ public static class KernelExtensions
 
         return kernel.RunAsync(new ContextVariables(), cancellationToken, pipeline);
     }
+
 
     /// <summary>
     /// Run a pipeline composed of synchronous and asynchronous functions.
@@ -467,6 +499,7 @@ public static class KernelExtensions
 
         return kernel.RunAsync(new ContextVariables(input), cancellationToken, pipeline);
     }
+
 
     /// <summary>
     /// Run a plugin function.
@@ -491,6 +524,7 @@ public static class KernelExtensions
         return kernel.RunAsync(function, variables, cancellationToken);
     }
 
+
     /// <summary>
     /// Run a pipeline composed of synchronous and asynchronous functions.
     /// </summary>
@@ -513,7 +547,7 @@ public static class KernelExtensions
 
         foreach (ISKFunction skFunction in pipeline)
         {
-repeat:
+            repeat:
             cancellationToken.ThrowIfCancellationRequested();
 
             try
@@ -552,6 +586,7 @@ repeat:
         return KernelResult.FromFunctionResults(allFunctionResults.LastOrDefault()?.Value, allFunctionResults);
     }
 
+
     /// <summary>
     /// Checks if the handler requested to cancel the function execution.
     /// </summary>
@@ -577,6 +612,7 @@ repeat:
         return false;
     }
 
+
     /// <summary>
     /// Checks if the handler requested to skip the function execution.
     /// </summary>
@@ -595,6 +631,7 @@ repeat:
 
         return false;
     }
+
 
     /// <summary>
     /// Checks if the handler requested to repeat the function execution.

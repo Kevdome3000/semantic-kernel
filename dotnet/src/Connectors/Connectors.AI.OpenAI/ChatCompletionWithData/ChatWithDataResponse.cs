@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
+
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
-
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes
+
 
 internal sealed class ChatWithDataResponse
 {

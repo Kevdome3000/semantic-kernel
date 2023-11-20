@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.UnitTests.TemplateEngine.Blocks;
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -14,7 +16,6 @@ using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.TemplateEngine.Blocks;
 
 public class CodeBlockTests
 {
@@ -22,6 +23,7 @@ public class CodeBlockTests
     private readonly Mock<IAIServiceProvider> _serviceProvider = new();
     private readonly Mock<IAIServiceSelector> _serviceSelector = new();
     private readonly Kernel _kernel = new(new Mock<IAIServiceProvider>().Object);
+
 
     [Fact]
     public async Task ItThrowsIfAFunctionDoesntExistAsync()
@@ -33,6 +35,7 @@ public class CodeBlockTests
         // Act & Assert
         await Assert.ThrowsAsync<KeyNotFoundException>(() => target.RenderCodeAsync(context));
     }
+
 
     [Fact]
     public async Task ItThrowsIfAFunctionCallThrowsAsync()
@@ -58,6 +61,7 @@ public class CodeBlockTests
         await Assert.ThrowsAsync<FormatException>(() => target.RenderCodeAsync(context));
     }
 
+
     [Fact]
     public void ItHasTheCorrectType()
     {
@@ -68,12 +72,14 @@ public class CodeBlockTests
         Assert.Equal(BlockTypes.Code, target.Type);
     }
 
+
     [Fact]
     public void ItTrimsSpaces()
     {
         // Act + Assert
         Assert.Equal("aa", new CodeBlock("  aa  ", NullLoggerFactory.Instance).Content);
     }
+
 
     [Fact]
     public void ItChecksValidityOfInternalBlocks()
@@ -91,6 +97,7 @@ public class CodeBlockTests
         Assert.True(codeBlock1.IsValid(out _));
         Assert.False(codeBlock2.IsValid(out _));
     }
+
 
     [Fact]
     public void ItRequiresAValidFunctionCall()
@@ -135,6 +142,7 @@ public class CodeBlockTests
         Assert.Equal("Unexpected named argument found. Expected function name first.", errorMessage7);
     }
 
+
     [Fact]
     public async Task ItRendersCodeBlockConsistingOfJustAVarBlock1Async()
     {
@@ -149,6 +157,7 @@ public class CodeBlockTests
         // Assert
         Assert.Equal("foo", result);
     }
+
 
     [Fact]
     public async Task ItRendersCodeBlockConsistingOfJustAVarBlock2Async()
@@ -166,6 +175,7 @@ public class CodeBlockTests
         Assert.Equal("bar", result);
     }
 
+
     [Fact]
     public async Task ItRendersCodeBlockConsistingOfJustAValBlock1Async()
     {
@@ -179,6 +189,7 @@ public class CodeBlockTests
         // Assert
         Assert.Equal("ciao", result);
     }
+
 
     [Fact]
     public async Task ItRendersCodeBlockConsistingOfJustAValBlock2Async()
@@ -195,6 +206,7 @@ public class CodeBlockTests
         Assert.Equal("arrivederci", result);
     }
 
+
     [Fact]
     public async Task ItInvokesFunctionCloningAllVariablesAsync()
     {
@@ -208,16 +220,16 @@ public class CodeBlockTests
         var canary2 = string.Empty;
 
         var function = SKFunction.FromMethod((SKContext context) =>
-        {
-            canary0 = context!.Variables["input"];
-            canary1 = context.Variables["var1"];
-            canary2 = context.Variables["var2"];
+            {
+                canary0 = context!.Variables["input"];
+                canary1 = context.Variables["var1"];
+                canary2 = context.Variables["var2"];
 
-            context.Variables["input"] = "overridden";
-            context.Variables["var1"] = "overridden";
-            context.Variables["var2"] = "overridden";
-        },
-        "function");
+                context.Variables["input"] = "overridden";
+                context.Variables["var1"] = "overridden";
+                context.Variables["var2"] = "overridden";
+            },
+            "function");
 
         this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { function }));
 
@@ -236,6 +248,7 @@ public class CodeBlockTests
         Assert.Equal("due", variables["var2"]);
     }
 
+
     [Fact]
     public async Task ItInvokesFunctionWithCustomVariableAsync()
     {
@@ -251,10 +264,10 @@ public class CodeBlockTests
         var canary = string.Empty;
 
         var function = SKFunction.FromMethod((SKContext context) =>
-        {
-            canary = context!.Variables["input"];
-        },
-        "function");
+            {
+                canary = context!.Variables["input"];
+            },
+            "function");
 
         this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { function }));
 
@@ -266,6 +279,7 @@ public class CodeBlockTests
         Assert.Equal(VarValue, result);
         Assert.Equal(VarValue, canary);
     }
+
 
     [Fact]
     public async Task ItInvokesFunctionWithCustomValueAsync()
@@ -280,10 +294,10 @@ public class CodeBlockTests
         var canary = string.Empty;
 
         var function = SKFunction.FromMethod((SKContext context) =>
-        {
-            canary = context!.Variables["input"];
-        },
-        "function");
+            {
+                canary = context!.Variables["input"];
+            },
+            "function");
 
         this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { function }));
 
@@ -295,6 +309,7 @@ public class CodeBlockTests
         Assert.Equal(Value, result);
         Assert.Equal(Value, canary);
     }
+
 
     [Fact]
     public async Task ItInvokesFunctionWithNamedArgsAsync()
@@ -316,11 +331,11 @@ public class CodeBlockTests
         var baz = string.Empty;
 
         var function = SKFunction.FromMethod((SKContext context) =>
-        {
-            foo = context!.Variables["foo"];
-            baz = context!.Variables["baz"];
-        },
-        "function");
+            {
+                foo = context!.Variables["foo"];
+                baz = context!.Variables["baz"];
+            },
+            "function");
 
         this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { function }));
 

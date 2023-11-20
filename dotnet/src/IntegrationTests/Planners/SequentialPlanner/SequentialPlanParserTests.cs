@@ -1,16 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace SemanticKernel.IntegrationTests.Planners.Sequential;
+
+using Fakes;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
-using SemanticKernel.IntegrationTests.Fakes;
-using SemanticKernel.IntegrationTests.TestSettings;
+using TestSettings;
 using Xunit;
 using Xunit.Abstractions;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
-namespace SemanticKernel.IntegrationTests.Planners.Sequential;
 #pragma warning restore IDE0130
+
 
 public class SequentialPlanParserTests
 {
@@ -24,6 +26,7 @@ public class SequentialPlanParserTests
             .AddUserSecrets<SequentialPlanParserTests>()
             .Build();
     }
+
 
     [Fact]
     public void CanCallToPlanFromXml()
@@ -90,6 +93,7 @@ public class SequentialPlanParserTests
             }
         );
     }
+
 
     private readonly IConfigurationRoot _configuration;
 }

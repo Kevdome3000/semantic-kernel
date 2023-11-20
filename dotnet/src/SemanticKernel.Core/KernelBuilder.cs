@@ -1,13 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.Services;
-
 namespace Microsoft.SemanticKernel;
+
+using System;
+using Diagnostics;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
+using Http;
+using Services;
+
 
 /// <summary>
 /// A builder for Semantic Kernel.
@@ -19,6 +20,7 @@ public sealed class KernelBuilder
     private readonly AIServiceCollection _aiServices = new();
     private IAIServiceSelector? _serviceSelector;
 
+
     /// <summary>
     /// Create a new kernel instance
     /// </summary>
@@ -28,6 +30,7 @@ public sealed class KernelBuilder
         var builder = new KernelBuilder();
         return builder.Build();
     }
+
 
     /// <summary>
     /// Build a new kernel instance using the settings passed so far.
@@ -48,6 +51,7 @@ public sealed class KernelBuilder
         return instance;
     }
 
+
     /// <summary>
     /// Add a logger to the kernel to be built.
     /// </summary>
@@ -59,6 +63,7 @@ public sealed class KernelBuilder
         this._loggerFactory = loggerFactory;
         return this;
     }
+
 
     /// <summary>
     /// Add a http handler factory to the kernel to be built.
@@ -72,6 +77,7 @@ public sealed class KernelBuilder
         return this;
     }
 
+
     /// <summary>
     /// Adds a <typeparamref name="TService"/> instance to the services collection
     /// </summary>
@@ -82,6 +88,7 @@ public sealed class KernelBuilder
         return this;
     }
 
+
     /// <summary>
     /// Adds a <typeparamref name="TService"/> factory method to the services collection
     /// </summary>
@@ -91,6 +98,7 @@ public sealed class KernelBuilder
         this._aiServices.SetService<TService>(() => factory(this._loggerFactory));
         return this;
     }
+
 
     /// <summary>
     /// Adds a <typeparamref name="TService"/> instance to the services collection
@@ -107,6 +115,7 @@ public sealed class KernelBuilder
         return this;
     }
 
+
     /// <summary>
     /// Adds a <typeparamref name="TService"/> factory method to the services collection
     /// </summary>
@@ -122,6 +131,7 @@ public sealed class KernelBuilder
         return this;
     }
 
+
     /// <summary>
     /// Adds a <typeparamref name="TService"/> factory method to the services collection
     /// </summary>
@@ -136,6 +146,7 @@ public sealed class KernelBuilder
         this._aiServices.SetService<TService>(serviceId, () => factory(this._loggerFactory, this._httpHandlerFactory), setAsDefault);
         return this;
     }
+
 
     /// <summary>
     /// Adds a <cref name="IAIServiceSelector"/> to the builder

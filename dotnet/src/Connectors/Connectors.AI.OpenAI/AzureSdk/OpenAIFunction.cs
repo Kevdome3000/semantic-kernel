@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -8,7 +10,6 @@ using Azure.AI.OpenAI;
 using Json.Schema;
 using Json.Schema.Generation;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
 /// <summary>
 /// Represents a function parameter that can be passed to the OpenAI API
@@ -46,6 +47,7 @@ public class OpenAIFunctionParameter
     public Type? ParameterType { get; set; } = null;
 }
 
+
 /// <summary>
 /// Represents a return parameter of a function that can be passed to the OpenAI API
 /// </summary>
@@ -66,6 +68,7 @@ public class OpenAIFunctionReturnParameter
     /// </summary>
     public Type? ParameterType { get; set; } = null;
 }
+
 
 /// <summary>
 /// Represents a function that can be passed to the OpenAI API
@@ -119,6 +122,7 @@ public class OpenAIFunction
     /// </summary>
     public OpenAIFunctionReturnParameter ReturnParameter { get; set; } = new OpenAIFunctionReturnParameter();
 
+
     /// <summary>
     /// Converts the <see cref="OpenAIFunction"/> to OpenAI's <see cref="FunctionDefinition"/>.
     /// </summary>
@@ -128,6 +132,7 @@ public class OpenAIFunction
         BinaryData resultParameters = s_zeroFunctionParametersSchema;
 
         var parameters = this.Parameters;
+
         if (parameters.Count > 0)
         {
             var properties = new Dictionary<string, SKJsonSchema>();
@@ -138,6 +143,7 @@ public class OpenAIFunction
                 var parameter = parameters[i];
 
                 SKJsonSchema? schema = parameter.Schema ?? GetJsonSchema(parameter.ParameterType, parameter.Description);
+
                 if (schema is not null)
                 {
                     properties.Add(parameter.Name, schema);
@@ -165,6 +171,7 @@ public class OpenAIFunction
         };
     }
 
+
     /// <summary>
     /// Creates an <see cref="SKJsonSchema"/> that contains a JSON Schema of the specified <see cref="Type"/> with the specified description.
     /// </summary>
@@ -175,13 +182,14 @@ public class OpenAIFunction
     internal static SKJsonSchema? GetJsonSchema(Type? type, string? description)
     {
         SKJsonSchema? schema = null;
+
         if (type is not null)
         {
             schema = SKJsonSchema.Parse(JsonSerializer.Serialize(
                 new JsonSchemaBuilder()
-                .FromType(type)
-                .Description(description ?? string.Empty)
-                .Build()));
+                    .FromType(type)
+                    .Description(description ?? string.Empty)
+                    .Build()));
         }
 
         return schema;

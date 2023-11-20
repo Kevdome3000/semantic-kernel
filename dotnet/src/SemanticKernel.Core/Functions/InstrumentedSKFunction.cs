@@ -1,20 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - Using the main namespace
+namespace Microsoft.SemanticKernel;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Orchestration;
+using AI;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
+using Orchestration;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using the main namespace
-namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
+
 
 /// <summary>Instrumented function that surrounds the invocation of another function with logging and metrics.</summary>
 internal sealed class InstrumentedSKFunction : ISKFunction
@@ -37,6 +39,7 @@ internal sealed class InstrumentedSKFunction : ISKFunction
     /// <summary>Logger to use for logging activities.</summary>
     private readonly ILogger _logger;
 
+
     /// <summary>
     /// Initialize a new instance of the <see cref="InstrumentedSKFunction"/> class.
     /// </summary>
@@ -48,6 +51,7 @@ internal sealed class InstrumentedSKFunction : ISKFunction
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(function.Name) : NullLogger.Instance;
     }
 
+
     /// <inheritdoc/>
     public string Name => this._function.Name;
 
@@ -57,9 +61,11 @@ internal sealed class InstrumentedSKFunction : ISKFunction
     /// <inheritdoc/>
     public IEnumerable<AIRequestSettings> ModelSettings => this._function.ModelSettings;
 
+
     /// <inheritdoc/>
     public SKFunctionMetadata GetMetadata() =>
         this._function.GetMetadata();
+
 
     /// <inheritdoc/>
     async Task<FunctionResult> ISKFunction.InvokeAsync(Kernel kernel, SKContext context, AIRequestSettings? requestSettings, CancellationToken cancellationToken)
@@ -70,6 +76,7 @@ internal sealed class InstrumentedSKFunction : ISKFunction
         TagList tags = new() { { "sk.function.name", this.Name } };
 
         long startingTimestamp = Stopwatch.GetTimestamp();
+
         try
         {
             var result = await this._function.InvokeAsync(kernel, context, requestSettings, cancellationToken).ConfigureAwait(false);

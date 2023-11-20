@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.UnitTests.Planning;
+
 using System;
 using System.Linq;
 using System.Threading;
@@ -13,13 +15,13 @@ using Microsoft.SemanticKernel.Services;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Planning;
 
 public sealed class PlanSerializationTests
 {
     private readonly Kernel _kernel = new(new Mock<IAIServiceProvider>().Object);
     private readonly Mock<IAIServiceProvider> _serviceProvider = new();
     private readonly Mock<IAIServiceSelector> _serviceSelector = new();
+
 
     [Fact]
     public void CanSerializePlan()
@@ -39,6 +41,7 @@ public sealed class PlanSerializationTests
         Assert.Contains(expectedSteps, serializedPlan, StringComparison.OrdinalIgnoreCase);
     }
 
+
     [Fact]
     public void CanSerializePlanWithGoalAndSteps()
     {
@@ -56,6 +59,7 @@ public sealed class PlanSerializationTests
         Assert.Contains(goal, serializedPlan, StringComparison.OrdinalIgnoreCase);
         Assert.Contains(expectedSteps, serializedPlan, StringComparison.OrdinalIgnoreCase);
     }
+
 
     [Fact]
     public void CanSerializePlanWithGoalAndSubPlans()
@@ -76,6 +80,7 @@ public sealed class PlanSerializationTests
         Assert.Contains("\"description\":\"Send it in an e-mail to Kai\"", serializedPlan, StringComparison.OrdinalIgnoreCase);
         Assert.Contains(expectedSteps, serializedPlan, StringComparison.OrdinalIgnoreCase);
     }
+
 
     [Fact]
     public void CanSerializePlanWithPlanStep()
@@ -106,6 +111,7 @@ public sealed class PlanSerializationTests
         Assert.Single(deserializedPlan.Steps);
         Assert.Equal("function", deserializedPlan.Steps[0].Name);
     }
+
 
     [Fact]
     public void CanSerializePlanWithFunctionStep()
@@ -139,6 +145,7 @@ public sealed class PlanSerializationTests
         Assert.Single(deserializedPlan.Steps);
         Assert.Equal("function", deserializedPlan.Steps[0].Name);
     }
+
 
     [Fact]
     public void CanSerializePlanWithFunctionSteps()
@@ -176,6 +183,7 @@ public sealed class PlanSerializationTests
         Assert.Equal("function2", deserializedPlan.Steps[1].Name);
     }
 
+
     [Fact]
     public void CanSerializePlanWithStepsAndFunction()
     {
@@ -212,6 +220,7 @@ public sealed class PlanSerializationTests
         Assert.Equal("function2", deserializedPlan.Steps[1].Name);
     }
 
+
     [Fact]
     public void CanSerializePlanWithSteps()
     {
@@ -239,6 +248,7 @@ public sealed class PlanSerializationTests
         Assert.NotNull(serializedPlan);
         Assert.NotEmpty(serializedPlan);
     }
+
 
     [Fact]
     public async Task CanStepAndSerializePlanWithStepsAsync()
@@ -278,6 +288,7 @@ public sealed class PlanSerializationTests
         Assert.NotEqual(serializedPlan2, serializedPlan3);
         Assert.Contains("\"next_step_index\":2", serializedPlan3, StringComparison.OrdinalIgnoreCase);
     }
+
 
     [Fact]
     public async Task CanStepAndSerializePlanWithStepsAndContextAsync()
@@ -344,6 +355,7 @@ public sealed class PlanSerializationTests
         Assert.NotEqual(serializedPlan1, serializedPlan2);
         Assert.Contains("\"next_step_index\":2", serializedPlan2, StringComparison.OrdinalIgnoreCase);
     }
+
 
     [Fact]
     public async Task CanStepAndSerializeAndDeserializePlanWithStepsAndContextAsync()
@@ -418,6 +430,7 @@ public sealed class PlanSerializationTests
         Assert.Contains("\"next_step_index\":2", serializedPlan2, StringComparison.OrdinalIgnoreCase);
     }
 
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -459,6 +472,7 @@ public sealed class PlanSerializationTests
         Assert.Equal(plan.Steps[0].Name, deserializedPlan.Steps[0].Name);
         Assert.Equal(plan.Steps[1].Name, deserializedPlan.Steps[1].Name);
     }
+
 
     [Theory]
     [InlineData(false)]

@@ -1,14 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Reliability.Basic;
+
 using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
 
-namespace Microsoft.SemanticKernel.Reliability.Basic;
 
 /// <summary>
 /// Handler that retries HTTP requests based on a <see cref="BasicRetryConfig"/>.
@@ -25,6 +26,7 @@ public sealed class BasicHttpRetryHandler : DelegatingHandler
     {
     }
 
+
     internal BasicHttpRetryHandler(
         BasicRetryConfig config,
         ILoggerFactory? loggerFactory = null,
@@ -36,6 +38,7 @@ public sealed class BasicHttpRetryHandler : DelegatingHandler
         this._delayProvider = delayProvider ?? new TaskDelayProvider();
         this._timeProvider = timeProvider ?? new DefaultTimeProvider();
     }
+
 
     /// <summary>
     /// Executes the action with retry logic
@@ -55,6 +58,7 @@ public sealed class BasicHttpRetryHandler : DelegatingHandler
         int retryCount = 0;
 
         var start = this._timeProvider.GetCurrentTime();
+
         while (true)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -62,6 +66,7 @@ public sealed class BasicHttpRetryHandler : DelegatingHandler
             TimeSpan waitFor;
             string reason;
             HttpResponseMessage? response = null;
+
             try
             {
                 response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
@@ -97,6 +102,7 @@ public sealed class BasicHttpRetryHandler : DelegatingHandler
             catch (Exception e) when (this.ShouldRetry(e) || this.ShouldRetry(e.InnerException))
             {
                 reason = e.GetType().ToString();
+
                 if (retryCount >= this._config.MaxRetryCount)
                 {
                     this._logger.LogError(e,
@@ -131,6 +137,7 @@ public sealed class BasicHttpRetryHandler : DelegatingHandler
         }
     }
 
+
     /// <summary>
     /// Interface for a delay provider, primarily to enable unit testing.
     /// </summary>
@@ -138,6 +145,7 @@ public sealed class BasicHttpRetryHandler : DelegatingHandler
     {
         Task DelayAsync(TimeSpan delay, CancellationToken cancellationToken);
     }
+
 
     internal sealed class TaskDelayProvider : IDelayProvider
     {
@@ -147,6 +155,7 @@ public sealed class BasicHttpRetryHandler : DelegatingHandler
         }
     }
 
+
     /// <summary>
     /// Interface for a time provider, primarily to enable unit testing.
     /// </summary>
@@ -154,6 +163,7 @@ public sealed class BasicHttpRetryHandler : DelegatingHandler
     {
         DateTimeOffset GetCurrentTime();
     }
+
 
     internal sealed class DefaultTimeProvider : ITimeProvider
     {
@@ -163,10 +173,12 @@ public sealed class BasicHttpRetryHandler : DelegatingHandler
         }
     }
 
+
     private readonly BasicRetryConfig _config;
     private readonly ILogger _logger;
     private readonly IDelayProvider _delayProvider;
     private readonly ITimeProvider _timeProvider;
+
 
     /// <summary>
     /// Get the wait time for the next retry.
@@ -183,11 +195,8 @@ public sealed class BasicHttpRetryHandler : DelegatingHandler
         retryAfter ??= this._config.MinRetryDelay;
 
         // If the retry delay is longer than the max retry delay, use the max retry delay
-        var timeToWait = retryAfter > this._config.MaxRetryDelay
-            ? this._config.MaxRetryDelay
-            : retryAfter < this._config.MinRetryDelay
-                ? this._config.MinRetryDelay
-                : retryAfter ?? default;
+        var timeToWait = retryAfter > this._config.MaxRetryDelay ? this._config.MaxRetryDelay :
+            retryAfter < this._config.MinRetryDelay ? this._config.MinRetryDelay : retryAfter ?? default;
 
         // If exponential backoff is enabled, and the server didn't provide a RetryAfter header, double the delay for each retry
         if (this._config.UseExponentialBackoff
@@ -202,6 +211,7 @@ public sealed class BasicHttpRetryHandler : DelegatingHandler
 
         return timeToWait;
     }
+
 
     /// <summary>
     /// Determines if there is time left for a retry.
@@ -220,10 +230,12 @@ public sealed class BasicHttpRetryHandler : DelegatingHandler
         return result < this._config.MaxTotalRetryTime;
     }
 
+
     private bool ShouldRetry(HttpStatusCode statusCode)
     {
         return this._config.RetryableStatusCodes.Contains(statusCode);
     }
+
 
     private bool ShouldRetry(Exception? exception)
     {

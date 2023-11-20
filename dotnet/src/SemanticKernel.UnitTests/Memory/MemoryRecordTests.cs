@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.UnitTests.Memory;
+
 using System;
 using System.Text.Json;
 using Microsoft.SemanticKernel.Memory;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Memory;
 
 public class MemoryRecordTests
 {
@@ -16,6 +17,7 @@ public class MemoryRecordTests
     private readonly string _externalSourceName = "externalSourceName";
     private readonly string _additionalMetadata = "value";
     private readonly ReadOnlyMemory<float> _embedding = new(new float[] { 1, 2, 3 });
+
 
     [Fact]
     public void ItCanBeConstructedFromMetadataAndVector()
@@ -41,6 +43,7 @@ public class MemoryRecordTests
         Assert.True(this._embedding.Span.SequenceEqual(memoryRecord.Embedding.Span));
     }
 
+
     [Fact]
     public void ItCanBeCreatedToRepresentLocalData()
     {
@@ -60,6 +63,7 @@ public class MemoryRecordTests
         Assert.True(this._embedding.Span.SequenceEqual(memoryRecord.Embedding.Span));
     }
 
+
     [Fact]
     public void ItCanBeCreatedToRepresentExternalData()
     {
@@ -78,6 +82,7 @@ public class MemoryRecordTests
         Assert.Equal(this._externalSourceName, memoryRecord.Metadata.ExternalSourceName);
         Assert.True(this._embedding.Span.SequenceEqual(memoryRecord.Embedding.Span));
     }
+
 
     [Fact]
     public void ItCanBeCreatedFromSerializedMetadata()
@@ -104,6 +109,7 @@ public class MemoryRecordTests
         Assert.Equal(this._additionalMetadata, memoryRecord.Metadata.AdditionalMetadata);
         Assert.True(this._embedding.Span.SequenceEqual(memoryRecord.Embedding.Span));
     }
+
 
     [Fact]
     public void ItCanBeDeserializedFromJson()
@@ -139,6 +145,7 @@ public class MemoryRecordTests
         Assert.Equal(this._externalSourceName, memoryRecord.Metadata.ExternalSourceName);
         Assert.True(this._embedding.Span.SequenceEqual(memoryRecord.Embedding.Span));
     }
+
 
     [Fact]
     public void ItCanBeSerialized()
@@ -181,6 +188,7 @@ public class MemoryRecordTests
         // Assert
         Assert.Equal(jsonString, serializedRecord);
     }
+
 
     [Fact]
     public void ItsMetadataCanBeSerialized()

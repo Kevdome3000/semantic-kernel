@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace NCalcPlugins;
+
 using System.Collections.Generic;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 
-namespace NCalcPlugins;
 
 /// <summary>
 /// Simple calculator plugin that evaluates a mathematical expression.
@@ -14,6 +15,7 @@ public class SimpleCalculatorPlugin
     private readonly ISKFunction _mathTranslator;
 
     private static readonly string[] s_stopSequences = new[] { "Problem:", "Solution:" };
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SimpleCalculatorPlugin"/> class.

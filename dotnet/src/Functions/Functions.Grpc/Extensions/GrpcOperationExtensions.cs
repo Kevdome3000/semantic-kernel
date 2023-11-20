@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-
-
 // ReSharper disable once CheckNamespace
 namespace Microsoft.SemanticKernel.Functions.Grpc.Extensions;
 

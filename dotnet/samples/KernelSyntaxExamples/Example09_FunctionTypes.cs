@@ -3,11 +3,11 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using RepoUtils;
-// ReSharper disable once InconsistentNaming
-using Microsoft.SemanticKernel;
 
+// ReSharper disable once InconsistentNaming
 
 // ReSharper disable once InconsistentNaming
 public static class Example09_FunctionTypes

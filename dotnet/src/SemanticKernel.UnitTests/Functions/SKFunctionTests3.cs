@@ -20,6 +20,7 @@ public sealed class SKFunctionTests3
 {
     private readonly Kernel _kernel = new(new Mock<IAIServiceProvider>().Object);
 
+
     [Fact]
     public void ItDoesntThrowForValidFunctionsViaDelegate()
     {

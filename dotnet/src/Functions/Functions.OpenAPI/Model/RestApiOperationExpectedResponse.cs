@@ -22,6 +22,7 @@ public sealed class RestApiOperationExpectedResponse
     /// </summary>
     public SKJsonSchema? Schema { get; set; }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="RestApiOperationResponse"/> class.
     /// </summary>

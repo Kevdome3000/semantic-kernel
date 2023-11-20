@@ -1,14 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Planning;
-
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of Kernel
 namespace Microsoft.SemanticKernel;
+
+using System.Threading;
+using System.Threading.Tasks;
+using Orchestration;
+using Planning;
+
 #pragma warning restore IDE0130
+
 
 /// <summary>
 /// Extension methods for running plans using a kernel
@@ -27,6 +29,7 @@ public static class KernelPlanExtensions
         return kernel.StepAsync(plan.State, plan, cancellationToken);
     }
 
+
     /// <summary>
     /// Run the next step in a plan asynchronously
     /// </summary>
@@ -38,6 +41,7 @@ public static class KernelPlanExtensions
     {
         return kernel.StepAsync(new ContextVariables(input), plan, cancellationToken);
     }
+
 
     /// <summary>
     /// Run the next step in a plan asynchronously

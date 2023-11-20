@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.UnitTests.Functions;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.SemanticKernel;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Functions;
 
 public class SKPluginTests
 {
@@ -45,6 +46,7 @@ public class SKPluginTests
         Assert.All(functions, f => Assert.True(plugin.Contains(f)));
     }
 
+
     [Fact]
     public void ItExposesFunctionsItContains()
     {
@@ -74,6 +76,7 @@ public class SKPluginTests
         Assert.Null(notFound);
     }
 
+
     [Fact]
     public void ItContainsAddedFunctions()
     {
@@ -97,6 +100,7 @@ public class SKPluginTests
         Assert.Throws<ArgumentException>(() => plugin.AddFunction(SKFunction.FromMethod(() => { }, "function1")));
         Assert.Throws<ArgumentException>(() => plugin.AddFunction(SKFunction.FromMethod(() => { }, "FUNCTION2")));
     }
+
 
     [Fact]
     public void ItThrowsForInvalidArguments()

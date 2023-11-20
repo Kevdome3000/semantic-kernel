@@ -62,6 +62,7 @@ public sealed class RestApiOperationParameter
     /// </summary>
     public SKJsonSchema? Schema { get; }
 
+
     /// <summary>
     /// Creates an instance of a <see cref="RestApiOperationParameter"/> class.
     /// </summary>

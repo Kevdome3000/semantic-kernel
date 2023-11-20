@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.UnitTests.TemplateEngine;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -13,11 +15,10 @@ using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Moq;
-using SemanticKernel.UnitTests.XunitHelpers;
 using Xunit;
 using Xunit.Abstractions;
+using XunitHelpers;
 
-namespace SemanticKernel.UnitTests.TemplateEngine;
 
 public sealed class KernelPromptTemplateTests
 {
@@ -30,6 +31,7 @@ public sealed class KernelPromptTemplateTests
     private readonly Mock<IAIServiceSelector> _serviceSelector;
     private readonly Kernel _kernel;
 
+
     public KernelPromptTemplateTests(ITestOutputHelper testOutputHelper)
     {
         this._logger = testOutputHelper;
@@ -40,6 +42,7 @@ public sealed class KernelPromptTemplateTests
         this._serviceSelector = new Mock<IAIServiceSelector>();
         this._kernel = KernelBuilder.Create();
     }
+
 
     [Fact]
     public void ItRendersVariables()
@@ -143,6 +146,7 @@ public sealed class KernelPromptTemplateTests
         Assert.Equal(BlockTypes.Code, updatedBlocks[9].Type);
     }
 
+
     [Fact]
     public async Task ItRendersCodeUsingInputAsync()
     {
@@ -169,6 +173,7 @@ public sealed class KernelPromptTemplateTests
         // Assert
         Assert.Equal("foo-F(INPUT-BAR)-baz", result);
     }
+
 
     [Fact]
     public async Task ItRendersCodeUsingVariablesAsync()
@@ -197,6 +202,7 @@ public sealed class KernelPromptTemplateTests
         Assert.Equal("foo-F(BAR)-baz", result);
     }
 
+
     [Fact]
     public async Task ItRendersCodeUsingNamedVariablesAsync()
     {
@@ -204,7 +210,8 @@ public sealed class KernelPromptTemplateTests
         string MyFunctionAsync(
             [Description("Name"), SKName("input")] string name,
             [Description("Age"), SKName("age")] int age,
-            [Description("Slogan"), SKName("slogan")] string slogan,
+            [Description("Slogan"), SKName("slogan")]
+            string slogan,
             [Description("Date"), SKName("date")] DateTime date)
         {
             var dateStr = date.ToString(DateFormat, CultureInfo.InvariantCulture);
@@ -230,6 +237,7 @@ public sealed class KernelPromptTemplateTests
         Assert.Equal("foo-[8/25/2023] Mario (42): \"Let's-a go!\"-baz", result);
     }
 
+
     [Fact]
     public async Task ItHandlesSyntaxErrorsAsync()
     {
@@ -237,7 +245,8 @@ public sealed class KernelPromptTemplateTests
         string MyFunctionAsync(
             [Description("Name"), SKName("input")] string name,
             [Description("Age"), SKName("age")] int age,
-            [Description("Slogan"), SKName("slogan")] string slogan,
+            [Description("Slogan"), SKName("slogan")]
+            string slogan,
             [Description("Date"), SKName("date")] DateTime date)
         {
             var dateStr = date.ToString(DateFormat, CultureInfo.InvariantCulture);
@@ -259,14 +268,17 @@ public sealed class KernelPromptTemplateTests
         Assert.Equal($"Named argument values need to be prefixed with a quote or {Symbols.VarPrefix}.", result.Message);
     }
 
+
     [Fact]
     public async Task ItRendersCodeUsingImplicitInputAndNamedVariablesAsync()
     {
         // Arrange
         string MyFunctionAsync(
-            [Description("Input"), SKName("input")] string name,
+            [Description("Input"), SKName("input")]
+            string name,
             [Description("Age"), SKName("age")] int age,
-            [Description("Slogan"), SKName("slogan")] string slogan,
+            [Description("Slogan"), SKName("slogan")]
+            string slogan,
             [Description("Date"), SKName("date")] DateTime date)
         {
             this._logger.WriteLine("MyFunction call received, name: {0}, age: {1}, slogan: {2}, date: {3}", name, age, slogan, date);
@@ -293,6 +305,7 @@ public sealed class KernelPromptTemplateTests
         Assert.Equal("foo-[8/25/2023] Mario (42): \"Let's-a go!\"-baz", result);
     }
 
+
     [Fact]
     public async Task ItRendersAsyncCodeUsingImmutableVariablesAsync()
     {
@@ -308,6 +321,7 @@ public sealed class KernelPromptTemplateTests
             context.Variables.Update("foo");
             return "F(OUTPUT-FOO)";
         }
+
         string MyFunction2Async(SKContext context)
         {
             // Input value should be "BAR" because the variable $input is immutable in MyFunction1
@@ -315,6 +329,7 @@ public sealed class KernelPromptTemplateTests
             context.Variables.Set("myVar", "bar");
             return context.Variables.Input;
         }
+
         string MyFunction3Async(SKContext context)
         {
             // Input value should be "BAZ" because the variable $myVar is immutable in MyFunction2
@@ -335,6 +350,7 @@ public sealed class KernelPromptTemplateTests
         // Assert
         Assert.Equal("F(OUTPUT-FOO) BAR BAZ", result);
     }
+
 
     [Fact]
     public async Task ItRendersAsyncCodeUsingVariablesAsync()
@@ -363,10 +379,12 @@ public sealed class KernelPromptTemplateTests
         Assert.Equal("foo-BAR-baz", result);
     }
 
+
     private static MethodInfo Method(Delegate method)
     {
         return method.Method;
     }
+
 
     private SKContext MockContext(params ISKFunction[] functions)
     {

@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.UnitTests.Functions;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -12,16 +14,17 @@ using Microsoft.SemanticKernel.Services;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Functions;
 
 public class SKFunctionMetadataTests
 {
     private readonly Mock<ILoggerFactory> _logger;
 
+
     public SKFunctionMetadataTests()
     {
         this._logger = new Mock<ILoggerFactory>();
     }
+
 
     [Fact]
     public void ItReturnsFunctionParams()
@@ -47,6 +50,7 @@ public class SKFunctionMetadataTests
         Assert.Equal("default 2", funcViewA.Parameters[1].DefaultValue);
     }
 
+
     [Fact]
     public void ItReturnsFunctionReturnParameter()
     {
@@ -69,6 +73,7 @@ public class SKFunctionMetadataTests
         Assert.Equivalent(SKJsonSchema.Parse("\"schema\""), funcViewA.ReturnParameter.Schema);
     }
 
+
     [Fact]
     public void ItSupportsValidFunctionName()
     {
@@ -82,6 +87,7 @@ public class SKFunctionMetadataTests
         Assert.Equal("ValidFunctionName", fv.Name);
     }
 
+
     [Fact]
     public void ItSupportsValidFunctionAsyncName()
     {
@@ -94,13 +100,15 @@ public class SKFunctionMetadataTests
         Assert.Equal("ValidFunctionName", fv.Name);
     }
 
+
     [Fact]
     public void ItSupportsValidFunctionSKNameAttributeOverride()
     {
         // Arrange
         [SKName("NewTestFunctionName")]
         static void TestFunctionName()
-        { }
+        {
+        }
 
         // Act
         var function = SKFunction.FromMethod(Method(TestFunctionName), loggerFactory: this._logger.Object);
@@ -112,6 +120,7 @@ public class SKFunctionMetadataTests
         Assert.Equal("NewTestFunctionName", fv.Name);
     }
 
+
     [Fact]
     public void ItSupportsValidAttributeDescriptions()
     {
@@ -119,9 +128,12 @@ public class SKFunctionMetadataTests
         [Description("function description")]
         [return: Description("return parameter description")]
         static void TestFunctionName(
-            [Description("first parameter description")] int p1,
-            [Description("second parameter description")] int p2)
-        { }
+            [Description("first parameter description")]
+            int p1,
+            [Description("second parameter description")]
+            int p2)
+        {
+        }
 
         // Act
         var function = SKFunction.FromMethod(Method(TestFunctionName), loggerFactory: this._logger.Object);
@@ -139,11 +151,14 @@ public class SKFunctionMetadataTests
         Assert.Equal(typeof(void), fv.ReturnParameter.ParameterType);
     }
 
+
     [Fact]
     public void ItSupportsNoAttributeDescriptions()
     {
         // Arrange
-        static void TestFunctionName(int p1, int p2) { }
+        static void TestFunctionName(int p1, int p2)
+        {
+        }
 
         // Act
         var function = SKFunction.FromMethod(Method(TestFunctionName), loggerFactory: this._logger.Object);
@@ -161,11 +176,14 @@ public class SKFunctionMetadataTests
         Assert.Equal(typeof(void), fv.ReturnParameter.ParameterType);
     }
 
+
     [Fact]
     public void ItSupportsValidNoParameters()
     {
         // Arrange
-        static void TestFunctionName() { }
+        static void TestFunctionName()
+        {
+        }
 
         // Act
         var function = SKFunction.FromMethod(Method(TestFunctionName), loggerFactory: this._logger.Object);
@@ -180,7 +198,12 @@ public class SKFunctionMetadataTests
         Assert.Equal(typeof(void), fv.ReturnParameter.ParameterType);
     }
 
-    private static void ValidFunctionName() { }
+
+    private static void ValidFunctionName()
+    {
+    }
+
+
     private static async Task ValidFunctionNameAsync()
     {
         var function = SKFunction.FromMethod(Method(ValidFunctionName));
@@ -188,10 +211,12 @@ public class SKFunctionMetadataTests
         var result = await function.InvokeAsync(new Kernel(new Mock<IAIServiceProvider>().Object), context);
     }
 
+
     private static MethodInfo Method(Delegate method)
     {
         return method.Method;
     }
+
 
     private static SKContext MockContext(string input)
     {

@@ -1,16 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Services;
-using Moq;
-using Xunit;
-
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.Planning.Sequential.UnitTests;
+
+using AI;
+using AI.TextCompletion;
+using Diagnostics;
+using Moq;
+using Orchestration;
+using Services;
+using Xunit;
+
 #pragma warning restore IDE0130 // Namespace does not match folder structure
+
 
 public sealed class SequentialPlannerTests
 {
@@ -44,6 +46,7 @@ public sealed class SequentialPlannerTests
         Assert.Contains(plan.Steps, step => plugins.TryGetFunction(step.PluginName, step.Name, out var _));
     }
 
+
     [Fact]
     public async Task EmptyGoalThrowsAsync()
     {
@@ -55,6 +58,7 @@ public sealed class SequentialPlannerTests
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(async () => await planner.CreatePlanAsync(""));
     }
+
 
     [Fact]
     public async Task InvalidXMLThrowsAsync()
@@ -68,6 +72,7 @@ public sealed class SequentialPlannerTests
         var exception = await Assert.ThrowsAsync<SKException>(async () => await planner.CreatePlanAsync("goal"));
         Assert.True(exception?.InnerException?.Message?.Contains("Failed to parse plan xml strings", StringComparison.InvariantCulture));
     }
+
 
     [Fact]
     public void UsesPromptDelegateWhenProvided()
@@ -86,6 +91,7 @@ public sealed class SequentialPlannerTests
         // Assert
         getPromptTemplateMock.Verify(x => x(), Times.Once());
     }
+
 
     private Kernel CreateKernel(string testPlanString, SKPluginCollection? plugins = null)
     {
@@ -112,6 +118,7 @@ public sealed class SequentialPlannerTests
 
         return new Kernel(serviceProvider.Object, plugins, serviceSelector.Object);
     }
+
 
     private SKPluginCollection CreatePluginCollection()
     {

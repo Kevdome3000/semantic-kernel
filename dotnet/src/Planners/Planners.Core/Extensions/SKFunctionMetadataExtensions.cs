@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Linq;
-
 #pragma warning disable IDE0130
 namespace Microsoft.SemanticKernel.Planning;
+
+using System.Linq;
+
 #pragma warning restore IDE0130
+
 
 /// <summary>
 /// Provides extension methods for the <see cref="SKFunctionMetadata"/> class.
@@ -32,6 +34,7 @@ internal static class SKFunctionMetadataExtensions
 {inputs}";
     }
 
+
     /// <summary>
     /// Create a fully qualified name for a function.
     /// </summary>
@@ -41,6 +44,7 @@ internal static class SKFunctionMetadataExtensions
     {
         return $"{function.PluginName}.{function.Name}";
     }
+
 
     /// <summary>
     /// Create a string for generating an embedding for a function.

@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Planning.Handlebars;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Planning.Handlebars;
 
 internal sealed class HandlebarsParameterTypeView
 {
@@ -21,6 +22,7 @@ internal sealed class HandlebarsParameterTypeView
     [JsonPropertyName("properties")]
     public List<SKParameterMetadata> Properties { get; set; } = new();
 }
+
 
 internal static class ParameterTypeExtensions
 {
@@ -74,6 +76,7 @@ internal static class ParameterTypeExtensions
             foreach (var property in properties)
             {
                 var propertyParameterTypes = property.PropertyType.ToParameterTypes();
+
                 foreach (var propertyParameterType in propertyParameterTypes)
                 {
                     if (propertyParameterType.IsComplexType)

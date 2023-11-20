@@ -13,6 +13,7 @@ using Microsoft.SemanticKernel.Reliability.Basic;
 using Microsoft.SemanticKernel.Services;
 using RepoUtils;
 
+
 /**
  * The following examples show how to use SK SDK in applications using DI/IoC containers.
  */
@@ -24,6 +25,7 @@ public static class Example40_DIContainer
 
         await UseKernelInDIPowerApp_AdvancedScenarioAsync();
     }
+
 
     /// <summary>
     /// This example shows how to register a Kernel in a DI container using KernelBuilder instead of
@@ -43,9 +45,9 @@ public static class Example40_DIContainer
         collection.AddTransient<Kernel>((serviceProvider) =>
         {
             return new KernelBuilder()
-            .WithLoggerFactory(serviceProvider.GetRequiredService<ILoggerFactory>())
-            .WithOpenAITextCompletionService(TestConfiguration.OpenAI.ModelId, TestConfiguration.OpenAI.ApiKey)
-            .Build();
+                .WithLoggerFactory(serviceProvider.GetRequiredService<ILoggerFactory>())
+                .WithOpenAITextCompletionService(TestConfiguration.OpenAI.ModelId, TestConfiguration.OpenAI.ApiKey)
+                .Build();
         });
 
         //Registering class that uses Kernel to execute a plugin
@@ -61,6 +63,7 @@ public static class Example40_DIContainer
         //Execute the function
         await kernelClient.SummarizeAsync("What's the tallest building in South America?");
     }
+
 
     /// <summary>
     /// This example shows how to registered Kernel and all its dependencies in DI container.
@@ -100,6 +103,7 @@ public static class Example40_DIContainer
         await kernelClient.SummarizeAsync("What's the tallest building in South America?");
     }
 
+
     /// <summary>
     /// Class that uses/references Kernel.
     /// </summary>
@@ -110,11 +114,13 @@ public static class Example40_DIContainer
         private readonly Kernel _kernel;
         private readonly ILogger _logger;
 
+
         public KernelClient(Kernel kernel, ILoggerFactory loggerFactory)
         {
             this._kernel = kernel;
             this._logger = loggerFactory.CreateLogger(nameof(KernelClient));
         }
+
 
         public async Task SummarizeAsync(string ask)
         {

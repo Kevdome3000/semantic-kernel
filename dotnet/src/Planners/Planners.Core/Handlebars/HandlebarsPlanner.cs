@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Planning.Handlebars;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -7,10 +9,9 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
+using AI.ChatCompletion;
+using Diagnostics;
 
-namespace Microsoft.SemanticKernel.Planning.Handlebars;
 
 /// <summary>
 /// Represents a Handlebars planner.
@@ -33,6 +34,7 @@ public sealed class HandlebarsPlanner
 
     private readonly HashSet<HandlebarsParameterTypeView> _parameterTypes = new();
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="HandlebarsPlanner"/> class.
     /// </summary>
@@ -43,6 +45,7 @@ public sealed class HandlebarsPlanner
         this._kernel = kernel;
         this._config = config ?? new HandlebarsPlannerConfig();
     }
+
 
     /// <summary>
     /// Create a plan for a goal.
@@ -78,6 +81,7 @@ public sealed class HandlebarsPlanner
         }
 
         Match match = Regex.Match(resultContext.Result, @"```\s*(handlebars)?\s*(.*)\s*```", RegexOptions.Singleline);
+
         if (!match.Success)
         {
             throw new SKException("Could not find the plan in the results");
@@ -96,14 +100,16 @@ public sealed class HandlebarsPlanner
         return new HandlebarsPlan(this._kernel, template);
     }
 
+
     private List<SKFunctionMetadata> GetAvailableFunctionsManual(CancellationToken cancellationToken = default)
     {
         return this._kernel.Plugins.GetFunctionsMetadata()
             .Where(s => !this._config.ExcludedPlugins.Contains(s.PluginName, StringComparer.OrdinalIgnoreCase)
-                && !this._config.ExcludedFunctions.Contains(s.Name, StringComparer.OrdinalIgnoreCase)
-                && !s.Name.Contains("Planner_Excluded"))
+                        && !this._config.ExcludedFunctions.Contains(s.Name, StringComparer.OrdinalIgnoreCase)
+                        && !s.Name.Contains("Planner_Excluded"))
             .ToList();
     }
+
 
     private ChatHistory GetChatHistoryFromPrompt(string prompt, IChatCompletion chatCompletion)
     {
@@ -113,6 +119,7 @@ public sealed class HandlebarsPlanner
 
         // Add the chat history to the chat
         ChatHistory chatMessages = chatCompletion.CreateNewChat();
+
         foreach (Match m in matches.Cast<Match>())
         {
             string role = m.Groups[1].Value;
@@ -135,21 +142,23 @@ public sealed class HandlebarsPlanner
         return chatMessages;
     }
 
+
     private string GetHandlebarsTemplate(Kernel kernel, string goal, List<SKFunctionMetadata> availableFunctions)
     {
         var plannerTemplate = this.ReadPrompt("skPrompt.handlebars", this._config.AllowLoops ? null : "NoLoops");
         var variables = new Dictionary<string, object?>()
-            {
-                { "functions", availableFunctions},
-                { "goal", goal },
-                { "reservedNameDelimiter", HandlebarsTemplateEngineExtensions.ReservedNameDelimiter},
-                { "complexTypeDefinitions", this._parameterTypes.Count > 0 && this._parameterTypes.Any(p => p.IsComplexType) ? this._parameterTypes.Where(p => p.IsComplexType) : null},
-                { "lastPlan", this._config.LastPlan },
-                { "lastError", this._config.LastError }
-            };
+        {
+            { "functions", availableFunctions },
+            { "goal", goal },
+            { "reservedNameDelimiter", HandlebarsTemplateEngineExtensions.ReservedNameDelimiter },
+            { "complexTypeDefinitions", this._parameterTypes.Count > 0 && this._parameterTypes.Any(p => p.IsComplexType) ? this._parameterTypes.Where(p => p.IsComplexType) : null },
+            { "lastPlan", this._config.LastPlan },
+            { "lastError", this._config.LastError }
+        };
 
         return HandlebarsTemplateEngineExtensions.Render(kernel, kernel.CreateNewContext(), plannerTemplate, variables);
     }
+
 
     private static string MinifyHandlebarsTemplate(string template)
     {

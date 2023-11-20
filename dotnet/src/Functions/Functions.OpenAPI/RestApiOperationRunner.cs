@@ -343,6 +343,7 @@ internal sealed class RestApiOperationRunner
     private static SKJsonSchema? GetExpectedSchema(IDictionary<string, SKJsonSchema?>? expectedSchemas, HttpStatusCode statusCode)
     {
         SKJsonSchema? matchingResponse = null;
+
         if (expectedSchemas is not null)
         {
             var statusCodeKey = $"{(int)statusCode}";

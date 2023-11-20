@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.UnitTests.Reliability;
+
 using System;
 using System.Net;
 using System.Net.Http;
@@ -10,7 +12,6 @@ using Moq;
 using Moq.Protected;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Reliability;
 
 public class NullHttpRetryHandlerTests
 {
@@ -34,6 +35,7 @@ public class NullHttpRetryHandlerTests
         Assert.Equal((HttpStatusCode)429, response.StatusCode);
     }
 
+
     [Fact]
     public async Task NoExceptionNoRetryAsync()
     {
@@ -53,6 +55,7 @@ public class NullHttpRetryHandlerTests
             .Verify<Task<HttpResponseMessage>>("SendAsync", Times.Once(), ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>());
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
+
 
     [Fact]
     public async Task TaskCanceledExceptionThrownOnCancellationTokenAsync()
@@ -76,6 +79,7 @@ public class NullHttpRetryHandlerTests
             .Verify<Task<HttpResponseMessage>>("SendAsync", Times.Once(), ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>());
     }
 
+
     [Fact]
     public async Task ItDoestExecuteOnFalseCancellationTokenAsync()
     {
@@ -95,6 +99,7 @@ public class NullHttpRetryHandlerTests
             .Verify<Task<HttpResponseMessage>>("SendAsync", Times.Once(), ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>());
         Assert.Equal((HttpStatusCode)429, response.StatusCode);
     }
+
 
     private static Mock<HttpMessageHandler> GetHttpMessageHandlerMock(HttpResponseMessage mockResponse)
     {

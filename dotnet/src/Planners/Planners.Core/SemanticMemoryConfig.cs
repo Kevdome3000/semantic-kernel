@@ -1,12 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using Microsoft.SemanticKernel.Memory;
-
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of Plan
 namespace Microsoft.SemanticKernel.Planning;
+
+using System.Collections.Generic;
+using Memory;
+
 #pragma warning restore IDE0130
+
 
 /// <summary>
 /// Semantic memory configuration.

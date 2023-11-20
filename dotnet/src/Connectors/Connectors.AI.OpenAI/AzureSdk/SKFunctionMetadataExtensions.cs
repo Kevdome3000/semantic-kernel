@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+
 using System.Collections.Generic;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
 /// <summary>
 /// Extensions for <see cref="SKFunctionMetadata"/> specific to the OpenAI connector.
@@ -17,6 +18,7 @@ public static class SKFunctionMetadataExtensions
     public static OpenAIFunction ToOpenAIFunction(this SKFunctionMetadata functionView)
     {
         var openAIParams = new List<OpenAIFunctionParameter>();
+
         foreach (SKParameterMetadata param in functionView.Parameters)
         {
             openAIParams.Add(new OpenAIFunctionParameter

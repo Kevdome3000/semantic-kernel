@@ -1,15 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable xUnit2013 // Do not use equality check to check for collection size.
+#pragma warning disable xUnit2017 // Do not use Contains() to check if a value exists in a collection
+
+namespace SemanticKernel.UnitTests.Functions;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.SemanticKernel;
 using Xunit;
 
-#pragma warning disable xUnit2013 // Do not use equality check to check for collection size.
-#pragma warning disable xUnit2017 // Do not use Contains() to check if a value exists in a collection
-
-namespace SemanticKernel.UnitTests.Functions;
 
 public class SKPluginCollectionTests
 {
@@ -55,6 +56,7 @@ public class SKPluginCollectionTests
         Assert.True(c.Contains("function2"));
         Assert.False(c.Contains("function3"));
     }
+
 
     [Fact]
     public void ItExposesAddedPlugins()
@@ -123,6 +125,7 @@ public class SKPluginCollectionTests
         Assert.Equal(0, c.Count);
     }
 
+
     [Fact]
     public void ItExposesGroupsOfAddedPlugins()
     {
@@ -133,6 +136,7 @@ public class SKPluginCollectionTests
         Assert.Equal("name1", c["name1"].Name);
         Assert.Equal("name2", c["name2"].Name);
     }
+
 
     [Fact]
     public void ItExposesFunctionViewsOfAllFunctions()
@@ -165,6 +169,7 @@ public class SKPluginCollectionTests
         Assert.Equal("plugin2", views[3].PluginName);
         Assert.Equal("Function3", views[3].Name);
     }
+
 
     [Fact]
     public void ItExposesFunctionsInPlugins()
@@ -202,6 +207,7 @@ public class SKPluginCollectionTests
         Assert.Same(plugin2["Function3"], func);
     }
 
+
     [Fact]
     public void ItThrowsForInvalidArguments()
     {
@@ -218,6 +224,7 @@ public class SKPluginCollectionTests
 
         Assert.Throws<KeyNotFoundException>(() => c["Function1"]);
     }
+
 
     [Fact]
     public void ItCopiesToDestinationArrayInCopyTo()

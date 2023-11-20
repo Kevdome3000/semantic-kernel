@@ -1,11 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of Plan
 namespace Microsoft.SemanticKernel.Planning;
+
+using AI.ChatCompletion;
+
 #pragma warning restore IDE0130
+
 
 /// <summary>
 /// Result produced by the <see cref="FunctionCallingStepwisePlanner"/>.

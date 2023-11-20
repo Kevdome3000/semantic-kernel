@@ -1,14 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.SemanticKernel.Diagnostics;
-
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using the main namespace
 namespace Microsoft.SemanticKernel;
+
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using Diagnostics;
+
 #pragma warning restore IDE0130
+
 
 /// <summary>
 /// Provides read-only metadata for an <see cref="ISKFunction"/>.
@@ -17,12 +19,16 @@ public sealed class SKFunctionMetadata
 {
     /// <summary>The name of the function.</summary>
     private string _name = string.Empty;
+
     /// <summary>The description of the function.</summary>
     private string _description = string.Empty;
+
     /// <summary>The function's parameters.</summary>
     private IReadOnlyList<SKParameterMetadata> _parameters = Array.Empty<SKParameterMetadata>();
+
     /// <summary>The function's return parameter.</summary>
     private SKReturnParameterMetadata? _returnParameter;
+
 
     /// <summary>Initializes the <see cref="SKFunctionMetadata"/> for a function with the specified name.</summary>
     /// <param name="name">The name of the function.</param>
@@ -32,6 +38,7 @@ public sealed class SKFunctionMetadata
     {
         this.Name = name;
     }
+
 
     /// <summary>Initializes a <see cref="SKFunctionMetadata"/> as a copy of another <see cref="SKFunctionMetadata"/>.</summary>
     /// <exception cref="ArgumentNullException">The <paramref name="metadata"/> was null.</exception>
@@ -48,6 +55,7 @@ public sealed class SKFunctionMetadata
         this.Parameters = metadata.Parameters;
         this.ReturnParameter = metadata.ReturnParameter;
     }
+
 
     /// <summary>Gets the name of the function.</summary>
     public string Name

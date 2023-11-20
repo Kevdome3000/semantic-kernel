@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Functions.Grpc.Extensions;
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,13 +9,12 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Diagnostics;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Functions.Grpc.Model;
-using Microsoft.SemanticKernel.Functions.Grpc.Protobuf;
-using Microsoft.SemanticKernel.Orchestration;
+using Model;
+using Orchestration;
+using Protobuf;
 
-namespace Microsoft.SemanticKernel.Functions.Grpc.Extensions;
 
 /// <summary>
 /// <see cref="Kernel"/> extensions methods for gRPC functionality.
@@ -21,6 +22,7 @@ namespace Microsoft.SemanticKernel.Functions.Grpc.Extensions;
 public static class KernelGrpcExtensions
 {
     // TODO: Revise XML comments and validate shape of methods is as desired
+
 
     /// <summary>
     /// Imports gRPC document from a directory.
@@ -41,6 +43,7 @@ public static class KernelGrpcExtensions
         return plugin;
     }
 
+
     /// <summary>
     /// Imports gRPC document from a file.
     /// </summary>
@@ -60,6 +63,7 @@ public static class KernelGrpcExtensions
         return plugin;
     }
 
+
     /// <summary>
     /// Registers an gRPC plugin.
     /// </summary>
@@ -78,6 +82,7 @@ public static class KernelGrpcExtensions
         kernel.Plugins.Add(plugin);
         return plugin;
     }
+
 
     /// <summary>
     /// Imports gRPC document from a directory.
@@ -101,19 +106,21 @@ public static class KernelGrpcExtensions
         Verify.DirectoryExists(pluginDir);
 
         var filePath = Path.Combine(pluginDir, ProtoFile);
+
         if (!File.Exists(filePath))
         {
             throw new FileNotFoundException($"No .proto document for the specified path - {filePath} is found.");
         }
 
         kernel.LoggerFactory
-              .CreateLogger(typeof(KernelGrpcExtensions))
-              .LogTrace("Registering gRPC functions from {0} .proto document", filePath);
+            .CreateLogger(typeof(KernelGrpcExtensions))
+            .LogTrace("Registering gRPC functions from {0} .proto document", filePath);
 
         using var stream = File.OpenRead(filePath);
 
         return kernel.CreatePluginFromGrpc(stream, pluginDirectoryName, httpClient);
     }
+
 
     /// <summary>
     /// Imports gRPC document from a file.
@@ -135,13 +142,14 @@ public static class KernelGrpcExtensions
         }
 
         kernel.LoggerFactory
-              .CreateLogger(typeof(KernelGrpcExtensions))
-              .LogTrace("Registering gRPC functions from {0} .proto document", filePath);
+            .CreateLogger(typeof(KernelGrpcExtensions))
+            .LogTrace("Registering gRPC functions from {0} .proto document", filePath);
 
         using var stream = File.OpenRead(filePath);
 
         return kernel.CreatePluginFromGrpc(stream, pluginName, httpClient);
     }
+
 
     /// <summary>
     /// Registers an gRPC plugin.
@@ -172,6 +180,7 @@ public static class KernelGrpcExtensions
         var runner = new GrpcOperationRunner(client);
 
         ILogger logger = kernel.LoggerFactory.CreateLogger(typeof(KernelGrpcExtensions));
+
         foreach (var operation in operations)
         {
             try
@@ -189,6 +198,7 @@ public static class KernelGrpcExtensions
 
         return plugin;
     }
+
 
     #region private
 
@@ -250,4 +260,6 @@ public static class KernelGrpcExtensions
     }
 
     #endregion
+
+
 }

@@ -20,6 +20,7 @@ public static class KernelOpenAIPluginExtensions
 {
     // TODO: Review XML comments
 
+
     /// <summary>
     /// Creates a plugin for an OpenAI plugin exposed through OpenAI's ChatGPT format and imports it into the <paramref name="kernel"/>'s plugin collection.
     /// </summary>
@@ -40,6 +41,7 @@ public static class KernelOpenAIPluginExtensions
         kernel.Plugins.Add(plugin);
         return plugin;
     }
+
 
     /// <summary>
     /// Creates a plugin for an OpenAI plugin exposed through OpenAI's ChatGPT format and imports it into the <paramref name="kernel"/>'s plugin collection.
@@ -62,6 +64,7 @@ public static class KernelOpenAIPluginExtensions
         return plugin;
     }
 
+
     /// <summary>
     /// Creates a plugin for an OpenAI plugin exposed through OpenAI's ChatGPT format and imports it into the <paramref name="kernel"/>'s plugin collection.
     /// </summary>
@@ -82,6 +85,7 @@ public static class KernelOpenAIPluginExtensions
         kernel.Plugins.Add(plugin);
         return plugin;
     }
+
 
     /// <summary>
     /// Creates a plugin for an OpenAI plugin exposed through OpenAI's ChatGPT format.

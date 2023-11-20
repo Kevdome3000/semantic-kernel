@@ -1,14 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Diagnostics;
-
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of Plan
 namespace Microsoft.SemanticKernel.Planning;
+
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Diagnostics;
+
 #pragma warning restore IDE0130
+
 
 /// <summary>Represents a planner that creates a plan to achieve a goal.</summary>
 public interface IPlanner

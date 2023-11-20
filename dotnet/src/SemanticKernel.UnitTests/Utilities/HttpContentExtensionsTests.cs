@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.UnitTests.Utilities;
+
 using System;
 using System.IO;
 using System.Net.Http;
@@ -8,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Utilities;
 
 public sealed class HttpContentExtensionsTests : IDisposable
 {
@@ -22,6 +23,7 @@ public sealed class HttpContentExtensionsTests : IDisposable
     /// </summary>
     private readonly HttpClient _httpClient;
 
+
     /// <summary>
     /// Creates an instance of a <see cref="HttpClientExtensionsTests"/> class.
     /// </summary>
@@ -31,6 +33,7 @@ public sealed class HttpContentExtensionsTests : IDisposable
 
         this._httpClient = new HttpClient(this._httpMessageHandlerStub);
     }
+
 
     [Fact]
     public async Task ShouldReturnHttpContentAsStringAsync()
@@ -50,6 +53,7 @@ public sealed class HttpContentExtensionsTests : IDisposable
 
         Assert.Equal("{\"details\": \"fake-response-content\"}", result);
     }
+
 
     [Fact]
     public async Task ShouldReturnHttpContentAsStreamAsync()
@@ -74,6 +78,7 @@ public sealed class HttpContentExtensionsTests : IDisposable
         Assert.Equal("{\"details\": \"fake-response-content\"}", content);
     }
 
+
     [Fact]
     public async Task ShouldReturnHttpContentAsByteArrayAsync()
     {
@@ -92,6 +97,7 @@ public sealed class HttpContentExtensionsTests : IDisposable
 
         Assert.Equal(new byte[] { 1, 2, 3 }, bytes);
     }
+
 
     /// <summary>
     /// Disposes resources used by this class.

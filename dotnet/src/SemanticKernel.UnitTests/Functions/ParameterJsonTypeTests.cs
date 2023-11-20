@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.UnitTests.Functions;
+
 using Microsoft.SemanticKernel;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Functions;
 
 public class ParameterJsonTypeTests
 {
@@ -25,6 +26,7 @@ public class ParameterJsonTypeTests
         Assert.Equal(name, result);
     }
 
+
     [Fact]
     public void ItCanCreateStringParameterDataType()
     {
@@ -34,6 +36,7 @@ public class ParameterJsonTypeTests
         //Assert
         Assert.Equal("string", sut.Name);
     }
+
 
     [Fact]
     public void ItCanCreateNumberParameterDataType()
@@ -45,6 +48,7 @@ public class ParameterJsonTypeTests
         Assert.Equal("number", sut.Name);
     }
 
+
     [Fact]
     public void ItCanCreateObjectParameterDataType()
     {
@@ -54,6 +58,7 @@ public class ParameterJsonTypeTests
         //Assert
         Assert.Equal("object", sut.Name);
     }
+
 
     [Fact]
     public void ItCanArrayParameterDataType()
@@ -65,6 +70,7 @@ public class ParameterJsonTypeTests
         Assert.Equal("array", sut.Name);
     }
 
+
     [Fact]
     public void ItCanCreateBooleanParameterDataType()
     {
@@ -74,6 +80,7 @@ public class ParameterJsonTypeTests
         //Assert
         Assert.Equal("boolean", sut.Name);
     }
+
 
     [Fact]
     public void ItCanCheckTwoParameterDataTypesAreEqual()
@@ -86,6 +93,7 @@ public class ParameterJsonTypeTests
         Assert.True(sut1.Equals(sut2));
     }
 
+
     [Fact]
     public void ItCanCheckTwoParameterDataTypesAreUnequal()
     {
@@ -96,6 +104,7 @@ public class ParameterJsonTypeTests
         //Assert
         Assert.False(sut1.Equals(sut2));
     }
+
 
     [Fact]
     public void ItCanCheckParameterDataTypeIsEqualToAnotherOneRepresentedByObject()
@@ -108,6 +117,7 @@ public class ParameterJsonTypeTests
         Assert.True(sut1.Equals(sut2));
     }
 
+
     [Fact]
     public void ItCanCheckParameterDataTypeIsUnequalToAnotherOneRepresentedByObject()
     {
@@ -118,6 +128,7 @@ public class ParameterJsonTypeTests
         //Assert
         Assert.False(sut1.Equals(sut2));
     }
+
 
     [Fact]
     public void ItCanCheckParameterDataTypeIsUnequalToAnotherType()

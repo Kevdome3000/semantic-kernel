@@ -1,17 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - Using the main namespace
+namespace Microsoft.SemanticKernel;
+
 using System;
 using System.ComponentModel;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Orchestration;
+using Extensions.Logging;
+using Orchestration;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using the main namespace
-namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
+
 
 /// <summary>
 /// Specifies that a method on a class imported as a plugin with should be included as an <see cref="ISKFunction"/>.

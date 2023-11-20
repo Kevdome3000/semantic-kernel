@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -9,14 +11,13 @@ using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
-using Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
-using Microsoft.SemanticKernel.Orchestration;
+using Model;
+using OpenApi;
+using Orchestration;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 
 /// <summary>
 /// Provides extension methods for importing plugins exposed as OpenAPI v3 endpoints.
@@ -24,6 +25,7 @@ namespace Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 public static class KernelOpenApiPluginExtensions
 {
     // TODO: Revise XML comments
+
 
     /// <summary>
     /// Creates a plugin from an OpenAPI v3 endpoint and adds it to the kernel's plugins collection.
@@ -46,6 +48,7 @@ public static class KernelOpenApiPluginExtensions
         return plugin;
     }
 
+
     /// <summary>
     /// Creates a plugin from an OpenAPI v3 endpoint and adds it to the kernel's plugins collection.
     /// </summary>
@@ -67,6 +70,7 @@ public static class KernelOpenApiPluginExtensions
         return plugin;
     }
 
+
     /// <summary>
     /// Creates a plugin from an OpenAPI v3 endpoint and adds it to the kernel's plugins collection.
     /// </summary>
@@ -87,6 +91,7 @@ public static class KernelOpenApiPluginExtensions
         kernel.Plugins.Add(plugin);
         return plugin;
     }
+
 
     /// <summary>
     /// Creates a plugin from an OpenAPI v3 endpoint.
@@ -124,6 +129,7 @@ public static class KernelOpenApiPluginExtensions
             openApiSpec,
             cancellationToken: cancellationToken).ConfigureAwait(false);
     }
+
 
     /// <summary>
     /// Creates a plugin from an OpenAPI v3 endpoint.
@@ -166,6 +172,7 @@ public static class KernelOpenApiPluginExtensions
             cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
+
     /// <summary>
     /// Creates a plugin from an OpenAPI v3 endpoint.
     /// </summary>
@@ -200,6 +207,7 @@ public static class KernelOpenApiPluginExtensions
             cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
+
     #region private
 
     private static async Task<ISKPlugin> CreateOpenApiPluginAsync(
@@ -231,6 +239,7 @@ public static class KernelOpenApiPluginExtensions
         SKPlugin plugin = new(pluginName);
 
         ILogger logger = kernel.LoggerFactory.CreateLogger(typeof(KernelOpenApiPluginExtensions));
+
         foreach (var operation in operations)
         {
             try
@@ -248,6 +257,7 @@ public static class KernelOpenApiPluginExtensions
 
         return plugin;
     }
+
 
     /// <summary>
     /// Registers SKFunction for a REST API operation.
@@ -282,6 +292,7 @@ public static class KernelOpenApiPluginExtensions
             {
                 // Extract function arguments from context
                 var arguments = new Dictionary<string, string>();
+
                 foreach (var parameter in restOperationParameters)
                 {
                     // A try to resolve argument by alternative parameter name
@@ -342,6 +353,7 @@ public static class KernelOpenApiPluginExtensions
             loggerFactory: loggerFactory);
     }
 
+
     /// <summary>
     /// Converts operation id to valid SK Function name.
     /// A function name can contain only ASCII letters, digits, and underscores.
@@ -376,10 +388,13 @@ public static class KernelOpenApiPluginExtensions
         return result;
     }
 
+
     /// <summary>
     /// Used to convert operationId to SK function names.
     /// </summary>
     private static readonly Regex s_removeInvalidCharsRegex = new("[^0-9A-Za-z_]");
 
     #endregion
+
+
 }

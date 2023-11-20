@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Planning;
+
 using System.Linq;
 
-namespace Microsoft.SemanticKernel.Planning;
 
 /// <summary>
 /// Extension methods for <see cref="Plan"/> type.
@@ -32,6 +33,7 @@ public static class PlanExtensions
         return planString;
     }
 
+
     /// <summary>
     /// Constructs string representation of <see cref="Plan"/>.
     /// </summary>
@@ -47,12 +49,14 @@ public static class PlanExtensions
                 string stepName = step.Name;
 
                 string parameters = string.Join(" ", step.Parameters.Select(param => $"{param.Key}='{param.Value}'"));
+
                 if (!string.IsNullOrEmpty(parameters))
                 {
                     parameters = $" {parameters}";
                 }
 
                 string? outputs = step.Outputs.FirstOrDefault();
+
                 if (!string.IsNullOrEmpty(outputs))
                 {
                     outputs = $" => {outputs}";

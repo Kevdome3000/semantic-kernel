@@ -1,15 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Orchestration;
-
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using the main namespace
 namespace Microsoft.SemanticKernel;
+
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using AI;
+using Orchestration;
+
 #pragma warning restore IDE0130
+
 
 /// <summary>
 /// Semantic Kernel callable function interface
@@ -31,11 +33,13 @@ public interface ISKFunction
     /// </summary>
     IEnumerable<AIRequestSettings> ModelSettings { get; }
 
+
     /// <summary>
     /// Gets the metadata describing the function.
     /// </summary>
     /// <returns>An instance of <see cref="SKFunctionMetadata"/> describing the function</returns>
     SKFunctionMetadata GetMetadata();
+
 
     /// <summary>
     /// Invoke the <see cref="ISKFunction"/>.

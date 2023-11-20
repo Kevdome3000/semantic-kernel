@@ -1,14 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.TemplateEngine;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Models;
-using Microsoft.SemanticKernel.Text;
+using AI;
+using Models;
+using Text;
 
-namespace Microsoft.SemanticKernel.TemplateEngine;
 
 /// <summary>
 /// Prompt template configuration.
@@ -19,6 +20,7 @@ public class PromptTemplateConfig
     /// Semantic Kernel template format.
     /// </summary>
     public const string SemanticKernelTemplateFormat = "semantic-kernel";
+
 
     /// <summary>
     /// Input parameter for semantic functions.
@@ -48,6 +50,7 @@ public class PromptTemplateConfig
         public string DefaultValue { get; set; } = string.Empty;
     }
 
+
     /// <summary>
     /// Input configuration (list of all input parameters for a semantic function).
     /// </summary>
@@ -61,6 +64,7 @@ public class PromptTemplateConfig
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public List<InputParameter> Parameters { get; set; } = new();
     }
+
 
     /// <summary>
     /// Format of the prompt template e.g. f-string, semantic-kernel, handlebars, ...
@@ -92,6 +96,7 @@ public class PromptTemplateConfig
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public List<AIRequestSettings> ModelSettings { get; set; } = new();
 
+
     /// <summary>
     /// Return the default <see cref="AIRequestSettings"/>
     /// </summary>
@@ -99,6 +104,7 @@ public class PromptTemplateConfig
     {
         return this.ModelSettings.FirstOrDefault() ?? new AIRequestSettings();
     }
+
 
     /// <summary>
     /// Creates a prompt template configuration from JSON.
@@ -111,6 +117,7 @@ public class PromptTemplateConfig
         var result = Json.Deserialize<PromptTemplateConfig>(json);
         return result ?? throw new ArgumentException("Unable to deserialize prompt template config from argument. The deserialization returned null.", nameof(json));
     }
+
 
     internal static PromptTemplateConfig ToPromptTemplateConfig(PromptFunctionModel semanticFunctionConfig)
     {

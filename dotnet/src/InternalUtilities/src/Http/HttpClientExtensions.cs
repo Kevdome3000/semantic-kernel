@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Diagnostics;
 
+
 internal static class HttpClientExtensions
 {
     /// <summary>
@@ -24,6 +25,7 @@ internal static class HttpClientExtensions
     internal static async Task<HttpResponseMessage> SendWithSuccessCheckAsync(this HttpClient client, HttpRequestMessage request, HttpCompletionOption completionOption, CancellationToken cancellationToken)
     {
         HttpResponseMessage? response = null;
+
         try
         {
             response = await client.SendAsync(request, completionOption, cancellationToken).ConfigureAwait(false);
@@ -36,6 +38,7 @@ internal static class HttpClientExtensions
         if (!response.IsSuccessStatusCode)
         {
             string? responseContent = null;
+
             try
             {
                 // On .NET Framework, EnsureSuccessStatusCode disposes of the response content;
@@ -53,6 +56,7 @@ internal static class HttpClientExtensions
 
         return response;
     }
+
 
     /// <summary>
     /// Sends an HTTP request using the provided <see cref="HttpClient"/> instance and checks for a successful response.

@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable SKEXP0001
+
+namespace SemanticKernel.Experimental.Orchestration.Flow.UnitTests;
+
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 using Xunit;
 
-#pragma warning disable SKEXP0001
-
-namespace SemanticKernel.Experimental.Orchestration.Flow.UnitTests;
 
 public class ChatHistorySerializerTest
 {
@@ -20,6 +21,7 @@ public class ChatHistorySerializerTest
         Assert.Single(history);
         Assert.Equal(AuthorRole.Assistant.Label, history[0].Role.Label);
     }
+
 
     [Fact]
     public void CanSerializeChatHistory()

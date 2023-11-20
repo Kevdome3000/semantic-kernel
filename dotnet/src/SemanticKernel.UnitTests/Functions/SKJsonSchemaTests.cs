@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.UnitTests.Functions;
+
 using System;
 using System.Text;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Functions;
 
 public class SKJsonSchemaTests
 {
@@ -63,6 +64,7 @@ public class SKJsonSchemaTests
             Assert.Equal(expected, JsonSerializer.Serialize(JsonSerializer.Deserialize<JsonElement>(schema.ToString())));
         }
     }
+
 
     [Fact]
     public void ItThrowsOnInvalidJsonSchema()

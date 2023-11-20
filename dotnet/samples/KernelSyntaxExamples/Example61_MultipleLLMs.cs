@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.TemplateEngine;
 using RepoUtils;
 
+
 // ReSharper disable once InconsistentNaming
 public static class Example61_MultipleLLMs
 {
@@ -57,6 +58,7 @@ public static class Example61_MultipleLLMs
         await RunByFirstModelIdAsync(kernel, "gpt-4-1106-preview", azureModelId, openAIModelId);
     }
 
+
     public static async Task RunByServiceIdAsync(Kernel kernel, string serviceId)
     {
         Console.WriteLine($"======== Service Id: {serviceId} ========");
@@ -64,13 +66,14 @@ public static class Example61_MultipleLLMs
         var prompt = "Hello AI, what can you do for me?";
 
         var result = await kernel.InvokePromptAsync(
-           prompt,
-           new AIRequestSettings()
-           {
-               ServiceId = serviceId
-           });
+            prompt,
+            new AIRequestSettings()
+            {
+                ServiceId = serviceId
+            });
         Console.WriteLine(result.GetValue<string>());
     }
+
 
     public static async Task RunByModelIdAsync(Kernel kernel, string modelId)
     {
@@ -79,13 +82,14 @@ public static class Example61_MultipleLLMs
         var prompt = "Hello AI, what can you do for me?";
 
         var result = await kernel.InvokePromptAsync(
-           prompt,
-           requestSettings: new AIRequestSettings()
-           {
-               ModelId = modelId
-           });
+            prompt,
+            requestSettings: new AIRequestSettings()
+            {
+                ModelId = modelId
+            });
         Console.WriteLine(result.GetValue<string>());
     }
+
 
     public static async Task RunByFirstModelIdAsync(Kernel kernel, params string[] modelIds)
     {
@@ -94,6 +98,7 @@ public static class Example61_MultipleLLMs
         var prompt = "Hello AI, what can you do for me?";
 
         var modelSettings = new List<AIRequestSettings>();
+
         foreach (var modelId in modelIds)
         {
             modelSettings.Add(new AIRequestSettings() { ModelId = modelId });

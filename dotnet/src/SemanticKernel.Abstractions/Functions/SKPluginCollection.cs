@@ -1,18 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable RCS1168 // Parameter name differs from base name.
+#pragma warning disable CA1725 // Parameter names should match base declaration
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+
+namespace Microsoft.SemanticKernel;
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Microsoft.SemanticKernel.Diagnostics;
+using Diagnostics;
 
-#pragma warning disable RCS1168 // Parameter name differs from base name.
-#pragma warning disable CA1725 // Parameter names should match base declaration
-#pragma warning disable IDE0130 // Namespace does not match folder structure
-
-namespace Microsoft.SemanticKernel;
 
 /// <summary>Provides a collection of <see cref="ISKPlugin"/>s.</summary>
 /// <remarks>
@@ -26,8 +27,10 @@ public sealed class SKPluginCollection : ISKPluginCollection
     /// <summary>The underlying dictionary of plugins.</summary>
     private readonly Dictionary<string, ISKPlugin> _plugins;
 
+
     /// <summary>Initializes a collection of plugins.</summary>
     public SKPluginCollection() => this._plugins = new(StringComparer.OrdinalIgnoreCase);
+
 
     /// <summary>Initializes a collection of plugins that contains all of the plugins from the provided collection.</summary>
     /// <param name="plugins">The initial collection of plugins to populate this collection.</param>
@@ -44,6 +47,7 @@ public sealed class SKPluginCollection : ISKPluginCollection
         else
         {
             this._plugins = new(plugins is ICollection<ISKPlugin> c ? c.Count : 0, StringComparer.OrdinalIgnoreCase);
+
             foreach (ISKPlugin plugin in plugins)
             {
                 this.Add(plugin);
@@ -51,8 +55,10 @@ public sealed class SKPluginCollection : ISKPluginCollection
         }
     }
 
+
     /// <summary>Gets the number of plugins in the collection.</summary>
     public int Count => this._plugins.Count;
+
 
     /// <summary>Adds the plugin to the plugin collection.</summary>
     /// <param name="plugin">The plugin to add.</param>
@@ -69,6 +75,7 @@ public sealed class SKPluginCollection : ISKPluginCollection
         this._plugins.Add(name, plugin);
     }
 
+
     /// <summary>Removes the specified plugin from the collection.</summary>
     /// <param name="plugin">The plugin to remove.</param>
     /// <returns>true if <paramref name="plugin"/> was in the collection and could be removed; otherwise, false.</returns>
@@ -84,14 +91,18 @@ public sealed class SKPluginCollection : ISKPluginCollection
         return false;
     }
 
+
     /// <summary>Removes all plugins from the collection.</summary>
     public void Clear() => this._plugins.Clear();
+
 
     /// <summary>Gets an enumerable of all plugins stored in this collection.</summary>
     public IEnumerator<ISKPlugin> GetEnumerator() => this._plugins.Values.GetEnumerator();
 
+
     /// <summary>Gets an enumerable of all plugins stored in this collection.</summary>
     IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
+
 
     /// <summary>Gets whether the collection contains the specified plugin.</summary>
     /// <param name="plugin">The plugin.</param>
@@ -102,6 +113,7 @@ public sealed class SKPluginCollection : ISKPluginCollection
 
         return this._plugins.TryGetValue(plugin.Name, out ISKPlugin? existing) && plugin == existing;
     }
+
 
     /// <inheritdoc/>
     public ISKPlugin this[string name]
@@ -117,6 +129,7 @@ public sealed class SKPluginCollection : ISKPluginCollection
         }
     }
 
+
     /// <summary>Gets a plugin from the collection by name.</summary>
     /// <param name="name">The name of the plugin.</param>
     /// <param name="plugin">The plugin if found in the collection.</param>
@@ -124,10 +137,13 @@ public sealed class SKPluginCollection : ISKPluginCollection
     public bool TryGetPlugin(string name, [NotNullWhen(true)] out ISKPlugin? plugin) =>
         this._plugins.TryGetValue(name, out plugin);
 
+
     void ICollection<ISKPlugin>.CopyTo(ISKPlugin[] array, int arrayIndex) =>
         ((IDictionary<string, ISKPlugin>)this._plugins).Values.CopyTo(array, arrayIndex);
 
+
     bool ICollection<ISKPlugin>.IsReadOnly => false;
+
 
     /// <summary>Debugger type proxy for nicer interaction with the collection in a debugger.</summary>
     private sealed class TypeProxy

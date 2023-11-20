@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Plugins.UnitTests.Core;
+
 using System;
 using System.Net;
 using System.Net.Http;
@@ -11,7 +13,6 @@ using Moq;
 using Moq.Protected;
 using Xunit;
 
-namespace SemanticKernel.Plugins.UnitTests.Core;
 
 public class HttpPluginTests : IDisposable
 {
@@ -24,12 +25,14 @@ public class HttpPluginTests : IDisposable
         Content = new StringContent("hello world"),
     };
 
+
     [Fact]
     public void ItCanBeInstantiated()
     {
         // Act - Assert no exception occurs
         var plugin = new HttpPlugin();
     }
+
 
     [Fact]
     public void ItCanBeImported()
@@ -41,6 +44,7 @@ public class HttpPluginTests : IDisposable
         // Act - Assert no exception occurs e.g. due to reflection
         kernel.ImportPluginFromObject(plugin, "http");
     }
+
 
     [Fact]
     public async Task ItCanGetAsync()
@@ -58,6 +62,7 @@ public class HttpPluginTests : IDisposable
         this.VerifyMock(mockHandler, HttpMethod.Get);
     }
 
+
     [Fact]
     public async Task ItCanPostAsync()
     {
@@ -73,6 +78,7 @@ public class HttpPluginTests : IDisposable
         Assert.Equal(this._content, result);
         this.VerifyMock(mockHandler, HttpMethod.Post);
     }
+
 
     [Fact]
     public async Task ItCanPutAsync()
@@ -90,6 +96,7 @@ public class HttpPluginTests : IDisposable
         this.VerifyMock(mockHandler, HttpMethod.Put);
     }
 
+
     [Fact]
     public async Task ItCanDeleteAsync()
     {
@@ -106,6 +113,7 @@ public class HttpPluginTests : IDisposable
         this.VerifyMock(mockHandler, HttpMethod.Delete);
     }
 
+
     private Mock<HttpMessageHandler> CreateMock()
     {
         var mockHandler = new Mock<HttpMessageHandler>();
@@ -114,6 +122,7 @@ public class HttpPluginTests : IDisposable
             .ReturnsAsync(this._response);
         return mockHandler;
     }
+
 
     private void VerifyMock(Mock<HttpMessageHandler> mockHandler, HttpMethod method)
     {
@@ -128,11 +137,13 @@ public class HttpPluginTests : IDisposable
         );
     }
 
+
     public void Dispose()
     {
         this.Dispose(true);
         GC.SuppressFinalize(this);
     }
+
 
     protected virtual void Dispose(bool disposing)
     {

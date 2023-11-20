@@ -1,17 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Experimental.Assistants.UnitTests.Extensions;
+
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Xunit;
 
-namespace SemanticKernel.Experimental.Assistants.UnitTests.Extensions;
 
 [Trait("Category", "Unit Tests")]
 [Trait("Feature", "Assistant")]
 public sealed class KernelExtensionTests
 {
     private const string TwoPartToolName = "Fake-Bogus";
+
 
     [Fact]
     public static void InvokeTwoPartTool()
@@ -29,6 +31,7 @@ public sealed class KernelExtensionTests
         Assert.NotNull(tool);
         Assert.Equal("Bogus", tool.Name);
     }
+
 
     [Theory]
     [InlineData("Bogus")]

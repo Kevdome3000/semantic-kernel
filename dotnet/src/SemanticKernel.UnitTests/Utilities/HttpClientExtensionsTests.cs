@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.UnitTests.Utilities;
+
 using System;
 using System.Net;
 using System.Net.Http;
@@ -9,7 +11,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Diagnostics;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Utilities;
 
 public sealed class HttpClientExtensionsTests : IDisposable
 {
@@ -23,6 +24,7 @@ public sealed class HttpClientExtensionsTests : IDisposable
     /// </summary>
     private readonly HttpClient _httpClient;
 
+
     /// <summary>
     /// Creates an instance of a <see cref="HttpClientExtensionsTests"/> class.
     /// </summary>
@@ -32,6 +34,7 @@ public sealed class HttpClientExtensionsTests : IDisposable
 
         this._httpClient = new HttpClient(this._httpMessageHandlerStub);
     }
+
 
     [Fact]
     public async Task ShouldReturnHttpResponseForSuccessfulRequestAsync()
@@ -50,6 +53,7 @@ public sealed class HttpClientExtensionsTests : IDisposable
         Assert.NotNull(this._httpMessageHandlerStub.ResponseToReturn);
         Assert.Equal(System.Net.HttpStatusCode.OK, this._httpMessageHandlerStub.ResponseToReturn.StatusCode);
     }
+
 
     [Fact]
     public async Task ShouldThrowHttpOperationExceptionForFailedRequestAsync()
@@ -74,6 +78,7 @@ public sealed class HttpClientExtensionsTests : IDisposable
 
         Assert.True(exception.InnerException is HttpRequestException);
     }
+
 
     /// <summary>
     /// Disposes resources used by this class.

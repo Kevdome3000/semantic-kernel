@@ -1,17 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - using planners namespace
+namespace Microsoft.SemanticKernel.Planning;
+
 using System;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - using planners namespace
-namespace Microsoft.SemanticKernel.Planning;
 #pragma warning restore IDE0130
+
 
 /// <summary>Instrumented planner that surrounds the invocation of another planner with logging and metrics.</summary>
 internal sealed class InstrumentedPlanner : IPlanner
@@ -34,6 +36,7 @@ internal sealed class InstrumentedPlanner : IPlanner
     /// <summary>Logger to use for logging activities.</summary>
     private readonly ILogger _logger;
 
+
     /// <summary>Creates a new instance of the <see cref="InstrumentedPlanner"/> class.</summary>
     /// <param name="planner">Instance of <see cref="IPlanner"/> to decorate.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
@@ -42,6 +45,7 @@ internal sealed class InstrumentedPlanner : IPlanner
         this._planner = planner;
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(planner.GetType()) : NullLogger.Instance;
     }
+
 
     /// <inheritdoc />
     async Task<Plan> IPlanner.CreatePlanAsync(string goal, CancellationToken cancellationToken)
@@ -61,6 +65,7 @@ internal sealed class InstrumentedPlanner : IPlanner
 
         TagList tags = new() { { "sk.planner.name", plannerName } };
         long startingTimestamp = Stopwatch.GetTimestamp();
+
         try
         {
             var plan = await this._planner.CreatePlanAsync(goal, cancellationToken).ConfigureAwait(false);

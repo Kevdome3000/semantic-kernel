@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.UnitTests.Functions;
+
 using System;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
@@ -7,7 +9,6 @@ using Microsoft.SemanticKernel.Services;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Functions;
 
 public class SKContextTests
 {

@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Planning.Action;
+
 using System.Collections.Generic;
 
-namespace Microsoft.SemanticKernel.Planning.Action;
 
 /// <summary>
 /// Plan data structure returned by the basic planner semantic function
@@ -26,6 +27,7 @@ internal sealed class ActionPlanResponse
         /// </summary>
         public Dictionary<string, object> Parameters { get; set; } = new();
     }
+
 
     /// <summary>
     /// Plan information

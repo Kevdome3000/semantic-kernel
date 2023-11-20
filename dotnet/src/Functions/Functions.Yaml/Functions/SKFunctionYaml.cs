@@ -4,7 +4,7 @@ namespace Microsoft.SemanticKernel.Functions.Yaml.Functions;
 
 using System.IO;
 using System.Reflection;
-using Microsoft.Extensions.Logging;
+using Extensions.Logging;
 using Models;
 using TemplateEngine;
 using YamlDotNet.Serialization;

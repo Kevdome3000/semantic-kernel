@@ -1,12 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Services;
-using Moq;
-using Xunit;
-
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.Planning.Stepwise.UnitTests;
+
+using Moq;
+using Services;
+using Xunit;
+
 #pragma warning restore IDE0130 // Namespace does not match folder structure
+
 
 public sealed class StepwisePlannerTests
 {

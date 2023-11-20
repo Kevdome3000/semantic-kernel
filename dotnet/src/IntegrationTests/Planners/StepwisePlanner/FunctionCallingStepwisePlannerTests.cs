@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace SemanticKernel.IntegrationTests.Planners.Stepwise;
+
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -10,17 +13,17 @@ using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
-using SemanticKernel.IntegrationTests.TestSettings;
+using TestSettings;
 using Xunit;
 using Xunit.Abstractions;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
-namespace SemanticKernel.IntegrationTests.Planners.Stepwise;
 #pragma warning restore IDE0130
+
 
 public sealed class FunctionCallingStepwisePlannerTests : IDisposable
 {
     private readonly string _bingApiKey;
+
 
     public FunctionCallingStepwisePlannerTests(ITestOutputHelper output)
     {
@@ -39,6 +42,7 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         Assert.NotNull(bingApiKeyCandidate);
         this._bingApiKey = bingApiKeyCandidate;
     }
+
 
     [Theory(Skip = "Requires model deployment that supports function calling.")]
     [InlineData("What is the tallest mountain on Earth? How tall is it?", "Everest")]
@@ -68,6 +72,7 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         Assert.True(planResult.Iterations <= 10);
     }
 
+
     private Kernel InitializeKernel(bool useEmbeddings = false)
     {
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
@@ -88,9 +93,9 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         if (useEmbeddings)
         {
             builder.WithAzureOpenAITextEmbeddingGenerationService(
-                    deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
-                    endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
-                    apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
+                deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
+                endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
+                apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
         }
 
         var kernel = builder.Build();
@@ -98,9 +103,11 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         return kernel;
     }
 
+
     private readonly ILoggerFactory _loggerFactory;
     private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
+
 
     public void Dispose()
     {
@@ -108,10 +115,12 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
+
     ~FunctionCallingStepwisePlannerTests()
     {
         this.Dispose(false);
     }
+
 
     private void Dispose(bool disposing)
     {

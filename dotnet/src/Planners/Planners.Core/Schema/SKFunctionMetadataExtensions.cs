@@ -1,11 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace Microsoft.SemanticKernel;
+
 using System;
 using System.Collections.Generic;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
-namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
+
 
 /// <summary>
 /// Extensions for functions views.
@@ -14,6 +16,7 @@ internal static class SKFunctionMetadataExtensions
 {
     private const string SuccessfulResponseCode = "200";
     private const string SuccessfulResponseDescription = "Success";
+
 
     /// <summary>
     /// Creates a <see cref="JsonSchemaFunctionView"/> for a function.
@@ -31,13 +34,16 @@ internal static class SKFunctionMetadataExtensions
         };
 
         var requiredProperties = new List<string>();
+
         foreach (var parameter in function.Parameters)
         {
             var schema = parameter.Schema ?? jsonSchemaDelegate(parameter.ParameterType, parameter.Description);
+
             if (schema is not null)
             {
                 functionView.Parameters.Properties.Add(parameter.Name, schema);
             }
+
             if (parameter.IsRequired)
             {
                 requiredProperties.Add(parameter.Name);

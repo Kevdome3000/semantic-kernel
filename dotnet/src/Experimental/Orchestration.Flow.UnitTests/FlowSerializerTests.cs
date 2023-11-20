@@ -1,13 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable SKEXP0001
+
+namespace SemanticKernel.Experimental.Orchestration.Flow.UnitTests;
+
 using System.IO;
 using System.Linq;
 using Microsoft.SemanticKernel.Experimental.Orchestration;
 using Xunit;
 
-#pragma warning disable SKEXP0001
-
-namespace SemanticKernel.Experimental.Orchestration.Flow.UnitTests;
 
 public class FlowSerializerTests
 {
@@ -25,6 +26,7 @@ public class FlowSerializerTests
         this.ValidateFlow(flow);
     }
 
+
     [Fact]
     public void CanDeserializeFromJson()
     {
@@ -38,6 +40,7 @@ public class FlowSerializerTests
         // Assert
         this.ValidateFlow(flow);
     }
+
 
     private void ValidateFlow(Microsoft.SemanticKernel.Experimental.Orchestration.Flow? flow)
     {

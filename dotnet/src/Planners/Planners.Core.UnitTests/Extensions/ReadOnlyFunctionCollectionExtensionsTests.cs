@@ -1,18 +1,21 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Services;
-using Moq;
-using Xunit;
-
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.Planning.UnitTests;
+
+using Memory;
+using Moq;
+using Orchestration;
+using Services;
+using Xunit;
+
 #pragma warning restore IDE0130 // Namespace does not match folder structure
+
 
 public class ReadOnlyFunctionCollectionExtensionsTests
 {
     private readonly Kernel _kernel = new(new Mock<IAIServiceProvider>().Object);
+
 
     private static PlannerConfigBase InitializeConfig(Type t)
     {
@@ -21,6 +24,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         return config;
     }
 
+
     private async IAsyncEnumerable<T> GetAsyncEnumerableAsync<T>(IEnumerable<T> results)
     {
         foreach (T result in results)
@@ -28,6 +32,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
             yield return await Task.FromResult(result);
         }
     }
+
 
     [Theory]
     [InlineData(typeof(ActionPlannerConfig))]
@@ -96,6 +101,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
             x => x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()),
             Times.Once);
     }
+
 
     [Theory]
     [InlineData(typeof(ActionPlannerConfig))]
@@ -166,6 +172,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         Assert.Equivalent(nativeFunctionView, result[1]);
     }
 
+
     [Theory]
     [InlineData(typeof(ActionPlannerConfig))]
     [InlineData(typeof(SequentialPlannerConfig))]
@@ -234,6 +241,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         Assert.Equivalent(functionView, result[0]);
         Assert.Equivalent(nativeFunctionView, result[1]);
     }
+
 
     [Theory]
     [InlineData(typeof(ActionPlannerConfig))]

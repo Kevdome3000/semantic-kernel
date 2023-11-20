@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Experimental.Assistants;
+
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants;
 
 /// <summary>
 /// Represents an assistant that can call the model and use tools.
@@ -59,11 +60,13 @@ public interface IAssistant
     /// </summary>
     public ISKPluginCollection Plugins { get; }
 
+
     /// <summary>
     /// Creates a new assistant chat thread.
     /// </summary>
     /// <param name="cancellationToken">A cancellation token</param>
     Task<IChatThread> NewThreadAsync(CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Gets an existing assistant chat thread.

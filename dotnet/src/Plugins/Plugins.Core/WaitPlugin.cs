@@ -23,7 +23,10 @@ public sealed class WaitPlugin
     /// <summary>
     /// Initializes a new instance of the <see cref="WaitPlugin"/> class.
     /// </summary>
-    public WaitPlugin() : this(null) { }
+    public WaitPlugin() : this(null)
+    {
+    }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WaitPlugin"/> class.
