@@ -6,13 +6,12 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Planners;
+using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using NCalcPlugins;
 using RepoUtils;
-
 
 /**
  * This example shows how to use Stepwise Planner to create and run a stepwise plan for a given goal.
@@ -29,7 +28,6 @@ public static class Example51_StepwisePlanner
     internal static string? TextModelOverride = null; //"text-davinci-003";
 
     internal static string? Suffix = null;
-
 
     public static async Task RunAsync()
     {
@@ -55,7 +53,6 @@ public static class Example51_StepwisePlanner
         PrintResults();
     }
 
-
     // print out summary table of ExecutionResults
     private static void PrintResults()
     {
@@ -67,14 +64,12 @@ public static class Example51_StepwisePlanner
         {
             Console.WriteLine("Question: " + question);
             Console.WriteLine("Mode\tModel\tAnswer\tStepsTaken\tIterations\tTimeTaken");
-
             foreach (var er in s_executionResults.OrderByDescending(s => s.model).Where(s => s.question == question))
             {
                 Console.WriteLine($"{er.mode}\t{er.model}\t{er.stepsTaken}\t{er.iterations}\t{er.timeTaken}\t{er.answer}");
             }
         }
     }
-
 
     private struct ExecutionResult
     {
@@ -87,9 +82,7 @@ public static class Example51_StepwisePlanner
         public string? timeTaken;
     }
 
-
     private static readonly List<ExecutionResult> s_executionResults = new();
-
 
     private static async Task RunTextCompletionAsync(string question)
     {
@@ -100,7 +93,6 @@ public static class Example51_StepwisePlanner
         await RunWithQuestionAsync(kernel, currentExecutionResult, question, TextMaxTokens);
     }
 
-
     private static async Task RunChatCompletionAsync(string question, string? model = null)
     {
         Console.WriteLine("RunChatCompletion");
@@ -110,33 +102,21 @@ public static class Example51_StepwisePlanner
         await RunWithQuestionAsync(kernel, currentExecutionResult, question, ChatMaxTokens);
     }
 
-
-    private static async Task RunWithQuestionAsync(IKernel kernel, ExecutionResult currentExecutionResult, string question, int? MaxTokens = null)
+    private static async Task RunWithQuestionAsync(Kernel kernel, ExecutionResult currentExecutionResult, string question, int? MaxTokens = null)
     {
         currentExecutionResult.question = question;
         var bingConnector = new BingConnector(TestConfiguration.Bing.ApiKey);
         var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
 
-        kernel.ImportFunctions(webSearchEnginePlugin, "WebSearch");
-        kernel.ImportFunctions(new LanguageCalculatorPlugin(kernel), "semanticCalculator");
-        kernel.ImportFunctions(new TimePlugin(), "time");
-
-        // StepwisePlanner is instructed to depend on available functions.
-        // We expose this function to increase the flexibility in it's ability to answer
-        // given the relatively small number of functions we have in this example.
-        // This seems to be particularly helpful in these examples with gpt-35-turbo -- even though it
-        // does not *use* this function. It seems to help the planner find a better path to the answer.
-        kernel.CreateSemanticFunction(
-            "Generate an answer for the following question: {{$input}}",
-            functionName: "GetAnswerForQuestion",
-            pluginName: "AnswerBot",
-            description: "Given a question, get an answer and return it as the result of the function");
+        kernel.ImportPluginFromObject(webSearchEnginePlugin, "WebSearch");
+        kernel.ImportPluginFromObject<LanguageCalculatorPlugin>("semanticCalculator");
+        kernel.ImportPluginFromObject<TimePlugin>("time");
 
         Console.WriteLine("*****************************************************");
         Stopwatch sw = new();
         Console.WriteLine("Question: " + question);
 
-        var plannerConfig = new Microsoft.SemanticKernel.Planners.StepwisePlannerConfig();
+        var plannerConfig = new StepwisePlannerConfig();
         plannerConfig.ExcludedFunctions.Add("TranslateMathProblem");
         plannerConfig.ExcludedFunctions.Add("DaysAgo");
         plannerConfig.ExcludedFunctions.Add("DateMatchingLastDayName");
@@ -159,7 +139,7 @@ public static class Example51_StepwisePlanner
         try
         {
             StepwisePlanner planner = new(kernel: kernel, config: plannerConfig);
-            var plan = planner.CreatePlan(question);
+            var plan = await planner.CreatePlanAsync(question);
 
             var kernelResult = await kernel.RunAsync(plan);
             var planResult = kernelResult.FunctionResults.First();
@@ -205,12 +185,10 @@ public static class Example51_StepwisePlanner
         Console.WriteLine("*****************************************************");
     }
 
-
-    private static IKernel GetKernel(ref ExecutionResult result, bool useChat = false, string? model = null)
+    private static Kernel GetKernel(ref ExecutionResult result, bool useChat = false, string? model = null)
     {
         var builder = new KernelBuilder();
         var maxTokens = 0;
-
         if (useChat)
         {
             builder.WithAzureOpenAIChatCompletionService(
@@ -220,7 +198,7 @@ public static class Example51_StepwisePlanner
                 alsoAsTextCompletion: true,
                 setAsDefault: true);
 
-            maxTokens = ChatMaxTokens ?? (new Microsoft.SemanticKernel.Planners.StepwisePlannerConfig()).MaxTokens;
+            maxTokens = ChatMaxTokens ?? new StepwisePlannerConfig().MaxTokens;
             result.model = model ?? ChatModelOverride ?? TestConfiguration.AzureOpenAI.ChatDeploymentName;
         }
         else
@@ -230,7 +208,7 @@ public static class Example51_StepwisePlanner
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey);
 
-            maxTokens = TextMaxTokens ?? (new Microsoft.SemanticKernel.Planners.StepwisePlannerConfig()).MaxTokens;
+            maxTokens = TextMaxTokens ?? new StepwisePlannerConfig().MaxTokens;
             result.model = model ?? TextModelOverride ?? TestConfiguration.AzureOpenAI.DeploymentName;
         }
 

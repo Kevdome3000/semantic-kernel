@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Functions.UnitTests.OpenAPI;
-
-using System.Text.Json;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
-using TestResponses;
+using SemanticKernel.Functions.UnitTests.OpenAPI.TestResponses;
 using Xunit;
 
+namespace SemanticKernel.Functions.UnitTests.OpenAPI;
 
 public class RestApiOperationResponseTests
 {
@@ -23,7 +22,6 @@ public class RestApiOperationResponseTests
         Assert.True(result);
     }
 
-
     [Fact]
     public void ItShouldValidateByteContentTWithNoSchema()
     {
@@ -37,7 +35,6 @@ public class RestApiOperationResponseTests
         Assert.True(result);
     }
 
-
     [Theory]
     [InlineData("fake-content", "application/json", "{\"type\": \"string\"}")]
     [InlineData("{\"fake\": \"content\"}", "text/plain", "{\"type\": \"string\"}")]
@@ -45,7 +42,7 @@ public class RestApiOperationResponseTests
     public void ItShouldFailValidationWithSchema(string content, string contentType, string schemaJson)
     {
         //Arrange
-        var response = new RestApiOperationResponse(content, contentType, JsonDocument.Parse(schemaJson));
+        var response = new RestApiOperationResponse(content, contentType, SKJsonSchema.Parse(schemaJson));
 
         //Act
         var result = response.IsValid();
@@ -53,7 +50,6 @@ public class RestApiOperationResponseTests
         //Assert
         Assert.False(result);
     }
-
 
     [Theory]
     [InlineData("\"fake-content\"", "application/json", "{\"type\": \"string\"}")]
@@ -63,7 +59,7 @@ public class RestApiOperationResponseTests
     public void ItShouldPassValidationWithSchema(string content, string contentType, string schemaJson)
     {
         //Arrange
-        var response = new RestApiOperationResponse(content, contentType, JsonDocument.Parse(schemaJson));
+        var response = new RestApiOperationResponse(content, contentType, SKJsonSchema.Parse(schemaJson));
 
         //Act
         var result = response.IsValid();
@@ -71,7 +67,6 @@ public class RestApiOperationResponseTests
         //Assert
         Assert.True(result);
     }
-
 
     [Theory]
     [InlineData("ValidProductContent.json", "application/json", "ObjectResponseSchema.json")]
@@ -81,7 +76,7 @@ public class RestApiOperationResponseTests
         //Arrange
         var contentText = ResourceResponseProvider.LoadFromResource(contentFileName);
         var productJson = ResourceResponseProvider.LoadFromResource(schemaJsonFilename);
-        var response = new RestApiOperationResponse(contentText, contentType, JsonDocument.Parse(productJson));
+        var response = new RestApiOperationResponse(contentText, contentType, SKJsonSchema.Parse(productJson));
 
         //Act
         var result = response.IsValid();
@@ -89,7 +84,6 @@ public class RestApiOperationResponseTests
         //Assert
         Assert.True(result);
     }
-
 
     [Theory]
     [InlineData("NotProductContent.json", "application/json", "ProductResponseSchema.json")]
@@ -99,7 +93,7 @@ public class RestApiOperationResponseTests
         //Arrange
         var contentText = ResourceResponseProvider.LoadFromResource(contentFileName);
         var productJson = ResourceResponseProvider.LoadFromResource(schemaJsonFilename);
-        var response = new RestApiOperationResponse(contentText, contentType, JsonDocument.Parse(productJson));
+        var response = new RestApiOperationResponse(contentText, contentType, SKJsonSchema.Parse(productJson));
 
         //Act
         var result = response.IsValid();

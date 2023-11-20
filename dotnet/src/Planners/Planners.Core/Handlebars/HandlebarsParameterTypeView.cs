@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Planners.Handlebars;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel.Planning.Handlebars;
 
 internal sealed class HandlebarsParameterTypeView
 {
@@ -20,9 +19,8 @@ internal sealed class HandlebarsParameterTypeView
     /// If this is a complex type, this will contain the properties of the complex type.
     /// </summary>
     [JsonPropertyName("properties")]
-    public List<ParameterView> Properties { get; set; } = new();
+    public List<SKParameterMetadata> Properties { get; set; } = new();
 }
-
 
 internal static class ParameterTypeExtensions
 {
@@ -69,14 +67,13 @@ internal static class ParameterTypeExtensions
             {
                 Name = type.Name,
                 IsComplexType = true,
-                Properties = properties.Select(p => new ParameterView(p.Name, ParameterType: p.PropertyType)).ToList()
+                Properties = properties.Select(p => new SKParameterMetadata(p.Name) { ParameterType = p.PropertyType }).ToList()
             });
 
             // Add nested complex types
             foreach (var property in properties)
             {
                 var propertyParameterTypes = property.PropertyType.ToParameterTypes();
-
                 foreach (var propertyParameterType in propertyParameterTypes)
                 {
                     if (propertyParameterType.IsComplexType)

@@ -20,13 +20,11 @@ public static class SKFunctionYaml
     /// Creates an <see cref="ISKFunction"/> instance for a semantic function using the specified markdown text.
     /// </summary>
     /// <param name="resourceName">Resource containing the YAML representation of the <see cref="PromptFunctionModel"/> to use to create the semantic function</param>
-    /// <param name="pluginName">The optional name of the plug-in associated with this method.</param>
     /// <param name="promptTemplateFactory">>Prompt template factory.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>The created <see cref="ISKFunction"/>.</returns>
     public static ISKFunction FromPromptYamlResource(
         string resourceName,
-        string? pluginName = null,
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null)
     {
@@ -39,7 +37,6 @@ public static class SKFunctionYaml
 
         return FromPromptYaml(
             text,
-            pluginName,
             promptTemplateFactory,
             loggerFactory);
     }
@@ -49,13 +46,11 @@ public static class SKFunctionYaml
     /// Creates an <see cref="ISKFunction"/> instance for a semantic function using the specified markdown text.
     /// </summary>
     /// <param name="text">YAML representation of the <see cref="PromptFunctionModel"/> to use to create the semantic function</param>
-    /// <param name="pluginName">The optional name of the plug-in associated with this method.</param>
     /// <param name="promptTemplateFactory">>Prompt template factory.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>The created <see cref="ISKFunction"/>.</returns>
     public static ISKFunction FromPromptYaml(
         string text,
-        string? pluginName = null,
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null)
     {
@@ -66,9 +61,8 @@ public static class SKFunctionYaml
 
         var promptFunctionModel = deserializer.Deserialize<PromptFunctionModel>(text);
 
-        return SKFunction.Create(
+        return SKFunction.FromPrompt(
             promptFunctionModel,
-            pluginName,
             promptTemplateFactory,
             loggerFactory);
     }

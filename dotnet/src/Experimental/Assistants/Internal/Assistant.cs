@@ -1,23 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants.Internal;
-
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using AI.ChatCompletion;
-using AI.TextCompletion;
-using Connectors.AI.OpenAI.ChatCompletion;
-using Diagnostics;
-using Extensions;
-using Http;
-using Models;
-using Services;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
+using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
+using Microsoft.SemanticKernel.Experimental.Assistants.Models;
+using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.Services;
 
+namespace Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 
 /// <summary>
 /// Represents an assistant that can call the model and use tools.
@@ -28,10 +25,10 @@ internal sealed class Assistant : IAssistant
     public string Id => this._model.Id;
 
     /// <inheritdoc/>
-    public IKernel Kernel { get; }
+    public Kernel Kernel { get; }
 
     /// <inheritdoc/>
-    public IList<ISKFunction> Functions { get; }
+    public ISKPluginCollection Plugins { get; }
 
     /// <inheritdoc/>
 #pragma warning disable CA1720 // Identifier contains type name - We don't control the schema
@@ -58,30 +55,28 @@ internal sealed class Assistant : IAssistant
     private readonly OpenAIRestContext _restContext;
     private readonly AssistantModel _model;
 
-
     /// <summary>
     /// Create a new assistant.
     /// </summary>
     /// <param name="restContext">A context for accessing OpenAI REST endpoint</param>
     /// <param name="chatService">An OpenAI chat service.</param>
     /// <param name="assistantModel">The assistant definition</param>
-    /// <param name="functions">Functions to initialize as assistant tools</param>
+    /// <param name="plugins">Plugins to initialize as assistant tools</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>An initialized <see cref="Assistant"> instance.</see></returns>
     public static async Task<IAssistant> CreateAsync(
         OpenAIRestContext restContext,
         OpenAIChatCompletion chatService,
         AssistantModel assistantModel,
-        IEnumerable<ISKFunction>? functions = null,
+        ISKPluginCollection? plugins = null,
         CancellationToken cancellationToken = default)
     {
         var resultModel =
             await restContext.CreateAssistantModelAsync(assistantModel, cancellationToken).ConfigureAwait(false) ??
             throw new SKException("Unexpected failure creating assistant: no result.");
 
-        return new Assistant(resultModel, chatService, restContext, functions);
+        return new Assistant(resultModel, chatService, restContext, plugins);
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Assistant"/> class.
@@ -90,31 +85,22 @@ internal sealed class Assistant : IAssistant
         AssistantModel model,
         OpenAIChatCompletion chatService,
         OpenAIRestContext restContext,
-        IEnumerable<ISKFunction>? functions = null)
+        ISKPluginCollection? plugins = null)
     {
         this._model = model;
         this._restContext = restContext;
-        this.Functions = new List<ISKFunction>(functions ?? Array.Empty<ISKFunction>());
-
-        var functionCollection = new FunctionCollection();
-
-        foreach (var function in this.Functions)
-        {
-            functionCollection.AddFunction(function);
-        }
+        this.Plugins = plugins ?? new SKPluginCollection();
 
         var services = new AIServiceCollection();
         services.SetService<IChatCompletion>(chatService);
         services.SetService<ITextCompletion>(chatService);
         this.Kernel =
             new Kernel(
-                functionCollection,
                 services.Build(),
-                memory: null!,
-                NullHttpHandlerFactory.Instance,
+                plugins,
+                httpHandlerFactory: NullHttpHandlerFactory.Instance,
                 loggerFactory: null);
     }
-
 
     /// <inheritdoc/>
     public Task<IChatThread> NewThreadAsync(CancellationToken cancellationToken = default)
@@ -122,13 +108,11 @@ internal sealed class Assistant : IAssistant
         return ChatThread.CreateAsync(this._restContext, cancellationToken);
     }
 
-
     /// <inheritdoc/>
     public Task<IChatThread> GetThreadAsync(string id, CancellationToken cancellationToken = default)
     {
         return ChatThread.GetAsync(this._restContext, id, cancellationToken);
     }
-
 
     /// <summary>
     /// Marshal thread run through <see cref="ISKFunction"/> interface.

@@ -19,7 +19,7 @@ public class SKFunctionYamlTests
         Assert.NotNull(skfunction);
         Assert.Equal("SayHello", skfunction.Name);
         Assert.Equal("Say hello to the specified person using the specified language", skfunction.Description);
-        Assert.Equal(2, skfunction.Describe().Parameters.Count);
+        Assert.Equal(2, skfunction.GetMetadata().Parameters.Count);
         //Assert.Equal(0, skfunction.ModelSettings.Count);
     }
 
@@ -49,7 +49,7 @@ public class SKFunctionYamlTests
         Assert.NotNull(skfunction);
         Assert.Equal("SayHello", skfunction.Name);
         Assert.Equal("Say hello to the specified person using the specified language", skfunction.Description);
-        Assert.Equal(2, skfunction.Describe().Parameters.Count);
+        Assert.Equal(2, skfunction.GetMetadata().Parameters.Count);
     }
 
 

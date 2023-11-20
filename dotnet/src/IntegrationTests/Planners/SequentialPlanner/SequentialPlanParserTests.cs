@@ -1,17 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.IntegrationTests.Planners.SequentialPlanner;
-
-using Fakes;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Planners;
-using Microsoft.SemanticKernel.Planners.Sequential;
 using Microsoft.SemanticKernel.Planning;
-using TestSettings;
+using SemanticKernel.IntegrationTests.Fakes;
+using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace SemanticKernel.IntegrationTests.Planners.Sequential;
+#pragma warning restore IDE0130
 
 public class SequentialPlanParserTests
 {
@@ -26,7 +25,6 @@ public class SequentialPlanParserTests
             .Build();
     }
 
-
     [Fact]
     public void CanCallToPlanFromXml()
     {
@@ -34,7 +32,7 @@ public class SequentialPlanParserTests
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
 
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
             .WithRetryBasic()
             .WithAzureTextCompletionService(
                 deploymentName: azureOpenAIConfiguration.DeploymentName,
@@ -43,7 +41,7 @@ public class SequentialPlanParserTests
                 serviceId: azureOpenAIConfiguration.ServiceId,
                 setAsDefault: true)
             .Build();
-        kernel.ImportFunctions(new EmailPluginFake(), "email");
+        kernel.ImportPluginFromObject<EmailPluginFake>("email");
         TestHelpers.ImportSamplePlugins(kernel, "SummarizePlugin", "WriterPlugin");
 
         var planString =
@@ -56,7 +54,7 @@ public class SequentialPlanParserTests
         var goal = "Summarize an input, translate to french, and e-mail to John Doe";
 
         // Act
-        var plan = planString.ToPlanFromXml(goal, kernel.Functions.GetFunctionCallback());
+        var plan = planString.ToPlanFromXml(goal, kernel.Plugins.GetFunctionCallback());
 
         // Assert
         Assert.NotNull(plan);
@@ -92,7 +90,6 @@ public class SequentialPlanParserTests
             }
         );
     }
-
 
     private readonly IConfigurationRoot _configuration;
 }

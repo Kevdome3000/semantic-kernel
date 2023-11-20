@@ -1,26 +1,26 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.IntegrationTests.Planners.StepwisePlanner;
-
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Planners;
+using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
-using TestSettings;
+using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace SemanticKernel.IntegrationTests.Planners.Stepwise;
+#pragma warning restore IDE0130
 
 public sealed class FunctionCallingStepwisePlannerTests : IDisposable
 {
     private readonly string _bingApiKey;
-
 
     public FunctionCallingStepwisePlannerTests(ITestOutputHelper output)
     {
@@ -40,7 +40,6 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         this._bingApiKey = bingApiKeyCandidate;
     }
 
-
     [Theory(Skip = "Requires model deployment that supports function calling.")]
     [InlineData("What is the tallest mountain on Earth? How tall is it?", "Everest")]
     [InlineData("What is the weather in Seattle?", "Seattle")]
@@ -48,11 +47,11 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
     {
         // Arrange
         bool useEmbeddings = false;
-        IKernel kernel = this.InitializeKernel(useEmbeddings);
+        Kernel kernel = this.InitializeKernel(useEmbeddings);
         var bingConnector = new BingConnector(this._bingApiKey);
         var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
-        kernel.ImportFunctions(webSearchEnginePlugin, "WebSearch");
-        kernel.ImportFunctions(new TimePlugin(), "time");
+        kernel.ImportPluginFromObject(webSearchEnginePlugin, "WebSearch");
+        kernel.ImportPluginFromObject(new TimePlugin(), "time");
 
         var planner = new FunctionCallingStepwisePlanner(
             kernel,
@@ -69,8 +68,7 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         Assert.True(planResult.Iterations <= 10);
     }
 
-
-    private IKernel InitializeKernel(bool useEmbeddings = false)
+    private Kernel InitializeKernel(bool useEmbeddings = false)
     {
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
@@ -90,9 +88,9 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         if (useEmbeddings)
         {
             builder.WithAzureOpenAITextEmbeddingGenerationService(
-                deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
-                endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
-                apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
+                    deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
+                    endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
+                    apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
         }
 
         var kernel = builder.Build();
@@ -100,11 +98,9 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         return kernel;
     }
 
-
     private readonly ILoggerFactory _loggerFactory;
     private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
-
 
     public void Dispose()
     {
@@ -112,12 +108,10 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
-
     ~FunctionCallingStepwisePlannerTests()
     {
         this.Dispose(false);
     }
-
 
     private void Dispose(bool disposing)
     {

@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Plugins;
 using RepoUtils;
-
 
 // ReSharper disable once InconsistentNaming
 public static class Example10_DescribeAllPluginsAndFunctions
@@ -29,35 +29,34 @@ public static class Example10_DescribeAllPluginsAndFunctions
 
         // Import a native plugin
         var staticText = new StaticTextPlugin();
-        kernel.ImportFunctions(staticText, "StaticTextPlugin");
+        kernel.ImportPluginFromObject(staticText, "StaticTextPlugin");
 
         // Import another native plugin
         var text = new TextPlugin();
-        kernel.ImportFunctions(text, "AnotherTextPlugin");
+        kernel.ImportPluginFromObject(text, "AnotherTextPlugin");
 
         // Import a semantic plugin
         string folder = RepoFiles.SamplePluginsPath();
-        kernel.ImportSemanticFunctionsFromDirectory(folder, "SummarizePlugin");
+        kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
 
         // Define a semantic function inline, without naming
-        var sFun1 = kernel.CreateSemanticFunction("tell a joke about {{$input}}", new OpenAIRequestSettings() { MaxTokens = 150 });
+        var sFun1 = kernel.CreateFunctionFromPrompt("tell a joke about {{$input}}", new OpenAIRequestSettings() { MaxTokens = 150 });
 
         // Define a semantic function inline, with plugin name
-        var sFun2 = kernel.CreateSemanticFunction(
+        var sFun2 = kernel.CreateFunctionFromPrompt(
             "write a novel about {{$input}} in {{$language}} language",
             new OpenAIRequestSettings() { MaxTokens = 150 },
-            pluginName: "Writing",
             functionName: "Novel",
             description: "Write a bedtime story");
 
-        var functions = kernel.Functions.GetFunctionViews();
+        var functions = kernel.Plugins.GetFunctionsMetadata();
 
         Console.WriteLine("*****************************************");
         Console.WriteLine("****** Registered plugins and functions ******");
         Console.WriteLine("*****************************************");
         Console.WriteLine();
 
-        foreach (FunctionView func in functions)
+        foreach (SKFunctionMetadata func in functions)
         {
             PrintFunction(func);
         }
@@ -65,15 +64,13 @@ public static class Example10_DescribeAllPluginsAndFunctions
         return Task.CompletedTask;
     }
 
-
-    private static void PrintFunction(FunctionView func)
+    private static void PrintFunction(SKFunctionMetadata func)
     {
         Console.WriteLine($"   {func.Name}: {func.Description}");
 
         if (func.Parameters.Count > 0)
         {
             Console.WriteLine("      Params:");
-
             foreach (var p in func.Parameters)
             {
                 Console.WriteLine($"      - {p.Name}: {p.Description}");
@@ -84,7 +81,6 @@ public static class Example10_DescribeAllPluginsAndFunctions
         Console.WriteLine();
     }
 }
-
 
 #pragma warning disable CS1587 // XML comment is not placed on a valid language element
 /** Sample output:
@@ -135,12 +131,6 @@ Plugin: TextPlugin
 *****************************************
 ***** Semantic plugins and functions *****
 *****************************************
-
-Plugin: _GLOBAL_FUNCTIONS_
-   funcce97d27e3d0b4897acf6122e41430695: Generic function, unknown purpose
-      Params:
-      - input:
-        default: ''
 
 Plugin: Writing
    Novel: Write a bedtime story

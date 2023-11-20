@@ -15,14 +15,13 @@ using Xunit;
 /// </summary>
 public class FunctionResultTests
 {
-    private readonly Mock<IFunctionRunner> _functionRunner = new();
     private readonly Mock<IAIServiceProvider> _serviceProvider = new();
     private readonly Mock<IAIServiceSelector> _serviceSelector = new();
 
 
     private SKContext CreateContext()
     {
-        return new SKContext(this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object);
+        return new SKContext(new Kernel(new Mock<IAIServiceProvider>().Object), this._serviceProvider.Object, this._serviceSelector.Object);
     }
 
 
@@ -32,7 +31,7 @@ public class FunctionResultTests
         // Arrange
         string key = Guid.NewGuid().ToString();
         string value = Guid.NewGuid().ToString();
-        FunctionResult target = new("functionName", "pluginName", this.CreateContext());
+        FunctionResult target = new("functionName", this.CreateContext());
 
         // Act
         target.Metadata.Add(key, value);
@@ -48,7 +47,7 @@ public class FunctionResultTests
     {
         // Arrange
         string key = Guid.NewGuid().ToString();
-        FunctionResult target = new("functionName", "pluginName", this.CreateContext());
+        FunctionResult target = new("functionName", this.CreateContext());
 
         // Act,Assert
         Assert.False(target.TryGetMetadataValue<string>(key, out string result));
@@ -62,7 +61,7 @@ public class FunctionResultTests
         // Arrange
         string key = Guid.NewGuid().ToString();
         int value = 42;
-        FunctionResult target = new("functionName", "pluginName", this.CreateContext());
+        FunctionResult target = new("functionName", this.CreateContext());
 
         // Act
         target.Metadata.Add(key, value);
@@ -78,7 +77,7 @@ public class FunctionResultTests
     {
         // Arrange
         string value = Guid.NewGuid().ToString();
-        FunctionResult target = new("functionName", "pluginName", this.CreateContext(), value);
+        FunctionResult target = new("functionName", this.CreateContext(), value);
 
         // Act,Assert
         Assert.Equal(value, target.GetValue<string>());
@@ -89,7 +88,7 @@ public class FunctionResultTests
     public void GetValueReturnsNullWhenValueIsNull()
     {
         // Arrange
-        FunctionResult target = new("functionName", "pluginName", this.CreateContext(), null);
+        FunctionResult target = new("functionName", this.CreateContext());
 
         // Act,Assert
         Assert.Null(target.GetValue<string>());
@@ -101,7 +100,7 @@ public class FunctionResultTests
     {
         // Arrange
         int value = 42;
-        FunctionResult target = new("functionName", "pluginName", this.CreateContext(), value);
+        FunctionResult target = new("functionName", this.CreateContext(), value);
 
         // Act,Assert
         Assert.Throws<InvalidCastException>(() => target.GetValue<string>());
@@ -117,11 +116,10 @@ public class FunctionResultTests
         SKContext context = this.CreateContext();
 
         // Act
-        FunctionResult target = new(functionName, pluginName, context);
+        FunctionResult target = new(functionName, context);
 
         // Assert
         Assert.Equal(functionName, target.FunctionName);
-        Assert.Equal(pluginName, target.PluginName);
         Assert.Equal(context, target.Context);
     }
 
@@ -131,16 +129,14 @@ public class FunctionResultTests
     {
         // Arrange
         string functionName = Guid.NewGuid().ToString();
-        string pluginName = Guid.NewGuid().ToString();
         SKContext context = this.CreateContext();
         string value = Guid.NewGuid().ToString();
 
         // Act
-        FunctionResult target = new(functionName, pluginName, context, value);
+        FunctionResult target = new(functionName, context, value);
 
         // Assert
         Assert.Equal(functionName, target.FunctionName);
-        Assert.Equal(pluginName, target.PluginName);
         Assert.Equal(context, target.Context);
         Assert.Equal(value, target.Value);
     }
@@ -151,7 +147,7 @@ public class FunctionResultTests
     {
         // Arrange
         string value = Guid.NewGuid().ToString();
-        FunctionResult target = new("functionName", "pluginName", this.CreateContext(), value);
+        FunctionResult target = new("functionName", this.CreateContext(), value);
 
         // Act and Assert
         Assert.Equal(value, target.ToString());

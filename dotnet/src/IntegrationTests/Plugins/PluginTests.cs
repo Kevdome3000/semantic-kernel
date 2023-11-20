@@ -30,7 +30,7 @@ public class PluginTests
         var kernel = new KernelBuilder().Build();
         using HttpClient httpClient = new();
 
-        var plugin = await kernel.ImportOpenAIPluginFunctionsAsync(
+        var plugin = await kernel.ImportPluginFromOpenAIAsync(
             name,
             new Uri(pluginEndpoint),
             new OpenAIFunctionExecutionParameters(httpClient));
@@ -42,7 +42,7 @@ public class PluginTests
         contextVariables["countryCode"] = countryCode;
 
         // Act
-        await plugin[functionName].InvokeAsync(kernel.CreateNewContext(contextVariables));
+        await plugin[functionName].InvokeAsync(kernel, kernel.CreateNewContext(contextVariables));
     }
 
 
@@ -61,7 +61,7 @@ public class PluginTests
         var kernel = new KernelBuilder().Build();
         using HttpClient httpClient = new();
 
-        var plugin = await kernel.ImportOpenApiPluginFunctionsAsync(
+        var plugin = await kernel.ImportPluginFromOpenApiAsync(
             name,
             new Uri(pluginEndpoint),
             new OpenApiFunctionExecutionParameters(httpClient));
@@ -73,7 +73,7 @@ public class PluginTests
         contextVariables["countryCode"] = countryCode;
 
         // Act
-        await plugin[functionName].InvokeAsync(kernel.CreateNewContext(contextVariables));
+        await plugin[functionName].InvokeAsync(kernel, kernel.CreateNewContext(contextVariables));
     }
 
 
@@ -92,7 +92,7 @@ public class PluginTests
         var kernel = new KernelBuilder().Build();
         using HttpClient httpClient = new();
 
-        var plugin = await kernel.ImportOpenApiPluginFunctionsAsync(
+        var plugin = await kernel.ImportPluginFromOpenApiAsync(
             name,
             new Uri(pluginEndpoint),
             new OpenApiFunctionExecutionParameters(httpClient));
@@ -131,7 +131,7 @@ public class PluginTests
         using HttpClient httpClient = new();
 
         //note that this plugin is not compliant according to the underlying validator in SK
-        var plugin = await kernel.ImportOpenAIPluginFunctionsAsync(
+        var plugin = await kernel.ImportPluginFromOpenAIAsync(
             name,
             new Uri(pluginEndpoint),
             new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
@@ -140,7 +140,7 @@ public class PluginTests
         contextVariables["payload"] = payload;
 
         // Act
-        await plugin[functionName].InvokeAsync(kernel.CreateNewContext(contextVariables));
+        await plugin[functionName].InvokeAsync(kernel, kernel.CreateNewContext(contextVariables));
     }
 
 
@@ -163,7 +163,7 @@ public class PluginTests
             using HttpClient httpClient = new();
 
             //note that this plugin is not compliant according to the underlying validator in SK
-            var plugin = await kernel.ImportOpenAIPluginFunctionsAsync(
+            var plugin = await kernel.ImportPluginFromOpenAIAsync(
                 name,
                 stream,
                 new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
@@ -172,7 +172,7 @@ public class PluginTests
             contextVariables["payload"] = payload;
 
             // Act
-            await plugin[functionName].InvokeAsync(kernel.CreateNewContext(contextVariables));
+            await plugin[functionName].InvokeAsync(kernel, kernel.CreateNewContext(contextVariables));
         }
     }
 
@@ -194,7 +194,7 @@ public class PluginTests
         using HttpClient httpClient = new();
 
         //note that this plugin is not compliant according to the underlying validator in SK
-        var plugin = await kernel.ImportOpenAIPluginFunctionsAsync(
+        var plugin = await kernel.ImportPluginFromOpenAIAsync(
             name,
             pluginFilePath,
             new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
@@ -203,6 +203,6 @@ public class PluginTests
         contextVariables["payload"] = payload;
 
         // Act
-        await plugin[functionName].InvokeAsync(kernel.CreateNewContext(contextVariables));
+        await plugin[functionName].InvokeAsync(kernel, kernel.CreateNewContext(contextVariables));
     }
 }

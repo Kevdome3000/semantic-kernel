@@ -21,7 +21,7 @@ public class AIServicesOpenAIExtensionsTests
         targetBuilder.WithAzureTextCompletionService("depl", "https://url", "key", "azure");
         targetBuilder.WithAzureOpenAITextEmbeddingGenerationService("depl2", "https://url", "key", "azure");
 
-        IKernel targetKernel = targetBuilder.Build();
+        Kernel targetKernel = targetBuilder.Build();
         Assert.NotNull(targetKernel.GetService<ITextCompletion>("azure"));
         Assert.NotNull(targetKernel.GetService<ITextEmbeddingGeneration>("azure"));
     }
@@ -37,7 +37,7 @@ public class AIServicesOpenAIExtensionsTests
         targetBuilder.WithOpenAITextEmbeddingGenerationService("model2", "apikey2", serviceId: "oai2");
 
         // Assert
-        IKernel targetKernel = targetBuilder.Build();
+        Kernel targetKernel = targetBuilder.Build();
         Assert.NotNull(targetKernel.GetService<ITextCompletion>("azure"));
         Assert.NotNull(targetKernel.GetService<ITextCompletion>("oai"));
         Assert.NotNull(targetKernel.GetService<ITextEmbeddingGeneration>("azure"));

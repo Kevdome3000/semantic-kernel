@@ -10,7 +10,6 @@ using Microsoft.SemanticKernel.Plugins.Web.Google;
 using Microsoft.SemanticKernel.TemplateEngine;
 using RepoUtils;
 
-
 /// <summary>
 /// The example shows how to use Bing and Google to search for current data
 /// you might want to import into your system, e.g. providing AI prompts with
@@ -31,7 +30,7 @@ public static class Example07_BingAndGooglePlugins
             return;
         }
 
-        IKernel kernel = new KernelBuilder()
+        Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAIChatCompletionService(
                 modelId: openAIModelId,
@@ -40,7 +39,6 @@ public static class Example07_BingAndGooglePlugins
 
         // Load Bing plugin
         string bingApiKey = TestConfiguration.Bing.ApiKey;
-
         if (bingApiKey == null)
         {
             Console.WriteLine("Bing credentials not found. Skipping example.");
@@ -49,7 +47,7 @@ public static class Example07_BingAndGooglePlugins
         {
             var bingConnector = new BingConnector(bingApiKey);
             var bing = new WebSearchEnginePlugin(bingConnector);
-            kernel.ImportFunctions(bing, "bing");
+            kernel.ImportPluginFromObject(bing, "bing");
             await Example1Async(kernel, "bing");
             await Example2Async(kernel);
         }
@@ -68,19 +66,18 @@ public static class Example07_BingAndGooglePlugins
                 apiKey: googleApiKey,
                 searchEngineId: googleSearchEngineId);
             var google = new WebSearchEnginePlugin(googleConnector);
-            kernel.ImportFunctions(new WebSearchEnginePlugin(googleConnector), "google");
+            kernel.ImportPluginFromObject(new WebSearchEnginePlugin(googleConnector), "google");
             await Example1Async(kernel, "google");
         }
     }
 
-
-    private static async Task Example1Async(IKernel kernel, string searchPluginName)
+    private static async Task Example1Async(Kernel kernel, string searchPluginName)
     {
         Console.WriteLine("======== Bing and Google Search Plugins ========");
 
         // Run
         var question = "What's the largest building in the world?";
-        var function = kernel.Functions.GetFunction(searchPluginName, "search");
+        var function = kernel.Plugins[searchPluginName]["search"];
         var result = await kernel.RunAsync(question, function);
 
         Console.WriteLine(question);
@@ -100,8 +97,7 @@ public static class Example07_BingAndGooglePlugins
        */
     }
 
-
-    private static async Task Example2Async(IKernel kernel)
+    private static async Task Example2Async(Kernel kernel)
     {
         Console.WriteLine("======== Use Search Plugin to answer user questions ========");
 
@@ -141,7 +137,7 @@ Answer: ";
         var questions = "Who is the most followed person on TikTok right now? What's the exchange rate EUR:USD?";
         Console.WriteLine(questions);
 
-        var oracle = kernel.CreateSemanticFunction(SemanticFunction, new OpenAIRequestSettings() { MaxTokens = 150, Temperature = 0, TopP = 1 });
+        var oracle = kernel.CreateFunctionFromPrompt(SemanticFunction, new OpenAIRequestSettings() { MaxTokens = 150, Temperature = 0, TopP = 1 });
 
         var answer = await kernel.RunAsync(oracle, new(questions)
         {
@@ -157,7 +153,7 @@ Answer: ";
             var promptTemplate = promptTemplateFactory.Create(result, new PromptTemplateConfig());
 
             Console.WriteLine("---- Fetching information from Bing...");
-            var information = await promptTemplate.RenderAsync(kernel.CreateNewContext());
+            var information = await promptTemplate.RenderAsync(kernel, kernel.CreateNewContext());
 
             Console.WriteLine("Information found:");
             Console.WriteLine(information);

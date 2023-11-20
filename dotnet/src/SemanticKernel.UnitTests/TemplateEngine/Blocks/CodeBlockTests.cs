@@ -1,78 +1,62 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.UnitTests.TemplateEngine.Blocks;
-
+using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Moq;
 using Xunit;
 
+namespace SemanticKernel.UnitTests.TemplateEngine.Blocks;
 
 public class CodeBlockTests
 {
-    private readonly Mock<IReadOnlyFunctionCollection> _functions;
     private readonly ILoggerFactory _logger = NullLoggerFactory.Instance;
-    private readonly Mock<IFunctionRunner> _functionRunner = new();
     private readonly Mock<IAIServiceProvider> _serviceProvider = new();
     private readonly Mock<IAIServiceSelector> _serviceSelector = new();
-
-
-    public CodeBlockTests()
-    {
-        this._functions = new Mock<IReadOnlyFunctionCollection>();
-    }
-
+    private readonly Kernel _kernel = new(new Mock<IAIServiceProvider>().Object);
 
     [Fact]
     public async Task ItThrowsIfAFunctionDoesntExistAsync()
     {
         // Arrange
-        var functionRunner = new Mock<IFunctionRunner>();
-        var context = new SKContext(this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object);
+        var context = new SKContext(this._kernel, this._serviceProvider.Object, this._serviceSelector.Object);
         var target = new CodeBlock("functionName", this._logger);
 
-        this._functionRunner.Setup(r => r.RunAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()))
-            .Returns<string, string, ContextVariables, CancellationToken>((pluginName, functionName, variables, cancellationToken) =>
-            {
-                throw new SKException("No function was found");
-            });
-
         // Act & Assert
-        await Assert.ThrowsAsync<SKException>(() => target.RenderCodeAsync(context));
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => target.RenderCodeAsync(context));
     }
-
 
     [Fact]
     public async Task ItThrowsIfAFunctionCallThrowsAsync()
     {
         // Arrange
-        var context = new SKContext(this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object, functions: this._functions.Object);
+        var context = new SKContext(this._kernel, this._serviceProvider.Object, this._serviceSelector.Object, plugins: this._kernel.Plugins);
+
         var function = new Mock<ISKFunction>();
+        function.Setup(x => x.Name).Returns("function");
         function
             .Setup(x => x.InvokeAsync(
+                It.IsAny<Kernel>(),
                 It.IsAny<SKContext>(),
                 It.IsAny<AIRequestSettings?>(),
                 It.IsAny<CancellationToken>()))
-            .Throws(new RuntimeWrappedException("error"));
+            .Throws(new FormatException("error"));
 
-        this.MockFunctionRunner(function.Object);
+        this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { function.Object }));
 
-        var target = new CodeBlock("functionName", this._logger);
+        var target = new CodeBlock("plugin.function", this._logger);
 
         // Act & Assert
-        await Assert.ThrowsAsync<RuntimeWrappedException>(() => target.RenderCodeAsync(context));
+        await Assert.ThrowsAsync<FormatException>(() => target.RenderCodeAsync(context));
     }
-
 
     [Fact]
     public void ItHasTheCorrectType()
@@ -84,14 +68,12 @@ public class CodeBlockTests
         Assert.Equal(BlockTypes.Code, target.Type);
     }
 
-
     [Fact]
     public void ItTrimsSpaces()
     {
         // Act + Assert
         Assert.Equal("aa", new CodeBlock("  aa  ", NullLoggerFactory.Instance).Content);
     }
-
 
     [Fact]
     public void ItChecksValidityOfInternalBlocks()
@@ -109,7 +91,6 @@ public class CodeBlockTests
         Assert.True(codeBlock1.IsValid(out _));
         Assert.False(codeBlock2.IsValid(out _));
     }
-
 
     [Fact]
     public void ItRequiresAValidFunctionCall()
@@ -154,13 +135,12 @@ public class CodeBlockTests
         Assert.Equal("Unexpected named argument found. Expected function name first.", errorMessage7);
     }
 
-
     [Fact]
     public async Task ItRendersCodeBlockConsistingOfJustAVarBlock1Async()
     {
         // Arrange
         var variables = new ContextVariables { ["varName"] = "foo" };
-        var context = new SKContext(this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object, variables, functions: this._functions.Object);
+        var context = new SKContext(this._kernel, this._serviceProvider.Object, this._serviceSelector.Object, variables, plugins: this._kernel.Plugins);
 
         // Act
         var codeBlock = new CodeBlock("$varName", NullLoggerFactory.Instance);
@@ -170,13 +150,12 @@ public class CodeBlockTests
         Assert.Equal("foo", result);
     }
 
-
     [Fact]
     public async Task ItRendersCodeBlockConsistingOfJustAVarBlock2Async()
     {
         // Arrange
         var variables = new ContextVariables { ["varName"] = "bar" };
-        var context = new SKContext(this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object, variables, functions: this._functions.Object);
+        var context = new SKContext(this._kernel, this._serviceProvider.Object, this._serviceSelector.Object, variables, plugins: this._kernel.Plugins);
         var varBlock = new VarBlock("$varName");
 
         // Act
@@ -187,12 +166,11 @@ public class CodeBlockTests
         Assert.Equal("bar", result);
     }
 
-
     [Fact]
     public async Task ItRendersCodeBlockConsistingOfJustAValBlock1Async()
     {
         // Arrange
-        var context = new SKContext(this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object);
+        var context = new SKContext(this._kernel, this._serviceProvider.Object, this._serviceSelector.Object);
 
         // Act
         var codeBlock = new CodeBlock("'ciao'", NullLoggerFactory.Instance);
@@ -202,13 +180,11 @@ public class CodeBlockTests
         Assert.Equal("ciao", result);
     }
 
-
     [Fact]
     public async Task ItRendersCodeBlockConsistingOfJustAValBlock2Async()
     {
         // Arrange
-        var kernel = new Mock<IKernel>();
-        var context = new SKContext(this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object);
+        var context = new SKContext(this._kernel, this._serviceProvider.Object, this._serviceSelector.Object);
         var valBlock = new ValBlock("'arrivederci'");
 
         // Act
@@ -219,49 +195,34 @@ public class CodeBlockTests
         Assert.Equal("arrivederci", result);
     }
 
-
     [Fact]
     public async Task ItInvokesFunctionCloningAllVariablesAsync()
     {
         // Arrange
-        const string Func = "funcName";
-        const string Plugin = "pluginName";
-
         var variables = new ContextVariables { ["input"] = "zero", ["var1"] = "uno", ["var2"] = "due" };
-        var context = new SKContext(this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object, variables, functions: this._functions.Object);
-        var funcId = new FunctionIdBlock(Func);
+        var context = new SKContext(this._kernel, this._serviceProvider.Object, this._serviceSelector.Object, variables, plugins: this._kernel.Plugins);
+        var funcBlock = new FunctionIdBlock("plugin.function");
 
         var canary0 = string.Empty;
         var canary1 = string.Empty;
         var canary2 = string.Empty;
-        var function = new Mock<ISKFunction>();
-        function
-            .Setup(x => x.InvokeAsync(
-                It.IsAny<SKContext>(),
-                It.IsAny<AIRequestSettings?>(),
-                It.IsAny<CancellationToken>()))
-            .Callback<
-                SKContext,
-                object?,
-                CancellationToken>((context, _, _) =>
-            {
-                canary0 = context!.Variables["input"];
-                canary1 = context.Variables["var1"];
-                canary2 = context.Variables["var2"];
 
-                context.Variables["input"] = "overridden";
-                context.Variables["var1"] = "overridden";
-                context.Variables["var2"] = "overridden";
-            })
-            .ReturnsAsync((
-                SKContext inputcontext,
-                object _,
-                CancellationToken _) => new FunctionResult(Func, Plugin, inputcontext));
+        var function = SKFunction.FromMethod((SKContext context) =>
+        {
+            canary0 = context!.Variables["input"];
+            canary1 = context.Variables["var1"];
+            canary2 = context.Variables["var2"];
 
-        this.MockFunctionRunner(function.Object);
+            context.Variables["input"] = "overridden";
+            context.Variables["var1"] = "overridden";
+            context.Variables["var2"] = "overridden";
+        },
+        "function");
+
+        this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { function }));
 
         // Act
-        var codeBlock = new CodeBlock(new List<Block> { funcId }, "", NullLoggerFactory.Instance);
+        var codeBlock = new CodeBlock(new List<Block> { funcBlock }, "", NullLoggerFactory.Instance);
         string result = await codeBlock.RenderCodeAsync(context);
 
         // Assert - Values are received
@@ -275,41 +236,27 @@ public class CodeBlockTests
         Assert.Equal("due", variables["var2"]);
     }
 
-
     [Fact]
     public async Task ItInvokesFunctionWithCustomVariableAsync()
     {
         // Arrange
-        const string Func = "funcName";
-        const string Plugin = "pluginName";
         const string Var = "varName";
         const string VarValue = "varValue";
 
         var variables = new ContextVariables { [Var] = VarValue };
-        var context = new SKContext(this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object, variables, functions: this._functions.Object);
-        var funcId = new FunctionIdBlock(Func);
+        var context = new SKContext(this._kernel, this._serviceProvider.Object, this._serviceSelector.Object, variables, plugins: this._kernel.Plugins);
+        var funcId = new FunctionIdBlock("plugin.function");
         var varBlock = new VarBlock($"${Var}");
 
         var canary = string.Empty;
-        var function = new Mock<ISKFunction>();
-        function
-            .Setup(x => x.InvokeAsync(
-                It.IsAny<SKContext>(),
-                It.IsAny<AIRequestSettings?>(),
-                It.IsAny<CancellationToken>()))
-            .Callback<
-                SKContext,
-                object?,
-                CancellationToken>((context, _, _) =>
-            {
-                canary = context!.Variables["input"];
-            })
-            .ReturnsAsync((
-                SKContext inputcontext,
-                object _,
-                CancellationToken _) => new FunctionResult(Func, Plugin, inputcontext));
 
-        this.MockFunctionRunner(function.Object);
+        var function = SKFunction.FromMethod((SKContext context) =>
+        {
+            canary = context!.Variables["input"];
+        },
+        "function");
+
+        this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { function }));
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcId, varBlock }, "", NullLoggerFactory.Instance);
@@ -320,42 +267,28 @@ public class CodeBlockTests
         Assert.Equal(VarValue, canary);
     }
 
-
     [Fact]
     public async Task ItInvokesFunctionWithCustomValueAsync()
     {
         // Arrange
-        const string Func = "funcName";
-        const string Plugin = "pluginName";
         const string Value = "value";
 
-        var context = new SKContext(this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object, variables: null, functions: this._functions.Object);
-        var funcId = new FunctionIdBlock(Func);
+        var context = new SKContext(this._kernel, this._serviceProvider.Object, this._serviceSelector.Object, variables: null, plugins: this._kernel.Plugins);
+        var funcBlock = new FunctionIdBlock("plugin.function");
         var valBlock = new ValBlock($"'{Value}'");
 
         var canary = string.Empty;
-        var function = new Mock<ISKFunction>();
-        function
-            .Setup(x => x.InvokeAsync(
-                It.IsAny<SKContext>(),
-                It.IsAny<AIRequestSettings?>(),
-                It.IsAny<CancellationToken>()))
-            .Callback<
-                SKContext,
-                object?,
-                CancellationToken>((context, _, _) =>
-            {
-                canary = context!.Variables["input"];
-            })
-            .ReturnsAsync((
-                SKContext inputcontext,
-                object _,
-                CancellationToken _) => new FunctionResult(Func, Plugin, inputcontext));
 
-        this.MockFunctionRunner(function.Object);
+        var function = SKFunction.FromMethod((SKContext context) =>
+        {
+            canary = context!.Variables["input"];
+        },
+        "function");
+
+        this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { function }));
 
         // Act
-        var codeBlock = new CodeBlock(new List<Block> { funcId, valBlock }, "", NullLoggerFactory.Instance);
+        var codeBlock = new CodeBlock(new List<Block> { funcBlock, valBlock }, "", NullLoggerFactory.Instance);
         string result = await codeBlock.RenderCodeAsync(context);
 
         // Assert
@@ -363,13 +296,10 @@ public class CodeBlockTests
         Assert.Equal(Value, canary);
     }
 
-
     [Fact]
     public async Task ItInvokesFunctionWithNamedArgsAsync()
     {
         // Arrange
-        const string Func = "funcName";
-        const string Plugin = "pluginName";
         const string Value = "value";
         const string FooValue = "bar";
         const string BobValue = "bob's value";
@@ -377,33 +307,22 @@ public class CodeBlockTests
         var variables = new ContextVariables();
         variables.Set("bob", BobValue);
         variables.Set("input", Value);
-        var context = new SKContext(this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object, variables: variables, functions: this._functions.Object);
-        var funcId = new FunctionIdBlock(Func);
+        var context = new SKContext(this._kernel, this._serviceProvider.Object, this._serviceSelector.Object, variables: variables, plugins: this._kernel.Plugins);
+        var funcId = new FunctionIdBlock("plugin.function");
         var namedArgBlock1 = new NamedArgBlock($"foo='{FooValue}'");
         var namedArgBlock2 = new NamedArgBlock("baz=$bob");
 
         var foo = string.Empty;
         var baz = string.Empty;
-        var function = new Mock<ISKFunction>();
-        function
-            .Setup(x => x.InvokeAsync(
-                It.IsAny<SKContext>(),
-                It.IsAny<AIRequestSettings?>(),
-                It.IsAny<CancellationToken>()))
-            .Callback<
-                SKContext,
-                object?,
-                CancellationToken>((context, _, _) =>
-            {
-                foo = context!.Variables["foo"];
-                baz = context!.Variables["baz"];
-            })
-            .ReturnsAsync((
-                SKContext inputcontext,
-                object _,
-                CancellationToken _) => new FunctionResult(Func, Plugin, inputcontext));
 
-        this.MockFunctionRunner(function.Object);
+        var function = SKFunction.FromMethod((SKContext context) =>
+        {
+            foo = context!.Variables["foo"];
+            baz = context!.Variables["baz"];
+        },
+        "function");
+
+        this._kernel.Plugins.Add(new SKPlugin("plugin", new[] { function }));
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcId, namedArgBlock1, namedArgBlock2 }, "", NullLoggerFactory.Instance);
@@ -413,16 +332,5 @@ public class CodeBlockTests
         Assert.Equal(FooValue, foo);
         Assert.Equal(BobValue, baz);
         Assert.Equal(Value, result);
-    }
-
-
-    private void MockFunctionRunner(ISKFunction function)
-    {
-        this._functionRunner.Setup(r => r.RunAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()))
-            .Returns<string, string, ContextVariables, CancellationToken>(async (pluginName, functionName, variables, cancellationToken) =>
-            {
-                var context = new SKContext(this._functionRunner.Object, this._serviceProvider.Object, this._serviceSelector.Object, variables);
-                return (FunctionResult?)await function.InvokeAsync(context, null, cancellationToken);
-            });
     }
 }

@@ -18,7 +18,7 @@ public abstract class SKEventArgs : EventArgs
     /// </summary>
     /// <param name="functionView">Function view details</param>
     /// <param name="context">Context related to the event</param>
-    internal SKEventArgs(FunctionView functionView, SKContext context)
+    internal SKEventArgs(SKFunctionMetadata functionView, SKContext context)
     {
         Verify.NotNull(context);
         Verify.NotNull(functionView);
@@ -32,7 +32,7 @@ public abstract class SKEventArgs : EventArgs
     /// <summary>
     /// Function view details.
     /// </summary>
-    public FunctionView FunctionView { get; }
+    public SKFunctionMetadata FunctionView { get; }
 
     /// <summary>
     /// Context related to the event.

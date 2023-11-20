@@ -1,20 +1,21 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.IntegrationTests.Planners.HandlebarsPlanner;
-
 using System;
 using System.Threading.Tasks;
-using Fakes;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Planners.Handlebars;
-using TestSettings;
+using Microsoft.SemanticKernel.Planning.Handlebars;
+using SemanticKernel.IntegrationTests.Fakes;
+using SemanticKernel.IntegrationTests.TestSettings;
 using xRetry;
 using Xunit;
 using Xunit.Abstractions;
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace SemanticKernel.IntegrationTests.Planners.Handlebars;
+#pragma warning restore IDE0130
 
 public sealed class HandlebarsPlannerTests : IDisposable
 {
@@ -32,18 +33,17 @@ public sealed class HandlebarsPlannerTests : IDisposable
             .Build();
     }
 
-
     [Theory]
-    [InlineData(true, "Write a joke and send it in an e-mail to Kai.", "SendEmail", FunctionCollection.GlobalFunctionsPluginName)]
+    [InlineData(true, "Write a joke and send it in an e-mail to Kai.", "SendEmail", "test")]
     public async Task CreatePlanFunctionFlowAsync(bool useChatModel, string prompt, string expectedFunction, string expectedPlugin)
     {
         // Arrange
         bool useEmbeddings = false;
-        IKernel kernel = this.InitializeKernel(useEmbeddings, useChatModel);
-        kernel.ImportFunctions(new EmailPluginFake());
+        Kernel kernel = this.InitializeKernel(useEmbeddings, useChatModel);
+        kernel.ImportPluginFromObject(new EmailPluginFake(), expectedPlugin);
         TestHelpers.ImportSamplePlugins(kernel, "FunPlugin");
 
-        var planner = new Microsoft.SemanticKernel.Planners.Handlebars.HandlebarsPlanner(kernel);
+        var planner = new HandlebarsPlanner(kernel);
 
         // Act
         var plan = await planner.CreatePlanAsync(prompt);
@@ -56,16 +56,15 @@ public sealed class HandlebarsPlannerTests : IDisposable
         );
     }
 
-
     [RetryTheory]
     [InlineData("Write a novel about software development that is 3 chapters long.", "NovelOutline", "WriterPlugin")]
     public async Task CreatePlanWithDefaultsAsync(string prompt, string expectedFunction, string expectedPlugin)
     {
         // Arrange
-        IKernel kernel = this.InitializeKernel();
+        Kernel kernel = this.InitializeKernel();
         TestHelpers.ImportSamplePlugins(kernel, "WriterPlugin", "MiscPlugin");
 
-        var planner = new Microsoft.SemanticKernel.Planners.Handlebars.HandlebarsPlanner(kernel);
+        var planner = new HandlebarsPlanner(kernel);
 
         // Act
         var plan = await planner.CreatePlanAsync(prompt);
@@ -78,8 +77,7 @@ public sealed class HandlebarsPlannerTests : IDisposable
         );
     }
 
-
-    private IKernel InitializeKernel(bool useEmbeddings = false, bool useChatModel = true)
+    private Kernel InitializeKernel(bool useEmbeddings = false, bool useChatModel = true)
     {
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
@@ -108,20 +106,18 @@ public sealed class HandlebarsPlannerTests : IDisposable
         if (useEmbeddings)
         {
             builder.WithAzureOpenAITextEmbeddingGenerationService(
-                deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
-                endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
-                apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
+                    deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
+                    endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
+                    apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
         }
 
         var kernel = builder.Build();
         return kernel;
     }
 
-
     private readonly ILoggerFactory _logger;
     private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
-
 
     public void Dispose()
     {
@@ -129,12 +125,10 @@ public sealed class HandlebarsPlannerTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
-
     ~HandlebarsPlannerTests()
     {
         this.Dispose(false);
     }
-
 
     private void Dispose(bool disposing)
     {

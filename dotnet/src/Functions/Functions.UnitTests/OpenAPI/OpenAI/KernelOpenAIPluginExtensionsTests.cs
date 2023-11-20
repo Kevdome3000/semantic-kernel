@@ -24,9 +24,9 @@ public sealed class KernelOpenAIPluginExtensionsTests : IDisposable
     private readonly Stream _openApiDocument;
 
     /// <summary>
-    /// IKernel instance.
+    /// Kernel instance.
     /// </summary>
-    private readonly IKernel _kernel;
+    private readonly Kernel _kernel;
 
 
     /// <summary>
@@ -58,7 +58,7 @@ public sealed class KernelOpenAIPluginExtensionsTests : IDisposable
         var pluginName = "fakePlugin";
 
         //Act
-        var plugin = await this._kernel.ImportOpenAIPluginFunctionsAsync(pluginName, openAiDocument, executionParameters);
+        var plugin = await this._kernel.ImportPluginFromOpenAIAsync(pluginName, openAiDocument, executionParameters);
 
         //Assert
         var setSecretFunction = plugin["SetSecret"];

@@ -1,12 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Events;
-
 using System.Threading;
-using Orchestration;
+using Microsoft.SemanticKernel.Orchestration;
 
+namespace Microsoft.SemanticKernel.Events;
 #pragma warning disable CA1001 // Types that own disposable fields should be disposable
-
 
 /// <summary>
 /// Base arguments for cancellable events.
@@ -15,17 +13,14 @@ public abstract class SKCancelEventArgs : SKEventArgs
 {
     private readonly CancellationTokenSource _cancelTokenSource = new();
 
-
-    internal SKCancelEventArgs(FunctionView functionView, SKContext context) : base(functionView, context)
+    internal SKCancelEventArgs(SKFunctionMetadata functionView, SKContext context) : base(functionView, context)
     {
     }
-
 
     /// <summary>
     /// Cancellation token to be used to cancel further execution.
     /// </summary>
     public CancellationToken CancelToken => this._cancelTokenSource.Token;
-
 
     /// <summary>
     /// Cancel all further execution.

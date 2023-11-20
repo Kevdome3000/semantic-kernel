@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Experimental.Orchestration.Flow.UnitTests;
-
 using System;
 using Microsoft.SemanticKernel.Experimental.Orchestration;
 using Xunit;
 
+#pragma warning disable SKEXP0001
+
+namespace SemanticKernel.Experimental.Orchestration.Flow.UnitTests;
 
 public class FlowValidatorTests
 {
@@ -37,7 +38,6 @@ public class FlowValidatorTests
         validator.Validate(flow);
     }
 
-
     [Fact]
     public void TestValidateFlowThrowForEmptyFlow()
     {
@@ -48,7 +48,6 @@ public class FlowValidatorTests
         // Act and assert
         Assert.Throws<ArgumentException>(() => validator.Validate(flow));
     }
-
 
     [Fact]
     public void TestValidateFlowThrowForFlowWithDependencyLoops()
@@ -69,7 +68,6 @@ public class FlowValidatorTests
         Assert.Throws<ArgumentException>(() => validator.Validate(flow));
     }
 
-
     [Fact]
     public void TestValidateFlowThrowForReferenceStepWithRequires()
     {
@@ -83,7 +81,6 @@ public class FlowValidatorTests
         Assert.Throws<ArgumentException>(() => validator.Validate(flow));
     }
 
-
     [Fact]
     public void TestValidateFlowThrowForReferenceStepWithProvides()
     {
@@ -96,7 +93,6 @@ public class FlowValidatorTests
         // Act and assert
         Assert.Throws<ArgumentException>(() => validator.Validate(flow));
     }
-
 
     [Fact]
     public void TestValidateFlowThrowForOptionalStepWithoutStartingMessage()

@@ -1,39 +1,35 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Planners.Handlebars;
-
 using System.Collections.Generic;
 using System.Threading;
-using Orchestration;
+using Microsoft.SemanticKernel.Orchestration;
 
+namespace Microsoft.SemanticKernel.Planning.Handlebars;
 
 /// <summary>
 /// Represents a Handlebars plan.
 /// </summary>
 public sealed class HandlebarsPlan
 {
-    private readonly IKernel _kernel;
+    private readonly Kernel _kernel;
     private readonly string _template;
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HandlebarsPlan"/> class.
     /// </summary>
     /// <param name="kernel">The kernel.</param>
     /// <param name="template">The Handlebars template.</param>
-    public HandlebarsPlan(IKernel kernel, string template)
+    public HandlebarsPlan(Kernel kernel, string template)
     {
         this._kernel = kernel;
         this._template = template;
     }
-
 
     /// <inheritdoc/>
     public override string ToString()
     {
         return this._template;
     }
-
 
     /// <summary>
     /// Invokes the Handlebars plan.
@@ -49,6 +45,6 @@ public sealed class HandlebarsPlan
     {
         string? results = HandlebarsTemplateEngineExtensions.Render(this._kernel, executionContext, this._template, variables, cancellationToken);
         executionContext.Variables.Update(results);
-        return new FunctionResult("Plan", "HandlebarsPlanner", executionContext, results?.Trim());
+        return new FunctionResult("HandlebarsPlanner", executionContext, results?.Trim());
     }
 }

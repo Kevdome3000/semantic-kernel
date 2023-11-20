@@ -1,11 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Planning;
-
-using System;
 using System.Linq;
-using Microsoft.Extensions.Logging;
 
+namespace Microsoft.SemanticKernel.Planning;
 
 /// <summary>
 /// Extension methods for <see cref="Plan"/> type.
@@ -35,7 +32,6 @@ public static class PlanExtensions
         return planString;
     }
 
-
     /// <summary>
     /// Constructs string representation of <see cref="Plan"/>.
     /// </summary>
@@ -51,14 +47,12 @@ public static class PlanExtensions
                 string stepName = step.Name;
 
                 string parameters = string.Join(" ", step.Parameters.Select(param => $"{param.Key}='{param.Value}'"));
-
                 if (!string.IsNullOrEmpty(parameters))
                 {
                     parameters = $" {parameters}";
                 }
 
                 string? outputs = step.Outputs.FirstOrDefault();
-
                 if (!string.IsNullOrEmpty(outputs))
                 {
                     outputs = $" => {outputs}";
@@ -71,28 +65,5 @@ public static class PlanExtensions
         }));
 
         return planString;
-    }
-
-
-    /// <summary>
-    /// Returns decorated instance of <see cref="IPlan"/> with enabled instrumentation.
-    /// </summary>
-    /// <param name="plan">Instance of <see cref="IPlan"/> to decorate.</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    [Obsolete("Use concrete class Plan WithInstrumentation instead")]
-    public static IPlan WithInstrumentation(this IPlan plan, ILoggerFactory? loggerFactory = null)
-    {
-        throw new NotSupportedException("This method is obsolete, use concrete class Plan WithInstrumentation instead");
-    }
-
-
-    /// <summary>
-    /// Returns decorated instance of <see cref="ISKFunction"/> with plan enabled instrumentation.
-    /// </summary>
-    /// <param name="plan">Instance of <see cref="Plan"/> to decorate.</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public static ISKFunction WithInstrumentation(this Plan plan, ILoggerFactory? loggerFactory = null)
-    {
-        return new InstrumentedPlan(plan, loggerFactory);
     }
 }

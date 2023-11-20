@@ -1,14 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of Plan
-namespace Microsoft.SemanticKernel.Planners;
-
-using System;
-using Connectors.AI.OpenAI;
-
+namespace Microsoft.SemanticKernel.Planning;
 #pragma warning restore IDE0130
-
 
 /// <summary>
 /// Configuration for Stepwise planner instances.
@@ -22,7 +20,6 @@ public sealed class FunctionCallingStepwisePlannerConfig : PlannerConfigBase
     {
         this.MaxTokens = 4000;
     }
-
 
     /// <summary>
     /// Delegate to get the prompt template string for the step execution phase.

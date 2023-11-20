@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.UnitTests.TemplateEngine;
-
+using System.Linq;
 using System.Text.Json;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Xunit;
 
+namespace SemanticKernel.UnitTests.TemplateEngine;
 
 public class PromptTemplateConfigTests
 {
@@ -31,7 +32,6 @@ public class PromptTemplateConfigTests
         Assert.Equal("Assistant is a large language model.", requestSettings.ChatSystemPrompt);
     }
 
-
     [Fact]
     public void DeserializingExpectChatSystemPromptToExists()
     {
@@ -53,7 +53,6 @@ public class PromptTemplateConfigTests
         Assert.NotNull(requestSettings.ChatSystemPrompt);
         Assert.Equal("I am a prompt", requestSettings.ChatSystemPrompt);
     }
-
 
     [Fact]
     public void DeserializingExpectMultipleModels()
@@ -104,7 +103,6 @@ public class PromptTemplateConfigTests
         Assert.Equal(2, promptTemplateConfig.ModelSettings.Count);
     }
 
-
     [Fact]
     public void DeserializingExpectCompletion()
     {
@@ -137,9 +135,7 @@ public class PromptTemplateConfigTests
 
         // Assert
         Assert.NotNull(promptTemplateConfig);
-#pragma warning disable CS0618 // Ensure backward compatibility
-        Assert.NotNull(promptTemplateConfig.Completion);
-        Assert.Equal("gpt-4", promptTemplateConfig.Completion.ModelId);
-#pragma warning restore CS0618 // Ensure backward compatibility
+        Assert.NotNull(promptTemplateConfig.ModelSettings?.FirstOrDefault<AIRequestSettings>());
+        Assert.Equal("gpt-4", promptTemplateConfig?.ModelSettings.FirstOrDefault<AIRequestSettings>()?.ModelId);
     }
 }

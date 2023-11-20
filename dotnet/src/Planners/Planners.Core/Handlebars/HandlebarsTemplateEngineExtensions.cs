@@ -1,18 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Planners.Handlebars;
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
-using Diagnostics;
 using HandlebarsDotNet;
 using HandlebarsDotNet.Compiler;
-using Orchestration;
+using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Orchestration;
 
+namespace Microsoft.SemanticKernel.Planning.Handlebars;
 
 /// <summary>
 /// Provides extension methods for rendering Handlebars templates in the context of a Semantic Kernel.
@@ -29,7 +28,6 @@ internal sealed class HandlebarsTemplateEngineExtensions
     /// </summary>
     public const string ReservedNameDelimiter = "-";
 
-
     /// <summary>
     /// Renders a Handlebars template in the context of a Semantic Kernel.
     /// </summary>
@@ -40,7 +38,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The rendered Handlebars template.</returns>
     public static string Render(
-        IKernel kernel,
+        Kernel kernel,
         SKContext executionContext,
         string template,
         Dictionary<string, object?> variables,
@@ -53,7 +51,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
             });
 
         // Add helpers for each function
-        foreach (FunctionView function in kernel.Functions.GetFunctionViews())
+        foreach (SKFunctionMetadata function in kernel.Plugins.GetFunctionsMetadata())
         {
             RegisterFunctionAsHelper(kernel, executionContext, handlebarsInstance, function, variables, cancellationToken);
         }
@@ -65,12 +63,11 @@ internal sealed class HandlebarsTemplateEngineExtensions
         return compiledTemplate(variables);
     }
 
-
     private static void RegisterFunctionAsHelper(
-        IKernel kernel,
+        Kernel kernel,
         SKContext executionContext,
         IHandlebars handlebarsInstance,
-        FunctionView functionView,
+        SKFunctionMetadata functionView,
         Dictionary<string, object?> variables,
         CancellationToken cancellationToken = default)
     {
@@ -106,15 +103,12 @@ internal sealed class HandlebarsTemplateEngineExtensions
                 {
                     // Process positional arguments
                     var requiredParameters = functionView.Parameters.Where(p => p.IsRequired == true).ToList();
-
                     if (arguments.Length >= requiredParameters.Count && arguments.Length <= functionView.Parameters.Count)
                     {
                         var argIndex = 0;
-
                         foreach (var arg in arguments)
                         {
                             var param = functionView.Parameters[argIndex];
-
                             if (IsExpectedParameterType(param.Type.ToString() ?? "", arg.GetType().Name, arg))
                             {
                                 variables[param.Name] = arguments[argIndex];
@@ -136,7 +130,6 @@ internal sealed class HandlebarsTemplateEngineExtensions
             foreach (var v in variables)
             {
                 var varString = v.Value?.ToString() ?? "";
-
                 if (executionContext.Variables.TryGetValue(v.Key, out var argVal))
                 {
                     executionContext.Variables[v.Key] = varString;
@@ -148,7 +141,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
             }
 
             // TODO (@teresaqhoang): Add model results to execution context + test possible deadlock scenario
-            ISKFunction function = kernel.Functions.GetFunction(functionView.PluginName, functionView.Name);
+            ISKFunction function = kernel.Plugins.GetFunction(functionView.PluginName, functionView.Name);
 
 #pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
             KernelResult result = kernel.RunAsync(executionContext.Variables, cancellationToken, function).GetAwaiter().GetResult();
@@ -158,7 +151,6 @@ internal sealed class HandlebarsTemplateEngineExtensions
             return result.GetValue<object?>();
         });
     }
-
 
     private static void RegisterSystemHelpers(
         IHandlebars handlebarsInstance,
@@ -297,7 +289,6 @@ internal sealed class HandlebarsTemplateEngineExtensions
         {
             var name = string.Empty;
             object value = string.Empty;
-
             if (arguments[0].GetType() == typeof(HashParameterDictionary))
             {
                 // Get the parameters from the template arguments
@@ -333,7 +324,6 @@ internal sealed class HandlebarsTemplateEngineExtensions
         });
     }
 
-
     private static bool IsNumericType(string typeStr)
     {
         Type? type = string.IsNullOrEmpty(typeStr) ? Type.GetType(typeStr) : null;
@@ -350,23 +340,21 @@ internal sealed class HandlebarsTemplateEngineExtensions
         };
     }
 
-
     private static bool TryParseAnyNumber(string input)
     {
         // Check if input can be parsed as any of these numeric types  
         return int.TryParse(input, out _)
-               || double.TryParse(input, out _)
-               || float.TryParse(input, out _)
-               || long.TryParse(input, out _)
-               || decimal.TryParse(input, out _)
-               || short.TryParse(input, out _)
-               || byte.TryParse(input, out _)
-               || sbyte.TryParse(input, out _)
-               || ushort.TryParse(input, out _)
-               || uint.TryParse(input, out _)
-               || ulong.TryParse(input, out _);
+            || double.TryParse(input, out _)
+            || float.TryParse(input, out _)
+            || long.TryParse(input, out _)
+            || decimal.TryParse(input, out _)
+            || short.TryParse(input, out _)
+            || byte.TryParse(input, out _)
+            || sbyte.TryParse(input, out _)
+            || ushort.TryParse(input, out _)
+            || uint.TryParse(input, out _)
+            || ulong.TryParse(input, out _);
     }
-
 
     private static double CastToNumber(object? number)
     {
@@ -384,7 +372,6 @@ internal sealed class HandlebarsTemplateEngineExtensions
         }
     }
 
-
     /*
      * Type check will pass if:
      * Types are an exact match.
@@ -395,7 +382,6 @@ internal sealed class HandlebarsTemplateEngineExtensions
     private static bool IsExpectedParameterType(string functionViewType, string handlebarArgumentType, object handlebarArgValue)
     {
         var isValidNumericType = IsNumericType(functionViewType) && IsNumericType(handlebarArgumentType);
-
         if (IsNumericType(functionViewType) && !IsNumericType(handlebarArgumentType))
         {
             isValidNumericType = TryParseAnyNumber(handlebarArgValue.ToString());

@@ -1,14 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
-namespace Microsoft.SemanticKernel.Planners.Stepwise.UnitTests;
-
-using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Services;
 using Moq;
 using Xunit;
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace Microsoft.SemanticKernel.Planning.Stepwise.UnitTests;
 #pragma warning restore IDE0130 // Namespace does not match folder structure
-
 
 public sealed class ParseResultTests
 {
@@ -26,10 +24,9 @@ public sealed class ParseResultTests
     public void WhenInputIsFinalAnswerReturnsFinalAnswer(string input, string expected)
     {
         // Arrange
-        var kernel = new Mock<IKernel>();
-        kernel.Setup(x => x.LoggerFactory).Returns(NullLoggerFactory.Instance);
+        var kernel = new Kernel(new Mock<IAIServiceProvider>().Object);
 
-        var planner = new StepwisePlanner(kernel.Object);
+        var planner = new StepwisePlanner(kernel);
 
         // Act
         var result = planner.ParseResult(input);
@@ -37,7 +34,6 @@ public sealed class ParseResultTests
         // Assert
         Assert.Equal(expected, result.FinalAnswer);
     }
-
 
     [Theory]
     [InlineData("To answer the first part of the question, I need to search.\n[ACTION]\n{\n  \"action\": \"Search\",\n  \"action_variables\": {\"input\": \"something to search\"}\n}", "To answer the first part of the question, I need to search.", "Search", "input", "something to search")]
@@ -72,7 +68,6 @@ public sealed class ParseResultTests
     public void ParseActionReturnsAction(string input, string expectedThought, string expectedAction, params string[] expectedVariables)
     {
         Dictionary<string, string>? expectedDictionary = null;
-
         for (int i = 0; i < expectedVariables.Length; i += 2)
         {
             expectedDictionary ??= new Dictionary<string, string>();
@@ -80,10 +75,9 @@ public sealed class ParseResultTests
         }
 
         // Arrange
-        var kernel = new Mock<IKernel>();
-        kernel.Setup(x => x.LoggerFactory).Returns(NullLoggerFactory.Instance);
+        var kernel = new Kernel(new Mock<IAIServiceProvider>().Object);
 
-        var planner = new StepwisePlanner(kernel.Object);
+        var planner = new StepwisePlanner(kernel);
 
         // Act
         var result = planner.ParseResult(input);
@@ -92,16 +86,5 @@ public sealed class ParseResultTests
         Assert.Equal(expectedAction ?? string.Empty, result.Action);
         Assert.Equal(expectedDictionary, result.ActionVariables);
         Assert.Equal(expectedThought ?? string.Empty, result.Thought);
-    }
-
-
-    // Method to create Mock<ISKFunction> objects
-    private static Mock<ISKFunction> CreateMockFunction(FunctionView functionView)
-    {
-        var mockFunction = new Mock<ISKFunction>();
-        mockFunction.Setup(x => x.Describe()).Returns(functionView);
-        mockFunction.Setup(x => x.Name).Returns(functionView.Name);
-        mockFunction.Setup(x => x.PluginName).Returns(functionView.PluginName);
-        return mockFunction;
     }
 }

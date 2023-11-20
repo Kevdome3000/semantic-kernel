@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
-
 using System.Collections.Generic;
 
+namespace Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 
 /// <summary>
 /// Execution state
@@ -25,7 +24,6 @@ public sealed class ExecutionState
     /// </summary>
     public Dictionary<string, StepExecutionState> StepStates { get; set; } = new Dictionary<string, StepExecutionState>();
 
-
     /// <summary>
     /// Step execution state
     /// </summary>
@@ -46,7 +44,6 @@ public sealed class ExecutionState
         /// </summary>
         public Dictionary<string, List<string>> Output { get; set; } = new Dictionary<string, List<string>>();
 
-
         /// <summary>
         /// Add or update variable for the step
         /// </summary>
@@ -55,7 +52,10 @@ public sealed class ExecutionState
         /// <param name="value">The value of variable.</param>
         public void AddOrUpdateVariable(int executionIndex, string key, string value)
         {
-            var output = this.Output.GetOrAdd(key, new List<string>());
+            if (!this.Output.TryGetValue(key, out List<string>? output))
+            {
+                this.Output[key] = output = new();
+            }
 
             if (output!.Count <= executionIndex)
             {
@@ -67,7 +67,6 @@ public sealed class ExecutionState
             }
         }
     }
-
 
     /// <summary>
     /// The execution status enum

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
@@ -12,13 +13,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.ApplicationInsights;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Planners;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using NCalcPlugins;
-
 
 /// <summary>
 /// Example of telemetry in Semantic Kernel using Application Insights within console application.
@@ -33,7 +32,6 @@ public sealed class Program
     /// <see cref="LogLevel.Trace"/> will enable logging with more detailed information, including sensitive data. Should not be used in production. <para />
     /// </remarks>
     private const LogLevel MinLogLevel = LogLevel.Information;
-
 
     /// <summary>
     /// The main entry point for the application.
@@ -81,7 +79,6 @@ public sealed class Program
         }
     }
 
-
     private static ServiceProvider GetServiceProvider()
     {
         var services = new ServiceCollection();
@@ -90,7 +87,6 @@ public sealed class Program
 
         return services.BuildServiceProvider();
     }
-
 
     private static void ConfigureApplicationInsightsTelemetry(ServiceCollection services)
     {
@@ -108,8 +104,7 @@ public sealed class Program
         });
     }
 
-
-    private static IKernel GetKernel(ILoggerFactory loggerFactory)
+    private static Kernel GetKernel(ILoggerFactory loggerFactory)
     {
         var folder = RepoFiles.SamplePluginsPath();
         var bingConnector = new BingConnector(Env.Var("Bing__ApiKey"));
@@ -123,18 +118,18 @@ public sealed class Program
                 Env.Var("AzureOpenAI__ApiKey"))
             .Build();
 
-        kernel.ImportSemanticFunctionsFromDirectory(folder, "SummarizePlugin", "WriterPlugin");
+        kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
+        kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "WriterPlugin"));
 
-        kernel.ImportFunctions(webSearchEnginePlugin, "WebSearch");
-        kernel.ImportFunctions(new LanguageCalculatorPlugin(kernel), "advancedCalculator");
-        kernel.ImportFunctions(new TimePlugin(), "time");
+        kernel.ImportPluginFromObject(webSearchEnginePlugin, "WebSearch");
+        kernel.ImportPluginFromObject<LanguageCalculatorPlugin>("advancedCalculator");
+        kernel.ImportPluginFromObject<TimePlugin>();
 
         return kernel;
     }
 
-
-    private static ISequentialPlanner GetSequentialPlanner(
-        IKernel kernel,
+    private static IPlanner GetSequentialPlanner(
+        Kernel kernel,
         ILoggerFactory loggerFactory,
         int maxTokens = 1024)
     {
@@ -143,17 +138,15 @@ public sealed class Program
         return new SequentialPlanner(kernel, plannerConfig).WithInstrumentation(loggerFactory);
     }
 
-
-    private static IActionPlanner GetActionPlanner(
-        IKernel kernel,
+    private static IPlanner GetActionPlanner(
+        Kernel kernel,
         ILoggerFactory loggerFactory)
     {
         return new ActionPlanner(kernel).WithInstrumentation(loggerFactory);
     }
 
-
-    private static IStepwisePlanner GetStepwisePlanner(
-        IKernel kernel,
+    private static IPlanner GetStepwisePlanner(
+        Kernel kernel,
         ILoggerFactory loggerFactory,
         int minIterationTimeMs = 1500,
         int maxTokens = 2000)
@@ -166,7 +159,6 @@ public sealed class Program
 
         return new StepwisePlanner(kernel, plannerConfig).WithInstrumentation(loggerFactory);
     }
-
 
     /// <summary>
     /// Example of metering configuration in Application Insights
@@ -191,7 +183,6 @@ public sealed class Program
         meterListener.Start();
     }
 
-
     /// <summary>
     /// The callback which can be used to get measurement recording.
     /// </summary>
@@ -203,7 +194,6 @@ public sealed class Program
             telemetryClient.GetMetric(instrument.Name).TrackValue(measurement);
         };
     }
-
 
     /// <summary>
     /// Example of advanced distributed tracing configuration in Application Insights

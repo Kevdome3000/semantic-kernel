@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Functions.UnitTests.OpenAPI;
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -15,14 +13,16 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.OpenAPI;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Moq;
-using TestResponses;
+using SemanticKernel.Functions.UnitTests.OpenAPI.TestResponses;
 using Xunit;
 
+namespace SemanticKernel.Functions.UnitTests.OpenAPI;
 
 public sealed class RestApiOperationRunnerTests : IDisposable
 {
@@ -41,7 +41,6 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     /// </summary>
     private readonly HttpClient _httpClient;
 
-
     /// <summary>
     /// Creates an instance of a <see cref="RestApiOperationRunnerTests"/> class.
     /// </summary>
@@ -53,7 +52,6 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         this._httpClient = new HttpClient(this._httpMessageHandlerStub);
     }
-
 
     [Fact]
     public async Task ItCanRunCreateAndUpdateOperationsWithJsonPayloadSuccessfullyAsync()
@@ -127,7 +125,6 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         this._authenticationHandlerMock.Verify(x => x(It.IsAny<HttpRequestMessage>()), Times.Once);
     }
 
-
     [Fact]
     public async Task ItCanRunCreateAndUpdateOperationsWithPlainTextPayloadSuccessfullyAsync()
     {
@@ -148,7 +145,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var arguments = new Dictionary<string, string>
         {
             { "payload", "fake-input-value" },
-            { "content-type", "text/plain" }
+            { "content-type", "text/plain"}
         };
 
         var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
@@ -180,7 +177,6 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         this._authenticationHandlerMock.Verify(x => x(It.IsAny<HttpRequestMessage>()), Times.Once);
     }
-
 
     [Fact]
     public async Task ItShouldAddHeadersToHttpRequestAsync()
@@ -218,7 +214,6 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.Contains(this._httpMessageHandlerStub.RequestHeaders, h => h.Key == "fake-header" && h.Value.Contains("fake-header-value"));
     }
 
-
     [Fact]
     public async Task ItShouldAddUserAgentHeaderToHttpRequestIfConfiguredAsync()
     {
@@ -255,7 +250,6 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.Contains(this._httpMessageHandlerStub.RequestHeaders, h => h.Key == "fake-header" && h.Value.Contains("fake-header-value"));
         Assert.Contains(this._httpMessageHandlerStub.RequestHeaders, h => h.Key == "User-Agent" && h.Value.Contains("fake-user-agent"));
     }
-
 
     [Fact]
     public async Task ItShouldBuildJsonPayloadDynamicallyAsync()
@@ -315,7 +309,6 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.NotNull(enabled);
         Assert.Equal("true", enabled);
     }
-
 
     [Fact]
     public async Task ItShouldBuildJsonPayloadDynamicallyUsingPayloadMetadataDataTypesAsync()
@@ -400,7 +393,6 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.NotNull(parameters);
         Assert.True(parameters is JsonArray);
     }
-
 
     [Fact]
     public async Task ItShouldBuildJsonPayloadDynamicallyResolvingArgumentsByFullNamesAsync()
@@ -492,7 +484,6 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.Equal("fake-cc-upn", ccUpn.ToString());
     }
 
-
     [Fact]
     public async Task ItShouldThrowExceptionIfPayloadMetadataDoesNotHaveContentTypeAsync()
     {
@@ -521,7 +512,6 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.Contains("No content type is provided", exception.Message, StringComparison.InvariantCulture);
     }
 
-
     [Fact]
     public async Task ItShouldThrowExceptionIfContentTypeArgumentIsNotProvidedAsync()
     {
@@ -549,7 +539,6 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         Assert.Contains("No content type is provided", exception.Message, StringComparison.InvariantCulture);
     }
-
 
     [Fact]
     public async Task ItShouldUsePayloadArgumentForPlainTextContentTypeWhenBuildingPayloadDynamicallyAsync()
@@ -592,7 +581,6 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.Equal("fake-input-value", payloadText);
     }
 
-
     [Theory]
     [InlineData(MediaTypeNames.Text.Plain)]
     [InlineData(MediaTypeNames.Application.Json)]
@@ -634,7 +622,6 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var payloadText = Encoding.UTF8.GetString(messageContent, 0, messageContent.Length);
         Assert.Equal("fake-input-value", payloadText);
     }
-
 
     [Fact]
     public async Task ItShouldBuildJsonPayloadDynamicallyExcludingOptionalParametersIfTheirArgumentsNotProvidedAsync()
@@ -683,7 +670,6 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.Null(senderUpn);
     }
 
-
     [Fact]
     public async Task ItShouldBuildJsonPayloadDynamicallyIncludingOptionalParametersIfTheirArgumentsProvidedAsync()
     {
@@ -731,7 +717,6 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var senderUpn = deserializedPayload["upn"]?.ToString();
         Assert.Equal("fake-sender-upn", senderUpn);
     }
-
 
     [Fact]
     public async Task ItShouldAddRequiredQueryStringParametersIfTheirArgumentsProvidedAsync()
@@ -782,7 +767,6 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.Equal("https://fake-random-test-host/fake-path?p1=v1&p2=v2", this._httpMessageHandlerStub.RequestUri.AbsoluteUri);
     }
 
-
     [Fact]
     public async Task ItShouldAddNotRequiredQueryStringParametersIfTheirArgumentsProvidedAsync()
     {
@@ -832,7 +816,6 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.Equal("https://fake-random-test-host/fake-path?p1=v1&p2=v2", this._httpMessageHandlerStub.RequestUri.AbsoluteUri);
     }
 
-
     [Fact]
     public async Task ItShouldSkipNotRequiredQueryStringParametersIfNoArgumentsProvidedAsync()
     {
@@ -881,7 +864,6 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.Equal("https://fake-random-test-host/fake-path?p2=v2", this._httpMessageHandlerStub.RequestUri.AbsoluteUri);
     }
 
-
     [Fact]
     public async Task ItShouldThrowExceptionIfNoArgumentProvidedForRequiredQueryStringParameterAsync()
     {
@@ -914,7 +896,6 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         // Act and Assert
         await Assert.ThrowsAsync<SKException>(() => sut.RunAsync(operation, arguments));
     }
-
 
     [Theory]
     [InlineData(MediaTypeNames.Application.Json)]
@@ -959,7 +940,6 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.Equal($"{contentType}; charset=utf-8", result.ContentType);
     }
 
-
     [Theory]
     [InlineData("image/jpeg")]
     [InlineData("image/png")]
@@ -1003,7 +983,6 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.Equal($"{contentType}", result.ContentType);
     }
 
-
     [Fact]
     public async Task ItShouldThrowExceptionForUnsupportedContentTypeAsync()
     {
@@ -1033,63 +1012,50 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         await Assert.ThrowsAsync<SKException>(() => sut.RunAsync(operation, arguments));
     }
 
-
     public class SchemaTestData : IEnumerable<object[]>
     {
         public IEnumerator<object[]> GetEnumerator()
         {
-            yield return new object[]
-            {
-                "default",
-                new (string, RestApiOperationExpectedResponse)[]
-                {
-                    ("400", new RestApiOperationExpectedResponse("fake-content", "fake-content-type", JsonDocument.Parse(ResourceResponseProvider.LoadFromResource("FakeResponseSchema.json")))),
-                    ("default", new RestApiOperationExpectedResponse("Default response content", "application/json", JsonDocument.Parse(ResourceResponseProvider.LoadFromResource("DefaultResponseSchema.json")))),
-                },
+            yield return new object[] {
+                    "default",
+                    new (string, RestApiOperationExpectedResponse)[] {
+                        ("400", new RestApiOperationExpectedResponse("fake-content", "fake-content-type", SKJsonSchema.Parse(ResourceResponseProvider.LoadFromResource("FakeResponseSchema.json")))),
+                        ("default", new RestApiOperationExpectedResponse("Default response content", "application/json", SKJsonSchema.Parse(ResourceResponseProvider.LoadFromResource("DefaultResponseSchema.json")))),
+                    },
             };
-            yield return new object[]
-            {
-                "200",
-                new (string, RestApiOperationExpectedResponse)[]
-                {
-                    ("200", new RestApiOperationExpectedResponse("fake-content", "fake-content-type", JsonDocument.Parse(ResourceResponseProvider.LoadFromResource("FakeResponseSchema.json")))),
-                    ("default", new RestApiOperationExpectedResponse("Default response content", "application/json", JsonDocument.Parse(ResourceResponseProvider.LoadFromResource("DefaultResponseSchema.json")))),
-                },
+            yield return new object[] {
+                    "200",
+                    new (string, RestApiOperationExpectedResponse)[] {
+                        ("200", new RestApiOperationExpectedResponse("fake-content", "fake-content-type", SKJsonSchema.Parse(ResourceResponseProvider.LoadFromResource("FakeResponseSchema.json")))),
+                        ("default", new RestApiOperationExpectedResponse("Default response content", "application/json", SKJsonSchema.Parse(ResourceResponseProvider.LoadFromResource("DefaultResponseSchema.json")))),
+                    },
             };
-            yield return new object[]
-            {
-                "2XX",
-                new (string, RestApiOperationExpectedResponse)[]
-                {
-                    ("2XX", new RestApiOperationExpectedResponse("fake-content", "fake-content-type", JsonDocument.Parse(ResourceResponseProvider.LoadFromResource("FakeResponseSchema.json")))),
-                    ("default", new RestApiOperationExpectedResponse("Default response content", "application/json", JsonDocument.Parse(ResourceResponseProvider.LoadFromResource("DefaultResponseSchema.json")))),
-                },
+            yield return new object[] {
+                    "2XX",
+                    new (string, RestApiOperationExpectedResponse)[] {
+                        ("2XX", new RestApiOperationExpectedResponse("fake-content", "fake-content-type", SKJsonSchema.Parse(ResourceResponseProvider.LoadFromResource("FakeResponseSchema.json")))),
+                        ("default", new RestApiOperationExpectedResponse("Default response content", "application/json", SKJsonSchema.Parse(ResourceResponseProvider.LoadFromResource("DefaultResponseSchema.json")))),
+                    },
             };
-            yield return new object[]
-            {
-                "2XX",
-                new (string, RestApiOperationExpectedResponse)[]
-                {
-                    ("2XX", new RestApiOperationExpectedResponse("fake-content", "fake-content-type", JsonDocument.Parse(ResourceResponseProvider.LoadFromResource("FakeResponseSchema.json")))),
-                    ("default", new RestApiOperationExpectedResponse("Default response content", "application/json", JsonDocument.Parse(ResourceResponseProvider.LoadFromResource("DefaultResponseSchema.json")))),
-                },
+            yield return new object[] {
+                    "2XX",
+                    new (string, RestApiOperationExpectedResponse)[] {
+                        ("2XX", new RestApiOperationExpectedResponse("fake-content", "fake-content-type", SKJsonSchema.Parse(ResourceResponseProvider.LoadFromResource("FakeResponseSchema.json")))),
+                        ("default", new RestApiOperationExpectedResponse("Default response content", "application/json", SKJsonSchema.Parse(ResourceResponseProvider.LoadFromResource("DefaultResponseSchema.json")))),
+                    },
             };
-            yield return new object[]
-            {
-                "200",
-                new (string, RestApiOperationExpectedResponse)[]
-                {
-                    ("default", new RestApiOperationExpectedResponse("Default response content", "application/json", JsonDocument.Parse(ResourceResponseProvider.LoadFromResource("DefaultResponseSchema.json")))),
-                    ("2XX", new RestApiOperationExpectedResponse("fake-content", "fake-content-type", JsonDocument.Parse(ResourceResponseProvider.LoadFromResource("2XXFakeResponseSchema.json")))),
-                    ("200", new RestApiOperationExpectedResponse("fake-content", "fake-content-type", JsonDocument.Parse(ResourceResponseProvider.LoadFromResource("200FakeResponseSchema.json")))),
-                },
+            yield return new object[] {
+                    "200",
+                    new (string, RestApiOperationExpectedResponse)[] {
+                        ("default", new RestApiOperationExpectedResponse("Default response content", "application/json", SKJsonSchema.Parse(ResourceResponseProvider.LoadFromResource("DefaultResponseSchema.json")))),
+                        ("2XX", new RestApiOperationExpectedResponse("fake-content", "fake-content-type", SKJsonSchema.Parse(ResourceResponseProvider.LoadFromResource("2XXFakeResponseSchema.json")))),
+                        ("200", new RestApiOperationExpectedResponse("fake-content", "fake-content-type", SKJsonSchema.Parse(ResourceResponseProvider.LoadFromResource("200FakeResponseSchema.json")))),
+                    },
             };
         }
 
-
         IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
     }
-
 
     [Theory]
     [ClassData(typeof(SchemaTestData))]
@@ -1117,7 +1083,6 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.Equal(JsonSerializer.Serialize(expected), JsonSerializer.Serialize(result.ExpectedSchema));
     }
 
-
     /// <summary>
     /// Disposes resources used by this class.
     /// </summary>
@@ -1127,7 +1092,6 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         this._httpClient.Dispose();
     }
-
 
     private sealed class HttpMessageHandlerStub : DelegatingHandler
     {
@@ -1143,7 +1107,6 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         public HttpResponseMessage ResponseToReturn { get; set; }
 
-
         public HttpMessageHandlerStub()
         {
             this.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
@@ -1151,7 +1114,6 @@ public sealed class RestApiOperationRunnerTests : IDisposable
                 Content = new StringContent("{}", Encoding.UTF8, MediaTypeNames.Application.Json)
             };
         }
-
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {

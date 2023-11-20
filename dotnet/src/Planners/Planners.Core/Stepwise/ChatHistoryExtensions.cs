@@ -1,15 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Linq;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.Text;
+
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of Plan
-namespace Microsoft.SemanticKernel.Planners;
-
-using System.Linq;
-using AI.ChatCompletion;
-using Text;
-
+namespace Microsoft.SemanticKernel.Planning;
 #pragma warning restore IDE0130
-
 
 /// <summary>
 /// Extension methods for <see cref="ChatHistory"/> class.
@@ -26,13 +24,14 @@ internal static class ChatHistoryExtensions
     // <param name="tokenCounter">The token counter to use.</param>
     internal static int GetTokenCount(this ChatHistory chatHistory, string? additionalMessage = null, int skipStart = 0, int skipCount = 0, TextChunker.TokenCounter? tokenCounter = null)
     {
-        return tokenCounter is null ? Default(chatHistory, additionalMessage, skipStart, skipCount) : Custom(chatHistory, additionalMessage, skipStart, skipCount, tokenCounter);
+        return tokenCounter is null ?
+            Default(chatHistory, additionalMessage, skipStart, skipCount) :
+            Custom(chatHistory, additionalMessage, skipStart, skipCount, tokenCounter);
 
         static int Default(ChatHistory chatHistory, string? additionalMessage, int skipStart, int skipCount)
         {
             int chars = 0;
             bool prevMsg = false;
-
             for (int i = 0; i < chatHistory.Count; i++)
             {
                 if (i >= skipStart && i < skipStart + skipCount)

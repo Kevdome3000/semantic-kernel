@@ -11,11 +11,15 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Services;
+using Moq;
 using Xunit;
 
 
 public sealed class SKFunctionTests3
 {
+    private readonly Kernel _kernel = new(new Mock<IAIServiceProvider>().Object);
+
     [Fact]
     public void ItDoesntThrowForValidFunctionsViaDelegate()
     {
@@ -26,7 +30,7 @@ public sealed class SKFunctionTests3
             .Where(m => m.Name is not "GetType" and not "Equals" and not "GetHashCode" and not "ToString")
             .ToArray();
 
-        ISKFunction[] functions = (from method in methods select SKFunction.Create(method, pluginInstance, "plugin")).ToArray();
+        ISKFunction[] functions = (from method in methods select SKFunction.FromMethod(method, pluginInstance, "plugin")).ToArray();
 
         // Act
         Assert.Equal(methods.Length, functions.Length);
@@ -44,7 +48,7 @@ public sealed class SKFunctionTests3
             .Where(m => m.Name is not "GetType" and not "Equals" and not "GetHashCode" and not "ToString")
             .ToArray();
 
-        ISKFunction[] functions = new KernelBuilder().Build().ImportFunctions(pluginInstance).Select(s => s.Value).ToArray();
+        ISKFunction[] functions = new KernelBuilder().Build().ImportPluginFromObject(pluginInstance).ToArray();
 
         // Act
         Assert.Equal(methods.Length, functions.Length);
@@ -69,7 +73,7 @@ public sealed class SKFunctionTests3
         {
             try
             {
-                SKFunction.Create(method, instance, "plugin");
+                SKFunction.FromMethod(method, instance, "plugin");
             }
             catch (SKException)
             {
@@ -100,14 +104,13 @@ public sealed class SKFunctionTests3
         }
 
         // Act
-        ISKFunction function = SKFunction.Create(
+        ISKFunction function = SKFunction.FromMethod(
             method: ExecuteAsync,
             parameters: null,
             description: "description",
-            pluginName: "pluginName",
             functionName: "functionName");
 
-        FunctionResult result = await function.InvokeAsync(context);
+        FunctionResult result = await function.InvokeAsync(this._kernel, context);
 
         // Assert
         Assert.Equal("YES", context.Variables["canary"]);
@@ -137,13 +140,12 @@ public sealed class SKFunctionTests3
         }
 
         // Act. Note: this will throw an exception if SKFunction doesn't handle the function type.
-        ISKFunction function = SKFunction.Create(
+        ISKFunction function = SKFunction.FromMethod(
             method: ExecuteAsync,
             description: "description",
-            pluginName: "pluginName",
             functionName: "functionName");
 
-        FunctionResult result = await function.InvokeAsync(context);
+        FunctionResult result = await function.InvokeAsync(this._kernel, context);
 
         // Assert
         Assert.Equal("YES", result.Context.Variables["canary"]);

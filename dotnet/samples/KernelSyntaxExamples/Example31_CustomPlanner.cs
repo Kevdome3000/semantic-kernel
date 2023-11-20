@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.XPath;
@@ -15,8 +16,8 @@ using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Memory;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
-using RepoUtils;
 
+using RepoUtils;
 
 // ReSharper disable CommentTypo
 // ReSharper disable once InconsistentNaming
@@ -25,21 +26,21 @@ internal static class Example31_CustomPlanner
     public static async Task RunAsync()
     {
         Console.WriteLine("======== Custom Planner - Create and Execute Markup Plan ========");
-        IKernel kernel = InitializeKernel();
+        Kernel kernel = InitializeKernel();
         ISemanticTextMemory memory = InitializeMemory();
 
         // ContextQuery is part of the QAPlugin
-        IDictionary<string, ISKFunction> qaPlugin = LoadQAPlugin(kernel);
+        ISKPlugin qaPlugin = LoadQAPlugin(kernel);
         SKContext context = CreateContextQueryContext(kernel);
 
         // Create a memory store using the VolatileMemoryStore and the embedding generator registered in the kernel
-        kernel.ImportFunctions(new TextMemoryPlugin(memory));
+        kernel.ImportPluginFromObject(new TextMemoryPlugin(memory));
 
         // Setup defined memories for recall
         await RememberFactsAsync(kernel, memory);
 
         // MarkupPlugin named "markup"
-        var markup = kernel.ImportFunctions(new MarkupPlugin(), "markup");
+        var markup = kernel.ImportPluginFromObject<MarkupPlugin>("markup");
 
         // contextQuery "Who is my president? Who was president 3 years ago? What should I eat for dinner" | markup
         // Create a plan to execute the ContextQuery and then run the markup plugin on the output
@@ -48,7 +49,7 @@ internal static class Example31_CustomPlanner
 
         // Execute plan
         context.Variables.Update("Who is my president? Who was president 3 years ago? What should I eat for dinner");
-        var result = await plan.InvokeAsync(context);
+        var result = await plan.InvokeAsync(kernel, context);
 
         Console.WriteLine("Result:");
         Console.WriteLine(result.GetValue<string>());
@@ -74,8 +75,7 @@ internal static class Example31_CustomPlanner
     For dinner, you might enjoy some sushi with your partner, since you both like it and you only ate it once this month
     */
 
-
-    private static SKContext CreateContextQueryContext(IKernel kernel)
+    private static SKContext CreateContextQueryContext(Kernel kernel)
     {
         var context = kernel.CreateNewContext();
         context.Variables.Set("firstname", "Jamal");
@@ -89,10 +89,9 @@ internal static class Example31_CustomPlanner
         return context;
     }
 
-
-    private static async Task RememberFactsAsync(IKernel kernel, ISemanticTextMemory memory)
+    private static async Task RememberFactsAsync(Kernel kernel, ISemanticTextMemory memory)
     {
-        kernel.ImportFunctions(new TextMemoryPlugin(memory));
+        kernel.ImportPluginFromObject(new TextMemoryPlugin(memory));
 
         List<string> memoriesToSave = new()
         {
@@ -114,24 +113,22 @@ internal static class Example31_CustomPlanner
         }
     }
 
-
     // ContextQuery is part of the QAPlugin
     // DependsOn: TimePlugin named "time"
     // DependsOn: BingPlugin named "bing"
-    private static IDictionary<string, ISKFunction> LoadQAPlugin(IKernel kernel)
+    private static ISKPlugin LoadQAPlugin(Kernel kernel)
     {
         string folder = RepoFiles.SamplePluginsPath();
-        kernel.ImportFunctions(new TimePlugin(), "time");
+        kernel.ImportPluginFromObject<TimePlugin>("time");
 #pragma warning disable CA2000 // Dispose objects before losing scope
         var bing = new WebSearchEnginePlugin(new BingConnector(TestConfiguration.Bing.ApiKey));
 #pragma warning restore CA2000 // Dispose objects before losing scope
-        kernel.ImportFunctions(bing, "bing");
+        kernel.ImportPluginFromObject(bing, "bing");
 
-        return kernel.ImportSemanticFunctionsFromDirectory(folder, "QAPlugin");
+        return kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "QAPlugin"));
     }
 
-
-    private static IKernel InitializeKernel()
+    private static Kernel InitializeKernel()
     {
         return new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
@@ -146,7 +143,6 @@ internal static class Example31_CustomPlanner
             .Build();
     }
 
-
     private static ISemanticTextMemory InitializeMemory()
     {
         return new MemoryBuilder()
@@ -159,7 +155,6 @@ internal static class Example31_CustomPlanner
             .Build();
     }
 }
-
 
 // Example Plugin that can process XML Markup created by ContextQuery
 public class MarkupPlugin
@@ -178,14 +173,12 @@ public class MarkupPlugin
     }
 }
 
-
 public static class XmlMarkupPlanParser
 {
     private static readonly Dictionary<string, KeyValuePair<string, string>> s_pluginMapping = new()
     {
         { "lookup", new KeyValuePair<string, string>("bing", "SearchAsync") },
     };
-
 
     public static Plan FromMarkup(this string markup, string goal, SKContext context)
     {
@@ -198,11 +191,9 @@ public static class XmlMarkupPlanParser
         return nodes.Count == 0 ? new Plan(goal) : NodeListToPlan(nodes, context, goal);
     }
 
-
     private static Plan NodeListToPlan(XmlNodeList nodes, SKContext context, string description)
     {
         Plan plan = new(description);
-
         for (var i = 0; i < nodes.Count; ++i)
         {
             var node = nodes[i];
@@ -223,34 +214,21 @@ public static class XmlMarkupPlanParser
             }
             else
             {
-                if (string.IsNullOrEmpty(pluginName)
-                        ? !context.Functions!.TryGetFunction(functionName, out var _)
-                        : !context.Functions!.TryGetFunction(pluginName, functionName, out var _))
-                {
-                    var planStep = new Plan(node.InnerText);
-                    planStep.Parameters.Update(node.InnerText);
-                    planStep.Outputs.Add($"markup.{functionName}.result");
-                    plan.Outputs.Add($"markup.{functionName}.result");
-                    plan.AddSteps(planStep);
-                }
-                else
-                {
-                    var command = string.IsNullOrEmpty(pluginName)
-                        ? context.Functions.GetFunction(functionName)
-                        : context.Functions.GetFunction(pluginName, functionName);
-                    var planStep = new Plan(command);
-                    planStep.Parameters.Update(node.InnerText);
-                    planStep.Outputs.Add($"markup.{functionName}.result");
-                    plan.Outputs.Add($"markup.{functionName}.result");
-                    plan.AddSteps(planStep);
-                }
+                Plan planStep = context.Plugins.TryGetFunction(pluginName, functionName, out ISKFunction? command) ?
+                    new Plan(command) :
+                    new Plan(node.InnerText);
+                planStep.PluginName = pluginName;
+
+                planStep.Parameters.Update(node.InnerText);
+                planStep.Outputs.Add($"markup.{functionName}.result");
+                plan.Outputs.Add($"markup.{functionName}.result");
+                plan.AddSteps(planStep);
             }
         }
 
         return plan;
     }
 }
-
 
 #region Utility Classes
 
@@ -267,15 +245,12 @@ public class XmlMarkup
         this.Document.LoadXml(response);
     }
 
-
     public XmlDocument Document { get; }
-
 
     public XmlNodeList SelectAllElements()
     {
         return this.Document.SelectNodes("//*")!;
     }
-
 
     public XmlNodeList SelectElements()
     {
@@ -283,14 +258,12 @@ public class XmlMarkup
     }
 }
 
-
 #pragma warning disable CA1815 // Override equals and operator equals on value types
 public struct XmlNodeInfo
 {
     public int StackDepth { get; set; }
     public XmlNode Parent { get; set; }
     public XmlNode Node { get; set; }
-
 
     public static implicit operator XmlNode(XmlNodeInfo info)
     {
@@ -310,7 +283,6 @@ public static class XmlEx
         }
 
         var childNodes = elt.ChildNodes;
-
         for (int i = 0, count = childNodes.Count; i < count; ++i)
         {
             if (childNodes[i]?.NodeType == XmlNodeType.Element)
@@ -322,7 +294,6 @@ public static class XmlEx
         return false;
     }
 
-
     /// <summary>
     ///     Walks the Markup DOM using an XPathNavigator, allowing recursive descent WITHOUT requiring a Stack Hit
     ///     This is safe for very large and highly nested documents.
@@ -333,14 +304,12 @@ public static class XmlEx
         return EnumerateNodes(nav!, maxStackDepth);
     }
 
-
     public static IEnumerable<XmlNodeInfo> EnumerateNodes(this XmlDocument doc, int maxStackDepth = 32)
     {
         var nav = doc.CreateNavigator();
         nav!.MoveToRoot();
         return EnumerateNodes(nav, maxStackDepth);
     }
-
 
     public static IEnumerable<XmlNodeInfo> EnumerateNodes(this XPathNavigator nav, int maxStackDepth = 32)
     {
@@ -349,11 +318,9 @@ public static class XmlEx
             StackDepth = 0
         };
         var hasChildren = nav.HasChildren;
-
         while (true)
         {
             info.Parent = (XmlNode)nav.UnderlyingObject!;
-
             if (hasChildren && info.StackDepth < maxStackDepth)
             {
                 nav.MoveToFirstChild();
@@ -362,11 +329,9 @@ public static class XmlEx
             else
             {
                 var hasParent = false;
-
                 while (hasParent = nav.MoveToParent())
                 {
                     info.StackDepth--;
-
                     if (info.StackDepth == 0)
                     {
                         hasParent = false;
@@ -389,7 +354,6 @@ public static class XmlEx
             {
                 info.Node = (XmlNode)nav.UnderlyingObject!;
                 yield return info;
-
                 if (hasChildren = nav.HasChildren)
                 {
                     break;

@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.IntegrationTests.Planners.StepwisePlanner;
-
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -10,20 +8,22 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
-using Microsoft.SemanticKernel.Planners;
+using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
-using TestSettings;
+using SemanticKernel.IntegrationTests.TestSettings;
 using xRetry;
 using Xunit;
 using Xunit.Abstractions;
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace SemanticKernel.IntegrationTests.Planners.Stepwise;
+#pragma warning restore IDE0130
 
 public sealed class StepwisePlannerTests : IDisposable
 {
     private readonly string _bingApiKey;
-
 
     public StepwisePlannerTests(ITestOutputHelper output)
     {
@@ -43,31 +43,29 @@ public sealed class StepwisePlannerTests : IDisposable
         this._bingApiKey = bingApiKeyCandidate;
     }
 
-
     [Theory]
     [InlineData(false, "Who is the current president of the United States? What is his current age divided by 2", "ExecutePlan", "StepwisePlanner")]
     [InlineData(true, "Who is the current president of the United States? What is his current age divided by 2", "ExecutePlan", "StepwisePlanner")]
-    public void CanCreateStepwisePlan(bool useChatModel, string prompt, string expectedFunction, string expectedPlugin)
+    public async Task CanCreateStepwisePlanAsync(bool useChatModel, string prompt, string expectedFunction, string expectedPlugin)
     {
         // Arrange
         bool useEmbeddings = false;
-        IKernel kernel = this.InitializeKernel(useEmbeddings, useChatModel);
+        Kernel kernel = this.InitializeKernel(useEmbeddings, useChatModel);
         var bingConnector = new BingConnector(this._bingApiKey);
         var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
-        kernel.ImportFunctions(webSearchEnginePlugin, "WebSearch");
-        kernel.ImportFunctions(new TimePlugin(), "time");
+        kernel.ImportPluginFromObject(webSearchEnginePlugin, "WebSearch");
+        kernel.ImportPluginFromObject<TimePlugin>("time");
 
-        var planner = new Microsoft.SemanticKernel.Planners.StepwisePlanner(kernel, new StepwisePlannerConfig() { MaxIterations = 10 });
+        var planner = new StepwisePlanner(kernel, new() { MaxIterations = 10 });
 
         // Act
-        var plan = planner.CreatePlan(prompt);
+        var plan = await planner.CreatePlanAsync(prompt);
 
         // Assert
         Assert.Empty(plan.Steps);
         Assert.Equal(expectedFunction, plan.Name);
         Assert.Contains(expectedPlugin, plan.PluginName, StringComparison.OrdinalIgnoreCase);
     }
-
 
     [RetryTheory(maxRetries: 3)]
     [InlineData(false, "What is the tallest mountain on Earth? How tall is it divided by 2", "Everest")]
@@ -78,16 +76,16 @@ public sealed class StepwisePlannerTests : IDisposable
     {
         // Arrange
         bool useEmbeddings = false;
-        IKernel kernel = this.InitializeKernel(useEmbeddings, useChatModel);
+        Kernel kernel = this.InitializeKernel(useEmbeddings, useChatModel);
         var bingConnector = new BingConnector(this._bingApiKey);
         var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
-        kernel.ImportFunctions(webSearchEnginePlugin, "WebSearch");
-        kernel.ImportFunctions(new TimePlugin(), "time");
+        kernel.ImportPluginFromObject(webSearchEnginePlugin, "WebSearch");
+        kernel.ImportPluginFromObject<TimePlugin>("time");
 
-        var planner = new Microsoft.SemanticKernel.Planners.StepwisePlanner(kernel, new StepwisePlannerConfig() { MaxIterations = 10 });
+        var planner = new StepwisePlanner(kernel, new() { MaxIterations = 10 });
 
         // Act
-        var plan = planner.CreatePlan(prompt);
+        var plan = await planner.CreatePlanAsync(prompt);
         var planResult = await plan.InvokeAsync(kernel);
         var result = planResult.GetValue<string>();
 
@@ -99,44 +97,42 @@ public sealed class StepwisePlannerTests : IDisposable
         Assert.True(int.Parse(iterations, System.Globalization.CultureInfo.InvariantCulture) <= 10);
     }
 
-
     [Fact]
     public async Task ExecutePlanFailsWithTooManyFunctionsAsync()
     {
         // Arrange
-        IKernel kernel = this.InitializeKernel();
+        Kernel kernel = this.InitializeKernel();
         var bingConnector = new BingConnector(this._bingApiKey);
         var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
-        kernel.ImportFunctions(webSearchEnginePlugin, "WebSearch");
-        kernel.ImportFunctions(new TextPlugin(), "text");
-        kernel.ImportFunctions(new ConversationSummaryPlugin(kernel), "ConversationSummary");
-        kernel.ImportFunctions(new MathPlugin(), "Math");
-        kernel.ImportFunctions(new FileIOPlugin(), "FileIO");
-        kernel.ImportFunctions(new HttpPlugin(), "Http");
+        kernel.ImportPluginFromObject(webSearchEnginePlugin, "WebSearch");
+        kernel.ImportPluginFromObject<TextPlugin>("text");
+        kernel.ImportPluginFromObject<ConversationSummaryPlugin>("ConversationSummary");
+        kernel.ImportPluginFromObject<MathPlugin>("Math");
+        kernel.ImportPluginFromObject<FileIOPlugin>("FileIO");
+        kernel.ImportPluginFromObject<HttpPlugin>("Http");
 
-        var planner = new Microsoft.SemanticKernel.Planners.StepwisePlanner(kernel, new() { MaxTokens = 1000 });
+        var planner = new StepwisePlanner(kernel, new() { MaxTokens = 1000 });
 
         // Act
-        var plan = planner.CreatePlan("I need to buy a new brush for my cat. Can you show me options?");
+        var plan = await planner.CreatePlanAsync("I need to buy a new brush for my cat. Can you show me options?");
 
         // Assert
         var ex = await Assert.ThrowsAsync<SKException>(async () => await kernel.RunAsync(plan));
         Assert.Equal("ChatHistory is too long to get a completion. Try reducing the available functions.", ex.Message);
     }
 
-
     [Fact]
     public async Task ExecutePlanSucceedsWithAlmostTooManyFunctionsAsync()
     {
         // Arrange
-        IKernel kernel = this.InitializeKernel();
+        Kernel kernel = this.InitializeKernel();
 
-        _ = await kernel.ImportOpenAIPluginFunctionsAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenAIFunctionExecutionParameters(enableDynamicOperationPayload: true));
+        _ = await kernel.ImportPluginFromOpenAIAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenAIFunctionExecutionParameters(enableDynamicOperationPayload: true));
 
-        var planner = new Microsoft.SemanticKernel.Planners.StepwisePlanner(kernel);
+        var planner = new StepwisePlanner(kernel);
 
         // Act
-        var plan = planner.CreatePlan("I need to buy a new brush for my cat. Can you show me options?");
+        var plan = await planner.CreatePlanAsync("I need to buy a new brush for my cat. Can you show me options?");
         var kernelResult = await kernel.RunAsync(plan);
         var result = kernelResult.GetValue<string>();
 
@@ -145,8 +141,7 @@ public sealed class StepwisePlannerTests : IDisposable
         Assert.DoesNotContain("Result not found, review 'stepsTaken' to see what happened", result, StringComparison.OrdinalIgnoreCase);
     }
 
-
-    private IKernel InitializeKernel(bool useEmbeddings = false, bool useChatModel = false)
+    private Kernel InitializeKernel(bool useEmbeddings = false, bool useChatModel = false)
     {
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
@@ -176,9 +171,9 @@ public sealed class StepwisePlannerTests : IDisposable
         if (useEmbeddings)
         {
             builder.WithAzureOpenAITextEmbeddingGenerationService(
-                deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
-                endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
-                apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
+                    deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
+                    endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
+                    apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
         }
 
         var kernel = builder.Build();
@@ -186,11 +181,9 @@ public sealed class StepwisePlannerTests : IDisposable
         return kernel;
     }
 
-
     private readonly ILoggerFactory _loggerFactory;
     private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
-
 
     public void Dispose()
     {
@@ -198,12 +191,10 @@ public sealed class StepwisePlannerTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
-
     ~StepwisePlannerTests()
     {
         this.Dispose(false);
     }
-
 
     private void Dispose(bool disposing)
     {

@@ -1,19 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.TemplateEngine;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Blocks;
-using Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Orchestration;
+using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
+namespace Microsoft.SemanticKernel.TemplateEngine;
 
 /// <summary>
 /// Given a prompt, that might contain references to variables and functions:
@@ -44,53 +43,49 @@ public sealed class KernelPromptTemplate : IPromptTemplate
         this._tokenizer = new TemplateTokenizer(this._loggerFactory);
     }
 
+    /// <inheritdoc/>
+    public IReadOnlyList<SKParameterMetadata> Parameters => this._parameters.Value;
 
     /// <inheritdoc/>
-    public IReadOnlyList<ParameterView> Parameters => this._parameters.Value;
-
-
-    /// <inheritdoc/>
-    public async Task<string> RenderAsync(SKContext executionContext, CancellationToken cancellationToken = default)
+    public async Task<string> RenderAsync(Kernel kernel, SKContext executionContext, CancellationToken cancellationToken = default)
     {
         return await this.RenderAsync(this._blocks.Value, executionContext, cancellationToken).ConfigureAwait(false);
     }
 
-
     #region private
-
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger _logger;
     private readonly string _templateString;
     private readonly PromptTemplateConfig _promptTemplateConfig;
     private readonly TemplateTokenizer _tokenizer;
-    private readonly Lazy<IReadOnlyList<ParameterView>> _parameters;
+    private readonly Lazy<IReadOnlyList<SKParameterMetadata>> _parameters;
     private readonly Lazy<IList<Block>> _blocks;
 
-
-    private List<ParameterView> InitParameters()
+    private List<SKParameterMetadata> InitParameters()
     {
         // Parameters from prompt template configuration
-        Dictionary<string, ParameterView> result = new(this._promptTemplateConfig.Input.Parameters.Count, StringComparer.OrdinalIgnoreCase);
-
+        Dictionary<string, SKParameterMetadata> result = new(this._promptTemplateConfig.Input.Parameters.Count, StringComparer.OrdinalIgnoreCase);
         foreach (var p in this._promptTemplateConfig.Input.Parameters)
         {
-            result[p.Name] = new ParameterView(p.Name, p.Description, p.DefaultValue);
+            result[p.Name] = new SKParameterMetadata(p.Name)
+            {
+                Description = p.Description,
+                DefaultValue = p.DefaultValue
+            };
         }
 
         // Parameters from the template
         var variableNames = this._blocks.Value.Where(block => block.Type == BlockTypes.Variable).Select(block => ((VarBlock)block).Name).ToList();
-
         foreach (var variableName in variableNames)
         {
             if (!string.IsNullOrEmpty(variableName) && !result.ContainsKey(variableName!))
             {
-                result.Add(variableName!, new ParameterView(variableName!));
+                result.Add(variableName!, new SKParameterMetadata(variableName!));
             }
         }
 
         return result.Values.ToList();
     }
-
 
     /// <summary>
     /// Given a prompt template string, extract all the blocks (text, variables, function calls)
@@ -117,7 +112,6 @@ public sealed class KernelPromptTemplate : IPromptTemplate
         return blocks;
     }
 
-
     /// <summary>
     /// Given a list of blocks render each block and compose the final result.
     /// </summary>
@@ -129,7 +123,6 @@ public sealed class KernelPromptTemplate : IPromptTemplate
     {
         this._logger.LogTrace("Rendering list of {0} blocks", blocks.Count);
         var tasks = new List<Task<string>>(blocks.Count);
-
         foreach (var block in blocks)
         {
             switch (block)
@@ -150,7 +143,6 @@ public sealed class KernelPromptTemplate : IPromptTemplate
         }
 
         var result = new StringBuilder();
-
         foreach (Task<string> t in tasks)
         {
             result.Append(await t.ConfigureAwait(false));
@@ -161,7 +153,6 @@ public sealed class KernelPromptTemplate : IPromptTemplate
 
         return result.ToString();
     }
-
 
     /// <summary>
     /// Given a list of blocks, render the Variable Blocks, replacing placeholders with the actual value in memory.
@@ -176,8 +167,5 @@ public sealed class KernelPromptTemplate : IPromptTemplate
             ? block
             : new TextBlock(((ITextRendering)block).Render(variables), this._loggerFactory)).ToList();
     }
-
     #endregion
-
-
 }

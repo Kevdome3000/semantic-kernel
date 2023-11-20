@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Planners.UnitTests.XunitHelpers;
-
 using Microsoft.Extensions.Logging;
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace Microsoft.SemanticKernel.Planning.UnitTests.XunitHelpers;
+#pragma warning restore IDE0130
 
 /// <summary>
 /// Basic logger printing to console
@@ -14,7 +15,6 @@ internal static class TestConsoleLogger
 
     internal static ILoggerFactory LoggerFactory => s_loggerFactory.Value;
     private static readonly Lazy<ILoggerFactory> s_loggerFactory = new(LogBuilder);
-
 
     private static ILoggerFactory LogBuilder()
     {
