@@ -7,7 +7,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using AzureSdk;
-using Microsoft.Extensions.Logging;
+using Extensions.Logging;
 using SemanticKernel.AI;
 using SemanticKernel.AI.TextCompletion;
 using Services;
@@ -35,13 +35,13 @@ public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
         ILoggerFactory? loggerFactory = null
     ) : base(modelId, apiKey, organization, httpClient, loggerFactory)
     {
-        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
-        this.AddAttribute(OrganizationKey, organization!);
+        AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        AddAttribute(OrganizationKey, organization!);
     }
 
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
+    public IReadOnlyDictionary<string, string> Attributes => InternalAttributes;
 
 
     /// <inheritdoc/>
@@ -50,8 +50,8 @@ public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
         AIRequestSettings? requestSettings,
         CancellationToken cancellationToken = default)
     {
-        this.LogActionDetails();
-        return this.InternalGetTextStreamingResultsAsync(text, requestSettings, cancellationToken);
+        LogActionDetails();
+        return InternalGetTextStreamingResultsAsync(text, requestSettings, cancellationToken);
     }
 
 
@@ -61,7 +61,7 @@ public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
         AIRequestSettings? requestSettings,
         CancellationToken cancellationToken = default)
     {
-        this.LogActionDetails();
-        return this.InternalGetTextResultsAsync(text, requestSettings, cancellationToken);
+        LogActionDetails();
+        return InternalGetTextResultsAsync(text, requestSettings, cancellationToken);
     }
 }

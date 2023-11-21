@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Reliability.Basic;
 using Microsoft.SemanticKernel.TemplateEngine;
@@ -66,7 +66,7 @@ public sealed class OpenAICompletionTests : IDisposable
         ISKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
 
         // Act
-        KernelResult actual = await target.RunAsync(prompt, plugins["ChatPlugin"]["Chat"]);
+        FunctionResult actual = await target.RunAsync(prompt, plugins["ChatPlugin"]["Chat"]);
 
         // Assert
         Assert.Contains(expectedAnswerContains, actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
@@ -87,7 +87,7 @@ public sealed class OpenAICompletionTests : IDisposable
         ISKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
 
         // Act
-        KernelResult actual = await target.RunAsync(prompt, plugins["ChatPlugin"]["Chat"]);
+        FunctionResult actual = await target.RunAsync(prompt, plugins["ChatPlugin"]["Chat"]);
 
         // Assert
         Assert.Contains(expectedAnswerContains, actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
@@ -137,7 +137,7 @@ public sealed class OpenAICompletionTests : IDisposable
         ISKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
 
         // Act
-        KernelResult actual = await target.RunAsync(prompt, plugins["ChatPlugin"]["Chat"]);
+        FunctionResult actual = await target.RunAsync(prompt, plugins["ChatPlugin"]["Chat"]);
 
         // Assert
         Assert.Contains(expectedAnswerContains, actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
@@ -306,7 +306,7 @@ public sealed class OpenAICompletionTests : IDisposable
         ISKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
 
         // Act
-        KernelResult actual = await target.RunAsync(prompt, plugins["ChatPlugin"]["Chat"]);
+        FunctionResult actual = await target.RunAsync(prompt, plugins["ChatPlugin"]["Chat"]);
 
         // Assert
         Assert.Contains(ExpectedAnswerContains, actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
@@ -324,7 +324,7 @@ public sealed class OpenAICompletionTests : IDisposable
         var prompt = "Where is the most famous fish market in Seattle, Washington, USA?";
 
         // Act
-        KernelResult actual = await target.InvokePromptAsync(prompt, new OpenAIRequestSettings() { MaxTokens = 150 });
+        FunctionResult actual = await target.InvokePromptAsync(prompt, new OpenAIRequestSettings() { MaxTokens = 150 });
 
         // Assert
         Assert.Contains("Pike Place", actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
@@ -342,7 +342,7 @@ public sealed class OpenAICompletionTests : IDisposable
         ISKPluginCollection plugin = TestHelpers.ImportSamplePlugins(target, "FunPlugin");
 
         // Act
-        KernelResult actual = await target.RunAsync(plugin["FunPlugin"]["Limerick"]);
+        FunctionResult actual = await target.RunAsync(plugin["FunPlugin"]["Limerick"]);
 
         // Assert
         Assert.Contains("Bob", actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
@@ -384,7 +384,7 @@ public sealed class OpenAICompletionTests : IDisposable
         // Act
         await Assert.ThrowsAsync<HttpOperationException>(() => target.RunAsync(defaultFunc));
 
-        KernelResult azureResult = await target.RunAsync(azureFunc);
+        FunctionResult azureResult = await target.RunAsync(azureFunc);
 
         // Assert
         Assert.Contains("Pike Place", azureResult.GetValue<string>(), StringComparison.OrdinalIgnoreCase);

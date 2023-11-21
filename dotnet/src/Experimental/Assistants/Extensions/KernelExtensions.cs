@@ -2,10 +2,7 @@
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 
-using Diagnostics;
-
-
-internal static class IKernelExtensions
+internal static class KernelExtensions
 {
     /// <summary>
     /// Retrieve a kernel function based on the tool name.
@@ -16,7 +13,7 @@ internal static class IKernelExtensions
         return nameParts.Length switch
         {
             2 => kernel.Plugins.GetFunction(nameParts[0], nameParts[1]),
-            _ => throw new SKException($"Unknown tool: {toolName}"),
+            _ => throw new SKException($"Unknown tool: {toolName}")
         };
     }
 }

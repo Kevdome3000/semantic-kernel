@@ -17,7 +17,7 @@ using Azure.Search.Documents;
 using Azure.Search.Documents.Indexes;
 using Azure.Search.Documents.Indexes.Models;
 using Azure.Search.Documents.Models;
-using Diagnostics;
+using Http;
 using SemanticKernel.Memory;
 
 
@@ -446,8 +446,7 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
         {
             Diagnostics =
             {
-                IsTelemetryEnabled = Telemetry.IsTelemetryEnabled,
-                ApplicationId = Telemetry.HttpUserAgent,
+                ApplicationId = HttpHeaderValues.UserAgent,
             },
         };
     }

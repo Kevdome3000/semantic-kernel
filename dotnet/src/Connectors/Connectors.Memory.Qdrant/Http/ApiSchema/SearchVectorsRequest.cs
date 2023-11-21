@@ -1,14 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
+
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
 
-internal sealed class SearchVectorsRequest : IValidatable
+internal sealed class SearchVectorsRequest
 {
     [JsonPropertyName("vector")]
     public ReadOnlyMemory<float> StartingVector { get; set; }
@@ -31,15 +31,18 @@ internal sealed class SearchVectorsRequest : IValidatable
     [JsonPropertyName("score_threshold")]
     public double ScoreThreshold { get; set; } = -1;
 
+
     public static SearchVectorsRequest Create(string collectionName)
     {
         return new SearchVectorsRequest(collectionName);
     }
 
+
     public static SearchVectorsRequest Create(string collectionName, int vectorSize)
     {
         return new SearchVectorsRequest(collectionName).SimilarTo(new float[vectorSize]);
     }
+
 
     public SearchVectorsRequest SimilarTo(ReadOnlyMemory<float> vector)
     {
@@ -47,12 +50,14 @@ internal sealed class SearchVectorsRequest : IValidatable
         return this;
     }
 
+
     public SearchVectorsRequest HavingExternalId(string id)
     {
         Verify.NotNull(id, "External ID is NULL");
         this.Filters.ValueMustMatch("id", id);
         return this;
     }
+
 
     public SearchVectorsRequest HavingTags(IEnumerable<string>? tags)
     {
@@ -69,11 +74,13 @@ internal sealed class SearchVectorsRequest : IValidatable
         return this;
     }
 
+
     public SearchVectorsRequest WithScoreThreshold(double threshold)
     {
         this.ScoreThreshold = threshold;
         return this;
     }
+
 
     public SearchVectorsRequest IncludePayLoad()
     {
@@ -81,11 +88,13 @@ internal sealed class SearchVectorsRequest : IValidatable
         return this;
     }
 
+
     public SearchVectorsRequest IncludeVectorData(bool withVector)
     {
         this.WithVector = withVector;
         return this;
     }
+
 
     public SearchVectorsRequest FromPosition(int offset)
     {
@@ -93,51 +102,49 @@ internal sealed class SearchVectorsRequest : IValidatable
         return this;
     }
 
+
     public SearchVectorsRequest Take(int count)
     {
         this.Limit = count;
         return this;
     }
 
+
     public SearchVectorsRequest TakeFirst()
     {
         return this.FromPosition(0).Take(1);
     }
 
-    public void Validate()
-    {
-        Verify.NotNull(this.StartingVector, "Missing target, either provide a vector or a vector size");
-        Verify.NotNullOrEmpty(this._collectionName, "The collection name is empty");
-        Verify.True(this.Limit > 0, "The number of vectors must be greater than zero");
-        this.Filters.Validate();
-    }
 
     public HttpRequestMessage Build()
     {
-        this.Validate();
+        Verify.NotNull(this.StartingVector);
+        Verify.NotNullOrWhiteSpace(this._collectionName);
+        Verify.True(this.Limit > 0, "The number of vectors must be greater than zero");
+        this.Filters.Validate();
+
         return HttpRequest.CreatePostRequest(
             $"collections/{this._collectionName}/points/search",
             payload: this);
     }
 
-    internal sealed class Filter : IValidatable
+
+    internal sealed class Filter
     {
-        internal sealed class Match : IValidatable
+        internal sealed class Match
         {
             [JsonPropertyName("value")]
             public object Value { get; set; }
+
 
             public Match()
             {
                 this.Value = string.Empty;
             }
-
-            public void Validate()
-            {
-            }
         }
 
-        internal sealed class Must : IValidatable
+
+        internal sealed class Must
         {
             [JsonPropertyName("key")]
             public string Key { get; set; }
@@ -145,17 +152,20 @@ internal sealed class SearchVectorsRequest : IValidatable
             [JsonPropertyName("match")]
             public Match Match { get; set; }
 
+
             public Must()
             {
                 this.Match = new();
                 this.Key = string.Empty;
             }
 
+
             public Must(string key, object value) : this()
             {
                 this.Key = key;
                 this.Match.Value = value;
             }
+
 
             public void Validate()
             {
@@ -164,13 +174,16 @@ internal sealed class SearchVectorsRequest : IValidatable
             }
         }
 
+
         [JsonPropertyName("must")]
         public List<Must> Conditions { get; set; }
+
 
         internal Filter()
         {
             this.Conditions = new();
         }
+
 
         internal Filter ValueMustMatch(string key, object value)
         {
@@ -178,9 +191,11 @@ internal sealed class SearchVectorsRequest : IValidatable
             return this;
         }
 
+
         public void Validate()
         {
             Verify.NotNull(this.Conditions, "Filter conditions are NULL");
+
             foreach (var x in this.Conditions)
             {
                 x.Validate();
@@ -188,9 +203,11 @@ internal sealed class SearchVectorsRequest : IValidatable
         }
     }
 
+
     #region private ================================================================================
 
     private readonly string _collectionName;
+
 
     private SearchVectorsRequest(string collectionName)
     {
@@ -204,4 +221,6 @@ internal sealed class SearchVectorsRequest : IValidatable
     }
 
     #endregion
+
+
 }

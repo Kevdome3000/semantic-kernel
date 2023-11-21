@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Azure.Core;
 using AzureSdk;
-using Microsoft.Extensions.Logging;
+using Extensions.Logging;
 using SemanticKernel.AI;
 using SemanticKernel.AI.TextCompletion;
 using Services;
@@ -38,7 +38,7 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null) : base(deploymentName, endpoint, apiKey, httpClient, loggerFactory)
     {
-        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
     }
 
 
@@ -59,7 +59,7 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null) : base(deploymentName, endpoint, credential, httpClient, loggerFactory)
     {
-        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
     }
 
 
@@ -76,12 +76,12 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
         string? modelId = null,
         ILoggerFactory? loggerFactory = null) : base(deploymentName, openAIClient, loggerFactory)
     {
-        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
     }
 
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
+    public IReadOnlyDictionary<string, string> Attributes => InternalAttributes;
 
 
     /// <inheritdoc/>
@@ -90,8 +90,8 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
         AIRequestSettings? requestSettings,
         CancellationToken cancellationToken = default)
     {
-        this.LogActionDetails();
-        return this.InternalGetTextStreamingResultsAsync(text, requestSettings, cancellationToken);
+        LogActionDetails();
+        return InternalGetTextStreamingResultsAsync(text, requestSettings, cancellationToken);
     }
 
 
@@ -101,7 +101,7 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
         AIRequestSettings? requestSettings,
         CancellationToken cancellationToken = default)
     {
-        this.LogActionDetails();
-        return this.InternalGetTextResultsAsync(text, requestSettings, cancellationToken);
+        LogActionDetails();
+        return InternalGetTextResultsAsync(text, requestSettings, cancellationToken);
     }
 }

@@ -8,8 +8,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Diagnostics;
-using Microsoft.Extensions.Logging;
+using Extensions.Logging;
 using SemanticKernel.Memory;
 
 

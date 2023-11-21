@@ -37,10 +37,10 @@ internal sealed class ChatMessage : IChatMessage
         var content = (IEnumerable<ThreadMessageModel.ContentModel>)model.Content;
         var text = content.First().Text?.Value ?? string.Empty;
 
-        this.Id = model.Id;
-        this.AssistantId = string.IsNullOrWhiteSpace(model.AssistantId) ? null : model.AssistantId;
-        this.Role = model.Role;
-        this.Content = text;
-        this.Properties = new ReadOnlyDictionary<string, object>(model.Metadata);
+        Id = model.Id;
+        AssistantId = string.IsNullOrWhiteSpace(model.AssistantId) ? null : model.AssistantId;
+        Role = model.Role;
+        Content = text;
+        Properties = new ReadOnlyDictionary<string, object>(model.Metadata);
     }
 }

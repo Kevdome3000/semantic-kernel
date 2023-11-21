@@ -46,11 +46,7 @@ internal static class ChatPromptParser
     /// Checks if <see cref="PromptNode"/> is valid chat message.
     /// </summary>
     /// <param name="node">Instance of <see cref="PromptNode"/>.</param>
-    private static bool IsValidChatMessage(PromptNode node)
-    {
-        return
-            node.TagName.Equals(MessageTagName, StringComparison.OrdinalIgnoreCase) &&
-            node.Attributes.ContainsKey(RoleAttributeName) &&
-            node.Content is not null;
-    }
+    private static bool IsValidChatMessage(PromptNode node) => node.TagName.Equals(MessageTagName, StringComparison.OrdinalIgnoreCase) &&
+                                                               node.Attributes.ContainsKey(RoleAttributeName) &&
+                                                               node.Content is not null;
 }

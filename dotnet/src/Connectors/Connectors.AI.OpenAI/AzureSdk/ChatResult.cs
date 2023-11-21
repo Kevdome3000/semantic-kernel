@@ -7,7 +7,6 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
-using Diagnostics;
 using Orchestration;
 using SemanticKernel.AI.ChatCompletion;
 using SemanticKernel.AI.TextCompletion;

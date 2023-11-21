@@ -10,14 +10,10 @@ namespace System.Runtime.CompilerServices;
 #pragma warning restore IDE0130
 
 #if !NETCOREAPP
-
-[AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = false)]
+[AttributeUsage(AttributeTargets.Parameter)]
 internal sealed class CallerArgumentExpressionAttribute : Attribute
 {
-    public CallerArgumentExpressionAttribute(string parameterName)
-    {
-        this.ParameterName = parameterName;
-    }
+    public CallerArgumentExpressionAttribute(string parameterName) => ParameterName = parameterName;
 
     public string ParameterName { get; }
 }

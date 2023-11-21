@@ -6,7 +6,6 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 using System;
 using System.Linq;
 using Abstractions;
-using Diagnostics;
 
 #pragma warning restore IDE0130
 

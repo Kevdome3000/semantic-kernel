@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.AI.Embeddings;
+
 using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Diagnostics;
 
-namespace Microsoft.SemanticKernel.AI.Embeddings;
 
 /// <summary>
 /// Provides a collection of static methods for operating on <see cref="IEmbeddingGeneration{TValue,TEmbedding}"/> objects.
@@ -22,8 +22,7 @@ public static class EmbeddingGenerationExtensions
     /// <param name="value">A value from which an embedding will be generated.</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>A list of embedding structs representing the input <paramref name="value"/>.</returns>
-    public static async Task<ReadOnlyMemory<TEmbedding>> GenerateEmbeddingAsync<TValue, TEmbedding>
-        (this IEmbeddingGeneration<TValue, TEmbedding> generator, TValue value, CancellationToken cancellationToken = default)
+    public static async Task<ReadOnlyMemory<TEmbedding>> GenerateEmbeddingAsync<TValue, TEmbedding>(this IEmbeddingGeneration<TValue, TEmbedding> generator, TValue value, CancellationToken cancellationToken = default)
         where TEmbedding : unmanaged
     {
         Verify.NotNull(generator);

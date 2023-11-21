@@ -9,11 +9,11 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Diagnostics;
 using global::Kusto.Cloud.Platform.Utils;
 using global::Kusto.Data;
 using global::Kusto.Data.Common;
 using global::Kusto.Data.Net.Client;
+using Http;
 using SemanticKernel.Memory;
 
 
@@ -345,7 +345,7 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
 
     private static ClientRequestProperties GetClientRequestProperties() => new()
     {
-        Application = Telemetry.HttpUserAgent,
+        Application = HttpHeaderValues.UserAgent,
     };
 
 

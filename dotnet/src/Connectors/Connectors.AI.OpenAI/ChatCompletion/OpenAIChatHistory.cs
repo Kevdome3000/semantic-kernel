@@ -19,7 +19,7 @@ public class OpenAIChatHistory : ChatHistory
     {
         if (!string.IsNullOrWhiteSpace(systemMessage))
         {
-            this.AddSystemMessage(systemMessage!);
+            AddSystemMessage(systemMessage!);
         }
     }
 
@@ -32,7 +32,7 @@ public class OpenAIChatHistory : ChatHistory
     {
         chatHistory.ForEach(message =>
         {
-            this.AddMessage(message.Role, message.Content);
+            AddMessage(message.Role, message.Content);
         });
     }
 }

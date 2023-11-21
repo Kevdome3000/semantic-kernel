@@ -1,13 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Services;
+
 
 // Use base namespace for better discoverability and to avoid conflicts with other extensions.
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel;
+
+using AI.ChatCompletion;
+using Services;
+
 #pragma warning restore IDE0130 // Namespace does not match folder structure
+
 
 /// <summary>
 /// Provides extension methods for working with chat completion services.
@@ -25,7 +28,8 @@ public static class ChatCompletionServiceExtensions
     public static IChatCompletion GetChatCompletionService(
         this IAIServiceProvider services,
         string? serviceId = null) => services.GetService<IChatCompletion>(serviceId)
-            ?? throw new SKException("Chat completion service not found");
+                                     ?? throw new SKException("Chat completion service not found");
+
 
     /// <summary>
     /// Returns true if a <see cref="IChatCompletion"/> exist with the specified ID.
@@ -36,5 +40,5 @@ public static class ChatCompletionServiceExtensions
     public static bool HasChatCompletionService(
         this IAIServiceProvider services,
         string? serviceId = null)
-            => services.TryGetService<IChatCompletion>(serviceId, out _);
+        => services.TryGetService<IChatCompletion>(serviceId, out _);
 }

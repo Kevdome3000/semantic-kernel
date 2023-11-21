@@ -84,14 +84,14 @@ public class OpenAIRequestSettings : AIRequestSettings
     [JsonPropertyName("chat_system_prompt")]
     public string ChatSystemPrompt
     {
-        get => this._chatSystemPrompt;
+        get => _chatSystemPrompt;
         set
         {
             if (string.IsNullOrEmpty(value))
             {
                 value = DefaultChatSystemPrompt;
             }
-            this._chatSystemPrompt = value;
+            _chatSystemPrompt = value;
         }
     }
 

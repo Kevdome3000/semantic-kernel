@@ -34,7 +34,7 @@ internal static partial class OpenAIRestExtensions
             new
             {
                 role = AuthorRole.User.Label,
-                content,
+                content
             };
 
         return
@@ -57,13 +57,9 @@ internal static partial class OpenAIRestExtensions
         this OpenAIRestContext context,
         string threadId,
         string messageId,
-        CancellationToken cancellationToken = default)
-    {
-        return
-            context.ExecuteGetAsync<ThreadMessageModel>(
-                GetMessagesUrl(threadId, messageId),
-                cancellationToken);
-    }
+        CancellationToken cancellationToken = default) => context.ExecuteGetAsync<ThreadMessageModel>(
+        GetMessagesUrl(threadId, messageId),
+        cancellationToken);
 
 
     /// <summary>
@@ -76,13 +72,9 @@ internal static partial class OpenAIRestExtensions
     public static Task<ThreadMessageListModel> GetMessagesAsync(
         this OpenAIRestContext context,
         string threadId,
-        CancellationToken cancellationToken = default)
-    {
-        return
-            context.ExecuteGetAsync<ThreadMessageListModel>(
-                GetMessagesUrl(threadId),
-                cancellationToken);
-    }
+        CancellationToken cancellationToken = default) => context.ExecuteGetAsync<ThreadMessageListModel>(
+        GetMessagesUrl(threadId),
+        cancellationToken);
 
 
     /// <summary>
@@ -112,14 +104,7 @@ internal static partial class OpenAIRestExtensions
     }
 
 
-    internal static string GetMessagesUrl(string threadId)
-    {
-        return $"{BaseThreadUrl}/{threadId}/messages";
-    }
+    internal static string GetMessagesUrl(string threadId) => $"{BaseThreadUrl}/{threadId}/messages";
 
-
-    internal static string GetMessagesUrl(string threadId, string messageId)
-    {
-        return $"{BaseThreadUrl}/{threadId}/messages/{messageId}";
-    }
+    internal static string GetMessagesUrl(string threadId, string messageId) => $"{BaseThreadUrl}/{threadId}/messages/{messageId}";
 }

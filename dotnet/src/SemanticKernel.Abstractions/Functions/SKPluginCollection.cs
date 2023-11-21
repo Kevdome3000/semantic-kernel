@@ -12,7 +12,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Diagnostics;
 
 
 /// <summary>Provides a collection of <see cref="ISKPlugin"/>s.</summary>

@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
+
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Text;
+using Text;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 
 /// <summary>
 /// A record structure used by Qdrant that contains an embedding and metadata.
@@ -39,6 +39,7 @@ public class QdrantVectorRecord
     [JsonPropertyName("tags")]
     public List<string>? Tags { get; }
 
+
     /// <summary>
     /// Constructor.
     /// </summary>
@@ -54,6 +55,7 @@ public class QdrantVectorRecord
         this.Tags = tags;
     }
 
+
     /// <summary>
     /// Serializes the metadata to JSON.
     /// </summary>
@@ -62,6 +64,7 @@ public class QdrantVectorRecord
     {
         return JsonSerializer.Serialize(this.Payload);
     }
+
 
     /// <summary>
     /// Deserializes the metadata from JSON.
@@ -75,6 +78,7 @@ public class QdrantVectorRecord
     public static QdrantVectorRecord FromJsonMetadata(string pointId, ReadOnlyMemory<float> embedding, string json, List<string>? tags = null)
     {
         var payload = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
+
         if (payload != null)
         {
             return new QdrantVectorRecord(pointId, embedding, payload, tags);

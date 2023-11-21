@@ -5,10 +5,11 @@ namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Diagnostics;
+using Http;
 using SemanticKernel.AI;
 using SemanticKernel.AI.TextCompletion;
 using Services;
@@ -77,13 +78,15 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
 
 
     /// <inheritdoc/>
-    [Obsolete("Streaming capability is not supported, use GetCompletionsAsync instead")]
-    public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
+    async IAsyncEnumerable<ITextStreamingResult> ITextCompletion.GetStreamingCompletionsAsync(
         string text,
-        AIRequestSettings? requestSettings = null,
-        CancellationToken cancellationToken = default)
+        AIRequestSettings? requestSettings,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        throw new NotSupportedException("Streaming capability is not supported");
+        foreach (TextCompletionResult result in await this.ExecuteGetCompletionsAsync(text, cancellationToken).ConfigureAwait(false))
+        {
+            yield return result;
+        }
     }
 
 
@@ -99,7 +102,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
 
     #region private ================================================================================
 
-    private async Task<IReadOnlyList<ITextResult>> ExecuteGetCompletionsAsync(string text, CancellationToken cancellationToken = default)
+    private async Task<IReadOnlyList<TextCompletionResult>> ExecuteGetCompletionsAsync(string text, CancellationToken cancellationToken = default)
     {
         var completionRequest = new TextCompletionRequest
         {
@@ -108,7 +111,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
 
         using var httpRequestMessage = HttpRequest.CreatePostRequest(this.GetRequestUri(), completionRequest);
 
-        httpRequestMessage.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
+        httpRequestMessage.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
 
         if (!string.IsNullOrEmpty(this._apiKey))
         {

@@ -2,9 +2,6 @@
 
 namespace Microsoft.SemanticKernel.TemplateEngine;
 
-using Diagnostics;
-
-
 /// <summary>
 /// Implementation of <see cref="IPromptTemplateFactory"/> which aggregates multiple prompt template factories.
 /// </summary>

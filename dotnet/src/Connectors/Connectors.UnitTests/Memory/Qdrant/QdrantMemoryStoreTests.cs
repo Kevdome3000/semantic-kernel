@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Connectors.UnitTests.Memory.Qdrant;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,12 +9,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Memory.Qdrant;
 
 /// <summary>
 /// Tests for <see cref="QdrantMemoryStore"/> collection and upsert operations.
@@ -33,12 +34,14 @@ public class QdrantMemoryStoreTests
     private readonly ReadOnlyMemory<float> _embedding3 = new float[] { 3, 3, 3 };
     private readonly Mock<ILoggerFactory> _mockLoggerFactory = new();
 
+
     public QdrantMemoryStoreTests()
     {
         this._mockLoggerFactory
             .Setup(f => f.CreateLogger(It.IsAny<string>()))
             .Returns(new Mock<ILogger>().Object);
     }
+
 
     [Fact]
     public async Task ItCreatesNewCollectionAsync()
@@ -63,6 +66,7 @@ public class QdrantMemoryStoreTests
             .Verify<Task>(x => x.CreateCollectionAsync("test", It.IsAny<CancellationToken>()), Times.Once());
     }
 
+
     [Fact]
     public async Task ItWillNotOverwriteExistingCollectionAsync()
     {
@@ -86,6 +90,7 @@ public class QdrantMemoryStoreTests
             .Verify<Task>(x => x.CreateCollectionAsync("test", It.IsAny<CancellationToken>()), Times.Never());
     }
 
+
     [Fact]
     public async Task ItListsCollectionsAsync()
     {
@@ -107,6 +112,7 @@ public class QdrantMemoryStoreTests
         Assert.Equal("test2", collections[1]);
     }
 
+
     [Fact]
     public async Task ItDeletesCollectionAsync()
     {
@@ -126,6 +132,7 @@ public class QdrantMemoryStoreTests
         // Assert
         mockQdrantClient.Verify<Task>(x => x.DeleteCollectionAsync("test", It.IsAny<CancellationToken>()), Times.Once());
     }
+
 
     [Fact]
     public async Task ItThrowsIfUpsertRequestFailsAsync()
@@ -157,6 +164,7 @@ public class QdrantMemoryStoreTests
         // Assert
         await Assert.ThrowsAsync<HttpOperationException>(() => vectorStore.UpsertAsync("test_collection", memoryRecord));
     }
+
 
     [Fact]
     public async Task InsertIntoNonExistentCollectionDoesNotCallCreateCollectionAsync()
@@ -192,6 +200,7 @@ public class QdrantMemoryStoreTests
             .Verify<Task<bool>>(x => x.DoesCollectionExistAsync("test_collection", It.IsAny<CancellationToken>()), Times.Never());
         mockQdrantClient.Verify<Task>(x => x.CreateCollectionAsync("test_collection", It.IsAny<CancellationToken>()), Times.Never());
     }
+
 
     [Fact]
     public async Task ItUpdatesExistingDataEntryBasedOnMetadataIdAsync()
@@ -242,6 +251,7 @@ public class QdrantMemoryStoreTests
         Assert.True(Guid.TryParse(guidString, out _));
         Assert.Equal(key, guidString);
     }
+
 
     [Fact]
     public async Task ItGeneratesIdsForQdrantUntilUniqueIdIsFoundAsync()
@@ -296,6 +306,7 @@ public class QdrantMemoryStoreTests
         Assert.True(Guid.TryParse(guidString, out _));
     }
 
+
     [Fact]
     public async Task ItUpdatesExistingDataEntryBasedOnKnownDatabaseKeyAsync()
     {
@@ -345,6 +356,7 @@ public class QdrantMemoryStoreTests
         Assert.True(Guid.TryParse(guidString, out _));
         Assert.Equal(memoryRecord.Key, guidString);
     }
+
 
     [Fact]
     public async Task ItCanBatchUpsertAsync()

@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
+
 using System;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 
 /// <summary>
 /// Represents result of a chat completion with data.
@@ -26,6 +27,7 @@ public class ChatWithDataModelResult
     /// </summary>
     public string? ToolContent { get; set; }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatWithDataModelResult"/> class.
     /// </summary>
@@ -33,7 +35,7 @@ public class ChatWithDataModelResult
     /// <param name="created">The first timestamp associated with generation activity for chat completion with data response.</param>
     public ChatWithDataModelResult(string id, DateTimeOffset created)
     {
-        this.Id = id;
-        this.Created = created;
+        Id = id;
+        Created = created;
     }
 }

@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Functions.OpenAPI.Builders.Serialization;
+
 using System;
 using System.Text.Json.Nodes;
 using System.Web;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
+using Model;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.Builders.Serialization;
 
 /// <summary>
 /// Serializes REST API operation parameter of the 'Form' style.
@@ -42,6 +42,7 @@ internal static class FormStyleParameterSerializer
         // Handling parameters of primitive - integer, string, etc type.
         return $"{parameter.Name}={HttpUtility.UrlEncode(argument)}";
     }
+
 
     /// <summary>
     /// Serializes an array-type parameter.

@@ -55,10 +55,10 @@ public static class Example60_AdvancedNativeFunctions
 
 
         [SKFunction, SKName("Function1")]
-        public async Task<MyCustomType> Function1Async(SKContext context)
+        public async Task<MyCustomType> Function1Async(Kernel kernel)
         {
             // Execute another function
-            var result = await context.Runner.RunAsync(PluginName, "Function2");
+            var result = await kernel.RunAsync(PluginName, "Function2");
             var value = result?.GetValue<MyCustomType>()!;
 
             return new MyCustomType

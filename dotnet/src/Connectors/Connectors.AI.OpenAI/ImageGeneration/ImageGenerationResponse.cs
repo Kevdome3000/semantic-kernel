@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
+
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 
 /// <summary>
 /// Image generation response
@@ -29,6 +30,7 @@ public class ImageGenerationResponse
         [JsonPropertyName("b64_json")]
         public string AsBase64 { get; set; } = string.Empty;
     }
+
 
     /// <summary>
     /// List of possible image generations

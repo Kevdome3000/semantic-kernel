@@ -3,7 +3,6 @@
 namespace Microsoft.SemanticKernel.Reliability.Polly;
 
 using System.Net.Http;
-using Diagnostics;
 using Extensions.Logging;
 using global::Polly;
 using Http;

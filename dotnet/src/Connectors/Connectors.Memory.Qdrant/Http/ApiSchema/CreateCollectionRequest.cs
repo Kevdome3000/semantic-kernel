@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
+
 using System;
 using System.Net.Http;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
 
 internal sealed class CreateCollectionRequest
 {
@@ -21,10 +21,12 @@ internal sealed class CreateCollectionRequest
     [JsonPropertyName("vectors")]
     public VectorSettings Settings { get; set; }
 
+
     public static CreateCollectionRequest Create(string collectionName, int vectorSize, QdrantDistanceType distanceType)
     {
         return new CreateCollectionRequest(collectionName, vectorSize, distanceType);
     }
+
 
     public HttpRequestMessage Build()
     {
@@ -33,7 +35,8 @@ internal sealed class CreateCollectionRequest
             payload: this);
     }
 
-    internal sealed class VectorSettings : IValidatable
+
+    internal sealed class VectorSettings
     {
         [JsonPropertyName("size")]
         public int? Size { get; set; }
@@ -47,20 +50,13 @@ internal sealed class CreateCollectionRequest
         [JsonIgnore]
         private QdrantDistanceType DistanceType { get; set; }
 
-        public void Validate()
-        {
-            Verify.True(this.Size > 0, "The vector size must be greater than zero");
-            Verify.NotNull(this.DistanceType, "The distance type has not been defined");
-            Verify.True(
-                this.DistanceType is QdrantDistanceType.Cosine or QdrantDistanceType.DotProduct or QdrantDistanceType.Euclidean or QdrantDistanceType.Manhattan,
-                $"Distance type {this.DistanceType:G} not supported.");
-        }
 
         public VectorSettings(int vectorSize, QdrantDistanceType distanceType)
         {
             this.Size = vectorSize;
             this.DistanceType = distanceType;
         }
+
 
         private static string DistanceTypeToString(QdrantDistanceType x)
         {
@@ -75,6 +71,7 @@ internal sealed class CreateCollectionRequest
         }
     }
 
+
     #region private ================================================================================
 
     private CreateCollectionRequest(string collectionName, int vectorSize, QdrantDistanceType distanceType)
@@ -84,4 +81,6 @@ internal sealed class CreateCollectionRequest
     }
 
     #endregion
+
+
 }

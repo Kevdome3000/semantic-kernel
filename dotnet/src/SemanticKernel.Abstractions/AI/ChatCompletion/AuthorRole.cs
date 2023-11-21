@@ -3,10 +3,8 @@
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
 using System;
-using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
-using Diagnostics;
 
 
 /// <summary>
@@ -85,13 +83,11 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
 
 
     /// <inheritdoc/>
-    [EditorBrowsable(EditorBrowsableState.Never)]
     public override bool Equals([NotNullWhen(true)] object? obj)
         => obj is AuthorRole otherRole && this == otherRole;
 
 
     /// <inheritdoc/>
-    [EditorBrowsable(EditorBrowsableState.Never)]
     public override int GetHashCode()
         => this.Label.GetHashCode();
 

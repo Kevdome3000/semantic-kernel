@@ -6,7 +6,6 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Connectors.AI.OpenAI.ChatCompletion;
-using Diagnostics;
 using Extensions;
 using Internal;
 using Models;
@@ -86,16 +85,12 @@ public partial class AssistantBuilder
         string model,
         string instructions,
         string? name = null,
-        string? description = null)
-    {
-        return
-            await new AssistantBuilder()
-                .WithOpenAIChatCompletionService(model, apiKey)
-                .WithInstructions(instructions)
-                .WithName(name)
-                .WithDescription(description)
-                .BuildAsync().ConfigureAwait(false);
-    }
+        string? description = null) => await new AssistantBuilder()
+        .WithOpenAIChatCompletionService(model, apiKey)
+        .WithInstructions(instructions)
+        .WithName(name)
+        .WithDescription(description)
+        .BuildAsync().ConfigureAwait(false);
 
 
     /// <summary>

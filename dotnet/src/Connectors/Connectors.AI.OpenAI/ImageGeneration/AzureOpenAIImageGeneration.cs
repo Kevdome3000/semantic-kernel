@@ -8,11 +8,12 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Core;
 using CustomClient;
-using Diagnostics;
-using Microsoft.Extensions.Logging;
+using Extensions.Logging;
 using SemanticKernel.AI.ImageGeneration;
 using Services;
+using Text;
 
 
 /// <summary>
@@ -67,11 +68,11 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         Verify.NotNullOrWhiteSpace(apiKey);
         Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
 
-        this._endpoint = endpoint;
-        this._apiKey = apiKey;
-        this._maxRetryCount = maxRetryCount;
-        this._apiVersion = apiVersion;
-        this.AddAttribute(IAIServiceExtensions.EndpointKey, endpoint);
+        _endpoint = endpoint;
+        _apiKey = apiKey;
+        _maxRetryCount = maxRetryCount;
+        _apiVersion = apiVersion;
+        AddAttribute(IAIServiceExtensions.EndpointKey, endpoint);
     }
 
 
@@ -97,24 +98,24 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         endpoint = !string.IsNullOrEmpty(endpoint) ? endpoint! : httpClient.BaseAddress!.AbsoluteUri;
         Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
 
-        this._endpoint = endpoint;
-        this._apiKey = apiKey;
-        this._maxRetryCount = maxRetryCount;
-        this._apiVersion = apiVersion;
-        this.AddAttribute(IAIServiceExtensions.EndpointKey, endpoint);
-        this.AddAttribute(IAIServiceExtensions.ApiVersionKey, apiVersion);
+        _endpoint = endpoint;
+        _apiKey = apiKey;
+        _maxRetryCount = maxRetryCount;
+        _apiVersion = apiVersion;
+        AddAttribute(IAIServiceExtensions.EndpointKey, endpoint);
+        AddAttribute(IAIServiceExtensions.ApiVersionKey, apiVersion);
     }
 
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
+    public IReadOnlyDictionary<string, string> Attributes => InternalAttributes;
 
 
     /// <inheritdoc/>
     public async Task<string> GenerateImageAsync(string description, int width, int height, CancellationToken cancellationToken = default)
     {
-        var operationId = await this.StartImageGenerationAsync(description, width, height, cancellationToken).ConfigureAwait(false);
-        var result = await this.GetImageGenerationResultAsync(operationId, cancellationToken).ConfigureAwait(false);
+        var operationId = await StartImageGenerationAsync(description, width, height, cancellationToken).ConfigureAwait(false);
+        var result = await GetImageGenerationResultAsync(operationId, cancellationToken).ConfigureAwait(false);
 
         if (result.Result is null)
         {
@@ -142,20 +143,20 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
     {
         Verify.NotNull(description);
 
-        if (width != height || (width != 256 && width != 512 && width != 1024))
+        if (width != height || width != 256 && width != 512 && width != 1024)
         {
             throw new ArgumentOutOfRangeException(nameof(width), width, "OpenAI can generate only square images of size 256x256, 512x512, or 1024x1024.");
         }
 
-        var requestBody = Microsoft.SemanticKernel.Text.Json.Serialize(new ImageGenerationRequest
+        var requestBody = Json.Serialize(new ImageGenerationRequest
         {
             Prompt = description,
             Size = $"{width}x{height}",
             Count = 1
         });
 
-        var uri = this.GetUri(GenerationImageOperation);
-        var result = await this.ExecutePostRequestAsync<AzureOpenAIImageGenerationResponse>(uri, requestBody, cancellationToken).ConfigureAwait(false);
+        var uri = GetUri(GenerationImageOperation);
+        var result = await ExecutePostRequestAsync<AzureOpenAIImageGenerationResponse>(uri, requestBody, cancellationToken).ConfigureAwait(false);
 
         if (result == null || string.IsNullOrWhiteSpace(result.Id))
         {
@@ -174,26 +175,27 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
     /// <returns></returns>
     private async Task<AzureOpenAIImageGenerationResponse> GetImageGenerationResultAsync(string operationId, CancellationToken cancellationToken = default)
     {
-        var operationLocation = this.GetUri(GetImageOperation, operationId);
+        var operationLocation = GetUri(GetImageOperation, operationId);
 
         var retryCount = 0;
 
         while (true)
         {
-            if (this._maxRetryCount == retryCount)
+            if (_maxRetryCount == retryCount)
             {
                 throw new SKException("Reached maximum retry attempts");
             }
 
-            using var response = await this.ExecuteRequestAsync(operationLocation, HttpMethod.Get, null, cancellationToken).ConfigureAwait(false);
+            using var response = await ExecuteRequestAsync(operationLocation, HttpMethod.Get, null, cancellationToken).ConfigureAwait(false);
             var responseJson = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
-            var result = this.JsonDeserialize<AzureOpenAIImageGenerationResponse>(responseJson);
+            var result = JsonDeserialize<AzureOpenAIImageGenerationResponse>(responseJson);
 
             if (result.Status.Equals(AzureOpenAIImageOperationStatus.Succeeded, StringComparison.OrdinalIgnoreCase))
             {
                 return result;
             }
-            else if (this.IsFailedOrCancelled(result.Status))
+
+            if (IsFailedOrCancelled(result.Status))
             {
                 throw new SKException($"Azure OpenAI image generation {result.Status}");
             }
@@ -211,30 +213,27 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 
     private string GetUri(string operation, params string[] parameters)
     {
-        var uri = new Azure.Core.RequestUriBuilder();
-        uri.Reset(new Uri(this._endpoint));
+        var uri = new RequestUriBuilder();
+        uri.Reset(new Uri(_endpoint));
         uri.AppendPath(operation, false);
 
         foreach (var parameter in parameters)
         {
             uri.AppendPath("/" + parameter, false);
         }
-        uri.AppendQuery("api-version", this._apiVersion);
+        uri.AppendQuery("api-version", _apiVersion);
         return uri.ToString();
     }
 
 
-    private bool IsFailedOrCancelled(string status)
-    {
-        return status.Equals(AzureOpenAIImageOperationStatus.Failed, StringComparison.OrdinalIgnoreCase)
-               || status.Equals(AzureOpenAIImageOperationStatus.Cancelled, StringComparison.OrdinalIgnoreCase)
-               || status.Equals(AzureOpenAIImageOperationStatus.Deleted, StringComparison.OrdinalIgnoreCase);
-    }
+    private bool IsFailedOrCancelled(string status) => status.Equals(AzureOpenAIImageOperationStatus.Failed, StringComparison.OrdinalIgnoreCase)
+                                                       || status.Equals(AzureOpenAIImageOperationStatus.Cancelled, StringComparison.OrdinalIgnoreCase)
+                                                       || status.Equals(AzureOpenAIImageOperationStatus.Deleted, StringComparison.OrdinalIgnoreCase);
 
 
     /// <summary>Adds headers to use for Azure OpenAI HTTP requests.</summary>
-    private protected override void AddRequestHeaders(HttpRequestMessage request)
+    protected private override void AddRequestHeaders(HttpRequestMessage request)
     {
-        request.Headers.Add("api-key", this._apiKey);
+        request.Headers.Add("api-key", _apiKey);
     }
 }

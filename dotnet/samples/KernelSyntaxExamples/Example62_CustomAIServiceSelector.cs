@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
 using RepoUtils;
@@ -69,9 +68,9 @@ public static class Example62_CustomAIServiceSelector
     /// </summary>
     private sealed class Gpt3xAIServiceSelector : IAIServiceSelector
     {
-        public (T?, AIRequestSettings?) SelectAIService<T>(SKContext context, ISKFunction skfunction) where T : IAIService
+        public (T?, AIRequestSettings?) SelectAIService<T>(Kernel kernel, SKContext context, ISKFunction skfunction) where T : IAIService
         {
-            var services = context.ServiceProvider.GetServices<T>();
+            var services = kernel.ServiceProvider.GetServices<T>();
 
             foreach (var service in services)
             {

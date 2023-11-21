@@ -2,9 +2,8 @@
 
 namespace Microsoft.SemanticKernel.TemplateEngine;
 
-using Diagnostics;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
 
 
 /// <summary>

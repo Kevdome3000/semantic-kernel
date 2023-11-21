@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Diagnostics;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
 using global::Google.Apis.CustomSearchAPI.v1;

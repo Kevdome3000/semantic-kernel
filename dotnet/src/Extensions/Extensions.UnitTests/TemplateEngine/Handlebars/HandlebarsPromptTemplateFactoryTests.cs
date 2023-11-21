@@ -2,7 +2,7 @@
 
 namespace SemanticKernel.Extensions.UnitTests.TemplateEngine.Handlebars;
 
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Handlebars;
 using Xunit;

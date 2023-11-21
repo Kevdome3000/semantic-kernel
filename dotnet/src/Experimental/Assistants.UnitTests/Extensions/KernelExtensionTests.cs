@@ -3,7 +3,6 @@
 namespace SemanticKernel.Experimental.Assistants.UnitTests.Extensions;
 
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Xunit;
 
@@ -19,7 +18,7 @@ public sealed class KernelExtensionTests
     public static void InvokeTwoPartTool()
     {
         //Arrange
-        var function = SKFunction.FromMethod(() => { }, functionName: "Bogus");
+        var function = SKFunctionFactory.CreateFromMethod(() => { }, functionName: "Bogus");
 
         var kernel = KernelBuilder.Create();
         kernel.Plugins.Add(new SKPlugin("Fake", new[] { function }));

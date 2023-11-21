@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using AzureSdk;
-using Microsoft.Extensions.Logging;
+using Extensions.Logging;
 using SemanticKernel.AI;
 using SemanticKernel.AI.ChatCompletion;
 using SemanticKernel.AI.TextCompletion;

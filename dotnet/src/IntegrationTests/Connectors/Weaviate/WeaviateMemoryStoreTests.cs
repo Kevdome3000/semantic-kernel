@@ -1,15 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.IntegrationTests.Connectors.Weaviate;
+
 using System;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Memory.Weaviate;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Connectors.Weaviate;
 
 /// <summary>
 /// Tests for <see cref="WeaviateMemoryStore" /> collection and upsert operations.
@@ -26,6 +28,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
     private readonly WeaviateMemoryStore _weaviateMemoryStore;
     private readonly string _authToken;
 
+
     public WeaviateMemoryStoreTests()
     {
         this._httpClient = new()
@@ -36,6 +39,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
 
         this._weaviateMemoryStore = new(this._httpClient, this._authToken);
     }
+
 
     [Fact(Skip = SkipReason)]
     public async Task EnsureConflictingCollectionNamesAreHandledForCreateAsync()
@@ -50,6 +54,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
             await this._weaviateMemoryStore.CreateCollectionAsync(conflictingCollectionName));
     }
 
+
     [Fact(Skip = SkipReason)]
     public async Task EnsureConflictingCollectionNamesAreHandledForDoesExistAsync()
     {
@@ -62,6 +67,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
         await Assert.ThrowsAsync<SKException>(async () =>
             await this._weaviateMemoryStore.DoesCollectionExistAsync(conflictingCollectionName));
     }
+
 
     [Fact(Skip = SkipReason)]
     public async Task EnsureConflictingCollectionNamesAreHandledForDeleteAsync()
@@ -76,6 +82,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
             await this._weaviateMemoryStore.DeleteCollectionAsync(conflictingCollectionName));
     }
 
+
     [Fact(Skip = SkipReason)]
     public async Task ItCreatesNewCollectionAsync()
     {
@@ -84,6 +91,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
         await this._weaviateMemoryStore.CreateCollectionAsync(collectionName);
         Assert.True(await this._weaviateMemoryStore.DoesCollectionExistAsync(collectionName));
     }
+
 
     [Fact(Skip = SkipReason)]
     public async Task ItListsCollectionsAsync()
@@ -105,6 +113,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
         Assert.Equal(2, (await this._weaviateMemoryStore.GetCollectionsAsync().ToListAsync()).Count);
     }
 
+
     [Fact(Skip = SkipReason)]
     public async Task ItDeletesCollectionAsync()
     {
@@ -122,6 +131,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
         Assert.False(await this._weaviateMemoryStore.DoesCollectionExistAsync(collectionName));
         Assert.Empty((await this._weaviateMemoryStore.GetCollectionsAsync().ToListAsync()));
     }
+
 
     [Fact(Skip = SkipReason)]
     public async Task CrudOperationsAsync()
@@ -145,6 +155,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
         Assert.Equal(id, responseId);
 
         var memoryRecordResultNoVector = await this._weaviateMemoryStore.GetAsync(collectionName, id);
+
         if (memoryRecordResultNoVector == null)
         {
             Assert.Fail("Unable to retrieve record");
@@ -162,6 +173,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
         Assert.Equal(memoryRecordResultNoVector.Metadata.IsReference, memoryRecordResultNoVector.Metadata.IsReference);
 
         var memoryRecordResultWithVector = await this._weaviateMemoryStore.GetAsync(collectionName, id, true);
+
         if (memoryRecordResultWithVector == null)
         {
             Assert.Fail("Unable to retrieve record");
@@ -180,11 +192,13 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
 
         await this._weaviateMemoryStore.RemoveAsync(collectionName, id);
         var memoryRecordAfterDeletion = await this._weaviateMemoryStore.GetAsync(collectionName, id);
+
         if (memoryRecordAfterDeletion != null)
         {
             Assert.Fail("Unable to delete record");
         }
     }
+
 
     [Fact(Skip = SkipReason)]
     public async Task BatchCrudOperationsAsync()
@@ -280,9 +294,11 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
         Assert.Empty(memoryRecordsAfterDeletion);
     }
 
+
     private async Task DeleteAllClassesAsync()
     {
         var classes = this._weaviateMemoryStore.GetCollectionsAsync();
+
         await foreach (var @class in classes)
         {
             using var requestMessage = new HttpRequestMessage(HttpMethod.Delete, $"v1/schema/{@class}");
@@ -291,6 +307,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
             result.EnsureSuccessStatusCode();
         }
     }
+
 
     public void Dispose()
     {

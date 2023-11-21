@@ -9,7 +9,6 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using AzureSdk;
-using Diagnostics;
 using Orchestration;
 using SemanticKernel.AI.ChatCompletion;
 using SemanticKernel.AI.TextCompletion;
@@ -25,18 +24,18 @@ internal sealed class ChatWithDataStreamingResult : IChatStreamingResult, ITextS
         Verify.NotNull(response);
         Verify.NotNull(choice);
 
-        this.ModelResult = new(new ChatWithDataModelResult(response.Id, DateTimeOffset.FromUnixTimeSeconds(response.Created))
+        ModelResult = new ModelResult(new ChatWithDataModelResult(response.Id, DateTimeOffset.FromUnixTimeSeconds(response.Created))
         {
-            ToolContent = this.GetToolContent(choice)
+            ToolContent = GetToolContent(choice)
         });
 
-        this._choice = choice;
+        _choice = choice;
     }
 
 
     public async Task<ChatMessage> GetChatMessageAsync(CancellationToken cancellationToken = default)
     {
-        var message = this._choice.Messages.FirstOrDefault(this.IsValidMessage);
+        var message = _choice.Messages.FirstOrDefault(IsValidMessage);
 
         var result = new AzureOpenAIChatMessage(AuthorRole.Assistant.Label, message?.Delta?.Content ?? string.Empty);
 
@@ -46,7 +45,7 @@ internal sealed class ChatWithDataStreamingResult : IChatStreamingResult, ITextS
 
     public async IAsyncEnumerable<ChatMessage> GetStreamingChatMessageAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var message = await this.GetChatMessageAsync(cancellationToken).ConfigureAwait(false);
+        var message = await GetChatMessageAsync(cancellationToken).ConfigureAwait(false);
 
         if (message.Content is { Length: > 0 })
         {
@@ -57,7 +56,7 @@ internal sealed class ChatWithDataStreamingResult : IChatStreamingResult, ITextS
 
     public async IAsyncEnumerable<string> GetCompletionStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var result in this.GetStreamingChatMessageAsync(cancellationToken))
+        await foreach (var result in GetStreamingChatMessageAsync(cancellationToken))
         {
             if (result.Content is string content and { Length: > 0 })
             {
@@ -69,7 +68,7 @@ internal sealed class ChatWithDataStreamingResult : IChatStreamingResult, ITextS
 
     public async Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
     {
-        var message = await this.GetChatMessageAsync(cancellationToken).ConfigureAwait(false);
+        var message = await GetChatMessageAsync(cancellationToken).ConfigureAwait(false);
 
         return message.Content;
     }
@@ -80,11 +79,8 @@ internal sealed class ChatWithDataStreamingResult : IChatStreamingResult, ITextS
     private readonly ChatWithDataStreamingChoice _choice;
 
 
-    private bool IsValidMessage(ChatWithDataStreamingMessage message)
-    {
-        return !message.EndTurn &&
-               (message.Delta.Role is null || !message.Delta.Role.Equals(AuthorRole.Tool.Label, StringComparison.Ordinal));
-    }
+    private bool IsValidMessage(ChatWithDataStreamingMessage message) => !message.EndTurn &&
+                                                                         (message.Delta.Role is null || !message.Delta.Role.Equals(AuthorRole.Tool.Label, StringComparison.Ordinal));
 
 
     private string? GetToolContent(ChatWithDataStreamingChoice choice)

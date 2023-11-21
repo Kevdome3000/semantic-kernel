@@ -2,9 +2,6 @@
 
 namespace Microsoft.SemanticKernel.TemplateEngine;
 
-using Diagnostics;
-
-
 /// <summary>
 /// Prompt template factory interface.
 /// Implement this interface to provide support for a new prompt template format.

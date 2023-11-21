@@ -250,7 +250,7 @@ public static class StructuredPlannerExtensions
     }
 
 
-    public static Plan ToPlan(this IEnumerable<SequentialFunctionCallResult> functionCalls, string goal, IReadOnlyFunctionCollection skillCollection)
+    public static Plan ToPlan(this IEnumerable<SequentialFunctionCallResult> functionCalls, string goal, IReadOnlySKPluginCollection skillCollection)
     {
         // Initialize Plan with goal
         var plan = new Plan(goal);

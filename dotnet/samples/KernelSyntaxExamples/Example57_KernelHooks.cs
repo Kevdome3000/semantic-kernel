@@ -170,7 +170,7 @@ public static class Example57_KernelHooks
 
         void MyChangeDataHandler(object? sender, FunctionInvokedEventArgs e)
         {
-            var originalOutput = e.SKContext.Result;
+            var originalOutput = e.SKContext.Variables.Input;
 
             //Use Regex to redact all vowels and numbers
             var newOutput = Regex.Replace(originalOutput, "[aeiouAEIOU0-9]", "*");
@@ -321,7 +321,7 @@ public static class Example57_KernelHooks
         kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
         {
             Console.WriteLine($"\nFunction {e.FunctionView.Name} executed:");
-            Console.WriteLine($"Result: {e.SKContext.Result}");
+            Console.WriteLine($"Result: {e.SKContext.Variables.Input}");
 
             if (repeatTimes < 3)
             {

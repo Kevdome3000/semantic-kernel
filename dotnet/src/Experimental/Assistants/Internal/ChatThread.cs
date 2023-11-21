@@ -7,7 +7,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Diagnostics;
 using Extensions;
 using Models;
 
@@ -35,7 +34,7 @@ internal sealed class ChatThread : IChatThread
             await restContext.CreateThreadModelAsync(cancellationToken).ConfigureAwait(false) ??
             throw new SKException("Unexpected failure creating thread: no result.");
 
-        return new ChatThread(threadModel, messageListModel: null, restContext);
+        return new ChatThread(threadModel, null, restContext);
     }
 
 
@@ -64,8 +63,8 @@ internal sealed class ChatThread : IChatThread
     public async Task<IChatMessage> AddUserMessageAsync(string message, CancellationToken cancellationToken = default)
     {
         var messageModel =
-            await this._restContext.CreateUserTextMessageAsync(
-                this.Id,
+            await _restContext.CreateUserTextMessageAsync(
+                Id,
                 message,
                 cancellationToken).ConfigureAwait(false);
 
@@ -77,12 +76,12 @@ internal sealed class ChatThread : IChatThread
     public async Task<IEnumerable<IChatMessage>> InvokeAsync(IAssistant assistant, CancellationToken cancellationToken)
     {
         var tools = assistant.Plugins.SelectMany(p => p.Select(f => f.ToToolModel(p.Name)));
-        var runModel = await this._restContext.CreateRunAsync(this.Id, assistant.Id, assistant.Instructions, tools, cancellationToken).ConfigureAwait(false);
+        var runModel = await _restContext.CreateRunAsync(Id, assistant.Id, assistant.Instructions, tools, cancellationToken).ConfigureAwait(false);
 
-        var run = new ChatRun(runModel, assistant.Kernel, this._restContext);
+        var run = new ChatRun(runModel, assistant.Kernel, _restContext);
         var results = await run.GetResultAsync(cancellationToken).ConfigureAwait(false);
 
-        var messages = await this.GetMessagesAsync(results, cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
+        var messages = await GetMessagesAsync(results, cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
 
         return messages;
     }
@@ -92,17 +91,14 @@ internal sealed class ChatThread : IChatThread
     /// Delete an existing thread.
     /// </summary>
     /// <param name="cancellationToken">A cancellation token</param>
-    public Task DeleteThreadAsync(CancellationToken cancellationToken)
-    {
-        return this._restContext.DeleteThreadModelAsync(this.Id, cancellationToken);
-    }
+    public Task DeleteThreadAsync(CancellationToken cancellationToken) => _restContext.DeleteThreadModelAsync(Id, cancellationToken);
 
 
     private async IAsyncEnumerable<IChatMessage> GetMessagesAsync(
         IList<string> messageIds,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        var messages = await this._restContext.GetMessagesAsync(this.Id, messageIds, cancellationToken).ConfigureAwait(false);
+        var messages = await _restContext.GetMessagesAsync(Id, messageIds, cancellationToken).ConfigureAwait(false);
 
         foreach (var message in messages)
         {
@@ -119,7 +115,7 @@ internal sealed class ChatThread : IChatThread
         ThreadMessageListModel? messageListModel,
         OpenAIRestContext restContext)
     {
-        this.Id = threadModel.Id;
-        this._restContext = restContext;
+        Id = threadModel.Id;
+        _restContext = restContext;
     }
 }

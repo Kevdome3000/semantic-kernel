@@ -7,7 +7,6 @@ namespace Microsoft.SemanticKernel.Planning;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Diagnostics;
 
 #pragma warning restore IDE0130
 

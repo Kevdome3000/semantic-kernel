@@ -105,7 +105,7 @@ public class OpenAIFunction
     /// If there is no plugin name, this is the same as the function name.
     /// </summary>
     public string FullyQualifiedName =>
-        string.IsNullOrEmpty(this.PluginName) ? this.FunctionName : $"{this.PluginName}{NameSeparator}{this.FunctionName}";
+        string.IsNullOrEmpty(PluginName) ? FunctionName : $"{PluginName}{NameSeparator}{FunctionName}";
 
     /// <summary>
     /// Description of the function
@@ -120,7 +120,7 @@ public class OpenAIFunction
     /// <summary>
     /// The return parameter of the function.
     /// </summary>
-    public OpenAIFunctionReturnParameter ReturnParameter { get; set; } = new OpenAIFunctionReturnParameter();
+    public OpenAIFunctionReturnParameter ReturnParameter { get; set; } = new();
 
 
     /// <summary>
@@ -131,7 +131,7 @@ public class OpenAIFunction
     {
         BinaryData resultParameters = s_zeroFunctionParametersSchema;
 
-        var parameters = this.Parameters;
+        var parameters = Parameters;
 
         if (parameters.Count > 0)
         {
@@ -158,16 +158,16 @@ public class OpenAIFunction
             resultParameters = BinaryData.FromObjectAsJson(new
             {
                 type = "object",
-                required = required,
-                properties = properties,
+                required,
+                properties
             });
         }
 
         return new FunctionDefinition
         {
-            Name = this.FullyQualifiedName,
-            Description = this.Description,
-            Parameters = resultParameters,
+            Name = FullyQualifiedName,
+            Description = Description,
+            Parameters = resultParameters
         };
     }
 

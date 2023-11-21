@@ -9,7 +9,6 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Diagnostics;
 using Npgsql;
 using Pgvector;
 using Pgvector.Npgsql;

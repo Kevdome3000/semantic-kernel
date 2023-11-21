@@ -4,7 +4,7 @@
 namespace SemanticKernel.Experimental.Assistants.UnitTests.Integration;
 
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Experimental.Assistants;
 using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Internal;

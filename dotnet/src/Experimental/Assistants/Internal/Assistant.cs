@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using AI.ChatCompletion;
 using AI.TextCompletion;
 using Connectors.AI.OpenAI.ChatCompletion;
-using Diagnostics;
 using Extensions;
 using Http;
 using Models;
@@ -23,7 +22,7 @@ using Services;
 internal sealed class Assistant : IAssistant
 {
     /// <inheritdoc/>
-    public string Id => this._model.Id;
+    public string Id => _model.Id;
 
     /// <inheritdoc/>
     public Kernel Kernel { get; }
@@ -34,24 +33,24 @@ internal sealed class Assistant : IAssistant
     /// <inheritdoc/>
 #pragma warning disable CA1720 // Identifier contains type name - We don't control the schema
 #pragma warning disable CA1716 // Identifiers should not match keywords
-    public string Object => this._model.Object;
+    public string Object => _model.Object;
 #pragma warning restore CA1720 // Identifier contains type name - We don't control the schema
 #pragma warning restore CA1716 // Identifiers should not match keywords
 
     /// <inheritdoc/>
-    public long CreatedAt => this._model.CreatedAt;
+    public long CreatedAt => _model.CreatedAt;
 
     /// <inheritdoc/>
-    public string? Name => this._model.Name;
+    public string? Name => _model.Name;
 
     /// <inheritdoc/>
-    public string? Description => this._model.Description;
+    public string? Description => _model.Description;
 
     /// <inheritdoc/>
-    public string Model => this._model.Model;
+    public string Model => _model.Model;
 
     /// <inheritdoc/>
-    public string Instructions => this._model.Instructions;
+    public string Instructions => _model.Instructions;
 
     private readonly OpenAIRestContext _restContext;
     private readonly AssistantModel _model;
@@ -90,14 +89,14 @@ internal sealed class Assistant : IAssistant
         OpenAIRestContext restContext,
         ISKPluginCollection? plugins = null)
     {
-        this._model = model;
-        this._restContext = restContext;
-        this.Plugins = plugins ?? new SKPluginCollection();
+        _model = model;
+        _restContext = restContext;
+        Plugins = plugins ?? new SKPluginCollection();
 
         var services = new AIServiceCollection();
         services.SetService<IChatCompletion>(chatService);
         services.SetService<ITextCompletion>(chatService);
-        this.Kernel =
+        Kernel =
             new Kernel(
                 services.Build(),
                 plugins,
@@ -107,17 +106,11 @@ internal sealed class Assistant : IAssistant
 
 
     /// <inheritdoc/>
-    public Task<IChatThread> NewThreadAsync(CancellationToken cancellationToken = default)
-    {
-        return ChatThread.CreateAsync(this._restContext, cancellationToken);
-    }
+    public Task<IChatThread> NewThreadAsync(CancellationToken cancellationToken = default) => ChatThread.CreateAsync(_restContext, cancellationToken);
 
 
     /// <inheritdoc/>
-    public Task<IChatThread> GetThreadAsync(string id, CancellationToken cancellationToken = default)
-    {
-        return ChatThread.GetAsync(this._restContext, id, cancellationToken);
-    }
+    public Task<IChatThread> GetThreadAsync(string id, CancellationToken cancellationToken = default) => ChatThread.GetAsync(_restContext, id, cancellationToken);
 
 
     /// <summary>
@@ -126,20 +119,20 @@ internal sealed class Assistant : IAssistant
     /// <param name="input">The user input</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>An assistant response (<see cref="AssistantResponse"/></returns>
-    [SKFunction, Description("Provide input to assistant a response")]
+    [SKFunction] [Description("Provide input to assistant a response")]
     public async Task<string> AskAsync(
         [Description("The input for the assistant.")]
         string input,
         CancellationToken cancellationToken = default)
     {
-        var thread = await this.NewThreadAsync(cancellationToken).ConfigureAwait(false);
+        var thread = await NewThreadAsync(cancellationToken).ConfigureAwait(false);
         await thread.AddUserMessageAsync(input, cancellationToken).ConfigureAwait(false);
         var message = await thread.InvokeAsync(this, cancellationToken).ConfigureAwait(false);
         var response =
             new AssistantResponse
             {
                 ThreadId = thread.Id,
-                Response = string.Concat(message.Select(m => m.Content)),
+                Response = string.Concat(message.Select(m => m.Content))
             };
 
         return JsonSerializer.Serialize(response);

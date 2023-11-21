@@ -11,7 +11,6 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Diagnostics;
 using NRedisStack;
 using NRedisStack.RedisStackCommands;
 using NRedisStack.Search;

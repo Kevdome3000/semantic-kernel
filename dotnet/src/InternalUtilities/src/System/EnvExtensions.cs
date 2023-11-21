@@ -5,6 +5,7 @@
 namespace System;
 #pragma warning restore IDE0130
 
+
 internal static class EnvExtensions
 {
     /// <summary>

@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Http;
 
 
 internal static class HttpClientExtensions
@@ -20,8 +21,8 @@ internal static class HttpClientExtensions
     /// or after reading the entire response message including the content.</param>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> for canceling the request.</param>
     /// <returns>The <see cref="HttpResponseMessage"/> representing the response.</returns>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "By design. See comment below.")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2016:Forward the 'CancellationToken' parameter to methods", Justification = "The `ReadAsStringAsync` method in the NetStandard 2.0 version does not have an overload that accepts the cancellation token.")]
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "By design. See comment below.")]
+    [SuppressMessage("Reliability", "CA2016:Forward the 'CancellationToken' parameter to methods", Justification = "The `ReadAsStringAsync` method in the NetStandard 2.0 version does not have an overload that accepts the cancellation token.")]
     internal static async Task<HttpResponseMessage> SendWithSuccessCheckAsync(this HttpClient client, HttpRequestMessage request, HttpCompletionOption completionOption, CancellationToken cancellationToken)
     {
         HttpResponseMessage? response = null;
@@ -66,8 +67,5 @@ internal static class HttpClientExtensions
     /// <param name="request">The <see cref="HttpRequestMessage"/> to send.</param>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> for canceling the request.</param>
     /// <returns>The <see cref="HttpResponseMessage"/> representing the response.</returns>
-    internal static async Task<HttpResponseMessage> SendWithSuccessCheckAsync(this HttpClient client, HttpRequestMessage request, CancellationToken cancellationToken)
-    {
-        return await client.SendWithSuccessCheckAsync(request, HttpCompletionOption.ResponseContentRead, cancellationToken).ConfigureAwait(false);
-    }
+    internal static async Task<HttpResponseMessage> SendWithSuccessCheckAsync(this HttpClient client, HttpRequestMessage request, CancellationToken cancellationToken) => await client.SendWithSuccessCheckAsync(request, HttpCompletionOption.ResponseContentRead, cancellationToken).ConfigureAwait(false);
 }

@@ -4,7 +4,6 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 
 using System.IO;
 using System.Reflection;
-using Diagnostics;
 
 
 internal static class EmbeddedResource

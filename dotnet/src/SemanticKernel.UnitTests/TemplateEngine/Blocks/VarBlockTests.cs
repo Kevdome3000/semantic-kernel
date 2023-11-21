@@ -2,7 +2,7 @@
 
 namespace SemanticKernel.UnitTests.TemplateEngine.Blocks;
 
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Xunit;

@@ -8,7 +8,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Connectors.AI.OpenAI.ChatCompletion;
-using Diagnostics;
 using Internal;
 using Models;
 
@@ -30,8 +29,8 @@ public partial class AssistantBuilder
     /// </summary>
     public AssistantBuilder()
     {
-        this._model = new AssistantModel();
-        this._plugins = new SKPluginCollection();
+        _model = new AssistantModel();
+        _plugins = new SKPluginCollection();
     }
 
 
@@ -42,22 +41,22 @@ public partial class AssistantBuilder
     /// <returns>A new <see cref="IAssistant"/> instance.</returns>
     public async Task<IAssistant> BuildAsync(CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(this._model.Model))
+        if (string.IsNullOrWhiteSpace(_model.Model))
         {
             throw new SKException("Model must be defined for assistant.");
         }
 
-        if (string.IsNullOrWhiteSpace(this._apiKey))
+        if (string.IsNullOrWhiteSpace(_apiKey))
         {
             throw new SKException("ApiKey must be provided for assistant.");
         }
 
         return
             await Assistant.CreateAsync(
-                new OpenAIRestContext(this._apiKey!, this._httpClientProvider),
-                new OpenAIChatCompletion(this._model.Model, this._apiKey!),
-                this._model,
-                this._plugins,
+                new OpenAIRestContext(_apiKey!, _httpClientProvider),
+                new OpenAIChatCompletion(_model.Model, _apiKey!),
+                _model,
+                _plugins,
                 cancellationToken).ConfigureAwait(false);
     }
 
@@ -68,8 +67,8 @@ public partial class AssistantBuilder
     /// <returns><see cref="AssistantBuilder"/> instance for fluid expression.</returns>
     public AssistantBuilder WithOpenAIChatCompletionService(string model, string apiKey)
     {
-        this._apiKey = apiKey;
-        this._model.Model = model;
+        _apiKey = apiKey;
+        _model.Model = model;
 
         return this;
     }
@@ -81,7 +80,7 @@ public partial class AssistantBuilder
     /// <returns><see cref="AssistantBuilder"/> instance for fluid expression.</returns>
     public AssistantBuilder WithHttpClient(HttpClient httpClient)
     {
-        this._httpClientProvider ??= () => httpClient;
+        _httpClientProvider ??= () => httpClient;
 
         return this;
     }
@@ -93,7 +92,7 @@ public partial class AssistantBuilder
     /// <returns><see cref="AssistantBuilder"/> instance for fluid expression.</returns>
     public AssistantBuilder WithDescription(string? description)
     {
-        this._model.Description = description;
+        _model.Description = description;
 
         return this;
     }
@@ -105,7 +104,7 @@ public partial class AssistantBuilder
     /// <returns><see cref="AssistantBuilder"/> instance for fluid expression.</returns>
     public AssistantBuilder WithInstructions(string instructions)
     {
-        this._model.Instructions = instructions;
+        _model.Instructions = instructions;
 
         return this;
     }
@@ -117,7 +116,7 @@ public partial class AssistantBuilder
     /// <returns><see cref="AssistantBuilder"/> instance for fluid expression.</returns>
     public AssistantBuilder WithMetadata(string key, object value)
     {
-        this._model.Metadata[key] = value;
+        _model.Metadata[key] = value;
 
         return this;
     }
@@ -131,7 +130,7 @@ public partial class AssistantBuilder
     {
         foreach (var kvp in metadata)
         {
-            this._model.Metadata[kvp.Key] = kvp.Value;
+            _model.Metadata[kvp.Key] = kvp.Value;
         }
 
         return this;
@@ -144,7 +143,7 @@ public partial class AssistantBuilder
     /// <returns><see cref="AssistantBuilder"/> instance for fluid expression.</returns>
     public AssistantBuilder WithName(string? name)
     {
-        this._model.Name = name;
+        _model.Name = name;
 
         return this;
     }
@@ -156,7 +155,7 @@ public partial class AssistantBuilder
     /// <returns><see cref="AssistantBuilder"/> instance for fluid expression.</returns>
     public AssistantBuilder WithPlugin(ISKPlugin plugin)
     {
-        this._plugins.Add(plugin);
+        _plugins.Add(plugin);
 
         return this;
     }
@@ -168,7 +167,7 @@ public partial class AssistantBuilder
     /// <returns><see cref="AssistantBuilder"/> instance for fluid expression.</returns>
     public AssistantBuilder WithPlugins(IEnumerable<ISKPlugin> plugins)
     {
-        this._plugins.AddRange(plugins);
+        _plugins.AddRange(plugins);
 
         return this;
     }

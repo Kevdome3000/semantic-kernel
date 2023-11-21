@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Memory;
+
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Text;
+using Text;
 
-namespace Microsoft.SemanticKernel.Memory;
 
 /// <summary>
 /// IMPORTANT: this is a storage schema. Changing the fields will invalidate existing metadata stored in persistent vector DBs.
@@ -26,6 +26,7 @@ public class MemoryRecord : DataEntryBase
     [JsonPropertyName("metadata")]
     public MemoryRecordMetadata Metadata { get; }
 
+
     /// <summary>
     /// Constructor, use <see cref="ReferenceRecord"/> or <see cref="LocalRecord"/>
     /// </summary>
@@ -39,6 +40,7 @@ public class MemoryRecord : DataEntryBase
         this.Metadata = metadata;
         this.Embedding = embedding;
     }
+
 
     /// <summary>
     /// Prepare an instance about a memory which source is stored externally.
@@ -77,6 +79,7 @@ public class MemoryRecord : DataEntryBase
         );
     }
 
+
     /// <summary>
     /// Prepare an instance for a memory stored in the internal storage provider.
     /// </summary>
@@ -114,6 +117,7 @@ public class MemoryRecord : DataEntryBase
         );
     }
 
+
     /// <summary>
     /// Create a memory record from a serialized metadata string.
     /// </summary>
@@ -135,6 +139,7 @@ public class MemoryRecord : DataEntryBase
             : throw new SKException("Unable to create memory record from serialized metadata");
     }
 
+
     /// <summary>
     /// Create a memory record from a memory record's metadata.
     /// </summary>
@@ -151,6 +156,7 @@ public class MemoryRecord : DataEntryBase
     {
         return new MemoryRecord(metadata, embedding, key, timestamp);
     }
+
 
     /// <summary>
     /// Serialize the metadata of a memory record.

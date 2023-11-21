@@ -58,13 +58,13 @@ internal sealed class ThreadMessageModel
     /// The content of the message in array of text and/or images.
     /// </summary>
     [JsonPropertyName("content")]
-    public List<ContentModel> Content { get; set; } = new List<ContentModel>();
+    public List<ContentModel> Content { get; set; } = new();
 
     /// <summary>
     /// A list of file IDs that the assistant should use.
     /// </summary>
     [JsonPropertyName("file_ids")]
-    public List<string> FileIds { get; set; } = new List<string>();
+    public List<string> FileIds { get; set; } = new();
 
     /// <summary>
     /// If applicable, the ID of the assistant that authored this message.
@@ -85,7 +85,7 @@ internal sealed class ThreadMessageModel
     /// characters long and values can be a maximum of 512 characters long.
     /// </summary>
     [JsonPropertyName("metadata")]
-    public Dictionary<string, object> Metadata { get; set; } = new Dictionary<string, object>();
+    public Dictionary<string, object> Metadata { get; set; } = new();
 
 
     /// <summary>
@@ -122,6 +122,6 @@ internal sealed class ThreadMessageModel
         /// Any annotations on the text.
         /// </summary>
         [JsonPropertyName("annotations")]
-        public List<object> Annotations { get; set; } = new List<object>();
+        public List<object> Annotations { get; set; } = new();
     }
 }

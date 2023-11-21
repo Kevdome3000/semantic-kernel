@@ -8,7 +8,6 @@ namespace Microsoft.SemanticKernel;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using Diagnostics;
 
 
 /// <summary>Provides extension methods for working with <see cref="ISKPlugin"/>s and collections of them.</summary>

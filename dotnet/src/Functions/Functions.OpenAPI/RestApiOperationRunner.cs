@@ -14,7 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Authentication;
 using Builders;
-using Diagnostics;
+using Http;
 using Model;
 
 
@@ -92,7 +92,7 @@ internal sealed class RestApiOperationRunner
         bool enablePayloadNamespacing = false)
     {
         this._httpClient = httpClient;
-        this._userAgent = userAgent ?? Telemetry.HttpUserAgent;
+        this._userAgent = userAgent ?? HttpHeaderValues.UserAgent;
         this._enableDynamicPayload = enableDynamicPayload;
         this._enablePayloadNamespacing = enablePayloadNamespacing;
 
@@ -169,7 +169,7 @@ internal sealed class RestApiOperationRunner
 
         requestMessage.Headers.Add("User-Agent", !string.IsNullOrWhiteSpace(this._userAgent)
             ? this._userAgent
-            : Telemetry.HttpUserAgent);
+            : HttpHeaderValues.UserAgent);
 
         if (headers != null)
         {

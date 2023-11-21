@@ -18,7 +18,7 @@ internal sealed class OpenAIRestContext
 
 
     /// <inheritdoc/>
-    public HttpClient GetHttpClient() => this._clientFactory.Invoke();
+    public HttpClient GetHttpClient() => _clientFactory.Invoke();
 
 
     private readonly Func<HttpClient> _clientFactory;
@@ -29,8 +29,8 @@ internal sealed class OpenAIRestContext
     /// </summary>
     public OpenAIRestContext(string apiKey, Func<HttpClient>? clientFactory = null)
     {
-        this._clientFactory = clientFactory ??= () => s_defaultOpenAIClient;
+        _clientFactory = clientFactory ??= () => s_defaultOpenAIClient;
 
-        this.ApiKey = apiKey;
+        ApiKey = apiKey;
     }
 }

@@ -9,8 +9,8 @@ using Azure;
 using Azure.AI.OpenAI;
 using Azure.Core;
 using Azure.Core.Pipeline;
-using Diagnostics;
-using Microsoft.Extensions.Logging;
+using Extensions.Logging;
+using Http;
 using Services;
 
 
@@ -117,8 +117,7 @@ public abstract class AzureOpenAIClientBase : ClientBase
         {
             Diagnostics =
             {
-                IsTelemetryEnabled = Telemetry.IsTelemetryEnabled,
-                ApplicationId = Telemetry.HttpUserAgent
+                ApplicationId = HttpHeaderValues.UserAgent
             }
         };
 

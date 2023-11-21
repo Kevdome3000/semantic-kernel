@@ -4,8 +4,8 @@ namespace Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
 
 using System;
 using System.Net.Http;
-using Diagnostics;
 using Extensions;
+using Http;
 
 
 /// <summary>
@@ -24,7 +24,7 @@ public class OpenAIFunctionExecutionParameters : OpenApiFunctionExecutionParamet
         HttpClient? httpClient = null,
         OpenAIAuthenticateRequestAsyncCallback? authCallback = null,
         Uri? serverUrlOverride = null,
-        string userAgent = Telemetry.HttpUserAgent,
+        string userAgent = HttpHeaderValues.UserAgent,
         bool ignoreNonCompliantErrors = false,
         bool enableDynamicOperationPayload = false,
         bool enablePayloadNamespacing = false) : base(httpClient, null, serverUrlOverride, userAgent, ignoreNonCompliantErrors, enableDynamicOperationPayload, enablePayloadNamespacing)

@@ -7,7 +7,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AzureSdk;
-using Diagnostics;
 using Orchestration;
 using SemanticKernel.AI.ChatCompletion;
 using SemanticKernel.AI.TextCompletion;
@@ -23,18 +22,18 @@ internal sealed class ChatWithDataResult : IChatResult, ITextResult
         Verify.NotNull(response);
         Verify.NotNull(choice);
 
-        this.ModelResult = new(new ChatWithDataModelResult(response.Id, DateTimeOffset.FromUnixTimeSeconds(response.Created))
+        ModelResult = new ModelResult(new ChatWithDataModelResult(response.Id, DateTimeOffset.FromUnixTimeSeconds(response.Created))
         {
-            ToolContent = this.GetToolContent(choice)
+            ToolContent = GetToolContent(choice)
         });
 
-        this._choice = choice;
+        _choice = choice;
     }
 
 
     public Task<ChatMessage> GetChatMessageAsync(CancellationToken cancellationToken = default)
     {
-        var message = this._choice.Messages
+        var message = _choice.Messages
             .FirstOrDefault(message => message.Role.Equals(AuthorRole.Assistant.Label, StringComparison.Ordinal));
 
         return message is not null ? Task.FromResult<ChatMessage>(new AzureOpenAIChatMessage(message.Role, message.Content)) : Task.FromException<ChatMessage>(new SKException("No message found"));
@@ -43,7 +42,7 @@ internal sealed class ChatWithDataResult : IChatResult, ITextResult
 
     public async Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
     {
-        var message = await this.GetChatMessageAsync(cancellationToken).ConfigureAwait(false);
+        var message = await GetChatMessageAsync(cancellationToken).ConfigureAwait(false);
 
         return message.Content;
     }

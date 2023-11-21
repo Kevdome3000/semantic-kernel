@@ -11,9 +11,9 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using Diagnostics;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
+using Http;
 
 
 /// <summary>
@@ -50,7 +50,7 @@ public sealed class BingConnector : IWebSearchEngineConnector
         this._apiKey = apiKey;
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(BingConnector)) : NullLogger.Instance;
         this._httpClient = httpClient;
-        this._httpClient.DefaultRequestHeaders.Add("User-Agent", Telemetry.HttpUserAgent);
+        this._httpClient.DefaultRequestHeaders.Add("User-Agent", HttpHeaderValues.UserAgent);
     }
 
 

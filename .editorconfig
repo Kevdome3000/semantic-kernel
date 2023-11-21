@@ -36,7 +36,7 @@ insert_final_newline = true
 trim_trailing_whitespace = true
 tab_width = 4
 indent_size = 4
-file_header_template = Copyright (c) Microsoft. All rights reserved.
+file_header_template = Copyright (c) Microsoft.All rights reserved.
 
 # Stylesheet files
 [*.{css,scss,sass,less}]
@@ -52,7 +52,7 @@ indent_size = 4
 insert_final_newline = true
 trim_trailing_whitespace = true
 charset = utf-8-bom
-file_header_template = Copyright (c) Microsoft. All rights reserved.
+file_header_template = Copyright (c) Microsoft.All rights reserved.
 
 ###############################
 # .NET Coding Conventions     #
@@ -251,11 +251,11 @@ dotnet_naming_style.end_in_async.word_separator =
 # Symbols
 
 dotnet_naming_symbols.constant_fields.applicable_kinds = field
-dotnet_naming_symbols.constant_fields.applicable_accessibilities  = *
+dotnet_naming_symbols.constant_fields.applicable_accessibilities = *
 dotnet_naming_symbols.constant_fields.required_modifiers = const
 
 dotnet_naming_symbols.local_constant.applicable_kinds = local
-dotnet_naming_symbols.local_constant.applicable_accessibilities  = *
+dotnet_naming_symbols.local_constant.applicable_accessibilities = *
 dotnet_naming_symbols.local_constant.required_modifiers = const
 
 dotnet_naming_symbols.private_static_fields.applicable_kinds = field
@@ -313,7 +313,7 @@ csharp_style_pattern_matching_over_as_with_null_check = true:suggestion
 csharp_style_throw_expression = true:suggestion
 csharp_style_conditional_delegate_call = true:suggestion
 # Modifier preferences
-csharp_preferred_modifier_order = public,private,protected,internal,static,extern,new,virtual,abstract,sealed,override,readonly,unsafe,volatile,async:suggestion
+csharp_preferred_modifier_order = public, private, protected, internal, static, extern, new, virtual, abstract, sealed, override, readonly, unsafe, volatile, async:suggestion
 # Expression-level preferences
 csharp_prefer_braces = true:error
 csharp_style_deconstructed_variable_declaration = true:suggestion
@@ -464,7 +464,8 @@ ij_java_entity_hi_suffix = Home
 ij_java_entity_lhi_prefix = Local
 ij_java_entity_lhi_suffix = Home
 ij_java_entity_li_prefix = Local
-ij_java_entity_pk_class = java.lang.String
+ij_java_entity_pk_class =
+java.lang.String
 ij_java_entity_vo_suffix = VO
 ij_java_enum_constants_wrap = off
 ij_java_extends_keyword_wrap = off

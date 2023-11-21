@@ -5,7 +5,6 @@ namespace Microsoft.SemanticKernel.Planning.Sequential.UnitTests;
 
 using AI;
 using AI.TextCompletion;
-using Diagnostics;
 using Moq;
 using Orchestration;
 using Services;
@@ -111,7 +110,7 @@ public sealed class SequentialPlannerTests
 
         var serviceSelector = new Mock<IAIServiceSelector>();
         serviceSelector
-            .Setup(ss => ss.SelectAIService<ITextCompletion>(It.IsAny<SKContext>(), It.IsAny<ISKFunction>()))
+            .Setup(ss => ss.SelectAIService<ITextCompletion>(It.IsAny<Kernel>(), It.IsAny<SKContext>(), It.IsAny<ISKFunction>()))
             .Returns((textCompletion.Object, new AIRequestSettings()));
 
         var serviceProvider = new Mock<IAIServiceProvider>();
@@ -126,16 +125,16 @@ public sealed class SequentialPlannerTests
         {
             new SKPlugin("email", new[]
             {
-                SKFunction.FromMethod(() => "MOCK FUNCTION CALLED", "SendEmail", "Send an e-mail"),
-                SKFunction.FromMethod(() => "MOCK FUNCTION CALLED", "GetEmailAddress", "Get an e-mail address")
+                SKFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "SendEmail", "Send an e-mail"),
+                SKFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "GetEmailAddress", "Get an e-mail address")
             }),
             new SKPlugin("WriterPlugin", new[]
             {
-                SKFunction.FromMethod(() => "MOCK FUNCTION CALLED", "Translate", "Translate something"),
+                SKFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "Translate", "Translate something"),
             }),
             new SKPlugin("SummarizePlugin", new[]
             {
-                SKFunction.FromMethod(() => "MOCK FUNCTION CALLED", "Summarize", "Summarize something"),
+                SKFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "Summarize", "Summarize something"),
             })
         };
     }

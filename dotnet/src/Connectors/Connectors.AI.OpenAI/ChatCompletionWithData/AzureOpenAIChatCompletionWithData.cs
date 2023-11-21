@@ -12,9 +12,9 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using ChatCompletion;
-using Diagnostics;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
+using Http;
 using SemanticKernel.AI;
 using SemanticKernel.AI.ChatCompletion;
 using SemanticKernel.AI.TextCompletion;
@@ -43,7 +43,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
 
         _config = config;
 
-        _httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
+        _httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, false);
         _logger = loggerFactory is not null ? loggerFactory.CreateLogger(GetType()) : NullLogger.Instance;
         _attributes.Add(IAIServiceExtensions.ModelIdKey, config.CompletionModelId);
     }
@@ -54,10 +54,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
 
 
     /// <inheritdoc/>
-    public ChatHistory CreateNewChat(string? instructions = null)
-    {
-        return new OpenAIChatHistory(instructions);
-    }
+    public ChatHistory CreateNewChat(string? instructions = null) => new OpenAIChatHistory(instructions);
 
 
     /// <inheritdoc/>
@@ -135,7 +132,6 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
 
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
-
     private readonly Dictionary<string, string> _attributes = new();
 
 
@@ -166,7 +162,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         OpenAIRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
     {
-        using var request = GetRequest(chat, requestSettings, isStreamEnabled: false);
+        using var request = GetRequest(chat, requestSettings, false);
         using var response = await SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
         var body = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
@@ -182,7 +178,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         OpenAIRequestSettings requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        using var request = GetRequest(chat, requestSettings, isStreamEnabled: true);
+        using var request = GetRequest(chat, requestSettings, true);
         using var response = await SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
         await foreach (var result in GetStreamingResultsAsync(response))
@@ -196,7 +192,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         HttpRequestMessage request,
         CancellationToken cancellationToken = default)
     {
-        request.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
+        request.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
         request.Headers.Add("Api-Key", _config.CompletionApiKey);
 
         try
@@ -284,21 +280,18 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
     }
 
 
-    private List<ChatWithDataSource> GetDataSources()
+    private List<ChatWithDataSource> GetDataSources() => new()
     {
-        return new List<ChatWithDataSource>
+        new()
         {
-            new()
+            Parameters = new ChatWithDataSourceParameters
             {
-                Parameters = new ChatWithDataSourceParameters
-                {
-                    Endpoint = _config.DataSourceEndpoint,
-                    ApiKey = _config.DataSourceApiKey,
-                    IndexName = _config.DataSourceIndex
-                }
+                Endpoint = _config.DataSourceEndpoint,
+                ApiKey = _config.DataSourceApiKey,
+                IndexName = _config.DataSourceIndex
             }
-        };
-    }
+        }
+    };
 
 
     private List<ChatWithDataMessage> GetMessages(ChatHistory chat)

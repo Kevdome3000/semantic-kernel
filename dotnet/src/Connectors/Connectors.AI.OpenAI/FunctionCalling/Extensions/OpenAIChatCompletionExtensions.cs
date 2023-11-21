@@ -174,7 +174,7 @@ public static class OpenAIChatCompletionExtensions
             .Select(group => group.First())
             .ToList();
 
-        var requestSettings = new FunctionCallRequestSettings()
+        var requestSettings = new FunctionCallRequestSettings
         {
             Temperature = settings.Temperature,
             TopP = settings.TopP,

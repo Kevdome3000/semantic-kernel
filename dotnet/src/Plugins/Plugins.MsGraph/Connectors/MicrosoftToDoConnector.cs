@@ -1,18 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using TaskStatus = Microsoft.Graph.TaskStatus;
+
+namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors;
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Graph;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.Diagnostics;
-using Microsoft.SemanticKernel.Plugins.MsGraph.Models;
-using TaskStatus = Microsoft.Graph.TaskStatus;
+using Diagnostics;
+using Graph;
+using Models;
+using TaskStatus = Graph.TaskStatus;
 
-namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors;
 
 /// <summary>
 /// Connector for Microsoft To-Do API
@@ -20,6 +22,7 @@ namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors;
 public class MicrosoftToDoConnector : ITaskManagementConnector
 {
     private readonly GraphServiceClient _graphServiceClient;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MicrosoftToDoConnector"/> class.
@@ -29,6 +32,7 @@ public class MicrosoftToDoConnector : ITaskManagementConnector
     {
         this._graphServiceClient = graphServiceClient;
     }
+
 
     /// <inheritdoc/>
     public async Task<TaskManagementTaskList?> GetDefaultTaskListAsync(CancellationToken cancellationToken = default)
@@ -56,6 +60,7 @@ public class MicrosoftToDoConnector : ITaskManagementConnector
         return new TaskManagementTaskList(result.Id, result.DisplayName);
     }
 
+
     /// <inheritdoc/>
     public async Task<IEnumerable<TaskManagementTaskList>> GetTaskListsAsync(CancellationToken cancellationToken = default)
     {
@@ -76,12 +81,14 @@ public class MicrosoftToDoConnector : ITaskManagementConnector
             name: list.DisplayName));
     }
 
+
     /// <inheritdoc/>
     public async Task<IEnumerable<TaskManagementTask>> GetTasksAsync(string listId, bool includeCompleted, CancellationToken cancellationToken = default)
     {
         Ensure.NotNullOrWhitespace(listId, nameof(listId));
 
         string filterValue = string.Empty;
+
         if (!includeCompleted)
         {
             filterValue = "status ne 'completed'";
@@ -107,6 +114,7 @@ public class MicrosoftToDoConnector : ITaskManagementConnector
             isCompleted: task.Status == TaskStatus.Completed));
     }
 
+
     /// <inheritdoc/>
     public async Task<TaskManagementTask> AddTaskAsync(string listId, TaskManagementTask task, CancellationToken cancellationToken = default)
     {
@@ -119,6 +127,7 @@ public class MicrosoftToDoConnector : ITaskManagementConnector
             .Request().AddAsync(FromTaskListTask(task), cancellationToken).ConfigureAwait(false));
     }
 
+
     /// <inheritdoc/>
     public Task DeleteTaskAsync(string listId, string taskId, CancellationToken cancellationToken = default)
     {
@@ -130,6 +139,7 @@ public class MicrosoftToDoConnector : ITaskManagementConnector
             .Tasks[taskId]
             .Request().DeleteAsync(cancellationToken);
     }
+
 
     private static TodoTask FromTaskListTask(TaskManagementTask task)
     {
@@ -147,6 +157,7 @@ public class MicrosoftToDoConnector : ITaskManagementConnector
             Status = task.IsCompleted ? TaskStatus.Completed : TaskStatus.NotStarted
         };
     }
+
 
     private static TaskManagementTask ToTaskListTask(TodoTask task)
     {

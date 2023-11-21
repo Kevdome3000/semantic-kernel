@@ -5,7 +5,6 @@ namespace Microsoft.SemanticKernel.Plugins.Memory.Collections;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Diagnostics;
 
 
 /// <summary>

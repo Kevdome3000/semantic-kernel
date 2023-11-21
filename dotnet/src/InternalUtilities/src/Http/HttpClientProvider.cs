@@ -4,6 +4,7 @@ using System.Net.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Http;
 
+
 /// <summary>
 /// Provides functionality for retrieving instances of HttpClient.
 /// </summary>

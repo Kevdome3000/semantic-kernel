@@ -7,7 +7,6 @@ namespace Microsoft.SemanticKernel;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using Diagnostics;
 
 #pragma warning restore IDE0130
 

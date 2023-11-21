@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure.Core;
 using AzureSdk;
-using Microsoft.Extensions.Logging;
+using Extensions.Logging;
 using SemanticKernel.AI.Embeddings;
 using Services;
 
@@ -36,7 +36,7 @@ public sealed class AzureOpenAITextEmbeddingGeneration : AzureOpenAIClientBase, 
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null) : base(deploymentName, endpoint, apiKey, httpClient, loggerFactory)
     {
-        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
     }
 
 
@@ -57,12 +57,12 @@ public sealed class AzureOpenAITextEmbeddingGeneration : AzureOpenAIClientBase, 
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null) : base(deploymentName, endpoint, credential, httpClient, loggerFactory)
     {
-        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
     }
 
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
+    public IReadOnlyDictionary<string, string> Attributes => InternalAttributes;
 
 
     /// <summary>
@@ -75,7 +75,7 @@ public sealed class AzureOpenAITextEmbeddingGeneration : AzureOpenAIClientBase, 
         IList<string> data,
         CancellationToken cancellationToken = default)
     {
-        this.LogActionDetails();
-        return this.InternalGetEmbeddingsAsync(data, cancellationToken);
+        LogActionDetails();
+        return InternalGetEmbeddingsAsync(data, cancellationToken);
     }
 }

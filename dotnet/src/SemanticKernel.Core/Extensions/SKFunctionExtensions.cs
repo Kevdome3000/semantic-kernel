@@ -7,7 +7,6 @@ using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using AI;
-using Diagnostics;
 using Extensions.Logging;
 using Orchestration;
 
@@ -28,7 +27,6 @@ public static class SKFunctionExtensions
     /// <param name="plugins">Collection of plugins that this function can access</param>
     /// <param name="culture">Culture to use for the function execution</param>
     /// <param name="requestSettings">LLM completion settings (for semantic functions only)</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function execution</returns>
     public static Task<FunctionResult> InvokeAsync(
@@ -38,10 +36,9 @@ public static class SKFunctionExtensions
         IReadOnlySKPluginCollection? plugins = null,
         CultureInfo? culture = null,
         AIRequestSettings? requestSettings = null,
-        ILoggerFactory? loggerFactory = null,
         CancellationToken cancellationToken = default)
     {
-        var context = kernel.CreateNewContext(variables, plugins, loggerFactory, culture);
+        var context = kernel.CreateNewContext(variables, plugins, culture);
         return function.InvokeAsync(kernel, context, requestSettings, cancellationToken);
     }
 
@@ -55,7 +52,6 @@ public static class SKFunctionExtensions
     /// <param name="plugins">Collection of plugins that this function can access</param>
     /// <param name="culture">Culture to use for the function execution</param>
     /// <param name="requestSettings">LLM completion settings (for semantic functions only)</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function execution</returns>
     public static Task<FunctionResult> InvokeAsync(
@@ -65,9 +61,8 @@ public static class SKFunctionExtensions
         IReadOnlySKPluginCollection? plugins = null,
         CultureInfo? culture = null,
         AIRequestSettings? requestSettings = null,
-        ILoggerFactory? loggerFactory = null,
         CancellationToken cancellationToken = default)
-        => function.InvokeAsync(kernel, new ContextVariables(input), plugins, culture, requestSettings, loggerFactory, cancellationToken);
+        => function.InvokeAsync(kernel, new ContextVariables(input), plugins, culture, requestSettings, cancellationToken);
 
 
     /// <summary>

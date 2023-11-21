@@ -13,7 +13,6 @@ using System.Threading.Tasks;
 using AI.ChatCompletion;
 using Connectors.AI.OpenAI;
 using Connectors.AI.OpenAI.AzureSdk;
-using Diagnostics;
 using Extensions.Logging;
 using Functions.OpenAPI.Model;
 using Json.More;

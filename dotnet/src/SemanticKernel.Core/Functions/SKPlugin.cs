@@ -12,7 +12,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
-using Diagnostics;
 using Extensions.Logging;
 
 
@@ -21,7 +20,7 @@ using Extensions.Logging;
 /// as well as static factory methods for creating commonly-used plugin implementations.
 /// </summary>
 [DebuggerDisplay("Name = {Name}, Functions = {FunctionCount}")]
-[DebuggerTypeProxy(typeof(SKPlugin.TypeProxy))]
+[DebuggerTypeProxy(typeof(TypeProxy))]
 public sealed class SKPlugin : ISKPlugin
 {
     /// <summary>The collection of functions associated with this plugin.</summary>

@@ -20,7 +20,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using AI;
 using AI.TextCompletion;
-using Diagnostics;
 using Events;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
@@ -178,7 +177,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
             handler(this, eventWrapper.EventArgs);
 
             // Apply any changes from the event handlers to final result.
-            result = new FunctionResult(this.Name, eventWrapper.EventArgs.SKContext, eventWrapper.EventArgs.SKContext.Result)
+            result = new FunctionResult(this.Name, eventWrapper.EventArgs.SKContext, eventWrapper.EventArgs.SKContext.Variables.Input)
             {
                 // Updates the eventArgs metadata during invoked handler execution
                 // will reflect in the result metadata
@@ -217,7 +216,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
 
     private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
-    private static readonly object[] s_cancellationTokenNoneArray = new object[] { CancellationToken.None };
+    private static readonly object[] s_cancellationTokenNoneArray = { CancellationToken.None };
     private readonly ImplementationFunc _function;
     private readonly IReadOnlyList<SKParameterMetadata> _parameters;
     private readonly SKReturnParameterMetadata _returnParameter;
@@ -325,7 +324,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
             Name = functionName!,
             Description = method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? "",
             Parameters = stringParameterViews,
-            ReturnParameter = new SKReturnParameterMetadata()
+            ReturnParameter = new SKReturnParameterMetadata
             {
                 Description = method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
                 ParameterType = method.ReturnType,
@@ -381,31 +380,31 @@ internal sealed class SKFunctionFromMethod : ISKFunction
         if (type == typeof(Kernel))
         {
             TrackUniqueParameterType(ref hasKernelParam, method, $"At most one {nameof(Kernel)} parameter is permitted.");
-            return (static (Kernel kernel, SKContext context, CancellationToken _) => kernel, null);
+            return (static (kernel, context, _) => kernel, null);
         }
 
         if (type == typeof(SKContext))
         {
             TrackUniqueParameterType(ref hasSKContextParam, method, $"At most one {nameof(SKContext)} parameter is permitted.");
-            return (static (Kernel kernel, SKContext context, CancellationToken _) => context, null);
+            return (static (kernel, context, _) => context, null);
         }
 
         if (type == typeof(ILogger) || type == typeof(ILoggerFactory))
         {
             TrackUniqueParameterType(ref hasLoggerParam, method, $"At most one {nameof(ILogger)}/{nameof(ILoggerFactory)} parameter is permitted.");
-            return type == typeof(ILogger) ? ((Kernel kernel, SKContext context, CancellationToken _) => context.LoggerFactory.CreateLogger(method?.DeclaringType ?? typeof(SKFunctionFromPrompt)), null) : ((Kernel kernel, SKContext context, CancellationToken _) => context.LoggerFactory, null);
+            return type == typeof(ILogger) ? ((kernel, context, _) => kernel.LoggerFactory.CreateLogger(method?.DeclaringType ?? typeof(SKFunctionFromPrompt)), null) : ((kernel, context, _) => kernel.LoggerFactory, null);
         }
 
         if (type == typeof(CultureInfo) || type == typeof(IFormatProvider))
         {
             TrackUniqueParameterType(ref hasCultureParam, method, $"At most one {nameof(CultureInfo)}/{nameof(IFormatProvider)} parameter is permitted.");
-            return (static (Kernel kernel, SKContext context, CancellationToken _) => context.Culture, null);
+            return (static (kernel, context, _) => context.Culture, null);
         }
 
         if (type == typeof(CancellationToken))
         {
             TrackUniqueParameterType(ref hasCancellationTokenParam, method, $"At most one {nameof(CancellationToken)} parameter is permitted.");
-            return (static (Kernel kernel, SKContext _, CancellationToken cancellationToken) => cancellationToken, null);
+            return (static (kernel, _, cancellationToken) => cancellationToken, null);
         }
 
         // Handle context variables. These are supplied from the SKContext's Variables dictionary.
@@ -559,7 +558,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
             return static (functionName, result, _) =>
             {
                 var context = (SKContext)ThrowIfNullResult(result);
-                return new ValueTask<FunctionResult>(new FunctionResult(functionName, context, context.Result));
+                return new ValueTask<FunctionResult>(new FunctionResult(functionName, context, context.Variables.Input));
             };
         }
 
@@ -568,7 +567,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
             return static async (functionName, result, _) =>
             {
                 var context = await ((Task<SKContext>)ThrowIfNullResult(result)).ConfigureAwait(false);
-                return new FunctionResult(functionName, context, context.Result);
+                return new FunctionResult(functionName, context, context.Variables.Input);
             };
         }
 
@@ -730,7 +729,7 @@ internal sealed class SKFunctionFromMethod : ISKFunction
         throw new SKException($"Function '{method.Name}' is not supported by the kernel. {reason}");
 
 
-    /// <summary>Throws an exception indicating an invalid SKFunction signature if the specified condition is not met.</summary>
+    /// <summary>Throws an exception indicating an invalid SKFunctionFactory signature if the specified condition is not met.</summary>
     private static void ThrowForInvalidSignatureIf([DoesNotReturnIf(true)] bool condition, MethodInfo method, string reason)
     {
         if (condition)

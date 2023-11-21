@@ -23,4 +23,3 @@ public class FunctionCallRequestSettings : OpenAIRequestSettings
 
     public Action<string>? EmitDamagedResponse { get; set; }
 }
-

@@ -40,7 +40,7 @@ internal static partial class OpenAIRestExtensions
                 instructions = model.Instructions,
                 tools = model.Tools,
                 file_ids = model.FileIds,
-                metadata = model.Metadata,
+                metadata = model.Metadata
             };
 
         return
@@ -61,13 +61,9 @@ internal static partial class OpenAIRestExtensions
     public static Task<AssistantModel> GetAssistantModelAsync(
         this OpenAIRestContext context,
         string assistantId,
-        CancellationToken cancellationToken = default)
-    {
-        return
-            context.ExecuteGetAsync<AssistantModel>(
-                GetAssistantUrl(assistantId),
-                cancellationToken);
-    }
+        CancellationToken cancellationToken = default) => context.ExecuteGetAsync<AssistantModel>(
+        GetAssistantUrl(assistantId),
+        cancellationToken);
 
 
     /// <summary>
@@ -131,14 +127,8 @@ internal static partial class OpenAIRestExtensions
     public static Task DeleteAssistantModelAsync(
         this OpenAIRestContext context,
         string id,
-        CancellationToken cancellationToken = default)
-    {
-        return context.ExecuteDeleteAsync(GetAssistantUrl(id), cancellationToken);
-    }
+        CancellationToken cancellationToken = default) => context.ExecuteDeleteAsync(GetAssistantUrl(id), cancellationToken);
 
 
-    internal static string GetAssistantUrl(string assistantId)
-    {
-        return $"{BaseAssistantUrl}/{assistantId}";
-    }
+    internal static string GetAssistantUrl(string assistantId) => $"{BaseAssistantUrl}/{assistantId}";
 }

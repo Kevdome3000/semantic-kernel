@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Net.Http;
 
+
 /// <summary>
 /// Represents a singleton implementation of <see cref="HttpClientHandler"/> that is not disposable.
 /// </summary>
@@ -9,15 +10,14 @@ internal sealed class NonDisposableHttpClientHandler : HttpClientHandler
     /// <summary>
     /// Private constructor to prevent direct instantiation of the class.
     /// </summary>
-    private NonDisposableHttpClientHandler()
-    {
-        this.CheckCertificateRevocationList = true;
-    }
+    private NonDisposableHttpClientHandler() => CheckCertificateRevocationList = true;
+
 
     /// <summary>
     /// Gets the singleton instance of <see cref="NonDisposableHttpClientHandler"/>.
     /// </summary>
     public static NonDisposableHttpClientHandler Instance { get; } = new();
+
 
     /// <summary>
     /// Disposes the underlying resources held by the <see cref="NonDisposableHttpClientHandler"/>.

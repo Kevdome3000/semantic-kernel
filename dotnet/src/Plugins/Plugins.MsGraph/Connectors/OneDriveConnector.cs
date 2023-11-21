@@ -1,15 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors;
+
 using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Graph;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.Diagnostics;
-namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors;
+using Diagnostics;
+using Graph;
+using Http;
+
 
 /// <summary>
 /// Connector for OneDrive API
@@ -17,6 +19,7 @@ namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors;
 public class OneDriveConnector : ICloudDriveConnector
 {
     private readonly GraphServiceClient _graphServiceClient;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OneDriveConnector"/> class.
@@ -26,6 +29,7 @@ public class OneDriveConnector : ICloudDriveConnector
     {
         this._graphServiceClient = graphServiceClient;
     }
+
 
     /// <inheritdoc/>
     public async Task<Stream> GetFileContentStreamAsync(string filePath, CancellationToken cancellationToken = default)
@@ -37,6 +41,7 @@ public class OneDriveConnector : ICloudDriveConnector
             .ItemWithPath(filePath).Content
             .Request().GetAsync(cancellationToken).ConfigureAwait(false);
     }
+
 
     /// <summary>
     /// Checks if a file exists at the specified path in OneDrive.
@@ -69,6 +74,7 @@ public class OneDriveConnector : ICloudDriveConnector
         }
     }
 
+
     /// <inheritdoc/>
     public async Task UploadSmallFileAsync(string filePath, string destinationPath, CancellationToken cancellationToken = default)
     {
@@ -78,6 +84,7 @@ public class OneDriveConnector : ICloudDriveConnector
         filePath = Environment.ExpandEnvironmentVariables(filePath);
 
         long fileSize = new FileInfo(filePath).Length;
+
         if (fileSize > 4 * 1024 * 1024)
         {
             throw new IOException("File is too large to upload - function currently only supports files up to 4MB.");
@@ -106,8 +113,12 @@ public class OneDriveConnector : ICloudDriveConnector
         }
     }
 
+
     /// <inheritdoc/>
-    public async Task<string> CreateShareLinkAsync(string filePath, string type = "view", string scope = "anonymous",
+    public async Task<string> CreateShareLinkAsync(
+        string filePath,
+        string type = "view",
+        string scope = "anonymous",
         CancellationToken cancellationToken = default)
     {
         Ensure.NotNullOrWhitespace(filePath, nameof(filePath));
@@ -119,10 +130,10 @@ public class OneDriveConnector : ICloudDriveConnector
         try
         {
             response = await this._graphServiceClient.Me
-               .Drive.Root
-               .ItemWithPath(filePath)
-               .CreateLink(type, scope)
-               .Request().PostResponseAsync(cancellationToken).ConfigureAwait(false);
+                .Drive.Root
+                .ItemWithPath(filePath)
+                .CreateLink(type, scope)
+                .Request().PostResponseAsync(cancellationToken).ConfigureAwait(false);
 
             response.ToHttpResponseMessage().EnsureSuccessStatusCode();
         }
@@ -136,6 +147,7 @@ public class OneDriveConnector : ICloudDriveConnector
         }
 
         string? result = (await response.GetResponseObjectAsync().ConfigureAwait(false)).Link?.WebUrl;
+
         if (string.IsNullOrWhiteSpace(result))
         {
             throw new SKException("Shareable file link was null or whitespace.");

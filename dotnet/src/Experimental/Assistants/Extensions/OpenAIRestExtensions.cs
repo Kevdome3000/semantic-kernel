@@ -5,7 +5,6 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Diagnostics;
 using Internal;
 
 
@@ -44,10 +43,7 @@ internal static partial class OpenAIRestExtensions
     private static Task<TResult> ExecutePostAsync<TResult>(
         this OpenAIRestContext context,
         string url,
-        CancellationToken cancellationToken = default)
-    {
-        return context.ExecutePostAsync<TResult>(url, payload: null, cancellationToken);
-    }
+        CancellationToken cancellationToken = default) => context.ExecutePostAsync<TResult>(url, null, cancellationToken);
 
 
     private static async Task<TResult> ExecutePostAsync<TResult>(

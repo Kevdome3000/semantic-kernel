@@ -93,8 +93,6 @@ internal static class Example31_CustomPlanner
 
     private static async Task RememberFactsAsync(Kernel kernel, ISemanticTextMemory memory)
     {
-        kernel.ImportPluginFromObject(new TextMemoryPlugin(memory));
-
         List<string> memoriesToSave = new()
         {
             "I like pizza and chicken wings.",
@@ -166,15 +164,15 @@ internal static class Example31_CustomPlanner
 public class MarkupPlugin
 {
     [SKFunction, Description("Run Markup")]
-    public async Task<string> RunMarkupAsync(string docString, SKContext context)
+    public async Task<string> RunMarkupAsync(string docString, Kernel kernel)
     {
-        var plan = docString.FromMarkup("Run a piece of xml markup", context);
+        var plan = docString.FromMarkup("Run a piece of xml markup", kernel);
 
         Console.WriteLine("Markup plan:");
         Console.WriteLine(plan.ToPlanWithGoalString());
         Console.WriteLine();
 
-        var result = await context.Runner.RunAsync(plan);
+        var result = await kernel.RunAsync(plan);
         return result?.GetValue<string>()! ?? string.Empty;
     }
 }
@@ -188,7 +186,7 @@ public static class XmlMarkupPlanParser
     };
 
 
-    public static Plan FromMarkup(this string markup, string goal, SKContext context)
+    public static Plan FromMarkup(this string markup, string goal, Kernel kernel)
     {
         Console.WriteLine("Markup:");
         Console.WriteLine(markup);
@@ -196,11 +194,11 @@ public static class XmlMarkupPlanParser
 
         var doc = new XmlMarkup(markup);
         var nodes = doc.SelectElements();
-        return nodes.Count == 0 ? new Plan(goal) : NodeListToPlan(nodes, context, goal);
+        return nodes.Count == 0 ? new Plan(goal) : NodeListToPlan(nodes, kernel, goal);
     }
 
 
-    private static Plan NodeListToPlan(XmlNodeList nodes, SKContext context, string description)
+    private static Plan NodeListToPlan(XmlNodeList nodes, Kernel kernel, string description)
     {
         Plan plan = new(description);
 
@@ -220,11 +218,11 @@ public static class XmlMarkupPlanParser
 
             if (hasChildElements)
             {
-                plan.AddSteps(NodeListToPlan(node.ChildNodes, context, functionName));
+                plan.AddSteps(NodeListToPlan(node.ChildNodes, kernel, functionName));
             }
             else
             {
-                Plan planStep = context.Plugins.TryGetFunction(pluginName, functionName, out ISKFunction? command) ? new Plan(command) : new Plan(node.InnerText);
+                Plan planStep = kernel.Plugins.TryGetFunction(pluginName, functionName, out ISKFunction? command) ? new Plan(command) : new Plan(node.InnerText);
                 planStep.PluginName = pluginName;
 
                 planStep.Parameters.Update(node.InnerText);

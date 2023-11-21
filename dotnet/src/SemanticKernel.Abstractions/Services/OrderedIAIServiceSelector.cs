@@ -4,7 +4,6 @@ namespace Microsoft.SemanticKernel.Services;
 
 using System.Linq;
 using AI;
-using Diagnostics;
 using Orchestration;
 
 
@@ -15,9 +14,9 @@ using Orchestration;
 internal class OrderedIAIServiceSelector : IAIServiceSelector
 {
     /// <inheritdoc/>
-    public (T?, AIRequestSettings?) SelectAIService<T>(SKContext context, ISKFunction skfunction) where T : IAIService
+    public (T?, AIRequestSettings?) SelectAIService<T>(Kernel kernel, SKContext context, ISKFunction skfunction) where T : IAIService
     {
-        var serviceProvider = context.ServiceProvider;
+        var serviceProvider = kernel.ServiceProvider;
         var modelSettings = skfunction.ModelSettings;
 
         if (modelSettings is null || !modelSettings.Any())

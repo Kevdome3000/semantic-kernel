@@ -9,11 +9,11 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
-using Diagnostics;
 using Orchestration;
 using SemanticKernel.AI.ChatCompletion;
 using SemanticKernel.AI.TextCompletion;
 using static FunctionCalling.Extensions.ChatMessageExtensions;
+using ChatMessage = SemanticKernel.AI.ChatCompletion.ChatMessage;
 
 
 internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreamingResult, IChatResult, ITextResult
@@ -33,7 +33,7 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
 
 
     /// <inheritdoc/>
-    public async Task<SemanticKernel.AI.ChatCompletion.ChatMessage> GetChatMessageAsync(CancellationToken cancellationToken = default)
+    public async Task<ChatMessage> GetChatMessageAsync(CancellationToken cancellationToken = default)
     {
         var chatMessage = await _choice.GetMessageStreaming(cancellationToken)
             .LastOrDefaultAsync(cancellationToken)
@@ -68,7 +68,7 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
 
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<SemanticKernel.AI.ChatCompletion.ChatMessage> GetStreamingChatMessageAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<ChatMessage> GetStreamingChatMessageAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         await foreach (var message in _choice.GetMessageStreaming(cancellationToken))
         {

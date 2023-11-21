@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Net.Http;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Http;
-
 namespace Microsoft.SemanticKernel.Reliability.Basic;
+
+using System.Net.Http;
+using Extensions.Logging;
+using Http;
+
 
 /// <summary>
 /// Internal factory for creating <see cref="BasicHttpRetryHandlerFactory"/> instances.
@@ -17,6 +17,7 @@ public sealed class BasicHttpRetryHandlerFactory : HttpHandlerFactory<BasicHttpR
     /// </summary>
     public static BasicHttpRetryHandlerFactory Instance { get; } = new BasicHttpRetryHandlerFactory();
 
+
     /// <summary>
     /// Creates a new instance of <see cref="BasicHttpRetryHandlerFactory"/> with the provided configuration.
     /// </summary>
@@ -25,6 +26,7 @@ public sealed class BasicHttpRetryHandlerFactory : HttpHandlerFactory<BasicHttpR
     {
         this.Config = config ?? new();
     }
+
 
     /// <summary>
     /// Creates a new instance of <see cref="BasicHttpRetryHandlerFactory"/> with the default configuration.
@@ -35,6 +37,7 @@ public sealed class BasicHttpRetryHandlerFactory : HttpHandlerFactory<BasicHttpR
     {
         return new BasicHttpRetryHandler(this.Config, loggerFactory);
     }
+
 
     /// <summary>
     /// Creates a new instance of <see cref="BasicHttpRetryHandlerFactory"/> with a specified configuration.
@@ -48,6 +51,7 @@ public sealed class BasicHttpRetryHandlerFactory : HttpHandlerFactory<BasicHttpR
 
         return new BasicHttpRetryHandler(config, loggerFactory);
     }
+
 
     /// <summary>
     /// Default retry configuration used when creating a new instance of <see cref="BasicHttpRetryHandlerFactory"/>.

@@ -6,7 +6,6 @@ namespace SemanticKernel.UnitTests.Functions;
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,7 +14,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Moq;
 using Xunit;
@@ -163,7 +161,7 @@ public class SemanticFunctionTests
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
-        var semanticFunction = SKFunction.FromPrompt("Write a simple phrase about UnitTests");
+        var semanticFunction = SKFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
 
         var invoked = 0;
         sut.FunctionInvoking += (sender, e) =>
@@ -192,7 +190,7 @@ public class SemanticFunctionTests
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
-        var semanticFunction = SKFunction.FromPrompt("Write a simple phrase about UnitTests");
+        var semanticFunction = SKFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
         var input = "Test input";
         var invoked = false;
         sut.FunctionInvoking += (sender, e) =>
@@ -206,7 +204,7 @@ public class SemanticFunctionTests
 
         // Assert
         Assert.True(invoked);
-        Assert.Null(result.GetValue<string>());
+        Assert.Null(result);
     }
 
 
@@ -216,7 +214,7 @@ public class SemanticFunctionTests
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
-        var semanticFunction = SKFunction.FromPrompt("Write a simple phrase about UnitTests");
+        var semanticFunction = SKFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
 
         var invoked = 0;
         sut.FunctionInvoking += (sender, e) =>
@@ -240,7 +238,7 @@ public class SemanticFunctionTests
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
-        var semanticFunction = SKFunction.FromPrompt("Write a simple phrase about UnitTests");
+        var semanticFunction = SKFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
         var invoked = 0;
 
         sut.FunctionInvoking += (sender, e) =>
@@ -267,8 +265,8 @@ public class SemanticFunctionTests
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
-        var semanticFunction1 = SKFunction.FromPrompt("Write one phrase about UnitTests", functionName: "SkipMe");
-        var semanticFunction2 = SKFunction.FromPrompt("Write two phrases about UnitTests", functionName: "DontSkipMe");
+        var semanticFunction1 = SKFunctionFactory.CreateFromPrompt("Write one phrase about UnitTests", functionName: "SkipMe");
+        var semanticFunction2 = SKFunctionFactory.CreateFromPrompt("Write two phrases about UnitTests", functionName: "DontSkipMe");
         var invoked = 0;
         var invoking = 0;
         string invokedFunction = string.Empty;
@@ -309,7 +307,7 @@ public class SemanticFunctionTests
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
-        var semanticFunction = SKFunction.FromPrompt("Write a simple phrase about UnitTests");
+        var semanticFunction = SKFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
 
         var invoked = 0;
 
@@ -340,7 +338,7 @@ public class SemanticFunctionTests
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
-        var semanticFunction = SKFunction.FromPrompt(prompt);
+        var semanticFunction = SKFunctionFactory.CreateFromPrompt(prompt);
 
         var originalInput = "Importance";
         var newInput = "Problems";
@@ -364,7 +362,7 @@ public class SemanticFunctionTests
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
-        var semanticFunction = SKFunction.FromPrompt(prompt);
+        var semanticFunction = SKFunctionFactory.CreateFromPrompt(prompt);
 
         var originalInput = "Importance";
         var newInput = "Problems";
@@ -394,19 +392,11 @@ public class SemanticFunctionTests
         var function3 = kernel.CreateFunctionFromPrompt("Write a simple phrase about UnitTests", functionName: "Function3");
 
         // Act
-        var kernelResult = await kernel.RunAsync(function1, function2, function3);
+        var result = await kernel.RunAsync(function1, function2, function3);
 
         // Assert
-        Assert.NotNull(kernelResult);
-        Assert.Equal("Result3", kernelResult.GetValue<string>());
-
-        var functionResult1 = kernelResult.FunctionResults.First(l => l.FunctionName == "Function1");
-        var functionResult2 = kernelResult.FunctionResults.First(l => l.FunctionName == "Function2");
-        var functionResult3 = kernelResult.FunctionResults.First(l => l.FunctionName == "Function3");
-
-        Assert.Equal("Result1", functionResult1.GetValue<string>());
-        Assert.Equal("Result2", functionResult2.GetValue<string>());
-        Assert.Equal("Result3", functionResult3.GetValue<string>());
+        Assert.NotNull(result);
+        Assert.Equal("Result3", result.GetValue<string>());
     }
 
 

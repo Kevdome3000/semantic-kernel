@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch;
+
 using System.Net;
 using Azure;
-using Microsoft.SemanticKernel.Diagnostics;
+using Http;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch;
 
 /// <summary>
 /// Provides extension methods for the <see cref="RequestFailedException"/> class.

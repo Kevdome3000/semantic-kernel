@@ -11,7 +11,6 @@ using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Model;
@@ -260,7 +259,7 @@ public static class KernelOpenApiPluginExtensions
 
 
     /// <summary>
-    /// Registers SKFunction for a REST API operation.
+    /// Registers SKFunctionFactory for a REST API operation.
     /// </summary>
     /// <param name="pluginName">Plugin name.</param>
     /// <param name="runner">The REST API operation runner.</param>
@@ -344,7 +343,7 @@ public static class KernelOpenApiPluginExtensions
 
         var returnParameter = operation.GetDefaultReturnParameter();
 
-        return SKFunction.FromMethod(
+        return SKFunctionFactory.CreateFromMethod(
             method: ExecuteAsync,
             parameters: parameters,
             returnParameter: returnParameter,

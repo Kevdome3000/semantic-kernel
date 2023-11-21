@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 
 
 /// <summary>
-/// A class for describing the reponse/return type of an SKFunction in a JSON Schema friendly way.
+/// A class for describing the reponse/return type of an SKFunctionFactory in a JSON Schema friendly way.
 /// </summary>
 internal sealed class JsonSchemaFunctionResponse
 {

@@ -39,7 +39,7 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
     {
         var handlebars = HandlebarsDotNet.Handlebars.Create();
 
-        foreach (ISKPlugin plugin in executionContext.Plugins)
+        foreach (ISKPlugin plugin in kernel.Plugins)
         {
             foreach (ISKFunction skfunction in plugin)
             {

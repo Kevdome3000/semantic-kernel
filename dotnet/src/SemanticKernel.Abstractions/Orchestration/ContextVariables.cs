@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Orchestration;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Microsoft.SemanticKernel.Diagnostics;
 
-namespace Microsoft.SemanticKernel.Orchestration;
 
 /// <summary>
 /// Context Variables is a data structure that holds temporary data while a task is being performed.
@@ -26,6 +26,7 @@ public sealed class ContextVariables : Dictionary<string, string>
         this.Set(MainKey, value);
     }
 
+
     /// <summary>
     /// Create a copy of the current instance with a copy of the internal data
     /// </summary>
@@ -33,6 +34,7 @@ public sealed class ContextVariables : Dictionary<string, string>
     public ContextVariables Clone()
     {
         var clone = new ContextVariables();
+
         foreach (KeyValuePair<string, string> x in this)
         {
             clone.Set(x.Key, x.Value);
@@ -41,9 +43,11 @@ public sealed class ContextVariables : Dictionary<string, string>
         return clone;
     }
 
+
     /// <summary>Gets the main input string.</summary>
     /// <remarks>If the main input string was removed from the collection, an empty string will be returned.</remarks>
     public string Input => this.TryGetValue(MainKey, out string? value) ? value : string.Empty;
+
 
     /// <summary>
     /// Updates the main input text with the new value after a function is complete.
@@ -57,6 +61,7 @@ public sealed class ContextVariables : Dictionary<string, string>
         return this;
     }
 
+
     /// <summary>
     /// This method allows to store additional data in the context variables, e.g. variables needed by functions in the
     /// pipeline. These "variables" are visible also to semantic functions using the "{{varName}}" syntax, allowing
@@ -67,6 +72,7 @@ public sealed class ContextVariables : Dictionary<string, string>
     public void Set(string name, string? value)
     {
         Verify.NotNullOrWhiteSpace(name);
+
         if (value != null)
         {
             this[name] = value;
@@ -77,11 +83,13 @@ public sealed class ContextVariables : Dictionary<string, string>
         }
     }
 
+
     /// <summary>
     /// Print the processed input, aka the current data after any processing occurred.
     /// </summary>
     /// <returns>Processed input, aka result</returns>
     public override string ToString() => this.Input;
+
 
     internal const string MainKey = "INPUT";
 
@@ -90,6 +98,7 @@ public sealed class ContextVariables : Dictionary<string, string>
         this.TryGetValue(MainKey, out string? input) && !string.IsNullOrEmpty(input)
             ? $"Variables = {this.Count}, Input = {input}"
             : $"Variables = {this.Count}";
+
 
     #region private ================================================================================
 
@@ -104,4 +113,6 @@ public sealed class ContextVariables : Dictionary<string, string>
     }
 
     #endregion
+
+
 }

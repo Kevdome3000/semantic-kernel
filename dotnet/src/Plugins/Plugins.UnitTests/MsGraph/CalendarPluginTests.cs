@@ -1,17 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Plugins.UnitTests.MsGraph;
+
 using System;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.MsGraph;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Models;
 using Moq;
 using SemanticKernel.UnitTests;
 using Xunit;
 
-namespace SemanticKernel.Plugins.UnitTests.MsGraph;
 
 public class CalendarPluginTests
 {
@@ -52,6 +53,7 @@ public class CalendarPluginTests
         connectorMock.VerifyAll();
     }
 
+
     [Fact]
     public async Task AddEventAsyncWithoutLocationSucceedsAsync()
     {
@@ -88,6 +90,7 @@ public class CalendarPluginTests
         // Assert
         connectorMock.VerifyAll();
     }
+
 
     [Fact]
     public async Task AddEventAsyncWithoutContentSucceedsAsync()
@@ -126,6 +129,7 @@ public class CalendarPluginTests
         connectorMock.VerifyAll();
     }
 
+
     [Fact]
     public async Task AddEventAsyncWithoutAttendeesSucceedsAsync()
     {
@@ -163,6 +167,7 @@ public class CalendarPluginTests
         connectorMock.VerifyAll();
     }
 
+
     [Fact]
     public async Task AddEventAsyncWithoutStartFailsAsync()
     {
@@ -187,6 +192,7 @@ public class CalendarPluginTests
         );
     }
 
+
     [Fact]
     public async Task AddEventAsyncWithoutEndFailsAsync()
     {
@@ -210,6 +216,7 @@ public class CalendarPluginTests
             ("attendees", string.Join(";", anyAttendees)))
         );
     }
+
 
     [Fact]
     public async Task AddEventAsyncWithoutSubjectFailsAsync()

@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
 /// <summary>
 /// JSON converter for <see cref="OpenAIRequestSettings"/>
@@ -82,6 +83,7 @@ public class OpenAIRequestSettingsConverter : JsonConverter<OpenAIRequestSetting
         return requestSettings;
     }
 
+
     /// <inheritdoc/>
     public override void Write(Utf8JsonWriter writer, OpenAIRequestSettings value, JsonSerializerOptions options)
     {
@@ -91,6 +93,7 @@ public class OpenAIRequestSettingsConverter : JsonConverter<OpenAIRequestSetting
         writer.WriteNumber("top_p", value.TopP);
         writer.WriteNumber("frequency_penalty", value.FrequencyPenalty);
         writer.WriteNumber("presence_penalty", value.PresencePenalty);
+
         if (value.MaxTokens is null)
         {
             writer.WriteNull("max_tokens");

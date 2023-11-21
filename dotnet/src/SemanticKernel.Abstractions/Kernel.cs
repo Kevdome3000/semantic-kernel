@@ -4,7 +4,6 @@ namespace Microsoft.SemanticKernel;
 
 using System;
 using System.Globalization;
-using Diagnostics;
 using Events;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
@@ -34,6 +33,16 @@ public sealed class Kernel
 
     /// <inheritdoc/>
     public ISKPluginCollection Plugins { get; }
+
+    /// <summary>
+    /// AI service provider
+    /// </summary>
+    public IAIServiceProvider ServiceProvider { get; }
+
+    /// <summary>
+    /// AIService selector implementation
+    /// </summary>
+    internal IAIServiceSelector ServiceSelector { get; }
 
     /// <summary>
     /// Reference to Http handler factory
@@ -68,9 +77,9 @@ public sealed class Kernel
         IDelegatingHandlerFactory? httpHandlerFactory = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._aiServiceProvider = aiServiceProvider;
+        this.ServiceProvider = aiServiceProvider;
         this.Plugins = plugins ?? new SKPluginCollection();
-        this._aiServiceSelector = serviceSelector ?? new OrderedIAIServiceSelector();
+        this.ServiceSelector = serviceSelector ?? new OrderedIAIServiceSelector();
         this.HttpHandlerFactory = httpHandlerFactory ?? NullHttpHandlerFactory.Instance;
         this.LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
 
@@ -83,24 +92,17 @@ public sealed class Kernel
     /// </summary>
     /// <param name="variables">Initializes the context with the provided variables</param>
     /// <param name="plugins">Provides a collection of plugins to be available in the new context. By default, it's the full collection from the kernel.</param>
-    /// <param name="loggerFactory">Logged factory used within the context</param>
     /// <param name="culture">Optional culture info related to the context</param>
     /// <returns>SK context</returns>
     public SKContext CreateNewContext(
         ContextVariables? variables = null,
         IReadOnlySKPluginCollection? plugins = null,
-        ILoggerFactory? loggerFactory = null,
         CultureInfo? culture = null)
     {
         return new SKContext(
-            this,
-            this._aiServiceProvider,
-            this._aiServiceSelector,
             variables,
-            plugins ?? this.Plugins,
             new EventHandlerWrapper<FunctionInvokingEventArgs>(this.FunctionInvoking),
             new EventHandlerWrapper<FunctionInvokedEventArgs>(this.FunctionInvoked),
-            loggerFactory ?? this.LoggerFactory,
             culture);
     }
 
@@ -113,7 +115,7 @@ public sealed class Kernel
     /// <returns>Instance of T</returns>
     public T GetService<T>(string? name = null) where T : IAIService
     {
-        var service = this._aiServiceProvider.GetService<T>(name);
+        var service = this.ServiceProvider.GetService<T>(name);
 
         if (service != null)
         {
@@ -126,8 +128,6 @@ public sealed class Kernel
 
     #region private ================================================================================
 
-    private readonly IAIServiceProvider _aiServiceProvider;
-    private readonly IAIServiceSelector _aiServiceSelector;
     private readonly ILogger _logger;
 
     #endregion

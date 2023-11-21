@@ -11,5 +11,5 @@ internal sealed class ChatWithDataSource
     public string Type { get; set; } = ChatWithDataSourceType.AzureCognitiveSearch.ToString();
 
     [JsonPropertyName("parameters")]
-    public ChatWithDataSourceParameters Parameters { get; set; } = new ChatWithDataSourceParameters();
+    public ChatWithDataSourceParameters Parameters { get; set; } = new();
 }

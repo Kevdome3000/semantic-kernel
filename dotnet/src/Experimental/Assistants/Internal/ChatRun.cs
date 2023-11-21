@@ -8,7 +8,6 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Diagnostics;
 using Extensions;
 using Models;
 using Orchestration;
@@ -20,13 +19,13 @@ using Orchestration;
 internal sealed class ChatRun
 {
     /// <inheritdoc/>
-    public string Id => this._model.Id;
+    public string Id => _model.Id;
 
     /// <inheritdoc/>
-    public string AssistantId => this._model.AssistantId;
+    public string AssistantId => _model.AssistantId;
 
     /// <inheritdoc/>
-    public string ThreadId => this._model.ThreadId;
+    public string ThreadId => _model.ThreadId;
 
     private const string ActionState = "requires_action";
     private const string FailedState = "failed";
@@ -36,7 +35,7 @@ internal sealed class ChatRun
         new(StringComparer.OrdinalIgnoreCase)
         {
             "queued",
-            "in_progress",
+            "in_progress"
         };
 
     private readonly OpenAIRestContext _restContext;
@@ -51,30 +50,30 @@ internal sealed class ChatRun
         await PollRunStatus().ConfigureAwait(false);
 
         // Retrieve steps
-        var steps = await this._restContext.GetRunStepsAsync(this.ThreadId, this.Id, cancellationToken).ConfigureAwait(false);
+        var steps = await _restContext.GetRunStepsAsync(ThreadId, Id, cancellationToken).ConfigureAwait(false);
 
         // Is tool action required?
-        if (ActionState.Equals(this._model.Status, StringComparison.OrdinalIgnoreCase))
+        if (ActionState.Equals(_model.Status, StringComparison.OrdinalIgnoreCase))
         {
             // Execute functions in parallel and post results at once.
-            var tasks = steps.Data.SelectMany(step => this.ExecuteStep(step, cancellationToken)).ToArray();
+            var tasks = steps.Data.SelectMany(step => ExecuteStep(step, cancellationToken)).ToArray();
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
             var results = tasks.Select(t => t.Result).ToArray();
-            await this._restContext.AddToolOutputsAsync(this.ThreadId, this.Id, results, cancellationToken).ConfigureAwait(false);
+            await _restContext.AddToolOutputsAsync(ThreadId, Id, results, cancellationToken).ConfigureAwait(false);
 
             // Refresh run as it goes back into pending state after posting function results.
-            this._model = await this._restContext.GetRunAsync(this.ThreadId, this.Id, cancellationToken).ConfigureAwait(false);
+            _model = await _restContext.GetRunAsync(ThreadId, Id, cancellationToken).ConfigureAwait(false);
             await PollRunStatus().ConfigureAwait(false);
 
             // Refresh steps to retrieve additional messages.
-            steps = await this._restContext.GetRunStepsAsync(this.ThreadId, this.Id, cancellationToken).ConfigureAwait(false);
+            steps = await _restContext.GetRunStepsAsync(ThreadId, Id, cancellationToken).ConfigureAwait(false);
         }
 
         // Did fail?
-        if (FailedState.Equals(this._model.Status, StringComparison.OrdinalIgnoreCase))
+        if (FailedState.Equals(_model.Status, StringComparison.OrdinalIgnoreCase))
         {
-            throw new SKException($"Unexpected failure processing run: {this.Id}: {this._model.LastError?.Message ?? "Unknown"}");
+            throw new SKException($"Unexpected failure processing run: {Id}: {_model.LastError?.Message ?? "Unknown"}");
         }
 
         var messageIds =
@@ -87,13 +86,13 @@ internal sealed class ChatRun
 
         async Task PollRunStatus()
         {
-            while (s_pollingStates.Contains(this._model.Status))
+            while (s_pollingStates.Contains(_model.Status))
             {
                 await Task.Delay(s_pollingInterval, cancellationToken).ConfigureAwait(false);
 
                 try
                 {
-                    this._model = await this._restContext.GetRunAsync(this.ThreadId, this.Id, cancellationToken).ConfigureAwait(false);
+                    _model = await _restContext.GetRunAsync(ThreadId, Id, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception exception) when (!exception.IsCriticalException())
                 {
@@ -112,9 +111,9 @@ internal sealed class ChatRun
         Kernel kernel,
         OpenAIRestContext restContext)
     {
-        this._model = model;
-        this._kernel = kernel;
-        this._restContext = restContext;
+        _model = model;
+        _kernel = kernel;
+        _restContext = restContext;
     }
 
 
@@ -126,7 +125,7 @@ internal sealed class ChatRun
             foreach (var toolCall in step.StepDetails.ToolCalls)
             {
                 // Run function
-                yield return this.ProcessFunctionStepAsync(toolCall.Id, toolCall.Function, cancellationToken);
+                yield return ProcessFunctionStepAsync(toolCall.Id, toolCall.Function, cancellationToken);
             }
         }
     }
@@ -140,12 +139,12 @@ internal sealed class ChatRun
             new ToolResultModel
             {
                 CallId = callId,
-                Output = result,
+                Output = result
             };
 
         async Task<string> InvokeFunctionCallAsync()
         {
-            var function = this._kernel.GetAssistantTool(functionDetails.Name);
+            var function = _kernel.GetAssistantTool(functionDetails.Name);
 
             var variables = new ContextVariables();
 
@@ -159,7 +158,7 @@ internal sealed class ChatRun
                 }
             }
 
-            var results = await this._kernel.RunAsync(function, variables, cancellationToken).ConfigureAwait(false);
+            var results = await _kernel.RunAsync(function, variables, cancellationToken).ConfigureAwait(false);
 
             return results.GetValue<string>() ?? string.Empty;
         }

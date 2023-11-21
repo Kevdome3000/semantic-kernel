@@ -11,10 +11,10 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Diagnostics;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
 using Http.ApiSchema;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
+using SemanticKernel.Http;
 using SemanticKernel.Memory;
 using Text;
 

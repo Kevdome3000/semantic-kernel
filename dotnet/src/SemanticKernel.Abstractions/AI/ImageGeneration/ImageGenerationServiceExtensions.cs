@@ -1,13 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.AI.ImageGeneration;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Services;
+
 
 // Use base namespace for better discoverability and to avoid conflicts with other extensions.
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel;
+
+using AI.ImageGeneration;
+using Services;
+
 #pragma warning restore IDE0130 // Namespace does not match folder structure
+
 
 /// <summary>
 /// Provides extension methods for working with <see cref="IImageGeneration"/> services.
@@ -25,7 +28,8 @@ public static class ImageGenerationServiceExtensions
     public static IImageGeneration GetImageGenerationService(
         this IAIServiceProvider services,
         string? serviceId = null) => services.GetService<IImageGeneration>(serviceId)
-            ?? throw new SKException("Image generation service not found");
+                                     ?? throw new SKException("Image generation service not found");
+
 
     /// <summary>
     /// Returns true if a <see cref="IImageGeneration"/> exist with the specified ID.
@@ -36,5 +40,5 @@ public static class ImageGenerationServiceExtensions
     public static bool HasImageGenerationService(
         this IAIServiceProvider services,
         string? serviceId = null)
-            => services.TryGetService<IImageGeneration>(serviceId, out _);
+        => services.TryGetService<IImageGeneration>(serviceId, out _);
 }

@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Reliability.Polly;
+
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Diagnostics;
-using Polly;
+using global::Polly;
 
-namespace Microsoft.SemanticKernel.Reliability.Polly;
 
 /// <summary>
 /// Customizable PollyHttpHandler that will follow the provided policy.
@@ -15,6 +15,7 @@ public class PollyHttpRetryHandler : DelegatingHandler
 {
     private readonly AsyncPolicy<HttpResponseMessage>? _typedAsyncPolicy;
     private readonly AsyncPolicy? _asyncPolicy;
+
 
     /// <summary>
     /// Creates a new instance of <see cref="PollyHttpRetryHandler"/>.
@@ -27,6 +28,7 @@ public class PollyHttpRetryHandler : DelegatingHandler
         this._typedAsyncPolicy = typedAsyncPolicy;
     }
 
+
     /// <summary>
     /// Creates a new instance of <see cref="PollyHttpRetryHandler"/> dedicated for non-typed policies.
     /// </summary>
@@ -37,6 +39,7 @@ public class PollyHttpRetryHandler : DelegatingHandler
 
         this._asyncPolicy = asyncPolicy;
     }
+
 
     /// <inheritdoc/>
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)

@@ -14,10 +14,7 @@ internal static class ISKFunctionExtensions
     /// <summary>
     /// Produce a fully qualified toolname.
     /// </summary>
-    public static string GetQualifiedName(this ISKFunction function, string pluginName)
-    {
-        return $"{pluginName}-{function.Name}";
-    }
+    public static string GetQualifiedName(this ISKFunction function, string pluginName) => $"{pluginName}-{function.Name}";
 
 
     /// <summary>
@@ -44,7 +41,7 @@ internal static class ISKFunctionExtensions
                         new OpenAIParameter
                         {
                             Type = ConvertType(p.ParameterType),
-                            Description = p.Description,
+                            Description = p.Description
                         };
                 });
 
@@ -53,7 +50,7 @@ internal static class ISKFunctionExtensions
             {
                 Type = "function",
                 Function =
-                    new()
+                    new ToolModel.FunctionModel
                     {
                         Name = function.GetQualifiedName(pluginName),
                         Description = function.Description,
@@ -61,9 +58,9 @@ internal static class ISKFunctionExtensions
                             new OpenAIParameters
                             {
                                 Properties = properties,
-                                Required = required,
-                            },
-                    },
+                                Required = required
+                            }
+                    }
             };
 
         return payload;

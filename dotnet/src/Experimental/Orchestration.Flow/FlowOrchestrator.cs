@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Abstractions;
-using Diagnostics;
 using Execution;
 using SemanticKernel.Orchestration;
 

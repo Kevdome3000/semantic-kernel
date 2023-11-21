@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Abstractions;
-using Diagnostics;
 
 #pragma warning restore IDE0130 // Namespace does not match folder structure
 

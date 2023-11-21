@@ -9,7 +9,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
@@ -140,8 +139,8 @@ public sealed class StepwisePlannerTests : IDisposable
 
         // Act
         var plan = await planner.CreatePlanAsync("I need to buy a new brush for my cat. Can you show me options?");
-        var kernelResult = await kernel.RunAsync(plan);
-        var result = kernelResult.GetValue<string>();
+        var functionResult = await kernel.RunAsync(plan);
+        var result = functionResult.GetValue<string>();
 
         // Assert - should contain results, for now just verify it didn't fail
         Assert.NotNull(result);

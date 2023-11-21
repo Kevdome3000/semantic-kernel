@@ -9,10 +9,10 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Diagnostics;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
+using Http;
 using ImageGeneration;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Services;
 using Text;
 using TextEmbedding;
@@ -48,7 +48,7 @@ public abstract class OpenAIClientBase
     /// <summary>Adds headers to use for OpenAI HTTP requests.</summary>
     protected private virtual void AddRequestHeaders(HttpRequestMessage request)
     {
-        request.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
+        request.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
     }
 
 

@@ -5,7 +5,6 @@ namespace Microsoft.SemanticKernel.Functions.OpenAPI.Builders;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Diagnostics;
 using Model;
 using Serialization;
 

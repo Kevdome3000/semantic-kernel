@@ -8,7 +8,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using AzureSdk;
-using Microsoft.Extensions.Logging;
+using Extensions.Logging;
 using SemanticKernel.AI.Embeddings;
 using Services;
 
@@ -34,12 +34,12 @@ public sealed class OpenAITextEmbeddingGeneration : OpenAIClientBase, ITextEmbed
         ILoggerFactory? loggerFactory = null
     ) : base(modelId, apiKey, organization, httpClient, loggerFactory)
     {
-        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
     }
 
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
+    public IReadOnlyDictionary<string, string> Attributes => InternalAttributes;
 
 
     /// <summary>
@@ -52,7 +52,7 @@ public sealed class OpenAITextEmbeddingGeneration : OpenAIClientBase, ITextEmbed
         IList<string> data,
         CancellationToken cancellationToken = default)
     {
-        this.LogActionDetails();
-        return this.InternalGetEmbeddingsAsync(data, cancellationToken);
+        LogActionDetails();
+        return InternalGetEmbeddingsAsync(data, cancellationToken);
     }
 }

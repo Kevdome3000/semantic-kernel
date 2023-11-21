@@ -3,7 +3,6 @@
 namespace Microsoft.SemanticKernel;
 
 using System;
-using Diagnostics;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
 using Http;

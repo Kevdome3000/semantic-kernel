@@ -7,7 +7,6 @@ namespace Microsoft.SemanticKernel.Planning;
 using System.Threading;
 using System.Threading.Tasks;
 using AI;
-using Diagnostics;
 using Orchestration;
 
 #pragma warning restore IDE0130
@@ -70,7 +69,7 @@ public sealed class SequentialPlanner : IPlanner
             [AvailableFunctionsKey] = relevantFunctionsManual
         };
 
-        KernelResult planResult = await this._kernel.RunAsync(this._functionFlowFunction, vars, cancellationToken).ConfigureAwait(false);
+        FunctionResult planResult = await this._kernel.RunAsync(this._functionFlowFunction, vars, cancellationToken).ConfigureAwait(false);
 
         string? planResultString = planResult.GetValue<string>()?.Trim();
 

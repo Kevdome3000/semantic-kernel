@@ -119,7 +119,7 @@ public static class OpenAIKernelBuilderExtensions
         string? modelId = null,
         bool setAsDefault = false)
     {
-        builder.WithAIService<ITextCompletion>(serviceId, (loggerFactory) =>
+        builder.WithAIService<ITextCompletion>(serviceId, loggerFactory =>
                 new AzureTextCompletion(
                     deploymentName,
                     openAIClient,
@@ -306,7 +306,7 @@ public static class OpenAIKernelBuilderExtensions
         {
             OpenAIClient client = CreateAzureOpenAIClient(loggerFactory, httpHandlerFactory, deploymentName, endpoint, new AzureKeyCredential(apiKey), httpClient);
 
-            return new(deploymentName, client, modelId, loggerFactory);
+            return new AzureOpenAIChatCompletion(deploymentName, client, modelId, loggerFactory);
         }
 
         ;
@@ -352,7 +352,7 @@ public static class OpenAIKernelBuilderExtensions
         {
             OpenAIClient client = CreateAzureOpenAIClient(loggerFactory, httpHandlerFactory, deploymentName, endpoint, credentials, httpClient);
 
-            return new(deploymentName, client, modelId, loggerFactory);
+            return new AzureOpenAIChatCompletion(deploymentName, client, modelId, loggerFactory);
         }
 
         ;
@@ -467,10 +467,7 @@ public static class OpenAIKernelBuilderExtensions
         string? modelId = null,
         bool setAsDefault = false)
     {
-        AzureOpenAIChatCompletion Factory(ILoggerFactory loggerFactory)
-        {
-            return new(deploymentName, openAIClient, modelId, loggerFactory);
-        }
+        AzureOpenAIChatCompletion Factory(ILoggerFactory loggerFactory) => new(deploymentName, openAIClient, modelId, loggerFactory);
 
         ;
 
@@ -505,10 +502,7 @@ public static class OpenAIKernelBuilderExtensions
         string? serviceId = null,
         bool setAsDefault = false)
     {
-        OpenAIChatCompletion Factory(ILoggerFactory loggerFactory)
-        {
-            return new(modelId, openAIClient, loggerFactory);
-        }
+        OpenAIChatCompletion Factory(ILoggerFactory loggerFactory) => new(modelId, openAIClient, loggerFactory);
 
         builder.WithAIService<IChatCompletion>(serviceId, Factory, setAsDefault);
 
@@ -595,7 +589,7 @@ public static class OpenAIKernelBuilderExtensions
     {
         OpenAIClientOptions options = CreateOpenAIClientOptions(loggerFactory, httpHandlerFactory, httpClient);
 
-        return new(new Uri(endpoint), credentials, options);
+        return new OpenAIClient(new Uri(endpoint), credentials, options);
     }
 
 
@@ -603,7 +597,7 @@ public static class OpenAIKernelBuilderExtensions
     {
         OpenAIClientOptions options = CreateOpenAIClientOptions(loggerFactory, httpHandlerFactory, httpClient);
 
-        return new(new Uri(endpoint), credentials, options);
+        return new OpenAIClient(new Uri(endpoint), credentials, options);
     }
 
 
@@ -613,7 +607,7 @@ public static class OpenAIKernelBuilderExtensions
         {
 #pragma warning disable CA2000 // Dispose objects before losing scope
             Transport = new HttpClientTransport(HttpClientProvider.GetHttpClient(httpHandlerFactory, httpClient, loggerFactory)),
-            RetryPolicy = new RetryPolicy(maxRetries: 0) //Disabling Azure SDK retry policy to use the one provided by the delegating handler factory or the HTTP client.
+            RetryPolicy = new RetryPolicy(0) //Disabling Azure SDK retry policy to use the one provided by the delegating handler factory or the HTTP client.
         };
 #pragma warning restore CA2000 // Dispose objects before losing scope
 

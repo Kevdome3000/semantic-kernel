@@ -3,8 +3,7 @@
 namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
 using System.Text.RegularExpressions;
-using Diagnostics;
-using Microsoft.Extensions.Logging;
+using Extensions.Logging;
 using Orchestration;
 
 

@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel;
+
 using System;
 
-namespace Microsoft.SemanticKernel.Diagnostics;
 
 /// <summary>
 /// Represents the base exception from which all Semantic Kernel exceptions derive.
@@ -16,6 +17,7 @@ public class SKException : Exception
     {
     }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="SKException"/> class with a specified error message.
     /// </summary>
@@ -23,6 +25,7 @@ public class SKException : Exception
     public SKException(string? message) : base(message)
     {
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SKException"/> class with a specified error message and a reference to the inner exception that is the cause of this exception.

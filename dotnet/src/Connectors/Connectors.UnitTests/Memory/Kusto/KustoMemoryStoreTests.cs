@@ -1,20 +1,21 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Connectors.UnitTests.Memory.Kusto;
+
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Kusto.Cloud.Platform.Utils;
-using Kusto.Data.Common;
+using global::Kusto.Cloud.Platform.Utils;
+using global::Kusto.Data.Common;
 using Microsoft.SemanticKernel.Connectors.Memory.Kusto;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Memory.Kusto;
 
 /// <summary>
 /// Unit tests for <see cref="KustoMemoryStore"/> class.
@@ -26,33 +27,35 @@ public class KustoMemoryStoreTests
     private readonly Mock<ICslQueryProvider> _cslQueryProviderMock;
     private readonly Mock<ICslAdminProvider> _cslAdminProviderMock;
 
+
     public KustoMemoryStoreTests()
     {
         this._cslQueryProviderMock = new Mock<ICslQueryProvider>();
         this._cslAdminProviderMock = new Mock<ICslAdminProvider>();
 
         this._cslAdminProviderMock
-           .Setup(client => client.ExecuteControlCommandAsync(
-               DatabaseName,
-               It.IsAny<string>(),
-               It.IsAny<ClientRequestProperties>()))
-           .ReturnsAsync(FakeEmptyResult());
+            .Setup(client => client.ExecuteControlCommandAsync(
+                DatabaseName,
+                It.IsAny<string>(),
+                It.IsAny<ClientRequestProperties>()))
+            .ReturnsAsync(FakeEmptyResult());
 
         this._cslAdminProviderMock
-           .Setup(client => client.ExecuteControlCommand(
-               DatabaseName,
-               It.IsAny<string>(),
-               It.IsAny<ClientRequestProperties>()))
-           .Returns(FakeEmptyResult());
+            .Setup(client => client.ExecuteControlCommand(
+                DatabaseName,
+                It.IsAny<string>(),
+                It.IsAny<ClientRequestProperties>()))
+            .Returns(FakeEmptyResult());
 
         this._cslQueryProviderMock
-           .Setup(client => client.ExecuteQueryAsync(
-               DatabaseName,
-               It.IsAny<string>(),
-               It.IsAny<ClientRequestProperties>(),
-               It.IsAny<CancellationToken>()))
-           .ReturnsAsync(FakeEmptyResult());
+            .Setup(client => client.ExecuteQueryAsync(
+                DatabaseName,
+                It.IsAny<string>(),
+                It.IsAny<ClientRequestProperties>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(FakeEmptyResult());
     }
+
 
     [Fact]
     public async Task ItCanCreateCollectionAsync()
@@ -68,9 +71,10 @@ public class KustoMemoryStoreTests
             .Verify(client => client.ExecuteControlCommandAsync(
                 DatabaseName,
                 It.Is<string>(s => s.StartsWith($".create table {CollectionName}")),
-                It.Is<ClientRequestProperties>(crp => string.Equals(crp.Application, Telemetry.HttpUserAgent, StringComparison.Ordinal))
+                It.Is<ClientRequestProperties>(crp => string.Equals(crp.Application, HttpHeaderValues.UserAgent, StringComparison.Ordinal))
             ), Times.Once());
     }
+
 
     [Fact]
     public async Task ItCanDeleteCollectionAsync()
@@ -87,9 +91,10 @@ public class KustoMemoryStoreTests
             .Verify(client => client.ExecuteControlCommandAsync(
                 DatabaseName,
                 It.Is<string>(s => s.StartsWith($".drop table {CollectionName}")),
-                It.Is<ClientRequestProperties>(crp => string.Equals(crp.Application, Telemetry.HttpUserAgent, StringComparison.Ordinal))
+                It.Is<ClientRequestProperties>(crp => string.Equals(crp.Application, HttpHeaderValues.UserAgent, StringComparison.Ordinal))
             ), Times.Once());
     }
+
 
     [Fact]
     public async Task ItReturnsTrueWhenCollectionExistsAsync()
@@ -111,6 +116,7 @@ public class KustoMemoryStoreTests
         Assert.True(doesCollectionExist);
     }
 
+
     [Fact]
     public async Task ItReturnsFalseWhenCollectionDoesNotExistAsync()
     {
@@ -131,6 +137,7 @@ public class KustoMemoryStoreTests
         Assert.False(doesCollectionExist);
     }
 
+
     [Fact]
     public async Task ItCanUpsertAsync()
     {
@@ -150,6 +157,7 @@ public class KustoMemoryStoreTests
             It.IsAny<ClientRequestProperties>()), Times.Once());
         Assert.Equal(expectedMemoryRecord.Key, actualMemoryRecordKey);
     }
+
 
     [Fact]
     public async Task ItCanUpsertBatchAsyncAsync()
@@ -183,6 +191,7 @@ public class KustoMemoryStoreTests
         }
     }
 
+
     [Fact]
     public async Task ItCanGetMemoryRecordFromCollectionAsync()
     {
@@ -196,13 +205,16 @@ public class KustoMemoryStoreTests
                 It.Is<string>(s => s.Contains(CollectionName) && s.Contains(expectedMemoryRecord.Key)),
                 It.IsAny<ClientRequestProperties>(),
                 CancellationToken.None))
-            .ReturnsAsync(CollectionToDataReader(new string[][] {
-                new string[] {
+            .ReturnsAsync(CollectionToDataReader(new string[][]
+            {
+                new string[]
+                {
                     expectedMemoryRecord.Key,
                     KustoSerializer.SerializeMetadata(expectedMemoryRecord.Metadata),
                     KustoSerializer.SerializeDateTimeOffset(expectedMemoryRecord.Timestamp),
                     KustoSerializer.SerializeEmbedding(expectedMemoryRecord.Embedding),
-                }}));
+                }
+            }));
 
         using var store = new KustoMemoryStore(this._cslAdminProviderMock.Object, this._cslQueryProviderMock.Object, DatabaseName);
 
@@ -213,6 +225,7 @@ public class KustoMemoryStoreTests
         Assert.NotNull(actualMemoryRecord);
         this.AssertMemoryRecordEqual(expectedMemoryRecord, actualMemoryRecord);
     }
+
 
     [Fact]
     public async Task ItReturnsNullWhenMemoryRecordDoesNotExistAsync()
@@ -228,6 +241,7 @@ public class KustoMemoryStoreTests
         // Assert
         Assert.Null(actualMemoryRecord);
     }
+
 
     [Fact]
     public async Task ItCanGetMemoryRecordBatchFromCollectionAsync()
@@ -249,23 +263,26 @@ public class KustoMemoryStoreTests
                     batchUpsertMemoryRecords.All(r => s.Contains(r.Key, StringComparison.Ordinal))),
                 It.IsAny<ClientRequestProperties>(),
                 CancellationToken.None))
-            .ReturnsAsync(CollectionToDataReader(batchUpsertMemoryRecords.Select(r => new string[] {
-                    r.Key,
-                    KustoSerializer.SerializeMetadata(r.Metadata),
-                    KustoSerializer.SerializeDateTimeOffset(r.Timestamp),
-                    KustoSerializer.SerializeEmbedding(r.Embedding),
-                }).ToArray()));
+            .ReturnsAsync(CollectionToDataReader(batchUpsertMemoryRecords.Select(r => new string[]
+            {
+                r.Key,
+                KustoSerializer.SerializeMetadata(r.Metadata),
+                KustoSerializer.SerializeDateTimeOffset(r.Timestamp),
+                KustoSerializer.SerializeEmbedding(r.Embedding),
+            }).ToArray()));
 
         // Act
         var actualMemoryRecords = await store.GetBatchAsync(CollectionName, expectedMemoryRecordKeys, withEmbeddings: true).ToListAsync();
 
         // Assert
         Assert.NotNull(actualMemoryRecords);
+
         for (var i = 0; i < actualMemoryRecords.Count; i++)
         {
             this.AssertMemoryRecordEqual(batchUpsertMemoryRecords[i], actualMemoryRecords[i]);
         }
     }
+
 
     [Fact]
     public async Task ItCanReturnCollectionsAsync()
@@ -294,6 +311,7 @@ public class KustoMemoryStoreTests
         }
     }
 
+
     [Fact]
     public async Task ItCanRemoveAsync()
     {
@@ -312,6 +330,7 @@ public class KustoMemoryStoreTests
                 It.IsAny<ClientRequestProperties>()
             ), Times.Once());
     }
+
 
     [Fact]
     public async Task ItCanRemoveBatchAsync()
@@ -332,6 +351,7 @@ public class KustoMemoryStoreTests
             ), Times.Once());
     }
 
+
     #region private ================================================================================
 
     private void AssertMemoryRecordEqual(MemoryRecord expectedRecord, MemoryRecord actualRecord)
@@ -346,6 +366,7 @@ public class KustoMemoryStoreTests
         Assert.Equal(expectedRecord.Metadata.IsReference, actualRecord.Metadata.IsReference);
         Assert.Equal(expectedRecord.Metadata.ExternalSourceName, actualRecord.Metadata.ExternalSourceName);
     }
+
 
     private MemoryRecord GetRandomMemoryRecord(ReadOnlyMemory<float>? embedding = null)
     {
@@ -362,7 +383,9 @@ public class KustoMemoryStoreTests
             timestamp: new DateTimeOffset(2023, 8, 4, 23, 59, 59, TimeSpan.Zero));
     }
 
+
     private static DataTableReader FakeEmptyResult() => Array.Empty<string[]>().ToDataTable().CreateDataReader();
+
 
     private static DataTableReader CollectionToSingleColumnDataReader(IEnumerable<string> collection)
     {
@@ -377,6 +400,7 @@ public class KustoMemoryStoreTests
         return table.CreateDataReader();
     }
 
+
     private static DataTableReader CollectionToDataReader(string[][] data)
     {
         using var table = new DataTable();
@@ -384,6 +408,7 @@ public class KustoMemoryStoreTests
         if (data != null)
         {
             data = data.ToArrayIfNotAlready();
+
             if (data[0] != null)
             {
                 for (int i = 0; i < data[0].Length; i++)
@@ -402,4 +427,6 @@ public class KustoMemoryStoreTests
     }
 
     #endregion
+
+
 }

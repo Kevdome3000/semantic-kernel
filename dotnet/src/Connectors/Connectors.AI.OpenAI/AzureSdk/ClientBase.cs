@@ -12,7 +12,6 @@ using System.Threading.Tasks;
 using Azure;
 using Azure.AI.OpenAI;
 using ChatCompletion;
-using Diagnostics;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
 using FunctionCalling;
@@ -21,6 +20,7 @@ using Prompt;
 using SemanticKernel.AI;
 using SemanticKernel.AI.ChatCompletion;
 using SemanticKernel.AI.TextCompletion;
+using ChatMessage = SemanticKernel.AI.ChatCompletion.ChatMessage;
 
 #pragma warning disable CA2208 // Instantiate argument exceptions correctly
 
@@ -69,8 +69,8 @@ public abstract class ClientBase
     private static readonly Counter<int> s_promptTokensCounter =
         s_meter.CreateCounter<int>(
             "sk.connectors.openai.tokens.prompt",
-            unit: "{token}",
-            description: "Number of prompt tokens used");
+            "{token}",
+            "Number of prompt tokens used");
 
     /// <summary>
     /// Instance of <see cref="Counter{T}"/> to keep track of the number of completion tokens used.
@@ -78,8 +78,8 @@ public abstract class ClientBase
     private static readonly Counter<int> s_completionTokensCounter =
         s_meter.CreateCounter<int>(
             "sk.connectors.openai.tokens.completion",
-            unit: "{token}",
-            description: "Number of completion tokens used");
+            "{token}",
+            "Number of completion tokens used");
 
     /// <summary>
     /// Instance of <see cref="Counter{T}"/> to keep track of the total number of tokens used.
@@ -87,8 +87,8 @@ public abstract class ClientBase
     private static readonly Counter<int> s_totalTokensCounter =
         s_meter.CreateCounter<int>(
             "sk.connectors.openai.tokens.total",
-            unit: "{token}",
-            description: "Number of tokens used");
+            "{token}",
+            "Number of tokens used");
 
 
     /// <summary>
@@ -257,7 +257,7 @@ public abstract class ClientBase
     /// <param name="cancellationToken">Async cancellation token</param>
     /// <returns>Streaming of generated chat message in string format</returns>
     protected private async IAsyncEnumerable<IChatStreamingResult> InternalGetChatStreamingResultsAsync(
-        IEnumerable<SemanticKernel.AI.ChatCompletion.ChatMessage> chat,
+        IEnumerable<ChatMessage> chat,
         AIRequestSettings? requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -396,7 +396,7 @@ public abstract class ClientBase
     }
 
 
-    internal static ChatCompletionsOptions CreateChatCompletionsOptions(OpenAIRequestSettings requestSettings, IEnumerable<SemanticKernel.AI.ChatCompletion.ChatMessage> chatHistory)
+    internal static ChatCompletionsOptions CreateChatCompletionsOptions(OpenAIRequestSettings requestSettings, IEnumerable<ChatMessage> chatHistory)
     {
         if (requestSettings.ResultsPerPrompt is < 1 or > MaxResultsPerPrompt)
         {

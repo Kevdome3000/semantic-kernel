@@ -24,13 +24,9 @@ internal static partial class OpenAIRestExtensions
     /// <returns>A thread definition</returns>
     public static Task<ThreadModel> CreateThreadModelAsync(
         this OpenAIRestContext context,
-        CancellationToken cancellationToken = default)
-    {
-        return
-            context.ExecutePostAsync<ThreadModel>(
-                BaseThreadUrl,
-                cancellationToken);
-    }
+        CancellationToken cancellationToken = default) => context.ExecutePostAsync<ThreadModel>(
+        BaseThreadUrl,
+        cancellationToken);
 
 
     /// <summary>
@@ -43,13 +39,9 @@ internal static partial class OpenAIRestExtensions
     public static Task<ThreadModel> GetThreadModelAsync(
         this OpenAIRestContext context,
         string threadId,
-        CancellationToken cancellationToken = default)
-    {
-        return
-            context.ExecuteGetAsync<ThreadModel>(
-                GetThreadUrl(threadId),
-                cancellationToken);
-    }
+        CancellationToken cancellationToken = default) => context.ExecuteGetAsync<ThreadModel>(
+        GetThreadUrl(threadId),
+        cancellationToken);
 
 
     /// <summary>
@@ -61,14 +53,8 @@ internal static partial class OpenAIRestExtensions
     public static Task DeleteThreadModelAsync(
         this OpenAIRestContext context,
         string id,
-        CancellationToken cancellationToken = default)
-    {
-        return context.ExecuteDeleteAsync(GetThreadUrl(id), cancellationToken);
-    }
+        CancellationToken cancellationToken = default) => context.ExecuteDeleteAsync(GetThreadUrl(id), cancellationToken);
 
 
-    internal static string GetThreadUrl(string threadId)
-    {
-        return $"{BaseThreadUrl}/{threadId}";
-    }
+    internal static string GetThreadUrl(string threadId) => $"{BaseThreadUrl}/{threadId}";
 }

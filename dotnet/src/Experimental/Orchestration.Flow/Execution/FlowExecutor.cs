@@ -10,7 +10,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Abstractions;
 using AI.ChatCompletion;
-using Diagnostics;
 using Extensions.Logging;
 using SemanticKernel.Orchestration;
 using TemplateEngine;
@@ -666,7 +665,7 @@ internal class FlowExecutor : IFlowExecutor
                 this._logger?.LogInformation("Observation: {Observation}", actionStep.Observation);
                 await this._flowStatusProvider.SaveReActStepsAsync(sessionId, stepId, stepsTaken).ConfigureAwait(false);
 
-                if (!string.IsNullOrEmpty(context.Result))
+                if (!string.IsNullOrEmpty(context.Variables.Input))
                 {
                     if (context.Variables.IsTerminateFlow())
                     {

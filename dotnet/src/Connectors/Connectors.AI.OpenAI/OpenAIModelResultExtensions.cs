@@ -19,10 +19,7 @@ public static class OpenAIModelResultExtension
     /// </summary>
     /// <param name="resultBase">Current context</param>
     /// <returns>OpenAI / AzureOpenAI result<see cref="Completions"/></returns>
-    public static TextModelResult GetOpenAITextResult(this ModelResult resultBase)
-    {
-        return resultBase.GetResult<TextModelResult>();
-    }
+    public static TextModelResult GetOpenAITextResult(this ModelResult resultBase) => resultBase.GetResult<TextModelResult>();
 
 
     /// <summary>
@@ -30,10 +27,7 @@ public static class OpenAIModelResultExtension
     /// </summary>
     /// <param name="resultBase">Current context</param>
     /// <returns>OpenAI / AzureOpenAI result<see cref="ChatCompletions"/></returns>
-    public static ChatModelResult GetOpenAIChatResult(this ModelResult resultBase)
-    {
-        return resultBase.GetResult<ChatModelResult>();
-    }
+    public static ChatModelResult GetOpenAIChatResult(this ModelResult resultBase) => resultBase.GetResult<ChatModelResult>();
 
 
     /// <summary>
@@ -41,8 +35,5 @@ public static class OpenAIModelResultExtension
     /// </summary>
     /// <param name="resultBase">Current context</param>
     /// <returns>OpenAI / AzureOpenAI result<see cref="ChatCompletions"/></returns>
-    public static ChatStreamingModelResult GetOpenAIChatStreamingResult(this ModelResult resultBase)
-    {
-        return resultBase.GetResult<ChatStreamingModelResult>();
-    }
+    public static ChatStreamingModelResult GetOpenAIChatStreamingResult(this ModelResult resultBase) => resultBase.GetResult<ChatStreamingModelResult>();
 }

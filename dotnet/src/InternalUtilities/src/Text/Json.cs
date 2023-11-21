@@ -27,7 +27,7 @@ internal static class Json
             MaxDepth = 20,
             AllowTrailingCommas = true,
             PropertyNameCaseInsensitive = true,
-            ReadCommentHandling = JsonCommentHandling.Skip,
+            ReadCommentHandling = JsonCommentHandling.Skip
         };
 
         options.Converters.Add(new ReadOnlyMemoryConverter());

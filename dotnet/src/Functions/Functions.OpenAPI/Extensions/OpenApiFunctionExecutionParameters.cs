@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using Authentication;
-using Diagnostics;
+using Http;
 
 
 /// <summary>
@@ -81,7 +81,7 @@ public class OpenApiFunctionExecutionParameters
         HttpClient? httpClient = null,
         AuthenticateRequestAsyncCallback? authCallback = null,
         Uri? serverUrlOverride = null,
-        string userAgent = Telemetry.HttpUserAgent,
+        string userAgent = HttpHeaderValues.UserAgent,
         bool ignoreNonCompliantErrors = false,
         bool enableDynamicOperationPayload = false,
         bool enablePayloadNamespacing = false,

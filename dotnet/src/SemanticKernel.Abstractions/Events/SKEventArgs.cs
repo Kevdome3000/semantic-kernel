@@ -4,7 +4,6 @@ namespace Microsoft.SemanticKernel.Events;
 
 using System;
 using System.Collections.Generic;
-using Diagnostics;
 using Orchestration;
 
 
