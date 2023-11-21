@@ -10,6 +10,7 @@ using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
+using Microsoft.SemanticKernel.Reliability.Basic;
 using NCalcPlugins;
 using RepoUtils;
 
@@ -33,7 +34,7 @@ public static class Example51_StepwisePlanner
 
     public static async Task RunAsync()
     {
-        string[] questions = new string[]
+        string[] questions =
         {
             "What color is the sky?",
             "What is the weather in Seattle?",
@@ -147,7 +148,7 @@ public static class Example51_StepwisePlanner
 
         try
         {
-            StepwisePlanner planner = new(kernel: kernel, config: plannerConfig);
+            StepwisePlanner planner = new(kernel, plannerConfig);
             var plan = await planner.CreatePlanAsync(question);
 
             var functionResult = await kernel.RunAsync(plan);
@@ -206,7 +207,6 @@ public static class Example51_StepwisePlanner
                 model ?? ChatModelOverride ?? TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey,
-                alsoAsTextCompletion: true,
                 setAsDefault: true);
 
             maxTokens = ChatMaxTokens ?? new StepwisePlannerConfig().MaxTokens;
@@ -227,11 +227,11 @@ public static class Example51_StepwisePlanner
 
         var kernel = builder
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithRetryBasic(new()
+            .WithRetryBasic(new BasicRetryConfig
             {
                 MaxRetryCount = 3,
                 UseExponentialBackoff = true,
-                MinRetryDelay = TimeSpan.FromSeconds(3),
+                MinRetryDelay = TimeSpan.FromSeconds(3)
             })
             .Build();
 

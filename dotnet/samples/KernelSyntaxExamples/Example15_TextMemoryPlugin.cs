@@ -3,6 +3,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Kusto.Data;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
@@ -18,6 +19,7 @@ using Microsoft.SemanticKernel.Connectors.Memory.Redis;
 using Microsoft.SemanticKernel.Connectors.Memory.Sqlite;
 using Microsoft.SemanticKernel.Connectors.Memory.Weaviate;
 using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Plugins.Memory;
 using Npgsql;
 using Pgvector.Npgsql;
@@ -140,7 +142,7 @@ public static class Example15_TextMemoryPlugin
         string configuration = TestConfiguration.Redis.Configuration;
         ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configuration);
         IDatabase database = connectionMultiplexer.GetDatabase();
-        IMemoryStore store = new RedisMemoryStore(database, vectorSize: 1536);
+        IMemoryStore store = new RedisMemoryStore(database, 1536);
         return store;
     }
 
@@ -150,14 +152,14 @@ public static class Example15_TextMemoryPlugin
         NpgsqlDataSourceBuilder dataSourceBuilder = new(TestConfiguration.Postgres.ConnectionString);
         dataSourceBuilder.UseVector();
         NpgsqlDataSource dataSource = dataSourceBuilder.Build();
-        IMemoryStore store = new PostgresMemoryStore(dataSource, vectorSize: 1536, schema: "public");
+        IMemoryStore store = new PostgresMemoryStore(dataSource, 1536, "public");
         return store;
     }
 
 
     private static IMemoryStore CreateSampleKustoMemoryStore()
     {
-        var connectionString = new Kusto.Data.KustoConnectionStringBuilder(TestConfiguration.Kusto.ConnectionString).WithAadUserPromptAuthentication();
+        var connectionString = new KustoConnectionStringBuilder(TestConfiguration.Kusto.ConnectionString).WithAadUserPromptAuthentication();
         IMemoryStore store = new KustoMemoryStore(connectionString, "MyDatabase");
         return store;
     }
@@ -217,7 +219,7 @@ public static class Example15_TextMemoryPlugin
 
         // Save a memory with the Kernel
         Console.WriteLine("Saving memory with key 'info5': \"My family is from New York\"");
-        await kernel.RunAsync(memoryFunctions["Save"], new()
+        await kernel.RunAsync(memoryFunctions["Save"], new ContextVariables
         {
             [TextMemoryPlugin.CollectionParam] = MemoryCollectionName,
             [TextMemoryPlugin.KeyParam] = "info5",
@@ -226,7 +228,7 @@ public static class Example15_TextMemoryPlugin
 
         // Retrieve a specific memory with the Kernel
         Console.WriteLine("== PART 2b: Retrieving Memories through the Kernel with TextMemoryPlugin and the 'Retrieve' function ==");
-        var result = await kernel.RunAsync(memoryFunctions["Retrieve"], new()
+        var result = await kernel.RunAsync(memoryFunctions["Retrieve"], new ContextVariables
         {
             [TextMemoryPlugin.CollectionParam] = MemoryCollectionName,
             [TextMemoryPlugin.KeyParam] = "info5"
@@ -247,12 +249,12 @@ public static class Example15_TextMemoryPlugin
         Console.WriteLine("Ask: where did I grow up?");
 
         await foreach (var answer in textMemory.SearchAsync(
-                           collection: MemoryCollectionName,
-                           query: "where did I grow up?",
-                           limit: 2,
-                           minRelevanceScore: 0.79,
-                           withEmbeddings: true,
-                           cancellationToken: cancellationToken))
+                           MemoryCollectionName,
+                           "where did I grow up?",
+                           2,
+                           0.79,
+                           true,
+                           cancellationToken))
         {
             Console.WriteLine($"Answer: {answer.Metadata.Text}");
         }
@@ -260,7 +262,7 @@ public static class Example15_TextMemoryPlugin
         Console.WriteLine("== PART 3b: Recall (similarity search) with Kernel and TextMemoryPlugin 'Recall' function ==");
         Console.WriteLine("Ask: where do I live?");
 
-        result = await kernel.RunAsync(memoryFunctions["Recall"], new()
+        result = await kernel.RunAsync(memoryFunctions["Recall"], new ContextVariables
         {
             [TextMemoryPlugin.CollectionParam] = MemoryCollectionName,
             [TextMemoryPlugin.LimitParam] = "2",
@@ -306,9 +308,10 @@ Question: {{$input}}
 Answer:
 ";
 
-        var aboutMeOracle = kernel.CreateFunctionFromPrompt(RecallFunctionDefinition, new OpenAIRequestSettings() { MaxTokens = 100 });
+        var aboutMeOracle = kernel.CreateFunctionFromPrompt(RecallFunctionDefinition, new OpenAIRequestSettings
+            { MaxTokens = 100 });
 
-        result = await kernel.RunAsync(aboutMeOracle, new()
+        result = await kernel.RunAsync(aboutMeOracle, new ContextVariables
         {
             [TextMemoryPlugin.CollectionParam] = MemoryCollectionName,
             [TextMemoryPlugin.RelevanceParam] = "0.79",

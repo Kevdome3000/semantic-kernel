@@ -43,14 +43,14 @@ public static class Example62_CustomAIServiceSelector
         var kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureOpenAIChatCompletionService(
-                deploymentName: azureDeploymentName,
-                endpoint: azureEndpoint,
+                azureDeploymentName,
+                azureEndpoint,
                 serviceId: "AzureOpenAIChat",
                 modelId: azureModelId,
                 apiKey: azureApiKey,
                 setAsDefault: true)
             .WithOpenAIChatCompletionService(
-                modelId: openAIModelId,
+                openAIModelId,
                 serviceId: "OpenAIChat",
                 apiKey: openAIApiKey)
             // Use the custom AI service selector to select the GPT 3.x model

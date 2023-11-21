@@ -37,7 +37,7 @@ public class MyTextCompletionService : ITextCompletion
 
     public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, AIRequestSettings? requestSettings, CancellationToken cancellationToken = default)
     {
-        this.ModelId = requestSettings?.ModelId;
+        ModelId = requestSettings?.ModelId;
 
         return Task.FromResult<IReadOnlyList<ITextResult>>(new List<ITextResult>
         {
@@ -70,7 +70,7 @@ exploring space. AI can also augment our abilities and inspire us to create new 
 of art, music, or literature. AI can also improve our well-being and happiness by
 providing personalized recommendations, entertainment, and assistance. AI is awesome";
 
-    public ModelResult ModelResult => this._modelResult;
+    public ModelResult ModelResult => _modelResult;
 
 
     public async Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
@@ -120,7 +120,7 @@ public static class Example16_CustomLLM
             // Add your text completion service as a singleton instance
             .WithAIService<ITextCompletion>("myService1", new MyTextCompletionService())
             // Add your text completion service as a factory method
-            .WithAIService<ITextCompletion>("myService2", (log) => new MyTextCompletionService())
+            .WithAIService<ITextCompletion>("myService2", log => new MyTextCompletionService())
             .Build();
 
         const string FunctionDefinition = "Does the text contain grammar errors (Y/N)? Text: {{$input}}";
@@ -133,7 +133,8 @@ public static class Example16_CustomLLM
         // Details of the my custom model response
         Console.WriteLine(JsonSerializer.Serialize(
             result.GetModelResults(),
-            new JsonSerializerOptions() { WriteIndented = true }
+            new JsonSerializerOptions
+                { WriteIndented = true }
         ));
     }
 
@@ -163,7 +164,7 @@ public static class Example16_CustomLLM
 
     private static async Task TextCompletionStreamAsync(string prompt, ITextCompletion textCompletion)
     {
-        var requestSettings = new OpenAIRequestSettings()
+        var requestSettings = new OpenAIRequestSettings
         {
             MaxTokens = 100,
             FrequencyPenalty = 0,

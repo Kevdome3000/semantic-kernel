@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace RepoUtils;
+
 using System;
 using Microsoft.Extensions.Configuration;
-
-namespace RepoUtils;
 
 #pragma warning disable CA1812 // instantiated by AddUserSecrets
 internal sealed class Env
@@ -22,12 +22,14 @@ internal sealed class Env
             .Build();
 
         var value = configuration[name];
+
         if (!string.IsNullOrEmpty(value))
         {
             return value;
         }
 
         value = Environment.GetEnvironmentVariable(name);
+
         if (string.IsNullOrEmpty(value))
         {
             throw new YourAppException($"Secret / Env var not set: {name}");

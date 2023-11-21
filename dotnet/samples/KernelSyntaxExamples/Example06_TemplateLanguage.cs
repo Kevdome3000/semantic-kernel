@@ -32,8 +32,8 @@ public static class Example06_TemplateLanguage
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAIChatCompletionService(
-                modelId: openAIModelId,
-                apiKey: openAIApiKey)
+                openAIModelId,
+                openAIApiKey)
             .Build();
 
         // Load native plugin into the kernel function collection, sharing its functions with prompt templates
@@ -58,7 +58,8 @@ Is it weekend time (weekend/not weekend)?
         Console.WriteLine(renderedPrompt);
 
         // Run the prompt / semantic function
-        var kindOfDay = kernel.CreateFunctionFromPrompt(FunctionDefinition, new OpenAIRequestSettings() { MaxTokens = 100 });
+        var kindOfDay = kernel.CreateFunctionFromPrompt(FunctionDefinition, new OpenAIRequestSettings
+            { MaxTokens = 100 });
 
         // Show the result
         Console.WriteLine("--- Semantic Function result");

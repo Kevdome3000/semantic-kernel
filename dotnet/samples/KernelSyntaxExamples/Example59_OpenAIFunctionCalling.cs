@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -33,7 +34,7 @@ public static class Example59_OpenAIFunctionCalling
             // Include all functions registered with the kernel.
             // Alternatively, you can provide your own list of OpenAIFunctions to include.
             Functions = kernel.Plugins.GetFunctionsMetadata().Select(f => f.ToOpenAIFunction()).ToList(),
-            FunctionCall = "TimePlugin_Date",
+            FunctionCall = "TimePlugin_Date"
         };
 
         // Set FunctionCall to the name of a specific function to force the model to use that function.
@@ -243,15 +244,10 @@ public static class Example59_OpenAIFunctionCalling
 
     private sealed class WidgetPlugin
     {
-        [SKFunction, SKName("CreateWidget"), System.ComponentModel.Description("Create a virtual widget.")]
+        [SKFunction] [SKName("CreateWidget")] [Description("Create a virtual widget.")]
         public string CreateWidget(
-            [System.ComponentModel.Description("Widget name")]
-            string name,
-            [System.ComponentModel.Description("Widget color")]
-            WidgetColor color
-        )
-        {
-            return $"Created a {color} widget named {name}";
-        }
+            [Description("Widget name")] string name,
+            [Description("Widget color")] WidgetColor color
+        ) => $"Created a {color} widget named {name}";
     }
 }

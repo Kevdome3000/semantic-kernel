@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace RepoUtils;
+
 using System.IO;
 using System.Reflection;
 
-namespace RepoUtils;
 
 public static class RepoFiles
 {
@@ -20,6 +21,7 @@ public static class RepoFiles
         {
             var currDir = Path.GetFullPath(Assembly.GetExecutingAssembly().Location);
             bool found;
+
             do
             {
                 result = Path.Join(currDir, pathToFind);

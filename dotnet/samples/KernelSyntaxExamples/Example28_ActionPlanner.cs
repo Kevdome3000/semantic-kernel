@@ -33,7 +33,7 @@ public static class Example28_ActionPlanner
 
         // Create an instance of ActionPlanner.
         // The ActionPlanner takes one goal and returns a single function to execute.
-        var planner = new ActionPlanner(kernel, config: config);
+        var planner = new ActionPlanner(kernel, config);
 
         // We're going to ask the planner to find a function to achieve this goal.
         var goal = "Write a joke about Cleopatra in the style of Hulk Hogan.";

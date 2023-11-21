@@ -36,23 +36,23 @@ public static class Example71_AssistantDelegation
         var menuAssistant =
             await AssistantBuilder.FromDefinitionAsync(
                 TestConfiguration.OpenAI.ApiKey,
-                model: OpenAIFunctionEnabledModel,
-                template: EmbeddedResource.Read("Assistants.ToolAssistant.yaml"),
+                OpenAIFunctionEnabledModel,
+                EmbeddedResource.Read("Assistants.ToolAssistant.yaml"),
                 new SKPluginCollection { plugin });
 
         var parrotAssistant =
             await AssistantBuilder.FromDefinitionAsync(
                 TestConfiguration.OpenAI.ApiKey,
-                model: OpenAIFunctionEnabledModel,
-                template: EmbeddedResource.Read("Assistants.ParrotAssistant.yaml"));
+                OpenAIFunctionEnabledModel,
+                EmbeddedResource.Read("Assistants.ParrotAssistant.yaml"));
 
         var helperAssistantPlugins = Import(menuAssistant, parrotAssistant);
 
         var toolAssistant =
             await AssistantBuilder.FromDefinitionAsync(
                 TestConfiguration.OpenAI.ApiKey,
-                model: OpenAIFunctionEnabledModel,
-                template: EmbeddedResource.Read("Assistants.ToolAssistant.yaml"),
+                OpenAIFunctionEnabledModel,
+                EmbeddedResource.Read("Assistants.ToolAssistant.yaml"),
                 helperAssistantPlugins);
 
         await ChatAsync(

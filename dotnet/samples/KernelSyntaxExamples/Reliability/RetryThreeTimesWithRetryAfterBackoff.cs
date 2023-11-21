@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Reliability;
+
 using System;
 using System.Net.Http;
 using System.Threading;
@@ -9,18 +11,15 @@ using Microsoft.SemanticKernel.Http;
 using Polly;
 using Polly.Retry;
 
-namespace Reliability;
 
 /// <summary>
 /// A factory for creating a retry handler.
 /// </summary>
 public class RetryThreeTimesWithRetryAfterBackoffFactory : IDelegatingHandlerFactory
 {
-    public DelegatingHandler Create(ILoggerFactory? loggerFactory)
-    {
-        return new RetryThreeTimesWithRetryAfterBackoff(loggerFactory);
-    }
+    public DelegatingHandler Create(ILoggerFactory? loggerFactory) => new RetryThreeTimesWithRetryAfterBackoff(loggerFactory);
 }
+
 
 /// <summary>
 /// An example of a retry mechanism that retries three times with backoff using the RetryAfter value.
@@ -29,19 +28,18 @@ public class RetryThreeTimesWithRetryAfterBackoff : DelegatingHandler
 {
     private readonly AsyncRetryPolicy<HttpResponseMessage> _policy;
 
-    public RetryThreeTimesWithRetryAfterBackoff(ILoggerFactory? loggerFactory)
-    {
-        this._policy = GetPolicy(loggerFactory);
-    }
+    public RetryThreeTimesWithRetryAfterBackoff(ILoggerFactory? loggerFactory) => _policy = GetPolicy(loggerFactory);
+
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        return await this._policy.ExecuteAsync(async () =>
+        return await _policy.ExecuteAsync(async () =>
         {
             var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
             return response;
         }).ConfigureAwait(false);
     }
+
 
     private static AsyncRetryPolicy<HttpResponseMessage> GetPolicy(ILoggerFactory? loggerFactory)
     {
@@ -55,8 +53,8 @@ public class RetryThreeTimesWithRetryAfterBackoff : DelegatingHandler
             .HandleResult<HttpResponseMessage>(response =>
                 (int)response.StatusCode is Unauthorized or TooManyRequests)
             .WaitAndRetryAsync(
-                retryCount: 3,
-                sleepDurationProvider: (_, r, _) =>
+                3,
+                (_, r, _) =>
                 {
                     var response = r.Result;
                     var retryAfter = response.Headers.RetryAfter?.Delta ?? response.Headers.RetryAfter?.Date - DateTimeOffset.Now;

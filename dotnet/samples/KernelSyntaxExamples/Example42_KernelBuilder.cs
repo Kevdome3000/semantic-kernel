@@ -7,6 +7,7 @@
 #pragma warning disable CA1852
 
 using System;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -72,9 +73,9 @@ public static class Example42_KernelBuilder
         var loggerFactory = NullLoggerFactory.Instance;
         var memoryStorage = new VolatileMemoryStore();
         var textEmbeddingGenerator = new AzureOpenAITextEmbeddingGeneration(
-            deploymentName: azureOpenAIEmbeddingDeployment,
-            endpoint: azureOpenAIEndpoint,
-            apiKey: azureOpenAIKey,
+            azureOpenAIEmbeddingDeployment,
+            azureOpenAIEndpoint,
+            azureOpenAIKey,
             loggerFactory: loggerFactory);
 
         var memory = new SemanticTextMemory(memoryStorage, textEmbeddingGenerator);
@@ -88,9 +89,9 @@ public static class Example42_KernelBuilder
         var aiServices = new AIServiceCollection();
 
         ITextCompletion Factory() => new AzureOpenAIChatCompletion(
-            deploymentName: azureOpenAIChatCompletionDeployment,
-            endpoint: azureOpenAIEndpoint,
-            apiKey: azureOpenAIKey,
+            azureOpenAIChatCompletionDeployment,
+            azureOpenAIEndpoint,
+            azureOpenAIKey,
             httpClient: httpClient,
             loggerFactory: loggerFactory);
 
@@ -109,9 +110,9 @@ public static class Example42_KernelBuilder
 
         var kernel7 = new KernelBuilder()
             .WithAzureOpenAIChatCompletionService(
-                deploymentName: azureOpenAIChatCompletionDeployment,
-                endpoint: azureOpenAIEndpoint,
-                apiKey: azureOpenAIKey,
+                azureOpenAIChatCompletionDeployment,
+                azureOpenAIEndpoint,
+                azureOpenAIKey,
                 setAsDefault: true)
             .Build();
 
@@ -124,7 +125,7 @@ public static class Example42_KernelBuilder
                 new BasicRetryConfig
                 {
                     MaxRetryCount = 3,
-                    UseExponentialBackoff = true,
+                    UseExponentialBackoff = true
                     //  MinRetryDelay = TimeSpan.FromSeconds(2),
                     //  MaxRetryDelay = TimeSpan.FromSeconds(8),
                     //  MaxTotalRetryTime = TimeSpan.FromSeconds(30),
@@ -136,7 +137,7 @@ public static class Example42_KernelBuilder
         var logger = loggerFactory.CreateLogger<PollyHttpRetryHandlerFactory>();
         var retryThreeTimesPolicy = Policy
             .Handle<HttpOperationException>(ex
-                => ex.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+                => ex.StatusCode == HttpStatusCode.TooManyRequests)
             .WaitAndRetryAsync(new[]
                 {
                     TimeSpan.FromSeconds(2),
@@ -172,7 +173,7 @@ public static class Example42_KernelBuilder
         {
             return Policy
                 .Handle<HttpOperationException>(ex
-                    => ex.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+                    => ex.StatusCode == HttpStatusCode.TooManyRequests)
                 .WaitAndRetryAsync(new[]
                     {
                         TimeSpan.FromSeconds(2),
@@ -196,11 +197,8 @@ public static class Example42_KernelBuilder
     // Basic custom empty retry handler
     public class MyCustomHandler : DelegatingHandler
     {
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) => throw
             // Your custom handler implementation
-
-            throw new NotImplementedException();
-        }
+            new NotImplementedException();
     }
 }

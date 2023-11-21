@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace RepoUtils;
+
 using System;
 using Microsoft.Extensions.Logging;
 
-namespace RepoUtils;
 
 /// <summary>
 /// Basic logger printing to console
@@ -15,6 +16,7 @@ internal static class ConsoleLogger
     internal static ILoggerFactory LoggerFactory => s_loggerFactory.Value;
 
     private static readonly Lazy<ILoggerFactory> s_loggerFactory = new(LogBuilder);
+
 
     private static ILoggerFactory LogBuilder()
     {

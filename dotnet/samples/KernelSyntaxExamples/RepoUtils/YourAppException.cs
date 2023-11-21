@@ -1,18 +1,21 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace RepoUtils;
+
 using System;
 
-namespace RepoUtils;
 
 public class YourAppException : Exception
 {
-    public YourAppException() : base()
+    public YourAppException()
     {
     }
+
 
     public YourAppException(string message) : base(message)
     {
     }
+
 
     public YourAppException(string message, Exception innerException) : base(message, innerException)
     {

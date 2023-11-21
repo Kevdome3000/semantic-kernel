@@ -47,14 +47,14 @@ public static class Example36_MultiCompletion
 
     private static async Task ChatCompletionAsync(IChatCompletion chatCompletion)
     {
-        var requestSettings = new OpenAIRequestSettings()
+        var requestSettings = new OpenAIRequestSettings
         {
             MaxTokens = 200,
             FrequencyPenalty = 0,
             PresencePenalty = 0,
             Temperature = 1,
             TopP = 0.5,
-            ResultsPerPrompt = 2,
+            ResultsPerPrompt = 2
         };
 
         var chatHistory = new ChatHistory();

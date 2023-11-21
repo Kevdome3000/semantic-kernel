@@ -38,7 +38,7 @@ public static class Example21_ChatGptPlugins
 
         var result = functionResult.GetValue<RestApiOperationResponse>();
 
-        Console.WriteLine("Function execution result: {0}", result?.Content?.ToString());
+        Console.WriteLine("Function execution result: {0}", result?.Content);
         Console.ReadLine();
 
         //--------------- Example of using Klarna ChatGPT plugin ------------------------

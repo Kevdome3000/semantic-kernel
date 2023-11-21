@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Reliability;
+
 using System;
 using System.Net.Http;
 using System.Threading;
@@ -9,18 +11,15 @@ using Microsoft.SemanticKernel.Http;
 using Polly;
 using Polly.Retry;
 
-namespace Reliability;
 
 /// <summary>
 /// A factory for creating a retry handler.
 /// </summary>
 public class RetryThreeTimesWithBackoffFactory : IDelegatingHandlerFactory
 {
-    public DelegatingHandler Create(ILoggerFactory? loggerFactory)
-    {
-        return new RetryThreeTimesWithBackoff(loggerFactory);
-    }
+    public DelegatingHandler Create(ILoggerFactory? loggerFactory) => new RetryThreeTimesWithBackoff(loggerFactory);
 }
+
 
 /// <summary>
 /// A basic example of a retry mechanism that retries three times with backoff.
@@ -29,19 +28,18 @@ public class RetryThreeTimesWithBackoff : DelegatingHandler
 {
     private readonly AsyncRetryPolicy<HttpResponseMessage> _policy;
 
-    public RetryThreeTimesWithBackoff(ILoggerFactory? loggerFactory)
-    {
-        this._policy = GetPolicy(loggerFactory);
-    }
+    public RetryThreeTimesWithBackoff(ILoggerFactory? loggerFactory) => _policy = GetPolicy(loggerFactory);
+
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        return await this._policy.ExecuteAsync(async () =>
+        return await _policy.ExecuteAsync(async () =>
         {
             var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
             return response;
         }).ConfigureAwait(false);
     }
+
 
     private static AsyncRetryPolicy<HttpResponseMessage> GetPolicy(ILoggerFactory? logger)
     {

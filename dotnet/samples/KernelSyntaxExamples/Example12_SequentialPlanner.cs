@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Memory;
@@ -164,7 +165,7 @@ internal static class Example12_SequentialPlanner
         Console.WriteLine("Searching for saved plan...");
 
         Plan? restoredPlan = null;
-        var memories = semanticMemory.SearchAsync("plans", goal, limit: 1, minRelevanceScore: 0.5);
+        var memories = semanticMemory.SearchAsync("plans", goal, 1, 0.5);
 
         await foreach (MemoryQueryResult memory in memories)
         {
@@ -188,7 +189,7 @@ internal static class Example12_SequentialPlanner
                 "agents of the Galactic Federation, and uncover the truth about his past. But the more he learns, the more he realizes that " +
                 "he's not just an ordinary boy.";
 
-            var result = await kernel.RunAsync(restoredPlan, new(newInput));
+            var result = await kernel.RunAsync(restoredPlan, new ContextVariables(newInput));
 
             Console.WriteLine("Result:");
             Console.WriteLine(result.GetValue<string>());
@@ -254,7 +255,11 @@ internal static class Example12_SequentialPlanner
         var goal = "Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'";
 
         // IMPORTANT: To use memory and embeddings to find relevant plugins in the planner, set the 'Memory' property on the planner config.
-        var planner = new SequentialPlanner(kernel, new SequentialPlannerConfig { SemanticMemoryConfig = new() { RelevancyThreshold = 0.5, Memory = memory } });
+        var planner = new SequentialPlanner(kernel, new SequentialPlannerConfig
+        {
+            SemanticMemoryConfig = new SemanticMemoryConfig
+                { RelevancyThreshold = 0.5, Memory = memory }
+        });
 
         var plan = await planner.CreatePlanAsync(goal);
 
@@ -304,9 +309,9 @@ internal static class Example12_SequentialPlanner
         var memoryStorage = new VolatileMemoryStore();
 
         var textEmbeddingGenerator = new AzureOpenAITextEmbeddingGeneration(
-            deploymentName: TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
-            endpoint: TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
-            apiKey: TestConfiguration.AzureOpenAIEmbeddings.ApiKey);
+            TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
+            TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
+            TestConfiguration.AzureOpenAIEmbeddings.ApiKey);
 
         var memory = new SemanticTextMemory(memoryStorage, textEmbeddingGenerator);
 

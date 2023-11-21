@@ -11,11 +11,7 @@ public sealed class TestConfiguration
     private readonly IConfigurationRoot _configRoot;
     private static TestConfiguration? s_instance;
 
-
-    private TestConfiguration(IConfigurationRoot configRoot)
-    {
-        this._configRoot = configRoot;
-    }
+    private TestConfiguration(IConfigurationRoot configRoot) => _configRoot = configRoot;
 
 
     public static void Initialize(IConfigurationRoot configRoot)
@@ -57,7 +53,7 @@ public sealed class TestConfiguration
             throw new ArgumentNullException(nameof(caller));
         }
         return s_instance._configRoot.GetSection(caller).Get<T>() ??
-               throw new ConfigurationNotFoundException(section: caller);
+               throw new ConfigurationNotFoundException(caller);
     }
 
 

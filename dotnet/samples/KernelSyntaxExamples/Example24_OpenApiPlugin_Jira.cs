@@ -72,7 +72,7 @@ public static class Example24_OpenApiPlugin_Jira
                 apiPluginRawFileURL,
                 new OpenApiFunctionExecutionParameters(
                     httpClient, tokenProvider.AuthenticateRequestAsync,
-                    serverUrlOverride: new Uri(serverUrl)
+                    new Uri(serverUrl)
                 )
             );
         }
@@ -89,7 +89,7 @@ public static class Example24_OpenApiPlugin_Jira
             Console.WriteLine("\n\n\n");
             var formattedContent = JsonSerializer.Serialize(
                 result.GetValue<RestApiOperationResponse>(),
-                new JsonSerializerOptions()
+                new JsonSerializerOptions
                 {
                     WriteIndented = true
                 });
@@ -109,7 +109,7 @@ public static class Example24_OpenApiPlugin_Jira
             Console.WriteLine("\n\n\n");
             var formattedContent = JsonSerializer.Serialize(
                 result.GetValue<RestApiOperationResponse>(),
-                new JsonSerializerOptions()
+                new JsonSerializerOptions
                 {
                     WriteIndented = true
                 });

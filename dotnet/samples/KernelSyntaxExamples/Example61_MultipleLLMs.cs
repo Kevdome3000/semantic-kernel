@@ -42,13 +42,13 @@ public static class Example61_MultipleLLMs
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureOpenAIChatCompletionService(
-                deploymentName: azureDeploymentName,
-                endpoint: azureEndpoint,
+                azureDeploymentName,
+                azureEndpoint,
                 serviceId: "AzureOpenAIChat",
                 modelId: azureModelId,
                 apiKey: azureApiKey)
             .WithOpenAIChatCompletionService(
-                modelId: openAIModelId,
+                openAIModelId,
                 serviceId: "OpenAIChat",
                 apiKey: openAIApiKey)
             .Build();
@@ -67,7 +67,7 @@ public static class Example61_MultipleLLMs
 
         var result = await kernel.InvokePromptAsync(
             prompt,
-            new AIRequestSettings()
+            new AIRequestSettings
             {
                 ServiceId = serviceId
             });
@@ -83,7 +83,7 @@ public static class Example61_MultipleLLMs
 
         var result = await kernel.InvokePromptAsync(
             prompt,
-            requestSettings: new AIRequestSettings()
+            new AIRequestSettings
             {
                 ModelId = modelId
             });
@@ -101,9 +101,11 @@ public static class Example61_MultipleLLMs
 
         foreach (var modelId in modelIds)
         {
-            modelSettings.Add(new AIRequestSettings() { ModelId = modelId });
+            modelSettings.Add(new AIRequestSettings
+                { ModelId = modelId });
         }
-        var promptTemplateConfig = new PromptTemplateConfig() { ModelSettings = modelSettings };
+        var promptTemplateConfig = new PromptTemplateConfig
+            { ModelSettings = modelSettings };
 
         var skfunction = kernel.CreateFunctionFromPrompt(
             prompt,

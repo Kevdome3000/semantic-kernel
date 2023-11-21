@@ -46,7 +46,7 @@ public static class Example08_RetryHandler
         var retryConfig = new BasicRetryConfig
         {
             MaxRetryCount = 3,
-            UseExponentialBackoff = true,
+            UseExponentialBackoff = true
         };
         retryConfig.RetryableStatusCodes.Add(HttpStatusCode.Unauthorized);
 
@@ -80,13 +80,10 @@ public static class Example08_RetryHandler
     }
 
 
-    private static KernelBuilder InitializeKernelBuilder()
-    {
-        return new KernelBuilder()
-            .WithLoggerFactory(InfoLogger.LoggerFactory)
-            // OpenAI settings - you can set the OpenAI.ApiKey to an invalid value to see the retry policy in play
-            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, "BAD_KEY");
-    }
+    private static KernelBuilder InitializeKernelBuilder() => new KernelBuilder()
+        .WithLoggerFactory(InfoLogger.LoggerFactory)
+        // OpenAI settings - you can set the OpenAI.ApiKey to an invalid value to see the retry policy in play
+        .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, "BAD_KEY");
 
 
     private static AsyncPolicy<HttpResponseMessage> GetPollyPolicy(ILoggerFactory? logger)
@@ -155,14 +152,12 @@ public static class Example08_RetryHandler
         }
 
 
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) =>
             // Your custom http handling implementation
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.BadRequest)
+            Task.FromResult(new HttpResponseMessage(HttpStatusCode.BadRequest)
             {
                 Content = new StringContent("My custom bad request override")
             });
-        }
     }
 
 

@@ -34,7 +34,7 @@ public static class Program
 
     private static async Task RunExamplesAsync(string? filter, CancellationToken cancellationToken)
     {
-        var examples = (Assembly.GetExecutingAssembly().GetTypes())
+        var examples = Assembly.GetExecutingAssembly().GetTypes()
             .Where(type => type.Name.StartsWith("Example", StringComparison.OrdinalIgnoreCase))
             .Select(type => type.Name).ToList();
 

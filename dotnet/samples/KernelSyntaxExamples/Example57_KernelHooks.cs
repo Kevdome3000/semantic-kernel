@@ -55,8 +55,8 @@ public static class Example57_KernelHooks
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAIChatCompletionService(
-                modelId: s_openAIModelId!,
-                apiKey: s_openAIApiKey!)
+                s_openAIModelId!,
+                s_openAIApiKey!)
             .Build();
 
         const string FunctionPrompt = "Write a random paragraph about: {{$input}}.";
@@ -64,7 +64,8 @@ public static class Example57_KernelHooks
         var excuseFunction = kernel.CreateFunctionFromPrompt(
             FunctionPrompt,
             functionName: "Excuse",
-            requestSettings: new OpenAIRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
+            requestSettings: new OpenAIRequestSettings
+                { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
         void MyPreHandler(object? sender, FunctionInvokingEventArgs e)
         {
@@ -103,8 +104,8 @@ public static class Example57_KernelHooks
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAIChatCompletionService(
-                modelId: s_openAIModelId!,
-                apiKey: s_openAIApiKey!)
+                s_openAIModelId!,
+                s_openAIApiKey!)
             .Build();
 
         const string FunctionPrompt = "Write a random paragraph about: {{$input}}.";
@@ -112,7 +113,8 @@ public static class Example57_KernelHooks
         var excuseFunction = kernel.CreateFunctionFromPrompt(
             FunctionPrompt,
             functionName: "Excuse",
-            requestSettings: new OpenAIRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
+            requestSettings: new OpenAIRequestSettings
+                { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
         void MyPreHandler(object? sender, FunctionInvokingEventArgs e)
         {
@@ -157,8 +159,8 @@ public static class Example57_KernelHooks
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAIChatCompletionService(
-                modelId: s_openAIModelId!,
-                apiKey: s_openAIApiKey!)
+                s_openAIModelId!,
+                s_openAIApiKey!)
             .Build();
 
         const string FunctionPrompt = "Write a paragraph about Handlers.";
@@ -166,7 +168,8 @@ public static class Example57_KernelHooks
         var writerFunction = kernel.CreateFunctionFromPrompt(
             FunctionPrompt,
             functionName: "Writer",
-            requestSettings: new OpenAIRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
+            requestSettings: new OpenAIRequestSettings
+                { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
         void MyChangeDataHandler(object? sender, FunctionInvokedEventArgs e)
         {
@@ -193,8 +196,8 @@ public static class Example57_KernelHooks
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAIChatCompletionService(
-                modelId: s_openAIModelId!,
-                apiKey: s_openAIApiKey!)
+                s_openAIModelId!,
+                s_openAIApiKey!)
             .Build();
 
         const string FunctionPrompt = "Write a paragraph about: Cancellation.";
@@ -202,10 +205,11 @@ public static class Example57_KernelHooks
         var writerFunction = kernel.CreateFunctionFromPrompt(
             FunctionPrompt,
             functionName: "Writer",
-            requestSettings: new OpenAIRequestSettings() { MaxTokens = 1000, Temperature = 1, TopP = 0.5 });
+            requestSettings: new OpenAIRequestSettings
+                { MaxTokens = 1000, Temperature = 1, TopP = 0.5 });
 
         // Adding new inline handler to cancel/prevent function execution
-        kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
+        kernel.FunctionInvoking += (sender, e) =>
         {
             Console.WriteLine($"{e.FunctionView.PluginName}.{e.FunctionView.Name} : FunctionInvoking - Cancelling all subsequent invocations");
             e.Cancel();
@@ -213,7 +217,7 @@ public static class Example57_KernelHooks
 
         // Technically invoked will never be called since the function will be cancelled
         int functionInvokedCount = 0;
-        kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
+        kernel.FunctionInvoked += (sender, e) =>
         {
             functionInvokedCount++;
         };
@@ -230,8 +234,8 @@ public static class Example57_KernelHooks
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAIChatCompletionService(
-                modelId: s_openAIModelId!,
-                apiKey: s_openAIApiKey!)
+                s_openAIModelId!,
+                s_openAIApiKey!)
             .Build();
 
         int functionInvokingCount = 0;
@@ -241,13 +245,13 @@ public static class Example57_KernelHooks
         var secondFunction = kernel.CreateFunctionFromPrompt("Write a phrase with Cancellation.", functionName: "CancellationPhrase");
 
         // Adding new inline handler to count invoking events
-        kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
+        kernel.FunctionInvoking += (sender, e) =>
         {
             functionInvokingCount++;
         };
 
         // Invoked will never be called twice (for the secondFunction) since Invoked from the first is cancelling.
-        kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
+        kernel.FunctionInvoked += (sender, e) =>
         {
             functionInvokedCount++;
             e.Cancel();
@@ -266,8 +270,8 @@ public static class Example57_KernelHooks
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAIChatCompletionService(
-                modelId: s_openAIModelId!,
-                apiKey: s_openAIApiKey!)
+                s_openAIModelId!,
+                s_openAIApiKey!)
             .Build();
 
         var skipMeFunction = kernel.CreateFunctionFromPrompt("Write a paragraph about Skipping",
@@ -276,7 +280,7 @@ public static class Example57_KernelHooks
         var dontSkipMeFunction = kernel.CreateFunctionFromPrompt("Write a paragraph about Handlers",
             functionName: "DontSkipMe");
 
-        kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
+        kernel.FunctionInvoking += (sender, e) =>
         {
             if (e.FunctionView.Name == "SkipMe")
             {
@@ -288,7 +292,7 @@ public static class Example57_KernelHooks
             Console.WriteLine($"Function {e.FunctionView.Name} will not be skipped");
         };
 
-        kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
+        kernel.FunctionInvoked += (sender, e) =>
         {
             Console.WriteLine($"Only not skipped functions will trigger invoked event - Function name: {e.FunctionView.Name}");
         };
@@ -308,8 +312,8 @@ public static class Example57_KernelHooks
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAIChatCompletionService(
-                modelId: s_openAIModelId!,
-                apiKey: s_openAIApiKey!)
+                s_openAIModelId!,
+                s_openAIApiKey!)
             .Build();
 
         var repeatSubjects = new Queue<string>(new[] { "Life", "Work", "Leisure" });
@@ -318,7 +322,7 @@ public static class Example57_KernelHooks
             functionName: "RepeatMe");
 
         var repeatTimes = 0;
-        kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
+        kernel.FunctionInvoked += (sender, e) =>
         {
             Console.WriteLine($"\nFunction {e.FunctionView.Name} executed:");
             Console.WriteLine($"Result: {e.SKContext.Variables.Input}");
@@ -334,7 +338,6 @@ public static class Example57_KernelHooks
                 repeatTimes++;
                 Console.WriteLine("Repeat requested!");
 
-                return;
             }
         };
 

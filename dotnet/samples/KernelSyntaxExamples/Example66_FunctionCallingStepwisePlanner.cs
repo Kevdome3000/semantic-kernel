@@ -14,11 +14,11 @@ public static class Example66_FunctionCallingStepwisePlanner
 {
     public static async Task RunAsync()
     {
-        string[] questions = new string[]
+        string[] questions =
         {
             "What is the current hour number, plus 5?",
             "What is 387 minus 22? Email the solution to John and Mary.",
-            "Write a limerick, translate it to Spanish, and send it to Jane",
+            "Write a limerick, translate it to Spanish, and send it to Jane"
         };
 
         var kernel = InitializeKernel();
@@ -26,7 +26,7 @@ public static class Example66_FunctionCallingStepwisePlanner
         var config = new FunctionCallingStepwisePlannerConfig
         {
             MaxIterations = 15,
-            MaxTokens = 4000,
+            MaxTokens = 4000
         };
         var planner = new FunctionCallingStepwisePlanner(kernel, config);
 

@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace RepoUtils;
+
 using System;
 
-namespace RepoUtils;
 
 public class ConfigurationException : Exception
 {
@@ -10,9 +11,11 @@ public class ConfigurationException : Exception
     {
     }
 
+
     public ConfigurationException(string message) : base(message)
     {
     }
+
 
     public ConfigurationException(string message, Exception innerException) : base(message, innerException)
     {

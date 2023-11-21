@@ -27,7 +27,7 @@ public static class Example52_ApimAuth
         var subscriptionKey = Env.Var("Apim__SubscriptionKey");
 
         // Use interactive browser login
-        string[] scopes = new string[] { "https://cognitiveservices.azure.com/.default" };
+        string[] scopes = { "https://cognitiveservices.azure.com/.default" };
         var credential = new InteractiveBrowserCredential();
         var requestContext = new TokenRequestContext(scopes);
         var accessToken = await credential.GetTokenAsync(requestContext);
@@ -45,7 +45,7 @@ public static class Example52_ApimAuth
             Transport = new HttpClientTransport(httpClient),
             Diagnostics =
             {
-                LoggedHeaderNames = { "ErrorSource", "ErrorReason", "ErrorMessage", "ErrorScope", "ErrorSection", "ErrorStatusCode" },
+                LoggedHeaderNames = { "ErrorSource", "ErrorReason", "ErrorMessage", "ErrorScope", "ErrorSection", "ErrorStatusCode" }
             }
         };
         var openAIClient = new OpenAIClient(apimUri, new BearerTokenCredential(accessToken), clientOptions);
@@ -60,8 +60,8 @@ public static class Example52_ApimAuth
 
         var kernel = new KernelBuilder()
             .WithLoggerFactory(loggerFactory)
-            .WithAIService<IChatCompletion>(TestConfiguration.AzureOpenAI.ChatDeploymentName, (loggerFactory) =>
-                new AzureOpenAIChatCompletion(deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName, openAIClient: openAIClient, loggerFactory: loggerFactory))
+            .WithAIService<IChatCompletion>(TestConfiguration.AzureOpenAI.ChatDeploymentName, loggerFactory =>
+                new AzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.ChatDeploymentName, openAIClient, loggerFactory: loggerFactory))
             .Build();
 
         // Load semantic plugin defined with prompt templates
@@ -87,20 +87,9 @@ public class BearerTokenCredential : TokenCredential
 
 
     // Constructor that takes a Bearer token string and its expiration date
-    public BearerTokenCredential(AccessToken accessToken)
-    {
-        this._accessToken = accessToken;
-    }
+    public BearerTokenCredential(AccessToken accessToken) => _accessToken = accessToken;
 
+    public override AccessToken GetToken(TokenRequestContext requestContext, CancellationToken cancellationToken) => _accessToken;
 
-    public override AccessToken GetToken(TokenRequestContext requestContext, CancellationToken cancellationToken)
-    {
-        return this._accessToken;
-    }
-
-
-    public override ValueTask<AccessToken> GetTokenAsync(TokenRequestContext requestContext, CancellationToken cancellationToken)
-    {
-        return new ValueTask<AccessToken>(this._accessToken);
-    }
+    public override ValueTask<AccessToken> GetTokenAsync(TokenRequestContext requestContext, CancellationToken cancellationToken) => new(_accessToken);
 }

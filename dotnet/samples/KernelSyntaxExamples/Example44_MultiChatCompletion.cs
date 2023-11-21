@@ -38,7 +38,7 @@ public static class Example44_MultiChatCompletion
     {
         Console.WriteLine("======== Open AI - Multiple Chat Completion ========");
 
-        OpenAIChatCompletion openAIChatCompletion = new(modelId: TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
+        OpenAIChatCompletion openAIChatCompletion = new(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
 
         await RunChatAsync(openAIChatCompletion);
     }
@@ -52,13 +52,13 @@ public static class Example44_MultiChatCompletion
         chatHistory.AddUserMessage("Hi, I'm looking for book 3 different book suggestions about sci-fi");
         await MessageOutputAsync(chatHistory);
 
-        var chatRequestSettings = new OpenAIRequestSettings()
+        var chatRequestSettings = new OpenAIRequestSettings
         {
             MaxTokens = 1024,
             ResultsPerPrompt = 2,
             Temperature = 1,
             TopP = 0.5,
-            FrequencyPenalty = 0,
+            FrequencyPenalty = 0
         };
 
         // First bot assistant message

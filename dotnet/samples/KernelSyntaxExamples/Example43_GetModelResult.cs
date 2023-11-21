@@ -25,8 +25,8 @@ public static class Example43_GetModelResult
 
         Kernel kernel = new KernelBuilder()
             .WithOpenAIChatCompletionService(
-                modelId: TestConfiguration.OpenAI.ChatModelId,
-                apiKey: TestConfiguration.OpenAI.ApiKey)
+                TestConfiguration.OpenAI.ChatModelId,
+                TestConfiguration.OpenAI.ApiKey)
             .Build();
 
         // Function defined using few-shot design pattern
@@ -53,11 +53,12 @@ public static class Example43_GetModelResult
 
         // Using Chat Completion directly
         var chatCompletion = new OpenAIChatCompletion(
-            modelId: TestConfiguration.OpenAI.ChatModelId,
-            apiKey: TestConfiguration.OpenAI.ApiKey);
+            TestConfiguration.OpenAI.ChatModelId,
+            TestConfiguration.OpenAI.ApiKey);
         var prompt = FunctionDefinition.Replace("{{$input}}", $"Translate this date {DateTimeOffset.Now:f} to French format", StringComparison.InvariantCultureIgnoreCase);
 
-        IReadOnlyList<ITextResult> completionResults = await chatCompletion.GetCompletionsAsync(prompt, new OpenAIRequestSettings() { MaxTokens = 500, Temperature = 1, TopP = 0.5 });
+        IReadOnlyList<ITextResult> completionResults = await chatCompletion.GetCompletionsAsync(prompt, new OpenAIRequestSettings
+            { MaxTokens = 500, Temperature = 1, TopP = 0.5 });
 
         Console.WriteLine(await completionResults[0].GetCompletionAsync());
         Console.WriteLine(completionResults[0].ModelResult.GetOpenAIChatResult().Usage.AsJson());
@@ -84,7 +85,11 @@ public static class Example43_GetModelResult
         {
             return exception switch
             {
-                HttpOperationException httpException => new { StatusCode = httpException.StatusCode?.ToString(), Message = httpException.Message, Response = httpException.ResponseContent }.AsJson(),
+                HttpOperationException httpException => new
+                {
+                    StatusCode = httpException.StatusCode?.ToString(),
+                    httpException.Message, Response = httpException.ResponseContent
+                }.AsJson(),
                 { } e => e.Message,
                 _ => string.Empty
             };

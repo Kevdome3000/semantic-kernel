@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace RepoUtils;
+
 using Microsoft.SemanticKernel.Planning;
 
-namespace RepoUtils;
 
 internal static class PlanExtensions
 {

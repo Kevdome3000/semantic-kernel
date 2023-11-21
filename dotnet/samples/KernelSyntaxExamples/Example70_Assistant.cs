@@ -123,10 +123,7 @@ public static class Example70_Assistant
 
     private static Task ChatAsync(
         string resourcePath,
-        params string[] messages)
-    {
-        return ChatAsync(resourcePath, null, messages);
-    }
+        params string[] messages) => ChatAsync(resourcePath, null, messages);
 
 
     private static async Task ChatAsync(
@@ -136,7 +133,10 @@ public static class Example70_Assistant
     {
         var definition = EmbeddedResource.Read(resourcePath);
 
-        var plugins = plugin == null ? new SKPluginCollection() : new SKPluginCollection() { plugin };
+        var plugins = plugin == null
+            ? new SKPluginCollection()
+            : new SKPluginCollection
+                { plugin };
 
         var assistant =
             await AssistantBuilder.FromDefinitionAsync(

@@ -19,6 +19,7 @@ using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Memory;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
+using Microsoft.SemanticKernel.Reliability.Basic;
 using NCalcPlugins;
 
 
@@ -118,7 +119,7 @@ provides:
             }
 
             result = await orchestrator.ExecuteFlowAsync(s_flow, sessionId, input);
-            Console.WriteLine("Assistant: " + result.ToString());
+            Console.WriteLine("Assistant: " + result);
 
             if (result.IsComplete(s_flow))
             {
@@ -167,22 +168,22 @@ provides:
 
         Console.WriteLine("Question: " + question);
         Console.WriteLine("Answer: " + result["answer"]);
-        Console.WriteLine("Assistant: " + result.ToString());
+        Console.WriteLine("Assistant: " + result);
 
-        string[] userInputs = new[]
+        string[] userInputs =
         {
             "my email is bad*email&address",
             "my email is sample@xyz.com",
             "yes", // confirm to add another email address
             "I also want to notify foo@bar.com",
-            "no I don't need notify any more address", // end of collect emails
+            "no I don't need notify any more address" // end of collect emails
         };
 
         foreach (var t in userInputs)
         {
             Console.WriteLine($"User: {t}");
             result = await orchestrator.ExecuteFlowAsync(s_flow, sessionId, t).ConfigureAwait(false);
-            Console.WriteLine("Assistant: " + result.ToString());
+            Console.WriteLine("Assistant: " + result);
 
             if (result.IsComplete(s_flow))
             {
@@ -218,13 +219,12 @@ provides:
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey,
-                true,
                 setAsDefault: true)
-            .WithRetryBasic(new()
+            .WithRetryBasic(new BasicRetryConfig
             {
                 MaxRetryCount = 3,
                 UseExponentialBackoff = true,
-                MinRetryDelay = TimeSpan.FromSeconds(3),
+                MinRetryDelay = TimeSpan.FromSeconds(3)
             })
             .WithLoggerFactory(loggerFactory);
     }
@@ -253,11 +253,12 @@ Do not expose the regex unless asked.
 
         public ChatPlugin(Kernel kernel)
         {
-            this._chat = kernel.GetService<IChatCompletion>();
-            this._chatRequestSettings = new OpenAIRequestSettings
+            _chat = kernel.GetService<IChatCompletion>();
+            _chatRequestSettings = new OpenAIRequestSettings
             {
-                MaxTokens = this.MaxTokens,
-                StopSequences = new List<string>() { "Observation:" },
+                MaxTokens = MaxTokens,
+                StopSequences = new List<string>
+                    { "Observation:" },
                 Temperature = 0
             };
         }
@@ -271,7 +272,7 @@ Do not expose the regex unless asked.
             string email,
             SKContext context)
         {
-            var chat = this._chat.CreateNewChat(SystemPrompt);
+            var chat = _chat.CreateNewChat(SystemPrompt);
             chat.AddUserMessage(Goal);
 
             ChatHistory? chatHistory = context.GetChatHistory();
@@ -291,7 +292,7 @@ Do not expose the regex unless asked.
             context.Variables["email_addresses"] = string.Empty;
             context.PromptInput();
 
-            return await this._chat.GenerateMessageAsync(chat, this._chatRequestSettings).ConfigureAwait(false);
+            return await _chat.GenerateMessageAsync(chat, _chatRequestSettings).ConfigureAwait(false);
         }
 
 
@@ -316,14 +317,15 @@ Do not expose the regex unless asked.
             string answer,
             SKContext context)
         {
-            var contract = new Email()
+            var contract = new Email
             {
                 Address = emailAddress,
-                Content = answer,
+                Content = answer
             };
 
             // for demo purpose only
-            string emailPayload = JsonSerializer.Serialize(contract, new JsonSerializerOptions() { WriteIndented = true });
+            string emailPayload = JsonSerializer.Serialize(contract, new JsonSerializerOptions
+                { WriteIndented = true });
             context.Variables["email"] = emailPayload;
 
             return "Here's the API contract I will post to mail server: " + emailPayload;

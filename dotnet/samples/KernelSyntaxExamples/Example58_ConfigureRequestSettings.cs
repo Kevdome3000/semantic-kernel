@@ -33,8 +33,8 @@ public static class Example58_ConfigureRequestSettings
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureOpenAIChatCompletionService(
-                deploymentName: chatDeploymentName,
-                endpoint: endpoint,
+                chatDeploymentName,
+                endpoint,
                 serviceId: serviceId,
                 apiKey: apiKey)
             .Build();
@@ -45,7 +45,7 @@ public static class Example58_ConfigureRequestSettings
         // Invoke the semantic function and pass an OpenAI specific instance containing the request settings
         var result = await kernel.InvokePromptAsync(
             prompt,
-            new OpenAIRequestSettings()
+            new OpenAIRequestSettings
             {
                 MaxTokens = 60,
                 Temperature = 0.7

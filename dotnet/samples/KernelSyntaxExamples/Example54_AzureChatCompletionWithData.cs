@@ -94,7 +94,7 @@ public static class Example54_AzureChatCompletionWithData
         var completionWithDataConfig = GetCompletionWithDataConfig();
 
         Kernel kernel = new KernelBuilder()
-            .WithAzureOpenAIChatCompletionService(config: completionWithDataConfig)
+            .WithAzureOpenAIChatCompletionService(completionWithDataConfig)
             .Build();
 
         var semanticFunction = kernel.CreateFunctionFromPrompt("Question: {{$input}}");
@@ -126,16 +126,13 @@ public static class Example54_AzureChatCompletionWithData
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureOpenAIChatCompletionWithDataConfig"/> class.
     /// </summary>
-    private static AzureOpenAIChatCompletionWithDataConfig GetCompletionWithDataConfig()
+    private static AzureOpenAIChatCompletionWithDataConfig GetCompletionWithDataConfig() => new()
     {
-        return new AzureOpenAIChatCompletionWithDataConfig
-        {
-            CompletionModelId = TestConfiguration.AzureOpenAI.ChatDeploymentName,
-            CompletionEndpoint = TestConfiguration.AzureOpenAI.Endpoint,
-            CompletionApiKey = TestConfiguration.AzureOpenAI.ApiKey,
-            DataSourceEndpoint = TestConfiguration.ACS.Endpoint,
-            DataSourceApiKey = TestConfiguration.ACS.ApiKey,
-            DataSourceIndex = TestConfiguration.ACS.IndexName
-        };
-    }
+        CompletionModelId = TestConfiguration.AzureOpenAI.ChatDeploymentName,
+        CompletionEndpoint = TestConfiguration.AzureOpenAI.Endpoint,
+        CompletionApiKey = TestConfiguration.AzureOpenAI.ApiKey,
+        DataSourceEndpoint = TestConfiguration.ACS.Endpoint,
+        DataSourceApiKey = TestConfiguration.ACS.ApiKey,
+        DataSourceIndex = TestConfiguration.ACS.IndexName
+    };
 }

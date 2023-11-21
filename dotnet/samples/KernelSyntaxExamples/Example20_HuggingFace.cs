@@ -30,8 +30,8 @@ public static class Example20_HuggingFace
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithHuggingFaceTextCompletionService(
-                model: TestConfiguration.HuggingFace.ModelId,
-                apiKey: TestConfiguration.HuggingFace.ApiKey)
+                TestConfiguration.HuggingFace.ModelId,
+                TestConfiguration.HuggingFace.ApiKey)
             .Build();
 
         var questionAnswerFunction = kernel.CreateFunctionFromPrompt("Question: {{$input}}; Answer:");
@@ -66,7 +66,7 @@ public static class Example20_HuggingFace
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithHuggingFaceTextCompletionService(
-                model: Model,
+                Model,
                 endpoint: Endpoint,
                 apiKey: TestConfiguration.HuggingFace.ApiKey)
             .Build();

@@ -44,8 +44,8 @@ public static class Example45_MultiStreamingChatCompletion
         Console.WriteLine("======== Open AI - Multiple Text Completion - Raw Streaming ========");
 
         OpenAIChatCompletion openAIChatCompletion = new(
-            modelId: TestConfiguration.OpenAI.ChatModelId,
-            apiKey: TestConfiguration.OpenAI.ApiKey);
+            TestConfiguration.OpenAI.ChatModelId,
+            TestConfiguration.OpenAI.ApiKey);
 
         await StreamingChatCompletionAsync(openAIChatCompletion);
     }
@@ -53,7 +53,7 @@ public static class Example45_MultiStreamingChatCompletion
 
     private static async Task StreamingChatCompletionAsync(IChatCompletion chatCompletion)
     {
-        var requestSettings = new OpenAIRequestSettings()
+        var requestSettings = new OpenAIRequestSettings
         {
             MaxTokens = 200,
             FrequencyPenalty = 0,
@@ -101,7 +101,7 @@ public static class Example45_MultiStreamingChatCompletion
 
             lock (s_lockObject)
             {
-                Console.SetCursorPosition(0, (resultNumber * linesPerResult));
+                Console.SetCursorPosition(0, resultNumber * linesPerResult);
                 Console.Write($"{role}: {message}");
             }
         }

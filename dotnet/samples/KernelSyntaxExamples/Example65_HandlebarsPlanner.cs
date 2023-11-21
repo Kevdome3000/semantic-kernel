@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -56,8 +57,8 @@ public static class Example65_HandlebarsPlanner
         var kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureOpenAIChatCompletionService(
-                deploymentName: chatDeploymentName,
-                endpoint: endpoint,
+                chatDeploymentName,
+                endpoint,
                 serviceId: "AzureOpenAIChat",
                 apiKey: apiKey)
             .Build();
@@ -79,7 +80,8 @@ public static class Example65_HandlebarsPlanner
         // The gpt-35-turbo model does not handle loops well in the plans.
         var allowLoopsInPlan = chatDeploymentName.Contains("gpt-35-turbo", StringComparison.OrdinalIgnoreCase) ? false : true;
 
-        var planner = new HandlebarsPlanner(kernel, new HandlebarsPlannerConfig() { AllowLoops = allowLoopsInPlan });
+        var planner = new HandlebarsPlanner(kernel, new HandlebarsPlannerConfig
+            { AllowLoops = allowLoopsInPlan });
         Console.WriteLine($"Goal: {goal}");
 
         // Create the plan
@@ -212,23 +214,20 @@ public static class Example65_HandlebarsPlanner
         };
 
 
-        [SKFunction, SKName("GetRandomWord"), System.ComponentModel.Description("Gets a random word from a dictionary of common words and their definitions.")]
+        [SKFunction] [SKName("GetRandomWord")] [Description("Gets a random word from a dictionary of common words and their definitions.")]
         public string GetRandomWord()
         {
             // Get random number
-            var index = RandomNumberGenerator.GetInt32(0, this._dictionary.Count - 1);
+            var index = RandomNumberGenerator.GetInt32(0, _dictionary.Count - 1);
 
             // Return the word at the random index
-            return this._dictionary.ElementAt(index).Key;
+            return _dictionary.ElementAt(index).Key;
         }
 
 
-        [SKFunction, SKName("GetDefinition"), System.ComponentModel.Description("Gets the definition for a given word.")]
-        public string GetDefinition([System.ComponentModel.Description("Word to get definition for.")] string word)
-        {
-            return this._dictionary.TryGetValue(word, out var definition)
-                ? definition
-                : "Word not found";
-        }
+        [SKFunction] [SKName("GetDefinition")] [Description("Gets the definition for a given word.")]
+        public string GetDefinition([Description("Word to get definition for.")] string word) => _dictionary.TryGetValue(word, out var definition)
+            ? definition
+            : "Word not found";
     }
 }

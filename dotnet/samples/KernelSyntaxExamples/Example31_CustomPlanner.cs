@@ -104,7 +104,7 @@ internal static class Example31_CustomPlanner
             "I am a software engineer.",
             "I live in Tacoma, WA.",
             "I have a dog named Tully.",
-            "I have a cat named Butters.",
+            "I have a cat named Butters."
         };
 
         foreach (var memoryToSave in memoriesToSave)
@@ -130,40 +130,34 @@ internal static class Example31_CustomPlanner
     }
 
 
-    private static Kernel InitializeKernel()
-    {
-        return new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletionService(
-                TestConfiguration.AzureOpenAI.ChatDeploymentName,
-                TestConfiguration.AzureOpenAI.Endpoint,
-                TestConfiguration.AzureOpenAI.ApiKey)
-            .WithAzureOpenAITextEmbeddingGenerationService(
-                TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
-                TestConfiguration.AzureOpenAI.Endpoint,
-                TestConfiguration.AzureOpenAI.ApiKey)
-            .Build();
-    }
+    private static Kernel InitializeKernel() => new KernelBuilder()
+        .WithLoggerFactory(ConsoleLogger.LoggerFactory)
+        .WithAzureOpenAIChatCompletionService(
+            TestConfiguration.AzureOpenAI.ChatDeploymentName,
+            TestConfiguration.AzureOpenAI.Endpoint,
+            TestConfiguration.AzureOpenAI.ApiKey)
+        .WithAzureOpenAITextEmbeddingGenerationService(
+            TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
+            TestConfiguration.AzureOpenAI.Endpoint,
+            TestConfiguration.AzureOpenAI.ApiKey)
+        .Build();
 
 
-    private static ISemanticTextMemory InitializeMemory()
-    {
-        return new MemoryBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAITextEmbeddingGenerationService(
-                TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
-                TestConfiguration.AzureOpenAI.Endpoint,
-                TestConfiguration.AzureOpenAI.ApiKey)
-            .WithMemoryStore(new VolatileMemoryStore())
-            .Build();
-    }
+    private static ISemanticTextMemory InitializeMemory() => new MemoryBuilder()
+        .WithLoggerFactory(ConsoleLogger.LoggerFactory)
+        .WithAzureOpenAITextEmbeddingGenerationService(
+            TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
+            TestConfiguration.AzureOpenAI.Endpoint,
+            TestConfiguration.AzureOpenAI.ApiKey)
+        .WithMemoryStore(new VolatileMemoryStore())
+        .Build();
 }
 
 
 // Example Plugin that can process XML Markup created by ContextQuery
 public class MarkupPlugin
 {
-    [SKFunction, Description("Run Markup")]
+    [SKFunction] [Description("Run Markup")]
     public async Task<string> RunMarkupAsync(string docString, Kernel kernel)
     {
         var plan = docString.FromMarkup("Run a piece of xml markup", kernel);
@@ -182,7 +176,7 @@ public static class XmlMarkupPlanParser
 {
     private static readonly Dictionary<string, KeyValuePair<string, string>> s_pluginMapping = new()
     {
-        { "lookup", new KeyValuePair<string, string>("bing", "SearchAsync") },
+        { "lookup", new KeyValuePair<string, string>("bing", "SearchAsync") }
     };
 
 
@@ -248,24 +242,16 @@ public class XmlMarkup
             response = $"<{wrapperTag}>{response}</{wrapperTag}>";
         }
 
-        this.Document = new XmlDocument();
-        this.Document.LoadXml(response);
+        Document = new XmlDocument();
+        Document.LoadXml(response);
     }
 
 
     public XmlDocument Document { get; }
 
+    public XmlNodeList SelectAllElements() => Document.SelectNodes("//*")!;
 
-    public XmlNodeList SelectAllElements()
-    {
-        return this.Document.SelectNodes("//*")!;
-    }
-
-
-    public XmlNodeList SelectElements()
-    {
-        return this.Document.SelectNodes("/*")!;
-    }
+    public XmlNodeList SelectElements() => Document.SelectNodes("/*")!;
 }
 
 
@@ -276,11 +262,7 @@ public struct XmlNodeInfo
     public XmlNode Parent { get; set; }
     public XmlNode Node { get; set; }
 
-
-    public static implicit operator XmlNode(XmlNodeInfo info)
-    {
-        return info.Node;
-    }
+    public static implicit operator XmlNode(XmlNodeInfo info) => info.Node;
 }
 #pragma warning restore CA1815
 

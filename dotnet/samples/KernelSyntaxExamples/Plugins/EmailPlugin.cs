@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel;
 
 internal sealed class EmailPlugin
 {
-    [SKFunction, Description("Given an e-mail and message body, send an email")]
+    [SKFunction] [Description("Given an e-mail and message body, send an email")]
     public string SendEmail(
         [Description("The body of the email message to send.")]
         string input,
@@ -18,7 +18,7 @@ internal sealed class EmailPlugin
         $"Sent email to: {email_address}. Body: {input}";
 
 
-    [SKFunction, Description("Given a name, find email address")]
+    [SKFunction] [Description("Given a name, find email address")]
     public string GetEmailAddress(
         [Description("The name of the person whose email address needs to be found.")]
         string input,
@@ -32,7 +32,7 @@ internal sealed class EmailPlugin
             "Jane" => "janedoe4321@example.com",
             "Paul" => "paulsmith5678@example.com",
             "Mary" => "maryjones8765@example.com",
-            _ => "johndoe1234@example.com",
+            _ => "johndoe1234@example.com"
         };
     }
 }
