@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace SemanticKernel.IntegrationTests.Planners.Handlebars;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -10,13 +13,12 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning.Handlebars;
-using SemanticKernel.IntegrationTests.TestSettings;
+using TestSettings;
 using Xunit;
 using Xunit.Abstractions;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
-namespace SemanticKernel.IntegrationTests.Planners.Handlebars;
 #pragma warning restore IDE0130
+
 
 public sealed class HandlebarsTemplateEngineExtensionsTests : IDisposable
 {
@@ -34,6 +36,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests : IDisposable
             .Build();
     }
 
+
     [Fact]
     public void ShouldRenderTemplateWithVariables()
     {
@@ -49,6 +52,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests : IDisposable
         // Assert
         Assert.Equal("Hello World!", result);
     }
+
 
     [Fact]
     public void ShouldRenderTemplateWithSystemHelpers()
@@ -66,6 +70,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests : IDisposable
         Assert.Equal("Equal", result);
     }
 
+
     [Fact]
     public void ShouldRenderTemplateWithArrayHelper()
     {
@@ -81,6 +86,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests : IDisposable
         // Assert
         Assert.Equal("123", result);
     }
+
 
     [Fact]
     public void ShouldRenderTemplateWithRangeHelper()
@@ -98,6 +104,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests : IDisposable
         Assert.Equal("12345", result);
     }
 
+
     [Fact]
     public void ShouldRenderTemplateWithConcatHelper()
     {
@@ -114,6 +121,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests : IDisposable
         Assert.Equal("Hello World!", result);
     }
 
+
     [Fact]
     public void ShouldRenderTemplateWithJsonHelper()
     {
@@ -122,9 +130,9 @@ public sealed class HandlebarsTemplateEngineExtensionsTests : IDisposable
         var executionContext = kernel.CreateNewContext();
         var template = "{{json person}}";
         var variables = new Dictionary<string, object?>
-            {
-                { "person", new { name = "Alice", age = 25 } }
-            };
+        {
+            { "person", new { name = "Alice", age = 25 } }
+        };
 
         // Act
         var result = HandlebarsTemplateEngineExtensions.Render(kernel, executionContext, template, variables);
@@ -132,6 +140,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests : IDisposable
         // Assert
         Assert.Equal("{\"name\":\"Alice\",\"age\":25}", result);
     }
+
 
     [Fact]
     public void ShouldRenderTemplateWithMessageHelper()
@@ -149,6 +158,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests : IDisposable
         Assert.Equal("<title~>Hello World!</title~>", result);
     }
 
+
     [Fact]
     public void ShouldRenderTemplateWithRawHelper()
     {
@@ -164,6 +174,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests : IDisposable
         // Assert
         Assert.Equal("{{x}}", result);
     }
+
 
     [Fact]
     public void ShouldRenderTemplateWithSetAndGetHelpers()
@@ -181,6 +192,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests : IDisposable
         Assert.Equal("10", result);
     }
 
+
     [Fact]
     public void ShouldRenderTemplateWithFunctionHelpers()
     {
@@ -197,6 +209,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests : IDisposable
         // Assert   
         Assert.Equal("Foo Bar", result);
     }
+
 
     // TODO [@teresaqhoang]: Add this back in when parameter metadata types are better supported. Currently, parameter type is null when it should be string.
     // [Fact]
@@ -216,6 +229,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests : IDisposable
     //     Assert.Equal("BazBar", result);
     // }
 
+
     [Fact]
     public void ShouldRenderTemplateWithFunctionHelpersWitHashArguments()
     {
@@ -233,6 +247,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests : IDisposable
         Assert.Equal("BazBar", result);
     }
 
+
     [Fact]
     public void ShouldThrowExceptionWhenMissingRequiredParameter()
     {
@@ -246,6 +261,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests : IDisposable
         // Assert   
         Assert.Throws<SKException>(() => HandlebarsTemplateEngineExtensions.Render(kernel, executionContext, template, variables));
     }
+
 
     [Fact]
     public void ShouldThrowExceptionWhenFunctionHelperHasInvalidParameterType()
@@ -261,6 +277,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests : IDisposable
         Assert.Throws<ArgumentOutOfRangeException>(() => HandlebarsTemplateEngineExtensions.Render(kernel, executionContext, template, variables));
     }
 
+
     [Fact]
     public void ShouldThrowExceptionWhenFunctionHelperIsNotDefined()
     {
@@ -274,6 +291,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests : IDisposable
         // Assert   
         Assert.Throws<HandlebarsRuntimeException>(() => HandlebarsTemplateEngineExtensions.Render(kernel, executionContext, template, variables));
     }
+
 
     private Kernel InitializeKernel()
     {
@@ -294,21 +312,26 @@ public sealed class HandlebarsTemplateEngineExtensionsTests : IDisposable
         return kernel;
     }
 
+
     private sealed class Foo
     {
         [SKFunction, Description("Return Bar")]
         public string Bar() => "Bar";
 
+
         [SKFunction, Description("Return words concatenated")]
         public string Combine([System.ComponentModel.Description("First word")] string x, [System.ComponentModel.Description("Second word")] string y) => y + x;
+
 
         [SKFunction, Description("Return number as string")]
         public string StringifyInt([System.ComponentModel.Description("Number to stringify")] int x) => x.ToString(CultureInfo.InvariantCulture);
     }
 
+
     private readonly ILoggerFactory _logger;
     private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
+
 
     public void Dispose()
     {
@@ -316,10 +339,12 @@ public sealed class HandlebarsTemplateEngineExtensionsTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
+
     ~HandlebarsTemplateEngineExtensionsTests()
     {
         this.Dispose(false);
     }
+
 
     private void Dispose(bool disposing)
     {

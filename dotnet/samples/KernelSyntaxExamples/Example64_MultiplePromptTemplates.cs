@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Handlebars;
 using RepoUtils;
 
+
 /**
  * This example shows how to use multiple prompt template formats.
  */
@@ -50,6 +51,7 @@ public static class Example64_MultiplePromptTemplates
         await RunPromptAsync(kernel, skPrompt, "semantic-kernel", promptTemplateFactory);
         await RunPromptAsync(kernel, handlebarsPrompt, "handlebars", promptTemplateFactory);
     }
+
 
     public static async Task RunPromptAsync(Kernel kernel, string prompt, string templateFormat, IPromptTemplateFactory promptTemplateFactory)
     {

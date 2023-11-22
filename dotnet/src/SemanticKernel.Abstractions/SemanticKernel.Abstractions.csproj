@@ -19,14 +19,14 @@
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
     <PackageReference Include="Microsoft.Bcl.HashCode" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
-    <PackageReference Include="System.Diagnostics.DiagnosticSource" />
+    <PackageReference Include="System.Diagnostics.DiagnosticSource"/>
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.SemanticKernel.Core" />
     <InternalsVisibleTo Include="SemanticKernel.UnitTests" />
-    <InternalsVisibleTo Include="SemanticKernel.Extensions.UnitTests" />
+    <InternalsVisibleTo Include="SemanticKernel.Extensions.UnitTests"/>
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" /> <!-- Moq -->
   </ItemGroup>
 </Project>

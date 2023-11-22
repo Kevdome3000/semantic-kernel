@@ -1,5 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - Using the main namespace
+namespace Microsoft.SemanticKernel;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -7,18 +11,16 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Events;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.TemplateEngine;
+using AI;
+using AI.TextCompletion;
+using Events;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
+using Orchestration;
+using TemplateEngine;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using the main namespace
-namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
+
 
 /// <summary>
 /// A Semantic Kernel "Semantic" prompt function.
@@ -27,6 +29,7 @@ namespace Microsoft.SemanticKernel;
 internal sealed class KernelFunctionFromPrompt : KernelFunction
 {
     // TODO: Revise these Create method XML comments
+
 
     /// <summary>
     /// Creates a string-to-string semantic function, with no direct support for input context.
@@ -65,6 +68,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             loggerFactory: loggerFactory);
     }
 
+
     /// <summary>
     /// Creates a semantic function passing in the definition in natural language, i.e. the prompt template.
     /// </summary>
@@ -89,6 +93,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             functionName,
             loggerFactory);
     }
+
 
     /// <summary>
     /// Allow to define a semantic function passing in the definition in natural language, i.e. the prompt template.
@@ -117,19 +122,22 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             loggerFactory: loggerFactory);
     }
 
+
     /// <summary>
     /// List of function parameters
     /// </summary>
     public IReadOnlyList<SKParameterMetadata> Parameters => this._promptTemplate.Parameters;
 
+
     /// <inheritdoc/>
     protected override SKFunctionMetadata GetMetadataCore() =>
         this._metadata ??=
-        new SKFunctionMetadata(this.Name)
-        {
-            Description = this._promptTemplateConfig.Description,
-            Parameters = this.Parameters
-        };
+            new SKFunctionMetadata(this.Name)
+            {
+                Description = this._promptTemplateConfig.Description,
+                Parameters = this.Parameters
+            };
+
 
     /// <inheritdoc/>
     protected override async Task<FunctionResult> InvokeCoreAsync(
@@ -149,6 +157,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             Verify.NotNull(textCompletion);
 
             this.CallFunctionInvoking(context, renderedPrompt);
+
             if (IsInvokingCancelOrSkipRequested(context))
             {
                 return new FunctionResult(this.Name, context);
@@ -170,6 +179,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             result.Metadata.Add(SKEventArgsExtensions.RenderedPromptMetadataKey, renderedPrompt);
 
             this.CallFunctionInvoked(result, context, renderedPrompt);
+
             if (IsInvokedCancelRequested(context))
             {
                 result = new FunctionResult(this.Name, context, result.Value);
@@ -184,10 +194,12 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         }
     }
 
+
     /// <summary>
     /// JSON serialized string representation of the function.
     /// </summary>
     public override string ToString() => JsonSerializer.Serialize(this);
+
 
     private KernelFunctionFromPrompt(
         IPromptTemplate template,
@@ -202,6 +214,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         Verify.ParametersUniqueness(this.Parameters);
     }
 
+
     #region private
 
     private readonly ILogger _logger;
@@ -209,14 +222,17 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     private SKFunctionMetadata? _metadata;
     private readonly IPromptTemplate _promptTemplate;
 
+
     private static async Task<string> GetCompletionsResultContentAsync(IReadOnlyList<ITextResult> completions, CancellationToken cancellationToken = default)
     {
         // To avoid any unexpected behavior we only take the first completion result (when running from the Kernel)
         return await completions[0].GetCompletionAsync(cancellationToken).ConfigureAwait(false);
     }
 
+
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay => string.IsNullOrWhiteSpace(this.Description) ? this.Name : $"{this.Name} ({this.Description})";
+
 
     /// <summary>Add default values to the context variables if the variable is not defined</summary>
     private void AddDefaultValues(ContextVariables variables)
@@ -230,6 +246,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         }
     }
 
+
     /// <summary>
     /// Handles the FunctionInvoking event
     /// </summary>
@@ -238,6 +255,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     private void CallFunctionInvoking(SKContext context, string renderedPrompt)
     {
         var eventWrapper = context.FunctionInvokingHandler;
+
         if (eventWrapper?.Handler is null)
         {
             return;
@@ -245,12 +263,14 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         eventWrapper.EventArgs = new FunctionInvokingEventArgs(this.GetMetadata(), context)
         {
-            Metadata = {
+            Metadata =
+            {
                 [SKEventArgsExtensions.RenderedPromptMetadataKey] = renderedPrompt
             }
         };
         eventWrapper.Handler.Invoke(this, eventWrapper.EventArgs);
     }
+
 
     /// <summary>
     /// Handles the FunctionInvoked event
@@ -278,6 +298,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         result.Metadata = eventWrapper.EventArgs.Metadata;
     }
 
+
     /// <summary>
     /// Try to get the prompt from the event args metadata.
     /// </summary>
@@ -287,6 +308,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     private string GetPromptFromEventArgsMetadataOrDefault(SKContext context, string defaultPrompt)
     {
         var eventArgs = context.FunctionInvokingHandler?.EventArgs;
+
         if (eventArgs is null || !eventArgs.Metadata.TryGetValue(SKEventArgsExtensions.RenderedPromptMetadataKey, out var renderedPromptFromMetadata))
         {
             return defaultPrompt;
@@ -296,8 +318,10 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         return renderedPromptFromMetadata?.ToString() ?? string.Empty;
     }
 
+
     /// <summary>Create a random, valid function name.</summary>
     private static string RandomFunctionName() => $"func{Guid.NewGuid():N}";
+
 
     /// <summary>
     /// Default implementation to identify if a function was cancelled or skipped.
@@ -307,6 +331,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     internal static bool IsInvokingCancelOrSkipRequested(SKContext context) =>
         IsInvokingCancelRequested(context) || IsInvokingSkipRequested(context);
 
+
     /// <summary>
     /// Default implementation to identify if a function was skipped.
     /// </summary>
@@ -314,6 +339,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     /// <returns>True if it was cancelled or skipped</returns>
     internal static bool IsInvokingSkipRequested(SKContext context) =>
         context.FunctionInvokingHandler?.EventArgs?.IsSkipRequested == true;
+
 
     /// <summary>
     /// Default implementation to identify if a function was cancelled in the pre hook.
@@ -323,6 +349,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     internal static bool IsInvokingCancelRequested(SKContext context) =>
         context.FunctionInvokingHandler?.EventArgs?.CancelToken.IsCancellationRequested == true;
 
+
     /// <summary>
     /// Default implementation to identify if a function was cancelled in the post hook.
     /// </summary>
@@ -331,10 +358,12 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     internal static bool IsInvokedCancelRequested(SKContext context) =>
         context.FunctionInvokedHandler?.EventArgs?.CancelToken.IsCancellationRequested == true;
 
+
     private sealed class NullPromptTemplateFactory : IPromptTemplateFactory
     {
         public IPromptTemplate Create(string templateString, PromptTemplateConfig promptTemplateConfig) =>
             new NullPromptTemplate(templateString);
+
 
         private sealed class NullPromptTemplate : IPromptTemplate
         {
@@ -344,10 +373,13 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
             public IReadOnlyList<SKParameterMetadata> Parameters => Array.Empty<SKParameterMetadata>();
 
+
             public Task<string> RenderAsync(Kernel kernel, SKContext executionContext, CancellationToken cancellationToken = default) =>
                 Task.FromResult(this._templateText);
         }
     }
 
     #endregion
+
+
 }

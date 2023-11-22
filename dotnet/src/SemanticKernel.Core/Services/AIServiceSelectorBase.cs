@@ -2,12 +2,14 @@
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using the main namespace
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Services;
-
 namespace Microsoft.SemanticKernel;
+
+using AI;
+using Orchestration;
+using Services;
+
 #pragma warning restore IDE0130
+
 
 /// <summary>
 /// Base class for implementing <see cref="IAIServiceSelector"/>.
@@ -18,9 +20,11 @@ public abstract class AIServiceSelectorBase : IAIServiceSelector
     public (T?, AIRequestSettings?) SelectAIService<T>(Kernel kernel, SKContext context, KernelFunction function) where T : IAIService
     {
         var services = kernel.ServiceProvider.GetServices<T>();
+
         foreach (var service in services)
         {
             var result = this.SelectAIService<T>(context, function, service);
+
             if (result is not null)
             {
                 return ((T?, AIRequestSettings?))result;
@@ -29,6 +33,7 @@ public abstract class AIServiceSelectorBase : IAIServiceSelector
 
         throw new SKException($"Valid service of type {typeof(T)} not found.");
     }
+
 
     /// <summary>
     /// Return the AI service and requesting settings if the specified provider is the valid choice.

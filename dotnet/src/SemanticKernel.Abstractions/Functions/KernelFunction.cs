@@ -1,20 +1,21 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics.Metrics;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Orchestration;
-
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using the main namespace
 namespace Microsoft.SemanticKernel;
+
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using AI;
+using Extensions.Logging;
+using Orchestration;
+
 #pragma warning restore IDE0130
+
 
 /// <summary>
 /// Represents a function that can be invoked as part of a Semantic Kernel workload.
@@ -57,6 +58,7 @@ public abstract class KernelFunction
     /// </summary>
     internal IEnumerable<AIRequestSettings> ModelSettings { get; }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunction"/> class.
     /// </summary>
@@ -69,6 +71,7 @@ public abstract class KernelFunction
         this.Description = description;
         this.ModelSettings = modelSettings ?? Enumerable.Empty<AIRequestSettings>();
     }
+
 
     /// <summary>
     /// Invoke the <see cref="KernelFunction"/>.
@@ -91,6 +94,7 @@ public abstract class KernelFunction
 
         TagList tags = new() { { "sk.function.name", this.Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
+
         try
         {
             var result = await this.InvokeCoreAsync(kernel, context, requestSettings, cancellationToken).ConfigureAwait(false);
@@ -105,6 +109,7 @@ public abstract class KernelFunction
         catch (Exception ex)
         {
             tags.Add("error.type", ex.GetType().FullName);
+
             if (logger.IsEnabled(LogLevel.Error))
             {
                 logger.LogError(ex, "Function failed. Error: {Message}", ex.Message);
@@ -115,12 +120,14 @@ public abstract class KernelFunction
         {
             TimeSpan duration = new((long)((Stopwatch.GetTimestamp() - startingTimestamp) * (10_000_000.0 / Stopwatch.Frequency)));
             s_invocationDuration.Record(duration.TotalSeconds, in tags);
+
             if (logger.IsEnabled(LogLevel.Information))
             {
                 logger.LogInformation("Function completed. Duration: {Duration}ms", duration.TotalMilliseconds);
             }
         }
     }
+
 
     /// <summary>
     /// Invoke the <see cref="KernelFunction"/>.
@@ -136,6 +143,7 @@ public abstract class KernelFunction
         AIRequestSettings? requestSettings,
         CancellationToken cancellationToken);
 
+
     /// <summary>
     /// Gets the metadata describing the function.
     /// </summary>
@@ -144,6 +152,7 @@ public abstract class KernelFunction
     {
         return this.GetMetadataCore();
     }
+
 
     /// <summary>
     /// Gets the metadata describing the function.
