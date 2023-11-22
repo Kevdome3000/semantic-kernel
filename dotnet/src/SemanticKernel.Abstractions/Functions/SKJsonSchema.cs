@@ -7,15 +7,13 @@ namespace Microsoft.SemanticKernel;
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Text;
 
 
-/// <summary>Represents JSON Schema for describing types used in <see cref="ISKFunction"/>s.</summary>
+/// <summary>Represents JSON Schema for describing types used in <see cref="KernelFunction"/>s.</summary>
 [JsonConverter(typeof(SKJsonSchema.JsonConverter))]
 public sealed class SKJsonSchema
 {
-    /// <summary><see cref="JsonSerializerOptions"/> to write human-readable JSON.</summary>
-    private static readonly JsonSerializerOptions s_writeIndentedOptions = new() { WriteIndented = true };
-
     /// <summary>The schema stored as a string.</summary>
     private string? _schemaAsString;
 
@@ -52,7 +50,7 @@ public sealed class SKJsonSchema
 
 
     /// <summary>Gets the JSON Schema as a string.</summary>
-    public override string ToString() => this._schemaAsString ??= JsonSerializer.Serialize(this.RootElement, s_writeIndentedOptions);
+    public override string ToString() => this._schemaAsString ??= JsonSerializer.Serialize(this.RootElement, JsonOptionsCache.WriteIndented);
 
 
     /// <summary>Converter for reading/writing the schema.</summary>

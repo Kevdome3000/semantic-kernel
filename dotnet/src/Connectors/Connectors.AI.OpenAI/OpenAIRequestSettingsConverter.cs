@@ -11,7 +11,7 @@ using System.Text.Json.Serialization;
 /// <summary>
 /// JSON converter for <see cref="OpenAIRequestSettings"/>
 /// </summary>
-public class OpenAIRequestSettingsConverter : JsonConverter<OpenAIRequestSettings>
+public sealed class OpenAIRequestSettingsConverter : JsonConverter<OpenAIRequestSettings>
 {
     /// <inheritdoc/>
     public override OpenAIRequestSettings? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)

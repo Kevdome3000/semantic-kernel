@@ -27,11 +27,6 @@ public class OpenAIFunctionParameter
     public string Description { get; set; } = string.Empty;
 
     /// <summary>
-    /// Type of the parameter.
-    /// </summary>
-    public string Type { get; set; } = string.Empty;
-
-    /// <summary>
     /// Whether the parameter is required or not.
     /// </summary>
     public bool IsRequired { get; set; } = false;
@@ -42,7 +37,7 @@ public class OpenAIFunctionParameter
     public SKJsonSchema? Schema { get; set; } = null;
 
     /// <summary>
-    /// The parameter Type.
+    /// The <see cref="Type"/> of the parameter.
     /// </summary>
     public Type? ParameterType { get; set; } = null;
 }

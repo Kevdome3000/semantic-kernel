@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Services;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.SemanticKernel.Services;
 
 /// <summary>
 /// A collection of AI services that can be registered and built into an <see cref="IAIServiceProvider"/>.
@@ -21,6 +22,7 @@ public class AIServiceCollection
     // A dictionary that maps a service type to the name of the default service
     private readonly Dictionary<Type, string> _defaultIds = new();
 
+
     /// <summary>
     /// Registers a singleton service instance with the default name.
     /// </summary>
@@ -29,6 +31,7 @@ public class AIServiceCollection
     /// <exception cref="ArgumentNullException">The service instance is null.</exception>
     public void SetService<T>(T service) where T : IAIService
         => this.SetService(DefaultKey, service, true);
+
 
     /// <summary>
     /// Registers a singleton service instance with an optional name and default flag.
@@ -42,6 +45,7 @@ public class AIServiceCollection
     public void SetService<T>(string? name, T service, bool setAsDefault = false) where T : IAIService
         => this.SetService<T>(name, (() => service), setAsDefault);
 
+
     /// <summary>
     /// Registers a transient service factory with the default name.
     /// </summary>
@@ -50,6 +54,7 @@ public class AIServiceCollection
     /// <exception cref="ArgumentNullException">The factory function is null.</exception>
     public void SetService<T>(Func<T> factory) where T : IAIService
         => this.SetService<T>(DefaultKey, factory, true);
+
 
     /// <summary>
     /// Registers a transient service factory with an optional name and default flag.
@@ -63,13 +68,11 @@ public class AIServiceCollection
     public void SetService<T>(string? name, Func<T> factory, bool setAsDefault = false) where T : IAIService
     {
         // Validate the factory function
-        if (factory == null)
-        {
-            throw new ArgumentNullException(nameof(factory));
-        }
+        Verify.NotNull(factory);
 
         // Get or create the nested dictionary for the service type
         var type = typeof(T);
+
         if (!this._services.TryGetValue(type, out var namedServices))
         {
             namedServices = new();
@@ -90,6 +93,7 @@ public class AIServiceCollection
         namedServices[name ?? DefaultKey] = objectFactory
                                             ?? throw new InvalidOperationException("Service factory is an invalid format");
     }
+
 
     /// <summary>
     /// Builds an <see cref="IAIServiceProvider"/> from the registered services and default names.
@@ -112,7 +116,8 @@ public class AIServiceCollection
         return new AIServiceProvider(servicesClone, defaultsClone);
     }
 
+
     private bool HasDefault<T>() where T : IAIService
         => this._defaultIds.TryGetValue(typeof(T), out var defaultName)
-            && !string.IsNullOrEmpty(defaultName);
+           && !string.IsNullOrEmpty(defaultName);
 }

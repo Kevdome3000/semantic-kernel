@@ -101,7 +101,9 @@ public enum PodType
 }
 
 
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
 internal sealed class PodTypeJsonConverter : JsonConverter<PodType>
+#pragma warning restore CA1812
 {
     public override PodType Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {

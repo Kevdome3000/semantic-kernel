@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Extensions.Logging;
@@ -125,15 +126,15 @@ public abstract class OpenAIClientBase
     {
         using var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
         using var response = await ExecuteRequestAsync(url, HttpMethod.Post, content, cancellationToken).ConfigureAwait(false);
-        var responseJson = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
-        var result = JsonDeserialize<T>(responseJson);
+        string responseJson = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
+        T result = JsonDeserialize<T>(responseJson);
         return result;
     }
 
 
     protected private T JsonDeserialize<T>(string responseJson)
     {
-        var result = Json.Deserialize<T>(responseJson);
+        var result = JsonSerializer.Deserialize<T>(responseJson, JsonOptionsCache.ReadPermissive);
 
         if (result is null)
         {

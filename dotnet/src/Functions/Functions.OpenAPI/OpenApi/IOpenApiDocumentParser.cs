@@ -10,7 +10,7 @@ using Model;
 
 
 /// <summary>
-/// Interface for OpenApi document parser classes.
+/// Interface for OpenAPI document parser classes.
 /// </summary>
 internal interface IOpenApiDocumentParser
 {

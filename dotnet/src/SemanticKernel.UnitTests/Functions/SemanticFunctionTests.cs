@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+
+
 // ReSharper disable StringLiteralTypo
 
 namespace SemanticKernel.UnitTests.Functions;
@@ -168,7 +170,7 @@ public class SemanticFunctionTests
         {
             invoked++;
         };
-        List<ISKFunction> functions = new();
+        List<KernelFunction> functions = new();
 
         for (int i = 0; i < pipelineCount; i++)
         {
@@ -316,7 +318,7 @@ public class SemanticFunctionTests
             invoked++;
         };
 
-        List<ISKFunction> functions = new();
+        List<KernelFunction> functions = new();
 
         for (int i = 0; i < pipelineCount; i++)
         {

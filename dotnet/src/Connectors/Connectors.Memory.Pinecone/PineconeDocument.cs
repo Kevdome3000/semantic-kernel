@@ -1,15 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
-using Microsoft.SemanticKernel.Text;
+using Http.ApiSchema;
+using Model;
+using Text;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 
 /// <summary>
 /// Pinecone Document entity.
@@ -83,6 +84,7 @@ public class PineconeDocument
     [JsonIgnore]
     public string? CreatedAt => this.Metadata?.TryGetValue("created_at", out var createdAt) == true ? createdAt.ToString() : null;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="PineconeDocument" /> class.
     /// </summary>
@@ -106,6 +108,7 @@ public class PineconeDocument
         this.Score = score;
     }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="PineconeDocument" /> class.
     /// </summary>
@@ -115,6 +118,7 @@ public class PineconeDocument
     {
         return new PineconeDocument(values, id);
     }
+
 
     /// <summary>
     /// Sets sparse vector data for <see cref="PineconeDocument" /> class.
@@ -126,6 +130,7 @@ public class PineconeDocument
         return this;
     }
 
+
     /// <summary>
     /// Sets metadata for <see cref="PineconeDocument" /> class.
     /// </summary>
@@ -135,6 +140,7 @@ public class PineconeDocument
         this.Metadata = metadata;
         return this;
     }
+
 
     /// <summary>
     /// Serializes the metadata to JSON.
@@ -154,20 +160,12 @@ public class PineconeDocument
             .Where(x => !propertiesToSkip.Contains(x.Key))
             .ToDictionary(x => x.Key, x => x.Value);
 
-        return JsonSerializer.Serialize(distinctMetadata, s_jsonSerializerOptions);
+        return JsonSerializer.Serialize(distinctMetadata, JsonOptionsCache.Default);
     }
+
 
     internal UpdateVectorRequest ToUpdateRequest()
     {
         return UpdateVectorRequest.FromPineconeDocument(this);
-    }
-
-    private static readonly JsonSerializerOptions s_jsonSerializerOptions = CreateSerializerOptions();
-
-    private static JsonSerializerOptions CreateSerializerOptions()
-    {
-        var jso = new JsonSerializerOptions();
-        jso.Converters.Add(new ReadOnlyMemoryConverter());
-        return jso;
     }
 }

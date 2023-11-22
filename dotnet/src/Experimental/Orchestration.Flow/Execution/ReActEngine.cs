@@ -27,7 +27,7 @@ internal sealed class ReActEngine
     /// <summary>
     /// Re-Act function for flow execution
     /// </summary>
-    private readonly ISKFunction _reActFunction;
+    private readonly KernelFunction _reActFunction;
 
     /// <summary>
     /// The flow planner config
@@ -246,7 +246,7 @@ internal sealed class ReActEngine
     }
 
 
-    private ISKFunction ImportSemanticFunction(Kernel kernel, string functionName, string promptTemplate, PromptTemplateConfig config)
+    private KernelFunction ImportSemanticFunction(Kernel kernel, string functionName, string promptTemplate, PromptTemplateConfig config)
     {
         var factory = new KernelPromptTemplateFactory(kernel.LoggerFactory);
         var template = factory.Create(promptTemplate, config);
@@ -418,7 +418,8 @@ internal sealed class ReActEngine
         SKParameterMetadata promptParameter = new(Constants.StopAndPromptParameterName)
         {
             Description = "The message to be shown to the user.",
-            Type = ParameterJsonType.String
+            ParameterType = typeof(string),
+            Schema = SKJsonSchema.Parse("{\"type\":\"string\"}"),
         };
 
         return new SKFunctionMetadata(Constants.StopAndPromptFunctionName)

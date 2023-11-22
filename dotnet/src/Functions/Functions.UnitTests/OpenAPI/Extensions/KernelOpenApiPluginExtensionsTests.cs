@@ -13,7 +13,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
-using Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
 using Microsoft.SemanticKernel.Orchestration;
 using TestPlugins;
 using Xunit;
@@ -64,13 +63,15 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
         Assert.NotNull(functionView);
 
         var secretNameParameter = functionView.Parameters.First(p => p.Name == "secret_name");
-        Assert.Equal(ParameterJsonType.String, secretNameParameter.Type);
+        Assert.NotNull(secretNameParameter.Schema);
+        Assert.Equal("string", secretNameParameter.Schema!.RootElement.GetProperty("type").GetString());
 
         var apiVersionParameter = functionView.Parameters.First(p => p.Name == "api_version");
-        Assert.Equal("string", apiVersionParameter?.Type?.ToString());
+        Assert.Equal("string", apiVersionParameter.Schema!.RootElement.GetProperty("type").GetString());
 
         var payloadParameter = functionView.Parameters.First(p => p.Name == "payload");
-        Assert.Equal(ParameterJsonType.Object, payloadParameter.Type);
+        Assert.NotNull(payloadParameter.Schema);
+        Assert.Equal("object", payloadParameter.Schema!.RootElement.GetProperty("type").GetString());
     }
 
 
@@ -216,7 +217,7 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
 
         Assert.NotNull(result);
 
-        //Check the response, converted to a string indirectly through an argument passed to a fake plugin that follows the OpenApi plugin in the pipeline since there's no direct access to the context.
+        //Check the response, converted to a string indirectly through an argument passed to a fake plugin that follows the OpenAPI plugin in the pipeline since there's no direct access to the context.
         Assert.Equal("fake-content", fakePlugin.ParameterValueFakeMethodCalledWith);
     }
 

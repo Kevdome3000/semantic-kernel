@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 
 
 /// <summary>
-/// Response from assistant when called as a <see cref="ISKFunction"/>.
+/// Response from assistant when called as a <see cref="KernelFunction"/>.
 /// </summary>
 public class AssistantResponse
 {

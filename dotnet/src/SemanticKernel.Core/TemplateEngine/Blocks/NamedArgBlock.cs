@@ -163,16 +163,12 @@ internal sealed class NamedArgBlock : Block, ITextRendering
         }
 
         string[] trimmedParts = NamedArgBlock.GetTrimmedParts(text);
-
-        switch (trimmedParts?.Length)
+        return (trimmedParts?.Length) switch
         {
-            case (2):
-                return $"{trimmedParts[0]}{Symbols.NamedArgBlockSeparator}{trimmedParts[1]}";
-            case (1):
-                return trimmedParts[0];
-            default:
-                return null;
-        }
+            1 => trimmedParts[0],
+            2 => $"{trimmedParts[0]}{Symbols.NamedArgBlockSeparator}{trimmedParts[1]}",
+            _ => null,
+        };
     }
 
 

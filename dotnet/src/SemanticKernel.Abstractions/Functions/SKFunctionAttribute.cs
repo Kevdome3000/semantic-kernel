@@ -16,7 +16,7 @@ using Orchestration;
 
 
 /// <summary>
-/// Specifies that a method on a class imported as a plugin with should be included as an <see cref="ISKFunction"/>.
+/// Specifies that a method on a class imported as a plugin with should be included as an <see cref="KernelFunction"/>.
 /// </summary>
 /// <remarks>
 /// <para>

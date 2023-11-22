@@ -3,7 +3,6 @@
 namespace SemanticKernel.Functions.UnitTests.OpenAPI.Builders.Serialization;
 
 using System;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Builders.Serialization;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Xunit;
@@ -18,7 +17,7 @@ public class PipeDelimitedStyleParametersSerializerTests
         var parameter = new RestApiOperationParameter(name: "p1", type: "string", isRequired: false, expand: false, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.Form);
 
         //Act & Assert
-        Assert.Throws<SKException>(() => PipeDelimitedStyleParameterSerializer.Serialize(parameter, "fake-argument"));
+        Assert.Throws<ArgumentException>(() => PipeDelimitedStyleParameterSerializer.Serialize(parameter, "fake-argument"));
     }
 
 
@@ -34,7 +33,7 @@ public class PipeDelimitedStyleParametersSerializerTests
         var parameter = new RestApiOperationParameter(name: "p1", type: parameterType, isRequired: false, expand: false, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.PipeDelimited);
 
         //Act & Assert
-        Assert.Throws<SKException>(() => PipeDelimitedStyleParameterSerializer.Serialize(parameter, "fake-argument"));
+        Assert.Throws<ArgumentException>(() => PipeDelimitedStyleParameterSerializer.Serialize(parameter, "fake-argument"));
     }
 
 

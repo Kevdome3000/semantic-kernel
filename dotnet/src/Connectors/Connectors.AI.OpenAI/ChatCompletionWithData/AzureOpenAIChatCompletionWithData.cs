@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using ChatCompletion;
@@ -242,7 +243,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
 
     private T DeserializeResponse<T>(string body)
     {
-        var response = Json.Deserialize<T>(body);
+        var response = JsonSerializer.Deserialize<T>(body, JsonOptionsCache.ReadPermissive);
 
         if (response is null)
         {

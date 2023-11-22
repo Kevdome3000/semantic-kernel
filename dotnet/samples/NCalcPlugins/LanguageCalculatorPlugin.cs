@@ -27,7 +27,7 @@ using NCalc;
 /// </example>
 public class LanguageCalculatorPlugin
 {
-    private readonly ISKFunction _mathTranslator;
+    private readonly KernelFunction _mathTranslator;
 
     private const string MathTranslatorPrompt =
         @"Translate a math problem into a expression that can be executed using .net NCalc library. Use the output of running this code to answer the question.

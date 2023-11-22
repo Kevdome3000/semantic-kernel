@@ -44,7 +44,6 @@ public sealed class OpenAIChatCompletionTests : IDisposable
                         {
                             Name = "Format",
                             Description = "Date format",
-                            Type = "string",
                             ParameterType = typeof(string),
                             IsRequired = false,
                         }
@@ -61,7 +60,6 @@ public sealed class OpenAIChatCompletionTests : IDisposable
                         {
                             Name = "Format",
                             Description = "Date format",
-                            Type = "string",
                             ParameterType = typeof(string),
                             IsRequired = false,
                         }

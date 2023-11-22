@@ -7,6 +7,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.DeepDev;
 using Microsoft.ML.Tokenizers;
+using Microsoft.SemanticKernel.Text;
 using Resources;
 using SharpToken;
 using static Microsoft.SemanticKernel.Text.TextChunker;
@@ -51,8 +52,8 @@ known as coral polyps.";
     {
         Console.WriteLine("=== Text chunking ===");
 
-        var lines = SplitPlainTextLines(Text, 40);
-        var paragraphs = SplitPlainTextParagraphs(lines, 120);
+        var lines = TextChunker.SplitPlainTextLines(Text, 40);
+        var paragraphs = TextChunker.SplitPlainTextParagraphs(lines, 120);
 
         WriteParagraphsToConsole(paragraphs);
     }
@@ -65,8 +66,8 @@ known as coral polyps.";
         sw.Start();
         var tokenCounter = s_tokenCounterFactory(counterType);
 
-        var lines = SplitPlainTextLines(Text, 40, tokenCounter);
-        var paragraphs = SplitPlainTextParagraphs(lines, 120, tokenCounter: tokenCounter);
+        var lines = TextChunker.SplitPlainTextLines(Text, 40, tokenCounter);
+        var paragraphs = TextChunker.SplitPlainTextParagraphs(lines, 120, tokenCounter: tokenCounter);
 
         sw.Stop();
         Console.WriteLine($"Elapsed time: {sw.ElapsedMilliseconds} ms");
@@ -78,8 +79,8 @@ known as coral polyps.";
     {
         Console.WriteLine("=== Text chunking with chunk header ===");
 
-        var lines = SplitPlainTextLines(Text, 40);
-        var paragraphs = SplitPlainTextParagraphs(lines, 150, chunkHeader: "DOCUMENT NAME: test.txt\n\n");
+        var lines = TextChunker.SplitPlainTextLines(Text, 40);
+        var paragraphs = TextChunker.SplitPlainTextParagraphs(lines, 150, chunkHeader: "DOCUMENT NAME: test.txt\n\n");
 
         WriteParagraphsToConsole(paragraphs);
     }
@@ -104,7 +105,7 @@ known as coral polyps.";
         SharpToken,
         MicrosoftML,
         DeepDev,
-        MicrosoftMLRoberta
+        MicrosoftMLRoberta,
     }
 
 
@@ -112,7 +113,7 @@ known as coral polyps.";
     /// Custom token counter implementation using SharpToken.
     /// Note: SharpToken is used for demonstration purposes only, it's possible to use any available or custom tokenization logic.
     /// </summary>
-    private static TokenCounter SharpTokenTokenCounter => input =>
+    private static TokenCounter SharpTokenTokenCounter => (string input) =>
     {
         // Initialize encoding by encoding name
         var encoding = GptEncoding.GetEncoding("cl100k_base");
@@ -128,7 +129,7 @@ known as coral polyps.";
     /// <summary>
     /// MicrosoftML token counter implementation.
     /// </summary>
-    private static TokenCounter MicrosoftMLTokenCounter => input =>
+    private static TokenCounter MicrosoftMLTokenCounter => (string input) =>
     {
         Tokenizer tokenizer = new(new Bpe());
         var tokens = tokenizer.Encode(input).Tokens;
@@ -139,7 +140,7 @@ known as coral polyps.";
     /// <summary>
     /// MicrosoftML token counter implementation using Roberta and local vocab
     /// </summary>
-    private static TokenCounter MicrosoftMLRobertaTokenCounter => input =>
+    private static TokenCounter MicrosoftMLRobertaTokenCounter => (string input) =>
     {
         var encoder = EmbeddedResource.ReadStream("EnglishRoberta.encoder.json");
         var vocab = EmbeddedResource.ReadStream("EnglishRoberta.vocab.bpe");
@@ -162,7 +163,7 @@ known as coral polyps.";
     /// <summary>
     /// DeepDev token counter implementation.
     /// </summary>
-    private static TokenCounter DeepDevTokenCounter => input =>
+    private static TokenCounter DeepDevTokenCounter => (string input) =>
     {
 #pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
         // Initialize encoding by encoding name
@@ -176,20 +177,13 @@ known as coral polyps.";
         return tokens.Count;
     };
 
-    private static readonly Func<TokenCounterType, TokenCounter> s_tokenCounterFactory = counterType =>
-    {
-        switch (counterType)
+    private static readonly Func<TokenCounterType, TokenCounter> s_tokenCounterFactory = (TokenCounterType counterType) =>
+        counterType switch
         {
-            case TokenCounterType.SharpToken:
-                return input => SharpTokenTokenCounter(input);
-            case TokenCounterType.MicrosoftML:
-                return input => MicrosoftMLTokenCounter(input);
-            case TokenCounterType.DeepDev:
-                return input => DeepDevTokenCounter(input);
-            case TokenCounterType.MicrosoftMLRoberta:
-                return input => MicrosoftMLRobertaTokenCounter(input);
-            default:
-                throw new ArgumentOutOfRangeException(nameof(counterType), counterType, null);
-        }
-    };
+            TokenCounterType.SharpToken => (string input) => SharpTokenTokenCounter(input),
+            TokenCounterType.MicrosoftML => (string input) => MicrosoftMLTokenCounter(input),
+            TokenCounterType.DeepDev => (string input) => DeepDevTokenCounter(input),
+            TokenCounterType.MicrosoftMLRoberta => (string input) => MicrosoftMLRobertaTokenCounter(input),
+            _ => throw new ArgumentOutOfRangeException(nameof(counterType), counterType, null),
+        };
 }

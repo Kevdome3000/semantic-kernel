@@ -8,11 +8,13 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using AzureSdk;
 using SemanticKernel.AI;
+using Text;
 
 
 /// <summary>
 /// Request settings for an OpenAI completion request.
 /// </summary>
+[JsonConverter(typeof(OpenAIRequestSettingsConverter))]
 public class OpenAIRequestSettings : AIRequestSettings
 {
     /// <summary>
@@ -114,31 +116,6 @@ public class OpenAIRequestSettings : AIRequestSettings
     public IList<OpenAIFunction>? Functions { get; set; }
 
     /// <summary>
-    /// An object specifying the format that the model must output.
-    /// Setting to <see cref="ChatResponseFormat.Json"/> enables JSON mode,
-    /// which guarantees the message the model generates is valid JSON.
-    /// </summary>
-    /// <remarks>
-    /// Important: When using JSON mode you must still instruct the model to produce JSON yourself via some conversation message,
-    /// for example via your system message. If you don't do this, the model may generate an unending stream of
-    /// whitespace until the generation reaches the token limit, which may take a lot of time and give the appearance
-    /// of a "stuck" request. Also note that the message content may be partial (i.e. cut off) if finish_reason="length",
-    /// which indicates the generation exceeded max_tokens or the conversation exceeded the max context length.
-    /// </remarks>
-    [JsonPropertyName("response_format")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public ResponseFormat? ResponseFormat { get; set; }
-
-    /// <summary>
-    /// This feature is in Beta. If specified, our system will make a best effort to sample deterministically,
-    /// such that repeated requests with the same seed and parameters should return the same result.
-    /// Determinism is not guaranteed, and you should refer to the system_fingerprint response parameter to
-    /// monitor changes in the backend.
-    /// </summary>
-    [JsonPropertyName("seed")]
-    public int? Seed { get; set; }
-
-    /// <summary>
     /// Default value for chat system property.
     /// </summary>
     internal static string DefaultChatSystemPrompt { get; } = "Assistant is a large language model.";
@@ -171,7 +148,7 @@ public class OpenAIRequestSettings : AIRequestSettings
         }
 
         var json = JsonSerializer.Serialize(requestSettings);
-        var openAIRequestSettings = JsonSerializer.Deserialize<OpenAIRequestSettings>(json, s_options);
+        var openAIRequestSettings = JsonSerializer.Deserialize<OpenAIRequestSettings>(json, JsonOptionsCache.ReadPermissive);
 
         if (openAIRequestSettings is not null)
         {
@@ -185,24 +162,6 @@ public class OpenAIRequestSettings : AIRequestSettings
     #region private ================================================================================
 
     private string _chatSystemPrompt = DefaultChatSystemPrompt;
-
-    private static readonly JsonSerializerOptions s_options = CreateOptions();
-
-
-    private static JsonSerializerOptions CreateOptions()
-    {
-        JsonSerializerOptions options = new()
-        {
-            WriteIndented = true,
-            MaxDepth = 20,
-            AllowTrailingCommas = true,
-            PropertyNameCaseInsensitive = true,
-            ReadCommentHandling = JsonCommentHandling.Skip,
-            Converters = { new OpenAIRequestSettingsConverter(), new JsonStringEnumConverter() }
-        };
-
-        return options;
-    }
 
     #endregion
 

@@ -6,12 +6,12 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using CustomClient;
 using Extensions.Logging;
 using SemanticKernel.AI.ImageGeneration;
-using Text;
 
 
 /// <summary>
@@ -53,7 +53,7 @@ public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         _authorizationHeaderValue = $"Bearer {apiKey}";
         _organizationHeaderValue = organization;
 
-        AddAttribute(OrganizationKey, organization!);
+        AddAttribute(OrganizationKey, organization);
     }
 
 
@@ -102,7 +102,7 @@ public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         Debug.Assert(format is "url" or "b64_json");
         Debug.Assert(extractResponse is not null);
 
-        var requestBody = Json.Serialize(new ImageGenerationRequest
+        var requestBody = JsonSerializer.Serialize(new ImageGenerationRequest
         {
             Prompt = description,
             Size = $"{width}x{height}",

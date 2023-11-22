@@ -1,21 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Functions.UnitTests.OpenAPI;
+
 using System;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
-namespace SemanticKernel.Functions.UnitTests.OpenAPI;
 
 /// <summary>
-/// Contains helper methods for OpenApi related tests.
+/// Contains helper methods for OpenAPI related tests.
 /// </summary>
 internal static class OpenApiTestHelper
 {
     /// <summary>
-    /// Modifies OpenApi document for testing different scenarios.
+    /// Modifies OpenAPI document for testing different scenarios.
     /// </summary>
-    /// <param name="openApiDocument">The OpenApi document content.</param>
+    /// <param name="openApiDocument">The OpenAPI document content.</param>
     /// <param name="transformer">Delegate with document modifications.</param>
     internal static MemoryStream ModifyOpenApiDocument(Stream openApiDocument, Action<JsonObject> transformer)
     {

@@ -17,7 +17,7 @@ using Services;
 public abstract class AIServiceSelectorBase : IAIServiceSelector
 {
     /// <inheritdoc/>
-    public (T?, AIRequestSettings?) SelectAIService<T>(Kernel kernel, SKContext context, ISKFunction skfunction) where T : IAIService
+    public (T?, AIRequestSettings?) SelectAIService<T>(Kernel kernel, SKContext context, KernelFunction skfunction) where T : IAIService
     {
         var services = kernel.ServiceProvider.GetServices<T>();
 
@@ -40,8 +40,8 @@ public abstract class AIServiceSelectorBase : IAIServiceSelector
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="context"><see cref="SKContext"/></param>
-    /// <param name="skfunction"><see cref="ISKFunction"/></param>
+    /// <param name="skfunction"><see cref="KernelFunction"/></param>
     /// <param name="service">Instance of <see cref="IAIService"/></param>
     /// <returns></returns>
-    protected abstract (T?, AIRequestSettings?)? SelectAIService<T>(SKContext context, ISKFunction skfunction, T service) where T : IAIService;
+    protected abstract (T?, AIRequestSettings?)? SelectAIService<T>(SKContext context, KernelFunction skfunction, T service) where T : IAIService;
 }

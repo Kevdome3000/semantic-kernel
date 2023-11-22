@@ -20,9 +20,9 @@ public class ConversationSummaryPlugin
     /// </summary>
     private const int MaxTokens = 1024;
 
-    private readonly ISKFunction _summarizeConversationFunction;
-    private readonly ISKFunction _conversationActionItemsFunction;
-    private readonly ISKFunction _conversationTopicsFunction;
+    private readonly KernelFunction _summarizeConversationFunction;
+    private readonly KernelFunction _conversationActionItemsFunction;
+    private readonly KernelFunction _conversationTopicsFunction;
 
 
     /// <summary>
@@ -102,7 +102,7 @@ public class ConversationSummaryPlugin
         ProcessAsync(this._conversationTopicsFunction, input, kernel, context);
 
 
-    private static async Task<string> ProcessAsync(ISKFunction func, string input, Kernel kernel, SKContext context)
+    private static async Task<string> ProcessAsync(KernelFunction func, string input, Kernel kernel, SKContext context)
     {
         List<string> lines = TextChunker.SplitPlainTextLines(input, MaxTokens);
         List<string> paragraphs = TextChunker.SplitPlainTextParagraphs(lines, MaxTokens);

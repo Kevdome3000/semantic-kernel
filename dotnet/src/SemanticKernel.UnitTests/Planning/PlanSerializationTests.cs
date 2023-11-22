@@ -4,10 +4,8 @@ namespace SemanticKernel.UnitTests.Planning;
 
 using System;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Services;
@@ -45,7 +43,9 @@ public sealed class PlanSerializationTests
         // Arrange
         var goal = "Write a poem or joke and send it in an e-mail to Kai.";
         var expectedSteps = "\"steps\":[{";
-        var plan = new Plan(goal, new Mock<ISKFunction>().Object, new Mock<ISKFunction>().Object);
+        var function1 = SKFunctionFactory.CreateFromMethod(() => true);
+        var function2 = SKFunctionFactory.CreateFromMethod(() => true);
+        var plan = new Plan(goal, function1, function2);
 
         // Act
         var serializedPlan = plan.ToJson();
@@ -285,36 +285,22 @@ public sealed class PlanSerializationTests
         // Arrange
         var goal = "Write a poem or joke and send it in an e-mail to Kai.";
         var planInput = "Some input";
-        var stepOutput = "Output: The input was: ";
         var plan = new Plan(goal);
+        var contextVariables = new ContextVariables(planInput);
+        contextVariables.Set("variables", "foo");
 
-        // Arrange
-        var returnContext = new SKContext(new ContextVariables(stepOutput)
-        );
-
-        var mockFunction = new Mock<ISKFunction>();
-        mockFunction.Setup(x => x.InvokeAsync(this._kernel, It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<Kernel, SKContext, AIRequestSettings?, CancellationToken>((k, c, s, ct) =>
-            {
-                c.Variables.TryGetValue("variables", out string? v);
-                returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
-            })
-            .Returns(() => Task.FromResult(new FunctionResult("functionName", returnContext)));
-
-        mockFunction.Setup(x => x.GetMetadata()).Returns(new SKFunctionMetadata("functionName")
+        static string method(SKContext context)
         {
-            PluginName = "pluginName",
-            Parameters = new SKParameterMetadata[]
-            {
-                new("variables")
-            }
-        });
+            context.Variables.TryGetValue("variables", out string? v);
+            return context.Variables.Input + v;
+        }
 
-        plan.AddSteps(mockFunction.Object, mockFunction.Object);
+        ;
+        var function = SKFunctionFactory.CreateFromMethod(method, "function", "description");
 
-        var cv = new ContextVariables(planInput);
-        cv.Set("variables", "foo");
-        plan = await this._kernel.StepAsync(cv, plan);
+        plan.AddSteps(function, function);
+
+        plan = await this._kernel.StepAsync(contextVariables, plan);
 
         // Act
         var serializedPlan1 = plan.ToJson();
@@ -325,13 +311,13 @@ public sealed class PlanSerializationTests
         Assert.Contains("\"next_step_index\":1", serializedPlan1, StringComparison.OrdinalIgnoreCase);
 
         // Act
-        cv.Set("variables", "bar");
-        cv.Update(string.Empty);
-        plan = await this._kernel.StepAsync(cv, plan);
+        contextVariables.Set("variables", "bar");
+        contextVariables.Update(string.Empty);
+        plan = await this._kernel.StepAsync(contextVariables, plan);
 
         // Assert
         Assert.NotNull(plan);
-        Assert.Equal($"{stepOutput}{planInput}foo{stepOutput}{planInput}foobar", plan.State.ToString());
+        Assert.Equal($"{planInput}foobar", plan.State.ToString());
 
         // Act
         var serializedPlan2 = plan.ToJson();
@@ -350,30 +336,21 @@ public sealed class PlanSerializationTests
         // Arrange
         var goal = "Write a poem or joke and send it in an e-mail to Kai.";
         var planInput = "Some input";
-        var stepOutput = "Output: The input was: ";
         var plan = new Plan(goal);
-
-        // Arrange
         var plugins = new SKPluginCollection();
 
-        var returnContext = new SKContext(new ContextVariables(stepOutput)
-        );
+        static string method(SKContext context)
+        {
+            context.Variables.TryGetValue("variables", out string? v);
+            return context.Variables.Input + v;
+        }
 
-        var mockFunction = new Mock<ISKFunction>();
-        mockFunction.Setup(x => x.Name).Returns("functionName");
-        mockFunction
-            .Setup(x => x.InvokeAsync(this._kernel, It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<Kernel, SKContext, AIRequestSettings?, CancellationToken>((k, c, s, ct) =>
-            {
-                c.Variables.TryGetValue("variables", out string? v);
-                returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
-            })
-            .Returns(() => Task.FromResult(new FunctionResult("functionName", returnContext)));
-        mockFunction.Setup(x => x.GetMetadata()).Returns(new SKFunctionMetadata("functionName") { PluginName = "pluginName" });
+        ;
+        var function = SKFunctionFactory.CreateFromMethod(method, "function", "description");
 
-        plugins.Add(new SKPlugin("pluginName", new[] { mockFunction.Object }));
+        plugins.Add(new SKPlugin("pluginName", new[] { function }));
 
-        plan.AddSteps(mockFunction.Object, mockFunction.Object);
+        plan.AddSteps(function, function);
 
         var serializedPlan = plan.ToJson();
 
@@ -401,7 +378,7 @@ public sealed class PlanSerializationTests
 
         // Assert
         Assert.NotNull(plan);
-        Assert.Equal($"{stepOutput}{planInput}foo{stepOutput}{planInput}foobar", plan.State.ToString());
+        Assert.Equal($"{planInput}foobar", plan.State.ToString());
 
         // Act
         var serializedPlan2 = plan.ToJson();

@@ -90,12 +90,12 @@ internal class FlowExecutor : IFlowExecutor
     /// <summary>
     /// Check repeat step function
     /// </summary>
-    private readonly ISKFunction _checkRepeatStepFunction;
+    private readonly KernelFunction _checkRepeatStepFunction;
 
     /// <summary>
     /// Check start step function
     /// </summary>
-    private readonly ISKFunction _checkStartStepFunction;
+    private readonly KernelFunction _checkStartStepFunction;
 
 
     internal FlowExecutor(KernelBuilder kernelBuilder, IFlowStatusProvider statusProvider, Dictionary<object, string?> globalPluginCollection, FlowOrchestratorConfig? config = null)
@@ -449,7 +449,7 @@ internal class FlowExecutor : IFlowExecutor
     }
 
 
-    private async Task<RepeatOrStartStepResult?> CheckRepeatOrStartStepAsync(ContextVariables context, ISKFunction function, string sessionId, string checkRepeatOrStartStepId, string input)
+    private async Task<RepeatOrStartStepResult?> CheckRepeatOrStartStepAsync(ContextVariables context, KernelFunction function, string sessionId, string checkRepeatOrStartStepId, string input)
     {
         var chatHistory = await this._flowStatusProvider.GetChatHistoryAsync(sessionId, checkRepeatOrStartStepId).ConfigureAwait(false);
 
@@ -717,7 +717,7 @@ internal class FlowExecutor : IFlowExecutor
     }
 
 
-    private static ISKFunction CreateSemanticFunction(Kernel kernel, string functionName, string promptTemplate, PromptTemplateConfig config)
+    private static KernelFunction CreateSemanticFunction(Kernel kernel, string functionName, string promptTemplate, PromptTemplateConfig config)
     {
         var factory = new KernelPromptTemplateFactory(kernel.LoggerFactory);
         var template = factory.Create(promptTemplate, config);

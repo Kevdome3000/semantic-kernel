@@ -6,7 +6,6 @@ namespace Microsoft.SemanticKernel.Orchestration;
 
 using System;
 using System.Text.Json;
-using Text;
 
 
 /// <summary>
@@ -59,6 +58,6 @@ public sealed class ModelResult
     /// <returns>The result object as a JSON element.</returns>
     public JsonElement GetJsonResult()
     {
-        return Json.Deserialize<JsonElement>(Json.Serialize(this._result));
+        return JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(this._result));
     }
 }

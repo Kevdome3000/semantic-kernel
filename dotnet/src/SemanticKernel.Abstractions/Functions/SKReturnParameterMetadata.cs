@@ -11,7 +11,7 @@ using System.Diagnostics.CodeAnalysis;
 
 
 /// <summary>
-/// Provides read-only metadata for an <see cref="ISKFunction"/>'s return parameter.
+/// Provides read-only metadata for an <see cref="KernelFunction"/>'s return parameter.
 /// </summary>
 public sealed class SKReturnParameterMetadata
 {

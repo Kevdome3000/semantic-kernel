@@ -4,6 +4,7 @@ namespace SemanticKernel.Connectors.UnitTests.OpenAI;
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Xunit;
@@ -156,7 +157,7 @@ public class OpenAIRequestSettingsTests
   ""service_id"": ""service"",
   ""max_tokens"": 128
 }";
-        var actualSettings = Microsoft.SemanticKernel.Text.Json.Deserialize<AIRequestSettings>(json);
+        var actualSettings = JsonSerializer.Deserialize<AIRequestSettings>(json);
 
         // Act
         OpenAIRequestSettings requestSettings = OpenAIRequestSettings.FromRequestSettings(actualSettings);
@@ -182,7 +183,7 @@ public class OpenAIRequestSettingsTests
   ""ServiceId"": ""service"",
   ""MaxTokens"": 128
 }";
-        var actualSettings = Microsoft.SemanticKernel.Text.Json.Deserialize<AIRequestSettings>(json);
+        var actualSettings = JsonSerializer.Deserialize<AIRequestSettings>(json);
 
         // Act
         OpenAIRequestSettings requestSettings = OpenAIRequestSettings.FromRequestSettings(actualSettings);
