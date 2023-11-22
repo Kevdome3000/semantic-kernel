@@ -8,7 +8,6 @@ using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Handlebars;
 using RepoUtils;
 
-
 /**
  * This example shows how to use multiple prompt template formats.
  */
@@ -35,8 +34,8 @@ public static class Example64_MultiplePromptTemplates
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureOpenAIChatCompletionService(
-                chatDeploymentName,
-                endpoint,
+                deploymentName: chatDeploymentName,
+                endpoint: endpoint,
                 serviceId: "AzureOpenAIChat",
                 apiKey: apiKey)
             .Build();
@@ -52,27 +51,26 @@ public static class Example64_MultiplePromptTemplates
         await RunPromptAsync(kernel, handlebarsPrompt, "handlebars", promptTemplateFactory);
     }
 
-
     public static async Task RunPromptAsync(Kernel kernel, string prompt, string templateFormat, IPromptTemplateFactory promptTemplateFactory)
     {
         Console.WriteLine($"======== {templateFormat} : {prompt} ========");
 
-        var skfunction = kernel.CreateFunctionFromPrompt(
-            prompt,
+        var function = kernel.CreateFunctionFromPrompt(
+            promptTemplate: prompt,
             functionName: "MyFunction",
-            promptTemplateConfig: new PromptTemplateConfig
+            promptTemplateConfig: new PromptTemplateConfig()
             {
                 TemplateFormat = templateFormat
             },
             promptTemplateFactory: promptTemplateFactory
         );
 
-        var variables = new ContextVariables
+        var variables = new ContextVariables()
         {
             { "name", "Bob" }
         };
 
-        var result = await kernel.RunAsync(skfunction, variables);
+        var result = await kernel.RunAsync(function, variables);
         Console.WriteLine(result.GetValue<string>());
     }
 }

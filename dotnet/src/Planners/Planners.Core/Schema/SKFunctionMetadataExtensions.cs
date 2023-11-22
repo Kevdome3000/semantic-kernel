@@ -10,7 +10,7 @@ using System.Collections.Generic;
 
 
 /// <summary>
-/// Extensions for functions views.
+/// Extensions for function metadata.
 /// </summary>
 internal static class SKFunctionMetadataExtensions
 {

@@ -1,11 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-
-
-// ReSharper disable StringLiteralTypo
-
-namespace SemanticKernel.UnitTests.Functions;
-
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -20,6 +14,9 @@ using Microsoft.SemanticKernel.TemplateEngine;
 using Moq;
 using Xunit;
 
+// ReSharper disable StringLiteralTypo
+
+namespace SemanticKernel.UnitTests.Functions;
 
 public class SemanticFunctionTests
 {
@@ -38,7 +35,6 @@ public class SemanticFunctionTests
         Assert.True(kernel.Plugins.TryGetFunction("jk", "joker", out _));
         Assert.True(kernel.Plugins.TryGetFunction("JK", "JOKER", out _));
     }
-
 
     [Theory]
     [InlineData(null, "Assistant is a large language model.")]
@@ -71,7 +67,6 @@ public class SemanticFunctionTests
         mockTextCompletion.Verify(a => a.GetCompletionsAsync("template", It.Is<OpenAIRequestSettings>(c => c.ChatSystemPrompt == expectedSystemChatPrompt), It.IsAny<CancellationToken>()), Times.Once());
     }
 
-
     [Fact]
     public async Task ItUsesDefaultServiceWhenSpecifiedAsync()
     {
@@ -99,7 +94,6 @@ public class SemanticFunctionTests
         mockTextCompletion1.Verify(a => a.GetCompletionsAsync("template", null, It.IsAny<CancellationToken>()), Times.Never());
         mockTextCompletion2.Verify(a => a.GetCompletionsAsync("template", null, It.IsAny<CancellationToken>()), Times.Once());
     }
-
 
     [Fact]
     public async Task ItUsesServiceIdWhenProvidedAsync()
@@ -130,7 +124,6 @@ public class SemanticFunctionTests
         mockTextCompletion2.Verify(a => a.GetCompletionsAsync("template", It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Never());
     }
 
-
     [Fact]
     public async Task ItFailsIfInvalidServiceIdIsProvidedAsync()
     {
@@ -154,7 +147,6 @@ public class SemanticFunctionTests
         Assert.Equal("Service of type Microsoft.SemanticKernel.AI.TextCompletion.ITextCompletion and name service3 not registered.", exception.Message);
     }
 
-
     [Theory]
     [InlineData(1)]
     [InlineData(2)]
@@ -171,7 +163,6 @@ public class SemanticFunctionTests
             invoked++;
         };
         List<KernelFunction> functions = new();
-
         for (int i = 0; i < pipelineCount; i++)
         {
             functions.Add(semanticFunction);
@@ -184,7 +175,6 @@ public class SemanticFunctionTests
         Assert.Equal(pipelineCount, invoked);
         mockTextCompletion.Verify(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Exactly(pipelineCount));
     }
-
 
     [Fact]
     public async Task RunAsyncHandlesPreInvocationWasCancelledAsync()
@@ -209,7 +199,6 @@ public class SemanticFunctionTests
         Assert.Null(result);
     }
 
-
     [Fact]
     public async Task RunAsyncHandlesPreInvocationCancelationDontRunSubsequentFunctionsInThePipelineAsync()
     {
@@ -232,7 +221,6 @@ public class SemanticFunctionTests
         Assert.Equal(1, invoked);
         mockTextCompletion.Verify(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Never);
     }
-
 
     [Fact]
     public async Task RunAsyncPreInvocationCancelationDontTriggerInvokedHandlerAsync()
@@ -260,7 +248,6 @@ public class SemanticFunctionTests
         Assert.Equal(0, invoked);
     }
 
-
     [Fact]
     public async Task RunAsyncPreInvocationSkipDontTriggerInvokedHandlerAsync()
     {
@@ -276,8 +263,7 @@ public class SemanticFunctionTests
         sut.FunctionInvoking += (sender, e) =>
         {
             invoking++;
-
-            if (e.FunctionView.Name == "SkipMe")
+            if (e.FunctionMetadata.Name == "SkipMe")
             {
                 e.Skip();
             }
@@ -285,7 +271,7 @@ public class SemanticFunctionTests
 
         sut.FunctionInvoked += (sender, e) =>
         {
-            invokedFunction = e.FunctionView.Name;
+            invokedFunction = e.FunctionMetadata.Name;
             invoked++;
         };
 
@@ -299,7 +285,6 @@ public class SemanticFunctionTests
         Assert.Equal(1, invoked);
         Assert.Equal("DontSkipMe", invokedFunction);
     }
-
 
     [Theory]
     [InlineData(1)]
@@ -319,7 +304,6 @@ public class SemanticFunctionTests
         };
 
         List<KernelFunction> functions = new();
-
         for (int i = 0; i < pipelineCount; i++)
         {
             functions.Add(semanticFunction);
@@ -332,7 +316,6 @@ public class SemanticFunctionTests
         Assert.Equal(pipelineCount, invoked);
         mockTextCompletion.Verify(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Exactly(pipelineCount));
     }
-
 
     [Fact]
     public async Task RunAsyncChangeVariableInvokingHandlerAsync()
@@ -357,7 +340,6 @@ public class SemanticFunctionTests
         Assert.Equal(newInput, originalInput);
     }
 
-
     [Fact]
     public async Task RunAsyncChangeVariableInvokedHandlerAsync()
     {
@@ -381,7 +363,6 @@ public class SemanticFunctionTests
         Assert.Equal(newInput, originalInput);
     }
 
-
     [Fact]
     public async Task ItReturnsFunctionResultsCorrectlyAsync()
     {
@@ -401,7 +382,6 @@ public class SemanticFunctionTests
         Assert.Equal("Result3", result.GetValue<string>());
     }
 
-
     private (Mock<ITextResult> textResultMock, Mock<ITextCompletion> textCompletionMock) SetupMocks(string? completionResult = null)
     {
         var mockTextResult = new Mock<ITextResult>();
@@ -412,7 +392,6 @@ public class SemanticFunctionTests
 
         return (mockTextResult, mockTextCompletion);
     }
-
 
     private static MethodInfo Method(Delegate method)
     {

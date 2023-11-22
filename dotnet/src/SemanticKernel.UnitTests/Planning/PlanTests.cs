@@ -809,13 +809,13 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
-            invokingListFunctions.Add(e.FunctionView);
+            invokingListFunctions.Add(e.FunctionMetadata);
             invokingCalls++;
         }
 
         void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
         {
-            invokedListFunctions.Add(e.FunctionView);
+            invokedListFunctions.Add(e.FunctionMetadata);
             invokedCalls++;
         }
 
@@ -857,7 +857,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
-            invokingListFunctions.Add(e.FunctionView);
+            invokingListFunctions.Add(e.FunctionMetadata);
             invokingCalls++;
 
             e.Cancel();
@@ -865,7 +865,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
         {
-            invokedListFunctions.Add(e.FunctionView);
+            invokedListFunctions.Add(e.FunctionMetadata);
             invokedCalls++;
         }
 
@@ -904,10 +904,10 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
-            invokingListFunctions.Add(e.FunctionView);
+            invokingListFunctions.Add(e.FunctionMetadata);
             invokingCalls++;
 
-            if (e.FunctionView.Name == "WritePoem")
+            if (e.FunctionMetadata.Name == "WritePoem")
             {
                 e.Cancel();
             }
@@ -915,7 +915,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
         {
-            invokedListFunctions.Add(e.FunctionView);
+            invokedListFunctions.Add(e.FunctionMetadata);
             invokedCalls++;
         }
 
@@ -958,16 +958,16 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
-            invokingListFunctions.Add(e.FunctionView);
+            invokingListFunctions.Add(e.FunctionMetadata);
             invokingCalls++;
         }
 
         void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
         {
-            invokedListFunctions.Add(e.FunctionView);
+            invokedListFunctions.Add(e.FunctionMetadata);
             invokedCalls++;
 
-            if (e.FunctionView.Name == "WritePoem")
+            if (e.FunctionMetadata.Name == "WritePoem")
             {
                 e.Cancel();
             }
@@ -1014,16 +1014,16 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
-            invokingListFunctions.Add(e.FunctionView);
+            invokingListFunctions.Add(e.FunctionMetadata);
             invokingCalls++;
         }
 
         void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
         {
-            invokedListFunctions.Add(e.FunctionView);
+            invokedListFunctions.Add(e.FunctionMetadata);
             invokedCalls++;
 
-            if (e.FunctionView.Name == "SendEmail")
+            if (e.FunctionMetadata.Name == "SendEmail")
             {
                 e.Cancel();
             }
@@ -1072,10 +1072,10 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
-            invokingListFunctions.Add(e.FunctionView);
+            invokingListFunctions.Add(e.FunctionMetadata);
             invokingCalls++;
 
-            if (e.FunctionView.Name == "WritePoem")
+            if (e.FunctionMetadata.Name == "WritePoem")
             {
                 e.Skip();
             }
@@ -1083,7 +1083,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
         {
-            invokedListFunctions.Add(e.FunctionView);
+            invokedListFunctions.Add(e.FunctionMetadata);
             invokedCalls++;
         }
 
@@ -1128,10 +1128,10 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
-            invokingListFunctions.Add(e.FunctionView);
+            invokingListFunctions.Add(e.FunctionMetadata);
             invokingCalls++;
 
-            if (e.FunctionView.Name == "SendEmail")
+            if (e.FunctionMetadata.Name == "SendEmail")
             {
                 e.Cancel();
             }
@@ -1139,7 +1139,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
         {
-            invokedListFunctions.Add(e.FunctionView);
+            invokedListFunctions.Add(e.FunctionMetadata);
             invokedCalls++;
         }
 
