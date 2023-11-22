@@ -4,6 +4,7 @@ namespace SemanticKernel.Experimental.Assistants.UnitTests.Extensions;
 
 using System.Collections.Generic;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Xunit;
 
 
