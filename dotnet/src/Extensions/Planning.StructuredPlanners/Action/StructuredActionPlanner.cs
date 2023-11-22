@@ -77,7 +77,7 @@ public class StructuredActionPlanner : IStructuredPlanner
             throw new SKException("The planner failed to generate a response");
         }
 
-        if (!_context.Functions.TryGetFunction(response, out ISKFunction? function))
+        if (!_context.Functions.TryGetFunction(response, out KernelFunction? function))
         {
             throw new SKException($"The function {response.Function} is not available");
         }
@@ -96,7 +96,7 @@ public class StructuredActionPlanner : IStructuredPlanner
     private readonly ILogger _logger;
 
     // Planner semantic function
-    private readonly ISKFunction _plannerFunction;
+    private readonly KernelFunction _plannerFunction;
     private const string SkillName = "this";
 
     private readonly string _promptTemplate = "Decide the best action to take to achieve the user's goal." +

@@ -86,7 +86,7 @@ public class StructuredSequentialPlanner : IStructuredPlanner
 
     private StructuredPlannerConfig Config { get; }
     private readonly SKContext _context;
-    private readonly ISKFunction _plannerFunction;
+    private readonly KernelFunction _plannerFunction;
     private readonly ILogger _logger;
 
     /// <summary>

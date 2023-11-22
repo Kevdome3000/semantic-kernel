@@ -87,7 +87,7 @@ public sealed class StructuredPlannerConfig
     /// <summary>
     /// Optional callback to get a function by name.
     /// </summary>
-    public Func<string, string, ISKFunction?>? GetSkillFunction { get; set; }
+    public Func<string, string, KernelFunction?>? GetSkillFunction { get; set; }
 
     /// <summary>
     /// Delegate to get the prompt template string.

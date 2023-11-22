@@ -384,7 +384,7 @@ public class StructuredStepwisePlanner : IStructuredPlanner
     private readonly SKContext _context;
     private readonly IKernel _kernel;
     private readonly ILogger _logger;
-    private readonly IDictionary<string, ISKFunction> _executeFunction;
+    private readonly IDictionary<string, KernelFunction> _executeFunction;
     private readonly PromptTemplateEngine _promptRenderer = new();
 
     private ChatHistory _chatHistory = new();
