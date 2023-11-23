@@ -1,14 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+
 #pragma warning disable IDE0130
 
 // ReSharper disable once CheckNamespace - Using the main namespace
 namespace Microsoft.SemanticKernel;
-
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-
 
 /// <summary>Provides extension methods for working with <see cref="ISKPlugin"/>s and collections of them.</summary>
 public static class ISKPluginExtensions
@@ -25,7 +23,6 @@ public static class ISKPluginExtensions
         return plugin.TryGetFunction(functionName, out _);
     }
 
-
     /// <summary>Gets whether the plugin contains a function.</summary>
     /// <param name="plugin">The plugin.</param>
     /// <param name="function">The function.</param>
@@ -38,7 +35,6 @@ public static class ISKPluginExtensions
         return plugin.TryGetFunction(function.Name, out KernelFunction? found) && found == function;
     }
 
-
     /// <summary>Gets whether the plugins collection contains a plugin with the specified name.</summary>
     /// <param name="plugins">The plugins collections.</param>
     /// <param name="pluginName">The name of the plugin.</param>
@@ -50,7 +46,6 @@ public static class ISKPluginExtensions
 
         return plugins.TryGetPlugin(pluginName, out _);
     }
-
 
     /// <summary>Gets a function from the collection by plugin and function names.</summary>
     /// <param name="plugins">The collection.</param>
@@ -69,7 +64,6 @@ public static class ISKPluginExtensions
 
         return function;
     }
-
 
     /// <summary>Gets a function from the collection by plugin and function names.</summary>
     /// <param name="plugins">The collection.</param>
@@ -109,25 +103,6 @@ public static class ISKPluginExtensions
         return false;
     }
 
-
-    /// <summary>Adds a collection of plugins to this plugin collection.</summary>
-    /// <param name="destination">The collection to which <paramref name="plugins"/> should be added.</param>
-    /// <param name="plugins">The plugins to add.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="plugins"/> is null.</exception>
-    /// <exception cref="ArgumentNullException">A plugin in <paramref name="plugins"/> has a null <see cref="ISKPlugin.Name"/>.</exception>
-    /// <exception cref="ArgumentException">A plugin with the same name as a plugin in <paramref name="plugins"/> already exists in the collection.</exception>
-    public static void AddRange(this ISKPluginCollection destination, IEnumerable<ISKPlugin> plugins)
-    {
-        Verify.NotNull(destination);
-        Verify.NotNull(plugins);
-
-        foreach (ISKPlugin plugin in plugins)
-        {
-            destination.Add(plugin);
-        }
-    }
-
-
     /// <summary>Gets a collection of <see cref="SKFunctionMetadata"/> instances, one for every function in every plugin in the plugins collection.</summary>
     /// <param name="plugins">The plugins collection.</param>
     /// <returns>A list of metadata over every function in the plugins collection</returns>
@@ -136,7 +111,6 @@ public static class ISKPluginExtensions
         Verify.NotNull(plugins);
 
         List<SKFunctionMetadata> metadata = new();
-
         foreach (ISKPlugin plugin in plugins)
         {
             foreach (KernelFunction function in plugin)

@@ -6,8 +6,6 @@ using System.Globalization;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Orchestration;
-
 
 /**
  * This example shows different ways how to define and execute native functions using custom and primitive types.
@@ -18,12 +16,7 @@ public static class Example60_AdvancedNativeFunctions
     public static async Task RunAsync()
     {
         await NativeFunctionsChainingAsync();
-
-        await NativeFunctionsPipelineAsync();
-
-        await PrimitiveTypesAutoConversionAsync();
     }
-
 
     #region Native Functions Chaining
 
@@ -45,7 +38,6 @@ public static class Example60_AdvancedNativeFunctions
         Console.WriteLine(customType.Text); // From Function1 + From Function2
     }
 
-
     /// <summary>
     /// Plugin example with two native functions, where one function is called from another.
     /// </summary>
@@ -53,8 +45,7 @@ public static class Example60_AdvancedNativeFunctions
     {
         public const string PluginName = nameof(FunctionsChainingPlugin);
 
-
-        [SKFunction] [SKName("Function1")]
+        [SKFunction, SKName("Function1")]
         public async Task<MyCustomType> Function1Async(Kernel kernel)
         {
             // Execute another function
@@ -68,112 +59,18 @@ public static class Example60_AdvancedNativeFunctions
             };
         }
 
-
-        [SKFunction] [SKName("Function2")]
-        public static MyCustomType Function2() => new()
+        [SKFunction, SKName("Function2")]
+        public static MyCustomType Function2()
         {
-            Number = 1,
-            Text = "From Function2"
-        };
+            return new MyCustomType
+            {
+                Number = 1,
+                Text = "From Function2"
+            };
+        }
     }
 
     #endregion
-
-
-    #region Native Functions Pipeline
-
-    /// <summary>
-    /// This example executes Function1 and Function2 sequentially.
-    /// Kernel will pass required parameters to second function as result from first function.
-    /// </summary>
-    private static async Task NativeFunctionsPipelineAsync()
-    {
-        Console.WriteLine("Running Native Function Pipeline example...");
-
-        var kernel = new KernelBuilder().Build();
-
-        var functions = kernel.ImportPluginFromObject<FunctionsPipelinePlugin>();
-
-        var result = await kernel.RunAsync(functions["Function1"], functions["Function2"]);
-        var customType = result.GetValue<MyCustomType>()!;
-
-        Console.WriteLine(customType.Number); // 2
-        Console.WriteLine(customType.Text); // From Function1 + From Function2
-    }
-
-
-    /// <summary>
-    /// Plugin example with two native functions, which will be called sequentially by Kernel.
-    /// </summary>
-    private sealed class FunctionsPipelinePlugin
-    {
-        public const string PluginName = nameof(FunctionsPipelinePlugin);
-
-
-        [SKFunction] [SKName("Function1")]
-        public MyCustomType Function1() => new()
-        {
-            Number = 1,
-            Text = "From Function1"
-        };
-
-
-        [SKFunction] [SKName("Function2")]
-        public static MyCustomType Function2(MyCustomType customType) => new()
-        {
-            Number = customType.Number * 2,
-            Text = customType.Text + " + From Function2"
-        };
-    }
-
-    #endregion
-
-
-    #region Primitive Types Auto Conversion
-
-    /// <summary>
-    /// This example shows how to initialize variables, which will be auto-converted to primitive types
-    /// in parameters of native function.
-    /// </summary>
-    private static async Task PrimitiveTypesAutoConversionAsync()
-    {
-        Console.WriteLine("Running Primitive Types Auto Conversion example...");
-
-        var kernel = new KernelBuilder().Build();
-
-        var functions = kernel.ImportPluginFromObject<PrimitiveTypesPlugin>();
-
-        var contextVariables = new ContextVariables();
-
-        contextVariables["number"] = "2";
-        contextVariables["text"] = "From Context Variables";
-
-        var result = await kernel.RunAsync(contextVariables, functions["Function1"]);
-        var customType = result.GetValue<MyCustomType>()!;
-
-        Console.WriteLine(customType.Number); // 2
-        Console.WriteLine(customType.Text); // From Context Variables
-    }
-
-
-    /// <summary>
-    /// Plugin example with native function, which contains two parameters with primitive types.
-    /// </summary>
-    private sealed class PrimitiveTypesPlugin
-    {
-        public const string PluginName = nameof(PrimitiveTypesPlugin);
-
-
-        [SKFunction] [SKName("Function1")]
-        public MyCustomType Function1(int number, string text) => new()
-        {
-            Number = number,
-            Text = text
-        };
-    }
-
-    #endregion
-
 
     #region Custom Type
 
@@ -194,7 +91,6 @@ public static class Example60_AdvancedNativeFunctions
         public string? Text { get; set; }
     }
 
-
     /// <summary>
     /// Implementation of <see cref="TypeConverter"/> for <see cref="MyCustomType"/>.
     /// In this example, object instance is serialized with <see cref="JsonSerializer"/> from System.Text.Json,
@@ -206,22 +102,24 @@ public static class Example60_AdvancedNativeFunctions
     {
         public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType) => true;
 
-
         /// <summary>
         /// This method is used to convert object from string to actual type. This will allow to pass object to
         /// native function which requires it.
         /// </summary>
-        public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value) => JsonSerializer.Deserialize<MyCustomType>((string)value);
-
+        public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
+        {
+            return JsonSerializer.Deserialize<MyCustomType>((string)value);
+        }
 
         /// <summary>
         /// This method is used to convert actual type to string representation, so it can be passed to AI
         /// for further processing.
         /// </summary>
-        public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType) => JsonSerializer.Serialize(value);
+        public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
+        {
+            return JsonSerializer.Serialize(value);
+        }
     }
 
     #endregion
-
-
 }

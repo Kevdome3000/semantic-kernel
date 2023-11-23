@@ -10,10 +10,8 @@ using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
-using Microsoft.SemanticKernel.Reliability.Basic;
 using NCalcPlugins;
 using RepoUtils;
-
 
 /**
  * This example shows how to use Stepwise Planner to create and run a stepwise plan for a given goal.
@@ -31,10 +29,9 @@ public static class Example51_StepwisePlanner
 
     internal static string? Suffix = null;
 
-
     public static async Task RunAsync()
     {
-        string[] questions =
+        string[] questions = new string[]
         {
             "What color is the sky?",
             "What is the weather in Seattle?",
@@ -56,7 +53,6 @@ public static class Example51_StepwisePlanner
         PrintResults();
     }
 
-
     // print out summary table of ExecutionResults
     private static void PrintResults()
     {
@@ -68,14 +64,12 @@ public static class Example51_StepwisePlanner
         {
             Console.WriteLine("Question: " + question);
             Console.WriteLine("Mode\tModel\tAnswer\tStepsTaken\tIterations\tTimeTaken");
-
             foreach (var er in s_executionResults.OrderByDescending(s => s.model).Where(s => s.question == question))
             {
                 Console.WriteLine($"{er.mode}\t{er.model}\t{er.stepsTaken}\t{er.iterations}\t{er.timeTaken}\t{er.answer}");
             }
         }
     }
-
 
     private struct ExecutionResult
     {
@@ -88,9 +82,7 @@ public static class Example51_StepwisePlanner
         public string? timeTaken;
     }
 
-
     private static readonly List<ExecutionResult> s_executionResults = new();
-
 
     private static async Task RunTextCompletionAsync(string question)
     {
@@ -101,7 +93,6 @@ public static class Example51_StepwisePlanner
         await RunWithQuestionAsync(kernel, currentExecutionResult, question, TextMaxTokens);
     }
 
-
     private static async Task RunChatCompletionAsync(string question, string? model = null)
     {
         Console.WriteLine("RunChatCompletion");
@@ -110,7 +101,6 @@ public static class Example51_StepwisePlanner
         var kernel = GetKernel(ref currentExecutionResult, true, model);
         await RunWithQuestionAsync(kernel, currentExecutionResult, question, ChatMaxTokens);
     }
-
 
     private static async Task RunWithQuestionAsync(Kernel kernel, ExecutionResult currentExecutionResult, string question, int? MaxTokens = null)
     {
@@ -148,8 +138,8 @@ public static class Example51_StepwisePlanner
 
         try
         {
-            StepwisePlanner planner = new(kernel, plannerConfig);
-            var plan = await planner.CreatePlanAsync(question);
+            StepwisePlanner planner = new(kernel: kernel, config: plannerConfig);
+            var plan = planner.CreatePlan(question);
 
             var functionResult = await kernel.RunAsync(plan);
 
@@ -195,18 +185,17 @@ public static class Example51_StepwisePlanner
         Console.WriteLine("*****************************************************");
     }
 
-
     private static Kernel GetKernel(ref ExecutionResult result, bool useChat = false, string? model = null)
     {
         var builder = new KernelBuilder();
         var maxTokens = 0;
-
         if (useChat)
         {
             builder.WithAzureOpenAIChatCompletionService(
                 model ?? ChatModelOverride ?? TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey,
+                alsoAsTextCompletion: true,
                 setAsDefault: true);
 
             maxTokens = ChatMaxTokens ?? new StepwisePlannerConfig().MaxTokens;
@@ -227,11 +216,11 @@ public static class Example51_StepwisePlanner
 
         var kernel = builder
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithRetryBasic(new BasicRetryConfig
+            .WithRetryBasic(new()
             {
                 MaxRetryCount = 3,
                 UseExponentialBackoff = true,
-                MinRetryDelay = TimeSpan.FromSeconds(3)
+                MinRetryDelay = TimeSpan.FromSeconds(3),
             })
             .Build();
 

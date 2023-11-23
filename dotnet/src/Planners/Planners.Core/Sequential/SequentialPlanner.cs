@@ -1,25 +1,24 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.Orchestration;
+
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of Plan
 namespace Microsoft.SemanticKernel.Planning;
-
-using System.Threading;
-using System.Threading.Tasks;
-using AI;
-using Orchestration;
-
 #pragma warning restore IDE0130
-
 
 /// <summary>
 /// A planner that uses semantic function to create a sequential plan.
 /// </summary>
-public sealed class SequentialPlanner : IPlanner
+public sealed class SequentialPlanner
 {
     private const string StopSequence = "<!-- END -->";
     private const string AvailableFunctionsKey = "available_functions";
-
 
     /// <summary>
     /// Initialize a new instance of the <see cref="SequentialPlanner"/> class.
@@ -54,14 +53,28 @@ public sealed class SequentialPlanner : IPlanner
             });
 
         this._kernel = kernel;
+        this._logger = this._kernel.LoggerFactory.CreateLogger(this.GetType());
     }
 
-
-    /// <inheritdoc />
-    public async Task<Plan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
+    /// <summary>Creates a plan for the specified goal.</summary>
+    /// <param name="goal">The goal for which a plan should be created.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The created plan.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="goal"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="goal"/> is empty or entirely composed of whitespace.</exception>
+    /// <exception cref="SKException">A plan could not be created.</exception>
+    public Task<Plan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(goal);
 
+        return PlannerInstrumentation.CreatePlanAsync(
+            createPlanAsync: static (SequentialPlanner planner, string goal, CancellationToken cancellationToken) => planner.CreatePlanCoreAsync(goal, cancellationToken),
+            planToString: static (Plan plan) => plan.ToSafePlanString(),
+            this, goal, this._logger, cancellationToken);
+    }
+
+    private async Task<Plan> CreatePlanCoreAsync(string goal, CancellationToken cancellationToken)
+    {
         string relevantFunctionsManual = await this._kernel.Plugins.GetFunctionsManualAsync(this.Config, goal, null, cancellationToken).ConfigureAwait(false);
 
         ContextVariables vars = new(goal)
@@ -83,7 +96,6 @@ public sealed class SequentialPlanner : IPlanner
         var getFunctionCallback = this.Config.GetFunctionCallback ?? this._kernel.Plugins.GetFunctionCallback();
 
         Plan plan;
-
         try
         {
             plan = planResultString!.ToPlanFromXml(goal, getFunctionCallback, this.Config.AllowMissingFunctions);
@@ -101,10 +113,10 @@ public sealed class SequentialPlanner : IPlanner
         return plan;
     }
 
-
     private SequentialPlannerConfig Config { get; }
 
     private readonly Kernel _kernel;
+    private readonly ILogger _logger;
 
     /// <summary>
     /// the function flow semantic function, which takes a goal and creates an xml plan that can be executed

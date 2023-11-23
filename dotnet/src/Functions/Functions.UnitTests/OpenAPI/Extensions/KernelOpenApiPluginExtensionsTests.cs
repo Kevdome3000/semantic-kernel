@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Functions.UnitTests.OpenAPI.Extensions;
-
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -15,9 +13,10 @@ using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
 using Microsoft.SemanticKernel.Orchestration;
-using TestPlugins;
+using SemanticKernel.Functions.UnitTests.OpenAPI.TestPlugins;
 using Xunit;
 
+namespace SemanticKernel.Functions.UnitTests.OpenAPI.Extensions;
 
 public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
 {
@@ -36,7 +35,6 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
     /// </summary>
     private readonly Kernel _kernel;
 
-
     /// <summary>
     /// Creates an instance of a <see cref="KernelOpenApiPluginExtensionsTests"/> class.
     /// </summary>
@@ -48,7 +46,6 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
 
         this._sut = new OpenApiDocumentParser();
     }
-
 
     [Fact]
     public async Task ItCanIncludeOpenApiOperationParameterTypesIntoFunctionParametersViewAsync()
@@ -74,7 +71,6 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
         Assert.NotNull(payloadParameter.Schema);
         Assert.Equal("object", payloadParameter.Schema!.RootElement.GetProperty("type").GetString());
     }
-
 
     [Theory]
     [InlineData(true)]
@@ -114,7 +110,6 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
         Assert.StartsWith(ServerUrlOverride, messageHandlerStub.RequestUri.AbsoluteUri, StringComparison.Ordinal);
     }
 
-
     [Theory]
     [InlineData("documentV2_0.json")]
     [InlineData("documentV3_0.json")]
@@ -144,7 +139,6 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
         Assert.NotNull(messageHandlerStub.RequestUri);
         Assert.StartsWith(ServerUrlFromDocument, messageHandlerStub.RequestUri.AbsoluteUri, StringComparison.Ordinal);
     }
-
 
     [Theory]
     [InlineData("http://localhost:3001/openapi.json", "http://localhost:3001/", "documentV2_0.json")]
@@ -183,46 +177,6 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
         Assert.StartsWith(expectedServerUrl, messageHandlerStub.RequestUri.AbsoluteUri, StringComparison.Ordinal);
     }
 
-
-    [Fact]
-    public async Task ItShouldConvertPluginComplexResponseToStringToSaveItInContextAsync()
-    {
-        //Arrange
-        using var messageHandlerStub = new HttpMessageHandlerStub();
-        messageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
-
-        using var httpClient = new HttpClient(messageHandlerStub, false);
-
-        var executionParameters = new OpenApiFunctionExecutionParameters
-        {
-            HttpClient = httpClient
-        };
-
-        var fakePlugin = new FakePlugin();
-
-        var openApiPlugins = await this._kernel.ImportPluginFromOpenApiAsync("fakePlugin", this._openApiDocument, executionParameters);
-        var fakePlugins = this._kernel.ImportPluginFromObject(fakePlugin, "fakePlugin2");
-
-        var kernel = KernelBuilder.Create();
-
-        var arguments = new ContextVariables
-        {
-            { "secret-name", "fake-secret-name" },
-            { "api-version", "fake-api-version" }
-        };
-
-        //Act
-        var result = await kernel.RunAsync(arguments, openApiPlugins["GetSecret"], fakePlugins["DoFakeAction"]);
-
-        //Assert
-
-        Assert.NotNull(result);
-
-        //Check the response, converted to a string indirectly through an argument passed to a fake plugin that follows the OpenAPI plugin in the pipeline since there's no direct access to the context.
-        Assert.Equal("fake-content", fakePlugin.ParameterValueFakeMethodCalledWith);
-    }
-
-
     [Fact]
     public async Task ItShouldRespectRunAsyncCancellationTokenOnExecutionAsync()
     {
@@ -254,7 +208,7 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
 
         //Act
         registerCancellationToken.Cancel();
-        var result = await kernel.RunAsync(arguments, executeCancellationToken.Token, openApiPlugins["GetSecret"]);
+        var result = await kernel.RunAsync(openApiPlugins["GetSecret"], arguments, executeCancellationToken.Token);
 
         //Assert
         Assert.NotNull(result);
@@ -266,12 +220,10 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
         Assert.Equal("fake-content", response.Content);
     }
 
-
     public void Dispose()
     {
         this._openApiDocument.Dispose();
     }
-
 
     #region private ================================================================================
 
@@ -288,11 +240,9 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
         return variables;
     }
 
-
     private sealed class FakePlugin
     {
         public string? ParameterValueFakeMethodCalledWith { get; private set; }
-
 
         [SKFunction]
         public void DoFakeAction(string parameter)
@@ -302,6 +252,4 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
     }
 
     #endregion
-
-
 }

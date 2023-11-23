@@ -13,7 +13,6 @@ using Microsoft.SemanticKernel.Reliability.Basic;
 using Microsoft.SemanticKernel.Services;
 using RepoUtils;
 
-
 /**
  * The following examples show how to use SK SDK in applications using DI/IoC containers.
  */
@@ -25,7 +24,6 @@ public static class Example40_DIContainer
 
         await UseKernelInDIPowerApp_AdvancedScenarioAsync();
     }
-
 
     /// <summary>
     /// This example shows how to register a Kernel in a DI container using KernelBuilder instead of
@@ -39,15 +37,15 @@ public static class Example40_DIContainer
 
         //Registering Kernel dependencies
         var collection = new ServiceCollection();
-        collection.AddTransient<ILoggerFactory>(_ => ConsoleLogger.LoggerFactory);
+        collection.AddTransient<ILoggerFactory>((_) => ConsoleLogger.LoggerFactory);
 
         //Registering Kernel
-        collection.AddTransient<Kernel>(serviceProvider =>
+        collection.AddTransient<Kernel>((serviceProvider) =>
         {
             return new KernelBuilder()
-                .WithLoggerFactory(serviceProvider.GetRequiredService<ILoggerFactory>())
-                .WithOpenAITextCompletionService(TestConfiguration.OpenAI.ModelId, TestConfiguration.OpenAI.ApiKey)
-                .Build();
+            .WithLoggerFactory(serviceProvider.GetRequiredService<ILoggerFactory>())
+            .WithOpenAITextCompletionService(TestConfiguration.OpenAI.ModelId, TestConfiguration.OpenAI.ApiKey)
+            .Build();
         });
 
         //Registering class that uses Kernel to execute a plugin
@@ -64,7 +62,6 @@ public static class Example40_DIContainer
         await kernelClient.SummarizeAsync("What's the tallest building in South America?");
     }
 
-
     /// <summary>
     /// This example shows how to registered Kernel and all its dependencies in DI container.
     /// </summary>
@@ -80,11 +77,10 @@ public static class Example40_DIContainer
 
         //Registering Kernel dependencies
         var collection = new ServiceCollection();
-        collection.AddTransient<ILoggerFactory>(_ => ConsoleLogger.LoggerFactory);
-        collection.AddTransient<IDelegatingHandlerFactory>(_ => BasicHttpRetryHandlerFactory.Instance);
-        collection.AddTransient<ISKPluginCollection, SKPluginCollection>();
-        collection.AddTransient<ISemanticTextMemory>(_ => NullMemory.Instance);
-        collection.AddTransient<IAIServiceProvider>(_ => aiServicesCollection.Build()); //Registering AI service provider that is used by Kernel to resolve AI services runtime
+        collection.AddTransient<ILoggerFactory>((_) => ConsoleLogger.LoggerFactory);
+        collection.AddTransient<IDelegatingHandlerFactory>((_) => BasicHttpRetryHandlerFactory.Instance);
+        collection.AddTransient<ISemanticTextMemory>((_) => NullMemory.Instance);
+        collection.AddTransient<IAIServiceProvider>((_) => aiServicesCollection.Build()); //Registering AI service provider that is used by Kernel to resolve AI services runtime
 
         //Registering Kernel
         collection.AddTransient<Kernel>();
@@ -103,7 +99,6 @@ public static class Example40_DIContainer
         await kernelClient.SummarizeAsync("What's the tallest building in South America?");
     }
 
-
     /// <summary>
     /// Class that uses/references Kernel.
     /// </summary>
@@ -114,23 +109,21 @@ public static class Example40_DIContainer
         private readonly Kernel _kernel;
         private readonly ILogger _logger;
 
-
         public KernelClient(Kernel kernel, ILoggerFactory loggerFactory)
         {
-            _kernel = kernel;
-            _logger = loggerFactory.CreateLogger(nameof(KernelClient));
+            this._kernel = kernel;
+            this._logger = loggerFactory.CreateLogger(nameof(KernelClient));
         }
-
 
         public async Task SummarizeAsync(string ask)
         {
             string folder = RepoFiles.SamplePluginsPath();
 
-            var summarizePlugin = _kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
+            var summarizePlugin = this._kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
 
-            var result = await _kernel.RunAsync(ask, summarizePlugin["Summarize"]);
+            var result = await this._kernel.RunAsync(summarizePlugin["Summarize"], ask);
 
-            _logger.LogWarning("Result - {0}", result.GetValue<string>());
+            this._logger.LogWarning("Result - {0}", result.GetValue<string>());
         }
     }
 }

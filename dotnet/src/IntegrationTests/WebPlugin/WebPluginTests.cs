@@ -1,23 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.IntegrationTests.WebPlugin;
-
 using System;
-using System.IO;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Plugins.Web;
-using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using Xunit;
 using Xunit.Abstractions;
 
+namespace SemanticKernel.IntegrationTests.WebPlugin;
 
 public sealed class WebPluginTests : IDisposable
 {
     private readonly string _bingApiKey;
-
 
     public WebPluginTests(ITestOutputHelper output)
     {
@@ -40,61 +33,11 @@ public sealed class WebPluginTests : IDisposable
         this._bingApiKey = bingApiKeyCandidate;
     }
 
-
-    [Theory(Skip = "Bing search results not consistent enough for testing.")]
-    [InlineData("What is generally recognized as the tallest building in Seattle, Washington, USA?", "Columbia Center")]
-    public async Task BingPluginTestAsync(string prompt, string expectedAnswerContains)
-    {
-        // Arrange
-        Kernel kernel = new KernelBuilder().WithLoggerFactory(this._logger).Build();
-
-        using XunitLogger<BingConnector> connectorLogger = new(this._output);
-        BingConnector connector = new(this._bingApiKey, connectorLogger);
-        Assert.NotEmpty(this._bingApiKey);
-
-        WebSearchEnginePlugin plugin = new(connector);
-        var searchFunctions = kernel.ImportPluginFromObject(plugin, "WebSearchEngine");
-
-        // Act
-        FunctionResult result = await kernel.RunAsync(
-            prompt,
-            searchFunctions["Search"]
-        );
-
-        // Assert
-        Assert.Contains(expectedAnswerContains, result.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
-    }
-
-
-    [Fact]
-    public async Task WebFileDownloadPluginFileTestAsync()
-    {
-        // Arrange
-        Kernel kernel = new KernelBuilder().WithLoggerFactory(this._logger).Build();
-        using XunitLogger<WebFileDownloadPlugin> pluginLogger = new(this._output);
-        var plugin = new WebFileDownloadPlugin(pluginLogger);
-        var downloadFunctions = kernel.ImportPluginFromObject(plugin, "WebFileDownload");
-        string fileWhereToSaveWebPage = Path.GetTempFileName();
-        var contextVariables = new ContextVariables("https://www.microsoft.com");
-        contextVariables.Set(WebFileDownloadPlugin.FilePathParamName, fileWhereToSaveWebPage);
-
-        // Act
-        await kernel.RunAsync(contextVariables, downloadFunctions["DownloadToFile"]);
-
-        // Assert
-        var fileInfo = new FileInfo(fileWhereToSaveWebPage);
-        Assert.True(fileInfo.Length > 0);
-
-        File.Delete(fileWhereToSaveWebPage);
-    }
-
-
     #region internals
 
     private readonly ITestOutputHelper _output;
     private readonly XunitLogger<Kernel> _logger;
     private readonly RedirectOutput _testOutputHelper;
-
 
     public void Dispose()
     {
@@ -102,12 +45,10 @@ public sealed class WebPluginTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
-
     ~WebPluginTests()
     {
         this.Dispose(false);
     }
-
 
     private void Dispose(bool disposing)
     {
@@ -119,6 +60,4 @@ public sealed class WebPluginTests : IDisposable
     }
 
     #endregion
-
-
 }

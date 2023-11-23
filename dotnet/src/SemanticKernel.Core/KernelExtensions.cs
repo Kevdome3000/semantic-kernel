@@ -1,30 +1,25 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel;
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using AI;
-using Extensions.Logging;
-using Orchestration;
-using TemplateEngine;
-using Text;
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.TemplateEngine;
+using Microsoft.SemanticKernel.Text;
 
+namespace Microsoft.SemanticKernel;
 
 /// <summary>Extension methods for interacting with <see cref="Kernel"/>.</summary>
 public static class KernelExtensions
 {
-
-
     #region CreateFunctionFromMethod
-
     /// <summary>
     /// Creates an <see cref="KernelFunction"/> instance for a method, specified via a delegate.
     /// </summary>
@@ -47,7 +42,6 @@ public static class KernelExtensions
 
         return SKFunctionFactory.CreateFromMethod(method.Method, method.Target, functionName, description, parameters, returnParameter, kernel.LoggerFactory);
     }
-
 
     /// <summary>
     /// Creates an <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
@@ -74,14 +68,10 @@ public static class KernelExtensions
 
         return SKFunctionFactory.CreateFromMethod(method, target, functionName, description, parameters, returnParameter, kernel.LoggerFactory);
     }
-
     #endregion
 
-
     #region CreateFunctionFromPrompt
-
     // TODO: Revise these CreateFunctionFromPrompt method XML comments
-
 
     /// <summary>
     /// Creates a string-to-string semantic function, with no direct support for input context.
@@ -106,7 +96,6 @@ public static class KernelExtensions
         return SKFunctionFactory.CreateFromPrompt(promptTemplate, requestSettings, functionName, description, kernel.LoggerFactory);
     }
 
-
     /// <summary>
     /// Creates a semantic function passing in the definition in natural language, i.e. the prompt template.
     /// </summary>
@@ -128,7 +117,6 @@ public static class KernelExtensions
         return SKFunctionFactory.CreateFromPrompt(promptTemplate, promptTemplateConfig, functionName, promptTemplateFactory, kernel.LoggerFactory);
     }
 
-
     /// <summary>
     /// Allow to define a semantic function passing in the definition in natural language, i.e. the prompt template.
     /// </summary>
@@ -147,12 +135,9 @@ public static class KernelExtensions
 
         return SKFunctionFactory.CreateFromPrompt(promptTemplate, promptTemplateConfig, functionName, kernel.LoggerFactory);
     }
-
     #endregion
 
-
     #region CreatePluginFromObject
-
     /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/>.</summary>
     /// <typeparam name="T">Specifies the type of the object to wrap.</typeparam>
     /// <param name="kernel">The kernel.</param>
@@ -167,9 +152,8 @@ public static class KernelExtensions
     {
         Verify.NotNull(kernel);
 
-        return SKPlugin.FromObject<T>(pluginName, kernel.LoggerFactory);
+        return KernelPluginFactory.CreateFromObject<T>(pluginName, kernel.LoggerFactory);
     }
-
 
     /// <summary>Creates a plugin that wraps the specified target object.</summary>
     /// <param name="kernel">The kernel.</param>
@@ -184,14 +168,11 @@ public static class KernelExtensions
     {
         Verify.NotNull(kernel);
 
-        return SKPlugin.FromObject(target, pluginName, kernel.LoggerFactory);
+        return KernelPluginFactory.CreateFromObject(target, pluginName, kernel.LoggerFactory);
     }
-
     #endregion
 
-
     #region ImportPluginFromObject
-
     /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/> and imports it into the <paramref name="kernel"/>'s plugin collection.</summary>
     /// <typeparam name="T">Specifies the type of the object to wrap.</typeparam>
     /// <param name="kernel">The kernel.</param>
@@ -209,7 +190,6 @@ public static class KernelExtensions
         return plugin;
     }
 
-
     /// <summary>Creates a plugin that wraps the specified target object and imports it into the <paramref name="kernel"/>'s plugin collection.</summary>
     /// <param name="kernel">The kernel.</param>
     /// <param name="target">The instance of the class to be wrapped.</param>
@@ -225,9 +205,7 @@ public static class KernelExtensions
         kernel.Plugins.Add(plugin);
         return plugin;
     }
-
     #endregion
-
 
     /// <summary>Creates a plugin containing one function per child directory of the specified <paramref name="pluginDirectory"/>.</summary>
     /// <remarks>
@@ -284,7 +262,6 @@ public static class KernelExtensions
 
             // Continue only if prompt template exists
             var promptPath = Path.Combine(functionDirectory, PromptFile);
-
             if (!File.Exists(promptPath))
             {
                 continue;
@@ -292,7 +269,9 @@ public static class KernelExtensions
 
             // Load prompt configuration. Note: the configuration is optional.
             var configPath = Path.Combine(functionDirectory, ConfigFile);
-            var promptTemplateConfig = File.Exists(configPath) ? PromptTemplateConfig.FromJson(File.ReadAllText(configPath)) : new PromptTemplateConfig();
+            var promptTemplateConfig = File.Exists(configPath) ?
+                PromptTemplateConfig.FromJson(File.ReadAllText(configPath)) :
+                new PromptTemplateConfig();
 
             if (logger.IsEnabled(LogLevel.Trace))
             {
@@ -314,9 +293,7 @@ public static class KernelExtensions
         return plugin;
     }
 
-
     #region ImportPluginFromPromptDirectory
-
     /// <summary>
     /// Creates a plugin containing one function per child directory of the specified <paramref name="pluginDirectory"/>
     /// and imports it into the <paramref name="kernel"/>'s plugin collection.
@@ -361,12 +338,9 @@ public static class KernelExtensions
         kernel.Plugins.Add(plugin);
         return plugin;
     }
-
     #endregion
 
-
     #region InvokePromptAsync
-
     /// <summary>
     /// Invoke a semantic function using the provided prompt template.
     /// </summary>
@@ -387,9 +361,47 @@ public static class KernelExtensions
             requestSettings,
             functionName,
             description));
-
     #endregion
 
+    #region RunAsync
+    /// <summary>
+    /// Run a single synchronous or asynchronous <see cref="KernelFunction"/>.
+    /// </summary>
+    /// <param name="kernel">The kernel.</param>
+    /// <param name="function">A Semantic Kernel function to run</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Result of the function</returns>
+    public static Task<FunctionResult> RunAsync(
+        this Kernel kernel,
+        KernelFunction function,
+        CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(kernel);
+
+        return kernel.RunAsync(function, new ContextVariables(), cancellationToken);
+    }
+
+    /// <summary>
+    /// Run a single synchronous or asynchronous <see cref="KernelFunction"/>.
+    /// </summary>
+    /// <param name="kernel">The kernel.</param>
+    /// <param name="function">A Semantic Kernel function to run</param>
+    /// <param name="input">Input to process</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Result of the function</returns>
+    public static Task<FunctionResult> RunAsync(
+        this Kernel kernel,
+        KernelFunction function,
+        string input,
+        CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(kernel);
+
+        var contextVariables = new ContextVariables();
+        contextVariables.Update(input);
+
+        return kernel.RunAsync(function, contextVariables, cancellationToken);
+    }
 
     /// <summary>
     /// Run a single synchronous or asynchronous <see cref="KernelFunction"/>.
@@ -402,104 +414,15 @@ public static class KernelExtensions
     public static Task<FunctionResult> RunAsync(
         this Kernel kernel,
         KernelFunction function,
-        ContextVariables? variables = null,
+        ContextVariables variables,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
 
-        return kernel.RunAsync(variables ?? new(), cancellationToken, function);
+        var context = kernel.CreateNewContext(variables);
+
+        return function.InvokeAsync(kernel, context, requestSettings: null, cancellationToken);
     }
-
-
-    /// <summary>
-    /// Run a pipeline composed of synchronous and asynchronous functions.
-    /// </summary>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="pipeline">List of functions</param>
-    /// <returns>Result of the function composition</returns>
-    public static Task<FunctionResult> RunAsync(
-        this Kernel kernel,
-        params KernelFunction[] pipeline)
-    {
-        Verify.NotNull(kernel);
-
-        return kernel.RunAsync(new ContextVariables(), pipeline);
-    }
-
-
-    /// <summary>
-    /// Run a pipeline composed of synchronous and asynchronous functions.
-    /// </summary>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="input">Input to process</param>
-    /// <param name="pipeline">List of functions</param>
-    /// <returns>Result of the function composition</returns>
-    public static Task<FunctionResult> RunAsync(
-        this Kernel kernel,
-        string input,
-        params KernelFunction[] pipeline)
-    {
-        Verify.NotNull(kernel);
-
-        return kernel.RunAsync(new ContextVariables(input), pipeline);
-    }
-
-
-    /// <summary>
-    /// Run a pipeline composed of synchronous and asynchronous functions.
-    /// </summary>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="variables">Input to process</param>
-    /// <param name="pipeline">List of functions</param>
-    /// <returns>Result of the function composition</returns>
-    public static Task<FunctionResult> RunAsync(
-        this Kernel kernel,
-        ContextVariables variables,
-        params KernelFunction[] pipeline)
-    {
-        Verify.NotNull(kernel);
-
-        return kernel.RunAsync(variables, CancellationToken.None, pipeline);
-    }
-
-
-    /// <summary>
-    /// Run a pipeline composed of synchronous and asynchronous functions.
-    /// </summary>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <param name="pipeline">List of functions</param>
-    /// <returns>Result of the function composition</returns>
-    public static Task<FunctionResult> RunAsync(
-        this Kernel kernel,
-        CancellationToken cancellationToken,
-        params KernelFunction[] pipeline)
-    {
-        Verify.NotNull(kernel);
-
-        return kernel.RunAsync(new ContextVariables(), cancellationToken, pipeline);
-    }
-
-
-    /// <summary>
-    /// Run a pipeline composed of synchronous and asynchronous functions.
-    /// </summary>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="input">Input to process</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <param name="pipeline">List of functions</param>
-    /// <returns>Result of the function composition</returns>
-    public static Task<FunctionResult> RunAsync(
-        this Kernel kernel,
-        string input,
-        CancellationToken cancellationToken,
-        params KernelFunction[] pipeline)
-    {
-        Verify.NotNull(kernel);
-
-        return kernel.RunAsync(new ContextVariables(input), cancellationToken, pipeline);
-    }
-
 
     /// <summary>
     /// Run a plugin function.
@@ -521,133 +444,7 @@ public static class KernelExtensions
 
         var function = kernel.Plugins.GetFunction(pluginName, functionName);
 
-        return kernel.RunAsync(function, variables, cancellationToken);
+        return kernel.RunAsync(function, variables ?? new(), cancellationToken);
     }
-
-
-    /// <summary>
-    /// Run a pipeline composed of synchronous and asynchronous functions.
-    /// </summary>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="variables">Input to process</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <param name="pipeline">List of functions</param>
-    /// <returns>Result of the function composition</returns>
-    /// <inheritdoc/>
-    public static async Task<FunctionResult> RunAsync(this Kernel kernel, ContextVariables variables, CancellationToken cancellationToken, params KernelFunction[] pipeline)
-    {
-        var context = kernel.CreateNewContext(variables);
-
-        FunctionResult? functionResult = null;
-
-        int pipelineStepCount = 0;
-        var allFunctionResults = new List<FunctionResult>();
-
-        var logger = kernel.LoggerFactory.CreateLogger(typeof(Kernel));
-
-        foreach (KernelFunction function in pipeline)
-        {
-            repeat:
-            cancellationToken.ThrowIfCancellationRequested();
-
-            try
-            {
-                var functionDetails = function.GetMetadata();
-
-                functionResult = await function.InvokeAsync(kernel, context, null, cancellationToken: cancellationToken).ConfigureAwait(false);
-
-                if (IsCancelRequested(function, functionResult.Context, pipelineStepCount, logger))
-                {
-                    break;
-                }
-
-                if (IsSkipRequested(function, functionResult.Context, pipelineStepCount, logger))
-                {
-                    continue;
-                }
-
-                // Only non-stop results are considered as Kernel results
-                allFunctionResults.Add(functionResult!);
-
-                if (IsRepeatRequested(function, functionResult.Context, pipelineStepCount, logger))
-                {
-                    goto repeat;
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.LogError("Function {Function} call fail during pipeline step {Step} with error {Error}:", function.Name, pipelineStepCount, ex.Message);
-                throw;
-            }
-
-            pipelineStepCount++;
-        }
-
-        return allFunctionResults.LastOrDefault();
-    }
-
-
-    /// <summary>
-    /// Checks if the handler requested to cancel the function execution.
-    /// </summary>
-    /// <param name="function">Target function</param>
-    /// <param name="context">Context of execution</param>
-    /// <param name="pipelineStepCount">Current pipeline step</param>
-    /// <param name="logger">The logger.</param>
-    /// <returns></returns>
-    private static bool IsCancelRequested(KernelFunction function, SKContext context, int pipelineStepCount, ILogger logger)
-    {
-        if (KernelFunctionFromPrompt.IsInvokingCancelRequested(context))
-        {
-            logger.LogInformation("Execution was cancelled on function invoking event of pipeline step {StepCount}: {FunctionName}.", pipelineStepCount, function.Name);
-            return true;
-        }
-
-        if (KernelFunctionFromPrompt.IsInvokedCancelRequested(context))
-        {
-            logger.LogInformation("Execution was cancelled on function invoked event of pipeline step {StepCount}: {FunctionName}.", pipelineStepCount, function.Name);
-            return true;
-        }
-
-        return false;
-    }
-
-
-    /// <summary>
-    /// Checks if the handler requested to skip the function execution.
-    /// </summary>
-    /// <param name="function">Target function</param>
-    /// <param name="context">Context of execution</param>
-    /// <param name="pipelineStepCount">Current pipeline step</param>
-    /// <param name="logger">The logger.</param>
-    /// <returns></returns>
-    private static bool IsSkipRequested(KernelFunction function, SKContext context, int pipelineStepCount, ILogger logger)
-    {
-        if (KernelFunctionFromPrompt.IsInvokingSkipRequested(context))
-        {
-            logger.LogInformation("Execution was skipped on function invoking event of pipeline step {StepCount}: {FunctionName}.", pipelineStepCount, function.Name);
-            return true;
-        }
-
-        return false;
-    }
-
-
-    /// <summary>
-    /// Checks if the handler requested to repeat the function execution.
-    /// </summary>
-    /// <param name="function">Target function</param>
-    /// <param name="context">Context of execution</param>
-    /// <param name="pipelineStepCount">Current pipeline step</param>
-    /// <param name="logger">The logger.</param>
-    /// <returns></returns>
-    private static bool IsRepeatRequested(KernelFunction function, SKContext context, int pipelineStepCount, ILogger logger)
-    {
-        if (context.FunctionInvokedHandler?.EventArgs?.IsRepeatRequested ?? false)
-        {
-            logger.LogInformation("Execution repeat request on function invoked event of pipeline step {StepCount}: {FunctionName}.", pipelineStepCount, function.Name);
-            return true;
-        }
-        return false;
-    }
+    #endregion
 }

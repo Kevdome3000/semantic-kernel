@@ -2,9 +2,6 @@
 
 namespace Microsoft.SemanticKernel.Orchestration;
 
-using Events;
-
-
 /// <summary>
 /// Semantic Kernel context.
 /// </summary>
@@ -16,32 +13,14 @@ public sealed class SKContext
     public ContextVariables Variables { get; }
 
     /// <summary>
-    /// Function invoking event handler wrapper
-    /// </summary>
-    internal EventHandlerWrapper<FunctionInvokingEventArgs>? FunctionInvokingHandler { get; private set; }
-
-    /// <summary>
-    /// Function invoked event handler wrapper
-    /// </summary>
-    internal EventHandlerWrapper<FunctionInvokedEventArgs>? FunctionInvokedHandler { get; private set; }
-
-
-    /// <summary>
     /// Constructor for the context.
     /// </summary>
     /// <param name="variables">Context variables to include in context.</param>
-    /// <param name="invokingWrapper">Event handler wrapper to be used in context</param>
-    /// <param name="invokedWrapper">Event handler wrapper to be used in context</param>
     internal SKContext(
-        ContextVariables? variables = null,
-        EventHandlerWrapper<FunctionInvokingEventArgs>? invokingWrapper = null,
-        EventHandlerWrapper<FunctionInvokedEventArgs>? invokedWrapper = null)
+        ContextVariables? variables = null)
     {
         this.Variables = variables ?? new();
-        this.FunctionInvokingHandler = invokingWrapper;
-        this.FunctionInvokedHandler = invokedWrapper;
     }
-
 
     /// <summary>
     /// Create a clone of the current context, using the same kernel references (memory, plugins, logger)
@@ -50,7 +29,6 @@ public sealed class SKContext
     /// <returns>A new context cloned from the current one</returns>
     public SKContext Clone()
         => this.Clone(null);
-
 
     /// <summary>
     /// Create a clone of the current context, using the same kernel references (memory, plugins, logger)
@@ -61,8 +39,6 @@ public sealed class SKContext
     public SKContext Clone(ContextVariables? variables)
     {
         return new SKContext(
-            variables ?? this.Variables.Clone(),
-            this.FunctionInvokingHandler,
-            this.FunctionInvokedHandler);
+            variables ?? this.Variables.Clone());
     }
 }

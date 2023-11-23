@@ -70,7 +70,7 @@ public sealed class PlanTests : IDisposable
         var cv = new ContextVariables();
         cv.Update(inputToEmail);
         cv.Set("email_address", expectedEmail);
-        var result = await target.RunAsync(cv, plan);
+        var result = await target.RunAsync(plan, cv);
 
         // Assert
         Assert.Equal(expectedBody, result.GetValue<string>());
@@ -93,7 +93,7 @@ public sealed class PlanTests : IDisposable
         var cv = new ContextVariables();
         cv.Update(inputToEmail);
         cv.Set("email_address", expectedEmail);
-        var result = await target.RunAsync(cv, plan);
+        var result = await target.RunAsync(plan, cv);
 
         // Assert
         Assert.Equal(expectedBody, result.GetValue<string>());
@@ -118,7 +118,7 @@ public sealed class PlanTests : IDisposable
         cv.Update(inputToTranslate);
         cv.Set("email_address", expectedEmail);
         cv.Set("language", language);
-        var result = (await target.RunAsync(cv, plan)).GetValue<string>();
+        var result = (await target.RunAsync(plan, cv)).GetValue<string>();
 
         // Assert
         Assert.NotNull(result);
@@ -146,7 +146,7 @@ public sealed class PlanTests : IDisposable
         plan.State.Set("email_address", "something@email.com");
 
         // Act
-        var result = await target.RunAsync("PlanInput", plan);
+        var result = await target.RunAsync(plan, "PlanInput");
 
         // Assert
         Assert.NotNull(result);
@@ -199,7 +199,7 @@ public sealed class PlanTests : IDisposable
         target.FunctionInvoked += FunctionInvoked;
 
         // Act
-        var result = await target.RunAsync("PlanInput", plan);
+        var result = await target.RunAsync(plan, "PlanInput");
 
         // Assert
         Assert.NotNull(result);
@@ -450,7 +450,7 @@ public sealed class PlanTests : IDisposable
         plan.AddSteps(summarizePlan, translatePlan, getEmailPlan, sendEmailPlan);
 
         // Act
-        var result = (await target.RunAsync(inputToSummarize, plan)).GetValue<string>();
+        var result = (await target.RunAsync(plan, inputToSummarize)).GetValue<string>();
 
         // Assert
         Assert.NotNull(result);
@@ -517,7 +517,7 @@ public sealed class PlanTests : IDisposable
         // Act
         var serializedPlan = plan.ToJson();
         var deserializedPlan = Plan.FromJson(serializedPlan, target.Plugins);
-        var result = (await target.RunAsync(inputToSummarize, deserializedPlan)).GetValue<string>();
+        var result = (await target.RunAsync(deserializedPlan, inputToSummarize)).GetValue<string>();
 
         // Assert
         Assert.NotNull(result);
@@ -551,7 +551,7 @@ public sealed class PlanTests : IDisposable
         cv.Update(inputToSummarize);
         cv.Set("email_address", expectedEmail);
         cv.Set("language", inputLanguage);
-        var result = await target.RunAsync(cv, plan);
+        var result = await target.RunAsync(plan, cv);
 
         // Assert
         Assert.Contains(expectedBody, result.GetValue<string>(), StringComparison.OrdinalIgnoreCase);

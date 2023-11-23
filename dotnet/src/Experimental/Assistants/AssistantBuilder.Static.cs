@@ -1,16 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants;
-
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Connectors.AI.OpenAI.ChatCompletion;
-using Extensions;
-using Internal;
-using Models;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
+using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
+using Microsoft.SemanticKernel.Experimental.Assistants.Internal;
+using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 using YamlDotNet.Serialization;
 
+namespace Microsoft.SemanticKernel.Experimental.Assistants;
 
 /// <summary>
 /// Context for interacting with OpenAI REST API.
@@ -30,7 +31,7 @@ public partial class AssistantBuilder
         string apiKey,
         string model,
         string template,
-        ISKPluginCollection? plugins = null,
+        IEnumerable<ISKPlugin>? plugins = null,
         CancellationToken cancellationToken = default)
     {
         var deserializer = new DeserializerBuilder().Build();
@@ -43,11 +44,10 @@ public partial class AssistantBuilder
                 .WithInstructions(assistantKernelModel.Instructions.Trim())
                 .WithName(assistantKernelModel.Name.Trim())
                 .WithDescription(assistantKernelModel.Description.Trim())
-                .WithPlugins(plugins ?? new SKPluginCollection())
+                .WithPlugins(plugins ?? Array.Empty<ISKPlugin>())
                 .BuildAsync(cancellationToken)
                 .ConfigureAwait(false);
     }
-
 
     /// <summary>
     /// Create a new assistant from a yaml template.
@@ -62,14 +62,13 @@ public partial class AssistantBuilder
         string apiKey,
         string model,
         string definitionPath,
-        ISKPluginCollection? plugins = null,
+        IEnumerable<ISKPlugin>? plugins = null,
         CancellationToken cancellationToken = default)
     {
         var yamlContent = File.ReadAllText(definitionPath);
 
         return FromDefinitionAsync(apiKey, model, yamlContent, plugins, cancellationToken);
     }
-
 
     /// <summary>
     /// Create a new assistant.
@@ -85,13 +84,16 @@ public partial class AssistantBuilder
         string model,
         string instructions,
         string? name = null,
-        string? description = null) => await new AssistantBuilder()
-        .WithOpenAIChatCompletionService(model, apiKey)
-        .WithInstructions(instructions)
-        .WithName(name)
-        .WithDescription(description)
-        .BuildAsync().ConfigureAwait(false);
-
+        string? description = null)
+    {
+        return
+            await new AssistantBuilder()
+                .WithOpenAIChatCompletionService(model, apiKey)
+                .WithInstructions(instructions)
+                .WithName(name)
+                .WithDescription(description)
+                .BuildAsync().ConfigureAwait(false);
+    }
 
     /// <summary>
     /// Retrieve an existing assistant, by identifier.
@@ -104,7 +106,7 @@ public partial class AssistantBuilder
     public static async Task<IAssistant> GetAssistantAsync(
         string apiKey,
         string assistantId,
-        ISKPluginCollection? plugins = null,
+        IEnumerable<ISKPlugin>? plugins = null,
         CancellationToken cancellationToken = default)
     {
         var restContext = new OpenAIRestContext(apiKey);
