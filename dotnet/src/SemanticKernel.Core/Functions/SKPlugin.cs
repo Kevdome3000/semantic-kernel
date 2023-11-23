@@ -1,5 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0130
+
+namespace Microsoft.SemanticKernel;
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,9 +11,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
-#pragma warning disable IDE0130
-
-namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Provides an <see cref="ISKPlugin"/> implementation around a collection of functions.
@@ -21,11 +22,13 @@ public sealed class SKPlugin : ISKPlugin
     /// <summary>The collection of functions associated with this plugin.</summary>
     private readonly Dictionary<string, KernelFunction> _functions;
 
+
     /// <summary>Initializes the new plugin from the provided name.</summary>
     /// <param name="name">The name for the plugin.</param>
     public SKPlugin(string name) : this(name, description: null, functions: null)
     {
     }
+
 
     /// <summary>Initializes the new plugin from the provided name and function collection.</summary>
     /// <param name="name">The name for the plugin.</param>
@@ -33,6 +36,7 @@ public sealed class SKPlugin : ISKPlugin
     public SKPlugin(string name, IEnumerable<KernelFunction>? functions) : this(name, description: null, functions)
     {
     }
+
 
     /// <summary>Initializes the new plugin from the provided name, description, and function collection.</summary>
     /// <param name="name">The name for the plugin.</param>
@@ -48,6 +52,7 @@ public sealed class SKPlugin : ISKPlugin
         this.Description = !string.IsNullOrWhiteSpace(description) ? description! : "";
 
         this._functions = new Dictionary<string, KernelFunction>(StringComparer.OrdinalIgnoreCase);
+
         if (functions is not null)
         {
             foreach (KernelFunction f in functions)
@@ -57,6 +62,7 @@ public sealed class SKPlugin : ISKPlugin
             }
         }
     }
+
 
     /// <inheritdoc/>
     public string Name { get; }
@@ -70,9 +76,11 @@ public sealed class SKPlugin : ISKPlugin
     /// <inheritdoc/>
     public KernelFunction this[string functionName] => this._functions[functionName];
 
+
     /// <inheritdoc/>
     public bool TryGetFunction(string name, [NotNullWhen(true)] out KernelFunction? function) =>
         this._functions.TryGetValue(name, out function);
+
 
     /// <summary>Adds a function to the plugin.</summary>
     /// <param name="function">The function to add.</param>
@@ -84,6 +92,7 @@ public sealed class SKPlugin : ISKPlugin
         Verify.NotNull(function);
         this._functions.Add(function.Name, function);
     }
+
 
     /// <summary>Adds all of the functions in the specified <paramref name="functions"/> collection to this plugin.</summary>
     /// <param name="functions">The functions to add.</param>
@@ -100,11 +109,14 @@ public sealed class SKPlugin : ISKPlugin
         }
     }
 
+
     /// <inheritdoc/>
     public IEnumerator<KernelFunction> GetEnumerator() => this._functions.Values.GetEnumerator();
 
+
     /// <inheritdoc/>
     IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
+
 
     /// <summary>Debugger type proxy for the plugin.</summary>
     private sealed class TypeProxy

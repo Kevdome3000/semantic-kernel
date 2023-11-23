@@ -11,6 +11,7 @@ using Microsoft.SemanticKernel.Planning.Handlebars;
 using Plugins.DictionaryPlugin;
 using RepoUtils;
 
+
 /**
  * This example shows how to use the Handlebars sequential planner.
  */
@@ -19,6 +20,7 @@ public static class Example65_HandlebarsPlanner
     private static int s_sampleIndex;
 
     private const string CourseraPluginName = "CourseraPlugin";
+
 
     /// <summary>
     /// Show how to create a plan with Handlebars and execute it.
@@ -38,10 +40,12 @@ public static class Example65_HandlebarsPlanner
         await RunLocalDictionaryWithComplexTypesSampleAsync(shouldPrintPrompt);
     }
 
+
     private static void WriteSampleHeadingToConsole(string name)
     {
         Console.WriteLine($"======== [Handlebars Planner] Sample {s_sampleIndex++} - Create and Execute {name} Plan ========");
     }
+
 
     private static async Task RunSampleAsync(string goal, bool shouldPrintPrompt = false, params string[] pluginDirectoryNames)
     {
@@ -118,6 +122,7 @@ public static class Example65_HandlebarsPlanner
         Console.WriteLine($"\nResult:\n{result.GetValue<string>()}\n");
     }
 
+
     private static async Task PlanNotPossibleSampleAsync(bool shouldPrintPrompt = false)
     {
         WriteSampleHeadingToConsole("Plan Not Possible");
@@ -134,13 +139,14 @@ public static class Example65_HandlebarsPlanner
                 Goal: Email me a list of meetings I have scheduled today.
                 Available Functions: SummarizePlugin-Notegen, SummarizePlugin-Summarize, SummarizePlugin-MakeAbstractReadable, SummarizePlugin-Topics
                 Planner output:
-                I'm sorry, but it seems that the provided helpers do not include any helper to fetch or filter meetings scheduled for today. 
-                Therefore, I cannot create a Handlebars template to achieve the specified goal with the available helpers. 
+                I'm sorry, but it seems that the provided helpers do not include any helper to fetch or filter meetings scheduled for today.
+                Therefore, I cannot create a Handlebars template to achieve the specified goal with the available helpers.
                 Additional helpers may be required.
             */
             Console.WriteLine($"{e.Message}\n");
         }
     }
+
 
     private static async Task RunDictionaryWithBasicTypesSampleAsync(bool shouldPrintPrompt = false)
     {
@@ -161,6 +167,7 @@ public static class Example65_HandlebarsPlanner
             ["book","a set of printed or written pages bound together along one edge"]
         */
     }
+
 
     private static async Task RunLocalDictionaryWithComplexTypesSampleAsync(bool shouldPrintPrompt = false)
     {
@@ -196,6 +203,7 @@ public static class Example65_HandlebarsPlanner
         */
     }
 
+
     private static async Task RunPoetrySampleAsync(bool shouldPrintPrompt = false)
     {
         WriteSampleHeadingToConsole("Poetry");
@@ -223,6 +231,7 @@ public static class Example65_HandlebarsPlanner
         */
     }
 
+
     private static async Task RunBookSampleAsync(bool shouldPrintPrompt = false)
     {
         WriteSampleHeadingToConsole("Book Creation");
@@ -241,10 +250,10 @@ public static class Example65_HandlebarsPlanner
                 {{set "chapterIndex" this}}
                 {{set "chapterSynopsis" (MiscPlugin-ElementAtIndex input=(get "novelOutline") index=(get "chapterIndex"))}}
                 {{set "previousChapterSynopsis" (MiscPlugin-ElementAtIndex input=(get "novelOutline") index=(get "chapterIndex" - 1))}}
-                
+
                 {{!-- Step 4: Write the chapter content using the WriterPlugin-NovelChapter helper --}}
                 {{set "chapterContent" (WriterPlugin-NovelChapter input=(get "chapterSynopsis") theme=(get "bookTitle") previousChapter=(get "previousChapterSynopsis") chapterIndex=(get "chapterIndex"))}}
-                
+
                 {{!-- Step 5: Output the chapter content --}}
                 {{json (get "chapterContent")}}
             {{/each}}

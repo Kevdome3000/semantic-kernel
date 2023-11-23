@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 #pragma warning disable CA1716 // Identifiers should not match keywords
 
 namespace Microsoft.SemanticKernel;
+
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+
 
 /// <summary>Represents a plugin that may be registered with a <see cref="Kernel"/>.</summary>
 /// <remarks>
@@ -27,6 +28,7 @@ public interface ISKPlugin : IEnumerable<KernelFunction>
     /// <returns>The function.</returns>
     /// <exception cref="KeyNotFoundException">The plugin does not contain a function with the specified name.</exception>
     KernelFunction this[string functionName] { get; }
+
 
     /// <summary>Finds a function in the plugin by name.</summary>
     /// <param name="name">The name of the function to find.</param>

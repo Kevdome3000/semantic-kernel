@@ -13,6 +13,7 @@ using Microsoft.SemanticKernel.Plugins.Memory;
 using Plugins;
 using RepoUtils;
 
+
 // ReSharper disable CommentTypo
 // ReSharper disable once InconsistentNaming
 internal static class Example12_SequentialPlanner
@@ -25,6 +26,7 @@ internal static class Example12_SequentialPlanner
         await MemorySampleAsync();
         await PlanNotPossibleSampleAsync();
     }
+
 
     private static async Task PlanNotPossibleSampleAsync()
     {
@@ -67,6 +69,7 @@ internal static class Example12_SequentialPlanner
         }
     }
 
+
     private static async Task PoetrySamplesAsync()
     {
         Console.WriteLine("======== Sequential Planner - Create and Execute Poetry Plan ========");
@@ -101,6 +104,7 @@ internal static class Example12_SequentialPlanner
         Console.WriteLine("Result:");
         Console.WriteLine(result.GetValue<string>());
     }
+
 
     private static async Task EmailSamplesWithRecallAsync()
     {
@@ -161,6 +165,7 @@ internal static class Example12_SequentialPlanner
 
         Plan? restoredPlan = null;
         var memories = semanticMemory.SearchAsync("plans", goal, limit: 1, minRelevanceScore: 0.5);
+
         await foreach (MemoryQueryResult memory in memories)
         {
             Console.WriteLine($"Restored plan (relevance={memory.Relevance}):");
@@ -177,11 +182,11 @@ internal static class Example12_SequentialPlanner
         if (restoredPlan is not null)
         {
             var newInput =
-            "Far in the future, on a planet lightyears away, 15 year old Remy lives a normal life. He goes to school, " +
-            "hangs out with his friends, and tries to avoid trouble. But when he stumbles across a secret that threatens to destroy " +
-            "everything he knows, he's forced to go on the run. With the help of a mysterious girl named Eve, he must evade the ruthless " +
-            "agents of the Galactic Federation, and uncover the truth about his past. But the more he learns, the more he realizes that " +
-            "he's not just an ordinary boy.";
+                "Far in the future, on a planet lightyears away, 15 year old Remy lives a normal life. He goes to school, " +
+                "hangs out with his friends, and tries to avoid trouble. But when he stumbles across a secret that threatens to destroy " +
+                "everything he knows, he's forced to go on the run. With the help of a mysterious girl named Eve, he must evade the ruthless " +
+                "agents of the Galactic Federation, and uncover the truth about his past. But the more he learns, the more he realizes that " +
+                "he's not just an ordinary boy.";
 
             var result = await kernel.RunAsync(restoredPlan, newInput);
 
@@ -189,6 +194,7 @@ internal static class Example12_SequentialPlanner
             Console.WriteLine(result.GetValue<string>());
         }
     }
+
 
     private static async Task BookSamplesAsync()
     {
@@ -222,6 +228,7 @@ internal static class Example12_SequentialPlanner
         await ExecutePlanAsync(kernel, originalPlan);
     }
 
+
     private static async Task MemorySampleAsync()
     {
         Console.WriteLine("======== Sequential Planner - Create and Execute Plan using Memory ========");
@@ -230,9 +237,12 @@ internal static class Example12_SequentialPlanner
         var memory = InitializeMemory();
 
         string folder = RepoFiles.SamplePluginsPath();
-        foreach (string pluginFolder in new[] {
-            "SummarizePlugin", "WriterPlugin", "CalendarPlugin", "ChatPlugin", "ChildrensBookPlugin", "ClassificationPlugin",
-            "CodingPlugin", "FunPlugin", "IntentDetectionPlugin", "MiscPlugin", "QAPlugin" })
+
+        foreach (string pluginFolder in new[]
+                 {
+                     "SummarizePlugin", "WriterPlugin", "CalendarPlugin", "ChatPlugin", "ChildrensBookPlugin", "ClassificationPlugin",
+                     "CodingPlugin", "FunPlugin", "IntentDetectionPlugin", "MiscPlugin", "QAPlugin"
+                 })
         {
             kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, pluginFolder));
         }
@@ -252,6 +262,7 @@ internal static class Example12_SequentialPlanner
         Console.WriteLine(plan.ToPlanWithGoalString());
     }
 
+
     private static Kernel InitializeKernelAndPlanner(out SequentialPlanner planner, int maxTokens = 1024)
     {
         var kernel = new KernelBuilder()
@@ -266,6 +277,7 @@ internal static class Example12_SequentialPlanner
 
         return kernel;
     }
+
 
     private static Kernel InitializeKernel()
     {
@@ -286,6 +298,7 @@ internal static class Example12_SequentialPlanner
         return kernel;
     }
 
+
     private static SemanticTextMemory InitializeMemory()
     {
         var memoryStorage = new VolatileMemoryStore();
@@ -299,6 +312,7 @@ internal static class Example12_SequentialPlanner
 
         return memory;
     }
+
 
     private static async Task<Plan> ExecutePlanAsync(
         Kernel kernel,

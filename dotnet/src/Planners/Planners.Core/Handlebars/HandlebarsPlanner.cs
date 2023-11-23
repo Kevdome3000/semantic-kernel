@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace Microsoft.SemanticKernel.Planning.Handlebars;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -7,11 +10,9 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
+using AI.ChatCompletion;
+using Extensions.Logging;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
-namespace Microsoft.SemanticKernel.Planning.Handlebars;
 
 /// <summary>
 /// Represents a Handlebars planner.
@@ -28,6 +29,7 @@ public sealed class HandlebarsPlanner
 
     private readonly HandlebarsPlannerConfig _config;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="HandlebarsPlanner"/> class.
     /// </summary>
@@ -39,6 +41,7 @@ public sealed class HandlebarsPlanner
         this._config = config ?? new HandlebarsPlannerConfig();
         this._logger = kernel.LoggerFactory.CreateLogger(this.GetType());
     }
+
 
     /// <summary>Creates a plan for the specified goal.</summary>
     /// <param name="goal">The goal for which a plan should be created.</param>
@@ -56,6 +59,7 @@ public sealed class HandlebarsPlanner
             planToString: static (HandlebarsPlan plan) => plan.ToString(),
             this, goal, this._logger, cancellationToken);
     }
+
 
     private async Task<HandlebarsPlan> CreatePlanCoreAsync(string goal, CancellationToken cancellationToken = default)
     {
@@ -82,6 +86,7 @@ public sealed class HandlebarsPlanner
         }
 
         Match match = Regex.Match(resultContext.Variables.Input, @"```\s*(handlebars)?\s*(.*)\s*```", RegexOptions.Singleline);
+
         if (!match.Success)
         {
             throw new SKException("Could not find the plan in the results");
@@ -100,6 +105,7 @@ public sealed class HandlebarsPlanner
         return new HandlebarsPlan(this._kernel, planTemplate, createPlanPrompt);
     }
 
+
     private List<SKFunctionMetadata> GetAvailableFunctionsManual(
         out HashSet<HandlebarsParameterTypeMetadata> complexParameterTypes,
         out Dictionary<string, string> complexParameterSchemas,
@@ -109,15 +115,17 @@ public sealed class HandlebarsPlanner
         complexParameterSchemas = new();
         var availableFunctions = this._kernel.Plugins.GetFunctionsMetadata()
             .Where(s => !this._config.ExcludedPlugins.Contains(s.PluginName, StringComparer.OrdinalIgnoreCase)
-                && !this._config.ExcludedFunctions.Contains(s.Name, StringComparer.OrdinalIgnoreCase)
-                && !s.Name.Contains("Planner_Excluded"))
+                        && !this._config.ExcludedFunctions.Contains(s.Name, StringComparer.OrdinalIgnoreCase)
+                        && !s.Name.Contains("Planner_Excluded"))
             .ToList();
 
         var functionsMetadata = new List<SKFunctionMetadata>();
+
         foreach (var skFunction in availableFunctions)
         {
             // Extract any complex parameter types for isolated render in prompt template
             var parametersMetadata = new List<SKParameterMetadata>();
+
             foreach (var parameter in skFunction.Parameters)
             {
                 var paramToAdd = this.SetComplexTypeDefinition(parameter, complexParameterTypes, complexParameterSchemas);
@@ -141,6 +149,7 @@ public sealed class HandlebarsPlanner
         return functionsMetadata;
     }
 
+
     // Extract any complex types or schemas for isolated render in prompt template
     private SKParameterMetadata SetComplexTypeDefinition(
         SKParameterMetadata parameter,
@@ -152,6 +161,7 @@ public sealed class HandlebarsPlanner
         {
             // Async return type - need to extract the actual return type and override ParameterType property
             var type = parameter.ParameterType;
+
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Task<>))
             {
                 parameter = new(parameter) { ParameterType = type.GenericTypeArguments[0] }; // Actual Return Type
@@ -163,6 +173,7 @@ public sealed class HandlebarsPlanner
         {
             // Parse the schema to extract any primitive types and set in ParameterType property instead
             var parsedParameter = parameter.ParseJsonSchema();
+
             if (parsedParameter.Schema is not null)
             {
                 complexParameterSchemas[parameter.GetSchemaTypeName()] = parameter.Schema.RootElement.ToJsonString();
@@ -174,6 +185,7 @@ public sealed class HandlebarsPlanner
         return parameter;
     }
 
+
     private ChatHistory GetChatHistoryFromPrompt(string prompt, IChatCompletion chatCompletion)
     {
         // Extract the chat history from the rendered prompt
@@ -182,6 +194,7 @@ public sealed class HandlebarsPlanner
 
         // Add the chat history to the chat
         ChatHistory chatMessages = chatCompletion.CreateNewChat();
+
         foreach (Match m in matches.Cast<Match>())
         {
             string role = m.Groups[1].Value;
@@ -204,27 +217,30 @@ public sealed class HandlebarsPlanner
         return chatMessages;
     }
 
+
     private string GetHandlebarsTemplate(
-        Kernel kernel, string goal,
+        Kernel kernel,
+        string goal,
         List<SKFunctionMetadata> availableFunctions,
         HashSet<HandlebarsParameterTypeMetadata> complexParameterTypes,
         Dictionary<string, string> complexParameterSchemas)
     {
         var plannerTemplate = this.ReadPrompt("CreatePlanPrompt.handlebars");
         var variables = new Dictionary<string, object?>()
-            {
-                { "functions", availableFunctions},
-                { "goal", goal },
-                { "reservedNameDelimiter", HandlebarsTemplateEngineExtensions.ReservedNameDelimiter},
-                { "allowLoops", this._config.AllowLoops },
-                { "complexTypeDefinitions", complexParameterTypes.Count > 0 && complexParameterTypes.Any(p => p.IsComplex) ? complexParameterTypes.Where(p => p.IsComplex) : null},
-                { "complexSchemaDefinitions", complexParameterSchemas.Count > 0 ? complexParameterSchemas : null},
-                { "lastPlan", this._config.LastPlan },
-                { "lastError", this._config.LastError }
-            };
+        {
+            { "functions", availableFunctions },
+            { "goal", goal },
+            { "reservedNameDelimiter", HandlebarsTemplateEngineExtensions.ReservedNameDelimiter },
+            { "allowLoops", this._config.AllowLoops },
+            { "complexTypeDefinitions", complexParameterTypes.Count > 0 && complexParameterTypes.Any(p => p.IsComplex) ? complexParameterTypes.Where(p => p.IsComplex) : null },
+            { "complexSchemaDefinitions", complexParameterSchemas.Count > 0 ? complexParameterSchemas : null },
+            { "lastPlan", this._config.LastPlan },
+            { "lastError", this._config.LastError }
+        };
 
         return HandlebarsTemplateEngineExtensions.Render(kernel, kernel.CreateNewContext(), plannerTemplate, variables);
     }
+
 
     private static string MinifyHandlebarsTemplate(string template)
     {

@@ -12,6 +12,7 @@ public sealed class SKContext
     /// </summary>
     public ContextVariables Variables { get; }
 
+
     /// <summary>
     /// Constructor for the context.
     /// </summary>
@@ -22,6 +23,7 @@ public sealed class SKContext
         this.Variables = variables ?? new();
     }
 
+
     /// <summary>
     /// Create a clone of the current context, using the same kernel references (memory, plugins, logger)
     /// and a new set variables, so that variables can be modified without affecting the original context.
@@ -29,6 +31,7 @@ public sealed class SKContext
     /// <returns>A new context cloned from the current one</returns>
     public SKContext Clone()
         => this.Clone(null);
+
 
     /// <summary>
     /// Create a clone of the current context, using the same kernel references (memory, plugins, logger)

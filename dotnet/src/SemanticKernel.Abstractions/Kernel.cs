@@ -1,19 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net.Http;
 using System.Threading;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Events;
-using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Services;
+using Events;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
+using Http;
+using Orchestration;
+using Services;
 
-namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Provides state for use throughout a Semantic Kernel workload.
@@ -89,6 +90,7 @@ public sealed class Kernel
     /// </summary>
     public event EventHandler<FunctionInvokedEventArgs>? FunctionInvoked;
 
+
     /// <summary>
     /// Initializes a new instance of <see cref="Kernel"/>.
     /// </summary>
@@ -115,6 +117,7 @@ public sealed class Kernel
         this.HttpHandlerFactory = httpHandlerFactory ?? NullHttpHandlerFactory.Instance;
         this.LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
     }
+
 
     /// <summary>
     /// Clone the <see cref="Kernel"/> object to create a new instance that may be mutated without affecting the current instance.
@@ -155,6 +158,7 @@ public sealed class Kernel
             _culture = this._culture,
         };
 
+
     /// <summary>
     /// Create a new instance of a context, linked to the kernel internal state.
     /// </summary>
@@ -168,6 +172,7 @@ public sealed class Kernel
         return new SKContext(variables);
     }
 
+
     /// <summary>
     /// Gets a configured service from the service provider.
     /// </summary>
@@ -178,6 +183,7 @@ public sealed class Kernel
     public T GetService<T>(string? name = null) where T : IAIService =>
         this.ServiceProvider.GetService<T>(name) ??
         throw new SKException($"Service of type {typeof(T)} and name {name ?? "<NONE>"} not registered.");
+
 
     /// <summary>
     /// Gets a dictionary for ambient data associated with the kernel.
@@ -190,10 +196,13 @@ public sealed class Kernel
         Interlocked.CompareExchange(ref this._data, new Dictionary<string, object?>(), null) ??
         this._data;
 
+
     #region internal ===============================================================================
+
     internal bool OnFunctionInvoking(FunctionInvokingEventArgs eventArgs)
     {
         bool handled = false;
+
         if (this.FunctionInvoking != null)
         {
             this.FunctionInvoking.Invoke(this, eventArgs);
@@ -202,9 +211,11 @@ public sealed class Kernel
         return handled;
     }
 
+
     internal bool OnFunctionInvoked(FunctionInvokedEventArgs eventArgs)
     {
         bool handled = false;
+
         if (this.FunctionInvoked != null)
         {
             this.FunctionInvoked.Invoke(this, eventArgs);
@@ -212,7 +223,9 @@ public sealed class Kernel
         }
         return handled;
     }
+
     #endregion
+
 
     #region private ================================================================================
 
@@ -222,4 +235,6 @@ public sealed class Kernel
     private IAIServiceSelector? _serviceSelector;
 
     #endregion
+
+
 }

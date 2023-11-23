@@ -1,12 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace Microsoft.SemanticKernel.Planning.Handlebars;
+
 using System;
 using System.IO;
 using System.Reflection;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
-namespace Microsoft.SemanticKernel.Planning.Handlebars;
 #pragma warning restore IDE0130
+
 
 /// <summary>
 /// Extension methods for the <see cref="HandlebarsPlanner"/> interface.
@@ -28,6 +30,7 @@ public static class HandlebarsPlannerExtensions
         return reader.ReadToEnd();
     }
 
+
     /// <summary>
     /// Reads the prompt stream for the given file name.
     /// </summary>
@@ -45,6 +48,7 @@ public static class HandlebarsPlannerExtensions
         return assembly.GetManifestResourceStream(resourceName)!;
     }
 
+
     /// <summary>
     /// Start the stopwatch.
     /// </summary>
@@ -57,6 +61,7 @@ public static class HandlebarsPlannerExtensions
 
         planner.Stopwatch.Start();
     }
+
 
     /// <summary>
     /// Stop the stopwatch and return the elapsed time in milliseconds.

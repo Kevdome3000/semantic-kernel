@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using System.Threading;
-using Microsoft.SemanticKernel.Orchestration;
-
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.Planning.Handlebars;
+
+using System.Collections.Generic;
+using System.Threading;
+using Orchestration;
+
 
 /// <summary>
 /// Represents a Handlebars plan.
@@ -27,6 +28,7 @@ public sealed class HandlebarsPlan
     /// </summary>
     public string Prompt { get; }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="HandlebarsPlan"/> class.
     /// </summary>
@@ -40,6 +42,7 @@ public sealed class HandlebarsPlan
         this.Prompt = createPlanPromptTemplate;
     }
 
+
     /// <summary>
     /// Print the generated plan, aka handlebars template that was the create plan chat completion result.
     /// </summary>
@@ -48,6 +51,7 @@ public sealed class HandlebarsPlan
     {
         return this._template;
     }
+
 
     /// <summary>
     /// Invokes the Handlebars plan.

@@ -19,6 +19,7 @@ using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using NCalcPlugins;
 
+
 /// <summary>
 /// Example of telemetry in Semantic Kernel using Application Insights within console application.
 /// </summary>
@@ -32,6 +33,7 @@ public sealed class Program
     /// <see cref="LogLevel.Trace"/> will enable logging with more detailed information, including sensitive data. Should not be used in production. <para />
     /// </remarks>
     private const LogLevel MinLogLevel = LogLevel.Information;
+
 
     /// <summary>
     /// The main entry point for the application.
@@ -79,6 +81,7 @@ public sealed class Program
         }
     }
 
+
     private static ServiceProvider GetServiceProvider()
     {
         var services = new ServiceCollection();
@@ -87,6 +90,7 @@ public sealed class Program
 
         return services.BuildServiceProvider();
     }
+
 
     private static void ConfigureApplicationInsightsTelemetry(ServiceCollection services)
     {
@@ -103,6 +107,7 @@ public sealed class Program
             options.ConnectionString = $"InstrumentationKey={instrumentationKey}";
         });
     }
+
 
     private static Kernel GetKernel(ILoggerFactory loggerFactory)
     {
@@ -128,6 +133,7 @@ public sealed class Program
         return kernel;
     }
 
+
     private static SequentialPlanner GetSequentialPlanner(
         Kernel kernel,
         int maxTokens = 1024)
@@ -137,11 +143,13 @@ public sealed class Program
         return new SequentialPlanner(kernel, plannerConfig);
     }
 
+
     private static ActionPlanner GetActionPlanner(
         Kernel kernel)
     {
         return new ActionPlanner(kernel);
     }
+
 
     private static StepwisePlanner GetStepwisePlanner(
         Kernel kernel,
@@ -156,6 +164,7 @@ public sealed class Program
 
         return new StepwisePlanner(kernel, plannerConfig);
     }
+
 
     /// <summary>
     /// Example of metering configuration in Application Insights
@@ -180,6 +189,7 @@ public sealed class Program
         meterListener.Start();
     }
 
+
     /// <summary>
     /// The callback which can be used to get measurement recording.
     /// </summary>
@@ -191,6 +201,7 @@ public sealed class Program
             telemetryClient.GetMetric(instrument.Name).TrackValue(measurement);
         };
     }
+
 
     /// <summary>
     /// Example of advanced distributed tracing configuration in Application Insights

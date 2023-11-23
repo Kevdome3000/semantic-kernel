@@ -1,16 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - using planners namespace
+namespace Microsoft.SemanticKernel.Planning;
+
 using System;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+using Extensions.Logging;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - using planners namespace
-namespace Microsoft.SemanticKernel.Planning;
 #pragma warning restore IDE0130
+
 
 /// <summary>Surrounds the invocation of a planner with logging and metrics.</summary>
 internal static class PlannerInstrumentation
@@ -27,11 +29,15 @@ internal static class PlannerInstrumentation
         unit: "s",
         description: "Duration time of plan creation.");
 
+
     /// <summary>Invokes the supplied <paramref name="createPlanAsync"/> delegate, surrounded by logging and metrics.</summary>
     internal static async Task<TPlan> CreatePlanAsync<TPlanner, TPlan>(
         Func<TPlanner, string, CancellationToken, Task<TPlan>> createPlanAsync,
         Func<TPlan, string> planToString,
-        TPlanner planner, string goal, ILogger logger, CancellationToken cancellationToken)
+        TPlanner planner,
+        string goal,
+        ILogger logger,
+        CancellationToken cancellationToken)
         where TPlanner : class
         where TPlan : class
     {
@@ -50,6 +56,7 @@ internal static class PlannerInstrumentation
 
         TagList tags = new() { { "sk.planner.name", plannerName } };
         long startingTimestamp = Stopwatch.GetTimestamp();
+
         try
         {
             var plan = await createPlanAsync(planner, goal, cancellationToken).ConfigureAwait(false);

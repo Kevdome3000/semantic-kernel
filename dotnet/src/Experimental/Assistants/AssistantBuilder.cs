@@ -1,15 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Experimental.Assistants;
+
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
-using Microsoft.SemanticKernel.Experimental.Assistants.Internal;
-using Microsoft.SemanticKernel.Experimental.Assistants.Models;
+using Connectors.AI.OpenAI.ChatCompletion;
+using Internal;
+using Models;
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants;
 
 /// <summary>
 /// Fluent builder for initializing an <see cref="IAssistant"/> instance.
@@ -22,6 +23,7 @@ public partial class AssistantBuilder
     private string? _apiKey;
     private Func<HttpClient>? _httpClientProvider;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="AssistantBuilder"/> class.
     /// </summary>
@@ -30,6 +32,7 @@ public partial class AssistantBuilder
         this._model = new AssistantModel();
         this._plugins = new SKPluginCollection();
     }
+
 
     /// <summary>
     /// Create a <see cref="IAssistant"/> instance.
@@ -57,6 +60,7 @@ public partial class AssistantBuilder
                 cancellationToken).ConfigureAwait(false);
     }
 
+
     /// <summary>
     /// Define the OpenAI chat completion service (required).
     /// </summary>
@@ -69,6 +73,7 @@ public partial class AssistantBuilder
         return this;
     }
 
+
     /// <summary>
     /// Provide an httpclient (optional).
     /// </summary>
@@ -79,6 +84,7 @@ public partial class AssistantBuilder
 
         return this;
     }
+
 
     /// <summary>
     /// Define the assistant description (optional).
@@ -91,6 +97,7 @@ public partial class AssistantBuilder
         return this;
     }
 
+
     /// <summary>
     /// Define the assistant instructions (optional).
     /// </summary>
@@ -102,6 +109,7 @@ public partial class AssistantBuilder
         return this;
     }
 
+
     /// <summary>
     /// Define the assistant metadata (optional).
     /// </summary>
@@ -112,6 +120,7 @@ public partial class AssistantBuilder
 
         return this;
     }
+
 
     /// <summary>
     /// Define the assistant metadata (optional).
@@ -127,6 +136,7 @@ public partial class AssistantBuilder
         return this;
     }
 
+
     /// <summary>
     /// Define the assistant name (optional).
     /// </summary>
@@ -138,6 +148,7 @@ public partial class AssistantBuilder
         return this;
     }
 
+
     /// <summary>
     /// Define functions associated with assistant instance (optional).
     /// </summary>
@@ -148,6 +159,7 @@ public partial class AssistantBuilder
 
         return this;
     }
+
 
     /// <summary>
     /// Define functions associated with assistant instance (optional).

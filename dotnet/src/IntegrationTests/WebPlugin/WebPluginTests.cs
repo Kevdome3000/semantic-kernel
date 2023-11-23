@@ -1,16 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.IntegrationTests.WebPlugin;
+
 using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.WebPlugin;
 
 public sealed class WebPluginTests : IDisposable
 {
     private readonly string _bingApiKey;
+
 
     public WebPluginTests(ITestOutputHelper output)
     {
@@ -33,11 +35,13 @@ public sealed class WebPluginTests : IDisposable
         this._bingApiKey = bingApiKeyCandidate;
     }
 
+
     #region internals
 
     private readonly ITestOutputHelper _output;
     private readonly XunitLogger<Kernel> _logger;
     private readonly RedirectOutput _testOutputHelper;
+
 
     public void Dispose()
     {
@@ -45,10 +49,12 @@ public sealed class WebPluginTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
+
     ~WebPluginTests()
     {
         this.Dispose(false);
     }
+
 
     private void Dispose(bool disposing)
     {
@@ -60,4 +66,6 @@ public sealed class WebPluginTests : IDisposable
     }
 
     #endregion
+
+
 }
