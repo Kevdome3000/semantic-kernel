@@ -380,7 +380,7 @@ public static class KernelExtensions
         AIRequestSettings? requestSettings = null,
         string? functionName = null,
         string? description = null) =>
-        kernel.InvokeAsync((KernelFunction)SKFunctionFactory.CreateFromPrompt(
+        kernel.InvokeAsync(SKFunctionFactory.CreateFromPrompt(
             promptTemplate,
             requestSettings,
             functionName,
