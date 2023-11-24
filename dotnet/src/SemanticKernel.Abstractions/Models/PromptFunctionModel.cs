@@ -1,12 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Models;
-
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using AI;
-using TemplateEngine;
+using Microsoft.SemanticKernel.AI;
 
+namespace Microsoft.SemanticKernel.Models;
 
 /// <summary>
 /// Prompt model files.
@@ -48,7 +46,6 @@ public sealed class PromptFunctionModel
     /// </summary>
     [JsonPropertyName("model_settings")]
     public List<AIRequestSettings> ModelSettings { get; set; } = new();
-
 
     /// <summary>
     /// Input parameter for semantic functions.

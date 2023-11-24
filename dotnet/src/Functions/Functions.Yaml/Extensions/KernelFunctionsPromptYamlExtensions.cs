@@ -1,15 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel.Functions.Yaml.Functions;
+using Microsoft.SemanticKernel.Models;
+
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using the namespace of IKernel
 namespace Microsoft.SemanticKernel;
-
-using Functions.Yaml.Functions;
-using Models;
-using TemplateEngine;
-
 #pragma warning restore IDE0130
-
 
 /// <summary>
 /// Class for extensions methods to define functions using prompt YAML format.
@@ -30,7 +27,6 @@ public static class KernelFunctionsPromptYamlExtensions
     {
         return SKFunctionYaml.FromPromptYamlResource(resourceName, promptTemplateFactory, kernel.LoggerFactory);
     }
-
 
     /// <summary>
     /// Creates an <see cref="KernelFunction"/> instance for a semantic function using the specified YAML.

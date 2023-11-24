@@ -1,16 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Functions.Yaml.Functions;
-
 using System.IO;
 using System.Reflection;
-using Extensions.Logging;
-using Models;
-using TemplateEngine;
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Models;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
-
+namespace Microsoft.SemanticKernel.Functions.Yaml.Functions;
 /// <summary>
 /// Factory methods for creating <seealso cref="KernelFunction"/> instances.
 /// </summary>
@@ -40,7 +37,6 @@ public static class SKFunctionYaml
             promptTemplateFactory,
             loggerFactory);
     }
-
 
     /// <summary>
     /// Creates an <see cref="KernelFunction"/> instance for a semantic function using the specified markdown text.

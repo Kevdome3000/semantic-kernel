@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 /// <summary>
 /// Base class for blocks parsed from a prompt template
 /// </summary>
-public abstract class Block
+internal abstract class Block
 {
     internal virtual BlockTypes Type => BlockTypes.Undefined;
 

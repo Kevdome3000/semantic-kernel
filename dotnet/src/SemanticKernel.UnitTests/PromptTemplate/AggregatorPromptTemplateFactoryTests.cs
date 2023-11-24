@@ -1,16 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.UnitTests.TemplateEngine;
-
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.TemplateEngine;
 using Xunit;
 
+namespace SemanticKernel.UnitTests.PromptTemplate;
 
 public sealed class AggregatorPromptTemplateFactoryTests
 {
@@ -32,7 +30,6 @@ public sealed class AggregatorPromptTemplateFactoryTests
         Assert.True(result2 is MyPromptTemplate2);
     }
 
-
     [Fact]
     public void ItThrowsExceptionForUnknowPromptTemplateFormat()
     {
@@ -48,14 +45,12 @@ public sealed class AggregatorPromptTemplateFactoryTests
         Assert.Throws<SKException>(() => target.Create(templateString, new PromptTemplateConfig() { TemplateFormat = "unknown-format" }));
     }
 
-
     #region private
-
     private sealed class MyPromptTemplateFactory1 : IPromptTemplateFactory
     {
         public IPromptTemplate Create(string templateString, PromptTemplateConfig promptTemplateConfig)
         {
-            if (promptTemplateConfig.TemplateFormat.Equals("my-format-1", System.StringComparison.Ordinal))
+            if (promptTemplateConfig.TemplateFormat.Equals("my-format-1", StringComparison.Ordinal))
             {
                 return new MyPromptTemplate1(templateString, promptTemplateConfig);
             }
@@ -64,12 +59,10 @@ public sealed class AggregatorPromptTemplateFactoryTests
         }
     }
 
-
     private sealed class MyPromptTemplate1 : IPromptTemplate
     {
         private readonly string _templateString;
         private readonly PromptTemplateConfig _promptTemplateConfig;
-
 
         public MyPromptTemplate1(string templateString, PromptTemplateConfig promptTemplateConfig)
         {
@@ -77,9 +70,7 @@ public sealed class AggregatorPromptTemplateFactoryTests
             this._promptTemplateConfig = promptTemplateConfig;
         }
 
-
         public IReadOnlyList<SKParameterMetadata> Parameters => Array.Empty<SKParameterMetadata>();
-
 
         public Task<string> RenderAsync(Kernel kernel, SKContext executionContext, CancellationToken cancellationToken = default)
         {
@@ -87,12 +78,11 @@ public sealed class AggregatorPromptTemplateFactoryTests
         }
     }
 
-
     private sealed class MyPromptTemplateFactory2 : IPromptTemplateFactory
     {
         public IPromptTemplate Create(string templateString, PromptTemplateConfig promptTemplateConfig)
         {
-            if (promptTemplateConfig.TemplateFormat.Equals("my-format-2", System.StringComparison.Ordinal))
+            if (promptTemplateConfig.TemplateFormat.Equals("my-format-2", StringComparison.Ordinal))
             {
                 return new MyPromptTemplate2(templateString, promptTemplateConfig);
             }
@@ -101,12 +91,10 @@ public sealed class AggregatorPromptTemplateFactoryTests
         }
     }
 
-
     private sealed class MyPromptTemplate2 : IPromptTemplate
     {
         private readonly string _templateString;
         private readonly PromptTemplateConfig _promptTemplateConfig;
-
 
         public MyPromptTemplate2(string templateString, PromptTemplateConfig promptTemplateConfig)
         {
@@ -114,17 +102,12 @@ public sealed class AggregatorPromptTemplateFactoryTests
             this._promptTemplateConfig = promptTemplateConfig;
         }
 
-
         public IReadOnlyList<SKParameterMetadata> Parameters => Array.Empty<SKParameterMetadata>();
-
 
         public Task<string> RenderAsync(Kernel kernel, SKContext executionContext, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(this._templateString);
         }
     }
-
     #endregion
-
-
 }

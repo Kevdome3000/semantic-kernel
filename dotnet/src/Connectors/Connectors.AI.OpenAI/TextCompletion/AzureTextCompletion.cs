@@ -1,19 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
-
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Azure.Core;
-using AzureSdk;
-using Extensions.Logging;
-using SemanticKernel.AI;
-using SemanticKernel.AI.TextCompletion;
-using Services;
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+using Microsoft.SemanticKernel.Services;
 
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 
 /// <summary>
 /// Azure OpenAI text completion client.
@@ -21,6 +20,9 @@ using Services;
 /// </summary>
 public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
 {
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
+
     /// <summary>
     /// Creates a new AzureTextCompletion client instance using API Key auth
     /// </summary>
@@ -38,9 +40,8 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null) : base(deploymentName, endpoint, apiKey, httpClient, loggerFactory)
     {
-        AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
     }
-
 
     /// <summary>
     /// Creates a new AzureTextCompletion client instance supporting AAD auth
@@ -59,9 +60,8 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null) : base(deploymentName, endpoint, credential, httpClient, loggerFactory)
     {
-        AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
     }
-
 
     /// <summary>
     /// Creates a new AzureTextCompletion client instance using the specified OpenAIClient
@@ -76,13 +76,8 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
         string? modelId = null,
         ILoggerFactory? loggerFactory = null) : base(deploymentName, openAIClient, loggerFactory)
     {
-        AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
     }
-
-
-    /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Attributes => InternalAttributes;
-
 
     /// <inheritdoc/>
     public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
@@ -90,10 +85,9 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
         AIRequestSettings? requestSettings,
         CancellationToken cancellationToken = default)
     {
-        LogActionDetails();
-        return InternalGetTextStreamingResultsAsync(text, requestSettings, cancellationToken);
+        this.LogActionDetails();
+        return this.InternalGetTextStreamingResultsAsync(text, requestSettings, cancellationToken);
     }
-
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
@@ -101,7 +95,13 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
         AIRequestSettings? requestSettings,
         CancellationToken cancellationToken = default)
     {
-        LogActionDetails();
-        return InternalGetTextResultsAsync(text, requestSettings, cancellationToken);
+        this.LogActionDetails();
+        return this.InternalGetTextResultsAsync(text, requestSettings, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+    {
+        return this.InternalGetTextStreamingUpdatesAsync<T>(prompt, requestSettings, cancellationToken);
     }
 }

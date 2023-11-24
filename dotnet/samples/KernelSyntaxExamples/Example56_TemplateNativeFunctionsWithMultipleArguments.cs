@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Core;
-using Microsoft.SemanticKernel.TemplateEngine;
 using RepoUtils;
 
 
@@ -67,7 +66,7 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
 
         // Show the result
         Console.WriteLine("--- Semantic Function result");
-        var result = await kernel.RunAsync(haiku, context.Variables);
+        var result = await kernel.InvokeAsync(haiku, context.Variables);
         Console.WriteLine(result.GetValue<string>());
 
         /* OUTPUT:

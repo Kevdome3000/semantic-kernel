@@ -1,18 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable IDE0130
-
-namespace Microsoft.SemanticKernel;
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
-using AI;
-using Extensions.Logging;
-using Models;
-using TemplateEngine;
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.Models;
 
+#pragma warning disable IDE0130
+
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Provides factory methods for creating commonly-used implementations of <see cref="KernelFunction"/>, such as
@@ -20,10 +18,7 @@ using TemplateEngine;
 /// </summary>
 public static class SKFunctionFactory
 {
-
-
     #region FromMethod
-
     /// <summary>
     /// Creates an <see cref="KernelFunction"/> instance for a method, specified via a delegate.
     /// </summary>
@@ -42,7 +37,6 @@ public static class SKFunctionFactory
         SKReturnParameterMetadata? returnParameter = null,
         ILoggerFactory? loggerFactory = null) =>
         CreateFromMethod(method.Method, method.Target, functionName, description, parameters, returnParameter, loggerFactory);
-
 
     /// <summary>
     /// Creates an <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
@@ -65,14 +59,10 @@ public static class SKFunctionFactory
         SKReturnParameterMetadata? returnParameter = null,
         ILoggerFactory? loggerFactory = null) =>
         KernelFunctionFromMethod.Create(method, target, functionName, description, parameters, returnParameter, loggerFactory);
-
     #endregion
 
-
     #region FromPrompt
-
     // TODO: Revise these Create method XML comments
-
 
     /// <summary>
     /// Creates a string-to-string semantic function, with no direct support for input context.
@@ -93,7 +83,6 @@ public static class SKFunctionFactory
         ILoggerFactory? loggerFactory = null) =>
         KernelFunctionFromPrompt.Create(promptTemplate, requestSettings, functionName, description, loggerFactory);
 
-
     /// <summary>
     /// Creates a semantic function passing in the definition in natural language, i.e. the prompt template.
     /// </summary>
@@ -111,7 +100,6 @@ public static class SKFunctionFactory
         ILoggerFactory? loggerFactory = null) =>
         KernelFunctionFromPrompt.Create(promptTemplate, promptTemplateConfig, functionName, promptTemplateFactory, loggerFactory);
 
-
     /// <summary>
     /// Allow to define a semantic function passing in the definition in natural language, i.e. the prompt template.
     /// </summary>
@@ -126,7 +114,6 @@ public static class SKFunctionFactory
         string? functionName = null,
         ILoggerFactory? loggerFactory = null) =>
         KernelFunctionFromPrompt.Create(promptTemplate, promptTemplateConfig, functionName, loggerFactory);
-
 
     /// <summary>
     /// Create a semantic function instance, given a prompt function model.
@@ -150,8 +137,5 @@ public static class SKFunctionFactory
 
         return KernelFunctionFromPrompt.Create(promptTemplate, promptTemplateConfig, promptFunctionModel.Name, loggerFactory);
     }
-
     #endregion
-
-
 }

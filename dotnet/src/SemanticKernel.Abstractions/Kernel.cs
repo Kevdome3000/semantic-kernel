@@ -1,20 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel;
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net.Http;
 using System.Threading;
-using Events;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
-using Http;
-using Orchestration;
-using Services;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.Events;
+using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Services;
 
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Provides state for use throughout a Semantic Kernel workload.
@@ -90,6 +90,15 @@ public sealed class Kernel
     /// </summary>
     public event EventHandler<FunctionInvokedEventArgs>? FunctionInvoked;
 
+    /// <summary>
+    /// Provides an event that's raised prior to a prompt being rendered.
+    /// </summary>
+    public event EventHandler<PromptRenderingEventArgs>? PromptRendering;
+
+    /// <summary>
+    /// Provides an event that's raised after a prompt is rendered.
+    /// </summary>
+    public event EventHandler<PromptRenderedEventArgs>? PromptRendered;
 
     /// <summary>
     /// Initializes a new instance of <see cref="Kernel"/>.
@@ -117,7 +126,6 @@ public sealed class Kernel
         this.HttpHandlerFactory = httpHandlerFactory ?? NullHttpHandlerFactory.Instance;
         this.LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
     }
-
 
     /// <summary>
     /// Clone the <see cref="Kernel"/> object to create a new instance that may be mutated without affecting the current instance.
@@ -158,7 +166,6 @@ public sealed class Kernel
             _culture = this._culture,
         };
 
-
     /// <summary>
     /// Create a new instance of a context, linked to the kernel internal state.
     /// </summary>
@@ -172,7 +179,6 @@ public sealed class Kernel
         return new SKContext(variables);
     }
 
-
     /// <summary>
     /// Gets a configured service from the service provider.
     /// </summary>
@@ -183,7 +189,6 @@ public sealed class Kernel
     public T GetService<T>(string? name = null) where T : IAIService =>
         this.ServiceProvider.GetService<T>(name) ??
         throw new SKException($"Service of type {typeof(T)} and name {name ?? "<NONE>"} not registered.");
-
 
     /// <summary>
     /// Gets a dictionary for ambient data associated with the kernel.
@@ -196,36 +201,59 @@ public sealed class Kernel
         Interlocked.CompareExchange(ref this._data, new Dictionary<string, object?>(), null) ??
         this._data;
 
-
     #region internal ===============================================================================
-
-    internal bool OnFunctionInvoking(FunctionInvokingEventArgs eventArgs)
+    internal FunctionInvokingEventArgs? OnFunctionInvoking(KernelFunction function, SKContext context)
     {
-        bool handled = false;
-
-        if (this.FunctionInvoking != null)
+        var functionInvoking = this.FunctionInvoking;
+        if (functionInvoking is null)
         {
-            this.FunctionInvoking.Invoke(this, eventArgs);
-            handled = true;
+            return null;
         }
-        return handled;
+
+        var eventArgs = new FunctionInvokingEventArgs(function, context);
+        functionInvoking.Invoke(this, eventArgs);
+        return eventArgs;
     }
 
-
-    internal bool OnFunctionInvoked(FunctionInvokedEventArgs eventArgs)
+    internal FunctionInvokedEventArgs? OnFunctionInvoked(KernelFunction function, FunctionResult result)
     {
-        bool handled = false;
-
-        if (this.FunctionInvoked != null)
+        var functionInvoked = this.FunctionInvoked;
+        if (functionInvoked is null)
         {
-            this.FunctionInvoked.Invoke(this, eventArgs);
-            handled = true;
+            return null;
         }
-        return handled;
+
+        var eventArgs = new FunctionInvokedEventArgs(function, result);
+        functionInvoked.Invoke(this, eventArgs);
+        return eventArgs;
     }
 
+    internal PromptRenderingEventArgs? OnPromptRendering(KernelFunction function, SKContext context, AIRequestSettings? requestSettings)
+    {
+        var promptRendering = this.PromptRendering;
+        if (promptRendering is null)
+        {
+            return null;
+        }
+
+        var eventArgs = new PromptRenderingEventArgs(function, context, requestSettings);
+        promptRendering.Invoke(this, eventArgs);
+        return eventArgs;
+    }
+
+    internal PromptRenderedEventArgs? OnPromptRendered(KernelFunction function, SKContext context, string renderedPrompt)
+    {
+        var promptRendered = this.PromptRendered;
+        if (promptRendered is null)
+        {
+            return null;
+        }
+
+        var eventArgs = new PromptRenderedEventArgs(function, context, renderedPrompt);
+        promptRendered.Invoke(this, eventArgs);
+        return eventArgs;
+    }
     #endregion
-
 
     #region private ================================================================================
 
@@ -235,6 +263,4 @@ public sealed class Kernel
     private IAIServiceSelector? _serviceSelector;
 
     #endregion
-
-
 }

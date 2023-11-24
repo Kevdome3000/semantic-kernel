@@ -1,31 +1,30 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Reliability.Basic;
-using Microsoft.SemanticKernel.TemplateEngine;
-using TestSettings;
+using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
 
-#pragma warning disable xUnit1004 // Contains test methods used in manual verification. Disable warning for this file only.
+namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
+#pragma warning disable xUnit1004 // Contains test methods used in manual verification. Disable warning for this file only.
 
 public sealed class OpenAICompletionTests : IDisposable
 {
     private readonly KernelBuilder _kernelBuilder;
     private readonly IConfigurationRoot _configuration;
-
 
     public OpenAICompletionTests(ITestOutputHelper output)
     {
@@ -44,7 +43,6 @@ public sealed class OpenAICompletionTests : IDisposable
         this._kernelBuilder = new KernelBuilder();
         this._kernelBuilder.WithRetryBasic();
     }
-
 
     [Theory(Skip = "OpenAI will often throttle requests. This test is for manual verification.")]
     [InlineData("Where is the most famous fish market in Seattle, Washington, USA?", "Pike Place Market")]
@@ -66,12 +64,11 @@ public sealed class OpenAICompletionTests : IDisposable
         IReadOnlySKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
 
         // Act
-        FunctionResult actual = await target.RunAsync(plugins["ChatPlugin"]["Chat"], prompt);
+        FunctionResult actual = await target.InvokeAsync(plugins["ChatPlugin"]["Chat"], prompt);
 
         // Assert
         Assert.Contains(expectedAnswerContains, actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
-
 
     [Theory(Skip = "OpenAI will often throttle requests. This test is for manual verification.")]
     [InlineData("Where is the most famous fish market in Seattle, Washington, USA?", "Pike Place Market")]
@@ -87,12 +84,11 @@ public sealed class OpenAICompletionTests : IDisposable
         IReadOnlySKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
 
         // Act
-        FunctionResult actual = await target.RunAsync(plugins["ChatPlugin"]["Chat"], prompt);
+        FunctionResult actual = await target.InvokeAsync(plugins["ChatPlugin"]["Chat"], prompt);
 
         // Assert
         Assert.Contains(expectedAnswerContains, actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
-
 
     [Fact(Skip = "Skipping while we investigate issue with GitHub actions.")]
     public async Task CanUseOpenAiChatForTextCompletionAsync()
@@ -114,6 +110,37 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.Contains("Uranus", result.GetValue<string>(), StringComparison.InvariantCultureIgnoreCase);
     }
 
+    [Theory]
+    [InlineData(false, "Where is the most famous fish market in Seattle, Washington, USA?", "Pike Place")]
+    [InlineData(true, "Where is the most famous fish market in Seattle, Washington, USA?", "Pike Place")]
+    public async Task AzureOpenAIStreamingTestAsync(bool useChatModel, string prompt, string expectedAnswerContains)
+    {
+        // Arrange
+        var builder = this._kernelBuilder.WithLoggerFactory(this._logger);
+
+        if (useChatModel)
+        {
+            this.ConfigureAzureOpenAIChatAsText(builder);
+        }
+        else
+        {
+            this.ConfigureAzureOpenAI(builder);
+        }
+
+        Kernel target = builder.Build();
+
+        IReadOnlySKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
+
+        StringBuilder fullResult = new();
+        // Act
+        await foreach (var content in target.RunStreamingAsync<StreamingContent>(plugins["ChatPlugin"]["Chat"], prompt))
+        {
+            fullResult.Append(content);
+        };
+
+        // Assert
+        Assert.Contains(expectedAnswerContains, fullResult.ToString(), StringComparison.OrdinalIgnoreCase);
+    }
 
     [Theory]
     [InlineData(false, "Where is the most famous fish market in Seattle, Washington, USA?", "Pike Place")]
@@ -137,12 +164,11 @@ public sealed class OpenAICompletionTests : IDisposable
         IReadOnlySKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
 
         // Act
-        FunctionResult actual = await target.RunAsync(plugins["ChatPlugin"]["Chat"], prompt);
+        FunctionResult actual = await target.InvokeAsync(plugins["ChatPlugin"]["Chat"], prompt);
 
         // Assert
         Assert.Contains(expectedAnswerContains, actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
-
 
     // If the test fails, please note that SK retry logic may not be fully integrated into the underlying code using Azure SDK
     [Theory]
@@ -169,12 +195,11 @@ public sealed class OpenAICompletionTests : IDisposable
         IReadOnlySKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
 
         // Act
-        await Assert.ThrowsAsync<HttpOperationException>(() => target.RunAsync(plugins["SummarizePlugin"]["Summarize"], prompt));
+        await Assert.ThrowsAsync<HttpOperationException>(() => target.InvokeAsync(plugins["SummarizePlugin"]["Summarize"], prompt));
 
         // Assert
         Assert.Contains(expectedOutput, this._testOutputHelper.GetLogs(), StringComparison.OrdinalIgnoreCase);
     }
-
 
     // If the test fails, please note that SK retry logic may not be fully integrated into the underlying code using Azure SDK
     [Theory]
@@ -204,12 +229,11 @@ public sealed class OpenAICompletionTests : IDisposable
         IReadOnlySKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
 
         // Act
-        await Assert.ThrowsAsync<HttpOperationException>(() => target.RunAsync(plugins["SummarizePlugin"]["Summarize"], prompt));
+        await Assert.ThrowsAsync<HttpOperationException>(() => target.InvokeAsync(plugins["SummarizePlugin"]["Summarize"], prompt));
 
         // Assert
         Assert.Contains(expectedOutput, this._testOutputHelper.GetLogs(), StringComparison.OrdinalIgnoreCase);
     }
-
 
     [Fact]
     public async Task OpenAIHttpInvalidKeyShouldReturnErrorDetailAsync()
@@ -229,11 +253,10 @@ public sealed class OpenAICompletionTests : IDisposable
         IReadOnlySKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
 
         // Act and Assert
-        var ex = await Assert.ThrowsAsync<HttpOperationException>(() => target.RunAsync(plugins["SummarizePlugin"]["Summarize"], "Any"));
+        var ex = await Assert.ThrowsAsync<HttpOperationException>(() => target.InvokeAsync(plugins["SummarizePlugin"]["Summarize"], "Any"));
 
         Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)ex).StatusCode);
     }
-
 
     [Fact]
     public async Task AzureOpenAIHttpInvalidKeyShouldReturnErrorDetailAsync()
@@ -254,11 +277,10 @@ public sealed class OpenAICompletionTests : IDisposable
         IReadOnlySKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
 
         // Act and Assert
-        var ex = await Assert.ThrowsAsync<HttpOperationException>(() => target.RunAsync(plugins["SummarizePlugin"]["Summarize"], "Any"));
+        var ex = await Assert.ThrowsAsync<HttpOperationException>(() => target.InvokeAsync(plugins["SummarizePlugin"]["Summarize"], "Any"));
 
         Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)ex).StatusCode);
     }
-
 
     [Fact]
     public async Task AzureOpenAIHttpExceededMaxTokensShouldReturnErrorDetailAsync()
@@ -283,7 +305,6 @@ public sealed class OpenAICompletionTests : IDisposable
         await Assert.ThrowsAsync<HttpOperationException>(() => plugins["SummarizePlugin"]["Summarize"].InvokeAsync(target, string.Join('.', Enumerable.Range(1, 40000))));
     }
 
-
     [Theory(Skip = "This test is for manual verification.")]
     [InlineData("\n", AIServiceType.OpenAI)]
     [InlineData("\r\n", AIServiceType.OpenAI)]
@@ -306,12 +327,11 @@ public sealed class OpenAICompletionTests : IDisposable
         IReadOnlySKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
 
         // Act
-        FunctionResult actual = await target.RunAsync(plugins["ChatPlugin"]["Chat"], prompt);
+        FunctionResult actual = await target.InvokeAsync(plugins["ChatPlugin"]["Chat"], prompt);
 
         // Assert
         Assert.Contains(ExpectedAnswerContains, actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
-
 
     [Fact]
     public async Task AzureOpenAIInvokePromptTestAsync()
@@ -330,7 +350,6 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.Contains("Pike Place", actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
 
-
     [Fact]
     public async Task AzureOpenAIDefaultValueTestAsync()
     {
@@ -342,12 +361,11 @@ public sealed class OpenAICompletionTests : IDisposable
         IReadOnlySKPluginCollection plugin = TestHelpers.ImportSamplePlugins(target, "FunPlugin");
 
         // Act
-        FunctionResult actual = await target.RunAsync(plugin["FunPlugin"]["Limerick"]);
+        FunctionResult actual = await target.InvokeAsync(plugin["FunPlugin"]["Limerick"]);
 
         // Assert
         Assert.Contains("Bob", actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
-
 
     [Fact]
     public async Task MultipleServiceLoadPromptConfigTestAsync()
@@ -382,14 +400,13 @@ public sealed class OpenAICompletionTests : IDisposable
             "FishMarket2");
 
         // Act
-        await Assert.ThrowsAsync<HttpOperationException>(() => target.RunAsync(defaultFunc));
+        await Assert.ThrowsAsync<HttpOperationException>(() => target.InvokeAsync(defaultFunc));
 
-        FunctionResult azureResult = await target.RunAsync(azureFunc);
+        FunctionResult azureResult = await target.InvokeAsync(azureFunc);
 
         // Assert
         Assert.Contains("Pike Place", azureResult.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
-
 
     #region internals
 
@@ -398,19 +415,16 @@ public sealed class OpenAICompletionTests : IDisposable
 
     private readonly Dictionary<AIServiceType, Action<Kernel>> _serviceConfiguration = new();
 
-
     public void Dispose()
     {
         this.Dispose(true);
         GC.SuppressFinalize(this);
     }
 
-
     ~OpenAICompletionTests()
     {
         this.Dispose(false);
     }
-
 
     private void Dispose(bool disposing)
     {
@@ -420,7 +434,6 @@ public sealed class OpenAICompletionTests : IDisposable
             this._testOutputHelper.Dispose();
         }
     }
-
 
     private void ConfigureChatOpenAI(KernelBuilder kernelBuilder)
     {
@@ -437,7 +450,6 @@ public sealed class OpenAICompletionTests : IDisposable
             serviceId: openAIConfiguration.ServiceId,
             setAsDefault: true);
     }
-
 
     private void ConfigureAzureOpenAI(KernelBuilder kernelBuilder)
     {
@@ -456,8 +468,6 @@ public sealed class OpenAICompletionTests : IDisposable
             serviceId: azureOpenAIConfiguration.ServiceId,
             setAsDefault: true);
     }
-
-
     private void ConfigureInvalidAzureOpenAI(KernelBuilder kernelBuilder)
     {
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
@@ -473,7 +483,6 @@ public sealed class OpenAICompletionTests : IDisposable
             serviceId: $"invalid-{azureOpenAIConfiguration.ServiceId}",
             setAsDefault: true);
     }
-
 
     private void ConfigureAzureOpenAIChatAsText(KernelBuilder kernelBuilder)
     {
@@ -493,6 +502,4 @@ public sealed class OpenAICompletionTests : IDisposable
     }
 
     #endregion
-
-
 }

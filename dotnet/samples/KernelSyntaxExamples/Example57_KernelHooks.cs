@@ -11,13 +11,11 @@ using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
 using RepoUtils;
 
-
 // ReSharper disable once InconsistentNaming
 public static class Example57_KernelHooks
 {
     private static string? s_openAIModelId;
     private static string? s_openAIApiKey;
-
 
     public static async Task RunAsync()
     {
@@ -43,7 +41,6 @@ public static class Example57_KernelHooks
         await AfterInvokeCancellationAsync();
     }
 
-
     private static async Task GetUsageAsync()
     {
         Console.WriteLine("\n======== Get Usage Data ========\n");
@@ -64,19 +61,19 @@ public static class Example57_KernelHooks
 
         void MyPreHandler(object? sender, FunctionInvokingEventArgs e)
         {
-            Console.WriteLine($"{e.FunctionMetadata.PluginName}.{e.FunctionMetadata.Name} : Pre Execution Handler - Triggered");
+            Console.WriteLine($"{e.Function.GetMetadata().PluginName}.{e.Function.GetMetadata().Name} : Pre Execution Handler - Triggered");
         }
 
         void MyRemovedPreExecutionHandler(object? sender, FunctionInvokingEventArgs e)
         {
-            Console.WriteLine($"{e.FunctionMetadata.PluginName}.{e.FunctionMetadata.Name} : Pre Execution Handler - Should not trigger");
+            Console.WriteLine($"{e.Function.GetMetadata().PluginName}.{e.Function.GetMetadata().Name} : Pre Execution Handler - Should not trigger");
             e.Cancel();
         }
 
         void MyPostExecutionHandler(object? sender, FunctionInvokedEventArgs e)
         {
             var modelResults = e.Metadata["ModelResults"] as IReadOnlyCollection<ModelResult>;
-            Console.WriteLine($"{e.FunctionMetadata.PluginName}.{e.FunctionMetadata.Name} : Post Execution Handler - Total Tokens: {modelResults?.First().GetOpenAIChatResult().Usage.TotalTokens}");
+            Console.WriteLine($"{e.Function.GetMetadata().PluginName}.{e.Function.GetMetadata().Name} : Post Execution Handler - Total Tokens: {modelResults?.First().GetOpenAIChatResult().Usage.TotalTokens}");
         }
 
         kernel.FunctionInvoking += MyPreHandler;
@@ -87,10 +84,9 @@ public static class Example57_KernelHooks
         kernel.FunctionInvoking -= MyRemovedPreExecutionHandler;
 
         const string Input = "I missed the F1 final race";
-        var result = await kernel.RunAsync(excuseFunction, Input);
+        var result = await kernel.InvokeAsync(excuseFunction, Input);
         Console.WriteLine($"Function Result: {result.GetValue<string>()}");
     }
-
 
     private static async Task GetRenderedPromptAsync()
     {
@@ -103,59 +99,45 @@ public static class Example57_KernelHooks
                 apiKey: s_openAIApiKey!)
             .Build();
 
-        const string FunctionPrompt = "Write a random paragraph about: {{$input}}.";
+        const string FunctionPrompt = "Write a random paragraph about: {{$input}} in the style of {{$style}}.";
 
         var excuseFunction = kernel.CreateFunctionFromPrompt(
             FunctionPrompt,
             functionName: "Excuse",
             requestSettings: new OpenAIRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
-        void MyPreHandler(object? sender, FunctionInvokingEventArgs e)
+        void MyRenderingHandler(object? sender, PromptRenderingEventArgs e)
         {
-            Console.WriteLine($"{e.FunctionMetadata.PluginName}.{e.FunctionMetadata.Name} : Pre Execution Handler - Triggered");
-
-            if (e.TryGetRenderedPrompt(out var prompt))
-            {
-                // Get the rendered prompt when available
-                Console.WriteLine("Rendered Prompt:");
-                Console.WriteLine(prompt);
-
-                // Update the prompt
-                e.TryUpdateRenderedPrompt($"{prompt}. USE SHORT, CLEAR, COMPLETE SENTENCES.");
-            }
+            Console.WriteLine($"{e.Function.GetMetadata().PluginName}.{e.Function.GetMetadata().Name} : Prompt Rendering Handler - Triggered");
+            e.SKContext.Variables.Set("style", "Seinfeld");
         }
 
-        void MyPostHandler(object? sender, FunctionInvokedEventArgs e)
+        void MyRenderedHandler(object? sender, PromptRenderedEventArgs e)
         {
-            Console.WriteLine($"{e.FunctionMetadata.PluginName}.{e.FunctionMetadata.Name} : Post Execution Handler - Triggered");
+            Console.WriteLine($"{e.Function.GetMetadata().PluginName}.{e.Function.GetMetadata().Name} : Prompt Rendered Handler - Triggered");
+            e.RenderedPrompt += " USE SHORT, CLEAR, COMPLETE SENTENCES.";
 
-            // Will be false for non semantic functions
-            if (e.TryGetRenderedPrompt(out var prompt))
-            {
-                Console.WriteLine("Used Prompt:");
-                Console.WriteLine(prompt);
-            }
+            Console.WriteLine(e.RenderedPrompt);
         }
 
-        kernel.FunctionInvoking += MyPreHandler;
-        kernel.FunctionInvoked += MyPostHandler;
+        kernel.PromptRendering += MyRenderingHandler;
+        kernel.PromptRendered += MyRenderedHandler;
 
         const string Input = "I missed the F1 final race";
-        var result = await kernel.RunAsync(excuseFunction, Input);
+        var result = await kernel.InvokeAsync(excuseFunction, Input);
         Console.WriteLine($"Function Result: {result.GetValue<string>()}");
     }
-
 
     private static async Task ChangingResultAsync()
     {
         Console.WriteLine("\n======== Changing/Filtering Function Result ========\n");
 
         Kernel kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithOpenAIChatCompletionService(
-                modelId: s_openAIModelId!,
-                apiKey: s_openAIApiKey!)
-            .Build();
+           .WithLoggerFactory(ConsoleLogger.LoggerFactory)
+           .WithOpenAIChatCompletionService(
+               modelId: s_openAIModelId!,
+               apiKey: s_openAIApiKey!)
+           .Build();
 
         const string FunctionPrompt = "Write a paragraph about Handlers.";
 
@@ -176,22 +158,21 @@ public static class Example57_KernelHooks
 
         kernel.FunctionInvoked += MyChangeDataHandler;
 
-        var result = await kernel.RunAsync(writerFunction);
+        var result = await kernel.InvokeAsync(writerFunction);
 
         Console.WriteLine($"Function Result: {result.GetValue<string>()}");
     }
-
 
     private static async Task BeforeInvokeCancellationAsync()
     {
         Console.WriteLine("\n======== Cancelling Pipeline Execution - Invoking event ========\n");
 
         Kernel kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithOpenAIChatCompletionService(
-                modelId: s_openAIModelId!,
-                apiKey: s_openAIApiKey!)
-            .Build();
+           .WithLoggerFactory(ConsoleLogger.LoggerFactory)
+           .WithOpenAIChatCompletionService(
+               modelId: s_openAIModelId!,
+               apiKey: s_openAIApiKey!)
+           .Build();
 
         const string FunctionPrompt = "Write a paragraph about: Cancellation.";
 
@@ -203,7 +184,7 @@ public static class Example57_KernelHooks
         // Adding new inline handler to cancel/prevent function execution
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
-            Console.WriteLine($"{e.FunctionMetadata.PluginName}.{e.FunctionMetadata.Name} : FunctionInvoking - Cancelling all subsequent invocations");
+            Console.WriteLine($"{e.Function.GetMetadata().PluginName}.{e.Function.GetMetadata().Name} : FunctionInvoking - Cancelling all subsequent invocations");
             e.Cancel();
         };
 
@@ -214,21 +195,20 @@ public static class Example57_KernelHooks
             functionInvokedCount++;
         };
 
-        var result = await kernel.RunAsync(writerFunction);
+        var result = await kernel.InvokeAsync(writerFunction);
         Console.WriteLine($"Function Invocation Times: {functionInvokedCount}");
     }
-
 
     private static async Task AfterInvokeCancellationAsync()
     {
         Console.WriteLine("\n======== Cancelling Pipeline Execution - Invoked event ========\n");
 
         Kernel kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithOpenAIChatCompletionService(
-                modelId: s_openAIModelId!,
-                apiKey: s_openAIApiKey!)
-            .Build();
+           .WithLoggerFactory(ConsoleLogger.LoggerFactory)
+           .WithOpenAIChatCompletionService(
+               modelId: s_openAIModelId!,
+               apiKey: s_openAIApiKey!)
+           .Build();
 
         int functionInvokingCount = 0;
         int functionInvokedCount = 0;
@@ -249,7 +229,7 @@ public static class Example57_KernelHooks
             e.Cancel();
         };
 
-        var result = await kernel.RunAsync(secondFunction);
+        var result = await kernel.InvokeAsync(secondFunction);
         Console.WriteLine($"Function Invoked Times: {functionInvokedCount}");
         Console.WriteLine($"Function Invoking Times: {functionInvokingCount}");
     }

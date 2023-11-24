@@ -1,14 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-
-
-// ReSharper disable StringLiteralTypo
-
-namespace SemanticKernel.UnitTests.Functions;
-
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -16,12 +9,15 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.TemplateEngine;
+using Microsoft.SemanticKernel.Orchestration;
 using Moq;
 using Xunit;
 
+// ReSharper disable StringLiteralTypo
 
-public class SemanticFunctionTests
+namespace SemanticKernel.UnitTests.Functions;
+
+public class FunctionFromPromptTests
 {
     [Fact]
     public void ItProvidesAccessToFunctionsViaFunctionCollection()
@@ -38,7 +34,6 @@ public class SemanticFunctionTests
         Assert.True(kernel.Plugins.TryGetFunction("jk", "joker", out _));
         Assert.True(kernel.Plugins.TryGetFunction("JK", "JOKER", out _));
     }
-
 
     [Theory]
     [InlineData(null, "Assistant is a large language model.")]
@@ -65,12 +60,11 @@ public class SemanticFunctionTests
         var func = kernel.CreateFunctionFromPrompt("template", templateConfig, "pluginName");
 
         // Act
-        await kernel.RunAsync(func);
+        await kernel.InvokeAsync(func);
 
         // Assert
         mockTextCompletion.Verify(a => a.GetCompletionsAsync("template", It.Is<OpenAIRequestSettings>(c => c.ChatSystemPrompt == expectedSystemChatPrompt), It.IsAny<CancellationToken>()), Times.Once());
     }
-
 
     [Fact]
     public async Task ItUsesDefaultServiceWhenSpecifiedAsync()
@@ -93,13 +87,12 @@ public class SemanticFunctionTests
         var func = kernel.CreateFunctionFromPrompt("template", templateConfig, "pluginName");
 
         // Act
-        await kernel.RunAsync(func);
+        await kernel.InvokeAsync(func);
 
         // Assert
         mockTextCompletion1.Verify(a => a.GetCompletionsAsync("template", null, It.IsAny<CancellationToken>()), Times.Never());
         mockTextCompletion2.Verify(a => a.GetCompletionsAsync("template", null, It.IsAny<CancellationToken>()), Times.Once());
     }
-
 
     [Fact]
     public async Task ItUsesServiceIdWhenProvidedAsync()
@@ -123,13 +116,12 @@ public class SemanticFunctionTests
         var func = kernel.CreateFunctionFromPrompt("template", templateConfig, "pluginName");
 
         // Act
-        await kernel.RunAsync(func);
+        await kernel.InvokeAsync(func);
 
         // Assert
         mockTextCompletion1.Verify(a => a.GetCompletionsAsync("template", It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Once());
         mockTextCompletion2.Verify(a => a.GetCompletionsAsync("template", It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Never());
     }
-
 
     [Fact]
     public async Task ItFailsIfInvalidServiceIdIsProvidedAsync()
@@ -148,12 +140,11 @@ public class SemanticFunctionTests
         var func = kernel.CreateFunctionFromPrompt("template", templateConfig, "pluginName");
 
         // Act
-        var exception = await Assert.ThrowsAsync<SKException>(() => kernel.RunAsync(func));
+        var exception = await Assert.ThrowsAsync<SKException>(() => kernel.InvokeAsync(func));
 
         // Assert
         Assert.Equal("Service of type Microsoft.SemanticKernel.AI.TextCompletion.ITextCompletion and name service3 not registered.", exception.Message);
     }
-
 
     [Fact]
     public async Task RunAsyncHandlesPreInvocationAsync()
@@ -171,13 +162,12 @@ public class SemanticFunctionTests
         List<KernelFunction> functions = new();
 
         // Act
-        var result = await sut.RunAsync(function);
+        var result = await sut.InvokeAsync(function);
 
         // Assert
         Assert.Equal(1, invoked);
         mockTextCompletion.Verify(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
     }
-
 
     [Fact]
     public async Task RunAsyncHandlesPreInvocationWasCancelledAsync()
@@ -195,13 +185,12 @@ public class SemanticFunctionTests
         };
 
         // Act
-        var result = await sut.RunAsync(function, input);
+        var result = await sut.InvokeAsync(function, input);
 
         // Assert
         Assert.True(invoked);
         Assert.NotNull(result);
     }
-
 
     [Fact]
     public async Task RunAsyncHandlesPreInvocationCancelationDontRunSubsequentFunctionsInThePipelineAsync()
@@ -219,13 +208,12 @@ public class SemanticFunctionTests
         };
 
         // Act
-        var result = await sut.RunAsync(function);
+        var result = await sut.InvokeAsync(function);
 
         // Assert
         Assert.Equal(1, invoked);
         mockTextCompletion.Verify(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Never);
     }
-
 
     [Fact]
     public async Task RunAsyncPreInvocationCancelationDontTriggerInvokedHandlerAsync()
@@ -247,12 +235,11 @@ public class SemanticFunctionTests
         };
 
         // Act
-        var result = await sut.RunAsync(function);
+        var result = await sut.InvokeAsync(function);
 
         // Assert
         Assert.Equal(0, invoked);
     }
-
 
     [Fact]
     public async Task RunAsyncPreInvocationSkipDontTriggerInvokedHandlerAsync()
@@ -268,8 +255,7 @@ public class SemanticFunctionTests
         sut.FunctionInvoking += (sender, e) =>
         {
             invoking++;
-
-            if (e.FunctionMetadata.Name == "SkipMe")
+            if (e.Function.GetMetadata().Name == "SkipMe")
             {
                 e.Skip();
             }
@@ -277,19 +263,18 @@ public class SemanticFunctionTests
 
         sut.FunctionInvoked += (sender, e) =>
         {
-            invokedFunction = e.FunctionMetadata.Name;
+            invokedFunction = e.Function.GetMetadata().Name;
             invoked++;
         };
 
         // Act
-        var result = await sut.RunAsync(function);
+        var result = await sut.InvokeAsync(function);
 
         // Assert
         Assert.Equal(1, invoking);
         Assert.Equal(0, invoked);
         Assert.Equal("", invokedFunction);
     }
-
 
     [Fact]
     public async Task RunAsyncHandlesPostInvocationAsync()
@@ -307,13 +292,12 @@ public class SemanticFunctionTests
         };
 
         // Act
-        var result = await sut.RunAsync(function);
+        var result = await sut.InvokeAsync(function);
 
         // Assert
         Assert.Equal(1, invoked);
         mockTextCompletion.Verify(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
     }
-
 
     [Fact]
     public async Task RunAsyncChangeVariableInvokingHandlerAsync()
@@ -332,12 +316,11 @@ public class SemanticFunctionTests
         };
 
         // Act
-        await sut.RunAsync(function, originalInput);
+        await sut.InvokeAsync(function, originalInput);
 
         // Assert
         Assert.Equal(newInput, originalInput);
     }
-
 
     [Fact]
     public async Task RunAsyncChangeVariableInvokedHandlerAsync()
@@ -356,12 +339,36 @@ public class SemanticFunctionTests
         };
 
         // Act
-        await sut.RunAsync(function, originalInput);
+        await sut.InvokeAsync(function, originalInput);
 
         // Assert
         Assert.Equal(newInput, originalInput);
     }
 
+    [Fact]
+    public async Task InvokeStreamingAsyncCallsConnectorStreamingApiAsync()
+    {
+        // Arrange
+        var mockTextCompletion = this.SetupStreamingMocks<StreamingContent>(
+            new TestStreamingContent("chunk1"),
+            new TestStreamingContent("chunk2"));
+        var kernel = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
+        var prompt = "Write a simple phrase about UnitTests {{$input}}";
+        var sut = SKFunctionFactory.CreateFromPrompt(prompt);
+        var variables = new ContextVariables("importance");
+        var context = kernel.CreateNewContext(variables);
+
+        var chunkCount = 0;
+        // Act
+        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContent>(kernel, context))
+        {
+            chunkCount++;
+        }
+
+        // Assert
+        Assert.Equal(2, chunkCount);
+        mockTextCompletion.Verify(m => m.GetStreamingContentAsync<StreamingContent>(It.IsIn("Write a simple phrase about UnitTests importance"), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
+    }
 
     private (Mock<ITextResult> textResultMock, Mock<ITextCompletion> textCompletionMock) SetupMocks(string? completionResult = null)
     {
@@ -370,13 +377,48 @@ public class SemanticFunctionTests
 
         var mockTextCompletion = new Mock<ITextCompletion>();
         mockTextCompletion.Setup(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<ITextResult> { mockTextResult.Object });
-
         return (mockTextResult, mockTextCompletion);
     }
 
-
-    private static MethodInfo Method(Delegate method)
+    private Mock<ITextCompletion> SetupStreamingMocks<T>(params T[] completionResults)
     {
-        return method.Method;
+        var mockTextCompletion = new Mock<ITextCompletion>();
+        mockTextCompletion.Setup(m => m.GetStreamingContentAsync<T>(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).Returns(this.ToAsyncEnumerable(completionResults));
+
+        return mockTextCompletion;
+    }
+
+    private sealed class TestStreamingContent : StreamingContent
+    {
+        private readonly string _content;
+
+        public TestStreamingContent(string content) : base(null)
+        {
+            this._content = content;
+        }
+
+        public override int ChoiceIndex => 0;
+
+        public override byte[] ToByteArray()
+        {
+            return Array.Empty<byte>();
+        }
+
+        public override string ToString()
+        {
+            return this._content;
+        }
+    }
+
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+#pragma warning disable IDE1006 // Naming Styles
+    private async IAsyncEnumerable<T> ToAsyncEnumerable<T>(IEnumerable<T> enumeration)
+#pragma warning restore IDE1006 // Naming Styles
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+    {
+        foreach (var enumerationItem in enumeration)
+        {
+            yield return enumerationItem;
+        }
     }
 }

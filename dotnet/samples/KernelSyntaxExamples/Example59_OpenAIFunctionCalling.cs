@@ -99,7 +99,7 @@ public static class Example59_OpenAIFunctionCalling
             // you can invoke it using the following code.
             if (kernel.Plugins.TryGetFunctionAndContext(functionResponse, out KernelFunction? func, out ContextVariables? context))
             {
-                var result = (await kernel.RunAsync(func, context)).GetValue<object>();
+                var result = (await kernel.InvokeAsync(func, context)).GetValue<object>();
 
                 string? resultContent = null;
 
@@ -202,7 +202,7 @@ public static class Example59_OpenAIFunctionCalling
                 // you can invoke it using the following code.
                 if (kernel.Plugins.TryGetFunctionAndContext(functionResponse, out KernelFunction? func, out ContextVariables? context))
                 {
-                    var functionResult = await kernel.RunAsync(func, context);
+                    var functionResult = await kernel.InvokeAsync(func, context);
 
                     var result = functionResult.GetValue<object>();
 

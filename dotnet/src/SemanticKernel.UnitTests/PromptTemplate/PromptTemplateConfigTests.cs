@@ -1,14 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.UnitTests.TemplateEngine;
-
 using System.Linq;
 using System.Text.Json;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.TemplateEngine;
 using Xunit;
 
+namespace SemanticKernel.UnitTests.PromptTemplate;
 
 public class PromptTemplateConfigTests
 {
@@ -33,7 +32,6 @@ public class PromptTemplateConfigTests
         Assert.Equal("Assistant is a large language model.", requestSettings.ChatSystemPrompt);
     }
 
-
     [Fact]
     public void DeserializingExpectChatSystemPromptToExists()
     {
@@ -55,7 +53,6 @@ public class PromptTemplateConfigTests
         Assert.NotNull(requestSettings.ChatSystemPrompt);
         Assert.Equal("I am a prompt", requestSettings.ChatSystemPrompt);
     }
-
 
     [Fact]
     public void DeserializingExpectMultipleModels()
@@ -105,7 +102,6 @@ public class PromptTemplateConfigTests
         Assert.NotNull(promptTemplateConfig.ModelSettings);
         Assert.Equal(2, promptTemplateConfig.ModelSettings.Count);
     }
-
 
     [Fact]
     public void DeserializingExpectCompletion()

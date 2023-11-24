@@ -1,17 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants.Internal;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Extensions;
-using Models;
-using Orchestration;
+using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
+using Microsoft.SemanticKernel.Experimental.Assistants.Models;
+using Microsoft.SemanticKernel.Orchestration;
 
+namespace Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 
 /// <summary>
 /// Represents an execution run on a thread.
@@ -19,13 +18,13 @@ using Orchestration;
 internal sealed class ChatRun
 {
     /// <inheritdoc/>
-    public string Id => _model.Id;
+    public string Id => this._model.Id;
 
     /// <inheritdoc/>
-    public string AssistantId => _model.AssistantId;
+    public string AssistantId => this._model.AssistantId;
 
     /// <inheritdoc/>
-    public string ThreadId => _model.ThreadId;
+    public string ThreadId => this._model.ThreadId;
 
     private const string ActionState = "requires_action";
     private const string FailedState = "failed";
@@ -35,13 +34,12 @@ internal sealed class ChatRun
         new(StringComparer.OrdinalIgnoreCase)
         {
             "queued",
-            "in_progress"
+            "in_progress",
         };
 
     private readonly OpenAIRestContext _restContext;
     private ThreadRunModel _model;
     private readonly Kernel _kernel;
-
 
     /// <inheritdoc/>
     public async Task<IList<string>> GetResultAsync(CancellationToken cancellationToken = default)
@@ -50,30 +48,30 @@ internal sealed class ChatRun
         await PollRunStatus().ConfigureAwait(false);
 
         // Retrieve steps
-        var steps = await _restContext.GetRunStepsAsync(ThreadId, Id, cancellationToken).ConfigureAwait(false);
+        var steps = await this._restContext.GetRunStepsAsync(this.ThreadId, this.Id, cancellationToken).ConfigureAwait(false);
 
         // Is tool action required?
-        if (ActionState.Equals(_model.Status, StringComparison.OrdinalIgnoreCase))
+        if (ActionState.Equals(this._model.Status, StringComparison.OrdinalIgnoreCase))
         {
             // Execute functions in parallel and post results at once.
-            var tasks = steps.Data.SelectMany(step => ExecuteStep(step, cancellationToken)).ToArray();
+            var tasks = steps.Data.SelectMany(step => this.ExecuteStep(step, cancellationToken)).ToArray();
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
             var results = tasks.Select(t => t.Result).ToArray();
-            await _restContext.AddToolOutputsAsync(ThreadId, Id, results, cancellationToken).ConfigureAwait(false);
+            await this._restContext.AddToolOutputsAsync(this.ThreadId, this.Id, results, cancellationToken).ConfigureAwait(false);
 
             // Refresh run as it goes back into pending state after posting function results.
-            _model = await _restContext.GetRunAsync(ThreadId, Id, cancellationToken).ConfigureAwait(false);
+            this._model = await this._restContext.GetRunAsync(this.ThreadId, this.Id, cancellationToken).ConfigureAwait(false);
             await PollRunStatus().ConfigureAwait(false);
 
             // Refresh steps to retrieve additional messages.
-            steps = await _restContext.GetRunStepsAsync(ThreadId, Id, cancellationToken).ConfigureAwait(false);
+            steps = await this._restContext.GetRunStepsAsync(this.ThreadId, this.Id, cancellationToken).ConfigureAwait(false);
         }
 
         // Did fail?
-        if (FailedState.Equals(_model.Status, StringComparison.OrdinalIgnoreCase))
+        if (FailedState.Equals(this._model.Status, StringComparison.OrdinalIgnoreCase))
         {
-            throw new SKException($"Unexpected failure processing run: {Id}: {_model.LastError?.Message ?? "Unknown"}");
+            throw new SKException($"Unexpected failure processing run: {this.Id}: {this._model.LastError?.Message ?? "Unknown"}");
         }
 
         var messageIds =
@@ -86,13 +84,13 @@ internal sealed class ChatRun
 
         async Task PollRunStatus()
         {
-            while (s_pollingStates.Contains(_model.Status))
+            while (s_pollingStates.Contains(this._model.Status))
             {
                 await Task.Delay(s_pollingInterval, cancellationToken).ConfigureAwait(false);
 
                 try
                 {
-                    _model = await _restContext.GetRunAsync(ThreadId, Id, cancellationToken).ConfigureAwait(false);
+                    this._model = await this._restContext.GetRunAsync(this.ThreadId, this.Id, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception exception) when (!exception.IsCriticalException())
                 {
@@ -102,7 +100,6 @@ internal sealed class ChatRun
         }
     }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatRun"/> class.
     /// </summary>
@@ -111,11 +108,10 @@ internal sealed class ChatRun
         Kernel kernel,
         OpenAIRestContext restContext)
     {
-        _model = model;
-        _kernel = kernel;
-        _restContext = restContext;
+        this._model = model;
+        this._kernel = kernel;
+        this._restContext = restContext;
     }
-
 
     private IEnumerable<Task<ToolResultModel>> ExecuteStep(ThreadRunStepModel step, CancellationToken cancellationToken)
     {
@@ -125,11 +121,10 @@ internal sealed class ChatRun
             foreach (var toolCall in step.StepDetails.ToolCalls)
             {
                 // Run function
-                yield return ProcessFunctionStepAsync(toolCall.Id, toolCall.Function, cancellationToken);
+                yield return this.ProcessFunctionStepAsync(toolCall.Id, toolCall.Function, cancellationToken);
             }
         }
     }
-
 
     private async Task<ToolResultModel> ProcessFunctionStepAsync(string callId, ThreadRunStepModel.FunctionDetailsModel functionDetails, CancellationToken cancellationToken)
     {
@@ -139,26 +134,24 @@ internal sealed class ChatRun
             new ToolResultModel
             {
                 CallId = callId,
-                Output = result
+                Output = result,
             };
 
         async Task<string> InvokeFunctionCallAsync()
         {
-            var function = _kernel.GetAssistantTool(functionDetails.Name);
+            var function = this._kernel.GetAssistantTool(functionDetails.Name);
 
             var variables = new ContextVariables();
-
             if (!string.IsNullOrWhiteSpace(functionDetails.Arguments))
             {
                 var arguments = JsonSerializer.Deserialize<Dictionary<string, object>>(functionDetails.Arguments)!;
-
                 foreach (var argument in arguments)
                 {
                     variables[argument.Key] = argument.Value.ToString();
                 }
             }
 
-            var results = await _kernel.RunAsync(function, variables, cancellationToken).ConfigureAwait(false);
+            var results = await this._kernel.InvokeAsync(function, variables, cancellationToken).ConfigureAwait(false);
 
             return results.GetValue<string>() ?? string.Empty;
         }

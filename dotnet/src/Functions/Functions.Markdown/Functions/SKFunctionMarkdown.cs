@@ -1,16 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Functions.Markdown.Functions;
-
 using System.IO;
 using System.Reflection;
 using System.Text.Json;
-using AI;
 using Markdig.Syntax;
 using Microsoft.Extensions.Logging;
-using Models;
-using TemplateEngine;
+using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.Models;
 
+namespace Microsoft.SemanticKernel.Functions.Markdown.Functions;
 
 /// <summary>
 /// Factory methods for creating <seealso cref="KernelFunction"/> instances.
@@ -48,7 +46,6 @@ public static class SKFunctionMarkdown
             loggerFactory);
     }
 
-
     /// <summary>
     /// Creates an <see cref="KernelFunction"/> instance for a semantic function using the specified markdown text.
     /// </summary>
@@ -71,9 +68,7 @@ public static class SKFunctionMarkdown
             loggerFactory);
     }
 
-
     #region Private methods
-
     internal static PromptFunctionModel CreateFromPromptMarkdown(string text, string functionName)
     {
         var promptFunctionModel = new PromptFunctionModel()
@@ -82,7 +77,6 @@ public static class SKFunctionMarkdown
         };
         var document = Markdig.Markdown.Parse(text);
         var enumerator = document.GetEnumerator();
-
         while (enumerator.MoveNext())
         {
             if (enumerator.Current is FencedCodeBlock codeBlock)
@@ -95,7 +89,6 @@ public static class SKFunctionMarkdown
                 {
                     var modelSettings = codeBlock.Lines.ToString();
                     var requestSettings = JsonSerializer.Deserialize<AIRequestSettings>(modelSettings);
-
                     if (requestSettings is not null)
                     {
                         promptFunctionModel.ModelSettings.Add(requestSettings);
@@ -106,8 +99,5 @@ public static class SKFunctionMarkdown
 
         return promptFunctionModel;
     }
-
     #endregion
-
-
 }

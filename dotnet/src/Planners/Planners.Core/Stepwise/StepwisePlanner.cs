@@ -1,9 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using NS of Plan
-namespace Microsoft.SemanticKernel.Planning;
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -15,15 +11,16 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using AI.ChatCompletion;
-using AI.TextCompletion;
-using Extensions.Logging;
-using Orchestration;
-using Services;
-using TemplateEngine;
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Services;
 
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - Using NS of Plan
+namespace Microsoft.SemanticKernel.Planning;
 #pragma warning restore IDE0130
-
 
 /// <summary>
 /// A planner that creates a Stepwise plan using Mrkl systems.
@@ -70,7 +67,6 @@ public class StepwisePlanner
         this._logger = this._kernel.LoggerFactory.CreateLogger(this.GetType());
     }
 
-
     /// <summary>Creates a plan for the specified goal.</summary>
     /// <param name="goal">The goal for which a plan should be created.</param>
     /// <returns>The created plan.</returns>
@@ -103,7 +99,6 @@ public class StepwisePlanner
         return task.GetAwaiter().GetResult();
 #pragma warning restore VSTHRD002
     }
-
 
     /// <summary>
     /// Execute a plan
@@ -215,7 +210,6 @@ public class StepwisePlanner
 
                 lastStep.OriginalResponse += step.OriginalResponse;
                 step = lastStep;
-
                 if (chatHistory.Count > startingMessageCount)
                 {
                     chatHistory.RemoveAt(chatHistory.Count - 1);
@@ -290,7 +284,6 @@ public class StepwisePlanner
 
             // If final answer is available, we're done, return the context
             var finalContext = TryGetFinalAnswer(nextStep, i + 1, context);
-
             if (finalContext is not null)
             {
                 return finalContext;
@@ -327,7 +320,6 @@ public class StepwisePlanner
         return context;
     }
 
-
     #region setup helpers
 
     private async Task<ChatHistory> InitializeChatHistoryAsync(Kernel kernel, ChatHistory chatHistory, IAIService aiService, string question, SKContext context, CancellationToken cancellationToken)
@@ -347,11 +339,9 @@ public class StepwisePlanner
         return chatHistory;
     }
 
-
     private ChatHistory CreateChatHistory(Kernel kernel, out IAIService aiService)
     {
         ChatHistory chatHistory;
-
         if (TryGetChatCompletion(this._kernel, out var chatCompletion))
         {
             chatHistory = chatCompletion.CreateNewChat();
@@ -367,7 +357,6 @@ public class StepwisePlanner
         return chatHistory;
     }
 
-
     private async Task<string> GetUserManualAsync(Kernel kernel, string question, SKContext context, CancellationToken cancellationToken)
     {
         var descriptions = await this._kernel.Plugins.GetFunctionsManualAsync(this.Config, question, this._logger, cancellationToken).ConfigureAwait(false);
@@ -376,16 +365,13 @@ public class StepwisePlanner
         return await promptTemplate.RenderAsync(kernel, context, cancellationToken).ConfigureAwait(false);
     }
 
-
     private Task<string> GetUserQuestionAsync(Kernel kernel, SKContext context, CancellationToken cancellationToken)
         => this._promptTemplateFactory.Create(this._questionTemplate, new PromptTemplateConfig()).RenderAsync(kernel, context, cancellationToken);
-
 
     private Task<string> GetSystemMessageAsync(Kernel kernel, SKContext context, CancellationToken cancellationToken)
         => this._promptTemplateFactory.Create(this._promptTemplate, new PromptTemplateConfig()).RenderAsync(kernel, context, cancellationToken);
 
     #endregion setup helpers
-
 
     #region execution helpers
 
@@ -399,7 +385,6 @@ public class StepwisePlanner
         string? originalThought = null;
 
         var tokenCount = chatHistory.GetTokenCount();
-
         while (tokenCount >= this.Config.MaxPromptTokens && chatHistory.Count > (skipStart + skipCount + messagesToKeep))
         {
             originalThought = $"{Thought} {stepsTaken.FirstOrDefault()?.Thought}";
@@ -422,7 +407,6 @@ public class StepwisePlanner
 
         return this.GetCompletionAsync(aiService, reducedChatHistory, stepsTaken.Count == 0, token);
     }
-
 
     private async Task<string> GetCompletionAsync(IAIService aiService, ChatHistory chatHistory, bool addThought, CancellationToken token)
     {
@@ -455,7 +439,6 @@ public class StepwisePlanner
 
         throw new SKException("No AIService available for getting completions.");
     }
-
 
     /// <summary>
     /// Parse LLM response into a SystemStep during execution
@@ -509,11 +492,9 @@ public class StepwisePlanner
         if (actionIndex != -1)
         {
             int jsonStartIndex = input.IndexOf("{", actionIndex, StringComparison.OrdinalIgnoreCase);
-
             if (jsonStartIndex != -1)
             {
                 int jsonEndIndex = input.Substring(jsonStartIndex).LastIndexOf("}", StringComparison.OrdinalIgnoreCase);
-
                 if (jsonEndIndex != -1)
                 {
                     string json = input.Substring(jsonStartIndex, jsonEndIndex + 1);
@@ -539,11 +520,9 @@ public class StepwisePlanner
         return result;
     }
 
-
     private async Task<string?> InvokeActionAsync(string actionName, Dictionary<string, string> actionVariables, CancellationToken cancellationToken)
     {
         FunctionUtils.SplitPluginFunctionName(actionName, out var pluginName, out var functionName);
-
         if (string.IsNullOrEmpty(functionName))
         {
             this._logger?.LogDebug("Attempt to invoke action {Action} failed", actionName);
@@ -564,13 +543,12 @@ public class StepwisePlanner
             string? result = null;
 
             var vars = this.CreateActionContextVariables(actionVariables);
-            var functionResult = await this._kernel.RunAsync(targetFunction, vars, cancellationToken).ConfigureAwait(false);
+            var functionResult = await this._kernel.InvokeAsync(targetFunction, vars, cancellationToken).ConfigureAwait(false);
             var resultObject = functionResult.GetValue<object>();
 
             if (resultObject is not null)
             {
                 var converter = TypeDescriptor.GetConverter(resultObject);
-
                 if (converter.CanConvertTo(typeof(string)))
                 {
                     result = converter.ConvertToString(resultObject);
@@ -588,11 +566,9 @@ public class StepwisePlanner
         }
     }
 
-
     private ContextVariables CreateActionContextVariables(Dictionary<string, string> actionVariables)
     {
         ContextVariables vars = new();
-
         if (actionVariables != null)
         {
             foreach (var kvp in actionVariables)
@@ -606,13 +582,11 @@ public class StepwisePlanner
 
     #endregion execution helpers
 
-
     private static PromptTemplateConfig LoadPromptConfigFromResource()
     {
         string promptConfigString = EmbeddedResource.Read("Stepwise.Plugin.StepwiseStep.config.json");
         return !string.IsNullOrEmpty(promptConfigString) ? PromptTemplateConfig.FromJson(promptConfigString) : new PromptTemplateConfig();
     }
-
 
     private static bool TryGetChatCompletion(Kernel kernel, [NotNullWhen(true)] out IChatCompletion? chatCompletion)
     {
@@ -631,7 +605,6 @@ public class StepwisePlanner
         return false;
     }
 
-
     private static void AddExecutionStatsToContext(List<SystemStep> stepsTaken, SKContext context, int iterations)
     {
         context.Variables.Set("stepCount", stepsTaken.Count.ToString(CultureInfo.InvariantCulture));
@@ -639,7 +612,6 @@ public class StepwisePlanner
         context.Variables.Set("iterations", iterations.ToString(CultureInfo.InvariantCulture));
 
         Dictionary<string, int> actionCounts = new();
-
         foreach (var step in stepsTaken)
         {
             if (string.IsNullOrEmpty(step.Action)) { continue; }
@@ -655,7 +627,6 @@ public class StepwisePlanner
 
         context.Variables.Set("functionCount", $"{functionCallCountStr} ({functionCallListWithCounts})");
     }
-
 
     #region private
 
@@ -739,6 +710,4 @@ public class StepwisePlanner
     private const string NoFinalAnswerFoundMessage = "Result not found, review 'stepsTaken' to see what happened.";
 
     #endregion private
-
-
 }

@@ -1,13 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Functions.Markdown.Extensions;
-
 using System.IO;
-using Functions;
 using Microsoft.Extensions.Logging;
-using Models;
-using TemplateEngine;
+using Microsoft.SemanticKernel.Functions.Markdown.Functions;
+using Microsoft.SemanticKernel.Models;
 
+namespace Microsoft.SemanticKernel.Functions.Markdown.Extensions;
 
 /// <summary>
 /// Class for extensions methods to define functions using prompt markdown format.
@@ -33,7 +31,6 @@ public static class KernelFunctionsMarkdownExtensions
         functionName ??= Path.GetFileNameWithoutExtension(resourceName);
         return SKFunctionMarkdown.FromPromptMarkdownResource(resourceName, functionName, pluginName, promptTemplateFactory, kernel.LoggerFactory);
     }
-
 
     /// <summary>
     /// Creates an <see cref="KernelFunction"/> instance for a semantic function using the specified markdown text.

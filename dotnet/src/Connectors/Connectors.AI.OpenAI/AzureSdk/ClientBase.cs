@@ -20,7 +20,8 @@ using Prompt;
 using SemanticKernel.AI;
 using SemanticKernel.AI.ChatCompletion;
 using SemanticKernel.AI.TextCompletion;
-using ChatMessage = SemanticKernel.AI.ChatCompletion.ChatMessage;
+using ChatMessage = Azure.AI.OpenAI.ChatMessage;
+
 
 #pragma warning disable CA2208 // Instantiate argument exceptions correctly
 
@@ -103,7 +104,7 @@ public abstract class ClientBase
         AIRequestSettings? requestSettings,
         CancellationToken cancellationToken = default)
     {
-        OpenAIRequestSettings textRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings, OpenAIRequestSettings.DefaultTextMaxTokens);
+        var textRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings, OpenAIRequestSettings.DefaultTextMaxTokens);
 
         ValidateMaxTokens(textRequestSettings.MaxTokens);
         var options = CreateCompletionsOptions(text, textRequestSettings);
@@ -141,7 +142,7 @@ public abstract class ClientBase
         AIRequestSettings? requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        OpenAIRequestSettings textRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings, OpenAIRequestSettings.DefaultTextMaxTokens);
+        var textRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings, OpenAIRequestSettings.DefaultTextMaxTokens);
 
         ValidateMaxTokens(textRequestSettings.MaxTokens);
 
@@ -150,13 +151,72 @@ public abstract class ClientBase
         Response<StreamingCompletions>? response = await RunRequestAsync<Response<StreamingCompletions>>(
             () => Client.GetCompletionsStreamingAsync(DeploymentOrModelName, options, cancellationToken)).ConfigureAwait(false);
 
-        using StreamingCompletions streamingChatCompletions = response.Value;
+        using var streamingChatCompletions = response.Value;
 
-        await foreach (StreamingChoice choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken))
+        await foreach (var choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken))
         {
             yield return new TextStreamingResult(streamingChatCompletions, choice);
         }
     }
+
+
+    protected private async IAsyncEnumerable<T> InternalGetTextStreamingUpdatesAsync<T>(
+        string prompt,
+        AIRequestSettings? requestSettings,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var textRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings, OpenAIRequestSettings.DefaultTextMaxTokens);
+
+        ValidateMaxTokens(textRequestSettings.MaxTokens);
+
+        var options = CreateCompletionsOptions(prompt, textRequestSettings);
+
+        Response<StreamingCompletions>? response = await RunRequestAsync<Response<StreamingCompletions>>(
+            () => Client.GetCompletionsStreamingAsync(DeploymentOrModelName, options, cancellationToken)).ConfigureAwait(false);
+
+        using var streamingChatCompletions = response.Value;
+        Dictionary<string, object> responseMetadata = GetResponseMetadata(streamingChatCompletions);
+
+        var choiceIndex = 0;
+
+        await foreach (var choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken).ConfigureAwait(false))
+        {
+            await foreach (var update in choice.GetTextStreaming(cancellationToken).ConfigureAwait(false))
+            {
+                // If the provided T is a string, return the completion as is
+                if (typeof(T) == typeof(string))
+                {
+                    yield return (T)(object)update;
+
+                    continue;
+                }
+
+                // If the provided T is an specialized class of StreamingContent interface
+                if (typeof(T) == typeof(StreamingTextContent) ||
+                    typeof(T) == typeof(StreamingContent))
+                {
+                    yield return (T)(object)new StreamingTextContent(update, choiceIndex, update, responseMetadata);
+
+                    continue;
+                }
+
+                throw new NotSupportedException($"Type {typeof(T)} is not supported");
+            }
+            choiceIndex++;
+        }
+    }
+
+
+    private static Dictionary<string, object> GetResponseMetadata(StreamingCompletions streamingChatCompletions) => new()
+    {
+        { $"{nameof(StreamingCompletions)}.{nameof(streamingChatCompletions.PromptFilterResults)}", streamingChatCompletions.PromptFilterResults }
+    };
+
+
+    private static Dictionary<string, object> GetResponseMetadata(StreamingChatCompletions streamingChatCompletions) => new()
+    {
+        { $"{nameof(StreamingChatCompletions)}.{nameof(streamingChatCompletions.PromptFilterResults)}", streamingChatCompletions.PromptFilterResults }
+    };
 
 
     /// <summary>
@@ -207,7 +267,7 @@ public abstract class ClientBase
     {
         Verify.NotNull(chat);
 
-        OpenAIRequestSettings chatRequestSettings = (OpenAIRequestSettings)(requestSettings is FunctionCallRequestSettings
+        var chatRequestSettings = (OpenAIRequestSettings)(requestSettings is FunctionCallRequestSettings
             ? requestSettings
             : OpenAIRequestSettings.FromRequestSettings(requestSettings));
 
@@ -257,13 +317,13 @@ public abstract class ClientBase
     /// <param name="cancellationToken">Async cancellation token</param>
     /// <returns>Streaming of generated chat message in string format</returns>
     protected private async IAsyncEnumerable<IChatStreamingResult> InternalGetChatStreamingResultsAsync(
-        IEnumerable<ChatMessage> chat,
+        IEnumerable<SemanticKernel.AI.ChatCompletion.ChatMessage> chat,
         AIRequestSettings? requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(chat);
 
-        OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
+        var chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
 
         ValidateMaxTokens(chatRequestSettings.MaxTokens);
 
@@ -282,6 +342,59 @@ public abstract class ClientBase
         await foreach (var choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken).ConfigureAwait(false))
         {
             yield return new ChatStreamingResult(response.Value, choice);
+        }
+    }
+
+
+    protected private async IAsyncEnumerable<T> InternalGetChatStreamingUpdatesAsync<T>(
+        IEnumerable<SemanticKernel.AI.ChatCompletion.ChatMessage> chat,
+        AIRequestSettings? requestSettings,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(chat);
+
+        var chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
+
+        ValidateMaxTokens(chatRequestSettings.MaxTokens);
+
+        var options = CreateChatCompletionsOptions(chatRequestSettings, chat);
+
+        Response<StreamingChatCompletions>? response = await RunRequestAsync<Response<StreamingChatCompletions>>(
+            () => Client.GetChatCompletionsStreamingAsync(DeploymentOrModelName, options, cancellationToken)).ConfigureAwait(false);
+
+        if (response is null)
+        {
+            throw new SKException("Chat completions null response");
+        }
+
+        using var streamingChatCompletions = response.Value;
+        Dictionary<string, object> responseMetadata = GetResponseMetadata(streamingChatCompletions);
+
+        var choiceIndex = 0;
+
+        await foreach (var choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken).ConfigureAwait(false))
+        {
+            await foreach (ChatMessage chatMessage in choice.GetMessageStreaming(cancellationToken).ConfigureAwait(false))
+            {
+                if (typeof(T) == typeof(string))
+                {
+                    yield return (T)(object)chatMessage.Content;
+
+                    continue;
+                }
+
+                // If the provided T is an specialized class of StreamingResultChunk interface
+                if (typeof(T) == typeof(StreamingChatContent) ||
+                    typeof(T) == typeof(StreamingContent))
+                {
+                    yield return (T)(object)new StreamingChatContent(chatMessage, choiceIndex, responseMetadata);
+
+                    continue;
+                }
+
+                throw new NotSupportedException($"Type {typeof(T)} is not supported");
+            }
+            choiceIndex++;
         }
     }
 
@@ -308,7 +421,7 @@ public abstract class ClientBase
         CancellationToken cancellationToken = default)
     {
 
-        ChatHistory chat = PrepareChatHistory(text, requestSettings, out OpenAIRequestSettings chatSettings);
+        ChatHistory chat = PrepareChatHistory(text, requestSettings, out var chatSettings);
 
         return (await InternalGetChatResultsAsync(chat, chatSettings, cancellationToken).ConfigureAwait(false))
             .OfType<ITextResult>()
@@ -322,7 +435,7 @@ public abstract class ClientBase
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
 
-        ChatHistory chat = PrepareChatHistory(text, requestSettings, out OpenAIRequestSettings chatSettings);
+        ChatHistory chat = PrepareChatHistory(text, requestSettings, out var chatSettings);
 
         IAsyncEnumerable<IChatStreamingResult> chatCompletionStreamingResults = InternalGetChatStreamingResultsAsync(chat, chatSettings, cancellationToken);
 
@@ -346,7 +459,7 @@ public abstract class ClientBase
     {
         settings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
 
-        if (XmlPromptParser.TryParse(text, out var nodes) && ChatPromptParser.TryParse(nodes, out var chatHistory))
+        if (XmlPromptParser.TryParse(text, out List<PromptNode> nodes) && ChatPromptParser.TryParse(nodes, out var chatHistory))
         {
             return InternalCreateNewChat(chatHistory);
         }
@@ -396,7 +509,7 @@ public abstract class ClientBase
     }
 
 
-    internal static ChatCompletionsOptions CreateChatCompletionsOptions(OpenAIRequestSettings requestSettings, IEnumerable<ChatMessage> chatHistory)
+    internal static ChatCompletionsOptions CreateChatCompletionsOptions(OpenAIRequestSettings requestSettings, IEnumerable<SemanticKernel.AI.ChatCompletion.ChatMessage> chatHistory)
     {
         if (requestSettings.ResultsPerPrompt is < 1 or > MaxResultsPerPrompt)
         {
@@ -444,11 +557,11 @@ public abstract class ClientBase
         {
             var azureMessage = new Azure.AI.OpenAI.ChatMessage(new ChatRole(message.Role.Label), message.Content);
 
-            if (message.AdditionalProperties?.TryGetValue(NameProperty, out string? name) is true)
+            if (message.AdditionalProperties?.TryGetValue(NameProperty, out var name) is true)
             {
                 azureMessage.Name = name;
 
-                if (message.AdditionalProperties?.TryGetValue(ArgumentsProperty, out string? arguments) is true)
+                if (message.AdditionalProperties?.TryGetValue(ArgumentsProperty, out var arguments) is true)
                 {
                     azureMessage.FunctionCall = new FunctionCall(name, arguments);
                 }

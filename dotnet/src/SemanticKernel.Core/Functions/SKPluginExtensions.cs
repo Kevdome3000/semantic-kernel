@@ -2,24 +2,19 @@
 
 #pragma warning disable IDE0130
 
-namespace Microsoft.SemanticKernel;
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
-using AI;
-using Extensions.Logging;
-using TemplateEngine;
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.AI;
 
+namespace Microsoft.SemanticKernel;
 
 /// <summary>Provides extension methods for working with <see cref="SKPlugin"/>s.</summary>
 public static class SKPluginExtensions
 {
-
-
     #region AddFunctionFromMethod
-
     /// <summary>
     /// Creates an <see cref="KernelFunction"/> instance for a method, specified via a delegate, and adds it to the <see cref="SKPlugin"/>.
     /// </summary>
@@ -46,7 +41,6 @@ public static class SKPluginExtensions
         plugin.AddFunction(function);
         return function;
     }
-
 
     /// <summary>
     /// Creates an <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
@@ -77,14 +71,10 @@ public static class SKPluginExtensions
         plugin.AddFunction(function);
         return function;
     }
-
     #endregion
 
-
     #region AddFunctionFromPrompt
-
     // TODO: Revise these CreateFunctionFromPrompt method XML comments
-
 
     /// <summary>
     /// Creates a string-to-string semantic function, with no direct support for input context, and adds it to the <see cref="SKPlugin"/>.
@@ -113,7 +103,6 @@ public static class SKPluginExtensions
         return function;
     }
 
-
     /// <summary>
     /// Creates a semantic function passing in the definition in natural language, i.e. the prompt template, and adds it to the <see cref="SKPlugin"/>.
     /// </summary>
@@ -138,7 +127,6 @@ public static class SKPluginExtensions
         return function;
     }
 
-
     /// <summary>
     /// Allow to define a semantic function passing in the definition in natural language, i.e. the prompt template.
     /// </summary>
@@ -161,8 +149,5 @@ public static class SKPluginExtensions
         plugin.AddFunction(function);
         return function;
     }
-
     #endregion
-
-
 }
