@@ -2,8 +2,8 @@
 
 namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
 
 
 /// <summary>

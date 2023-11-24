@@ -107,6 +107,7 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
         return InternalGetChatResultsAsTextAsync(text, requestSettings, cancellationToken);
     }
 
+
     /// <inheritdoc/>
     public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
     {

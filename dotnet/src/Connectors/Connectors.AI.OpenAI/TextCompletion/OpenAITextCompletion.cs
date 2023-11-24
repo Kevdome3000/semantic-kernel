@@ -65,6 +65,7 @@ public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
         return InternalGetTextResultsAsync(text, requestSettings, cancellationToken);
     }
 
+
     /// <inheritdoc/>
     public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
     {

@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.AI.ChatCompletion;
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Services;
+using Services;
 
-namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
 /// <summary>
 /// Interface for chat completion services
@@ -20,6 +21,7 @@ public interface IChatCompletion : IAIService
     /// <returns>Chat object</returns>
     ChatHistory CreateNewChat(string? instructions = null);
 
+
     /// <summary>
     /// Get chat completion results for the prompt and settings.
     /// </summary>
@@ -32,6 +34,7 @@ public interface IChatCompletion : IAIService
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Get chat streaming completion results for the prompt and settings.
     /// </summary>
@@ -43,6 +46,7 @@ public interface IChatCompletion : IAIService
         ChatHistory chat,
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Get streaming results for the prompt using the specified request settings.

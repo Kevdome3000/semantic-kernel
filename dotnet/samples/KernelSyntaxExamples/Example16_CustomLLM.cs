@@ -52,6 +52,7 @@ public class MyTextCompletionService : ITextCompletion
         yield return new MyTextCompletionStreamingResult();
     }
 
+
     public async IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, AIRequestSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (typeof(T) == typeof(MyStreamingContent))
@@ -62,21 +63,25 @@ public class MyTextCompletionService : ITextCompletion
     }
 }
 
+
 public class MyStreamingContent : StreamingContent
 {
     public override int ChoiceIndex => 0;
 
     public string Content { get; }
 
+
     public MyStreamingContent(string content) : base(content)
     {
         this.Content = content;
     }
 
+
     public override byte[] ToByteArray()
     {
         return Encoding.UTF8.GetBytes(this.Content);
     }
+
 
     public override string ToString()
     {

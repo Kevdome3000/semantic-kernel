@@ -1,15 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
+using ChatCompletionWithData;
+using SemanticKernel.AI;
+using SemanticKernel.AI.ChatCompletion;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
 /// <summary>
 /// Streaming chat result update.
@@ -23,6 +24,7 @@ public sealed class StreamingChatWithDataContent : StreamingContent
     /// Chat message abstraction
     /// </summary>
     public ChatMessage ChatMessage { get; }
+
 
     /// <summary>
     /// Create a new instance of the <see cref="StreamingChatContent"/> class.
@@ -38,11 +40,13 @@ public sealed class StreamingChatWithDataContent : StreamingContent
         this.ChatMessage = new AzureOpenAIChatMessage(AuthorRole.Assistant.Label, message?.Delta?.Content ?? string.Empty);
     }
 
+
     /// <inheritdoc/>
     public override byte[] ToByteArray()
     {
         return Encoding.UTF8.GetBytes(this.ToString());
     }
+
 
     /// <inheritdoc/>
     public override string ToString()
@@ -50,9 +54,10 @@ public sealed class StreamingChatWithDataContent : StreamingContent
         return JsonSerializer.Serialize(this);
     }
 
+
     private bool IsValidMessage(ChatWithDataStreamingMessage message)
     {
         return !message.EndTurn &&
-            (message.Delta.Role is null || !message.Delta.Role.Equals(AuthorRole.Tool.Label, StringComparison.Ordinal));
+               (message.Delta.Role is null || !message.Delta.Role.Equals(AuthorRole.Tool.Label, StringComparison.Ordinal));
     }
 }

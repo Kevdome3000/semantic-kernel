@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.SemanticKernel.AI;
+using SemanticKernel.AI;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
 /// <summary>
 /// Streaming text result update.
@@ -19,6 +20,7 @@ public class StreamingTextContent : StreamingContent
     /// </summary>
     public string Content { get; }
 
+
     /// <summary>
     /// Create a new instance of the <see cref="StreamingTextContent"/> class.
     /// </summary>
@@ -32,11 +34,13 @@ public class StreamingTextContent : StreamingContent
         this.Content = text;
     }
 
+
     /// <inheritdoc/>
     public override byte[] ToByteArray()
     {
         return Encoding.UTF8.GetBytes(this.ToString());
     }
+
 
     /// <inheritdoc/>
     public override string ToString()

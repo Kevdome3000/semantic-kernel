@@ -1,13 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Orchestration;
-
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 
 namespace Microsoft.SemanticKernel;
+
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Orchestration;
+
 
 /// <summary>
 /// Interface for prompt template.
@@ -18,6 +19,7 @@ public interface IPromptTemplate
     /// The list of parameters required by the template, using configuration and template info.
     /// </summary>
     IReadOnlyList<SKParameterMetadata> Parameters { get; }
+
 
     /// <summary>
     /// Render the template using the information in the context

@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Functions;
+
 using System.Collections.Generic;
 using System.Threading;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Orchestration;
+using AI;
+using Orchestration;
 
-namespace Microsoft.SemanticKernel.Functions;
 
 /// <summary>
 /// Kernel function extensions class.

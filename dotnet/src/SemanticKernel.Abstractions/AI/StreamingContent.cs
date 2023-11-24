@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.AI;
+
 using System.Collections.Generic;
 
-namespace Microsoft.SemanticKernel.AI;
 
 /// <summary>
 /// Represents a single update to a streaming content.
@@ -28,6 +29,7 @@ public abstract class StreamingContent
     /// </summary>
     public Dictionary<string, object>? Metadata { get; }
 
+
     /// <summary>
     /// Abstract string representation of the chunk in a way it could compose/append with previous chunks.
     /// </summary>
@@ -37,6 +39,7 @@ public abstract class StreamingContent
     /// <returns>String representation of the chunk</returns>
     public abstract override string ToString();
 
+
     /// <summary>
     /// Abstract byte[] representation of the chunk in a way it could be composed/appended with previous chunks.
     /// </summary>
@@ -45,6 +48,7 @@ public abstract class StreamingContent
     /// </remarks>
     /// <returns>Byte array representation of the chunk</returns>
     public abstract byte[] ToByteArray();
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StreamingContent"/> class.

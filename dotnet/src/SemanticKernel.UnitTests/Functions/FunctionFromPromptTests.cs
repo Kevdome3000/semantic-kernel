@@ -1,5 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+
+
+// ReSharper disable StringLiteralTypo
+
+namespace SemanticKernel.UnitTests.Functions;
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -13,9 +19,6 @@ using Microsoft.SemanticKernel.Orchestration;
 using Moq;
 using Xunit;
 
-// ReSharper disable StringLiteralTypo
-
-namespace SemanticKernel.UnitTests.Functions;
 
 public class FunctionFromPromptTests
 {
@@ -34,6 +37,7 @@ public class FunctionFromPromptTests
         Assert.True(kernel.Plugins.TryGetFunction("jk", "joker", out _));
         Assert.True(kernel.Plugins.TryGetFunction("JK", "JOKER", out _));
     }
+
 
     [Theory]
     [InlineData(null, "Assistant is a large language model.")]
@@ -66,6 +70,7 @@ public class FunctionFromPromptTests
         mockTextCompletion.Verify(a => a.GetCompletionsAsync("template", It.Is<OpenAIRequestSettings>(c => c.ChatSystemPrompt == expectedSystemChatPrompt), It.IsAny<CancellationToken>()), Times.Once());
     }
 
+
     [Fact]
     public async Task ItUsesDefaultServiceWhenSpecifiedAsync()
     {
@@ -93,6 +98,7 @@ public class FunctionFromPromptTests
         mockTextCompletion1.Verify(a => a.GetCompletionsAsync("template", null, It.IsAny<CancellationToken>()), Times.Never());
         mockTextCompletion2.Verify(a => a.GetCompletionsAsync("template", null, It.IsAny<CancellationToken>()), Times.Once());
     }
+
 
     [Fact]
     public async Task ItUsesServiceIdWhenProvidedAsync()
@@ -123,6 +129,7 @@ public class FunctionFromPromptTests
         mockTextCompletion2.Verify(a => a.GetCompletionsAsync("template", It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Never());
     }
 
+
     [Fact]
     public async Task ItFailsIfInvalidServiceIdIsProvidedAsync()
     {
@@ -145,6 +152,7 @@ public class FunctionFromPromptTests
         // Assert
         Assert.Equal("Service of type Microsoft.SemanticKernel.AI.TextCompletion.ITextCompletion and name service3 not registered.", exception.Message);
     }
+
 
     [Fact]
     public async Task RunAsyncHandlesPreInvocationAsync()
@@ -169,6 +177,7 @@ public class FunctionFromPromptTests
         mockTextCompletion.Verify(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
     }
 
+
     [Fact]
     public async Task RunAsyncHandlesPreInvocationWasCancelledAsync()
     {
@@ -192,6 +201,7 @@ public class FunctionFromPromptTests
         Assert.NotNull(result);
     }
 
+
     [Fact]
     public async Task RunAsyncHandlesPreInvocationCancelationDontRunSubsequentFunctionsInThePipelineAsync()
     {
@@ -214,6 +224,7 @@ public class FunctionFromPromptTests
         Assert.Equal(1, invoked);
         mockTextCompletion.Verify(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Never);
     }
+
 
     [Fact]
     public async Task RunAsyncPreInvocationCancelationDontTriggerInvokedHandlerAsync()
@@ -241,6 +252,7 @@ public class FunctionFromPromptTests
         Assert.Equal(0, invoked);
     }
 
+
     [Fact]
     public async Task RunAsyncPreInvocationSkipDontTriggerInvokedHandlerAsync()
     {
@@ -255,6 +267,7 @@ public class FunctionFromPromptTests
         sut.FunctionInvoking += (sender, e) =>
         {
             invoking++;
+
             if (e.Function.GetMetadata().Name == "SkipMe")
             {
                 e.Skip();
@@ -275,6 +288,7 @@ public class FunctionFromPromptTests
         Assert.Equal(0, invoked);
         Assert.Equal("", invokedFunction);
     }
+
 
     [Fact]
     public async Task RunAsyncHandlesPostInvocationAsync()
@@ -299,6 +313,7 @@ public class FunctionFromPromptTests
         mockTextCompletion.Verify(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
     }
 
+
     [Fact]
     public async Task RunAsyncChangeVariableInvokingHandlerAsync()
     {
@@ -321,6 +336,7 @@ public class FunctionFromPromptTests
         // Assert
         Assert.Equal(newInput, originalInput);
     }
+
 
     [Fact]
     public async Task RunAsyncChangeVariableInvokedHandlerAsync()
@@ -345,6 +361,7 @@ public class FunctionFromPromptTests
         Assert.Equal(newInput, originalInput);
     }
 
+
     [Fact]
     public async Task InvokeStreamingAsyncCallsConnectorStreamingApiAsync()
     {
@@ -359,6 +376,7 @@ public class FunctionFromPromptTests
         var context = kernel.CreateNewContext(variables);
 
         var chunkCount = 0;
+
         // Act
         await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContent>(kernel, context))
         {
@@ -370,6 +388,7 @@ public class FunctionFromPromptTests
         mockTextCompletion.Verify(m => m.GetStreamingContentAsync<StreamingContent>(It.IsIn("Write a simple phrase about UnitTests importance"), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
     }
 
+
     private (Mock<ITextResult> textResultMock, Mock<ITextCompletion> textCompletionMock) SetupMocks(string? completionResult = null)
     {
         var mockTextResult = new Mock<ITextResult>();
@@ -380,6 +399,7 @@ public class FunctionFromPromptTests
         return (mockTextResult, mockTextCompletion);
     }
 
+
     private Mock<ITextCompletion> SetupStreamingMocks<T>(params T[] completionResults)
     {
         var mockTextCompletion = new Mock<ITextCompletion>();
@@ -388,27 +408,33 @@ public class FunctionFromPromptTests
         return mockTextCompletion;
     }
 
+
     private sealed class TestStreamingContent : StreamingContent
     {
         private readonly string _content;
+
 
         public TestStreamingContent(string content) : base(null)
         {
             this._content = content;
         }
 
+
         public override int ChoiceIndex => 0;
+
 
         public override byte[] ToByteArray()
         {
             return Array.Empty<byte>();
         }
 
+
         public override string ToString()
         {
             return this._content;
         }
     }
+
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 #pragma warning disable IDE1006 // Naming Styles

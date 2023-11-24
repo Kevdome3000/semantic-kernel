@@ -22,7 +22,6 @@ using SemanticKernel.AI.ChatCompletion;
 using SemanticKernel.AI.TextCompletion;
 using ChatMessage = Azure.AI.OpenAI.ChatMessage;
 
-
 #pragma warning disable CA2208 // Instantiate argument exceptions correctly
 
 

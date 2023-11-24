@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.UnitTests.PromptTemplate;
+
 using Microsoft.SemanticKernel;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.PromptTemplate;
 
 public sealed class KernelPromptTemplateFactoryTests
 {
@@ -22,6 +23,7 @@ public sealed class KernelPromptTemplateFactoryTests
         Assert.True(result is KernelPromptTemplate);
     }
 
+
     [Fact]
     public void ItCreatesBasicPromptTemplate()
     {
@@ -36,6 +38,7 @@ public sealed class KernelPromptTemplateFactoryTests
         Assert.NotNull(result);
         Assert.True(result is KernelPromptTemplate);
     }
+
 
     [Fact]
     public void ItThrowsExceptionForUnknowPromptTemplateFormat()

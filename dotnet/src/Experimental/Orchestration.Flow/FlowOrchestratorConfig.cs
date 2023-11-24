@@ -1,12 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
-
 #pragma warning disable IDE0130
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
+
+using System.Collections.Generic;
+using AI;
+using Execution;
+
 #pragma warning restore IDE0130
+
 
 /// <summary>
 /// Configuration for flow planner instances.

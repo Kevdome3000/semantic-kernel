@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+
 using System.Collections.Generic;
 using System.Text;
 using Azure.AI.OpenAI;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
+using SemanticKernel.AI;
+using SemanticKernel.AI.ChatCompletion;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
 /// <summary>
 /// Streaming chat result update.
@@ -36,6 +37,7 @@ public class StreamingChatContent : StreamingContent
     /// </summary>
     public string? Name { get; }
 
+
     /// <summary>
     /// Create a new instance of the <see cref="StreamingChatContent"/> class.
     /// </summary>
@@ -51,8 +53,10 @@ public class StreamingChatContent : StreamingContent
         this.Name = chatMessage.FunctionCall?.Name;
     }
 
+
     /// <inheritdoc/>
     public override byte[] ToByteArray() => Encoding.UTF8.GetBytes(this.ToString());
+
 
     /// <inheritdoc/>
     public override string ToString() => this.Content ?? string.Empty;

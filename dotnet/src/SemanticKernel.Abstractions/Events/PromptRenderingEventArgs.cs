@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Orchestration;
-
 namespace Microsoft.SemanticKernel.Events;
+
+using AI;
+using Orchestration;
+
 
 /// <summary>
 /// Event arguments available to the Kernel.PromptRendering event.
@@ -20,6 +21,7 @@ public class PromptRenderingEventArgs : SKEventArgs
     {
         this.RequestSettings = requestSettings; // TODO clone these settings
     }
+
 
     /// <summary>
     /// Request settings for the AI service.

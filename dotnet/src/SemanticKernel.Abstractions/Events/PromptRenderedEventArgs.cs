@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Orchestration;
-
 namespace Microsoft.SemanticKernel.Events;
+
+using Orchestration;
+
 
 /// <summary>
 /// Event arguments available to the Kernel.PromptRendered event.
@@ -19,6 +20,7 @@ public class PromptRenderedEventArgs : SKCancelEventArgs
     {
         this.RenderedPrompt = renderedPrompt;
     }
+
 
     /// <summary>
     /// Rendered prompt.

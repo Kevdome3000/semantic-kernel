@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Planning;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,11 +11,10 @@ using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Text;
+using AI;
+using Orchestration;
+using Text;
 
-namespace Microsoft.SemanticKernel.Planning;
 
 /// <summary>
 /// Standard Semantic Kernel callable plan.
@@ -64,6 +65,7 @@ public sealed class Plan : KernelFunction
     [JsonPropertyName("plugin_name")]
     public string PluginName { get; set; } = string.Empty;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="Plan"/> class with a goal description.
     /// </summary>
@@ -72,6 +74,7 @@ public sealed class Plan : KernelFunction
     {
         this.PluginName = nameof(Plan);
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Plan"/> class with a goal description and steps.
@@ -83,6 +86,7 @@ public sealed class Plan : KernelFunction
         this.AddSteps(steps);
     }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="Plan"/> class with a goal description and steps.
     /// </summary>
@@ -93,6 +97,7 @@ public sealed class Plan : KernelFunction
         this.AddSteps(steps);
     }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="Plan"/> class with a function.
     /// </summary>
@@ -101,6 +106,7 @@ public sealed class Plan : KernelFunction
     {
         this.Function = function;
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Plan"/> class with a function and steps.
@@ -133,6 +139,7 @@ public sealed class Plan : KernelFunction
         this.AddSteps(steps.ToArray());
     }
 
+
     /// <summary>
     /// Deserialize a JSON string into a Plan object.
     /// TODO: the context should never be null, it's required internally
@@ -154,15 +161,15 @@ public sealed class Plan : KernelFunction
         return plan;
     }
 
+
     /// <summary>
     /// Get JSON representation of the plan.
     /// </summary>
     /// <param name="indented">Whether to emit indented JSON</param>
     /// <returns>Plan serialized using JSON format</returns>
     public string ToJson(bool indented = false) =>
-        indented ?
-            JsonSerializer.Serialize(this, JsonOptionsCache.WriteIndented) :
-            JsonSerializer.Serialize(this);
+        indented ? JsonSerializer.Serialize(this, JsonOptionsCache.WriteIndented) : JsonSerializer.Serialize(this);
+
 
     /// <summary>
     /// Adds one or more existing plans to the end of the current plan as steps.
@@ -176,6 +183,7 @@ public sealed class Plan : KernelFunction
         this._steps.AddRange(steps);
     }
 
+
     /// <summary>
     /// Adds one or more new steps to the end of the current plan.
     /// </summary>
@@ -187,6 +195,7 @@ public sealed class Plan : KernelFunction
     {
         this._steps.AddRange(steps.Select(step => step is Plan plan ? plan : new Plan(step)));
     }
+
 
     /// <summary>
     /// Runs the next step in the plan using the provided kernel instance and variables.
@@ -207,6 +216,7 @@ public sealed class Plan : KernelFunction
         return this.InvokeNextStepAsync(kernel, context, cancellationToken);
     }
 
+
     /// <summary>
     /// Invoke the next step of the plan
     /// </summary>
@@ -224,6 +234,7 @@ public sealed class Plan : KernelFunction
 
         return this;
     }
+
 
     #region ISKFunction implementation
 
@@ -265,6 +276,7 @@ public sealed class Plan : KernelFunction
         };
     }
 
+
     /// <inheritdoc/>
     protected override async Task<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
@@ -304,6 +316,7 @@ public sealed class Plan : KernelFunction
                 {
                     return result;
                 }
+
                 if (stepResult.IsSkipRequested)
                 {
                     continue;
@@ -318,6 +331,7 @@ public sealed class Plan : KernelFunction
         return result;
     }
 
+
     /// <inheritdoc/>
     protected override IAsyncEnumerable<T> InvokeCoreStreamingAsync<T>(
         Kernel kernel,
@@ -330,6 +344,7 @@ public sealed class Plan : KernelFunction
     }
 
     #endregion ISKFunction implementation
+
 
     /// <summary>
     /// Expand variables in the input string.
@@ -354,6 +369,7 @@ public sealed class Plan : KernelFunction
         return result;
     }
 
+
     /// <summary>
     /// Invoke the next step of the plan
     /// </summary>
@@ -375,6 +391,7 @@ public sealed class Plan : KernelFunction
             var result = await kernel.InvokeAsync(step, functionVariables, cancellationToken).ConfigureAwait(false);
 
             var resultValue = result.Context.Variables.Input.Trim();
+
 
             #region Update State
 
@@ -409,6 +426,7 @@ public sealed class Plan : KernelFunction
 
             #endregion Update State
 
+
             this.NextStepIndex++;
 
             return result;
@@ -416,6 +434,7 @@ public sealed class Plan : KernelFunction
 
         throw new InvalidOperationException("There isn't a next step");
     }
+
 
     /// <summary>
     /// Set functions for a plan and its steps.
@@ -450,6 +469,7 @@ public sealed class Plan : KernelFunction
         return plan;
     }
 
+
     /// <summary>
     /// Add any missing variables from a plan state variables to the context.
     /// </summary>
@@ -464,6 +484,7 @@ public sealed class Plan : KernelFunction
             }
         }
     }
+
 
     /// <summary>
     /// Update the context with the outputs from the current step.
@@ -490,6 +511,7 @@ public sealed class Plan : KernelFunction
 
         return context;
     }
+
 
     /// <summary>
     /// Update the function result with the outputs from the current state.
@@ -518,6 +540,7 @@ public sealed class Plan : KernelFunction
         return functionResult;
     }
 
+
     /// <summary>
     /// Get the variables for the next step in the plan.
     /// </summary>
@@ -534,6 +557,7 @@ public sealed class Plan : KernelFunction
         // - Plan.Description
 
         var input = string.Empty;
+
         if (!string.IsNullOrEmpty(step.Parameters.Input))
         {
             input = this.ExpandFromVariables(variables, step.Parameters.Input!);
@@ -562,6 +586,7 @@ public sealed class Plan : KernelFunction
         // - Step Parameters (pull from variables or state by a key value)
         // - All other variables. These are carried over in case the function wants access to the ambient content.
         var functionParameters = step.GetMetadata();
+
         foreach (var param in functionParameters.Parameters)
         {
             if (param.Name.Equals(ContextVariables.MainKey, StringComparison.OrdinalIgnoreCase))
@@ -588,6 +613,7 @@ public sealed class Plan : KernelFunction
             }
 
             var expandedValue = this.ExpandFromVariables(variables, item.Value);
+
             if (!expandedValue.Equals(item.Value, StringComparison.OrdinalIgnoreCase))
             {
                 stepVariables.Set(item.Key, expandedValue);
@@ -616,6 +642,7 @@ public sealed class Plan : KernelFunction
 
         return stepVariables;
     }
+
 
     private static string GetRandomPlanName() => "plan" + Guid.NewGuid().ToString("N");
 

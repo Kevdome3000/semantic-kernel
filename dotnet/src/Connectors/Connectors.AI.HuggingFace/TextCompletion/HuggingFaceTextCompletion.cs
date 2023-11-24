@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
+
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -7,12 +9,11 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.Services;
+using Http;
+using SemanticKernel.AI;
+using SemanticKernel.AI.TextCompletion;
+using Services;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
 
 /// <summary>
 /// HuggingFace text completion service.
@@ -28,6 +29,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
     private readonly HttpClient _httpClient;
     private readonly string? _apiKey;
     private readonly Dictionary<string, string> _attributes = new();
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HuggingFaceTextCompletion"/> class.
@@ -47,6 +49,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
 
         this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HuggingFaceTextCompletion"/> class.
@@ -69,8 +72,10 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
         this._attributes.Add(IAIServiceExtensions.EndpointKey, this._endpoint ?? HuggingFaceApiEndpoint);
     }
 
+
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, string> Attributes => this._attributes;
+
 
     /// <inheritdoc/>
     async IAsyncEnumerable<ITextStreamingResult> ITextCompletion.GetStreamingCompletionsAsync(
@@ -84,6 +89,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
         }
     }
 
+
     /// <inheritdoc/>
     public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
         string text,
@@ -92,6 +98,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
     {
         return await this.ExecuteGetCompletionsAsync(text, cancellationToken).ConfigureAwait(false);
     }
+
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<T> GetStreamingContentAsync<T>(
@@ -109,6 +116,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
             if (typeof(T) == typeof(string))
             {
                 yield return (T)(object)content;
+
                 continue;
             }
 
@@ -123,6 +131,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
         }
     }
 
+
     #region private ================================================================================
 
     private async Task<IReadOnlyList<TextCompletionResult>> ExecuteGetCompletionsAsync(string text, CancellationToken cancellationToken = default)
@@ -135,6 +144,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
         using var httpRequestMessage = HttpRequest.CreatePostRequest(this.GetRequestUri(), completionRequest);
 
         httpRequestMessage.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
+
         if (!string.IsNullOrEmpty(this._apiKey))
         {
             httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");
@@ -156,6 +166,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
 
         return completionResponse.ConvertAll(c => new TextCompletionResult(c));
     }
+
 
     /// <summary>
     /// Retrieves the request URI based on the provided endpoint and model information.
@@ -180,4 +191,6 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
     }
 
     #endregion
+
+
 }

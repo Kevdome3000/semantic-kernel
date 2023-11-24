@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -10,18 +12,17 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
-using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.Text;
+using AzureSdk;
+using ChatCompletion;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
+using Http;
+using SemanticKernel.AI;
+using SemanticKernel.AI.ChatCompletion;
+using SemanticKernel.AI.TextCompletion;
+using Services;
+using Text;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 
 /// <summary>
 /// Azure OpenAI Chat Completion with data client.
@@ -49,14 +50,17 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         this._attributes.Add(IAIServiceExtensions.ModelIdKey, config.CompletionModelId);
     }
 
+
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, string> Attributes => this._attributes;
+
 
     /// <inheritdoc/>
     public ChatHistory CreateNewChat(string? instructions = null)
     {
         return new OpenAIChatHistory(instructions);
     }
+
 
     /// <inheritdoc/>
     public async Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
@@ -73,6 +77,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         return await this.ExecuteCompletionRequestAsync(chat, chatRequestSettings, cancellationToken).ConfigureAwait(false);
     }
 
+
     /// <inheritdoc/>
     public IAsyncEnumerable<IChatStreamingResult> GetStreamingChatCompletionsAsync(
         ChatHistory chat,
@@ -87,6 +92,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
 
         return this.ExecuteCompletionStreamingRequestAsync(chat, chatRequestSettings, cancellationToken);
     }
+
 
     /// <inheritdoc/>
     public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
@@ -103,6 +109,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
             .ToList();
     }
 
+
     /// <inheritdoc/>
     public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
         string text,
@@ -114,11 +121,13 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         var chat = this.PrepareChatHistory(text, chatRequestSettings);
 
         IAsyncEnumerable<IChatStreamingResult> results = this.GetStreamingChatCompletionsAsync(chat, chatRequestSettings, cancellationToken);
+
         await foreach (var result in results)
         {
             yield return (ITextStreamingResult)result;
         }
     }
+
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<T> GetStreamingContentAsync<T>(
@@ -139,6 +148,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         }
     }
 
+
     #region private ================================================================================
 
     private const string DefaultApiVersion = "2023-06-01-preview";
@@ -148,6 +158,8 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
     private readonly Dictionary<string, string> _attributes = new();
+
+
     private void ValidateConfig(AzureOpenAIChatCompletionWithDataConfig config)
     {
         Verify.NotNull(config);
@@ -160,6 +172,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         Verify.NotNullOrWhiteSpace(config.DataSourceIndex);
     }
 
+
     private static void ValidateMaxTokens(int? maxTokens)
     {
         if (maxTokens.HasValue && maxTokens < 1)
@@ -167,6 +180,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
             throw new SKException($"MaxTokens {maxTokens} is not valid, the value must be greater than zero");
         }
     }
+
 
     private async Task<IReadOnlyList<IChatResult>> ExecuteCompletionRequestAsync(
         ChatHistory chat,
@@ -183,6 +197,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         return chatWithDataResponse.Choices.Select(choice => new ChatWithDataResult(chatWithDataResponse, choice)).ToList();
     }
 
+
     private async IAsyncEnumerable<IChatStreamingResult> ExecuteCompletionStreamingRequestAsync(
         ChatHistory chat,
         OpenAIRequestSettings requestSettings,
@@ -196,6 +211,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
             yield return result;
         }
     }
+
 
     private async Task<HttpResponseMessage> SendRequestAsync(
         HttpRequestMessage request,
@@ -216,6 +232,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
             throw;
         }
     }
+
 
     private async IAsyncEnumerable<IChatStreamingResult> GetStreamingResultsAsync(HttpResponseMessage response)
     {
@@ -247,6 +264,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         }
     }
 
+
     private async IAsyncEnumerable<T> GetChatStreamingUpdatesAsync<T>(HttpResponseMessage response)
     {
         const string ServerEventPayloadPrefix = "data:";
@@ -270,6 +288,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
 
             var chatWithDataResponse = this.DeserializeResponse<ChatWithDataStreamingResponse>(body);
             var responseMetadata = this.GetResponseMetadata(response);
+
             foreach (var choice in chatWithDataResponse.Choices)
             {
                 // If the provided T is an specialized class of StreamingContent interface
@@ -277,10 +296,12 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
                     typeof(T) == typeof(StreamingContent))
                 {
                     yield return (T)(object)new StreamingChatWithDataContent(choice, choice.Index, responseMetadata);
+
                     continue;
                 }
 
                 var result = new ChatWithDataStreamingResult(chatWithDataResponse, choice);
+
                 if (typeof(T) == typeof(string))
                 {
                     await foreach (SemanticKernel.AI.ChatCompletion.ChatMessage message in result.GetStreamingChatMessageAsync().ConfigureAwait(false))
@@ -299,6 +320,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         }
     }
 
+
     private Dictionary<string, object> GetResponseMetadata(HttpResponseMessage response)
     {
         return new Dictionary<string, object>()
@@ -306,6 +328,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
             { nameof(HttpResponseMessage), response },
         };
     }
+
 
     private T DeserializeResponse<T>(string body)
     {
@@ -322,6 +345,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
 
         return response;
     }
+
 
     private HttpRequestMessage GetRequest(
         ChatHistory chat,
@@ -345,11 +369,13 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         return HttpRequest.CreatePostRequest(this.GetRequestUri(), payload);
     }
 
+
     private List<ChatWithDataSource> GetDataSources()
     {
         return new List<ChatWithDataSource>
         {
-            new() {
+            new()
+            {
                 Parameters = new ChatWithDataSourceParameters
                 {
                     Endpoint = this._config.DataSourceEndpoint,
@@ -359,6 +385,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
             }
         };
     }
+
 
     private List<ChatWithDataMessage> GetMessages(ChatHistory chat)
     {
@@ -371,6 +398,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
             .ToList();
     }
 
+
     private ChatHistory PrepareChatHistory(string text, OpenAIRequestSettings requestSettings)
     {
         var chat = this.CreateNewChat(requestSettings.ChatSystemPrompt);
@@ -379,6 +407,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
 
         return chat;
     }
+
 
     private string GetRequestUri()
     {
@@ -400,4 +429,6 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
     }
 
     #endregion
+
+
 }
