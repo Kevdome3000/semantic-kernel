@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Plugins.Core;
+
 using System;
 using System.ComponentModel;
 
-namespace Microsoft.SemanticKernel.Plugins.Core;
 
 /// <summary>
 /// TimePlugin provides a set of functions to get the current time and date.
@@ -51,6 +52,7 @@ public sealed class TimePlugin
         // Example: Sunday, 12 January, 2025
         DateTimeOffset.Now.ToString("D", formatProvider);
 
+
     /// <summary>
     /// Get the current date
     /// </summary>
@@ -62,6 +64,7 @@ public sealed class TimePlugin
     public string Today(IFormatProvider? formatProvider = null) =>
         // Example: Sunday, 12 January, 2025
         this.Date(formatProvider);
+
 
     /// <summary>
     /// Get the current date and time in the local time zone"
@@ -75,6 +78,7 @@ public sealed class TimePlugin
         // Sunday, January 12, 2025 9:15 PM
         DateTimeOffset.Now.ToString("f", formatProvider);
 
+
     /// <summary>
     /// Get the current UTC date and time
     /// </summary>
@@ -86,6 +90,7 @@ public sealed class TimePlugin
     public string UtcNow(IFormatProvider? formatProvider = null) =>
         // Sunday, January 13, 2025 5:15 AM
         DateTimeOffset.UtcNow.ToString("f", formatProvider);
+
 
     /// <summary>
     /// Get the current time
@@ -99,6 +104,7 @@ public sealed class TimePlugin
         // Example: 09:15:07 PM
         DateTimeOffset.Now.ToString("hh:mm:ss tt", formatProvider);
 
+
     /// <summary>
     /// Get the current year
     /// </summary>
@@ -110,6 +116,7 @@ public sealed class TimePlugin
     public string Year(IFormatProvider? formatProvider = null) =>
         // Example: 2025
         DateTimeOffset.Now.ToString("yyyy", formatProvider);
+
 
     /// <summary>
     /// Get the current month name
@@ -123,6 +130,7 @@ public sealed class TimePlugin
         // Example: January
         DateTimeOffset.Now.ToString("MMMM", formatProvider);
 
+
     /// <summary>
     /// Get the current month number
     /// </summary>
@@ -135,6 +143,7 @@ public sealed class TimePlugin
         // Example: 01
         DateTimeOffset.Now.ToString("MM", formatProvider);
 
+
     /// <summary>
     /// Get the current day of the month
     /// </summary>
@@ -146,6 +155,7 @@ public sealed class TimePlugin
     public string Day(IFormatProvider? formatProvider = null) =>
         // Example: 12
         DateTimeOffset.Now.ToString("dd", formatProvider);
+
 
     /// <summary>
     /// Get the date a provided number of days in the past
@@ -160,6 +170,7 @@ public sealed class TimePlugin
     public string DaysAgo([Description("The number of days to offset from today"), KernelName("input")] double daysOffset, IFormatProvider? formatProvider = null) =>
         DateTimeOffset.Now.AddDays(-daysOffset).ToString("D", formatProvider);
 
+
     /// <summary>
     /// Get the current day of the week
     /// </summary>
@@ -171,6 +182,7 @@ public sealed class TimePlugin
     public string DayOfWeek(IFormatProvider? formatProvider = null) =>
         // Example: Sunday
         DateTimeOffset.Now.ToString("dddd", formatProvider);
+
 
     /// <summary>
     /// Get the current clock hour
@@ -184,6 +196,7 @@ public sealed class TimePlugin
         // Example: 9 PM
         DateTimeOffset.Now.ToString("h tt", formatProvider);
 
+
     /// <summary>
     /// Get the current clock 24-hour number
     /// </summary>
@@ -196,6 +209,7 @@ public sealed class TimePlugin
         // Example: 21
         DateTimeOffset.Now.ToString("HH", formatProvider);
 
+
     /// <summary>
     /// Get the date of the previous day matching the supplied day name
     /// </summary>
@@ -207,7 +221,8 @@ public sealed class TimePlugin
     [KernelFunction]
     [Description("Get the date of the last day matching the supplied week day name in English. Example: Che giorno era 'Martedi' scorso -> dateMatchingLastDayName 'Tuesday' => Tuesday, 16 May, 2023")]
     public string DateMatchingLastDayName(
-        [Description("The day name to match"), KernelName("input")] DayOfWeek dayName,
+        [Description("The day name to match"), KernelName("input")]
+        DayOfWeek dayName,
         IFormatProvider? formatProvider = null)
     {
         DateTimeOffset dateTime = DateTimeOffset.Now;
@@ -216,6 +231,7 @@ public sealed class TimePlugin
         for (int i = 1; i <= 7; ++i)
         {
             dateTime = dateTime.AddDays(-1);
+
             if (dateTime.DayOfWeek == dayName)
             {
                 break;
@@ -224,6 +240,7 @@ public sealed class TimePlugin
 
         return dateTime.ToString("D", formatProvider);
     }
+
 
     /// <summary>
     /// Get the minutes on the current hour
@@ -237,6 +254,7 @@ public sealed class TimePlugin
         // Example: 15
         DateTimeOffset.Now.ToString("mm", formatProvider);
 
+
     /// <summary>
     /// Get the seconds on the current minute
     /// </summary>
@@ -249,6 +267,7 @@ public sealed class TimePlugin
         // Example: 07
         DateTimeOffset.Now.ToString("ss", formatProvider);
 
+
     /// <summary>
     /// Get the local time zone offset from UTC
     /// </summary>
@@ -260,6 +279,7 @@ public sealed class TimePlugin
     public string TimeZoneOffset(IFormatProvider? formatProvider = null) =>
         // Example: -08:00
         DateTimeOffset.Now.ToString("%K", formatProvider);
+
 
     /// <summary>
     /// Get the local time zone name

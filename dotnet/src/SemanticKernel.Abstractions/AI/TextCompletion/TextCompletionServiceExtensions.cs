@@ -1,12 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Services;
-
 // Use base namespace for better discoverability and to avoid conflicts with other extensions.
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel;
+
+using AI.TextCompletion;
+using Services;
+
 #pragma warning restore IDE0130 // Namespace does not match folder structure
+
 
 /// <summary>
 /// Provides extension methods for working with <see cref="ITextCompletion"/> services.
@@ -24,7 +26,8 @@ public static class TextCompletionServiceExtensions
     public static ITextCompletion GetTextCompletionServiceOrDefault(
         this IAIServiceProvider services,
         string? serviceId = null) => services.GetService<ITextCompletion>(serviceId)
-            ?? throw new KernelException("Text completion service not found");
+                                     ?? throw new KernelException("Text completion service not found");
+
 
     /// <summary>
     /// Returns true if a <see cref="ITextCompletion"/> exist with the specified ID.
@@ -35,5 +38,5 @@ public static class TextCompletionServiceExtensions
     public static bool HasTextCompletionService(
         this IAIServiceProvider services,
         string? serviceId = null)
-            => services.TryGetService<ITextCompletion>(serviceId, out _);
+        => services.TryGetService<ITextCompletion>(serviceId, out _);
 }

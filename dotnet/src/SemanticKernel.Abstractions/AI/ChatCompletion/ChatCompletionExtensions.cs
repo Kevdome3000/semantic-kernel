@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.AI.ChatCompletion;
+
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.AI.ChatCompletion;
+
 /// <summary>
 /// Provides extension methods for the IChatCompletion interface.
 /// </summary>
@@ -31,6 +33,7 @@ public static class ChatCompletionExtensions
         return firstChatMessage.Content;
     }
 
+
     /// <summary>
     /// Get asynchronous stream of <see cref="StreamingContent"/>.
     /// </summary>
@@ -44,5 +47,5 @@ public static class ChatCompletionExtensions
         string input,
         PromptExecutionSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
-            => chatCompletion.GetStreamingContentAsync<StreamingContent>(input, requestSettings, cancellationToken);
+        => chatCompletion.GetStreamingContentAsync<StreamingContent>(input, requestSettings, cancellationToken);
 }

@@ -1,14 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace Microsoft.SemanticKernel.Planning;
+
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Xml;
-using Microsoft.SemanticKernel.Orchestration;
+using Orchestration;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
-namespace Microsoft.SemanticKernel.Planning;
 #pragma warning restore IDE0130
+
 
 /// <summary>
 /// Parse sequential plan text into a plan.
@@ -41,6 +43,7 @@ internal static class SequentialPlanParser
     /// </summary>
     internal const string AppendToResultTag = "appendToResult";
 
+
     /// <summary>
     /// Convert a plan xml string to a plan.
     /// </summary>
@@ -53,6 +56,7 @@ internal static class SequentialPlanParser
     internal static Plan ToPlanFromXml(this string xmlString, string goal, Func<string, string, KernelFunction?> getFunctionCallback, bool allowMissingFunctions = false)
     {
         XmlDocument xmlDoc = new();
+
         try
         {
             xmlDoc.LoadXml("<xml>" + xmlString + "</xml>");
@@ -132,6 +136,7 @@ internal static class SequentialPlanParser
                             var functionResults = new List<string>();
 
                             var metadata = pluginFunction.GetMetadata();
+
                             foreach (var p in metadata.Parameters)
                             {
                                 functionVariables.Set(p.Name, p.DefaultValue);
@@ -160,6 +165,7 @@ internal static class SequentialPlanParser
                             // Plan properties
                             planStep.Outputs = functionOutputs;
                             planStep.Parameters = functionVariables;
+
                             foreach (var result in functionResults)
                             {
                                 plan.Outputs.Add(result);
@@ -188,6 +194,7 @@ internal static class SequentialPlanParser
 
         return plan;
     }
+
 
     private static readonly string[] s_functionTagArray = new string[] { FunctionTag };
 }

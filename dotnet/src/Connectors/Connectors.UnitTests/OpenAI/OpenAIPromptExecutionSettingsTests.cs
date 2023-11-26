@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Connectors.UnitTests.OpenAI;
+
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
@@ -7,7 +9,6 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.OpenAI;
 
 /// <summary>
 /// Unit tests of OpenAIPromptExecutionSettings
@@ -33,6 +34,7 @@ public class OpenAIPromptExecutionSettingsTests
         Assert.Null(requestSettings.ServiceId);
         Assert.Equal(128, requestSettings.MaxTokens);
     }
+
 
     [Fact]
     public void ItUsesExistingOpenAIRequestSettings()
@@ -60,6 +62,7 @@ public class OpenAIPromptExecutionSettingsTests
         Assert.Equal(actualSettings, requestSettings);
     }
 
+
     [Fact]
     public void ItCanUseOpenAIRequestSettings()
     {
@@ -77,6 +80,7 @@ public class OpenAIPromptExecutionSettingsTests
         Assert.Equal(actualSettings.ServiceId, requestSettings.ServiceId);
     }
 
+
     [Fact]
     public void ItCreatesOpenAIRequestSettingsFromExtraPropertiesSnakeCase()
     {
@@ -91,7 +95,7 @@ public class OpenAIPromptExecutionSettingsTests
                 { "frequency_penalty", 0.7 },
                 { "presence_penalty", 0.7 },
                 { "results_per_prompt", 2 },
-                { "stop_sequences", new [] { "foo", "bar" } },
+                { "stop_sequences", new[] { "foo", "bar" } },
                 { "chat_system_prompt", "chat system prompt" },
                 { "max_tokens", 128 },
                 { "service_id", "service" },
@@ -105,6 +109,7 @@ public class OpenAIPromptExecutionSettingsTests
         // Assert
         AssertRequestSettings(requestSettings);
     }
+
 
     [Fact]
     public void ItCreatesOpenAIRequestSettingsFromExtraPropertiesPascalCase()
@@ -135,6 +140,7 @@ public class OpenAIPromptExecutionSettingsTests
         AssertRequestSettings(requestSettings);
     }
 
+
     [Fact]
     public void ItCreatesOpenAIRequestSettingsFromJsonSnakeCase()
     {
@@ -160,6 +166,7 @@ public class OpenAIPromptExecutionSettingsTests
         AssertRequestSettings(requestSettings);
     }
 
+
     [Fact]
     public void ItCreatesOpenAIRequestSettingsFromJsonPascalCase()
     {
@@ -184,6 +191,7 @@ public class OpenAIPromptExecutionSettingsTests
         // Assert
         AssertRequestSettings(requestSettings);
     }
+
 
     private static void AssertRequestSettings(OpenAIPromptExecutionSettings requestSettings)
     {

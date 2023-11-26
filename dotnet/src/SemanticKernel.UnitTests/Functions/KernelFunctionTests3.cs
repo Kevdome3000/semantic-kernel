@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.UnitTests.Functions;
+
 using System;
 using System.ComponentModel;
 using System.Linq;
@@ -12,11 +14,11 @@ using Microsoft.SemanticKernel.Services;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Functions;
 
 public sealed class KernelFunctionTests3
 {
     private readonly Kernel _kernel = new(new Mock<IAIServiceProvider>().Object);
+
 
     [Fact]
     public void ItDoesntThrowForValidFunctionsViaDelegate()
@@ -35,6 +37,7 @@ public sealed class KernelFunctionTests3
         Assert.All(functions, Assert.NotNull);
     }
 
+
     [Fact]
     public void ItDoesNotThrowForValidFunctionsViaPlugin()
     {
@@ -52,6 +55,7 @@ public sealed class KernelFunctionTests3
         Assert.All(functions, f => Assert.NotNull(f));
     }
 
+
     [Fact]
     public void ItThrowsForInvalidFunctions()
     {
@@ -64,6 +68,7 @@ public sealed class KernelFunctionTests3
 
         // Act - Assert that no exception occurs
         var count = 0;
+
         foreach (var method in methods)
         {
             try
@@ -79,6 +84,7 @@ public sealed class KernelFunctionTests3
         // Assert
         Assert.Equal(4, count);
     }
+
 
     [Fact]
     public async Task ItCanImportNativeFunctionsAsync()
@@ -109,6 +115,7 @@ public sealed class KernelFunctionTests3
         Assert.Equal("YES", variables["canary"]);
         Assert.Equal("YES", result.Variables["canary"]);
     }
+
 
     [Fact]
     public async Task ItCanImportNativeFunctionsWithExternalReferencesAsync()
@@ -142,6 +149,7 @@ public sealed class KernelFunctionTests3
         Assert.Equal("YES", variables["canary"]);
     }
 
+
     private sealed class InvalidPlugin
     {
         [KernelFunction]
@@ -149,23 +157,30 @@ public sealed class KernelFunctionTests3
         {
         }
 
+
         [KernelFunction]
         public void Invalid2(string y, CustomUnknownType n)
         {
         }
+
 
         [KernelFunction]
         public void Invalid3(ContextVariables context1, ContextVariables context2)
         {
         }
 
+
         [KernelFunction]
         public void Invalid4(CancellationToken ct1, CancellationToken ct2)
         {
         }
 
-        public struct CustomUnknownType { }
+
+        public struct CustomUnknownType
+        {
+        }
     }
+
 
     private sealed class LocalExamplePlugin
     {
@@ -174,17 +189,20 @@ public sealed class KernelFunctionTests3
         {
         }
 
+
         [KernelFunction]
         public string Type02()
         {
             return "";
         }
 
+
         [KernelFunction]
         public string? Type02Nullable()
         {
             return null;
         }
+
 
         [KernelFunction]
         public async Task<string> Type03Async()
@@ -193,6 +211,7 @@ public sealed class KernelFunctionTests3
             return "";
         }
 
+
         [KernelFunction]
         public async Task<string?> Type03NullableAsync()
         {
@@ -200,15 +219,18 @@ public sealed class KernelFunctionTests3
             return null;
         }
 
+
         [KernelFunction]
         public void Type04(ContextVariables context)
         {
         }
 
+
         [KernelFunction]
         public void Type04Nullable(ContextVariables? variables)
         {
         }
+
 
         [KernelFunction]
         public string Type05(ContextVariables context)
@@ -216,11 +238,13 @@ public sealed class KernelFunctionTests3
             return "";
         }
 
+
         [KernelFunction]
         public string? Type05Nullable(ContextVariables? variables)
         {
             return null;
         }
+
 
         [KernelFunction]
         public async Task<string> Type06Async(ContextVariables context)
@@ -229,21 +253,25 @@ public sealed class KernelFunctionTests3
             return "";
         }
 
+
         [KernelFunction]
         public async Task Type07Async(ContextVariables context)
         {
             await Task.Delay(0);
         }
 
+
         [KernelFunction]
         public void Type08(string input)
         {
         }
 
+
         [KernelFunction]
         public void Type08Nullable(string? input)
         {
         }
+
 
         [KernelFunction]
         public string Type09(string input)
@@ -251,11 +279,13 @@ public sealed class KernelFunctionTests3
             return "";
         }
 
+
         [KernelFunction]
         public string? Type09Nullable(string? input = null)
         {
             return "";
         }
+
 
         [KernelFunction]
         public async Task<string> Type10Async(string input)
@@ -264,6 +294,7 @@ public sealed class KernelFunctionTests3
             return "";
         }
 
+
         [KernelFunction]
         public async Task<string?> Type10NullableAsync(string? input)
         {
@@ -271,21 +302,25 @@ public sealed class KernelFunctionTests3
             return "";
         }
 
+
         [KernelFunction]
         public void Type11(string input, ContextVariables context)
         {
         }
+
 
         [KernelFunction]
         public void Type11Nullable(string? input = null, ContextVariables? variables = null)
         {
         }
 
+
         [KernelFunction]
         public string Type12(string input, ContextVariables context)
         {
             return "";
         }
+
 
         [KernelFunction]
         public async Task<string> Type13Async(string input, ContextVariables context)
@@ -294,11 +329,13 @@ public sealed class KernelFunctionTests3
             return "";
         }
 
+
         [KernelFunction]
         public async Task Type14Async(string input, ContextVariables context)
         {
             await Task.Delay(0);
         }
+
 
         [KernelFunction]
         public async Task Type15Async(string input)
@@ -306,11 +343,13 @@ public sealed class KernelFunctionTests3
             await Task.Delay(0);
         }
 
+
         [KernelFunction]
         public async Task Type16Async(ContextVariables context)
         {
             await Task.Delay(0);
         }
+
 
         [KernelFunction]
         public async Task Type17Async(string input, ContextVariables context)
@@ -318,17 +357,20 @@ public sealed class KernelFunctionTests3
             await Task.Delay(0);
         }
 
+
         [KernelFunction]
         public async Task Type18Async()
         {
             await Task.Delay(0);
         }
 
+
         [KernelFunction]
         public async ValueTask ReturnsValueTaskAsync()
         {
             await Task.Delay(0);
         }
+
 
         [KernelFunction]
         public async ValueTask<string> ReturnsValueTaskStringAsync()
@@ -337,11 +379,13 @@ public sealed class KernelFunctionTests3
             return "hello world";
         }
 
+
         [KernelFunction]
         public async ValueTask ReturnsValueTaskContextAsync(ContextVariables context)
         {
             await Task.Delay(0);
         }
+
 
         [KernelFunction]
         public string WithPrimitives(

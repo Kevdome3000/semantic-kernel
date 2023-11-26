@@ -1,13 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - Using the main namespace
+namespace Microsoft.SemanticKernel;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using the main namespace
-namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
+
 
 /// <summary>
 /// Provides read-only metadata for an <see cref="KernelFunction"/>.
@@ -16,12 +18,16 @@ public sealed class KernelFunctionMetadata
 {
     /// <summary>The name of the function.</summary>
     private string _name = string.Empty;
+
     /// <summary>The description of the function.</summary>
     private string _description = string.Empty;
+
     /// <summary>The function's parameters.</summary>
     private IReadOnlyList<KernelParameterMetadata> _parameters = Array.Empty<KernelParameterMetadata>();
+
     /// <summary>The function's return parameter.</summary>
     private KernelReturnParameterMetadata? _returnParameter;
+
 
     /// <summary>Initializes the <see cref="KernelFunctionMetadata"/> for a function with the specified name.</summary>
     /// <param name="name">The name of the function.</param>
@@ -31,6 +37,7 @@ public sealed class KernelFunctionMetadata
     {
         this.Name = name;
     }
+
 
     /// <summary>Initializes a <see cref="KernelFunctionMetadata"/> as a copy of another <see cref="KernelFunctionMetadata"/>.</summary>
     /// <exception cref="ArgumentNullException">The <paramref name="metadata"/> was null.</exception>
@@ -47,6 +54,7 @@ public sealed class KernelFunctionMetadata
         this.Parameters = metadata.Parameters;
         this.ReturnParameter = metadata.ReturnParameter;
     }
+
 
     /// <summary>Gets the name of the function.</summary>
     public string Name

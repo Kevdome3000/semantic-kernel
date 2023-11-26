@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.UnitTests;
+
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 
-namespace SemanticKernel.UnitTests;
 
 /// <summary>Test helpers for working with native functions.</summary>
 internal static class FunctionHelpers

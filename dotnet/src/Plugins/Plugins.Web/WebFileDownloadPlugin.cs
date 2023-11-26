@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Plugins.Web;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -7,10 +9,9 @@ using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
 
-namespace Microsoft.SemanticKernel.Plugins.Web;
 
 /// <summary>
 /// Plugin to download web files.
@@ -25,6 +26,7 @@ public sealed class WebFileDownloadPlugin
     private readonly ILogger _logger;
     private readonly HttpClient _httpClient;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="WebFileDownloadPlugin"/> class.
     /// </summary>
@@ -33,6 +35,7 @@ public sealed class WebFileDownloadPlugin
         this(new HttpClient(NonDisposableHttpClientHandler.Instance, false), loggerFactory)
     {
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WebFileDownloadPlugin"/> class.
@@ -45,6 +48,7 @@ public sealed class WebFileDownloadPlugin
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(WebFileDownloadPlugin)) : NullLogger.Instance;
     }
 
+
     /// <summary>
     /// Downloads a file to a local file path.
     /// </summary>
@@ -55,8 +59,10 @@ public sealed class WebFileDownloadPlugin
     /// <exception cref="KeyNotFoundException">Thrown when the location where to download the file is not provided</exception>
     [KernelFunction, Description("Downloads a file to local storage")]
     public async Task DownloadToFileAsync(
-        [Description("URL of file to download")] Uri url,
-        [Description("Path where to save file locally")] string filePath,
+        [Description("URL of file to download")]
+        Uri url,
+        [Description("Path where to save file locally")]
+        string filePath,
         CancellationToken cancellationToken = default)
     {
         this._logger.LogDebug($"{nameof(this.DownloadToFileAsync)} got called");

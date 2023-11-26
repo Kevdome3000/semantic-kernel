@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.IntegrationTests;
+
 using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.SemanticKernel;
 
-namespace SemanticKernel.IntegrationTests;
 
 internal static class TestHelpers
 {
@@ -26,6 +27,7 @@ internal static class TestHelpers
             "QAPlugin");
     }
 
+
     internal static void ImportAllSampleSkills(Kernel kernel)
     {
         ImportSampleSemanticFunctions(kernel, "../../../../../../samples/skills",
@@ -42,14 +44,17 @@ internal static class TestHelpers
             "QASkill");
     }
 
+
     internal static IReadOnlyKernelPluginCollection ImportSamplePlugins(Kernel kernel, params string[] pluginNames)
     {
         return ImportSampleSemanticFunctions(kernel, "../../../../../../samples/plugins", pluginNames);
     }
 
+
     internal static IReadOnlyKernelPluginCollection ImportSampleSemanticFunctions(Kernel kernel, string path, params string[] pluginNames)
     {
         string? currentAssemblyDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
         if (string.IsNullOrWhiteSpace(currentAssemblyDirectory))
         {
             throw new InvalidOperationException("Unable to determine current assembly directory.");

@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Plugins.MsGraph;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -7,13 +9,12 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Plugins.MsGraph.Diagnostics;
-using Microsoft.SemanticKernel.Plugins.MsGraph.Models;
+using Diagnostics;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
+using Models;
+using Orchestration;
 
-namespace Microsoft.SemanticKernel.Plugins.MsGraph;
 
 /// <summary>
 /// Email plugin (e.g. Outlook).
@@ -46,13 +47,16 @@ public sealed class EmailPlugin
         public const string Skip = "skip";
     }
 
+
     private readonly IEmailConnector _connector;
     private readonly ILogger _logger;
+
     private static readonly JsonSerializerOptions s_options = new()
     {
         WriteIndented = false,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     };
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="EmailPlugin"/> class.
@@ -67,6 +71,7 @@ public sealed class EmailPlugin
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(EmailPlugin)) : NullLogger.Instance;
     }
 
+
     /// <summary>
     /// Get my email address.
     /// </summary>
@@ -74,13 +79,15 @@ public sealed class EmailPlugin
     public async Task<string> GetMyEmailAddressAsync()
         => await this._connector.GetMyEmailAddressAsync().ConfigureAwait(false);
 
+
     /// <summary>
     /// Send an email using <see cref="ContextVariables.Input"/> as the body.
     /// </summary>
     [KernelFunction, Description("Send an email to one or more recipients.")]
     public async Task SendEmailAsync(
         [Description("Email content/body")] string content,
-        [Description("Recipients of the email, separated by ',' or ';'.")] string recipients,
+        [Description("Recipients of the email, separated by ',' or ';'.")]
+        string recipients,
         [Description("Subject of the email")] string subject,
         CancellationToken cancellationToken = default)
     {
@@ -100,13 +107,16 @@ public sealed class EmailPlugin
         await this._connector.SendEmailAsync(subject, content, recipientList, cancellationToken).ConfigureAwait(false);
     }
 
+
     /// <summary>
     /// Get email messages with specified optional clauses used to query for messages.
     /// </summary>
     [KernelFunction, Description("Get email messages.")]
     public async Task<string> GetEmailMessagesAsync(
-        [Description("Optional limit of the number of message to retrieve.")] int? maxResults = 10,
-        [Description("Optional number of message to skip before retrieving results.")] int? skip = 0,
+        [Description("Optional limit of the number of message to retrieve.")]
+        int? maxResults = 10,
+        [Description("Optional number of message to skip before retrieving results.")]
+        int? skip = 0,
         CancellationToken cancellationToken = default)
     {
         this._logger.LogDebug("Getting email messages with query options top: '{0}', skip:'{1}'.", maxResults, skip);

@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.ComponentModel;
-using System.Reflection;
-using Microsoft.Extensions.Logging;
-
 #pragma warning disable IDE0130
 namespace Microsoft.SemanticKernel;
+
+using System.ComponentModel;
+using System.Reflection;
+using Extensions.Logging;
+
 
 /// <summary>
 /// Provides static factory methods for creating commonly-used plugin implementations.
@@ -24,6 +25,7 @@ public static class KernelPluginFactory
     /// </remarks>
     public static IKernelPlugin CreateFromObject<T>(string? pluginName = null, ILoggerFactory? loggerFactory = null) where T : new() =>
         CreateFromObject(new T(), pluginName, loggerFactory);
+
 
     /// <summary>Creates a plugin that wraps the specified target object.</summary>
     /// <param name="target">The instance of the class to be wrapped.</param>
@@ -46,6 +48,7 @@ public static class KernelPluginFactory
 
         // Filter out non-SKFunctions and fail if two functions have the same name (with or without the same casing).
         KernelPlugin plugin = new(pluginName, target.GetType().GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description);
+
         foreach (MethodInfo method in methods)
         {
             if (method.GetCustomAttribute<KernelFunctionAttribute>() is not null)
@@ -57,6 +60,7 @@ public static class KernelPluginFactory
         if (loggerFactory is not null)
         {
             ILogger logger = loggerFactory.CreateLogger(target.GetType());
+
             if (logger.IsEnabled(LogLevel.Trace))
             {
                 logger.LogTrace("Created plugin {PluginName} with {IncludedFunctions} out of {TotalMethods} methods found.", pluginName, plugin.FunctionCount, methods.Length);

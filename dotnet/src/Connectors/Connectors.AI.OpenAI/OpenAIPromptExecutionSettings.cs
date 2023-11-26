@@ -1,14 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
-using Microsoft.SemanticKernel.Text;
+using AzureSdk;
+using SemanticKernel.AI;
+using Text;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
 /// <summary>
 /// Request settings for an OpenAI completion request.
@@ -124,6 +125,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// </summary>
     internal static int DefaultTextMaxTokens { get; } = 256;
 
+
     /// <summary>
     /// Create a new settings object with the values from another settings object.
     /// </summary>
@@ -156,9 +158,12 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
         throw new ArgumentException($"Invalid request settings, cannot convert to {nameof(OpenAIPromptExecutionSettings)}", nameof(requestSettings));
     }
 
+
     #region private ================================================================================
 
     private string _chatSystemPrompt = OpenAIPromptExecutionSettings.DefaultChatSystemPrompt;
 
     #endregion
+
+
 }

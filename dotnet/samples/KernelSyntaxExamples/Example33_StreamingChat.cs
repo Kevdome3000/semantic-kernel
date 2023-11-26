@@ -6,6 +6,7 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
+
 /**
  * The following example shows how to use Semantic Kernel with streaming Chat Completion
  */
@@ -18,6 +19,7 @@ public static class Example33_StreamingChat
         await OpenAIChatStreamSampleAsync();
     }
 
+
     private static async Task OpenAIChatStreamSampleAsync()
     {
         Console.WriteLine("======== Open AI - ChatGPT Streaming ========");
@@ -27,17 +29,19 @@ public static class Example33_StreamingChat
         await StartStreamingChatAsync(openAIChatCompletion);
     }
 
+
     private static async Task AzureOpenAIChatStreamSampleAsync()
     {
         Console.WriteLine("======== Azure Open AI - ChatGPT Streaming ========");
 
         AzureOpenAIChatCompletion azureOpenAIChatCompletion = new(
-           TestConfiguration.AzureOpenAI.ChatDeploymentName,
-           TestConfiguration.AzureOpenAI.Endpoint,
-           TestConfiguration.AzureOpenAI.ApiKey);
+            TestConfiguration.AzureOpenAI.ChatDeploymentName,
+            TestConfiguration.AzureOpenAI.Endpoint,
+            TestConfiguration.AzureOpenAI.ApiKey);
 
         await StartStreamingChatAsync(azureOpenAIChatCompletion);
     }
+
 
     private static async Task StartStreamingChatAsync(IChatCompletion chatCompletion)
     {
@@ -46,6 +50,7 @@ public static class Example33_StreamingChat
 
         Console.WriteLine($"User: {prompt}");
         Console.WriteLine("------------------------");
+
         await foreach (var chatUpdate in chatCompletion.GetStreamingContentAsync<StreamingChatContent>(prompt))
         {
             if (!roleWritten && chatUpdate.Role.HasValue)

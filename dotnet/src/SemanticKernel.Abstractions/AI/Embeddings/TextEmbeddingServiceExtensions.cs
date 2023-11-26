@@ -1,12 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Services;
-
 // Use base namespace for better discoverability and to avoid conflicts with other extensions.
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel;
+
+using AI.Embeddings;
+using Services;
+
 #pragma warning restore IDE0130 // Namespace does not match folder structure
+
 
 /// <summary>
 /// Provides extension methods for working with text embedding services.
@@ -24,8 +26,9 @@ public static class TextEmbeddingServiceExtensions
     public static ITextEmbeddingGeneration GetTextEmbeddingService(
         this IAIServiceProvider services,
         string? serviceId = null)
-            => services.GetService<ITextEmbeddingGeneration>(serviceId)
-                ?? throw new KernelException("Text embedding service not found");
+        => services.GetService<ITextEmbeddingGeneration>(serviceId)
+           ?? throw new KernelException("Text embedding service not found");
+
 
     /// <summary>
     /// Returns true if a <see cref="ITextEmbeddingGeneration"/> exist with the specified ID.
@@ -36,5 +39,5 @@ public static class TextEmbeddingServiceExtensions
     public static bool HasTextEmbeddingService(
         this IAIServiceProvider services,
         string? serviceId = null)
-            => services.TryGetService<ITextEmbeddingGeneration>(serviceId, out _);
+        => services.TryGetService<ITextEmbeddingGeneration>(serviceId, out _);
 }

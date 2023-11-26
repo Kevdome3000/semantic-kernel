@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+namespace Microsoft.SemanticKernel.Planning;
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Planning;
 
 /// <summary>
 /// Planner config with semantic memory

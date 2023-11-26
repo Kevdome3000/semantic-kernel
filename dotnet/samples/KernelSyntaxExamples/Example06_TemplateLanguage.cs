@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Plugins.Core;
 using RepoUtils;
 
+
 // ReSharper disable once InconsistentNaming
 public static class Example06_TemplateLanguage
 {

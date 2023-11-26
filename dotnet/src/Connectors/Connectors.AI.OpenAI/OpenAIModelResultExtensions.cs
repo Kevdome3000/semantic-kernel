@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Azure.AI.OpenAI;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
-using Microsoft.SemanticKernel.Orchestration;
-
 #pragma warning disable IDE0130
 
 namespace Microsoft.SemanticKernel;
+
+using Azure.AI.OpenAI;
+using Connectors.AI.OpenAI.AzureSdk;
+using Orchestration;
+
 
 /// <summary>
 /// Provides extension methods for working with OpenAI model results.
@@ -22,6 +23,7 @@ public static class OpenAIModelResultExtension
     {
         return resultBase.GetResult<TextModelResult>();
     }
+
 
     /// <summary>
     /// Retrieves a typed <see cref="ChatCompletions"/> OpenAI / AzureOpenAI result from chat completion prompt.

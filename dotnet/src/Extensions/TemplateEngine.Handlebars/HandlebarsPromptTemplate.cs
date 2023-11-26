@@ -1,15 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.TemplateEngine.Handlebars;
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
 using HandlebarsDotNet;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Orchestration;
+using Orchestration;
 
-namespace Microsoft.SemanticKernel.TemplateEngine.Handlebars;
 
 internal class HandlebarsPromptTemplate : IPromptTemplate
 {
@@ -28,8 +29,10 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
         this._parameters = new(() => this.InitParameters());
     }
 
+
     /// <inheritdoc/>
     public IReadOnlyList<KernelParameterMetadata> Parameters => this._parameters.Value;
+
 
     /// <inheritdoc/>
     public async Task<string> RenderAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
@@ -55,16 +58,20 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
         return await Task.FromResult(prompt).ConfigureAwait(true);
     }
 
+
     #region private
+
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger _logger;
     private readonly string _templateString;
     private readonly PromptTemplateConfig _promptTemplateConfig;
     private readonly Lazy<IReadOnlyList<KernelParameterMetadata>> _parameters;
 
+
     private List<KernelParameterMetadata> InitParameters()
     {
         List<KernelParameterMetadata> parameters = new(this._promptTemplateConfig.Input.Parameters.Count);
+
         foreach (var p in this._promptTemplateConfig.Input.Parameters)
         {
             parameters.Add(new KernelParameterMetadata(p.Name)
@@ -77,9 +84,11 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
         return parameters;
     }
 
+
     private Dictionary<string, string> GetVariables(ContextVariables variables)
     {
         Dictionary<string, string> result = new();
+
         foreach (var p in this._promptTemplateConfig.Input.Parameters)
         {
             if (!string.IsNullOrEmpty(p.DefaultValue))
@@ -97,5 +106,6 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
     }
 
     #endregion
+
 
 }

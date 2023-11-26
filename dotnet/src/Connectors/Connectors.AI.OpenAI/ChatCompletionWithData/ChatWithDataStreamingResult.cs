@@ -1,20 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
-using Microsoft.SemanticKernel.Orchestration;
+using AzureSdk;
+using Orchestration;
+using SemanticKernel.AI.ChatCompletion;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 
 internal sealed class ChatWithDataStreamingResult
 {
     public ModelResult ModelResult { get; }
+
 
     public ChatWithDataStreamingResult(ChatWithDataStreamingResponse response, ChatWithDataStreamingChoice choice)
     {
@@ -29,6 +31,7 @@ internal sealed class ChatWithDataStreamingResult
         this._choice = choice;
     }
 
+
     public async IAsyncEnumerable<ChatMessage> GetStreamingChatMessageAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var message = await this.GetChatMessageAsync(cancellationToken).ConfigureAwait(false);
@@ -39,7 +42,9 @@ internal sealed class ChatWithDataStreamingResult
         }
     }
 
+
     #region private ================================================================================
+
     private async Task<ChatMessage> GetChatMessageAsync(CancellationToken cancellationToken = default)
     {
         var message = this._choice.Messages.FirstOrDefault(this.IsValidMessage);
@@ -49,13 +54,16 @@ internal sealed class ChatWithDataStreamingResult
         return await Task.FromResult<ChatMessage>(result).ConfigureAwait(false);
     }
 
+
     private readonly ChatWithDataStreamingChoice _choice;
+
 
     private bool IsValidMessage(ChatWithDataStreamingMessage message)
     {
         return !message.EndTurn &&
-            (message.Delta.Role is null || !message.Delta.Role.Equals(AuthorRole.Tool.Label, StringComparison.Ordinal));
+               (message.Delta.Role is null || !message.Delta.Role.Equals(AuthorRole.Tool.Label, StringComparison.Ordinal));
     }
+
 
     private string? GetToolContent(ChatWithDataStreamingChoice choice)
     {
@@ -66,4 +74,6 @@ internal sealed class ChatWithDataStreamingResult
     }
 
     #endregion
+
+
 }

@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Plugins.Web;
+
 using System;
 using System.ComponentModel;
 using System.Linq;
@@ -7,7 +9,6 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Plugins.Web;
 
 /// <summary>
 /// Web search engine plugin (e.g. Bing).
@@ -26,6 +27,7 @@ public sealed class WebSearchEnginePlugin
 
     private readonly IWebSearchEngineConnector _connector;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="WebSearchEnginePlugin"/> class.
     /// </summary>
@@ -34,6 +36,7 @@ public sealed class WebSearchEnginePlugin
     {
         this._connector = connector;
     }
+
 
     /// <summary>
     /// Performs a web search using the provided query, count, and offset.
@@ -47,10 +50,12 @@ public sealed class WebSearchEnginePlugin
     public async Task<string> SearchAsync(
         [Description("Search query")] string query,
         [Description("Number of results")] int count = 10,
-        [Description("Number of results to skip")] int offset = 0,
+        [Description("Number of results to skip")]
+        int offset = 0,
         CancellationToken cancellationToken = default)
     {
         var results = await this._connector.SearchAsync(query, count, offset, cancellationToken).ConfigureAwait(false);
+
         if (!results.Any())
         {
             throw new InvalidOperationException("Failed to get a response from the web search engine.");

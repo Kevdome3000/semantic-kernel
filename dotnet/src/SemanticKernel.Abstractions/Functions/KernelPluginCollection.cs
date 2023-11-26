@@ -1,5 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable RCS1168 // Parameter name differs from base name.
+#pragma warning disable CA1725 // Parameter names should match base declaration
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+
+namespace Microsoft.SemanticKernel;
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,11 +13,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
-#pragma warning disable RCS1168 // Parameter name differs from base name.
-#pragma warning disable CA1725 // Parameter names should match base declaration
-#pragma warning disable IDE0130 // Namespace does not match folder structure
-
-namespace Microsoft.SemanticKernel;
 
 /// <summary>Provides a collection of <see cref="IKernelPlugin"/>s.</summary>
 /// <remarks>
@@ -25,8 +26,10 @@ public sealed class KernelPluginCollection : ICollection<IKernelPlugin>, IReadOn
     /// <summary>The underlying dictionary of plugins.</summary>
     private readonly Dictionary<string, IKernelPlugin> _plugins;
 
+
     /// <summary>Initializes a collection of plugins.</summary>
     public KernelPluginCollection() => this._plugins = new(StringComparer.OrdinalIgnoreCase);
+
 
     /// <summary>Initializes a collection of plugins that contains all of the plugins from the provided collection.</summary>
     /// <param name="plugins">The initial collection of plugins to populate this collection.</param>
@@ -43,6 +46,7 @@ public sealed class KernelPluginCollection : ICollection<IKernelPlugin>, IReadOn
         else
         {
             this._plugins = new(plugins is ICollection<IKernelPlugin> c ? c.Count : 0, StringComparer.OrdinalIgnoreCase);
+
             foreach (IKernelPlugin plugin in plugins)
             {
                 this.Add(plugin);
@@ -50,8 +54,10 @@ public sealed class KernelPluginCollection : ICollection<IKernelPlugin>, IReadOn
         }
     }
 
+
     /// <summary>Gets the number of plugins in the collection.</summary>
     public int Count => this._plugins.Count;
+
 
     /// <summary>Adds the plugin to the plugin collection.</summary>
     /// <param name="plugin">The plugin to add.</param>
@@ -67,6 +73,7 @@ public sealed class KernelPluginCollection : ICollection<IKernelPlugin>, IReadOn
 
         this._plugins.Add(name, plugin);
     }
+
 
     /// <summary>Adds a collection of plugins to this plugin collection.</summary>
     /// <param name="plugins">The plugins to add.</param>
@@ -84,6 +91,7 @@ public sealed class KernelPluginCollection : ICollection<IKernelPlugin>, IReadOn
         }
     }
 
+
     /// <summary>Removes the specified plugin from the collection.</summary>
     /// <param name="plugin">The plugin to remove.</param>
     /// <returns>true if <paramref name="plugin"/> was in the collection and could be removed; otherwise, false.</returns>
@@ -99,14 +107,18 @@ public sealed class KernelPluginCollection : ICollection<IKernelPlugin>, IReadOn
         return false;
     }
 
+
     /// <summary>Removes all plugins from the collection.</summary>
     public void Clear() => this._plugins.Clear();
+
 
     /// <summary>Gets an enumerable of all plugins stored in this collection.</summary>
     public IEnumerator<IKernelPlugin> GetEnumerator() => this._plugins.Values.GetEnumerator();
 
+
     /// <summary>Gets an enumerable of all plugins stored in this collection.</summary>
     IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
+
 
     /// <summary>Gets whether the collection contains the specified plugin.</summary>
     /// <param name="plugin">The plugin.</param>
@@ -117,6 +129,7 @@ public sealed class KernelPluginCollection : ICollection<IKernelPlugin>, IReadOn
 
         return this._plugins.TryGetValue(plugin.Name, out IKernelPlugin? existing) && plugin == existing;
     }
+
 
     /// <inheritdoc/>
     public IKernelPlugin this[string name]
@@ -132,6 +145,7 @@ public sealed class KernelPluginCollection : ICollection<IKernelPlugin>, IReadOn
         }
     }
 
+
     /// <summary>Gets a plugin from the collection by name.</summary>
     /// <param name="name">The name of the plugin.</param>
     /// <param name="plugin">The plugin if found in the collection.</param>
@@ -139,10 +153,13 @@ public sealed class KernelPluginCollection : ICollection<IKernelPlugin>, IReadOn
     public bool TryGetPlugin(string name, [NotNullWhen(true)] out IKernelPlugin? plugin) =>
         this._plugins.TryGetValue(name, out plugin);
 
+
     void ICollection<IKernelPlugin>.CopyTo(IKernelPlugin[] array, int arrayIndex) =>
         ((IDictionary<string, IKernelPlugin>)this._plugins).Values.CopyTo(array, arrayIndex);
 
+
     bool ICollection<IKernelPlugin>.IsReadOnly => false;
+
 
     /// <summary>Debugger type proxy for nicer interaction with the collection in a debugger.</summary>
     private sealed class TypeProxy

@@ -1,18 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
+
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Azure.Core;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
-using Microsoft.SemanticKernel.Services;
+using AzureSdk;
+using Extensions.Logging;
+using SemanticKernel.AI;
+using SemanticKernel.AI.TextCompletion;
+using Services;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 
 /// <summary>
 /// Azure OpenAI text completion client.
@@ -22,6 +23,7 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
 {
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
+
 
     /// <summary>
     /// Creates a new AzureTextCompletion client instance using API Key auth
@@ -43,6 +45,7 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
         this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
     }
 
+
     /// <summary>
     /// Creates a new AzureTextCompletion client instance supporting AAD auth
     /// </summary>
@@ -63,6 +66,7 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
         this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
     }
 
+
     /// <summary>
     /// Creates a new AzureTextCompletion client instance using the specified OpenAIClient
     /// </summary>
@@ -79,6 +83,7 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
         this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
     }
 
+
     /// <inheritdoc/>
     public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
         string text,
@@ -88,6 +93,7 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
         this.LogActionDetails();
         return this.InternalGetTextResultsAsync(text, requestSettings, cancellationToken);
     }
+
 
     /// <inheritdoc/>
     public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, PromptExecutionSettings? requestSettings = null, CancellationToken cancellationToken = default)

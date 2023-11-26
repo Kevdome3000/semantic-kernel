@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Plugins.Web;
+
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Encodings.Web;
 
-namespace Microsoft.SemanticKernel.Plugins.Web;
 
 /// <summary>
 /// Get search URLs for various websites
@@ -25,6 +26,7 @@ public sealed class SearchUrlPlugin
         return $"https://www.amazon.com/s?k={encoded}";
     }
 
+
     /**
      * Bing Search URLs
      */
@@ -38,6 +40,7 @@ public sealed class SearchUrlPlugin
         return $"https://www.bing.com/search?q={encoded}";
     }
 
+
     /// <summary>
     /// Get search URL for Bing Images
     /// </summary>
@@ -47,6 +50,7 @@ public sealed class SearchUrlPlugin
         string encoded = UrlEncoder.Default.Encode(query);
         return $"https://www.bing.com/images/search?q={encoded}";
     }
+
 
     /// <summary>
     /// Get search URL for Bing Maps
@@ -58,6 +62,7 @@ public sealed class SearchUrlPlugin
         return $"https://www.bing.com/maps?q={encoded}";
     }
 
+
     /// <summary>
     /// Get search URL for Bing Shopping
     /// </summary>
@@ -67,6 +72,7 @@ public sealed class SearchUrlPlugin
         string encoded = UrlEncoder.Default.Encode(query);
         return $"https://www.bing.com/shop?q={encoded}";
     }
+
 
     /// <summary>
     /// Get search URL for Bing News
@@ -78,6 +84,7 @@ public sealed class SearchUrlPlugin
         return $"https://www.bing.com/news/search?q={encoded}";
     }
 
+
     /// <summary>
     /// Get search URL for Bing Travel
     /// </summary>
@@ -87,6 +94,7 @@ public sealed class SearchUrlPlugin
         string encoded = UrlEncoder.Default.Encode(query);
         return $"https://www.bing.com/travel/search?q={encoded}";
     }
+
 
     /**
      * Facebook Search URLs
@@ -101,6 +109,7 @@ public sealed class SearchUrlPlugin
         return $"https://www.facebook.com/search/top/?q={encoded}";
     }
 
+
     /**
      * GitHub Search URLs
      */
@@ -113,6 +122,7 @@ public sealed class SearchUrlPlugin
         string encoded = UrlEncoder.Default.Encode(query);
         return $"https://github.com/search?q={encoded}";
     }
+
 
     /**
      * LinkedIn Search URLs
@@ -127,6 +137,7 @@ public sealed class SearchUrlPlugin
         return $"https://www.linkedin.com/search/results/index/?keywords={encoded}";
     }
 
+
     /**
      * Twitter Search URLs
      */
@@ -139,6 +150,7 @@ public sealed class SearchUrlPlugin
         string encoded = UrlEncoder.Default.Encode(query);
         return $"https://twitter.com/search?q={encoded}";
     }
+
 
     /**
      * Wikipedia Search URLs

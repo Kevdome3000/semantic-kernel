@@ -1,16 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Plugins.Document;
+
 using System;
 using System.ComponentModel;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Plugins.Document.FileSystem;
-
-namespace Microsoft.SemanticKernel.Plugins.Document;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
+using FileSystem;
+using Orchestration;
 
 //**********************************************************************************************************************
 // EXAMPLE USAGE
@@ -33,6 +33,7 @@ namespace Microsoft.SemanticKernel.Plugins.Document;
 // Console.WriteLine(result);
 //**********************************************************************************************************************
 
+
 /// <summary>
 /// Plugin for interacting with documents (e.g. Microsoft Word)
 /// </summary>
@@ -49,9 +50,11 @@ public sealed class DocumentPlugin
         public const string FilePath = "filePath";
     }
 
+
     private readonly IDocumentConnector _documentConnector;
     private readonly IFileSystemConnector _fileSystemConnector;
     private readonly ILogger _logger;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DocumentPlugin"/> class.
@@ -66,18 +69,21 @@ public sealed class DocumentPlugin
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(DocumentPlugin)) : NullLogger.Instance;
     }
 
+
     /// <summary>
     /// Read all text from a document, using <see cref="ContextVariables.Input"/> as the file path.
     /// </summary>
     [KernelFunction, Description("Read all text from a document")]
     public async Task<string> ReadTextAsync(
-        [Description("Path to the file to read")] string filePath,
+        [Description("Path to the file to read")]
+        string filePath,
         CancellationToken cancellationToken = default)
     {
         this._logger.LogDebug("Reading text from {0}", filePath);
         using var stream = await this._fileSystemConnector.GetFileContentStreamAsync(filePath, cancellationToken).ConfigureAwait(false);
         return this._documentConnector.ReadText(stream);
     }
+
 
     /// <summary>
     /// Append the text in <see cref="ContextVariables.Input"/> to a document. If the document doesn't exist, it will be created.

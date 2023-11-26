@@ -1,20 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0130
+namespace Microsoft.SemanticKernel.Planning;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
 using Json.Schema;
 using Json.Schema.Generation;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Memory;
+using Memory;
 
-#pragma warning disable IDE0130
-namespace Microsoft.SemanticKernel.Planning;
 #pragma warning restore IDE0130
+
 
 /// <summary>
 /// Provides extension methods for the <see cref="IReadOnlyKernelPluginCollection"/> implementations for planners.
@@ -22,6 +24,7 @@ namespace Microsoft.SemanticKernel.Planning;
 internal static class ReadOnlyPluginCollectionPlannerExtensions
 {
     internal const string PlannerMemoryCollectionName = "Planning.SKFunctionsManual";
+
 
     /// <summary>
     /// Returns a function callback that can be used to retrieve a function from the function provider.
@@ -36,6 +39,7 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
             return pluginFunction;
         };
     }
+
 
     /// <summary>
     /// Returns a string containing the manual for all available functions.
@@ -58,6 +62,7 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
         return string.Join("\n\n", availableFunctions.Select(x => x.ToManualString()));
     }
 
+
     /// <summary>
     /// Returns a string containing the manual for all available functions in a JSON Schema format.
     /// </summary>
@@ -77,9 +82,9 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
         CancellationToken cancellationToken = default)
     {
         static KernelJsonSchema? CreateSchema(Type? type, string? description) =>
-            type is null ?
-                null :
-                KernelJsonSchema.Parse(JsonSerializer.Serialize(
+            type is null
+                ? null
+                : KernelJsonSchema.Parse(JsonSerializer.Serialize(
                     new JsonSchemaBuilder()
                         .FromType(type)
                         .Description(description ?? string.Empty)
@@ -89,6 +94,7 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
         var manuals = availableFunctions.Select(x => x.ToJsonSchemaFunctionView(CreateSchema, includeOutputSchema));
         return JsonSerializer.Serialize(manuals);
     }
+
 
     /// <summary>
     /// Returns a list of functions that are available to the user based on the semantic query and the excluded plugins and functions.
@@ -106,10 +112,9 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
         ILogger? logger,
         CancellationToken cancellationToken)
     {
-        return config.GetAvailableFunctionsAsync is null ?
-            await plugins.GetAvailableFunctionsAsync(config, semanticQuery, logger, cancellationToken).ConfigureAwait(false) :
-            await config.GetAvailableFunctionsAsync(config, semanticQuery, cancellationToken).ConfigureAwait(false);
+        return config.GetAvailableFunctionsAsync is null ? await plugins.GetAvailableFunctionsAsync(config, semanticQuery, logger, cancellationToken).ConfigureAwait(false) : await config.GetAvailableFunctionsAsync(config, semanticQuery, cancellationToken).ConfigureAwait(false);
     }
+
 
     /// <summary>
     /// Returns a list of functions that are available to the user based on the semantic query and the excluded plugins and functions.
@@ -131,11 +136,12 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
 
         var availableFunctions = functionsView
             .Where(s => !config.ExcludedPlugins.Contains(s.PluginName, StringComparer.OrdinalIgnoreCase)
-                && !config.ExcludedFunctions.Contains(s.Name, StringComparer.OrdinalIgnoreCase))
+                        && !config.ExcludedFunctions.Contains(s.Name, StringComparer.OrdinalIgnoreCase))
             .ToList();
 
         List<KernelFunctionMetadata>? result = null;
         var semanticMemoryConfig = config.SemanticMemoryConfig;
+
         if (string.IsNullOrEmpty(semanticQuery) || semanticMemoryConfig is null || semanticMemoryConfig.Memory is NullMemory)
         {
             // If no semantic query is provided, return all available functions.
@@ -173,6 +179,7 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
             .ThenBy(x => x.Name);
     }
 
+
     private static async Task<IEnumerable<KernelFunctionMetadata>> GetRelevantFunctionsAsync(
         IEnumerable<KernelFunctionMetadata> availableFunctions,
         IAsyncEnumerable<MemoryQueryResult> memories,
@@ -180,9 +187,11 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
         CancellationToken cancellationToken = default)
     {
         var relevantFunctions = new List<KernelFunctionMetadata>();
+
         await foreach (var memoryEntry in memories.WithCancellation(cancellationToken))
         {
             var function = availableFunctions.FirstOrDefault(x => x.ToFullyQualifiedName() == memoryEntry.Metadata.Id);
+
             if (function != null)
             {
                 if (logger.IsEnabled(LogLevel.Debug))
@@ -196,6 +205,7 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
 
         return relevantFunctions;
     }
+
 
     /// <summary>
     /// Saves all available functions to memory.
@@ -218,6 +228,7 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
             // It'd be nice if there were a saveIfNotExists method on the memory interface
             var memoryEntry = await memory.GetAsync(collection: PlannerMemoryCollectionName, key: key, withEmbedding: false,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
+
             if (memoryEntry == null)
             {
                 // TODO It'd be nice if the minRelevanceScore could be a parameter for each item that was saved to memory

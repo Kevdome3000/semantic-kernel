@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace Microsoft.SemanticKernel.Planning.Handlebars;
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -8,10 +11,8 @@ using System.Text.Json;
 using System.Threading;
 using HandlebarsDotNet;
 using HandlebarsDotNet.Compiler;
-using Microsoft.SemanticKernel.Orchestration;
+using Orchestration;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
-namespace Microsoft.SemanticKernel.Planning.Handlebars;
 
 /// <summary>
 /// Provides extension methods for rendering Handlebars templates in the context of a Semantic Kernel.
@@ -27,6 +28,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
     /// The character used to delimit the plugin name and function name in a Handlebars template.
     /// </summary>
     public const string ReservedNameDelimiter = "-";
+
 
     /// <summary>
     /// Renders a Handlebars template in the context of a Semantic Kernel.
@@ -62,6 +64,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
         var compiledTemplate = handlebarsInstance.Compile(template);
         return compiledTemplate(variables);
     }
+
 
     private static void RegisterFunctionAsHelper(
         Kernel kernel,
@@ -100,6 +103,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
         });
     }
 
+
     private static void RegisterSystemHelpers(
         IHandlebars handlebarsInstance,
         Dictionary<string, object?> variables
@@ -109,6 +113,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
         handlebarsInstance.RegisterHelper("or", (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
             var isAtLeastOneTruthy = false;
+
             foreach (var arg in arguments)
             {
                 if (arg is not null)
@@ -265,6 +270,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
         {
             var name = string.Empty;
             object value = string.Empty;
+
             if (arguments[0].GetType() == typeof(HashParameterDictionary))
             {
                 // Get the parameters from the template arguments
@@ -300,6 +306,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
         });
     }
 
+
     private static bool IsNumericType(Type? type) =>
         type is not null &&
         Type.GetTypeCode(type) is
@@ -308,6 +315,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
             TypeCode.Double or TypeCode.Single or
             TypeCode.Decimal;
 
+
     private static bool TryParseAnyNumber(string? input) =>
         // Check if input can be parsed as any of these numeric types.
         // We only need to check the largest types, as if they fail, the smaller types will also fail.
@@ -315,6 +323,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
         ulong.TryParse(input, out _) ||
         double.TryParse(input, out _) ||
         decimal.TryParse(input, out _);
+
 
     private static double CastToNumber(object number)
     {
@@ -327,6 +336,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
             return Convert.ToDouble(number, CultureInfo.InvariantCulture);
         }
     }
+
 
     /// <summary>
     /// Checks if handlebars argument is a valid type for the function parameter.
@@ -355,6 +365,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
             (IsNumericType(argument?.GetType()) || TryParseAnyNumber(argument?.ToString()));
     }
 
+
     /// <summary>
     /// Processes the hash arguments passed to a Handlebars helper function.
     /// </summary>
@@ -381,6 +392,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
         }
     }
 
+
     /// <summary>
     /// Processes the positional arguments passed to a Handlebars helper function.
     /// </summary>
@@ -391,12 +403,15 @@ internal sealed class HandlebarsTemplateEngineExtensions
     private static void ProcessPositionalArguments(KernelFunctionMetadata functionMetadata, Dictionary<string, object?> variables, Arguments handlebarArgs)
     {
         var requiredParameters = functionMetadata.Parameters.Where(p => p.IsRequired).ToList();
+
         if (handlebarArgs.Length >= requiredParameters.Count && handlebarArgs.Length <= functionMetadata.Parameters.Count)
         {
             var argIndex = 0;
+
             foreach (var arg in handlebarArgs)
             {
                 var param = functionMetadata.Parameters[argIndex];
+
                 if (IsExpectedParameterType(param, arg))
                 {
                     variables[param.Name] = handlebarArgs[argIndex];
@@ -414,6 +429,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
         }
     }
 
+
     /// <summary>
     /// Initializes the variables in the SK function context with the variables maintained by the Handlebars template engine.
     /// </summary>
@@ -425,6 +441,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
         {
             var value = v.Value ?? "";
             var varString = !KernelParameterMetadataExtensions.IsPrimitiveOrStringType(value.GetType()) ? JsonSerializer.Serialize(value) : value.ToString();
+
             if (contextVariables.ContainsKey(v.Key))
             {
                 contextVariables[v.Key] = varString;
@@ -435,6 +452,7 @@ internal sealed class HandlebarsTemplateEngineExtensions
             }
         }
     }
+
 
     /// <summary>
     /// Invokes an SK function and returns a typed result, if specified.

@@ -61,6 +61,7 @@ public class StreamingChatContent : StreamingContent
     /// <inheritdoc/>
     public override string ToString() => this.Content ?? string.Empty;
 
+
     /// <summary>
     /// Retrieve the resulting function from the chat result.
     /// </summary>
@@ -70,6 +71,7 @@ public class StreamingChatContent : StreamingContent
     {
         StringBuilder arguments = new();
         FunctionCall? functionCall = null;
+
         foreach (var message in fullContent)
         {
             functionCall ??= message?.FunctionCall;

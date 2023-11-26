@@ -7,6 +7,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using RepoUtils;
 
+
 // ReSharper disable once InconsistentNaming
 public static class Example58_ConfigureRequestSettings
 {

@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.UnitTests.Functions;
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -11,7 +13,7 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Functions;
+
 public class OrderedIAIServiceConfigurationProviderTests
 {
     [Fact]
@@ -26,6 +28,7 @@ public class OrderedIAIServiceConfigurationProviderTests
         // Assert
         Assert.Throws<KernelException>(() => serviceSelector.SelectAIService<ITextCompletion>(kernel, new ContextVariables(), function));
     }
+
 
     [Fact]
     public void ItGetsAIServiceConfigurationForSingleAIService()
@@ -43,6 +46,7 @@ public class OrderedIAIServiceConfigurationProviderTests
         Assert.Null(defaultRequestSettings);
     }
 
+
     [Fact]
     public void ItGetsAIServiceConfigurationForSingleTextCompletion()
     {
@@ -59,6 +63,7 @@ public class OrderedIAIServiceConfigurationProviderTests
         Assert.NotNull(aiService);
         Assert.Null(defaultRequestSettings);
     }
+
 
     [Fact]
     public void ItGetsAIServiceConfigurationForTextCompletionByServiceId()
@@ -81,6 +86,7 @@ public class OrderedIAIServiceConfigurationProviderTests
         Assert.Equal(requestSettings, defaultRequestSettings);
     }
 
+
     [Fact]
     public void ItThrowsAnSKExceptionForNotFoundService()
     {
@@ -98,6 +104,7 @@ public class OrderedIAIServiceConfigurationProviderTests
         // Assert
         Assert.Throws<KernelException>(() => serviceSelector.SelectAIService<ITextCompletion>(kernel, variables, function));
     }
+
 
     [Fact]
     public void ItUsesDefaultServiceForEmptyModelSettings()
@@ -118,6 +125,7 @@ public class OrderedIAIServiceConfigurationProviderTests
         Assert.Equal(kernel.ServiceProvider.GetService<ITextCompletion>("service2"), aiService);
         Assert.Null(defaultRequestSettings);
     }
+
 
     [Fact]
     public void ItUsesDefaultServiceAndSettings()
@@ -141,6 +149,7 @@ public class OrderedIAIServiceConfigurationProviderTests
         Assert.Equal(requestSettings, defaultRequestSettings);
     }
 
+
     [Fact]
     public void ItUsesDefaultServiceAndSettingsEmptyServiceId()
     {
@@ -162,6 +171,7 @@ public class OrderedIAIServiceConfigurationProviderTests
         Assert.Equal(requestSettings, defaultRequestSettings);
     }
 
+
     [Theory]
     [InlineData(new string[] { "service1" }, "service1")]
     [InlineData(new string[] { "service2" }, "service2")]
@@ -177,6 +187,7 @@ public class OrderedIAIServiceConfigurationProviderTests
             .Build();
         var variables = new ContextVariables();
         var modelSettings = new List<PromptExecutionSettings>();
+
         foreach (var serviceId in serviceIds)
         {
             modelSettings.Add(new PromptExecutionSettings() { ServiceId = serviceId });
@@ -192,7 +203,9 @@ public class OrderedIAIServiceConfigurationProviderTests
         Assert.Equal(expectedServiceId, defaultRequestSettings!.ServiceId);
     }
 
+
     #region private
+
     private sealed class AIService : IAIService
     {
         public IReadOnlyDictionary<string, string> Attributes => new Dictionary<string, string>();
@@ -200,21 +213,27 @@ public class OrderedIAIServiceConfigurationProviderTests
         public string? ModelId { get; }
     }
 
+
     private sealed class TextCompletion : ITextCompletion
     {
         public IReadOnlyDictionary<string, string> Attributes => new Dictionary<string, string>();
 
         public string? ModelId { get; }
 
+
         public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, PromptExecutionSettings? requestSettings = null, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
+
 
         public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, PromptExecutionSettings? requestSettings = null, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
     }
+
     #endregion
+
+
 }

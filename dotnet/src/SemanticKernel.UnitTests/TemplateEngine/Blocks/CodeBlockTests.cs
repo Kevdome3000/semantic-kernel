@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.UnitTests.TemplateEngine.Blocks;
+
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -12,12 +14,12 @@ using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.TemplateEngine.Blocks;
 
 public class CodeBlockTests
 {
     private readonly ILoggerFactory _logger = NullLoggerFactory.Instance;
     private readonly Kernel _kernel = new(new Mock<IAIServiceProvider>().Object);
+
 
     [Fact]
     public async Task ItThrowsIfAFunctionDoesntExistAsync()
@@ -29,6 +31,7 @@ public class CodeBlockTests
         // Act & Assert
         await Assert.ThrowsAsync<KeyNotFoundException>(() => target.RenderCodeAsync(this._kernel, variables));
     }
+
 
     [Fact]
     public async Task ItThrowsIfAFunctionCallThrowsAsync()
@@ -47,6 +50,7 @@ public class CodeBlockTests
         await Assert.ThrowsAsync<FormatException>(() => target.RenderCodeAsync(this._kernel, variables));
     }
 
+
     [Fact]
     public void ItHasTheCorrectType()
     {
@@ -57,12 +61,14 @@ public class CodeBlockTests
         Assert.Equal(BlockTypes.Code, target.Type);
     }
 
+
     [Fact]
     public void ItTrimsSpaces()
     {
         // Act + Assert
         Assert.Equal("aa", new CodeBlock("  aa  ", NullLoggerFactory.Instance).Content);
     }
+
 
     [Fact]
     public void ItChecksValidityOfInternalBlocks()
@@ -80,6 +86,7 @@ public class CodeBlockTests
         Assert.True(codeBlock1.IsValid(out _));
         Assert.False(codeBlock2.IsValid(out _));
     }
+
 
     [Fact]
     public void ItRequiresAValidFunctionCall()
@@ -124,6 +131,7 @@ public class CodeBlockTests
         Assert.Equal("Unexpected named argument found. Expected function name first.", errorMessage7);
     }
 
+
     [Fact]
     public async Task ItRendersCodeBlockConsistingOfJustAVarBlock1Async()
     {
@@ -137,6 +145,7 @@ public class CodeBlockTests
         // Assert
         Assert.Equal("foo", result);
     }
+
 
     [Fact]
     public async Task ItRendersCodeBlockConsistingOfJustAVarBlock2Async()
@@ -153,6 +162,7 @@ public class CodeBlockTests
         Assert.Equal("bar", result);
     }
 
+
     [Fact]
     public async Task ItRendersCodeBlockConsistingOfJustAValBlock1Async()
     {
@@ -166,6 +176,7 @@ public class CodeBlockTests
         // Assert
         Assert.Equal("ciao", result);
     }
+
 
     [Fact]
     public async Task ItRendersCodeBlockConsistingOfJustAValBlock2Async()
@@ -182,6 +193,7 @@ public class CodeBlockTests
         Assert.Equal("arrivederci", result);
     }
 
+
     [Fact]
     public async Task ItInvokesFunctionCloningAllVariablesAsync()
     {
@@ -194,16 +206,16 @@ public class CodeBlockTests
         var canary2 = string.Empty;
 
         var function = KernelFunctionFactory.CreateFromMethod((ContextVariables localVariables) =>
-        {
-            canary0 = localVariables["input"];
-            canary1 = localVariables["var1"];
-            canary2 = localVariables["var2"];
+            {
+                canary0 = localVariables["input"];
+                canary1 = localVariables["var1"];
+                canary2 = localVariables["var2"];
 
-            localVariables["input"] = "overridden";
-            localVariables["var1"] = "overridden";
-            localVariables["var2"] = "overridden";
-        },
-        "function");
+                localVariables["input"] = "overridden";
+                localVariables["var1"] = "overridden";
+                localVariables["var2"] = "overridden";
+            },
+            "function");
 
         this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { function }));
 
@@ -222,6 +234,7 @@ public class CodeBlockTests
         Assert.Equal("due", variables["var2"]);
     }
 
+
     [Fact]
     public async Task ItInvokesFunctionWithCustomVariableAsync()
     {
@@ -236,10 +249,10 @@ public class CodeBlockTests
         var canary = string.Empty;
 
         var function = KernelFunctionFactory.CreateFromMethod((ContextVariables localVariables) =>
-        {
-            canary = localVariables["input"];
-        },
-        "function");
+            {
+                canary = localVariables["input"];
+            },
+            "function");
 
         this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { function }));
 
@@ -251,6 +264,7 @@ public class CodeBlockTests
         Assert.Equal(VarValue, result);
         Assert.Equal(VarValue, canary);
     }
+
 
     [Fact]
     public async Task ItInvokesFunctionWithCustomValueAsync()
@@ -265,10 +279,10 @@ public class CodeBlockTests
         var canary = string.Empty;
 
         var function = KernelFunctionFactory.CreateFromMethod((ContextVariables localVariables) =>
-        {
-            canary = localVariables["input"];
-        },
-        "function");
+            {
+                canary = localVariables["input"];
+            },
+            "function");
 
         this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { function }));
 
@@ -280,6 +294,7 @@ public class CodeBlockTests
         Assert.Equal(Value, result);
         Assert.Equal(Value, canary);
     }
+
 
     [Fact]
     public async Task ItInvokesFunctionWithNamedArgsAsync()
@@ -301,11 +316,11 @@ public class CodeBlockTests
         var baz = string.Empty;
 
         var function = KernelFunctionFactory.CreateFromMethod((ContextVariables localVariables) =>
-        {
-            foo = localVariables["foo"];
-            baz = localVariables["baz"];
-        },
-        "function");
+            {
+                foo = localVariables["foo"];
+                baz = localVariables["baz"];
+            },
+            "function");
 
         this._kernel.Plugins.Add(new KernelPlugin("plugin", new[] { function }));
 

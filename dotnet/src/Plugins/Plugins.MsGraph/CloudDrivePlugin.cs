@@ -1,16 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Plugins.MsGraph;
+
 using System;
 using System.ComponentModel;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Plugins.MsGraph.Diagnostics;
+using Diagnostics;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
+using Orchestration;
 
-namespace Microsoft.SemanticKernel.Plugins.MsGraph;
 
 /// <summary>
 /// Cloud drive plugin (e.g. OneDrive).
@@ -28,8 +29,10 @@ public sealed class CloudDrivePlugin
         public const string DestinationPath = "destinationPath";
     }
 
+
     private readonly ICloudDriveConnector _connector;
     private readonly ILogger _logger;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CloudDrivePlugin"/> class.
@@ -43,6 +46,7 @@ public sealed class CloudDrivePlugin
         this._connector = connector;
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(CloudDrivePlugin)) : NullLogger.Instance;
     }
+
 
     /// <summary>
     /// Get the contents of a file stored in a cloud drive.
@@ -64,6 +68,7 @@ public sealed class CloudDrivePlugin
         return content;
     }
 
+
     /// <summary>
     /// Upload a small file to OneDrive (less than 4MB).
     /// </summary>
@@ -73,7 +78,8 @@ public sealed class CloudDrivePlugin
     [KernelFunction, Description("Upload a small file to OneDrive (less than 4MB).")]
     public async Task UploadFileAsync(
         [Description("Path to file")] string filePath,
-        [Description("Remote path to store the file")] string destinationPath,
+        [Description("Remote path to store the file")]
+        string destinationPath,
         CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(destinationPath))
@@ -86,6 +92,7 @@ public sealed class CloudDrivePlugin
         // TODO Add support for large file uploads (i.e. upload sessions)
         await this._connector.UploadSmallFileAsync(filePath, destinationPath, cancellationToken).ConfigureAwait(false);
     }
+
 
     /// <summary>
     /// Create a sharable link to a file stored in a cloud drive.

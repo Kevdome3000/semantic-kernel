@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Planning;
+namespace Microsoft.SemanticKernel.Planners.UnitTests.Planning;
+
+using Orchestration;
+using SemanticKernel.Planning;
 using Xunit;
 
-namespace Microsoft.SemanticKernel.Planners.UnitTests.Planning;
 
 public sealed class PlanVariableExpansionTests
 {
@@ -22,6 +23,7 @@ public sealed class PlanVariableExpansionTests
         // Assert
         Assert.Equal(input, result);
     }
+
 
     [Theory]
     [InlineData("Hello $name! $greeting", "Hello Bob! How are you?", "name", "Bob", "greeting", "How are you?")]
@@ -41,6 +43,7 @@ public sealed class PlanVariableExpansionTests
     {
         // Arrange
         var contextVariables = new ContextVariables();
+
         for (var i = 0; i < variables.Length; i += 2)
         {
             contextVariables.Set(variables[i], variables[i + 1]);

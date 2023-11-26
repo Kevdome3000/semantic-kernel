@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-// ReSharper disable once InconsistentNaming
-
 using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using RepoUtils;
+// ReSharper disable once InconsistentNaming
+
 
 // ReSharper disable once InconsistentNaming
 public static class Example09_FunctionTypes
@@ -71,6 +71,7 @@ public static class Example09_FunctionTypes
     }
 }
 
+
 public class LocalExamplePlugin
 {
     [KernelFunction]
@@ -79,12 +80,14 @@ public class LocalExamplePlugin
         Console.WriteLine("Running function type 1");
     }
 
+
     [KernelFunction]
     public string Type02()
     {
         Console.WriteLine("Running function type 2");
         return "";
     }
+
 
     [KernelFunction]
     public async Task<string> Type03Async()
@@ -94,11 +97,13 @@ public class LocalExamplePlugin
         return "";
     }
 
+
     [KernelFunction]
     public void Type04(ContextVariables variables)
     {
         Console.WriteLine("Running function type 4");
     }
+
 
     [KernelFunction]
     public string Type05(ContextVariables variables)
@@ -106,6 +111,7 @@ public class LocalExamplePlugin
         Console.WriteLine("Running function type 5");
         return "";
     }
+
 
     [KernelFunction]
     public async Task<string> Type06Async(Kernel kernel)
@@ -115,6 +121,7 @@ public class LocalExamplePlugin
         return "";
     }
 
+
     [KernelFunction]
     public async Task<ContextVariables> Type07Async(ContextVariables variables)
     {
@@ -123,11 +130,13 @@ public class LocalExamplePlugin
         return variables;
     }
 
+
     [KernelFunction]
     public void Type08(string x)
     {
         Console.WriteLine("Running function type 8");
     }
+
 
     [KernelFunction]
     public string Type09(string x)
@@ -135,6 +144,7 @@ public class LocalExamplePlugin
         Console.WriteLine("Running function type 9");
         return "";
     }
+
 
     [KernelFunction]
     public async Task<string> Type10Async(string x)
@@ -144,11 +154,13 @@ public class LocalExamplePlugin
         return "";
     }
 
+
     [KernelFunction]
     public void Type11(string x, ContextVariables variables)
     {
         Console.WriteLine("Running function type 11");
     }
+
 
     [KernelFunction]
     public string Type12(string x, ContextVariables variables)
@@ -156,6 +168,7 @@ public class LocalExamplePlugin
         Console.WriteLine("Running function type 12");
         return "";
     }
+
 
     [KernelFunction]
     public async Task<string> Type13Async(string x, ContextVariables variables)
@@ -165,6 +178,7 @@ public class LocalExamplePlugin
         return "";
     }
 
+
     [KernelFunction]
     public async Task<ContextVariables> Type14Async(string x, ContextVariables variables)
     {
@@ -173,12 +187,14 @@ public class LocalExamplePlugin
         return variables;
     }
 
+
     [KernelFunction]
     public async Task Type15Async(string x)
     {
         await Task.Delay(0);
         Console.WriteLine("Running function type 15");
     }
+
 
     [KernelFunction]
     public async Task Type16Async(ContextVariables variables)
@@ -187,12 +203,14 @@ public class LocalExamplePlugin
         Console.WriteLine("Running function type 16");
     }
 
+
     [KernelFunction]
     public async Task Type17Async(string x, ContextVariables variables)
     {
         await Task.Delay(0);
         Console.WriteLine("Running function type 17");
     }
+
 
     [KernelFunction]
     public async Task Type18Async()

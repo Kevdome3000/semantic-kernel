@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -8,11 +10,11 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
-namespace Microsoft.SemanticKernel;
 
 internal static class Verify
 {
     private static readonly Regex s_asciiLettersDigitsUnderscoresRegex = new("^[0-9A-Za-z_]*$");
+
 
     /// <summary>
     /// Equivalent of ArgumentNullException.ThrowIfNull
@@ -26,24 +28,29 @@ internal static class Verify
         }
     }
 
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void NotNullOrWhiteSpace([NotNull] string? str, [CallerArgumentExpression("str")] string? paramName = null)
     {
         NotNull(str, paramName);
+
         if (string.IsNullOrWhiteSpace(str))
         {
             ThrowArgumentWhiteSpaceException(paramName);
         }
     }
 
+
     internal static void NotNullOrEmpty<T>(IList<T> list, [CallerArgumentExpression("list")] string? paramName = null)
     {
         NotNull(list, paramName);
+
         if (list.Count == 0)
         {
             throw new ArgumentException("The value cannot be empty.", paramName);
         }
     }
+
 
     public static void True(bool condition, string message, [CallerArgumentExpression("condition")] string? paramName = null)
     {
@@ -53,9 +60,11 @@ internal static class Verify
         }
     }
 
+
     internal static void ValidPluginName([NotNull] string? pluginName, IReadOnlyKernelPluginCollection? plugins = null, [CallerArgumentExpression("pluginName")] string? paramName = null)
     {
         NotNullOrWhiteSpace(pluginName);
+
         if (!s_asciiLettersDigitsUnderscoresRegex.IsMatch(pluginName))
         {
             ThrowArgumentInvalidName("plugin name", pluginName, paramName);
@@ -67,14 +76,17 @@ internal static class Verify
         }
     }
 
+
     internal static void ValidFunctionName([NotNull] string? functionName, [CallerArgumentExpression("functionName")] string? paramName = null)
     {
         NotNullOrWhiteSpace(functionName);
+
         if (!s_asciiLettersDigitsUnderscoresRegex.IsMatch(functionName))
         {
             ThrowArgumentInvalidName("function name", functionName, paramName);
         }
     }
+
 
     public static void ValidateUrl(string url, bool allowQuery = false, [CallerArgumentExpression("url")] string? paramName = null)
     {
@@ -96,16 +108,19 @@ internal static class Verify
         }
     }
 
+
     internal static void StartsWith(string text, string prefix, string message, [CallerArgumentExpression("text")] string? textParamName = null)
     {
         Debug.Assert(prefix is not null);
 
         NotNullOrWhiteSpace(text, textParamName);
+
         if (!text.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
         {
             throw new ArgumentException(textParamName, message);
         }
     }
+
 
     internal static void DirectoryExists(string path)
     {
@@ -115,6 +130,7 @@ internal static class Verify
         }
     }
 
+
     /// <summary>
     /// Make sure every function parameter name is unique
     /// </summary>
@@ -122,15 +138,19 @@ internal static class Verify
     internal static void ParametersUniqueness(IReadOnlyList<KernelParameterMetadata> parameters)
     {
         int count = parameters.Count;
+
         if (count > 0)
         {
             var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
             for (int i = 0; i < count; i++)
             {
                 KernelParameterMetadata p = parameters[i];
+
                 if (string.IsNullOrWhiteSpace(p.Name))
                 {
                     string paramName = $"{nameof(parameters)}[{i}].{p.Name}";
+
                     if (p.Name is null)
                     {
                         ThrowArgumentNullException(paramName);
@@ -149,17 +169,21 @@ internal static class Verify
         }
     }
 
+
     [DoesNotReturn]
     private static void ThrowArgumentInvalidName(string kind, string name, string? paramName) =>
         throw new ArgumentException($"A {kind} can contain only ASCII letters, digits, and underscores: '{name}' is not a valid name.", paramName);
+
 
     [DoesNotReturn]
     internal static void ThrowArgumentNullException(string? paramName) =>
         throw new ArgumentNullException(paramName);
 
+
     [DoesNotReturn]
     internal static void ThrowArgumentWhiteSpaceException(string? paramName) =>
         throw new ArgumentException("The value cannot be an empty string or composed entirely of whitespace.", paramName);
+
 
     [DoesNotReturn]
     internal static void ThrowArgumentOutOfRangeException<T>(string? paramName, T actualValue, string message) =>

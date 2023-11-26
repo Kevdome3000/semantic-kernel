@@ -15,6 +15,7 @@ using RepoUtils;
 
 #pragma warning disable RCS1192 // (Unnecessary usage of verbatim string literal)
 
+
 // ReSharper disable once InconsistentNaming
 public static class Example43_GetModelResult
 {

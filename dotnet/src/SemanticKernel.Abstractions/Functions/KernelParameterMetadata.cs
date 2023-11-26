@@ -1,12 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using the main namespace
 namespace Microsoft.SemanticKernel;
+
+using System;
+using System.Diagnostics.CodeAnalysis;
+
 #pragma warning restore IDE0130
+
 
 /// <summary>
 /// Provides read-only metadata for an <see cref="KernelFunction"/> parameter.
@@ -15,8 +17,10 @@ public sealed class KernelParameterMetadata
 {
     /// <summary>The name of the parameter.</summary>
     private string _name = string.Empty;
+
     /// <summary>The description of the parameter.</summary>
     private string _description = string.Empty;
+
 
     /// <summary>Initializes the <see cref="KernelParameterMetadata"/> for a parameter with the specified name.</summary>
     /// <param name="name">The name of the parameter.</param>
@@ -25,6 +29,7 @@ public sealed class KernelParameterMetadata
     {
         this.Name = name;
     }
+
 
     /// <summary>Initializes a <see cref="KernelParameterMetadata"/> as a copy of another <see cref="KernelParameterMetadata"/>.</summary>
     /// <exception cref="ArgumentNullException">The <paramref name="metadata"/> was null.</exception>
@@ -39,6 +44,7 @@ public sealed class KernelParameterMetadata
         this.ParameterType = metadata.ParameterType;
         this.Schema = metadata.Schema;
     }
+
 
     /// <summary>Gets the name of the function.</summary>
     public string Name

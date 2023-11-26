@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.AI.TextCompletion;
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Services;
+using Services;
 
-namespace Microsoft.SemanticKernel.AI.TextCompletion;
 
 /// <summary>
 /// Interface for text completion services
@@ -24,6 +25,7 @@ public interface ITextCompletion : IAIService
         string text,
         PromptExecutionSettings? requestSettings = null,
         CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Get streaming results for the prompt using the specified request settings.

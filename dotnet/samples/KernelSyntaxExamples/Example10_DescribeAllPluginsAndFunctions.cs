@@ -9,6 +9,7 @@ using Microsoft.SemanticKernel.Plugins.Core;
 using Plugins;
 using RepoUtils;
 
+
 // ReSharper disable once InconsistentNaming
 public static class Example10_DescribeAllPluginsAndFunctions
 {
@@ -64,6 +65,7 @@ public static class Example10_DescribeAllPluginsAndFunctions
         return Task.CompletedTask;
     }
 
+
     private static void PrintFunction(KernelFunctionMetadata func)
     {
         Console.WriteLine($"   {func.Name}: {func.Description}");
@@ -71,6 +73,7 @@ public static class Example10_DescribeAllPluginsAndFunctions
         if (func.Parameters.Count > 0)
         {
             Console.WriteLine("      Params:");
+
             foreach (var p in func.Parameters)
             {
                 Console.WriteLine($"      - {p.Name}: {p.Description}");
@@ -81,6 +84,7 @@ public static class Example10_DescribeAllPluginsAndFunctions
         Console.WriteLine();
     }
 }
+
 
 #pragma warning disable CS1587 // XML comment is not placed on a valid language element
 /** Sample output:

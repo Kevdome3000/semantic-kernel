@@ -1,18 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Plugins.MsGraph;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Plugins.MsGraph.Diagnostics;
-using Microsoft.SemanticKernel.Plugins.MsGraph.Models;
+using Diagnostics;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
+using Models;
+using Orchestration;
 
-namespace Microsoft.SemanticKernel.Plugins.MsGraph;
 
 /// <summary>
 /// Task list plugin (e.g. Microsoft To-Do)
@@ -35,8 +36,10 @@ public sealed class TaskListPlugin
         public const string IncludeCompleted = "includeCompleted";
     }
 
+
     private readonly ITaskManagementConnector _connector;
     private readonly ILogger _logger;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TaskListPlugin"/> class.
@@ -51,6 +54,7 @@ public sealed class TaskListPlugin
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(TaskListPlugin)) : NullLogger.Instance;
     }
 
+
     /// <summary>
     /// Calculates an upcoming day of week (e.g. 'next Monday').
     /// </summary>
@@ -58,6 +62,7 @@ public sealed class TaskListPlugin
     {
         DateTimeOffset today = new(DateTime.Today);
         int nextDayOfWeekOffset = dayOfWeek - today.DayOfWeek;
+
         if (nextDayOfWeekOffset <= 0)
         {
             nextDayOfWeekOffset += 7;
@@ -69,16 +74,19 @@ public sealed class TaskListPlugin
         return nextDayOfWeekAtTimeOfDay;
     }
 
+
     /// <summary>
     /// Add a task to a To-Do list with an optional reminder.
     /// </summary>
     [KernelFunction, Description("Add a task to a task list with an optional reminder.")]
     public async Task AddTaskAsync(
         [Description("Title of the task.")] string title,
-        [Description("Reminder for the task in DateTimeOffset (optional)")] string? reminder = null,
+        [Description("Reminder for the task in DateTimeOffset (optional)")]
+        string? reminder = null,
         CancellationToken cancellationToken = default)
     {
         TaskManagementTaskList? defaultTaskList = await this._connector.GetDefaultTaskListAsync(cancellationToken).ConfigureAwait(false);
+
         if (defaultTaskList == null)
         {
             throw new InvalidOperationException("No default task list found.");
@@ -95,15 +103,18 @@ public sealed class TaskListPlugin
         await this._connector.AddTaskAsync(defaultTaskList.Id, task, cancellationToken).ConfigureAwait(false);
     }
 
+
     /// <summary>
     /// Get tasks from the default task list.
     /// </summary>
     [KernelFunction, Description("Get tasks from the default task list.")]
     public async Task<string> GetDefaultTasksAsync(
-        [Description("Whether to include completed tasks (optional)")] string includeCompleted = "false",
+        [Description("Whether to include completed tasks (optional)")]
+        string includeCompleted = "false",
         CancellationToken cancellationToken = default)
     {
         TaskManagementTaskList? defaultTaskList = await this._connector.GetDefaultTaskListAsync(cancellationToken).ConfigureAwait(false);
+
         if (defaultTaskList == null)
         {
             throw new InvalidOperationException("No default task list found.");

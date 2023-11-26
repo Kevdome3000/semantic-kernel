@@ -1,12 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Connectors.UnitTests.OpenAI.FunctionCalling;
+
 using System;
 using System.Linq;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.OpenAI.FunctionCalling;
+
 public sealed class KernelFunctionMetadataExtensionsTests
 {
     [Fact]
@@ -32,6 +34,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = KernelJsonSchema.Parse("\"schema\"") }, result.ReturnParameter);
     }
 
+
     [Fact]
     public void ItCanConvertToOpenAIFunctionNoPluginName()
     {
@@ -54,6 +57,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         Assert.NotNull(result.ReturnParameter);
         Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = KernelJsonSchema.Parse("\"schema\"") }, result.ReturnParameter);
     }
+
 
     [Theory]
     [InlineData(false)]
@@ -91,6 +95,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = KernelJsonSchema.Parse("\"schema\"") }, result.ReturnParameter);
     }
 
+
     [Fact]
     public void ItCanConvertToOpenAIFunctionWithParameterNoType()
     {
@@ -118,6 +123,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         Assert.Equal(param1.IsRequired, outputParam.IsRequired);
         Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = KernelJsonSchema.Parse("\"schema\"") }, result.ReturnParameter);
     }
+
 
     [Fact]
     public void ItCanConvertToOpenAIFunctionWithNoReturnParameterType()
@@ -148,6 +154,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         Assert.Equal("integer", outputParam.Schema.RootElement.GetProperty("type").GetString());
     }
 
+
     [Fact]
     public void ItCanCreateValidOpenAIFunctionManual()
     {
@@ -173,20 +180,25 @@ public sealed class KernelFunctionMetadataExtensionsTests
         );
     }
 
+
     private enum MyEnum
     {
         Value1,
         Value2
     }
 
+
     private sealed class MyPlugin
     {
         [KernelFunction, KernelName("MyFunction"), System.ComponentModel.Description("My sample function.")]
         public string MyFunction(
-            [System.ComponentModel.Description("String parameter")] string parameter1,
-            [System.ComponentModel.Description("Enum parameter")] MyEnum parameter2,
-            [System.ComponentModel.Description("DateTime parameter")] DateTime parameter3
-            )
+            [System.ComponentModel.Description("String parameter")]
+            string parameter1,
+            [System.ComponentModel.Description("Enum parameter")]
+            MyEnum parameter2,
+            [System.ComponentModel.Description("DateTime parameter")]
+            DateTime parameter3
+        )
         {
             return "return";
         }

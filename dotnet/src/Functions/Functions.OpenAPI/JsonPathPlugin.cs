@@ -1,13 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Functions.OpenAPI;
+
 using System;
 using System.ComponentModel;
 using System.Linq;
-using Microsoft.SemanticKernel.Orchestration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Orchestration;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI;
 
 /// <summary>
 /// Provides methods to retrieve JSON elements from a JSON string using JsonPath queries.
@@ -24,6 +25,7 @@ public sealed class JsonPathPlugin
         /// </summary>
         public const string JsonPath = "jsonpath";
     }
+
 
     /// <summary>
     /// Retrieve the value of a JSON element from a JSON string using a JsonPath query.
@@ -48,6 +50,7 @@ public sealed class JsonPathPlugin
 
         return token?.Value<string>() ?? string.Empty;
     }
+
 
     /// <summary>
     /// Retrieve a collection of JSON elements from a JSON string using a JsonPath query.

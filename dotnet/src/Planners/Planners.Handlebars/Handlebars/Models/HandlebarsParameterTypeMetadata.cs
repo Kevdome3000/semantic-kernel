@@ -1,12 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace Microsoft.SemanticKernel.Planning.Handlebars;
+
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
-namespace Microsoft.SemanticKernel.Planning.Handlebars;
 #pragma warning restore IDE0130
+
 
 internal class HandlebarsParameterTypeMetadata
 {
@@ -21,6 +23,7 @@ internal class HandlebarsParameterTypeMetadata
     /// </summary>
     [JsonPropertyName("properties")]
     public List<KernelParameterMetadata> Properties { get; set; } = new();
+
 
     // Override the Equals method to compare the property values
     public override bool Equals(object obj)
@@ -40,6 +43,7 @@ internal class HandlebarsParameterTypeMetadata
         // Compare the Properties lists using a helper method
         return ArePropertiesEqual(this.Properties, other.Properties);
     }
+
 
     // A helper method to compare two lists of KernelParameterMetadata
     private static bool ArePropertiesEqual(List<KernelParameterMetadata> list1, List<KernelParameterMetadata> list2)
@@ -63,12 +67,14 @@ internal class HandlebarsParameterTypeMetadata
         return true;
     }
 
+
     // Override the GetHashCode method to generate a hash code based on the property values
     public override int GetHashCode()
     {
         HashCode hash = default;
         hash.Add(this.Name);
         hash.Add(this.IsComplex);
+
         foreach (var item in this.Properties)
         {
             // Combine the Name and ParameterType properties into one hash code

@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Planning.Handlebars;
+namespace Microsoft.SemanticKernel.Planners.UnitTests.Handlebars;
+
+using Planning.Handlebars;
 using Xunit;
 
-namespace Microsoft.SemanticKernel.Planners.UnitTests.Handlebars;
 
 public class KernelParameterMetadataExtensionsTests
 {
@@ -23,6 +24,7 @@ public class KernelParameterMetadataExtensionsTests
         Assert.True(KernelParameterMetadataExtensions.IsPrimitiveOrStringType(stringType));
     }
 
+
     [Fact]
     public void ReturnsFalseForNonPrimitiveOrStringTypes()
     {
@@ -36,6 +38,7 @@ public class KernelParameterMetadataExtensionsTests
         }
     }
 
+
     [Fact]
     public void ReturnsEmptySetForPrimitiveOrStringType()
     {
@@ -48,6 +51,7 @@ public class KernelParameterMetadataExtensionsTests
         // Assert
         Assert.Empty(result);
     }
+
 
     [Fact]
     public void ReturnsSetWithOneElementForSimpleClassType()
@@ -68,6 +72,7 @@ public class KernelParameterMetadataExtensionsTests
         Assert.Equal("Name", result.First().Properties[1].Name);
         Assert.Equal(typeof(string), result.First().Properties[1].ParameterType);
     }
+
 
     [Fact]
     public void ReturnsSetWithMultipleElementsForNestedClassType()
@@ -116,6 +121,7 @@ public class KernelParameterMetadataExtensionsTests
         Assert.DoesNotContain(result, r => r.IsComplex && r.Properties.Count == 0);
     }
 
+
     [Fact]
     public void ReturnsSetWithOneElementForTaskOfSimpleClassType()
     {
@@ -136,6 +142,7 @@ public class KernelParameterMetadataExtensionsTests
         Assert.Equal(typeof(string), result.First().Properties[1].ParameterType);
     }
 
+
     [Fact]
     public void ReturnsEmptySetForTaskOfPrimitiveOrStringType()
     {
@@ -152,6 +159,7 @@ public class KernelParameterMetadataExtensionsTests
         Assert.Empty(result2);
     }
 
+
     [Fact]
     public void ReturnsTrueForPrimitiveOrStringSchemaTypes()
     {
@@ -164,6 +172,7 @@ public class KernelParameterMetadataExtensionsTests
             Assert.True(KernelParameterMetadataExtensions.IsPrimitiveOrStringType(type));
         }
     }
+
 
     [Fact]
     public void ReturnsFalseForNonPrimitiveOrStringSchemaTypes()
@@ -178,17 +187,18 @@ public class KernelParameterMetadataExtensionsTests
         }
     }
 
+
     [Fact]
     public void ReturnsParameterWithParameterTypeForPrimitiveOrStringSchemaType()
     {
         // Arrange
         var schemaTypeMap = new Dictionary<string, Type>
         {
-            {"string", typeof(string)},
-            {"integer", typeof(long)},
-            {"number", typeof(double)},
-            {"boolean", typeof(bool)},
-            {"null", typeof(object)}
+            { "string", typeof(string) },
+            { "integer", typeof(long) },
+            { "number", typeof(double) },
+            { "boolean", typeof(bool) },
+            { "null", typeof(object) }
         };
 
         foreach (var pair in schemaTypeMap)
@@ -205,6 +215,7 @@ public class KernelParameterMetadataExtensionsTests
         }
     }
 
+
     [Fact]
     public void ReturnsParameterWithSchemaForNonPrimitiveOrStringSchemaType()
     {
@@ -219,6 +230,7 @@ public class KernelParameterMetadataExtensionsTests
         Assert.Null(result.ParameterType);
         Assert.Equal(schema, result.Schema);
     }
+
 
     [Fact]
     public void ReturnsIndentedJsonStringForJsonElement()
@@ -237,6 +249,7 @@ public class KernelParameterMetadataExtensionsTests
         Assert.Equal(expected, result);
     }
 
+
     [Fact]
     public void ReturnsParameterNameAndSchemaType()
     {
@@ -250,6 +263,7 @@ public class KernelParameterMetadataExtensionsTests
         // Assert
         Assert.Equal("test-object", result);
     }
+
 
     [Fact]
     public void ConvertsReturnParameterMetadataToParameterMetadata()
@@ -269,6 +283,7 @@ public class KernelParameterMetadataExtensionsTests
         Assert.Equal(schema, result.Schema);
     }
 
+
     [Fact]
     public void ConvertsParameterMetadataToReturnParameterMetadata()
     {
@@ -285,6 +300,7 @@ public class KernelParameterMetadataExtensionsTests
         Assert.Equal(schema, result.Schema);
     }
 
+
     #region Simple helper classes
 
     private sealed class SimpleClass
@@ -293,10 +309,12 @@ public class KernelParameterMetadataExtensionsTests
         public string Name { get; set; } = string.Empty;
     }
 
+
     private sealed class AnotherClass
     {
         public double Value { get; set; }
     }
+
 
     private static class NestedClass
     {
@@ -305,5 +323,7 @@ public class KernelParameterMetadataExtensionsTests
         public static AnotherClass Another { get; set; } = new AnotherClass();
     }
 
-    #endregion  
+    #endregion
+
+
 }

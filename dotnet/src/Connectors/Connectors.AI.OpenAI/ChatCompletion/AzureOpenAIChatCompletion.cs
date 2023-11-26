@@ -1,19 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
+
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Azure.Core;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
-using Microsoft.SemanticKernel.Services;
+using AzureSdk;
+using Extensions.Logging;
+using SemanticKernel.AI;
+using SemanticKernel.AI.ChatCompletion;
+using SemanticKernel.AI.TextCompletion;
+using Services;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
 /// <summary>
 /// Azure OpenAI chat completion client.
@@ -41,6 +42,7 @@ public sealed class AzureOpenAIChatCompletion : AzureOpenAIClientBase, IChatComp
         this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
     }
 
+
     /// <summary>
     /// Create an instance of the <see cref="AzureOpenAIChatCompletion"/> connector with AAD auth.
     /// </summary>
@@ -61,6 +63,7 @@ public sealed class AzureOpenAIChatCompletion : AzureOpenAIClientBase, IChatComp
         this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
     }
 
+
     /// <summary>
     /// Creates a new <see cref="AzureOpenAIChatCompletion"/> client instance using the specified <see cref="OpenAIClient"/>.
     /// </summary>
@@ -77,8 +80,10 @@ public sealed class AzureOpenAIChatCompletion : AzureOpenAIClientBase, IChatComp
         this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
     }
 
+
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
+
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
@@ -90,11 +95,13 @@ public sealed class AzureOpenAIChatCompletion : AzureOpenAIClientBase, IChatComp
         return this.InternalGetChatResultsAsync(chat, requestSettings, cancellationToken);
     }
 
+
     /// <inheritdoc/>
     public ChatHistory CreateNewChat(string? instructions = null)
     {
         return InternalCreateNewChat(instructions);
     }
+
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
@@ -105,6 +112,7 @@ public sealed class AzureOpenAIChatCompletion : AzureOpenAIClientBase, IChatComp
         this.LogActionDetails();
         return this.InternalGetChatResultsAsTextAsync(text, requestSettings, cancellationToken);
     }
+
 
     /// <inheritdoc/>
     public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, PromptExecutionSettings? requestSettings = null, CancellationToken cancellationToken = default)

@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Functions.Yaml;
+
 using System;
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.AI;
+using AI;
 using YamlDotNet.Core;
 using YamlDotNet.Serialization;
 
-namespace Microsoft.SemanticKernel.Functions.Yaml;
 
 /// <summary>
 /// Deserializer for <see cref="PromptExecutionSettings"/>.
@@ -24,6 +25,7 @@ internal class PromptExecutionSettingsNodeDeserializer : INodeDeserializer
 
         var dictionary = nestedObjectDeserializer.Invoke(reader, typeof(Dictionary<string, object>));
         var modelSettings = new PromptExecutionSettings();
+
         foreach (var kv in (Dictionary<string, object>)dictionary!)
         {
             if (kv.Key == "service_id")

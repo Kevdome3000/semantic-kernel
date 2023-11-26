@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using TaskStatus = Microsoft.Graph.TaskStatus;
-
 namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors;
 
 using System;

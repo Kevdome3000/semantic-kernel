@@ -1,11 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using the main namespace
 namespace Microsoft.SemanticKernel;
+
+using System;
+
 #pragma warning restore IDE0130
+
 
 /// <summary>Overrides the default name used by a Semantic Kernel native function name or parameter.</summary>
 /// <remarks>
@@ -20,6 +22,7 @@ public sealed class KernelNameAttribute : Attribute
     /// </summary>
     /// <param name="name">The name.</param>
     public KernelNameAttribute(string name) => this.Name = name;
+
 
     /// <summary>Gets the specified name.</summary>
     public string Name { get; }

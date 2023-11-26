@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Plugins.MsGraph;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -8,13 +10,12 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Plugins.MsGraph.Diagnostics;
-using Microsoft.SemanticKernel.Plugins.MsGraph.Models;
+using Diagnostics;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
+using Models;
+using Orchestration;
 
-namespace Microsoft.SemanticKernel.Plugins.MsGraph;
 
 /// <summary>
 /// Plugin for calendar operations.
@@ -62,13 +63,16 @@ public sealed class CalendarPlugin
         public const string Skip = "skip";
     }
 
+
     private readonly ICalendarConnector _connector;
     private readonly ILogger _logger;
+
     private static readonly JsonSerializerOptions s_options = new()
     {
         WriteIndented = false,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     };
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CalendarPlugin"/> class.
@@ -83,17 +87,24 @@ public sealed class CalendarPlugin
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(CalendarPlugin)) : NullLogger.Instance;
     }
 
+
     /// <summary>
     /// Add an event to my calendar using <see cref="ContextVariables.Input"/> as the subject.
     /// </summary>
     [KernelFunction, Description("Add an event to my calendar.")]
     public async Task AddEventAsync(
-        [Description("Event subject"), KernelName("input")] string subject,
-        [Description("Event start date/time as DateTimeOffset")] DateTimeOffset start,
-        [Description("Event end date/time as DateTimeOffset")] DateTimeOffset end,
-        [Description("Event location (optional)")] string? location = null,
-        [Description("Event content/body (optional)")] string? content = null,
-        [Description("Event attendees, separated by ',' or ';'.")] string? attendees = null)
+        [Description("Event subject"), KernelName("input")]
+        string subject,
+        [Description("Event start date/time as DateTimeOffset")]
+        DateTimeOffset start,
+        [Description("Event end date/time as DateTimeOffset")]
+        DateTimeOffset end,
+        [Description("Event location (optional)")]
+        string? location = null,
+        [Description("Event content/body (optional)")]
+        string? content = null,
+        [Description("Event attendees, separated by ',' or ';'.")]
+        string? attendees = null)
     {
         if (string.IsNullOrWhiteSpace(subject))
         {
@@ -115,13 +126,16 @@ public sealed class CalendarPlugin
         await this._connector.AddEventAsync(calendarEvent).ConfigureAwait(false);
     }
 
+
     /// <summary>
     /// Get calendar events with specified optional clauses used to query for messages.
     /// </summary>
     [KernelFunction, Description("Get calendar events.")]
     public async Task<string> GetCalendarEventsAsync(
-        [Description("Optional limit of the number of events to retrieve.")] int? maxResults = 10,
-        [Description("Optional number of events to skip before retrieving results.")] int? skip = 0,
+        [Description("Optional limit of the number of events to retrieve.")]
+        int? maxResults = 10,
+        [Description("Optional number of events to skip before retrieving results.")]
+        int? skip = 0,
         CancellationToken cancellationToken = default)
     {
         this._logger.LogDebug("Getting calendar events with query options top: '{0}', skip:'{1}'.", maxResults, skip);

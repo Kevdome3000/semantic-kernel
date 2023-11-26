@@ -1,20 +1,21 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net.Http;
 using System.Threading;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Events;
-using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Services;
+using AI;
+using Events;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
+using Http;
+using Orchestration;
+using Services;
 
-namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Provides state for use throughout a Semantic Kernel workload.
@@ -100,6 +101,7 @@ public sealed class Kernel
     /// </summary>
     public event EventHandler<PromptRenderedEventArgs>? PromptRendered;
 
+
     /// <summary>
     /// Initializes a new instance of <see cref="Kernel"/>.
     /// </summary>
@@ -126,6 +128,7 @@ public sealed class Kernel
         this.HttpHandlerFactory = httpHandlerFactory ?? NullHttpHandlerFactory.Instance;
         this.LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
     }
+
 
     /// <summary>
     /// Clone the <see cref="Kernel"/> object to create a new instance that may be mutated without affecting the current instance.
@@ -166,6 +169,7 @@ public sealed class Kernel
             _culture = this._culture,
         };
 
+
     /// <summary>
     /// Gets a configured service from the service provider.
     /// </summary>
@@ -176,6 +180,7 @@ public sealed class Kernel
     public T GetService<T>(string? name = null) where T : IAIService =>
         this.ServiceProvider.GetService<T>(name) ??
         throw new KernelException($"Service of type {typeof(T)} and name {name ?? "<NONE>"} not registered.");
+
 
     /// <summary>
     /// Gets a dictionary for ambient data associated with the kernel.
@@ -188,10 +193,13 @@ public sealed class Kernel
         Interlocked.CompareExchange(ref this._data, new Dictionary<string, object?>(), null) ??
         this._data;
 
+
     #region internal ===============================================================================
+
     internal FunctionInvokingEventArgs? OnFunctionInvoking(KernelFunction function, ContextVariables variables)
     {
         var functionInvoking = this.FunctionInvoking;
+
         if (functionInvoking is null)
         {
             return null;
@@ -202,9 +210,11 @@ public sealed class Kernel
         return eventArgs;
     }
 
+
     internal FunctionInvokedEventArgs? OnFunctionInvoked(KernelFunction function, FunctionResult result)
     {
         var functionInvoked = this.FunctionInvoked;
+
         if (functionInvoked is null)
         {
             return null;
@@ -215,9 +225,11 @@ public sealed class Kernel
         return eventArgs;
     }
 
+
     internal PromptRenderingEventArgs? OnPromptRendering(KernelFunction function, ContextVariables variables, PromptExecutionSettings? requestSettings)
     {
         var promptRendering = this.PromptRendering;
+
         if (promptRendering is null)
         {
             return null;
@@ -228,9 +240,11 @@ public sealed class Kernel
         return eventArgs;
     }
 
+
     internal PromptRenderedEventArgs? OnPromptRendered(KernelFunction function, ContextVariables variables, string renderedPrompt)
     {
         var promptRendered = this.PromptRendered;
+
         if (promptRendered is null)
         {
             return null;
@@ -240,7 +254,9 @@ public sealed class Kernel
         promptRendered.Invoke(this, eventArgs);
         return eventArgs;
     }
+
     #endregion
+
 
     #region private ================================================================================
 
@@ -250,4 +266,6 @@ public sealed class Kernel
     private IAIServiceSelector? _serviceSelector;
 
     #endregion
+
+
 }

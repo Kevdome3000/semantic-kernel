@@ -1,5 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - Using the main namespace
+namespace Microsoft.SemanticKernel;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -8,17 +12,15 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Events;
-using Microsoft.SemanticKernel.Orchestration;
+using AI;
+using AI.TextCompletion;
+using Events;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
+using Orchestration;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using the main namespace
-namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
+
 
 /// <summary>
 /// A Semantic Kernel "Semantic" prompt function.
@@ -27,6 +29,7 @@ namespace Microsoft.SemanticKernel;
 internal sealed class KernelFunctionFromPrompt : KernelFunction
 {
     // TODO: Revise these Create method XML comments
+
 
     /// <summary>
     /// Creates a string-to-string semantic function, with no direct support for input context.
@@ -65,6 +68,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             loggerFactory: loggerFactory);
     }
 
+
     /// <summary>
     /// Creates a semantic function passing in the definition in natural language, i.e. the prompt template.
     /// </summary>
@@ -89,6 +93,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             functionName,
             loggerFactory);
     }
+
 
     /// <summary>
     /// Allow to define a semantic function passing in the definition in natural language, i.e. the prompt template.
@@ -117,19 +122,22 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             loggerFactory: loggerFactory);
     }
 
+
     /// <summary>
     /// List of function parameters
     /// </summary>
     public IReadOnlyList<KernelParameterMetadata> Parameters => this._promptTemplate.Parameters;
 
+
     /// <inheritdoc/>
     protected override KernelFunctionMetadata GetMetadataCore() =>
         this._metadata ??=
-        new KernelFunctionMetadata(this.Name)
-        {
-            Description = this._promptTemplateConfig.Description,
-            Parameters = this.Parameters
-        };
+            new KernelFunctionMetadata(this.Name)
+            {
+                Description = this._promptTemplateConfig.Description,
+                Parameters = this.Parameters
+            };
+
 
     /// <inheritdoc/>
     protected override async Task<FunctionResult> InvokeCoreAsync(
@@ -143,6 +151,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         try
         {
             (var textCompletion, var defaultRequestSettings, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, variables, requestSettings, cancellationToken).ConfigureAwait(false);
+
             if (renderedEventArgs?.CancelToken.IsCancellationRequested ?? false)
             {
                 return new FunctionResult(this.Name, variables)
@@ -173,6 +182,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         }
     }
 
+
     protected override async IAsyncEnumerable<T> InvokeCoreStreamingAsync<T>(
         Kernel kernel,
         ContextVariables variables,
@@ -182,6 +192,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         this.AddDefaultValues(variables);
 
         (var textCompletion, var defaultRequestSettings, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, variables, requestSettings, cancellationToken).ConfigureAwait(false);
+
         if (renderedEventArgs?.CancelToken.IsCancellationRequested ?? false)
         {
             yield break;
@@ -196,10 +207,12 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         // There is no post cancellation check to override the result as the stream data was already sent.
     }
 
+
     /// <summary>
     /// JSON serialized string representation of the function.
     /// </summary>
     public override string ToString() => JsonSerializer.Serialize(this);
+
 
     private KernelFunctionFromPrompt(
         IPromptTemplate template,
@@ -214,6 +227,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         Verify.ParametersUniqueness(this.Parameters);
     }
 
+
     #region private
 
     private readonly ILogger _logger;
@@ -221,14 +235,17 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     private KernelFunctionMetadata? _metadata;
     private readonly IPromptTemplate _promptTemplate;
 
+
     private static async Task<string> GetCompletionsResultContentAsync(IReadOnlyList<ITextResult> completions, CancellationToken cancellationToken = default)
     {
         // To avoid any unexpected behavior we only take the first completion result (when running from the Kernel)
         return await completions[0].GetCompletionAsync(cancellationToken).ConfigureAwait(false);
     }
 
+
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay => string.IsNullOrWhiteSpace(this.Description) ? this.Name : $"{this.Name} ({this.Description})";
+
 
     /// <summary>Add default values to the context variables if the variable is not defined</summary>
     private void AddDefaultValues(ContextVariables variables)
@@ -241,6 +258,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             }
         }
     }
+
 
     private async Task<(ITextCompletion, PromptExecutionSettings?, string, PromptRenderedEventArgs?)> RenderPromptAsync(Kernel kernel, ContextVariables variables, PromptExecutionSettings? requestSettings, CancellationToken cancellationToken)
     {
@@ -257,8 +275,11 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         return (textCompletion, defaultRequestSettings, renderedPrompt, renderedEventArgs);
     }
 
+
     /// <summary>Create a random, valid function name.</summary>
     private static string RandomFunctionName() => $"func{Guid.NewGuid():N}";
 
     #endregion
+
+
 }

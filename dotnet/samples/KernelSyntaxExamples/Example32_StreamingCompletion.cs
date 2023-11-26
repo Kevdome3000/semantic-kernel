@@ -6,6 +6,7 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 
+
 /**
  * The following example shows how to use Semantic Kernel with streaming Text Completion.
  *
@@ -22,6 +23,7 @@ public static class Example32_StreamingCompletion
         await OpenAITextCompletionStreamAsync();
     }
 
+
     private static async Task AzureOpenAITextCompletionStreamAsync()
     {
         Console.WriteLine("======== Azure OpenAI - Text Completion - Raw Streaming ========");
@@ -34,6 +36,7 @@ public static class Example32_StreamingCompletion
         await TextCompletionStreamAsync(textCompletion);
     }
 
+
     private static async Task OpenAITextCompletionStreamAsync()
     {
         Console.WriteLine("======== Open AI - Text Completion - Raw Streaming ========");
@@ -42,6 +45,7 @@ public static class Example32_StreamingCompletion
 
         await TextCompletionStreamAsync(textCompletion);
     }
+
 
     private static async Task TextCompletionStreamAsync(ITextCompletion textCompletion)
     {
@@ -57,6 +61,7 @@ public static class Example32_StreamingCompletion
         var prompt = "Write one paragraph why AI is awesome";
 
         Console.WriteLine("Prompt: " + prompt);
+
         await foreach (string message in textCompletion.GetStreamingContentAsync<string>(prompt, requestSettings))
         {
             Console.Write(message);

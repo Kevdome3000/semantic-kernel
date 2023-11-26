@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Plugins.MsGraph;
+
 using System.ComponentModel;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Plugins.MsGraph.Diagnostics;
+using Diagnostics;
 
-namespace Microsoft.SemanticKernel.Plugins.MsGraph;
 
 /// <summary>
 /// Organizational Hierarchy plugin.
@@ -15,6 +16,7 @@ namespace Microsoft.SemanticKernel.Plugins.MsGraph;
 public sealed class OrganizationHierarchyPlugin
 {
     private readonly IOrganizationHierarchyConnector _connector;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OrganizationHierarchyPlugin"/> class.
@@ -27,6 +29,7 @@ public sealed class OrganizationHierarchyPlugin
         this._connector = connector;
     }
 
+
     /// <summary>
     /// Get the emails of the direct reports of the current user.
     /// </summary>
@@ -36,6 +39,7 @@ public sealed class OrganizationHierarchyPlugin
     public async Task<string> GetMyDirectReportsEmailAsync(CancellationToken cancellationToken = default)
         => JsonSerializer.Serialize(await this._connector.GetDirectReportsEmailAsync(cancellationToken).ConfigureAwait(false));
 
+
     /// <summary>
     /// Get the email of the manager of the current user.
     /// </summary>
@@ -44,6 +48,7 @@ public sealed class OrganizationHierarchyPlugin
     [KernelFunction, Description("Get my manager's email address.")]
     public async Task<string> GetMyManagerEmailAsync(CancellationToken cancellationToken = default)
         => await this._connector.GetManagerEmailAsync(cancellationToken).ConfigureAwait(false);
+
 
     /// <summary>
     /// Get the name of the manager of the current user.

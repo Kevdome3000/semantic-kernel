@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-
 #pragma warning disable IDE0130
 
 // ReSharper disable once CheckNamespace - Using the main namespace
 namespace Microsoft.SemanticKernel;
+
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+
 
 /// <summary>Provides a read-only collection of <see cref="IKernelPlugin"/>s.</summary>
 public interface IReadOnlyKernelPluginCollection : IReadOnlyCollection<IKernelPlugin>
@@ -15,6 +16,7 @@ public interface IReadOnlyKernelPluginCollection : IReadOnlyCollection<IKernelPl
     /// <param name="name">The name of the plugin.</param>
     /// <returns>The plugin.</returns>
     IKernelPlugin this[string name] { get; }
+
 
     /// <summary>Gets a plugin from the collection by name.</summary>
     /// <param name="name">The name of the plugin.</param>

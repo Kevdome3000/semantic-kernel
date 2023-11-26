@@ -1,14 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Linq;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
-using Microsoft.SemanticKernel.Orchestration;
-
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 // ReSharper disable once CheckNamespace
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
+
+using System.Linq;
+using AI.ChatCompletion;
+using Execution;
+using SemanticKernel.Orchestration;
+
 #pragma warning restore IDE0130 // Namespace does not match folder structure
+
 
 /// <summary>
 /// Extension methods for <see cref="ContextVariables"/>
@@ -26,6 +28,7 @@ public static class ContextVariablesExtensions
                && promptInput == Constants.ChatPluginVariables.DefaultValue;
     }
 
+
     /// <summary>
     /// Check if we should force the next iteration loop based on current context.
     /// </summary>
@@ -35,6 +38,7 @@ public static class ContextVariablesExtensions
         return variables.TryGetValue(Constants.ChatPluginVariables.ContinueLoopName, out string? continueLoop)
                && continueLoop == Constants.ChatPluginVariables.DefaultValue;
     }
+
 
     /// <summary>
     /// Check if we should terminate flow based on current context.
@@ -46,6 +50,7 @@ public static class ContextVariablesExtensions
                && stopFlow == Constants.ChatPluginVariables.DefaultValue;
     }
 
+
     /// <summary>
     /// Check if all variables to be provided with the flow is available in the context
     /// </summary>
@@ -56,6 +61,7 @@ public static class ContextVariablesExtensions
     {
         return flow.Provides.All(variables.ContainsKey);
     }
+
 
     /// <summary>
     /// Get <see cref="ChatHistory"/> from context.
@@ -72,6 +78,7 @@ public static class ContextVariablesExtensions
         return null;
     }
 
+
     /// <summary>
     /// Get latest chat input from context.
     /// </summary>
@@ -87,6 +94,7 @@ public static class ContextVariablesExtensions
         return string.Empty;
     }
 
+
     /// <summary>
     /// Signal the orchestrator to prompt user for input with current function response.
     /// </summary>
@@ -99,6 +107,7 @@ public static class ContextVariablesExtensions
             variables.Set(Constants.ChatPluginVariables.PromptInputName, Constants.ChatPluginVariables.DefaultValue);
         }
     }
+
 
     /// <summary>
     /// Signal the orchestrator to exit out of the AtLeastOnce or ZeroOrMore loop. If response is non-null, that value will be outputted to the user.
@@ -114,6 +123,7 @@ public static class ContextVariablesExtensions
         }
     }
 
+
     /// <summary>
     /// Signal the orchestrator to go to the next iteration of the loop in the AtLeastOnce or ZeroOrMore step.
     /// </summary>
@@ -122,6 +132,7 @@ public static class ContextVariablesExtensions
     {
         variables.Set(Constants.ChatPluginVariables.ContinueLoopName, Constants.ChatPluginVariables.DefaultValue);
     }
+
 
     /// <summary>
     /// Signal the orchestrator to terminate the flow.
