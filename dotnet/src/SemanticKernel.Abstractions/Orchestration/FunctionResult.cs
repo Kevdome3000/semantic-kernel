@@ -50,7 +50,7 @@ public sealed class FunctionResult
     /// <summary>
     /// Instance of <see cref="ContextVariables"/> to pass in function pipeline.
     /// </summary>
-    internal ContextVariables Variables { get; private set; }
+    public ContextVariables Variables { get; private set; }
 
 
     /// <summary>

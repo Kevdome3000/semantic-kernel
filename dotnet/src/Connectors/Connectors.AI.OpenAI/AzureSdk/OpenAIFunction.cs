@@ -174,7 +174,7 @@ public class OpenAIFunction
     /// <param name="description">The object description.</param>
     /// <returns>Return JSON Schema document or null if the type is null</returns>
     [return: NotNullIfNotNull("type")]
-    internal static KernelJsonSchema? GetJsonSchema(Type? type, string? description)
+    public static KernelJsonSchema? GetJsonSchema(Type? type, string? description)
     {
         KernelJsonSchema? schema = null;
 

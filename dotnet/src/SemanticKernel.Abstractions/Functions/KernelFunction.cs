@@ -59,7 +59,7 @@ public abstract class KernelFunction
     /// <summary>
     /// Gets the model request settings.
     /// </summary>
-    internal IEnumerable<PromptExecutionSettings> ModelSettings { get; }
+    public IEnumerable<PromptExecutionSettings> ModelSettings { get; }
 
 
     /// <summary>
@@ -68,7 +68,7 @@ public abstract class KernelFunction
     /// <param name="name">Name of the function.</param>
     /// <param name="description">Function description.</param>
     /// <param name="modelSettings">Model request settings.</param>
-    internal KernelFunction(string name, string description, IEnumerable<PromptExecutionSettings>? modelSettings = null)
+    protected KernelFunction(string name, string description, IEnumerable<PromptExecutionSettings>? modelSettings = null)
     {
         this.Name = name;
         this.Description = description;
