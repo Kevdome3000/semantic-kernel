@@ -38,7 +38,7 @@ public sealed class RestApiOperationPayloadProperty
     /// <summary>
     /// The schema of the parameter.
     /// </summary>
-    public SKJsonSchema? Schema { get; }
+    public KernelJsonSchema? Schema { get; }
 
 
     /// <summary>
@@ -56,7 +56,7 @@ public sealed class RestApiOperationPayloadProperty
         bool isRequired,
         IList<RestApiOperationPayloadProperty> properties,
         string? description = null,
-        SKJsonSchema? schema = null)
+        KernelJsonSchema? schema = null)
     {
         this.Name = name;
         this.Type = type;

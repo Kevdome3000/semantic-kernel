@@ -9,7 +9,7 @@ using Azure.AI.OpenAI;
 /// <summary>
 ///  Extension of ChatRequestSettings for use with the OpenAI connector for function calling
 /// </summary>
-public class FunctionCallRequestSettings : OpenAIRequestSettings
+public class FunctionCallRequestSettings : OpenAIPromptExecutionSettings
 {
     /// <summary>
     ///  The function to call

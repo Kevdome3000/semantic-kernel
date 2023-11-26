@@ -1,20 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
-
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Azure.Core;
-using AzureSdk;
-using Extensions.Logging;
-using SemanticKernel.AI;
-using SemanticKernel.AI.ChatCompletion;
-using SemanticKernel.AI.TextCompletion;
-using Services;
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+using Microsoft.SemanticKernel.Services;
 
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
 /// <summary>
 /// Azure OpenAI chat completion client.
@@ -39,9 +38,8 @@ public sealed class AzureOpenAIChatCompletion : AzureOpenAIClientBase, IChatComp
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null) : base(deploymentName, endpoint, apiKey, httpClient, loggerFactory)
     {
-        AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
     }
-
 
     /// <summary>
     /// Create an instance of the <see cref="AzureOpenAIChatCompletion"/> connector with AAD auth.
@@ -60,9 +58,8 @@ public sealed class AzureOpenAIChatCompletion : AzureOpenAIClientBase, IChatComp
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null) : base(deploymentName, endpoint, credentials, httpClient, loggerFactory)
     {
-        AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
     }
-
 
     /// <summary>
     /// Creates a new <see cref="AzureOpenAIChatCompletion"/> client instance using the specified <see cref="OpenAIClient"/>.
@@ -77,64 +74,40 @@ public sealed class AzureOpenAIChatCompletion : AzureOpenAIClientBase, IChatComp
         string? modelId = null,
         ILoggerFactory? loggerFactory = null) : base(deploymentName, openAIClient, loggerFactory)
     {
-        AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
     }
 
-
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Attributes => InternalAttributes;
-
+    public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
         ChatHistory chat,
-        AIRequestSettings? requestSettings = null,
+        PromptExecutionSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        LogActionDetails();
-        return InternalGetChatResultsAsync(chat, requestSettings, cancellationToken);
+        this.LogActionDetails();
+        return this.InternalGetChatResultsAsync(chat, requestSettings, cancellationToken);
     }
 
-
     /// <inheritdoc/>
-    public IAsyncEnumerable<IChatStreamingResult> GetStreamingChatCompletionsAsync(
-        ChatHistory chat,
-        AIRequestSettings? requestSettings = null,
-        CancellationToken cancellationToken = default)
+    public ChatHistory CreateNewChat(string? instructions = null)
     {
-        LogActionDetails();
-        return InternalGetChatStreamingResultsAsync(chat, requestSettings, cancellationToken);
+        return InternalCreateNewChat(instructions);
     }
-
-
-    /// <inheritdoc/>
-    public ChatHistory CreateNewChat(string? instructions = null) => InternalCreateNewChat(instructions);
-
-
-    /// <inheritdoc/>
-    public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
-        string text,
-        AIRequestSettings? requestSettings = null,
-        CancellationToken cancellationToken = default)
-    {
-        LogActionDetails();
-        return InternalGetChatStreamingResultsAsTextAsync(text, requestSettings, cancellationToken);
-    }
-
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
         string text,
-        AIRequestSettings? requestSettings = null,
+        PromptExecutionSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        LogActionDetails();
-        return InternalGetChatResultsAsTextAsync(text, requestSettings, cancellationToken);
+        this.LogActionDetails();
+        return this.InternalGetChatResultsAsTextAsync(text, requestSettings, cancellationToken);
     }
 
-
     /// <inheritdoc/>
-    public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, PromptExecutionSettings? requestSettings = null, CancellationToken cancellationToken = default)
     {
         var chatHistory = this.CreateNewChat(prompt);
         return this.InternalGetChatStreamingUpdatesAsync<T>(chatHistory, requestSettings, cancellationToken);

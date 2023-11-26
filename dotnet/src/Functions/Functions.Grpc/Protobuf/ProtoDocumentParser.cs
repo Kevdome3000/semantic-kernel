@@ -37,7 +37,7 @@ internal sealed class ProtoDocumentParser
 
         if (errors != null && errors.Length != 0)
         {
-            throw new SKException($"Parsing of '{protoFileName}' .proto document has failed. Details: {string.Join(";", errors.AsEnumerable())}");
+            throw new KernelException($"Parsing of '{protoFileName}' .proto document has failed. Details: {string.Join(";", errors.AsEnumerable())}");
         }
 
         return this.GetGrpcOperations(descriptor.Files.Single());
@@ -95,7 +95,7 @@ internal sealed class ProtoDocumentParser
 
         if (messageType == null)
         {
-            throw new SKException($"No '{fullTypeName}' message type is found while resolving data contracts for the '{methodName}' method.");
+            throw new KernelException($"No '{fullTypeName}' message type is found while resolving data contracts for the '{methodName}' method.");
         }
 
         var fields = this.GetDataContractFields(messageType.Fields);
@@ -144,6 +144,6 @@ internal sealed class ProtoDocumentParser
             }
         }
 
-        throw new SKException($"Impossible to find protobuf type name corresponding to '{type}' type.");
+        throw new KernelException($"Impossible to find protobuf type name corresponding to '{type}' type.");
     }
 }

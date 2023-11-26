@@ -103,7 +103,7 @@ public class VarBlockTests
         var target = new VarBlock(" $ ");
 
         // Act + Assert
-        Assert.Throws<SKException>(() => target.Render(variables));
+        Assert.Throws<KernelException>(() => target.Render(variables));
     }
 
 

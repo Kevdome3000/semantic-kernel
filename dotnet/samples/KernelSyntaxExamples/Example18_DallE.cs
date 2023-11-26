@@ -12,7 +12,6 @@ using RepoUtils;
 /**
  * The following example shows how to use Semantic Kernel with OpenAI Dall-E 2 to create images
  */
-
 // ReSharper disable once InconsistentNaming
 public static class Example18_DallE
 {

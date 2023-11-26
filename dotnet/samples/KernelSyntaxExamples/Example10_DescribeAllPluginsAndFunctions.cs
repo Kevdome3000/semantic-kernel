@@ -9,7 +9,6 @@ using Microsoft.SemanticKernel.Plugins.Core;
 using Plugins;
 using RepoUtils;
 
-
 // ReSharper disable once InconsistentNaming
 public static class Example10_DescribeAllPluginsAndFunctions
 {
@@ -24,8 +23,8 @@ public static class Example10_DescribeAllPluginsAndFunctions
 
         var kernel = new KernelBuilder()
             .WithOpenAIChatCompletionService(
-                TestConfiguration.OpenAI.ChatModelId,
-                TestConfiguration.OpenAI.ApiKey)
+                modelId: TestConfiguration.OpenAI.ChatModelId,
+                apiKey: TestConfiguration.OpenAI.ApiKey)
             .Build();
 
         // Import a native plugin
@@ -41,16 +40,14 @@ public static class Example10_DescribeAllPluginsAndFunctions
         kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
 
         // Define a semantic function inline, without naming
-        var sFun1 = kernel.CreateFunctionFromPrompt("tell a joke about {{$input}}", new OpenAIRequestSettings
-            { MaxTokens = 150 });
+        var sFun1 = kernel.CreateFunctionFromPrompt("tell a joke about {{$input}}", new OpenAIPromptExecutionSettings() { MaxTokens = 150 });
 
         // Define a semantic function inline, with plugin name
         var sFun2 = kernel.CreateFunctionFromPrompt(
             "write a novel about {{$input}} in {{$language}} language",
-            new OpenAIRequestSettings
-                { MaxTokens = 150 },
-            "Novel",
-            "Write a bedtime story");
+            new OpenAIPromptExecutionSettings() { MaxTokens = 150 },
+            functionName: "Novel",
+            description: "Write a bedtime story");
 
         var functions = kernel.Plugins.GetFunctionsMetadata();
 
@@ -59,7 +56,7 @@ public static class Example10_DescribeAllPluginsAndFunctions
         Console.WriteLine("*****************************************");
         Console.WriteLine();
 
-        foreach (SKFunctionMetadata func in functions)
+        foreach (KernelFunctionMetadata func in functions)
         {
             PrintFunction(func);
         }
@@ -67,15 +64,13 @@ public static class Example10_DescribeAllPluginsAndFunctions
         return Task.CompletedTask;
     }
 
-
-    private static void PrintFunction(SKFunctionMetadata func)
+    private static void PrintFunction(KernelFunctionMetadata func)
     {
         Console.WriteLine($"   {func.Name}: {func.Description}");
 
         if (func.Parameters.Count > 0)
         {
             Console.WriteLine("      Params:");
-
             foreach (var p in func.Parameters)
             {
                 Console.WriteLine($"      - {p.Name}: {p.Description}");
@@ -86,7 +81,6 @@ public static class Example10_DescribeAllPluginsAndFunctions
         Console.WriteLine();
     }
 }
-
 
 #pragma warning disable CS1587 // XML comment is not placed on a valid language element
 /** Sample output:

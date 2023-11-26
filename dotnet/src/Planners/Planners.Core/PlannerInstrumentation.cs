@@ -15,7 +15,7 @@ using Extensions.Logging;
 
 
 /// <summary>Surrounds the invocation of a planner with logging and metrics.</summary>
-internal static class PlannerInstrumentation
+public static class PlannerInstrumentation
 {
     /// <summary><see cref="ActivitySource"/> for planning-related activities.</summary>
     private static readonly ActivitySource s_activitySource = new("Microsoft.SemanticKernel.Planning");
@@ -31,7 +31,7 @@ internal static class PlannerInstrumentation
 
 
     /// <summary>Invokes the supplied <paramref name="createPlanAsync"/> delegate, surrounded by logging and metrics.</summary>
-    internal static async Task<TPlan> CreatePlanAsync<TPlanner, TPlan>(
+    public static async Task<TPlan> CreatePlanAsync<TPlanner, TPlan>(
         Func<TPlanner, string, CancellationToken, Task<TPlan>> createPlanAsync,
         Func<TPlan, string> planToString,
         TPlanner planner,

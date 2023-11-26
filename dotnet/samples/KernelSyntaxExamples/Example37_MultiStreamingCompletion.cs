@@ -4,8 +4,8 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
-
 
 /**
  * The following example shows how to use Semantic Kernel with streaming Multiple Results Chat Completion
@@ -19,7 +19,6 @@ public static class Example37_MultiStreamingCompletion
         await OpenAIChatCompletionStreamAsync();
     }
 
-
     private static async Task AzureOpenAIMultiChatCompletionStreamAsync()
     {
         Console.WriteLine("======== Azure OpenAI - Multiple Chat Completion - Raw Streaming ========");
@@ -32,7 +31,6 @@ public static class Example37_MultiStreamingCompletion
         await ChatCompletionStreamAsync(chatCompletion);
     }
 
-
     private static async Task OpenAIChatCompletionStreamAsync()
     {
         Console.WriteLine("======== Open AI - Multiple Chat Completion - Raw Streaming ========");
@@ -44,10 +42,9 @@ public static class Example37_MultiStreamingCompletion
         await ChatCompletionStreamAsync(chatCompletion);
     }
 
-
     private static async Task ChatCompletionStreamAsync(IChatCompletion chatCompletion)
     {
-        var requestSettings = new OpenAIRequestSettings
+        var requestSettings = new OpenAIPromptExecutionSettings()
         {
             MaxTokens = 200,
             FrequencyPenalty = 0,
@@ -57,12 +54,12 @@ public static class Example37_MultiStreamingCompletion
             ResultsPerPrompt = 3
         };
 
-        var chatHistory = new ChatHistory();
-        chatHistory.AddUserMessage("Write one paragraph about why AI is awesome");
-
-        await foreach (string message in chatCompletion.GenerateMessageStreamAsync(chatHistory))
+        await foreach (var chatUpdate in chatCompletion.GetStreamingContentAsync<StreamingChatContent>("Write one paragraph about why AI is awesome"))
         {
-            Console.Write(message);
+            if (chatUpdate.Content is { Length: > 0 })
+            {
+                Console.Write(chatUpdate.Content);
+            }
         }
 
         Console.WriteLine();

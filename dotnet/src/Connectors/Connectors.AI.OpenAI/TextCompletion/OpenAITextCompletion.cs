@@ -1,17 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
-
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using AzureSdk;
-using Extensions.Logging;
-using SemanticKernel.AI;
-using SemanticKernel.AI.TextCompletion;
-using Services;
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+using Microsoft.SemanticKernel.Services;
 
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 
 /// <summary>
 /// OpenAI text completion service.
@@ -35,39 +34,25 @@ public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
         ILoggerFactory? loggerFactory = null
     ) : base(modelId, apiKey, organization, httpClient, loggerFactory)
     {
-        AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
-        AddAttribute(OrganizationKey, organization);
+        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        this.AddAttribute(OrganizationKey, organization);
     }
 
-
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Attributes => InternalAttributes;
-
-
-    /// <inheritdoc/>
-    public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
-        string text,
-        AIRequestSettings? requestSettings,
-        CancellationToken cancellationToken = default)
-    {
-        LogActionDetails();
-        return InternalGetTextStreamingResultsAsync(text, requestSettings, cancellationToken);
-    }
-
+    public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
         string text,
-        AIRequestSettings? requestSettings,
+        PromptExecutionSettings? requestSettings,
         CancellationToken cancellationToken = default)
     {
-        LogActionDetails();
-        return InternalGetTextResultsAsync(text, requestSettings, cancellationToken);
+        this.LogActionDetails();
+        return this.InternalGetTextResultsAsync(text, requestSettings, cancellationToken);
     }
 
-
     /// <inheritdoc/>
-    public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, PromptExecutionSettings? requestSettings = null, CancellationToken cancellationToken = default)
     {
         return this.InternalGetTextStreamingUpdatesAsync<T>(prompt, requestSettings, cancellationToken);
     }

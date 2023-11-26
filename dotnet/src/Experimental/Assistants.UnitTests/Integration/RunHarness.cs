@@ -151,14 +151,14 @@ public sealed class RunHarness
         /// <summary>
         /// Get the question
         /// </summary>
-        [SKFunction, Description("Get the guessing game question")]
+        [KernelFunction, Description("Get the guessing game question")]
         public string GetQuestion() => "What color am I thinking of?";
 
 
         /// <summary>
         /// Get the answer
         /// </summary>
-        [SKFunction, Description("Get the answer to the guessing game question.")]
+        [KernelFunction, Description("Get the answer to the guessing game question.")]
         public string GetAnswer() => "Blue";
     }
 }

@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable IDE0130
-namespace Microsoft.SemanticKernel;
-
 using System.ComponentModel;
 using System.Reflection;
-using Extensions.Logging;
+using Microsoft.Extensions.Logging;
 
+#pragma warning disable IDE0130
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Provides static factory methods for creating commonly-used plugin implementations.
@@ -20,12 +19,11 @@ public static class KernelPluginFactory
     /// </param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <remarks>
-    /// Public methods decorated with <see cref="SKFunctionAttribute"/> will be included in the plugin.
+    /// Public methods decorated with <see cref="KernelFunctionAttribute"/> will be included in the plugin.
     /// Attributed methods must all have different names; overloads are not supported.
     /// </remarks>
-    public static ISKPlugin CreateFromObject<T>(string? pluginName = null, ILoggerFactory? loggerFactory = null) where T : new() =>
+    public static IKernelPlugin CreateFromObject<T>(string? pluginName = null, ILoggerFactory? loggerFactory = null) where T : new() =>
         CreateFromObject(new T(), pluginName, loggerFactory);
-
 
     /// <summary>Creates a plugin that wraps the specified target object.</summary>
     /// <param name="target">The instance of the class to be wrapped.</param>
@@ -34,10 +32,10 @@ public static class KernelPluginFactory
     /// </param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <remarks>
-    /// Public methods decorated with <see cref="SKFunctionAttribute"/> will be included in the plugin.
+    /// Public methods decorated with <see cref="KernelFunctionAttribute"/> will be included in the plugin.
     /// Attributed methods must all have different names; overloads are not supported.
     /// </remarks>
-    public static ISKPlugin CreateFromObject(object target, string? pluginName = null, ILoggerFactory? loggerFactory = null)
+    public static IKernelPlugin CreateFromObject(object target, string? pluginName = null, ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(target);
 
@@ -47,11 +45,10 @@ public static class KernelPluginFactory
         MethodInfo[] methods = target.GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
 
         // Filter out non-SKFunctions and fail if two functions have the same name (with or without the same casing).
-        SKPlugin plugin = new(pluginName, target.GetType().GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description);
-
+        KernelPlugin plugin = new(pluginName, target.GetType().GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description);
         foreach (MethodInfo method in methods)
         {
-            if (method.GetCustomAttribute<SKFunctionAttribute>() is not null)
+            if (method.GetCustomAttribute<KernelFunctionAttribute>() is not null)
             {
                 plugin.AddFunctionFromMethod(method, target, loggerFactory: loggerFactory);
             }
@@ -60,7 +57,6 @@ public static class KernelPluginFactory
         if (loggerFactory is not null)
         {
             ILogger logger = loggerFactory.CreateLogger(target.GetType());
-
             if (logger.IsEnabled(LogLevel.Trace))
             {
                 logger.LogTrace("Created plugin {PluginName} with {IncludedFunctions} out of {TotalMethods} methods found.", pluginName, plugin.FunctionCount, methods.Length);

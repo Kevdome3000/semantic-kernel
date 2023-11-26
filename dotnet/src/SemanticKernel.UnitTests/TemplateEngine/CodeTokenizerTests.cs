@@ -219,7 +219,7 @@ public class CodeTokenizerTests
     public void ItThrowsWhenSeparatorsAreMissing(string template)
     {
         // Act & Assert
-        Assert.Throws<SKException>(() => this._target.Tokenize(template));
+        Assert.Throws<KernelException>(() => this._target.Tokenize(template));
     }
 
 
@@ -229,7 +229,7 @@ public class CodeTokenizerTests
     public void ItThrowsWhenArgValueIsMissing(string template, string expectedErrorMessage)
     {
         // Act & Assert
-        var exception = Assert.Throws<SKException>(() => this._target.Tokenize(template));
+        var exception = Assert.Throws<KernelException>(() => this._target.Tokenize(template));
         Assert.Equal(expectedErrorMessage, exception.Message);
     }
 }

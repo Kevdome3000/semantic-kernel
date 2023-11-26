@@ -1,17 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using AI.ChatCompletion;
-using Extensions.Logging;
-using SemanticKernel.Orchestration;
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.Orchestration;
 
+namespace Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 
 /// <summary>
 /// Chat ReAct Engine
@@ -83,7 +82,6 @@ internal sealed class ReActEngine
     private static readonly Regex s_finalAnswerRegex =
         new(@"\[FINAL.+\](?<final_answer>.+)", RegexOptions.Singleline);
 
-
     internal ReActEngine(Kernel systemKernel, ILogger logger, FlowOrchestratorConfig config)
     {
         this._logger = logger;
@@ -93,13 +91,11 @@ internal sealed class ReActEngine
 
         var modelId = config.AIRequestSettings?.ModelId;
         var promptConfig = config.ReActPromptTemplateConfig;
-
         if (promptConfig is null)
         {
             promptConfig = new PromptTemplateConfig();
 
             string promptConfigString = EmbeddedResource.Read("Plugins.ReActEngine.config.json")!;
-
             if (!string.IsNullOrEmpty(modelId))
             {
                 var modelConfigString = EmbeddedResource.Read($"Plugins.ReActEngine.{modelId}.config.json", false);
@@ -117,7 +113,6 @@ internal sealed class ReActEngine
         }
 
         var promptTemplate = config.ReActPromptTemplate;
-
         if (string.IsNullOrEmpty(promptTemplate))
         {
             promptTemplate = EmbeddedResource.Read("Plugins.ReActEngine.skprompt.txt")!;
@@ -132,19 +127,16 @@ internal sealed class ReActEngine
         this._reActFunction = this.ImportSemanticFunction(systemKernel, "ReActFunction", promptTemplate!, promptConfig);
     }
 
-
-    internal async Task<ReActStep?> GetNextStepAsync(Kernel kernel, SKContext context, string question, List<ReActStep> previousSteps)
+    internal async Task<ReActStep?> GetNextStepAsync(Kernel kernel, ContextVariables variables, string question, List<ReActStep> previousSteps)
     {
-        context.Variables.Set("question", question);
+        variables.Set("question", question);
         var scratchPad = this.CreateScratchPad(previousSteps);
-        context.Variables.Set("agentScratchPad", scratchPad);
+        variables.Set("agentScratchPad", scratchPad);
 
         var availableFunctions = this.GetAvailableFunctions(kernel).ToArray();
-
         if (availableFunctions.Length == 1)
         {
             var firstActionFunction = availableFunctions.First();
-
             if (firstActionFunction.Parameters.Count == 0)
             {
                 var action = $"{firstActionFunction.PluginName}.{firstActionFunction.Name}";
@@ -157,13 +149,13 @@ internal sealed class ReActEngine
         }
 
         var functionDesc = this.GetFunctionDescriptions(availableFunctions);
-        context.Variables.Set("functionDescriptions", functionDesc);
+        variables.Set("functionDescriptions", functionDesc);
 
         this._logger?.LogInformation("question: {Question}", question);
         this._logger?.LogInformation("functionDescriptions: {FunctionDescriptions}", functionDesc);
         this._logger?.LogInformation("Scratchpad: {ScratchPad}", scratchPad);
 
-        var llmResponse = await this._reActFunction.InvokeAsync(kernel, context).ConfigureAwait(false);
+        var llmResponse = await this._reActFunction.InvokeAsync(kernel, variables).ConfigureAwait(false);
 
         string llmResponseText = llmResponse.GetValue<string>()!.Trim();
         this._logger?.LogDebug("Response : {ActionText}", llmResponseText);
@@ -181,8 +173,7 @@ internal sealed class ReActEngine
         return actionStep;
     }
 
-
-    internal async Task<string> InvokeActionAsync(ReActStep actionStep, string chatInput, ChatHistory chatHistory, Kernel kernel, SKContext context)
+    internal async Task<string> InvokeActionAsync(ReActStep actionStep, string chatInput, ChatHistory chatHistory, Kernel kernel, ContextVariables contextVariables)
     {
         var variables = actionStep.ActionVariables ?? new Dictionary<string, string>();
 
@@ -192,7 +183,6 @@ internal sealed class ReActEngine
 
         var availableFunctions = this.GetAvailableFunctions(kernel);
         var targetFunction = availableFunctions.FirstOrDefault(f => ToFullyQualifiedName(f) == actionStep.Action);
-
         if (targetFunction is null)
         {
             throw new MissingMethodException($"The function '{actionStep.Action}' was not found.");
@@ -201,23 +191,23 @@ internal sealed class ReActEngine
         var function = kernel.Plugins.GetFunction(targetFunction.PluginName, targetFunction.Name);
         var functionView = function.GetMetadata();
 
-        var actionContext = this.CreateActionContext(variables, kernel, context);
+        var actionContextVariables = this.CreateActionContextVariables(variables, kernel, contextVariables);
 
         foreach (var parameter in functionView.Parameters)
         {
-            if (!actionContext.Variables.ContainsKey(parameter.Name))
+            if (!actionContextVariables.ContainsKey(parameter.Name))
             {
-                actionContext.Variables.Set(parameter.Name, parameter.DefaultValue ?? string.Empty);
+                actionContextVariables.Set(parameter.Name, parameter.DefaultValue ?? string.Empty);
             }
         }
 
         try
         {
-            var result = await function.InvokeAsync(kernel, actionContext).ConfigureAwait(false);
+            var result = await function.InvokeAsync(kernel, actionContextVariables).ConfigureAwait(false);
 
-            foreach (var variable in actionContext.Variables)
+            foreach (var variable in actionContextVariables)
             {
-                context.Variables.Set(variable.Key, variable.Value);
+                contextVariables.Set(variable.Key, variable.Value);
             }
 
             this._logger?.LogDebug("Invoked {FunctionName}. Result: {Result}", targetFunction.Name, result.GetValue<string>());
@@ -231,32 +221,29 @@ internal sealed class ReActEngine
         }
     }
 
-
-    private SKContext CreateActionContext(Dictionary<string, string> actionVariables, Kernel kernel, SKContext context)
+    private ContextVariables CreateActionContextVariables(Dictionary<string, string> actionVariables, Kernel kernel, ContextVariables contextVariables)
     {
-        var actionContext = context.Clone();
+        var actionContext = contextVariables.Clone();
 
         foreach (var kvp in actionVariables)
         {
-            actionContext.Variables.Set(kvp.Key, kvp.Value);
+            actionContext.Set(kvp.Key, kvp.Value);
         }
 
         return actionContext;
     }
-
 
     private KernelFunction ImportSemanticFunction(Kernel kernel, string functionName, string promptTemplate, PromptTemplateConfig config)
     {
         var factory = new KernelPromptTemplateFactory(kernel.LoggerFactory);
         var template = factory.Create(promptTemplate, config);
 
-        var plugin = new SKPlugin(RestrictedPluginName);
+        var plugin = new KernelPlugin(RestrictedPluginName);
 
         kernel.Plugins.Add(plugin);
 
         return plugin.AddFunctionFromPrompt(template, config, functionName);
     }
-
 
     private string CreateScratchPad(List<ReActStep> stepsTaken)
     {
@@ -307,7 +294,6 @@ internal sealed class ReActEngine
         return string.Join("\n", scratchPadLines).Trim();
     }
 
-
     private ReActStep ParseResult(string input)
     {
         var result = new ReActStep
@@ -344,7 +330,6 @@ internal sealed class ReActEngine
         // Extract action
         string actionStepJson = input;
         Match actionMatch = s_actionRegex.Match(input + "\n[");
-
         if (actionMatch.Success)
         {
             actionStepJson = actionMatch.Groups[1].Value.Trim();
@@ -352,7 +337,6 @@ internal sealed class ReActEngine
         else
         {
             Match finalActionMatch = s_finalActionRegex.Match(input);
-
             if (finalActionMatch.Success)
             {
                 actionStepJson = finalActionMatch.Groups[1].Value.Trim();
@@ -362,7 +346,6 @@ internal sealed class ReActEngine
         try
         {
             var reActStep = JsonSerializer.Deserialize<ReActStep>(actionStepJson);
-
             if (reActStep is null)
             {
                 result.Observation = $"Action step parsing error, empty JSON: {actionStepJson}";
@@ -386,14 +369,12 @@ internal sealed class ReActEngine
         return result;
     }
 
-
-    private string GetFunctionDescriptions(SKFunctionMetadata[] functions)
+    private string GetFunctionDescriptions(KernelFunctionMetadata[] functions)
     {
         return string.Join("\n", functions.Select(ToManualString));
     }
 
-
-    private IEnumerable<SKFunctionMetadata> GetAvailableFunctions(Kernel kernel)
+    private IEnumerable<KernelFunctionMetadata> GetAvailableFunctions(Kernel kernel)
     {
         var functionViews = kernel.Plugins.GetFunctionsMetadata();
 
@@ -411,17 +392,16 @@ internal sealed class ReActEngine
             : availableFunctions;
     }
 
-
-    private static SKFunctionMetadata GetStopAndPromptUserFunction()
+    private static KernelFunctionMetadata GetStopAndPromptUserFunction()
     {
-        SKParameterMetadata promptParameter = new(Constants.StopAndPromptParameterName)
+        KernelParameterMetadata promptParameter = new(Constants.StopAndPromptParameterName)
         {
             Description = "The message to be shown to the user.",
             ParameterType = typeof(string),
-            Schema = SKJsonSchema.Parse("{\"type\":\"string\"}"),
+            Schema = KernelJsonSchema.Parse("{\"type\":\"string\"}"),
         };
 
-        return new SKFunctionMetadata(Constants.StopAndPromptFunctionName)
+        return new KernelFunctionMetadata(Constants.StopAndPromptFunctionName)
         {
             PluginName = "_REACT_ENGINE_",
             Description = "Terminate the session, only used when previous attempts failed with FATAL error and need notify user",
@@ -429,8 +409,7 @@ internal sealed class ReActEngine
         };
     }
 
-
-    private static string ToManualString(SKFunctionMetadata function)
+    private static string ToManualString(KernelFunctionMetadata function)
     {
         var inputs = string.Join("\n", function.Parameters.Select(parameter =>
         {
@@ -448,8 +427,7 @@ internal sealed class ReActEngine
         return $"{ToFullyQualifiedName(function)}: {functionDescription}\n{inputs}\n";
     }
 
-
-    private static string ToFullyQualifiedName(SKFunctionMetadata function)
+    private static string ToFullyQualifiedName(KernelFunctionMetadata function)
     {
         return $"{function.PluginName}.{function.Name}";
     }

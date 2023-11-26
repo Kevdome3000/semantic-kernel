@@ -25,7 +25,7 @@ public class PromptTemplateConfigTests
         }";
 
         // Act
-        var requestSettings = JsonSerializer.Deserialize<OpenAIRequestSettings>(configPayload);
+        var requestSettings = JsonSerializer.Deserialize<OpenAIPromptExecutionSettings>(configPayload);
 
         // Assert
         Assert.NotNull(requestSettings);
@@ -48,7 +48,7 @@ public class PromptTemplateConfigTests
         }";
 
         // Act
-        var requestSettings = JsonSerializer.Deserialize<OpenAIRequestSettings>(configPayload);
+        var requestSettings = JsonSerializer.Deserialize<OpenAIPromptExecutionSettings>(configPayload);
 
         // Assert
         Assert.NotNull(requestSettings);
@@ -139,7 +139,7 @@ public class PromptTemplateConfigTests
 
         // Assert
         Assert.NotNull(promptTemplateConfig);
-        Assert.NotNull(promptTemplateConfig.ModelSettings?.FirstOrDefault<AIRequestSettings>());
-        Assert.Equal("gpt-4", promptTemplateConfig?.ModelSettings.FirstOrDefault<AIRequestSettings>()?.ModelId);
+        Assert.NotNull(promptTemplateConfig.ModelSettings?.FirstOrDefault<PromptExecutionSettings>());
+        Assert.Equal("gpt-4", promptTemplateConfig?.ModelSettings.FirstOrDefault<PromptExecutionSettings>()?.ModelId);
     }
 }

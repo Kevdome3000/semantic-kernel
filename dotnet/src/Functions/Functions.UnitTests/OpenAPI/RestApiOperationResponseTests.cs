@@ -45,7 +45,7 @@ public class RestApiOperationResponseTests
     public void ItShouldFailValidationWithSchema(string content, string contentType, string schemaJson)
     {
         //Arrange
-        var response = new RestApiOperationResponse(content, contentType, SKJsonSchema.Parse(schemaJson));
+        var response = new RestApiOperationResponse(content, contentType, KernelJsonSchema.Parse(schemaJson));
 
         //Act
         var result = response.IsValid();
@@ -63,7 +63,7 @@ public class RestApiOperationResponseTests
     public void ItShouldPassValidationWithSchema(string content, string contentType, string schemaJson)
     {
         //Arrange
-        var response = new RestApiOperationResponse(content, contentType, SKJsonSchema.Parse(schemaJson));
+        var response = new RestApiOperationResponse(content, contentType, KernelJsonSchema.Parse(schemaJson));
 
         //Act
         var result = response.IsValid();
@@ -81,7 +81,7 @@ public class RestApiOperationResponseTests
         //Arrange
         var contentText = ResourceResponseProvider.LoadFromResource(contentFileName);
         var productJson = ResourceResponseProvider.LoadFromResource(schemaJsonFilename);
-        var response = new RestApiOperationResponse(contentText, contentType, SKJsonSchema.Parse(productJson));
+        var response = new RestApiOperationResponse(contentText, contentType, KernelJsonSchema.Parse(productJson));
 
         //Act
         var result = response.IsValid();
@@ -99,7 +99,7 @@ public class RestApiOperationResponseTests
         //Arrange
         var contentText = ResourceResponseProvider.LoadFromResource(contentFileName);
         var productJson = ResourceResponseProvider.LoadFromResource(schemaJsonFilename);
-        var response = new RestApiOperationResponse(contentText, contentType, SKJsonSchema.Parse(productJson));
+        var response = new RestApiOperationResponse(contentText, contentType, KernelJsonSchema.Parse(productJson));
 
         //Act
         var result = response.IsValid();

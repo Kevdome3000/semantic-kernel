@@ -269,7 +269,7 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
         var nonComplaintOpenApiDocument = ResourcePluginsProvider.LoadFromResource("nonCompliant_documentV3_0.json");
 
         // Act and Assert
-        await Assert.ThrowsAsync<SKException>(async () => await this._sut.ParseAsync(nonComplaintOpenApiDocument));
+        await Assert.ThrowsAsync<KernelException>(async () => await this._sut.ParseAsync(nonComplaintOpenApiDocument));
     }
 
 
@@ -377,7 +377,7 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
         Assert.NotNull(response.Schema);
         Assert.Equal("string", response.Schema.RootElement.GetProperty("type").GetString());
         Assert.Equal(
-            JsonSerializer.Serialize(SKJsonSchema.Parse("{\"type\": \"string\"}")),
+            JsonSerializer.Serialize(KernelJsonSchema.Parse("{\"type\": \"string\"}")),
             JsonSerializer.Serialize(response.Schema));
     }
 

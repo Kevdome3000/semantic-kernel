@@ -35,14 +35,14 @@ public static class KernelOpenApiPluginExtensions
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
-    public static async Task<ISKPlugin> ImportPluginFromOpenApiAsync(
+    public static async Task<IKernelPlugin> ImportPluginFromOpenApiAsync(
         this Kernel kernel,
         string pluginName,
         string filePath,
         OpenApiFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
-        ISKPlugin plugin = await kernel.CreatePluginFromOpenApiAsync(pluginName, filePath, executionParameters, cancellationToken).ConfigureAwait(false);
+        IKernelPlugin plugin = await kernel.CreatePluginFromOpenApiAsync(pluginName, filePath, executionParameters, cancellationToken).ConfigureAwait(false);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -57,14 +57,14 @@ public static class KernelOpenApiPluginExtensions
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
-    public static async Task<ISKPlugin> ImportPluginFromOpenApiAsync(
+    public static async Task<IKernelPlugin> ImportPluginFromOpenApiAsync(
         this Kernel kernel,
         string pluginName,
         Uri uri,
         OpenApiFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
-        ISKPlugin plugin = await kernel.CreatePluginFromOpenApiAsync(pluginName, uri, executionParameters, cancellationToken).ConfigureAwait(false);
+        IKernelPlugin plugin = await kernel.CreatePluginFromOpenApiAsync(pluginName, uri, executionParameters, cancellationToken).ConfigureAwait(false);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -79,14 +79,14 @@ public static class KernelOpenApiPluginExtensions
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
-    public static async Task<ISKPlugin> ImportPluginFromOpenApiAsync(
+    public static async Task<IKernelPlugin> ImportPluginFromOpenApiAsync(
         this Kernel kernel,
         string pluginName,
         Stream stream,
         OpenApiFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
-        ISKPlugin plugin = await kernel.CreatePluginFromOpenApiAsync(pluginName, stream, executionParameters, cancellationToken).ConfigureAwait(false);
+        IKernelPlugin plugin = await kernel.CreatePluginFromOpenApiAsync(pluginName, stream, executionParameters, cancellationToken).ConfigureAwait(false);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -101,7 +101,7 @@ public static class KernelOpenApiPluginExtensions
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
-    public static async Task<ISKPlugin> CreatePluginFromOpenApiAsync(
+    public static async Task<IKernelPlugin> CreatePluginFromOpenApiAsync(
         this Kernel kernel,
         string pluginName,
         string filePath,
@@ -139,7 +139,7 @@ public static class KernelOpenApiPluginExtensions
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
-    public static async Task<ISKPlugin> CreatePluginFromOpenApiAsync(
+    public static async Task<IKernelPlugin> CreatePluginFromOpenApiAsync(
         this Kernel kernel,
         string pluginName,
         Uri uri,
@@ -181,7 +181,7 @@ public static class KernelOpenApiPluginExtensions
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
-    public static async Task<ISKPlugin> CreatePluginFromOpenApiAsync(
+    public static async Task<IKernelPlugin> CreatePluginFromOpenApiAsync(
         this Kernel kernel,
         string pluginName,
         Stream stream,
@@ -209,7 +209,7 @@ public static class KernelOpenApiPluginExtensions
 
     #region private
 
-    private static async Task<ISKPlugin> CreateOpenApiPluginAsync(
+    private static async Task<IKernelPlugin> CreateOpenApiPluginAsync(
         Kernel kernel,
         string pluginName,
         OpenApiFunctionExecutionParameters? executionParameters,
@@ -235,7 +235,7 @@ public static class KernelOpenApiPluginExtensions
             executionParameters?.EnableDynamicPayload ?? false,
             executionParameters?.EnablePayloadNamespacing ?? false);
 
-        SKPlugin plugin = new(pluginName);
+        KernelPlugin plugin = new(pluginName);
 
         ILogger logger = kernel.LoggerFactory.CreateLogger(typeof(KernelOpenApiPluginExtensions));
 
@@ -259,7 +259,7 @@ public static class KernelOpenApiPluginExtensions
 
 
     /// <summary>
-    /// Registers SKFunctionFactory for a REST API operation.
+    /// Registers KernelFunctionFactory for a REST API operation.
     /// </summary>
     /// <param name="pluginName">Plugin name.</param>
     /// <param name="runner">The REST API operation runner.</param>
@@ -285,7 +285,7 @@ public static class KernelOpenApiPluginExtensions
 
         var logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(KernelOpenApiPluginExtensions)) : NullLogger.Instance;
 
-        async Task<RestApiOperationResponse> ExecuteAsync(SKContext context, CancellationToken cancellationToken)
+        async Task<RestApiOperationResponse> ExecuteAsync(ContextVariables variables, CancellationToken cancellationToken)
         {
             try
             {
@@ -295,14 +295,14 @@ public static class KernelOpenApiPluginExtensions
                 foreach (var parameter in restOperationParameters)
                 {
                     // A try to resolve argument by alternative parameter name
-                    if (!string.IsNullOrEmpty(parameter.AlternativeName) && context.Variables.TryGetValue(parameter.AlternativeName!, out string? value))
+                    if (!string.IsNullOrEmpty(parameter.AlternativeName) && variables.TryGetValue(parameter.AlternativeName!, out string? value))
                     {
                         arguments.Add(parameter.Name, value);
                         continue;
                     }
 
                     // A try to resolve argument by original parameter name
-                    if (context.Variables.TryGetValue(parameter.Name, out value))
+                    if (variables.TryGetValue(parameter.Name, out value))
                     {
                         arguments.Add(parameter.Name, value);
                         continue;
@@ -331,18 +331,18 @@ public static class KernelOpenApiPluginExtensions
         }
 
         var parameters = restOperationParameters
-            .Select(p => new SKParameterMetadata(p.AlternativeName ?? p.Name)
+            .Select(p => new KernelParameterMetadata(p.AlternativeName ?? p.Name)
             {
                 Description = $"{p.Description ?? p.Name}",
                 DefaultValue = p.DefaultValue ?? string.Empty,
                 IsRequired = p.IsRequired,
-                Schema = p.Schema ?? (p.Type is null ? null : SKJsonSchema.Parse($"{{\"type\":\"{p.Type}\"}}")),
+                Schema = p.Schema ?? (p.Type is null ? null : KernelJsonSchema.Parse($"{{\"type\":\"{p.Type}\"}}")),
             })
             .ToList();
 
         var returnParameter = operation.GetDefaultReturnParameter();
 
-        return SKFunctionFactory.CreateFromMethod(
+        return KernelFunctionFactory.CreateFromMethod(
             method: ExecuteAsync,
             parameters: parameters,
             returnParameter: returnParameter,
@@ -366,7 +366,7 @@ public static class KernelOpenApiPluginExtensions
             Verify.ValidFunctionName(operationId);
             return operationId;
         }
-        catch (SKException)
+        catch (KernelException)
         {
         }
 

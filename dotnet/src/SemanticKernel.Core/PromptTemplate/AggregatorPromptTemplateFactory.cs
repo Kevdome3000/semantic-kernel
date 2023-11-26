@@ -22,7 +22,7 @@ public class AggregatorPromptTemplateFactory : IPromptTemplateFactory
 
         if (promptTemplateFactories.Length == 0)
         {
-            throw new SKException("At least one prompt template factory must be specified.");
+            throw new KernelException("At least one prompt template factory must be specified.");
         }
 
         this._promptTemplateFactories = promptTemplateFactories;
@@ -30,7 +30,7 @@ public class AggregatorPromptTemplateFactory : IPromptTemplateFactory
 
 
     /// <summary>
-    /// Create an instance of <see cref="IPromptTemplate"/> from a template string and a configuration. Throws an <see cref="SKException"/> if the specified template format is not supported.
+    /// Create an instance of <see cref="IPromptTemplate"/> from a template string and a configuration. Throws an <see cref="KernelException"/> if the specified template format is not supported.
     /// </summary>
     /// <param name="templateString">Template string using the format associated with this <see cref="IPromptTemplateFactory"/></param>
     /// <param name="promptTemplateConfig">Prompt template configuration</param>
@@ -48,12 +48,12 @@ public class AggregatorPromptTemplateFactory : IPromptTemplateFactory
                     return promptTemplate;
                 }
             }
-            catch (SKException)
+            catch (KernelException)
             {
                 // Ignore the exception and try the next factory
             }
         }
 
-        throw new SKException($"Prompt template format {promptTemplateConfig.TemplateFormat} is not supported.");
+        throw new KernelException($"Prompt template format {promptTemplateConfig.TemplateFormat} is not supported.");
     }
 }

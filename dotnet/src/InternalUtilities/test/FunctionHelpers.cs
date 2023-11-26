@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.UnitTests;
-
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 
+namespace SemanticKernel.UnitTests;
 
 /// <summary>Test helpers for working with native functions.</summary>
 internal static class FunctionHelpers
@@ -20,15 +19,15 @@ internal static class FunctionHelpers
     {
         var kernel = new KernelBuilder().Build();
 
-        ISKPlugin plugin = kernel.ImportPluginFromObject(pluginInstance);
+        IKernelPlugin plugin = kernel.ImportPluginFromObject(pluginInstance);
 
-        SKContext context = kernel.CreateNewContext();
+        ContextVariables contextVariables = new();
 
         foreach ((string Name, object Value) pair in variables)
         {
-            context.Variables.Set(pair.Name, pair.Value.ToString());
+            contextVariables.Set(pair.Name, pair.Value.ToString());
         }
 
-        return kernel.InvokeAsync(plugin[methodName], context.Variables);
+        return kernel.InvokeAsync(plugin[methodName], contextVariables);
     }
 }

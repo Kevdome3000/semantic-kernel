@@ -30,13 +30,13 @@ internal static partial class OpenAIRestExtensions
 
         if (!response.IsSuccessStatusCode)
         {
-            throw new SKException($"Unexpected failure: {response.StatusCode} [{url}]");
+            throw new KernelException($"Unexpected failure: {response.StatusCode} [{url}]");
         }
 
         string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         return
             JsonSerializer.Deserialize<TResult>(responseBody) ??
-            throw new SKException($"Null result processing: {typeof(TResult).Name}");
+            throw new KernelException($"Null result processing: {typeof(TResult).Name}");
     }
 
 
@@ -61,13 +61,13 @@ internal static partial class OpenAIRestExtensions
 
         if (!response.IsSuccessStatusCode)
         {
-            throw new SKException($"Unexpected failure: {response.StatusCode} [{url}]");
+            throw new KernelException($"Unexpected failure: {response.StatusCode} [{url}]");
         }
 
         string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         return
             JsonSerializer.Deserialize<TResult>(responseBody) ??
-            throw new SKException($"Null result processing: {typeof(TResult).Name}");
+            throw new KernelException($"Null result processing: {typeof(TResult).Name}");
     }
 
 
@@ -85,7 +85,7 @@ internal static partial class OpenAIRestExtensions
 
         if (!response.IsSuccessStatusCode)
         {
-            throw new SKException($"Unexpected failure: {response.StatusCode} [{url}]");
+            throw new KernelException($"Unexpected failure: {response.StatusCode} [{url}]");
         }
     }
 }

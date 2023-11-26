@@ -16,8 +16,8 @@ using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Memory;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
-using RepoUtils;
 
+using RepoUtils;
 
 // ReSharper disable CommentTypo
 // ReSharper disable once InconsistentNaming
@@ -30,8 +30,8 @@ internal static class Example31_CustomPlanner
         ISemanticTextMemory memory = InitializeMemory();
 
         // ContextQuery is part of the QAPlugin
-        ISKPlugin qaPlugin = LoadQAPlugin(kernel);
-        SKContext context = CreateContextQueryContext(kernel);
+        IKernelPlugin qaPlugin = LoadQAPlugin(kernel);
+        var variables = CreateContextQueryContextVariables();
 
         // Create a memory store using the VolatileMemoryStore and the embedding generator registered in the kernel
         kernel.ImportPluginFromObject(new TextMemoryPlugin(memory));
@@ -48,8 +48,8 @@ internal static class Example31_CustomPlanner
         plan.AddSteps(qaPlugin["ContextQuery"], markup["RunMarkup"]);
 
         // Execute plan
-        context.Variables.Update("Who is my president? Who was president 3 years ago? What should I eat for dinner");
-        var result = await plan.InvokeAsync(kernel, context);
+        variables.Update("Who is my president? Who was president 3 years ago? What should I eat for dinner");
+        var result = await plan.InvokeAsync(kernel, variables);
 
         Console.WriteLine("Result:");
         Console.WriteLine(result.GetValue<string>());
@@ -75,21 +75,21 @@ internal static class Example31_CustomPlanner
     For dinner, you might enjoy some sushi with your partner, since you both like it and you only ate it once this month
     */
 
-
-    private static SKContext CreateContextQueryContext(Kernel kernel)
+    private static ContextVariables CreateContextQueryContextVariables()
     {
-        var context = kernel.CreateNewContext();
-        context.Variables.Set("firstname", "Jamal");
-        context.Variables.Set("lastname", "Williams");
-        context.Variables.Set("city", "Tacoma");
-        context.Variables.Set("state", "WA");
-        context.Variables.Set("country", "USA");
-        context.Variables.Set("collection", "contextQueryMemories");
-        context.Variables.Set("limit", "5");
-        context.Variables.Set("relevance", "0.3");
-        return context;
+        var variables = new ContextVariables
+        {
+            ["firstname"] = "Jamal",
+            ["lastname"] = "Williams",
+            ["city"] = "Tacoma",
+            ["state"] = "WA",
+            ["country"] = "USA",
+            ["collection"] = "contextQueryMemories",
+            ["limit"] = "5",
+            ["relevance"] = "0.3",
+        };
+        return variables;
     }
-
 
     private static async Task RememberFactsAsync(Kernel kernel, ISemanticTextMemory memory)
     {
@@ -113,11 +113,10 @@ internal static class Example31_CustomPlanner
         }
     }
 
-
     // ContextQuery is part of the QAPlugin
     // DependsOn: TimePlugin named "time"
     // DependsOn: BingPlugin named "bing"
-    private static ISKPlugin LoadQAPlugin(Kernel kernel)
+    private static IKernelPlugin LoadQAPlugin(Kernel kernel)
     {
         string folder = RepoFiles.SamplePluginsPath();
         kernel.ImportPluginFromObject<TimePlugin>("time");
@@ -128,7 +127,6 @@ internal static class Example31_CustomPlanner
 
         return kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "QAPlugin"));
     }
-
 
     private static Kernel InitializeKernel()
     {
@@ -145,7 +143,6 @@ internal static class Example31_CustomPlanner
             .Build();
     }
 
-
     private static ISemanticTextMemory InitializeMemory()
     {
         return new MemoryBuilder()
@@ -159,11 +156,10 @@ internal static class Example31_CustomPlanner
     }
 }
 
-
 // Example Plugin that can process XML Markup created by ContextQuery
 public class MarkupPlugin
 {
-    [SKFunction, Description("Run Markup")]
+    [KernelFunction, Description("Run Markup")]
     public async Task<string> RunMarkupAsync(string docString, Kernel kernel)
     {
         var plan = docString.FromMarkup("Run a piece of xml markup", kernel);
@@ -172,11 +168,10 @@ public class MarkupPlugin
         Console.WriteLine(plan.ToPlanWithGoalString());
         Console.WriteLine();
 
-        var result = await kernel.InvokeAsync(plan);
+        var result = await plan.InvokeAsync(kernel);
         return result?.GetValue<string>()! ?? string.Empty;
     }
 }
-
 
 public static class XmlMarkupPlanParser
 {
@@ -184,7 +179,6 @@ public static class XmlMarkupPlanParser
     {
         { "lookup", new KeyValuePair<string, string>("bing", "SearchAsync") },
     };
-
 
     public static Plan FromMarkup(this string markup, string goal, Kernel kernel)
     {
@@ -197,11 +191,9 @@ public static class XmlMarkupPlanParser
         return nodes.Count == 0 ? new Plan(goal) : NodeListToPlan(nodes, kernel, goal);
     }
 
-
     private static Plan NodeListToPlan(XmlNodeList nodes, Kernel kernel, string description)
     {
         Plan plan = new(description);
-
         for (var i = 0; i < nodes.Count; ++i)
         {
             var node = nodes[i];
@@ -222,7 +214,9 @@ public static class XmlMarkupPlanParser
             }
             else
             {
-                Plan planStep = kernel.Plugins.TryGetFunction(pluginName, functionName, out KernelFunction? command) ? new Plan(command) : new Plan(node.InnerText);
+                Plan planStep = kernel.Plugins.TryGetFunction(pluginName, functionName, out KernelFunction? command) ?
+                    new Plan(command) :
+                    new Plan(node.InnerText);
                 planStep.PluginName = pluginName;
 
                 planStep.Parameters.Update(node.InnerText);
@@ -235,7 +229,6 @@ public static class XmlMarkupPlanParser
         return plan;
     }
 }
-
 
 #region Utility Classes
 
@@ -252,15 +245,12 @@ public class XmlMarkup
         this.Document.LoadXml(response);
     }
 
-
     public XmlDocument Document { get; }
-
 
     public XmlNodeList SelectAllElements()
     {
         return this.Document.SelectNodes("//*")!;
     }
-
 
     public XmlNodeList SelectElements()
     {
@@ -268,14 +258,12 @@ public class XmlMarkup
     }
 }
 
-
 #pragma warning disable CA1815 // Override equals and operator equals on value types
 public struct XmlNodeInfo
 {
     public int StackDepth { get; set; }
     public XmlNode Parent { get; set; }
     public XmlNode Node { get; set; }
-
 
     public static implicit operator XmlNode(XmlNodeInfo info)
     {
@@ -295,7 +283,6 @@ public static class XmlEx
         }
 
         var childNodes = elt.ChildNodes;
-
         for (int i = 0, count = childNodes.Count; i < count; ++i)
         {
             if (childNodes[i]?.NodeType == XmlNodeType.Element)
@@ -307,7 +294,6 @@ public static class XmlEx
         return false;
     }
 
-
     /// <summary>
     ///     Walks the Markup DOM using an XPathNavigator, allowing recursive descent WITHOUT requiring a Stack Hit
     ///     This is safe for very large and highly nested documents.
@@ -318,14 +304,12 @@ public static class XmlEx
         return EnumerateNodes(nav!, maxStackDepth);
     }
 
-
     public static IEnumerable<XmlNodeInfo> EnumerateNodes(this XmlDocument doc, int maxStackDepth = 32)
     {
         var nav = doc.CreateNavigator();
         nav!.MoveToRoot();
         return EnumerateNodes(nav, maxStackDepth);
     }
-
 
     public static IEnumerable<XmlNodeInfo> EnumerateNodes(this XPathNavigator nav, int maxStackDepth = 32)
     {
@@ -334,11 +318,9 @@ public static class XmlEx
             StackDepth = 0
         };
         var hasChildren = nav.HasChildren;
-
         while (true)
         {
             info.Parent = (XmlNode)nav.UnderlyingObject!;
-
             if (hasChildren && info.StackDepth < maxStackDepth)
             {
                 nav.MoveToFirstChild();
@@ -347,11 +329,9 @@ public static class XmlEx
             else
             {
                 var hasParent = false;
-
                 while (hasParent = nav.MoveToParent())
                 {
                     info.StackDepth--;
-
                     if (info.StackDepth == 0)
                     {
                         hasParent = false;
@@ -374,7 +354,6 @@ public static class XmlEx
             {
                 info.Node = (XmlNode)nav.UnderlyingObject!;
                 yield return info;
-
                 if (hasChildren = nav.HasChildren)
                 {
                     break;

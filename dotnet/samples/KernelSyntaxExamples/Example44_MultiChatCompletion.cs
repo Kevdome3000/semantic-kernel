@@ -7,7 +7,6 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
-
 /**
  * The following example shows how to use Semantic Kernel with Multiple Results Text Completion as streaming
  */
@@ -19,7 +18,6 @@ public static class Example44_MultiChatCompletion
         await AzureOpenAIMultiChatCompletionAsync();
         await OpenAIMultiChatCompletionAsync();
     }
-
 
     private static async Task AzureOpenAIMultiChatCompletionAsync()
     {
@@ -33,16 +31,14 @@ public static class Example44_MultiChatCompletion
         await RunChatAsync(azureOpenAIChatCompletion);
     }
 
-
     private static async Task OpenAIMultiChatCompletionAsync()
     {
         Console.WriteLine("======== Open AI - Multiple Chat Completion ========");
 
-        OpenAIChatCompletion openAIChatCompletion = new(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
+        OpenAIChatCompletion openAIChatCompletion = new(modelId: TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
 
         await RunChatAsync(openAIChatCompletion);
     }
-
 
     private static async Task RunChatAsync(IChatCompletion chatCompletion)
     {
@@ -52,13 +48,13 @@ public static class Example44_MultiChatCompletion
         chatHistory.AddUserMessage("Hi, I'm looking for book 3 different book suggestions about sci-fi");
         await MessageOutputAsync(chatHistory);
 
-        var chatRequestSettings = new OpenAIRequestSettings
+        var chatRequestSettings = new OpenAIPromptExecutionSettings()
         {
             MaxTokens = 1024,
             ResultsPerPrompt = 2,
             Temperature = 1,
             TopP = 0.5,
-            FrequencyPenalty = 0
+            FrequencyPenalty = 0,
         };
 
         // First bot assistant message
@@ -71,7 +67,6 @@ public static class Example44_MultiChatCompletion
 
         Console.WriteLine();
     }
-
 
     /// <summary>
     /// Outputs the last message of the chat history

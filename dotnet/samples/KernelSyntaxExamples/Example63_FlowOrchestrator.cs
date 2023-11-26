@@ -19,14 +19,11 @@ using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Memory;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
-using Microsoft.SemanticKernel.Reliability.Basic;
 using NCalcPlugins;
-
 
 /**
  * This example shows how to use FlowOrchestrator to execute a given flow with interaction with client.
  */
-
 // ReSharper disable once InconsistentNaming
 public static class Example63_FlowOrchestrator
 {
@@ -61,7 +58,6 @@ provides:
     - email
 ");
 
-
     public static Task RunAsync()
     {
         // Load assemblies for external plugins
@@ -70,7 +66,6 @@ provides:
         return RunExampleAsync();
         //return RunInteractiveAsync();
     }
-
 
     private static async Task RunInteractiveAsync()
     {
@@ -101,7 +96,6 @@ provides:
         Console.WriteLine("Please type the question you'd like to ask");
         ContextVariables? result;
         string? goal = null;
-
         do
         {
             Console.WriteLine("User: ");
@@ -119,7 +113,7 @@ provides:
             }
 
             result = await orchestrator.ExecuteFlowAsync(s_flow, sessionId, input);
-            Console.WriteLine("Assistant: " + result);
+            Console.WriteLine("Assistant: " + result.ToString());
 
             if (result.IsComplete(s_flow))
             {
@@ -134,7 +128,6 @@ provides:
         Console.WriteLine("Time Taken: " + sw.Elapsed);
         Console.WriteLine("*****************************************************");
     }
-
 
     private static async Task RunExampleAsync()
     {
@@ -168,22 +161,22 @@ provides:
 
         Console.WriteLine("Question: " + question);
         Console.WriteLine("Answer: " + result["answer"]);
-        Console.WriteLine("Assistant: " + result);
+        Console.WriteLine("Assistant: " + result.ToString());
 
-        string[] userInputs =
+        string[] userInputs = new[]
         {
             "my email is bad*email&address",
             "my email is sample@xyz.com",
             "yes", // confirm to add another email address
             "I also want to notify foo@bar.com",
-            "no I don't need notify any more address" // end of collect emails
+            "no I don't need notify any more address", // end of collect emails
         };
 
         foreach (var t in userInputs)
         {
             Console.WriteLine($"User: {t}");
             result = await orchestrator.ExecuteFlowAsync(s_flow, sessionId, t).ConfigureAwait(false);
-            Console.WriteLine("Assistant: " + result);
+            Console.WriteLine("Assistant: " + result.ToString());
 
             if (result.IsComplete(s_flow))
             {
@@ -198,7 +191,6 @@ provides:
         Console.WriteLine("*****************************************************");
     }
 
-
     private static FlowOrchestratorConfig GetOrchestratorConfig()
     {
         var config = new FlowOrchestratorConfig
@@ -209,7 +201,6 @@ provides:
         return config;
     }
 
-
     private static KernelBuilder GetKernelBuilder(ILoggerFactory loggerFactory)
     {
         var builder = new KernelBuilder();
@@ -219,16 +210,16 @@ provides:
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey,
+                true,
                 setAsDefault: true)
-            .WithRetryBasic(new BasicRetryConfig
+            .WithRetryBasic(new()
             {
                 MaxRetryCount = 3,
                 UseExponentialBackoff = true,
-                MinRetryDelay = TimeSpan.FromSeconds(3)
+                MinRetryDelay = TimeSpan.FromSeconds(3),
             })
             .WithLoggerFactory(loggerFactory);
     }
-
 
     public sealed class ChatPlugin
     {
@@ -248,35 +239,32 @@ Do not expose the regex unless asked.
 
         private int MaxTokens { get; set; } = 256;
 
-        private readonly AIRequestSettings _chatRequestSettings;
-
+        private readonly PromptExecutionSettings _chatRequestSettings;
 
         public ChatPlugin(Kernel kernel)
         {
-            _chat = kernel.GetService<IChatCompletion>();
-            _chatRequestSettings = new OpenAIRequestSettings
+            this._chat = kernel.GetService<IChatCompletion>();
+            this._chatRequestSettings = new OpenAIPromptExecutionSettings
             {
-                MaxTokens = MaxTokens,
-                StopSequences = new List<string>
-                    { "Observation:" },
+                MaxTokens = this.MaxTokens,
+                StopSequences = new List<string>() { "Observation:" },
                 Temperature = 0
             };
         }
 
-
-        [SKFunction]
+        [KernelFunction]
         [Description("Useful to assist in configuration of email address, must be called after email provided")]
-        [SKName("ConfigureEmailAddress")]
+        [KernelName("ConfigureEmailAddress")]
         public async Task<string> CollectEmailAsync(
-            [SKName("email_address")] [Description("The email address provided by the user, pass no matter what the value is")]
+            [KernelName("email_address")]
+            [Description("The email address provided by the user, pass no matter what the value is")]
             string email,
-            SKContext context)
+            ContextVariables variables)
         {
-            var chat = _chat.CreateNewChat(SystemPrompt);
+            var chat = this._chat.CreateNewChat(SystemPrompt);
             chat.AddUserMessage(Goal);
 
-            ChatHistory? chatHistory = context.GetChatHistory();
-
+            ChatHistory? chatHistory = variables.GetChatHistory();
             if (chatHistory?.Any() ?? false)
             {
                 chat.AddRange(chatHistory);
@@ -284,17 +272,16 @@ Do not expose the regex unless asked.
 
             if (!string.IsNullOrEmpty(email) && IsValidEmail(email))
             {
-                context.Variables["email_addresses"] = email;
+                variables["email_addresses"] = email;
 
                 return "Thanks for providing the info, the following email would be used in subsequent steps: " + email;
             }
 
-            context.Variables["email_addresses"] = string.Empty;
-            context.PromptInput();
+            variables["email_addresses"] = string.Empty;
+            variables.PromptInput();
 
-            return await _chat.GenerateMessageAsync(chat, _chatRequestSettings).ConfigureAwait(false);
+            return await this._chat.GenerateMessageAsync(chat, this._chatRequestSettings).ConfigureAwait(false);
         }
-
 
         private static bool IsValidEmail(string email)
         {
@@ -304,33 +291,30 @@ Do not expose the regex unless asked.
         }
     }
 
-
     public sealed class EmailPluginV2
     {
-        [SKFunction]
+        [KernelFunction]
         [Description("Send email")]
-        [SKName("SendEmail")]
+        [KernelName("SendEmail")]
         public string SendEmail(
-            [SKName("email_addresses")] [Description("target email addresses")]
+            [KernelName("email_addresses")][Description("target email addresses")]
             string emailAddress,
-            [SKName("answer")] [Description("answer, which is going to be the email content")]
+            [KernelName("answer")][Description("answer, which is going to be the email content")]
             string answer,
-            SKContext context)
+            ContextVariables variables)
         {
-            var contract = new Email
+            var contract = new Email()
             {
                 Address = emailAddress,
-                Content = answer
+                Content = answer,
             };
 
             // for demo purpose only
-            string emailPayload = JsonSerializer.Serialize(contract, new JsonSerializerOptions
-                { WriteIndented = true });
-            context.Variables["email"] = emailPayload;
+            string emailPayload = JsonSerializer.Serialize(contract, new JsonSerializerOptions() { WriteIndented = true });
+            variables["email"] = emailPayload;
 
             return "Here's the API contract I will post to mail server: " + emailPayload;
         }
-
 
         private sealed class Email
         {
@@ -363,7 +347,6 @@ Do not expose the regex unless asked.
 //}
 //Time Taken: 00:00:24.2450785
 //*****************************************************
-
 
 //*****************************************************
 //Executing RunInteractiveAsync

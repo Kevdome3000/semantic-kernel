@@ -15,7 +15,6 @@ using RepoUtils;
 
 #pragma warning disable RCS1192 // (Unnecessary usage of verbatim string literal)
 
-
 // ReSharper disable once InconsistentNaming
 public static class Example43_GetModelResult
 {
@@ -25,8 +24,8 @@ public static class Example43_GetModelResult
 
         Kernel kernel = new KernelBuilder()
             .WithOpenAIChatCompletionService(
-                TestConfiguration.OpenAI.ChatModelId,
-                TestConfiguration.OpenAI.ApiKey)
+                modelId: TestConfiguration.OpenAI.ChatModelId,
+                apiKey: TestConfiguration.OpenAI.ApiKey)
             .Build();
 
         // Function defined using few-shot design pattern
@@ -37,7 +36,7 @@ public static class Example43_GetModelResult
         // Using InvokeAsync with 3 results (Currently invoke only supports 1 result, but you can get the other results from the ModelResults)
         var functionResult = await myFunction.InvokeAsync(kernel,
             "Sci-fi",
-            requestSettings: new OpenAIRequestSettings { ResultsPerPrompt = 3, MaxTokens = 500, Temperature = 1, TopP = 0.5 });
+            requestSettings: new OpenAIPromptExecutionSettings { ResultsPerPrompt = 3, MaxTokens = 500, Temperature = 1, TopP = 0.5 });
 
         Console.WriteLine(functionResult.GetValue<string>());
         Console.WriteLine(functionResult.GetModelResults()?.Select(result => result.GetOpenAIChatResult()).AsJson());
@@ -53,12 +52,11 @@ public static class Example43_GetModelResult
 
         // Using Chat Completion directly
         var chatCompletion = new OpenAIChatCompletion(
-            TestConfiguration.OpenAI.ChatModelId,
-            TestConfiguration.OpenAI.ApiKey);
+            modelId: TestConfiguration.OpenAI.ChatModelId,
+            apiKey: TestConfiguration.OpenAI.ApiKey);
         var prompt = FunctionDefinition.Replace("{{$input}}", $"Translate this date {DateTimeOffset.Now:f} to French format", StringComparison.InvariantCultureIgnoreCase);
 
-        IReadOnlyList<ITextResult> completionResults = await chatCompletion.GetCompletionsAsync(prompt, new OpenAIRequestSettings
-            { MaxTokens = 500, Temperature = 1, TopP = 0.5 });
+        IReadOnlyList<ITextResult> completionResults = await chatCompletion.GetCompletionsAsync(prompt, new OpenAIPromptExecutionSettings() { MaxTokens = 500, Temperature = 1, TopP = 0.5 });
 
         Console.WriteLine(await completionResults[0].GetCompletionAsync());
         Console.WriteLine(completionResults[0].ModelResult.GetOpenAIChatResult().Usage.AsJson());
@@ -85,11 +83,7 @@ public static class Example43_GetModelResult
         {
             return exception switch
             {
-                HttpOperationException httpException => new
-                {
-                    StatusCode = httpException.StatusCode?.ToString(),
-                    httpException.Message, Response = httpException.ResponseContent
-                }.AsJson(),
+                HttpOperationException httpException => new { StatusCode = httpException.StatusCode?.ToString(), Message = httpException.Message, Response = httpException.ResponseContent }.AsJson(),
                 { } e => e.Message,
                 _ => string.Empty
             };

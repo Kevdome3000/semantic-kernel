@@ -50,7 +50,7 @@ public static class OpenAIChatCompletionExtensions
     public static async Task<string> GenerateFunctionCallAsync(
         this IChatCompletion chatCompletion,
         ChatHistory chat,
-        OpenAIRequestSettings requestSettings,
+        OpenAIPromptExecutionSettings requestSettings,
         IEnumerable<FunctionDefinition> callableFunctions,
         FunctionDefinition? functionCall = null,
         CancellationToken cancellationToken = default)
@@ -146,7 +146,7 @@ public static class OpenAIChatCompletionExtensions
     public static async Task<T?> GenerateResponseAsync<T>(
         this IChatCompletion chatCompletion,
         ChatHistory chat,
-        OpenAIRequestSettings requestSettings,
+        OpenAIPromptExecutionSettings requestSettings,
         IEnumerable<FunctionDefinition> callableFunctions,
         FunctionDefinition? functionCall = null,
         JsonSerializerOptions? options = null,
@@ -159,13 +159,13 @@ public static class OpenAIChatCompletionExtensions
 
 
     /// <summary>
-    ///  Converts the <see cref="OpenAIRequestSettings"/> to <see cref="FunctionCallRequestSettings"/>
+    ///  Converts the <see cref="OpenAIPromptExecutionSettings"/> to <see cref="FunctionCallRequestSettings"/>
     /// </summary>
     /// <param name="settings"></param>
     /// <param name="callableFunctions"></param>
     /// <param name="targetFunctionCall"></param>
     /// <returns></returns>
-    public static FunctionCallRequestSettings ToFunctionCallRequestSettings(this OpenAIRequestSettings settings, IEnumerable<FunctionDefinition> callableFunctions, FunctionDefinition? targetFunctionCall = null)
+    public static FunctionCallRequestSettings ToFunctionCallRequestSettings(this OpenAIPromptExecutionSettings settings, IEnumerable<FunctionDefinition> callableFunctions, FunctionDefinition? targetFunctionCall = null)
     {
         // Remove duplicates, if any, due to the inaccessibility of ReadOnlySkillCollection
         // Can't changes what skills are available to the context because you can't remove skills from the context

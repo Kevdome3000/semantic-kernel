@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
-
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -9,11 +7,12 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Http;
-using SemanticKernel.AI;
-using SemanticKernel.AI.TextCompletion;
-using Services;
+using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.Services;
 
+namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
 
 /// <summary>
 /// HuggingFace text completion service.
@@ -29,7 +28,6 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
     private readonly HttpClient _httpClient;
     private readonly string? _apiKey;
     private readonly Dictionary<string, string> _attributes = new();
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HuggingFaceTextCompletion"/> class.
@@ -49,7 +47,6 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
 
         this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HuggingFaceTextCompletion"/> class.
@@ -72,38 +69,22 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
         this._attributes.Add(IAIServiceExtensions.EndpointKey, this._endpoint ?? HuggingFaceApiEndpoint);
     }
 
-
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, string> Attributes => this._attributes;
-
-
-    /// <inheritdoc/>
-    async IAsyncEnumerable<ITextStreamingResult> ITextCompletion.GetStreamingCompletionsAsync(
-        string text,
-        AIRequestSettings? requestSettings,
-        [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        foreach (TextCompletionResult result in await this.ExecuteGetCompletionsAsync(text, cancellationToken).ConfigureAwait(false))
-        {
-            yield return result;
-        }
-    }
-
 
     /// <inheritdoc/>
     public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
         string text,
-        AIRequestSettings? requestSettings = null,
+        PromptExecutionSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         return await this.ExecuteGetCompletionsAsync(text, cancellationToken).ConfigureAwait(false);
     }
 
-
     /// <inheritdoc/>
     public async IAsyncEnumerable<T> GetStreamingContentAsync<T>(
         string prompt,
-        AIRequestSettings? requestSettings = null,
+        PromptExecutionSettings? requestSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         foreach (var result in await this.ExecuteGetCompletionsAsync(prompt, cancellationToken).ConfigureAwait(false))
@@ -116,7 +97,6 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
             if (typeof(T) == typeof(string))
             {
                 yield return (T)(object)content;
-
                 continue;
             }
 
@@ -131,7 +111,6 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
         }
     }
 
-
     #region private ================================================================================
 
     private async Task<IReadOnlyList<TextCompletionResult>> ExecuteGetCompletionsAsync(string text, CancellationToken cancellationToken = default)
@@ -144,7 +123,6 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
         using var httpRequestMessage = HttpRequest.CreatePostRequest(this.GetRequestUri(), completionRequest);
 
         httpRequestMessage.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
-
         if (!string.IsNullOrEmpty(this._apiKey))
         {
             httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");
@@ -158,7 +136,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
 
         if (completionResponse is null)
         {
-            throw new SKException("Unexpected response from model")
+            throw new KernelException("Unexpected response from model")
             {
                 Data = { { "ResponseData", body } },
             };
@@ -166,7 +144,6 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
 
         return completionResponse.ConvertAll(c => new TextCompletionResult(c));
     }
-
 
     /// <summary>
     /// Retrieves the request URI based on the provided endpoint and model information.
@@ -191,6 +168,4 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
     }
 
     #endregion
-
-
 }

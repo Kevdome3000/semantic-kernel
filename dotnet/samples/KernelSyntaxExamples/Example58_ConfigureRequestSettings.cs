@@ -7,7 +7,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using RepoUtils;
 
-
 // ReSharper disable once InconsistentNaming
 public static class Example58_ConfigureRequestSettings
 {
@@ -32,8 +31,8 @@ public static class Example58_ConfigureRequestSettings
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureOpenAIChatCompletionService(
-                chatDeploymentName,
-                endpoint,
+                deploymentName: chatDeploymentName,
+                endpoint: endpoint,
                 serviceId: serviceId,
                 apiKey: apiKey)
             .Build();
@@ -44,7 +43,7 @@ public static class Example58_ConfigureRequestSettings
         // Invoke the semantic function and pass an OpenAI specific instance containing the request settings
         var result = await kernel.InvokePromptAsync(
             prompt,
-            new OpenAIRequestSettings
+            new OpenAIPromptExecutionSettings()
             {
                 MaxTokens = 60,
                 Temperature = 0.7

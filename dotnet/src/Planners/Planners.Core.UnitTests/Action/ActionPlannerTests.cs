@@ -1,17 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
-namespace Microsoft.SemanticKernel.Planning.Action.UnitTests;
-
-using AI;
-using AI.TextCompletion;
+using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Services;
 using Moq;
-using Orchestration;
-using Services;
 using Xunit;
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace Microsoft.SemanticKernel.Planning.Action.UnitTests;
 #pragma warning restore IDE0130 // Namespace does not match folder structure
-
 
 public sealed class ActionPlannerTests
 {
@@ -36,7 +34,6 @@ public sealed class ActionPlannerTests
         Assert.Equal("PullsList", plan.Steps[0].Name);
     }
 
-
     [Fact]
     public async Task InvalidJsonThrowsAsync()
     {
@@ -48,9 +45,8 @@ public sealed class ActionPlannerTests
         var planner = new ActionPlanner(kernel);
 
         // Act & Assert
-        await Assert.ThrowsAsync<SKException>(() => planner.CreatePlanAsync("goal"));
+        await Assert.ThrowsAsync<KernelException>(() => planner.CreatePlanAsync("goal"));
     }
-
 
     [Fact]
     public void UsesPromptDelegateWhenProvided()
@@ -71,7 +67,6 @@ public sealed class ActionPlannerTests
         // Assert
         getPromptTemplateMock.Verify(x => x(), Times.Once());
     }
-
 
     [Fact]
     public async Task MalformedJsonThrowsAsync()
@@ -100,9 +95,8 @@ public sealed class ActionPlannerTests
         var planner = new ActionPlanner(kernel);
 
         // Act & Assert
-        await Assert.ThrowsAsync<SKException>(async () => await planner.CreatePlanAsync("goal"));
+        await Assert.ThrowsAsync<KernelException>(async () => await planner.CreatePlanAsync("goal"));
     }
-
 
     [Fact]
     public async Task ListOfFunctionsIncludesNativeAndPromptFunctionsAsync()
@@ -122,7 +116,6 @@ public sealed class ActionPlannerTests
         Assert.Equal(expected, result);
     }
 
-
     [Fact]
     public async Task ListOfFunctionsExcludesExcludedPluginsAsync()
     {
@@ -136,8 +129,6 @@ public sealed class ActionPlannerTests
 
         var planner = new ActionPlanner(kernel, config: config);
 
-        var context = kernel.CreateNewContext();
-
         // Act
         var result = await planner.ListOfFunctionsAsync("goal");
 
@@ -145,7 +136,6 @@ public sealed class ActionPlannerTests
         var expected = $"// Send an e-mail.{Environment.NewLine}email.SendEmail{Environment.NewLine}";
         Assert.Equal(expected, result);
     }
-
 
     [Fact]
     public async Task ListOfFunctionsExcludesExcludedFunctionsAsync()
@@ -160,8 +150,6 @@ public sealed class ActionPlannerTests
 
         var planner = new ActionPlanner(kernel, config: config);
 
-        var context = kernel.CreateNewContext();
-
         // Act
         var result = await planner.ListOfFunctionsAsync("goal");
 
@@ -170,10 +158,9 @@ public sealed class ActionPlannerTests
         Assert.Equal(expected, result);
     }
 
-
-    private Kernel CreateKernel(string testPlanString, SKPluginCollection? plugins = null)
+    private Kernel CreateKernel(string testPlanString, KernelPluginCollection? plugins = null)
     {
-        plugins ??= new SKPluginCollection();
+        plugins ??= new KernelPluginCollection();
 
         var textResult = new Mock<ITextResult>();
         textResult
@@ -184,36 +171,34 @@ public sealed class ActionPlannerTests
 
         var textCompletion = new Mock<ITextCompletion>();
         textCompletion
-            .Setup(tc => tc.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()))
+            .Setup(tc => tc.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(textCompletionResult);
 
         var serviceSelector = new Mock<IAIServiceSelector>();
         serviceSelector
-            .Setup(ss => ss.SelectAIService<ITextCompletion>(It.IsAny<Kernel>(), It.IsAny<SKContext>(), It.IsAny<KernelFunction>()))
-            .Returns((textCompletion.Object, new AIRequestSettings()));
+            .Setup(ss => ss.SelectAIService<ITextCompletion>(It.IsAny<Kernel>(), It.IsAny<ContextVariables>(), It.IsAny<KernelFunction>()))
+            .Returns((textCompletion.Object, new PromptExecutionSettings()));
 
         var serviceProvider = new Mock<IAIServiceProvider>();
 
         return new Kernel(serviceProvider.Object, plugins, serviceSelector.Object);
     }
 
-
-    private SKPluginCollection CreatePluginCollection()
+    private KernelPluginCollection CreatePluginCollection()
     {
         return new()
         {
-            new SKPlugin("email", new[]
+            new KernelPlugin("email", new[]
             {
-                SKFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "SendEmail", "Send an e-mail")
+                KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "SendEmail", "Send an e-mail")
             }),
-            new SKPlugin("GitHubPlugin", new[]
+            new KernelPlugin("GitHubPlugin", new[]
             {
-                SKFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "PullsList", "List pull requests"),
-                SKFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "RepoList", "List repositories")
+                KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "PullsList", "List pull requests"),
+                KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "RepoList", "List repositories")
             })
         };
     }
-
 
     private const string ValidPlanString =
         @"Here is a possible plan to accomplish the user intent:

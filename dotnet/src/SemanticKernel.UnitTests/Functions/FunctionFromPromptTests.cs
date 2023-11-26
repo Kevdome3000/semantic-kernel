@@ -31,7 +31,7 @@ public class FunctionFromPromptTests
             .WithDefaultAIService(factory.Object)
             .Build();
 
-        kernel.Plugins.Add(new SKPlugin("jk", functions: new[] { kernel.CreateFunctionFromPrompt(promptTemplate: "Tell me a joke", functionName: "joker", description: "Nice fun") }));
+        kernel.Plugins.Add(new KernelPlugin("jk", functions: new[] { kernel.CreateFunctionFromPrompt(promptTemplate: "Tell me a joke", functionName: "joker", description: "Nice fun") }));
 
         // Act & Assert - 3 functions, var name is not case sensitive
         Assert.True(kernel.Plugins.TryGetFunction("jk", "joker", out _));
@@ -48,7 +48,7 @@ public class FunctionFromPromptTests
         var mockTextCompletion = new Mock<ITextCompletion>();
         var mockCompletionResult = new Mock<ITextResult>();
 
-        mockTextCompletion.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
+        mockTextCompletion.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
         mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
 
         var kernel = new KernelBuilder()
@@ -56,7 +56,7 @@ public class FunctionFromPromptTests
             .Build();
 
         var templateConfig = new PromptTemplateConfig();
-        templateConfig.ModelSettings.Add(new OpenAIRequestSettings()
+        templateConfig.ModelSettings.Add(new OpenAIPromptExecutionSettings()
         {
             ChatSystemPrompt = providedSystemChatPrompt
         });
@@ -67,7 +67,7 @@ public class FunctionFromPromptTests
         await kernel.InvokeAsync(func);
 
         // Assert
-        mockTextCompletion.Verify(a => a.GetCompletionsAsync("template", It.Is<OpenAIRequestSettings>(c => c.ChatSystemPrompt == expectedSystemChatPrompt), It.IsAny<CancellationToken>()), Times.Once());
+        mockTextCompletion.Verify(a => a.GetCompletionsAsync("template", It.Is<OpenAIPromptExecutionSettings>(c => c.ChatSystemPrompt == expectedSystemChatPrompt), It.IsAny<CancellationToken>()), Times.Once());
     }
 
 
@@ -108,8 +108,8 @@ public class FunctionFromPromptTests
         var mockTextCompletion2 = new Mock<ITextCompletion>();
         var mockCompletionResult = new Mock<ITextResult>();
 
-        mockTextCompletion1.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
-        mockTextCompletion2.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
+        mockTextCompletion1.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
+        mockTextCompletion2.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
         mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
 
         var kernel = new KernelBuilder()
@@ -118,15 +118,15 @@ public class FunctionFromPromptTests
             .Build();
 
         var templateConfig = new PromptTemplateConfig();
-        templateConfig.ModelSettings.Add(new AIRequestSettings() { ServiceId = "service1" });
+        templateConfig.ModelSettings.Add(new PromptExecutionSettings() { ServiceId = "service1" });
         var func = kernel.CreateFunctionFromPrompt("template", templateConfig, "pluginName");
 
         // Act
         await kernel.InvokeAsync(func);
 
         // Assert
-        mockTextCompletion1.Verify(a => a.GetCompletionsAsync("template", It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Once());
-        mockTextCompletion2.Verify(a => a.GetCompletionsAsync("template", It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Never());
+        mockTextCompletion1.Verify(a => a.GetCompletionsAsync("template", It.IsAny<PromptExecutionSettings>(), It.IsAny<CancellationToken>()), Times.Once());
+        mockTextCompletion2.Verify(a => a.GetCompletionsAsync("template", It.IsAny<PromptExecutionSettings>(), It.IsAny<CancellationToken>()), Times.Never());
     }
 
 
@@ -143,11 +143,11 @@ public class FunctionFromPromptTests
             .Build();
 
         var templateConfig = new PromptTemplateConfig();
-        templateConfig.ModelSettings.Add(new AIRequestSettings() { ServiceId = "service3" });
+        templateConfig.ModelSettings.Add(new PromptExecutionSettings() { ServiceId = "service3" });
         var func = kernel.CreateFunctionFromPrompt("template", templateConfig, "pluginName");
 
         // Act
-        var exception = await Assert.ThrowsAsync<SKException>(() => kernel.InvokeAsync(func));
+        var exception = await Assert.ThrowsAsync<KernelException>(() => kernel.InvokeAsync(func));
 
         // Assert
         Assert.Equal("Service of type Microsoft.SemanticKernel.AI.TextCompletion.ITextCompletion and name service3 not registered.", exception.Message);
@@ -160,7 +160,7 @@ public class FunctionFromPromptTests
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
-        var function = SKFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
+        var function = KernelFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
 
         var invoked = 0;
         sut.FunctionInvoking += (sender, e) =>
@@ -174,7 +174,7 @@ public class FunctionFromPromptTests
 
         // Assert
         Assert.Equal(1, invoked);
-        mockTextCompletion.Verify(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
+        mockTextCompletion.Verify(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
     }
 
 
@@ -184,7 +184,7 @@ public class FunctionFromPromptTests
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
-        var function = SKFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
+        var function = KernelFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
         var input = "Test input";
         var invoked = false;
         sut.FunctionInvoking += (sender, e) =>
@@ -208,7 +208,7 @@ public class FunctionFromPromptTests
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
-        var function = SKFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
+        var function = KernelFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
 
         var invoked = 0;
         sut.FunctionInvoking += (sender, e) =>
@@ -222,7 +222,7 @@ public class FunctionFromPromptTests
 
         // Assert
         Assert.Equal(1, invoked);
-        mockTextCompletion.Verify(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Never);
+        mockTextCompletion.Verify(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
 
@@ -232,7 +232,7 @@ public class FunctionFromPromptTests
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
-        var function = SKFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
+        var function = KernelFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
         var invoked = 0;
 
         sut.FunctionInvoking += (sender, e) =>
@@ -259,7 +259,7 @@ public class FunctionFromPromptTests
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
-        var function = SKFunctionFactory.CreateFromPrompt("Write one phrase about UnitTests", functionName: "SkipMe");
+        var function = KernelFunctionFactory.CreateFromPrompt("Write one phrase about UnitTests", functionName: "SkipMe");
         var invoked = 0;
         var invoking = 0;
         string invokedFunction = string.Empty;
@@ -296,7 +296,7 @@ public class FunctionFromPromptTests
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
-        var function = SKFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
+        var function = KernelFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
 
         var invoked = 0;
 
@@ -310,7 +310,7 @@ public class FunctionFromPromptTests
 
         // Assert
         Assert.Equal(1, invoked);
-        mockTextCompletion.Verify(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
+        mockTextCompletion.Verify(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
     }
 
 
@@ -320,7 +320,7 @@ public class FunctionFromPromptTests
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
-        var function = SKFunctionFactory.CreateFromPrompt(prompt);
+        var function = KernelFunctionFactory.CreateFromPrompt(prompt);
 
         var originalInput = "Importance";
         var newInput = "Problems";
@@ -344,7 +344,7 @@ public class FunctionFromPromptTests
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
-        var function = SKFunctionFactory.CreateFromPrompt(prompt);
+        var function = KernelFunctionFactory.CreateFromPrompt(prompt);
 
         var originalInput = "Importance";
         var newInput = "Problems";
@@ -371,21 +371,20 @@ public class FunctionFromPromptTests
             new TestStreamingContent("chunk2"));
         var kernel = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
-        var sut = SKFunctionFactory.CreateFromPrompt(prompt);
+        var sut = KernelFunctionFactory.CreateFromPrompt(prompt);
         var variables = new ContextVariables("importance");
-        var context = kernel.CreateNewContext(variables);
 
         var chunkCount = 0;
 
         // Act
-        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContent>(kernel, context))
+        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContent>(kernel, variables))
         {
             chunkCount++;
         }
 
         // Assert
         Assert.Equal(2, chunkCount);
-        mockTextCompletion.Verify(m => m.GetStreamingContentAsync<StreamingContent>(It.IsIn("Write a simple phrase about UnitTests importance"), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
+        mockTextCompletion.Verify(m => m.GetStreamingContentAsync<StreamingContent>(It.IsIn("Write a simple phrase about UnitTests importance"), It.IsAny<PromptExecutionSettings>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
     }
 
 
@@ -395,7 +394,7 @@ public class FunctionFromPromptTests
         mockTextResult.Setup(m => m.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync(completionResult ?? "LLM Result about UnitTests");
 
         var mockTextCompletion = new Mock<ITextCompletion>();
-        mockTextCompletion.Setup(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<ITextResult> { mockTextResult.Object });
+        mockTextCompletion.Setup(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<ITextResult> { mockTextResult.Object });
         return (mockTextResult, mockTextCompletion);
     }
 
@@ -403,7 +402,7 @@ public class FunctionFromPromptTests
     private Mock<ITextCompletion> SetupStreamingMocks<T>(params T[] completionResults)
     {
         var mockTextCompletion = new Mock<ITextCompletion>();
-        mockTextCompletion.Setup(m => m.GetStreamingContentAsync<T>(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).Returns(this.ToAsyncEnumerable(completionResults));
+        mockTextCompletion.Setup(m => m.GetStreamingContentAsync<T>(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<CancellationToken>())).Returns(this.ToAsyncEnumerable(completionResults));
 
         return mockTextCompletion;
     }

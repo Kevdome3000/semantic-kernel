@@ -240,7 +240,7 @@ public class RestApiOperationTests
         void Act() => sut.RenderHeaders(new Dictionary<string, string>());
 
         // Assert
-        Assert.Throws<SKException>(Act);
+        Assert.Throws<KernelException>(Act);
     }
 
 
@@ -266,7 +266,7 @@ public class RestApiOperationTests
         void Act() => sut.RenderHeaders(new Dictionary<string, string>());
 
         // Assert
-        Assert.Throws<SKException>(Act);
+        Assert.Throws<KernelException>(Act);
     }
 
 

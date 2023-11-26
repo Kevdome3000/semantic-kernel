@@ -8,7 +8,7 @@ using Orchestration;
 /// <summary>
 /// Event arguments available to the Kernel.FunctionInvoking event.
 /// </summary>
-public class FunctionInvokingEventArgs : SKCancelEventArgs
+public class FunctionInvokingEventArgs : KernelCancelEventArgs
 {
     /// <summary>
     /// Indicates if the function execution should be skipped.
@@ -20,8 +20,8 @@ public class FunctionInvokingEventArgs : SKCancelEventArgs
     /// Initializes a new instance of the <see cref="FunctionInvokingEventArgs"/> class.
     /// </summary>
     /// <param name="function">Kernel function</param>
-    /// <param name="context">Context related to the event</param>
-    public FunctionInvokingEventArgs(KernelFunction function, SKContext context) : base(function, context)
+    /// <param name="variables">Context variables relevant to the event</param>
+    public FunctionInvokingEventArgs(KernelFunction function, ContextVariables variables) : base(function, variables)
     {
     }
 

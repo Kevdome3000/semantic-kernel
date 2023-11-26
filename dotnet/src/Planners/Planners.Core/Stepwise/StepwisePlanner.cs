@@ -1,9 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using NS of Plan
-namespace Microsoft.SemanticKernel.Planning;
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -15,14 +11,16 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using AI.ChatCompletion;
-using AI.TextCompletion;
-using Extensions.Logging;
-using Orchestration;
-using Services;
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Services;
 
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - Using NS of Plan
+namespace Microsoft.SemanticKernel.Planning;
 #pragma warning restore IDE0130
-
 
 /// <summary>
 /// A planner that creates a Stepwise plan using Mrkl systems.
@@ -69,13 +67,12 @@ public class StepwisePlanner
         this._logger = this._kernel.LoggerFactory.CreateLogger(this.GetType());
     }
 
-
     /// <summary>Creates a plan for the specified goal.</summary>
     /// <param name="goal">The goal for which a plan should be created.</param>
     /// <returns>The created plan.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="goal"/> is null.</exception>
     /// <exception cref="ArgumentException"><paramref name="goal"/> is empty or entirely composed of whitespace.</exception>
-    /// <exception cref="SKException">A plan could not be created.</exception>
+    /// <exception cref="KernelException">A plan could not be created.</exception>
     public Plan CreatePlan(string goal)
     {
         Verify.NotNullOrWhiteSpace(goal);
@@ -103,38 +100,37 @@ public class StepwisePlanner
 #pragma warning restore VSTHRD002
     }
 
-
     /// <summary>
     /// Execute a plan
     /// </summary>
     /// <param name="question">The question to answer</param>
-    /// <param name="context">The context to use</param>
+    /// <param name="contextVariables">The context variables to use</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The context with the result</returns>
-    /// <exception cref="SKException">No AIService available for getting completions.</exception>
-    [SKFunction, SKName("ExecutePlan"), Description("Execute a plan")]
-    public async Task<SKContext> ExecutePlanAsync(
+    /// <returns>The result</returns>
+    /// <exception cref="KernelException">No AIService available for getting completions.</exception>
+    [KernelFunction, KernelName("ExecutePlan"), Description("Execute a plan")]
+    public async Task<string> ExecutePlanAsync(
         [Description("The question to answer")]
         string question,
-        SKContext context,
+        ContextVariables contextVariables,
         CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(question))
         {
-            context.Variables.Update("Question not found.");
-            return context;
+            contextVariables.Update("Question not found.");
+            return "Question not found.";
         }
 
-        ChatHistory chatHistory = await this.InitializeChatHistoryAsync(this._kernel, this.CreateChatHistory(this._kernel, out var aiService), aiService, question, context, cancellationToken).ConfigureAwait(false);
+        ChatHistory chatHistory = await this.InitializeChatHistoryAsync(this._kernel, this.CreateChatHistory(this._kernel, out var aiService), aiService, question, contextVariables, cancellationToken).ConfigureAwait(false);
 
         if (aiService is null)
         {
-            throw new SKException("No AIService available for getting completions.");
+            throw new KernelException("No AIService available for getting completions.");
         }
 
         if (chatHistory is null)
         {
-            throw new SKException("ChatHistory is null.");
+            throw new KernelException("ChatHistory is null.");
         }
 
         var startingMessageCount = chatHistory.Count;
@@ -149,21 +145,21 @@ public class StepwisePlanner
             return this.ParseResult(actionText);
         }
 
-        SKContext? TryGetFinalAnswer(SystemStep step, int iterations, SKContext context)
+        string? TryGetFinalAnswer(SystemStep step, int iterations, ContextVariables variables)
         {
             // If a final answer is found, update the context to be returned
             if (!string.IsNullOrEmpty(step.FinalAnswer))
             {
                 this._logger?.LogInformation("Final Answer: {FinalAnswer}", step.FinalAnswer);
 
-                context.Variables.Update(step.FinalAnswer);
+                variables.Update(step.FinalAnswer);
 
                 stepsTaken.Add(step);
 
                 // Add additional results to the context
-                AddExecutionStatsToContext(stepsTaken, context, iterations);
+                AddExecutionStatsToContextVariables(stepsTaken, variables, iterations);
 
-                return context;
+                return variables.Input;
             }
 
             return null;
@@ -214,7 +210,6 @@ public class StepwisePlanner
 
                 lastStep.OriginalResponse += step.OriginalResponse;
                 step = lastStep;
-
                 if (chatHistory.Count > startingMessageCount)
                 {
                     chatHistory.RemoveAt(chatHistory.Count - 1);
@@ -288,11 +283,10 @@ public class StepwisePlanner
             var nextStep = await GetNextStepAsync().ConfigureAwait(false);
 
             // If final answer is available, we're done, return the context
-            var finalContext = TryGetFinalAnswer(nextStep, i + 1, context);
-
-            if (finalContext is not null)
+            var answer = TryGetFinalAnswer(nextStep, i + 1, contextVariables);
+            if (answer is not null)
             {
-                return finalContext;
+                return answer;
             }
 
             // If we have an observation before running the action, continue to the next iteration
@@ -320,25 +314,24 @@ public class StepwisePlanner
             }
         }
 
-        AddExecutionStatsToContext(stepsTaken, context, this.Config.MaxIterations);
-        context.Variables.Update(NoFinalAnswerFoundMessage);
+        AddExecutionStatsToContextVariables(stepsTaken, contextVariables, this.Config.MaxIterations);
+        contextVariables.Update(NoFinalAnswerFoundMessage);
 
-        return context;
+        return NoFinalAnswerFoundMessage;
     }
-
 
     #region setup helpers
 
-    private async Task<ChatHistory> InitializeChatHistoryAsync(Kernel kernel, ChatHistory chatHistory, IAIService aiService, string question, SKContext context, CancellationToken cancellationToken)
+    private async Task<ChatHistory> InitializeChatHistoryAsync(Kernel kernel, ChatHistory chatHistory, IAIService aiService, string question, ContextVariables variables, CancellationToken cancellationToken)
     {
-        string userManual = await this.GetUserManualAsync(kernel, question, context, cancellationToken).ConfigureAwait(false);
-        string userQuestion = await this.GetUserQuestionAsync(kernel, context, cancellationToken).ConfigureAwait(false);
+        string userManual = await this.GetUserManualAsync(kernel, question, variables, cancellationToken).ConfigureAwait(false);
+        string userQuestion = await this.GetUserQuestionAsync(kernel, variables, cancellationToken).ConfigureAwait(false);
 
-        var systemContext = this._kernel.CreateNewContext();
+        var systemVariables = new ContextVariables();
 
-        systemContext.Variables.Set("suffix", this.Config.Suffix);
-        systemContext.Variables.Set("functionDescriptions", userManual);
-        string systemMessage = await this.GetSystemMessageAsync(kernel, systemContext, cancellationToken).ConfigureAwait(false);
+        systemVariables.Set("suffix", this.Config.Suffix);
+        systemVariables.Set("functionDescriptions", userManual);
+        string systemMessage = await this.GetSystemMessageAsync(kernel, systemVariables, cancellationToken).ConfigureAwait(false);
 
         chatHistory.AddSystemMessage(systemMessage);
         chatHistory.AddUserMessage(userQuestion);
@@ -346,11 +339,9 @@ public class StepwisePlanner
         return chatHistory;
     }
 
-
     private ChatHistory CreateChatHistory(Kernel kernel, out IAIService aiService)
     {
         ChatHistory chatHistory;
-
         if (TryGetChatCompletion(this._kernel, out var chatCompletion))
         {
             chatHistory = chatCompletion.CreateNewChat();
@@ -366,25 +357,21 @@ public class StepwisePlanner
         return chatHistory;
     }
 
-
-    private async Task<string> GetUserManualAsync(Kernel kernel, string question, SKContext context, CancellationToken cancellationToken)
+    private async Task<string> GetUserManualAsync(Kernel kernel, string question, ContextVariables variables, CancellationToken cancellationToken)
     {
         var descriptions = await this._kernel.Plugins.GetFunctionsManualAsync(this.Config, question, this._logger, cancellationToken).ConfigureAwait(false);
-        context.Variables.Set("functionDescriptions", descriptions);
+        variables.Set("functionDescriptions", descriptions);
         var promptTemplate = this._promptTemplateFactory.Create(this._manualTemplate, new PromptTemplateConfig());
-        return await promptTemplate.RenderAsync(kernel, context, cancellationToken).ConfigureAwait(false);
+        return await promptTemplate.RenderAsync(kernel, variables, cancellationToken).ConfigureAwait(false);
     }
 
+    private Task<string> GetUserQuestionAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken)
+        => this._promptTemplateFactory.Create(this._questionTemplate, new PromptTemplateConfig()).RenderAsync(kernel, variables, cancellationToken);
 
-    private Task<string> GetUserQuestionAsync(Kernel kernel, SKContext context, CancellationToken cancellationToken)
-        => this._promptTemplateFactory.Create(this._questionTemplate, new PromptTemplateConfig()).RenderAsync(kernel, context, cancellationToken);
-
-
-    private Task<string> GetSystemMessageAsync(Kernel kernel, SKContext context, CancellationToken cancellationToken)
-        => this._promptTemplateFactory.Create(this._promptTemplate, new PromptTemplateConfig()).RenderAsync(kernel, context, cancellationToken);
+    private Task<string> GetSystemMessageAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken)
+        => this._promptTemplateFactory.Create(this._promptTemplate, new PromptTemplateConfig()).RenderAsync(kernel, variables, cancellationToken);
 
     #endregion setup helpers
-
 
     #region execution helpers
 
@@ -398,7 +385,6 @@ public class StepwisePlanner
         string? originalThought = null;
 
         var tokenCount = chatHistory.GetTokenCount();
-
         while (tokenCount >= this.Config.MaxPromptTokens && chatHistory.Count > (skipStart + skipCount + messagesToKeep))
         {
             originalThought = $"{Thought} {stepsTaken.FirstOrDefault()?.Thought}";
@@ -407,7 +393,7 @@ public class StepwisePlanner
 
         if (tokenCount >= this.Config.MaxPromptTokens)
         {
-            throw new SKException("ChatHistory is too long to get a completion. Try reducing the available functions.");
+            throw new KernelException("ChatHistory is too long to get a completion. Try reducing the available functions.");
         }
 
         var reducedChatHistory = new ChatHistory();
@@ -421,7 +407,6 @@ public class StepwisePlanner
 
         return this.GetCompletionAsync(aiService, reducedChatHistory, stepsTaken.Count == 0, token);
     }
-
 
     private async Task<string> GetCompletionAsync(IAIService aiService, ChatHistory chatHistory, bool addThought, CancellationToken token)
     {
@@ -446,15 +431,14 @@ public class StepwisePlanner
 
             if (results.Count == 0)
             {
-                throw new SKException("No completions returned.");
+                throw new KernelException("No completions returned.");
             }
 
             return await results[0].GetCompletionAsync(token).ConfigureAwait(false);
         }
 
-        throw new SKException("No AIService available for getting completions.");
+        throw new KernelException("No AIService available for getting completions.");
     }
-
 
     /// <summary>
     /// Parse LLM response into a SystemStep during execution
@@ -508,11 +492,9 @@ public class StepwisePlanner
         if (actionIndex != -1)
         {
             int jsonStartIndex = input.IndexOf("{", actionIndex, StringComparison.OrdinalIgnoreCase);
-
             if (jsonStartIndex != -1)
             {
                 int jsonEndIndex = input.Substring(jsonStartIndex).LastIndexOf("}", StringComparison.OrdinalIgnoreCase);
-
                 if (jsonEndIndex != -1)
                 {
                     string json = input.Substring(jsonStartIndex, jsonEndIndex + 1);
@@ -538,11 +520,9 @@ public class StepwisePlanner
         return result;
     }
 
-
     private async Task<string?> InvokeActionAsync(string actionName, Dictionary<string, string> actionVariables, CancellationToken cancellationToken)
     {
         FunctionUtils.SplitPluginFunctionName(actionName, out var pluginName, out var functionName);
-
         if (string.IsNullOrEmpty(functionName))
         {
             this._logger?.LogDebug("Attempt to invoke action {Action} failed", actionName);
@@ -569,7 +549,6 @@ public class StepwisePlanner
             if (resultObject is not null)
             {
                 var converter = TypeDescriptor.GetConverter(resultObject);
-
                 if (converter.CanConvertTo(typeof(string)))
                 {
                     result = converter.ConvertToString(resultObject);
@@ -587,11 +566,9 @@ public class StepwisePlanner
         }
     }
 
-
     private ContextVariables CreateActionContextVariables(Dictionary<string, string> actionVariables)
     {
         ContextVariables vars = new();
-
         if (actionVariables != null)
         {
             foreach (var kvp in actionVariables)
@@ -605,13 +582,11 @@ public class StepwisePlanner
 
     #endregion execution helpers
 
-
     private static PromptTemplateConfig LoadPromptConfigFromResource()
     {
         string promptConfigString = EmbeddedResource.Read("Stepwise.Plugin.StepwiseStep.config.json");
         return !string.IsNullOrEmpty(promptConfigString) ? PromptTemplateConfig.FromJson(promptConfigString) : new PromptTemplateConfig();
     }
-
 
     private static bool TryGetChatCompletion(Kernel kernel, [NotNullWhen(true)] out IChatCompletion? chatCompletion)
     {
@@ -622,7 +597,7 @@ public class StepwisePlanner
             chatCompletion = kernel.GetService<IChatCompletion>();
             return true;
         }
-        catch (SKException)
+        catch (KernelException)
         {
             chatCompletion = null;
         }
@@ -630,15 +605,13 @@ public class StepwisePlanner
         return false;
     }
 
-
-    private static void AddExecutionStatsToContext(List<SystemStep> stepsTaken, SKContext context, int iterations)
+    private static void AddExecutionStatsToContextVariables(List<SystemStep> stepsTaken, ContextVariables variables, int iterations)
     {
-        context.Variables.Set("stepCount", stepsTaken.Count.ToString(CultureInfo.InvariantCulture));
-        context.Variables.Set("stepsTaken", JsonSerializer.Serialize(stepsTaken));
-        context.Variables.Set("iterations", iterations.ToString(CultureInfo.InvariantCulture));
+        variables.Set("stepCount", stepsTaken.Count.ToString(CultureInfo.InvariantCulture));
+        variables.Set("stepsTaken", JsonSerializer.Serialize(stepsTaken));
+        variables.Set("iterations", iterations.ToString(CultureInfo.InvariantCulture));
 
         Dictionary<string, int> actionCounts = new();
-
         foreach (var step in stepsTaken)
         {
             if (string.IsNullOrEmpty(step.Action)) { continue; }
@@ -652,9 +625,8 @@ public class StepwisePlanner
 
         var functionCallCountStr = actionCounts.Values.Sum().ToString(CultureInfo.InvariantCulture);
 
-        context.Variables.Set("functionCount", $"{functionCallCountStr} ({functionCallListWithCounts})");
+        variables.Set("functionCount", $"{functionCallCountStr} ({functionCallListWithCounts})");
     }
-
 
     #region private
 
@@ -670,7 +642,7 @@ public class StepwisePlanner
     /// <summary>
     /// Planner native functions
     /// </summary>
-    private readonly ISKPlugin _nativeFunctions;
+    private readonly IKernelPlugin _nativeFunctions;
 
     /// <summary>
     /// The prompt template to use for the system step
@@ -738,6 +710,4 @@ public class StepwisePlanner
     private const string NoFinalAnswerFoundMessage = "Result not found, review 'stepsTaken' to see what happened.";
 
     #endregion private
-
-
 }

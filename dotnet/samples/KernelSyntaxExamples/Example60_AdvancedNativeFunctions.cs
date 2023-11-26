@@ -7,7 +7,6 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 
-
 /**
  * This example shows different ways how to define and execute native functions using custom and primitive types.
  */
@@ -18,7 +17,6 @@ public static class Example60_AdvancedNativeFunctions
     {
         await NativeFunctionsChainingAsync();
     }
-
 
     #region Native Functions Chaining
 
@@ -40,7 +38,6 @@ public static class Example60_AdvancedNativeFunctions
         Console.WriteLine(customType.Text); // From Function1 + From Function2
     }
 
-
     /// <summary>
     /// Plugin example with two native functions, where one function is called from another.
     /// </summary>
@@ -48,8 +45,7 @@ public static class Example60_AdvancedNativeFunctions
     {
         public const string PluginName = nameof(FunctionsChainingPlugin);
 
-
-        [SKFunction, SKName("Function1")]
+        [KernelFunction, KernelName("Function1")]
         public async Task<MyCustomType> Function1Async(Kernel kernel)
         {
             // Execute another function
@@ -63,8 +59,7 @@ public static class Example60_AdvancedNativeFunctions
             };
         }
 
-
-        [SKFunction, SKName("Function2")]
+        [KernelFunction, KernelName("Function2")]
         public static MyCustomType Function2()
         {
             return new MyCustomType
@@ -76,7 +71,6 @@ public static class Example60_AdvancedNativeFunctions
     }
 
     #endregion
-
 
     #region Custom Type
 
@@ -97,7 +91,6 @@ public static class Example60_AdvancedNativeFunctions
         public string? Text { get; set; }
     }
 
-
     /// <summary>
     /// Implementation of <see cref="TypeConverter"/> for <see cref="MyCustomType"/>.
     /// In this example, object instance is serialized with <see cref="JsonSerializer"/> from System.Text.Json,
@@ -109,7 +102,6 @@ public static class Example60_AdvancedNativeFunctions
     {
         public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType) => true;
 
-
         /// <summary>
         /// This method is used to convert object from string to actual type. This will allow to pass object to
         /// native function which requires it.
@@ -118,7 +110,6 @@ public static class Example60_AdvancedNativeFunctions
         {
             return JsonSerializer.Deserialize<MyCustomType>((string)value);
         }
-
 
         /// <summary>
         /// This method is used to convert actual type to string representation, so it can be passed to AI
@@ -131,6 +122,4 @@ public static class Example60_AdvancedNativeFunctions
     }
 
     #endregion
-
-
 }

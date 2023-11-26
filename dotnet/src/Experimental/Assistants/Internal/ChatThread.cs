@@ -32,7 +32,7 @@ internal sealed class ChatThread : IChatThread
     {
         var threadModel =
             await restContext.CreateThreadModelAsync(cancellationToken).ConfigureAwait(false) ??
-            throw new SKException("Unexpected failure creating thread: no result.");
+            throw new KernelException("Unexpected failure creating thread: no result.");
 
         return new ChatThread(threadModel, null, restContext);
     }
@@ -49,11 +49,11 @@ internal sealed class ChatThread : IChatThread
     {
         var threadModel =
             await restContext.GetThreadModelAsync(threadId, cancellationToken).ConfigureAwait(false) ??
-            throw new SKException($"Unexpected failure retrieving thread: no result. ({threadId})");
+            throw new KernelException($"Unexpected failure retrieving thread: no result. ({threadId})");
 
         var messageListModel =
             await restContext.GetMessagesAsync(threadId, cancellationToken).ConfigureAwait(false) ??
-            throw new SKException($"Unexpected failure retrieving thread: no result. ({threadId})");
+            throw new KernelException($"Unexpected failure retrieving thread: no result. ({threadId})");
 
         return new ChatThread(threadModel, messageListModel, restContext);
     }

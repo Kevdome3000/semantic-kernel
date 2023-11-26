@@ -49,6 +49,6 @@ public sealed class KernelPromptTemplateFactoryTests
 
         // Act
         // Assert
-        Assert.Throws<SKException>(() => target.Create(templateString, new PromptTemplateConfig() { TemplateFormat = "unknown-format" }));
+        Assert.Throws<KernelException>(() => target.Create(templateString, new PromptTemplateConfig() { TemplateFormat = "unknown-format" }));
     }
 }

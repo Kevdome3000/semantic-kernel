@@ -6,7 +6,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using RepoUtils;
 
-
 // ReSharper disable once InconsistentNaming
 public static class Example05_InlineFunctionDefinition
 {
@@ -32,8 +31,8 @@ public static class Example05_InlineFunctionDefinition
         Kernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAIChatCompletionService(
-                openAIModelId,
-                openAIApiKey)
+                modelId: openAIModelId,
+                apiKey: openAIApiKey)
             .Build();
 
         // Function defined using few-shot design pattern
@@ -50,8 +49,7 @@ Excuse: I've been too busy training my pet dragon.
 Event: {{$input}}
 ";
 
-        var excuseFunction = kernel.CreateFunctionFromPrompt(promptTemplate, new OpenAIRequestSettings
-            { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
+        var excuseFunction = kernel.CreateFunctionFromPrompt(promptTemplate, new OpenAIPromptExecutionSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
         var result = await kernel.InvokeAsync(excuseFunction, "I missed the F1 final race");
         Console.WriteLine(result.GetValue<string>());
@@ -59,8 +57,7 @@ Event: {{$input}}
         result = await kernel.InvokeAsync(excuseFunction, "sorry I forgot your birthday");
         Console.WriteLine(result.GetValue<string>());
 
-        var fixedFunction = kernel.CreateFunctionFromPrompt($"Translate this date {DateTimeOffset.Now:f} to French format", new OpenAIRequestSettings
-            { MaxTokens = 100 });
+        var fixedFunction = kernel.CreateFunctionFromPrompt($"Translate this date {DateTimeOffset.Now:f} to French format", new OpenAIPromptExecutionSettings() { MaxTokens = 100 });
 
         result = await kernel.InvokeAsync(fixedFunction);
         Console.WriteLine(result.GetValue<string>());

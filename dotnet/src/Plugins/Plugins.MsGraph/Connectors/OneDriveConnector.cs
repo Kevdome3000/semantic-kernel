@@ -150,7 +150,7 @@ public class OneDriveConnector : ICloudDriveConnector
 
         if (string.IsNullOrWhiteSpace(result))
         {
-            throw new SKException("Shareable file link was null or whitespace.");
+            throw new KernelException("Shareable file link was null or whitespace.");
         }
 
         return result!;

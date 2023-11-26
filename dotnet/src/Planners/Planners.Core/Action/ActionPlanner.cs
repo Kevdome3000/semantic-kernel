@@ -1,9 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using NS of Plan
-namespace Microsoft.SemanticKernel.Planning;
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -13,13 +9,15 @@ using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Action;
-using AI;
-using Extensions.Logging;
-using Orchestration;
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Planning.Action;
 
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - Using NS of Plan
+namespace Microsoft.SemanticKernel.Planning;
 #pragma warning restore IDE0130
-
 
 /// <summary>
 /// Action Planner allows to select one function out of many, to achieve a given goal.
@@ -52,11 +50,9 @@ public sealed class ActionPlanner
     // Planner semantic function
     private readonly KernelFunction _plannerFunction;
 
-    // Context used to access the list of functions in the kernel
-    private readonly SKContext _context;
+    private readonly ContextVariables _contextVariables;
     private readonly Kernel _kernel;
     private readonly ILogger _logger;
-
 
     // TODO: allow to inject plugin store
     /// <summary>
@@ -79,7 +75,7 @@ public sealed class ActionPlanner
 
         this._plannerFunction = kernel.CreateFunctionFromPrompt(
             promptTemplate: promptTemplate,
-            new AIRequestSettings()
+            new PromptExecutionSettings()
             {
                 ExtensionData = new()
                 {
@@ -91,10 +87,9 @@ public sealed class ActionPlanner
         kernel.ImportPluginFromObject(this, pluginName: PluginName);
 
         // Create context and logger
-        this._context = kernel.CreateNewContext();
+        this._contextVariables = new ContextVariables();
         this._logger = this._kernel.LoggerFactory.CreateLogger(this.GetType());
     }
-
 
     /// <summary>Creates a plan for the specified goal.</summary>
     /// <param name="goal">The goal for which a plan should be created.</param>
@@ -102,7 +97,7 @@ public sealed class ActionPlanner
     /// <returns>The created plan.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="goal"/> is null.</exception>
     /// <exception cref="ArgumentException"><paramref name="goal"/> is empty or entirely composed of whitespace.</exception>
-    /// <exception cref="SKException">A plan could not be created.</exception>
+    /// <exception cref="KernelException">A plan could not be created.</exception>
     public Task<Plan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(goal);
@@ -113,29 +108,26 @@ public sealed class ActionPlanner
             this, goal, this._logger, cancellationToken);
     }
 
-
     private async Task<Plan> CreatePlanCoreAsync(string goal, CancellationToken cancellationToken)
     {
-        this._context.Variables.Update(goal);
+        this._contextVariables.Update(goal);
 
-        FunctionResult result = await this._plannerFunction.InvokeAsync(this._kernel, this._context, cancellationToken: cancellationToken).ConfigureAwait(false);
+        FunctionResult result = await this._plannerFunction.InvokeAsync(this._kernel, this._contextVariables, cancellationToken: cancellationToken).ConfigureAwait(false);
         ActionPlanResponse? planData = this.ParsePlannerResult(result);
 
         if (planData == null)
         {
-            throw new SKException("The plan deserialized to a null object");
+            throw new KernelException("The plan deserialized to a null object");
         }
 
         // Build and return plan
         Plan? plan = null;
 
         FunctionUtils.SplitPluginFunctionName(planData.Plan.Function, out var pluginName, out var functionName);
-
         if (!string.IsNullOrEmpty(functionName))
         {
             var getFunctionCallback = this.Config.GetFunctionCallback ?? this._kernel.Plugins.GetFunctionCallback();
             var pluginFunction = getFunctionCallback(pluginName, functionName);
-
             if (pluginFunction != null)
             {
                 plan = new Plan(goal, pluginFunction);
@@ -160,7 +152,6 @@ public sealed class ActionPlanner
         return plan;
     }
 
-
     // TODO: use goal to find relevant functions in a plugin store
     /// <summary>
     /// Native function returning a list of all the functions in the current context,
@@ -169,10 +160,9 @@ public sealed class ActionPlanner
     /// <param name="goal">Currently unused. Will be used to handle long lists of functions.</param>
     /// <param name="cancellationToken">The token to use to request cancellation.</param>
     /// <returns>List of functions, formatted accordingly to the prompt</returns>
-    [SKFunction, Description("List all functions available in the kernel")]
+    [KernelFunction, Description("List all functions available in the kernel")]
     public async Task<string> ListOfFunctionsAsync(
-        [Description("The current goal processed by the planner")]
-        string goal,
+        [Description("The current goal processed by the planner")] string goal,
         CancellationToken cancellationToken = default)
     {
         // Prepare list using the format used by skprompt.txt
@@ -183,20 +173,18 @@ public sealed class ActionPlanner
         return list.ToString();
     }
 
-
     // TODO: generate string programmatically
     // TODO: use goal to find relevant examples
     /// <summary>
     /// Native function that provides a list of good examples of plans to generate.
     /// </summary>
     /// <param name="goal">The current goal processed by the planner.</param>
-    /// <param name="context">Function execution context.</param>
+    /// <param name="variables">Function execution context variables.</param>
     /// <returns>List of good examples, formatted accordingly to the prompt.</returns>
-    [SKFunction, Description("List a few good examples of plans to generate")]
+    [KernelFunction, Description("List a few good examples of plans to generate")]
     public string GoodExamples(
-        [Description("The current goal processed by the planner")]
-        string goal,
-        SKContext context)
+        [Description("The current goal processed by the planner")] string goal,
+        ContextVariables variables)
     {
         return @"
 [EXAMPLE]
@@ -227,19 +215,17 @@ Goal: create a file called ""something.txt"".
 ";
     }
 
-
     // TODO: generate string programmatically
     /// <summary>
     /// Native function that provides a list of edge case examples of plans to handle.
     /// </summary>
     /// <param name="goal">The current goal processed by the planner.</param>
-    /// <param name="context">Function execution context.</param>
+    /// <param name="variables">Function execution context variables.</param>
     /// <returns>List of edge case examples, formatted accordingly to the prompt.</returns>
-    [SKFunction, Description("List a few edge case examples of plans to handle")]
+    [KernelFunction, Description("List a few edge case examples of plans to handle")]
     public string EdgeCaseExamples(
-        [Description("The current goal processed by the planner")]
-        string goal,
-        SKContext context)
+        [Description("The current goal processed by the planner")] string goal,
+        ContextVariables variables)
     {
         return @"
 [EXAMPLE]
@@ -268,14 +254,12 @@ Goal: tell me a joke.
 ";
     }
 
-
     #region private ================================================================================
 
     /// <summary>
     /// The configuration for the ActionPlanner
     /// </summary>
     private ActionPlannerConfig Config { get; }
-
 
     /// <summary>
     /// Native function that filters out good JSON from planner result in case additional text is present
@@ -292,25 +276,23 @@ Goal: tell me a joke.
             if (match.Success && match.Groups["Close"] is { Length: > 0 } close)
             {
                 string planJson = $"{{{close}}}";
-
                 try
                 {
                     return JsonSerializer.Deserialize<ActionPlanResponse?>(planJson, s_actionPlayResponseOptions);
                 }
                 catch (Exception e)
                 {
-                    throw new SKException("Plan parsing error, invalid JSON", e);
+                    throw new KernelException("Plan parsing error, invalid JSON", e);
                 }
             }
         }
 
-        throw new SKException($"Failed to extract valid json string from planner result: '{plannerResult}'");
+        throw new KernelException($"Failed to extract valid json string from planner result: '{plannerResult}'");
     }
 
-
-    private void PopulateList(StringBuilder list, IEnumerable<SKFunctionMetadata> functions)
+    private void PopulateList(StringBuilder list, IEnumerable<KernelFunctionMetadata> functions)
     {
-        foreach (SKFunctionMetadata func in functions)
+        foreach (KernelFunctionMetadata func in functions)
         {
             // Function description
             if (func.Description != null)
@@ -336,13 +318,10 @@ Goal: tell me a joke.
         }
     }
 
-
     private static string AddPeriod(string x)
     {
         return x.EndsWith(".", StringComparison.Ordinal) ? x : $"{x}.";
     }
 
     #endregion
-
-
 }

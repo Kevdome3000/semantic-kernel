@@ -1,25 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using static Microsoft.SemanticKernel.PromptTemplateConfig;
-
-namespace SemanticKernel.Extensions.UnitTests.TemplateEngine.Handlebars;
-
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine.Handlebars;
+using SemanticKernel.Extensions.UnitTests.XunitHelpers;
 using Xunit;
-using XunitHelpers;
+using static Microsoft.SemanticKernel.PromptTemplateConfig;
 
+namespace SemanticKernel.Extensions.UnitTests.TemplateEngine.Handlebars;
 
 public sealed class HandlebarsPromptTemplateTests
 {
     private readonly HandlebarsPromptTemplateFactory _factory;
     private readonly Kernel _kernel;
     private readonly ContextVariables _variables;
-
 
     public HandlebarsPromptTemplateTests()
     {
@@ -28,7 +25,6 @@ public sealed class HandlebarsPromptTemplateTests
         this._variables = new ContextVariables(Guid.NewGuid().ToString("X"));
     }
 
-
     [Fact]
     public async Task ItRendersVariablesAsync()
     {
@@ -36,15 +32,13 @@ public sealed class HandlebarsPromptTemplateTests
         this._variables.Set("bar", "Bar");
         var template = "Foo {{bar}}";
         var target = (HandlebarsPromptTemplate)this._factory.Create(template, new PromptTemplateConfig() { TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat });
-        var context = this._kernel.CreateNewContext(this._variables);
 
         // Act
-        var prompt = await target.RenderAsync(this._kernel, context);
+        var prompt = await target.RenderAsync(this._kernel, this._variables);
 
         // Assert   
         Assert.Equal("Foo Bar", prompt);
     }
-
 
     [Fact]
     public async Task ItRendersFunctionsAsync()
@@ -53,15 +47,13 @@ public sealed class HandlebarsPromptTemplateTests
         this._kernel.ImportPluginFromObject<Foo>();
         var template = "Foo {{Foo_Bar}}";
         var target = (HandlebarsPromptTemplate)this._factory.Create(template, new PromptTemplateConfig() { TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat });
-        var context = this._kernel.CreateNewContext(this._variables);
 
         // Act
-        var prompt = await target.RenderAsync(this._kernel, context);
+        var prompt = await target.RenderAsync(this._kernel, this._variables);
 
         // Assert   
         Assert.Equal("Foo Bar", prompt);
     }
-
 
     [Fact]
     public async Task ItRendersAsyncFunctionsAsync()
@@ -70,15 +62,13 @@ public sealed class HandlebarsPromptTemplateTests
         this._kernel.ImportPluginFromObject<Foo>();
         var template = "Foo {{Foo_Bar}} {{Foo_Baz}}";
         var target = (HandlebarsPromptTemplate)this._factory.Create(template, new PromptTemplateConfig() { TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat });
-        var context = this._kernel.CreateNewContext(this._variables);
 
         // Act
-        var prompt = await target.RenderAsync(this._kernel, context);
+        var prompt = await target.RenderAsync(this._kernel, this._variables);
 
         // Assert   
         Assert.Equal("Foo Bar Baz", prompt);
     }
-
 
     [Fact]
     public void ItReturnsParameters()
@@ -110,7 +100,6 @@ public sealed class HandlebarsPromptTemplateTests
         Assert.Equal(2, parameters.Count);
     }
 
-
     [Fact]
     public async Task ItUsesDefaultValuesAsync()
     {
@@ -133,23 +122,20 @@ public sealed class HandlebarsPromptTemplateTests
         });
         var template = "Foo {{Bar}} {{Baz}}";
         var target = (HandlebarsPromptTemplate)this._factory.Create(template, promptTemplateConfig);
-        var context = this._kernel.CreateNewContext(this._variables);
 
         // Act
-        var prompt = await target.RenderAsync(this._kernel, context);
+        var prompt = await target.RenderAsync(this._kernel, this._variables);
 
         // Assert   
         Assert.Equal("Foo Bar Baz", prompt);
     }
 
-
     private sealed class Foo
     {
-        [SKFunction, Description("Return Bar")]
+        [KernelFunction, Description("Return Bar")]
         public string Bar() => "Bar";
 
-
-        [SKFunction, Description("Return Baz")]
+        [KernelFunction, Description("Return Baz")]
         public async Task<string> BazAsync()
         {
             await Task.Delay(1000);

@@ -64,7 +64,7 @@ public sealed class OpenAICompletionTests : IDisposable
                 setAsDefault: true)
             .Build();
 
-        IReadOnlySKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
+        IReadOnlyKernelPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
 
         // Act
         FunctionResult actual = await target.InvokeAsync(plugins["ChatPlugin"]["Chat"], prompt);
@@ -85,7 +85,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         Kernel target = builder.Build();
 
-        IReadOnlySKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
+        IReadOnlyKernelPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
 
         // Act
         FunctionResult actual = await target.InvokeAsync(plugins["ChatPlugin"]["Chat"], prompt);
@@ -106,7 +106,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         var func = target.CreateFunctionFromPrompt(
             "List the two planets after '{{$input}}', excluding moons, using bullet points.",
-            new OpenAIRequestSettings());
+            new OpenAIPromptExecutionSettings());
 
         var result = await func.InvokeAsync(target, "Jupiter");
 
@@ -135,7 +135,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         Kernel target = builder.Build();
 
-        IReadOnlySKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
+        IReadOnlyKernelPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
 
         StringBuilder fullResult = new();
 
@@ -170,7 +170,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         Kernel target = builder.Build();
 
-        IReadOnlySKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
+        IReadOnlyKernelPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
 
         // Act
         FunctionResult actual = await target.InvokeAsync(plugins["ChatPlugin"]["Chat"], prompt);
@@ -202,7 +202,7 @@ public sealed class OpenAICompletionTests : IDisposable
                 apiKey: "INVALID_KEY") // Use an invalid API key to force a 401 Unauthorized response
             .Build();
 
-        IReadOnlySKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
+        IReadOnlyKernelPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
 
         // Act
         await Assert.ThrowsAsync<HttpOperationException>(() => target.InvokeAsync(plugins["SummarizePlugin"]["Summarize"], prompt));
@@ -237,7 +237,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         Kernel target = builder.Build();
 
-        IReadOnlySKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
+        IReadOnlyKernelPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
 
         // Act
         await Assert.ThrowsAsync<HttpOperationException>(() => target.InvokeAsync(plugins["SummarizePlugin"]["Summarize"], prompt));
@@ -262,7 +262,7 @@ public sealed class OpenAICompletionTests : IDisposable
                 serviceId: openAIConfiguration.ServiceId)
             .Build();
 
-        IReadOnlySKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
+        IReadOnlyKernelPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
 
         // Act and Assert
         var ex = await Assert.ThrowsAsync<HttpOperationException>(() => target.InvokeAsync(plugins["SummarizePlugin"]["Summarize"], "Any"));
@@ -287,7 +287,7 @@ public sealed class OpenAICompletionTests : IDisposable
                 serviceId: azureOpenAIConfiguration.ServiceId)
             .Build();
 
-        IReadOnlySKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
+        IReadOnlyKernelPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
 
         // Act and Assert
         var ex = await Assert.ThrowsAsync<HttpOperationException>(() => target.InvokeAsync(plugins["SummarizePlugin"]["Summarize"], "Any"));
@@ -312,7 +312,7 @@ public sealed class OpenAICompletionTests : IDisposable
                 serviceId: azureOpenAIConfiguration.ServiceId)
             .Build();
 
-        IReadOnlySKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
+        IReadOnlyKernelPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
 
         // Act
         // Assert
@@ -339,7 +339,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         this._serviceConfiguration[service](target);
 
-        IReadOnlySKPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
+        IReadOnlyKernelPluginCollection plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
 
         // Act
         FunctionResult actual = await target.InvokeAsync(plugins["ChatPlugin"]["Chat"], prompt);
@@ -360,7 +360,7 @@ public sealed class OpenAICompletionTests : IDisposable
         var prompt = "Where is the most famous fish market in Seattle, Washington, USA?";
 
         // Act
-        FunctionResult actual = await target.InvokePromptAsync(prompt, new OpenAIRequestSettings() { MaxTokens = 150 });
+        FunctionResult actual = await target.InvokePromptAsync(prompt, new OpenAIPromptExecutionSettings() { MaxTokens = 150 });
 
         // Assert
         Assert.Contains("Pike Place", actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
@@ -375,7 +375,7 @@ public sealed class OpenAICompletionTests : IDisposable
         this.ConfigureAzureOpenAI(builder);
         Kernel target = builder.Build();
 
-        IReadOnlySKPluginCollection plugin = TestHelpers.ImportSamplePlugins(target, "FunPlugin");
+        IReadOnlyKernelPluginCollection plugin = TestHelpers.ImportSamplePlugins(target, "FunPlugin");
 
         // Act
         FunctionResult actual = await target.InvokeAsync(plugin["FunPlugin"]["Limerick"]);
