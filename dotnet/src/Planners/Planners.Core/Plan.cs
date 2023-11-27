@@ -272,7 +272,7 @@ public sealed class Plan
     {
         if (this.Function is not null)
         {
-            return this.Function.GetMetadata();
+            return this.Function.Metadata;
         }
 
         // The parameter mapping definitions from Plan -> Function

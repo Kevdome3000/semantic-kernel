@@ -15,14 +15,12 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
-using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using AI;
 using AI.TextCompletion;
 using Extensions.Logging;
-using Extensions.Logging.Abstractions;
 using Orchestration;
 using Text;
 
@@ -79,17 +77,6 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
         return result;
     }
-
-
-    /// <inheritdoc/>
-    protected override KernelFunctionMetadata GetMetadataCore() =>
-        this._metadata ??=
-            new KernelFunctionMetadata(this.Name)
-            {
-                Description = this.Description,
-                Parameters = this._parameters,
-                ReturnParameter = this._returnParameter
-            };
 
 
     /// <inheritdoc/>
@@ -155,8 +142,6 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
     private static readonly object[] s_cancellationTokenNoneArray = new object[] { CancellationToken.None };
     private readonly ImplementationFunc _function;
-    private readonly IReadOnlyList<KernelParameterMetadata> _parameters;
-    private readonly KernelReturnParameterMetadata _returnParameter;
     private readonly ILogger _logger;
 
     private record struct MethodDetails(string Name, string Description, ImplementationFunc Function, List<KernelParameterMetadata> Parameters, KernelReturnParameterMetadata ReturnParameter);
@@ -168,16 +153,13 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         string description,
         IReadOnlyList<KernelParameterMetadata> parameters,
         KernelReturnParameterMetadata returnParameter,
-        ILogger logger) : base(functionName, description)
+        ILogger logger) : base(functionName, description, parameters, returnParameter)
     {
         Verify.ValidFunctionName(functionName);
 
         this._logger = logger;
 
         this._function = implementationFunc;
-        this._parameters = parameters.ToArray();
-        Verify.ParametersUniqueness(this._parameters);
-        this._returnParameter = returnParameter;
     }
 
 
@@ -844,8 +826,6 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
     /// <summary>Formatter functions for converting parameter types to strings.</summary>
     private static readonly ConcurrentDictionary<Type, Func<object?, CultureInfo, string?>?> s_formatters = new();
-
-    private KernelFunctionMetadata? _metadata;
 
     #endregion
 

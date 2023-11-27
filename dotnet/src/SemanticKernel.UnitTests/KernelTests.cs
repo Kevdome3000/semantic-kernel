@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+
+
 // ReSharper disable StringLiteralTypo
 
 namespace SemanticKernel.UnitTests;
@@ -222,7 +224,7 @@ public class KernelTests
         {
             invoking++;
 
-            if (e.Function.GetMetadata().Name == "func1")
+            if (e.Function.Name == "func1")
             {
                 e.Skip();
             }
@@ -230,7 +232,7 @@ public class KernelTests
 
         sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
         {
-            invokedFunction = e.Function.GetMetadata().Name;
+            invokedFunction = e.Function.Name;
             invoked++;
         };
 
@@ -362,7 +364,7 @@ public class KernelTests
         {
             invoking++;
 
-            if (e.Function.GetMetadata().Name == "func1")
+            if (e.Function.Name == "func1")
             {
                 e.Skip();
             }
@@ -370,7 +372,7 @@ public class KernelTests
 
         sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
         {
-            invokedFunction = e.Function.GetMetadata().Name;
+            invokedFunction = e.Function.Name;
             invoked++;
         };
 

@@ -7,7 +7,6 @@ namespace Microsoft.SemanticKernel;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -45,7 +44,7 @@ public abstract class KernelFunction
     /// should be invoked when, or as part of lookups in a plugin's function collection. Function names are generally
     /// handled in an ordinal case-insensitive manner.
     /// </remarks>
-    public string Name { get; }
+    public string Name => this.Metadata.Name;
 
     /// <summary>
     /// Gets a description of the function.
@@ -54,12 +53,18 @@ public abstract class KernelFunction
     /// The description may be supplied to a model in order to elaborate on the function's purpose,
     /// in case it may be beneficial for the model to recommend invoking the function.
     /// </remarks>
-    public string Description { get; }
+    public string Description => this.Metadata.Description;
 
     /// <summary>
-    /// Gets the model request settings.
+    /// Gets the metadata describing the function.
     /// </summary>
-    public IEnumerable<PromptExecutionSettings> ModelSettings { get; }
+    /// <returns>An instance of <see cref="KernelFunctionMetadata"/> describing the function</returns>
+    public KernelFunctionMetadata Metadata { get; init; }
+
+    /// <summary>
+    /// Gets the prompt execution settings.
+    /// </summary>
+    internal IEnumerable<PromptExecutionSettings> ExecutionSettings { get; }
 
 
     /// <summary>
@@ -67,12 +72,21 @@ public abstract class KernelFunction
     /// </summary>
     /// <param name="name">Name of the function.</param>
     /// <param name="description">Function description.</param>
-    /// <param name="modelSettings">Model request settings.</param>
-    protected KernelFunction(string name, string description, IEnumerable<PromptExecutionSettings>? modelSettings = null)
+    /// <param name="parameters">Function parameters metadata</param>
+    /// <param name="returnParameter">Function return parameter metadata</param>
+    /// <param name="executionSettings">Prompt execution settings.</param>
+    internal KernelFunction(string name, string description, IReadOnlyList<KernelParameterMetadata> parameters, KernelReturnParameterMetadata? returnParameter = null, IEnumerable<PromptExecutionSettings>? executionSettings = null)
     {
-        this.Name = name;
-        this.Description = description;
-        this.ModelSettings = modelSettings ?? Enumerable.Empty<PromptExecutionSettings>();
+        Verify.NotNull(name);
+        Verify.ParametersUniqueness(parameters);
+
+        this.Metadata = new KernelFunctionMetadata(name)
+        {
+            Description = description,
+            Parameters = parameters,
+            ReturnParameter = returnParameter ?? new()
+        };
+        this.ExecutionSettings = executionSettings ?? Enumerable.Empty<PromptExecutionSettings>();
     }
 
 
@@ -93,7 +107,7 @@ public abstract class KernelFunction
         using var activity = s_activitySource.StartActivity(this.Name);
         ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name);
 
-        logger.LogTrace("Function invoking");
+        logger.LogTrace("Function invoking.");
 
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -107,7 +121,7 @@ public abstract class KernelFunction
 
             if (invokingEventArgs is not null && (invokingEventArgs.IsSkipRequested || invokingEventArgs.CancelToken.IsCancellationRequested))
             {
-                logger.LogTrace("Function canceled or skipped prior to invocation");
+                logger.LogTrace("Function canceled or skipped prior to invocation.");
 
                 return new FunctionResult(this.Name, variables)
                 {
@@ -118,7 +132,7 @@ public abstract class KernelFunction
 
             var result = await this.InvokeCoreAsync(kernel, variables, requestSettings, cancellationToken).ConfigureAwait(false);
 
-            logger.LogTrace("Function succeeded");
+            logger.LogTrace("Function succeeded.");
 
             // Invoke the post hook.
             (var invokedEventArgs, result) = this.CallFunctionInvoked(kernel, variables, result);
@@ -225,23 +239,6 @@ public abstract class KernelFunction
         ContextVariables variables,
         PromptExecutionSettings? requestSettings,
         CancellationToken cancellationToken);
-
-
-    /// <summary>
-    /// Gets the metadata describing the function.
-    /// </summary>
-    /// <returns>An instance of <see cref="KernelFunctionMetadata"/> describing the function</returns>
-    public KernelFunctionMetadata GetMetadata()
-    {
-        return this.GetMetadataCore();
-    }
-
-
-    /// <summary>
-    /// Gets the metadata describing the function.
-    /// </summary>
-    /// <returns>An instance of <see cref="KernelFunctionMetadata"/> describing the function</returns>
-    protected abstract KernelFunctionMetadata GetMetadataCore();
 
 
     #region private

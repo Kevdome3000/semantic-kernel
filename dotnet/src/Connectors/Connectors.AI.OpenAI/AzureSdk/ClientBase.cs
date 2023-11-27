@@ -13,7 +13,6 @@ using Azure;
 using Azure.AI.OpenAI;
 using ChatCompletion;
 using Extensions.Logging;
-using Extensions.Logging.Abstractions;
 using FunctionCalling;
 using FunctionCalling.Extensions;
 using Prompt;
@@ -106,10 +105,10 @@ public abstract class ClientBase
         var textRequestSettings = OpenAIPromptExecutionSettings.FromRequestSettings(requestSettings, OpenAIPromptExecutionSettings.DefaultTextMaxTokens);
 
         ValidateMaxTokens(textRequestSettings.MaxTokens);
-        var options = CreateCompletionsOptions(text, textRequestSettings);
+        var options = CreateCompletionsOptions(text, textRequestSettings, this.DeploymentOrModelName);
 
         Response<Completions>? response = await RunRequestAsync<Response<Completions>?>(
-            () => Client.GetCompletionsAsync(DeploymentOrModelName, options, cancellationToken)).ConfigureAwait(false);
+            () => this.Client.GetCompletionsAsync(options, cancellationToken)).ConfigureAwait(false);
 
         if (response is null)
         {
@@ -138,24 +137,24 @@ public abstract class ClientBase
 
         ValidateMaxTokens(textRequestSettings.MaxTokens);
 
-        var options = CreateCompletionsOptions(prompt, textRequestSettings);
+        var options = CreateCompletionsOptions(prompt, textRequestSettings, this.DeploymentOrModelName);
 
-        Response<StreamingCompletions>? response = await RunRequestAsync<Response<StreamingCompletions>>(
-            () => Client.GetCompletionsStreamingAsync(DeploymentOrModelName, options, cancellationToken)).ConfigureAwait(false);
+        StreamingResponse<Completions>? response = await RunRequestAsync<StreamingResponse<Completions>>(
+            () => this.Client.GetCompletionsStreamingAsync(options, cancellationToken)).ConfigureAwait(false);
 
-        using var streamingChatCompletions = response.Value;
-        Dictionary<string, object> responseMetadata = GetResponseMetadata(streamingChatCompletions);
+        int choiceIndex = 0;
+        Dictionary<string, object>? responseMetadata = null;
 
-        var choiceIndex = 0;
-
-        await foreach (var choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken).ConfigureAwait(false))
+        await foreach (Completions completions in response)
         {
-            await foreach (var update in choice.GetTextStreaming(cancellationToken).ConfigureAwait(false))
+            responseMetadata ??= GetResponseMetadata(completions);
+
+            foreach (Choice choice in completions.Choices)
             {
                 // If the provided T is a string, return the completion as is
                 if (typeof(T) == typeof(string))
                 {
-                    yield return (T)(object)update;
+                    yield return (T)(object)choice.Text;
 
                     continue;
                 }
@@ -164,7 +163,7 @@ public abstract class ClientBase
                 if (typeof(T) == typeof(StreamingTextContent) ||
                     typeof(T) == typeof(StreamingContent))
                 {
-                    yield return (T)(object)new StreamingTextContent(update, choiceIndex, update, responseMetadata);
+                    yield return (T)(object)new StreamingTextContent(choice.Text, choice.Index, choice, responseMetadata);
 
                     continue;
                 }
@@ -176,15 +175,18 @@ public abstract class ClientBase
     }
 
 
-    private static Dictionary<string, object> GetResponseMetadata(StreamingCompletions streamingChatCompletions) => new()
+    private static Dictionary<string, object> GetResponseMetadata(Completions completions) => new()
     {
-        { $"{nameof(StreamingCompletions)}.{nameof(streamingChatCompletions.PromptFilterResults)}", streamingChatCompletions.PromptFilterResults }
+        { $"{nameof(Completions)}.{nameof(completions.Id)}", completions.Id },
+        { $"{nameof(Completions)}.{nameof(completions.Created)}", completions.Created },
+        { $"{nameof(Completions)}.{nameof(completions.PromptFilterResults)}", completions.PromptFilterResults }
     };
 
 
-    private static Dictionary<string, object> GetResponseMetadata(StreamingChatCompletions streamingChatCompletions) => new()
+    private static Dictionary<string, object> GetResponseMetadata(StreamingChatCompletionsUpdate completions) => new()
     {
-        { $"{nameof(StreamingChatCompletions)}.{nameof(streamingChatCompletions.PromptFilterResults)}", streamingChatCompletions.PromptFilterResults }
+        { $"{nameof(StreamingChatCompletionsUpdate)}.{nameof(completions.Id)}", completions.Id },
+        { $"{nameof(StreamingChatCompletionsUpdate)}.{nameof(completions.Created)}", completions.Created }
     };
 
 
@@ -198,118 +200,117 @@ public abstract class ClientBase
         IList<string> data,
         CancellationToken cancellationToken = default)
     {
-        List<ReadOnlyMemory<float>> result = new(data.Count);
+        var result = new List<ReadOnlyMemory<float>>(data.Count);
 
-        foreach (var options in data.Select(text => new EmbeddingsOptions(text)))
+        foreach (string text in data)
         {
-            Response<Embeddings>? response = await RunRequestAsync<Response<Embeddings>?>(
-                () => Client.GetEmbeddingsAsync(DeploymentOrModelName, options, cancellationToken)).ConfigureAwait(false);
+            var options = new EmbeddingsOptions(this.DeploymentOrModelName, new[] { text });
+
+            foreach (var options in data.Select(text => new EmbeddingsOptions(text)))
+            {
+                Response<Embeddings>? response = await RunRequestAsync<Response<Embeddings>?>(
+                    () => this.Client.GetEmbeddingsAsync(options, cancellationToken)).ConfigureAwait(false);
+
+                if (response is null)
+                {
+                    throw new KernelException("Text embedding null response");
+                }
+
+                if (response.Value.Data.Count == 0)
+                {
+                    throw new KernelException("Text embedding not found");
+                }
+
+                result.Add(response.Value.Data[0].Embedding.ToArray());
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Generate a new chat message
+        /// </summary>
+        /// <param name="chat">Chat history</param>
+        /// <param name="requestSettings">AI request settings</param>
+        /// <param name="cancellationToken">Async cancellation token</param>
+        /// <returns>Generated chat message in string format</returns>
+        protected private async Task<IReadOnlyList<IChatResult>> InternalGetChatResultsAsync(
+            ChatHistory chat,
+            PromptExecutionSettings? requestSettings,
+            CancellationToken cancellationToken = default)
+        {
+            Verify.NotNull(chat);
+
+            var chatRequestSettings = (OpenAIPromptExecutionSettings)(requestSettings is FunctionCallRequestSettings
+                ? requestSettings
+                : OpenAIPromptExecutionSettings.FromRequestSettings(requestSettings));
+
+            ValidateMaxTokens(chatRequestSettings.MaxTokens);
+            var chatOptions = CreateChatCompletionsOptions(chatRequestSettings!, chat);
+
+            List<string>? functionNames = chatOptions.Functions?.Select(f => f.Name).ToList();
+            Response<ChatCompletions>? response = await RunRequestAsync<Response<ChatCompletions>?>(
+                () => Client.GetChatCompletionsAsync(DeploymentOrModelName, chatOptions, cancellationToken)).ConfigureAwait(false);
 
             if (response is null)
             {
-                throw new KernelException("Text embedding null response");
+                throw new KernelException("Chat completions null response");
             }
 
-            if (response.Value.Data.Count == 0)
+            var responseData = response.Value;
+
+            if (responseData.Choices.Count == 0)
             {
-                throw new KernelException("Text embedding not found");
+                throw new KernelException("Chat completions not found");
             }
 
-            result.Add(response.Value.Data[0].Embedding.ToArray());
-        }
+            CaptureUsageDetails(responseData.Usage);
 
-        return result;
-    }
-
-
-    /// <summary>
-    /// Generate a new chat message
-    /// </summary>
-    /// <param name="chat">Chat history</param>
-    /// <param name="requestSettings">AI request settings</param>
-    /// <param name="cancellationToken">Async cancellation token</param>
-    /// <returns>Generated chat message in string format</returns>
-    protected private async Task<IReadOnlyList<IChatResult>> InternalGetChatResultsAsync(
-        ChatHistory chat,
-        PromptExecutionSettings? requestSettings,
-        CancellationToken cancellationToken = default)
-    {
-        Verify.NotNull(chat);
-
-        var chatRequestSettings = (OpenAIPromptExecutionSettings)(requestSettings is FunctionCallRequestSettings
-            ? requestSettings
-            : OpenAIPromptExecutionSettings.FromRequestSettings(requestSettings));
-
-        ValidateMaxTokens(chatRequestSettings.MaxTokens);
-        var chatOptions = CreateChatCompletionsOptions(chatRequestSettings!, chat);
-
-        List<string>? functionNames = chatOptions.Functions?.Select(f => f.Name).ToList();
-        Response<ChatCompletions>? response = await RunRequestAsync<Response<ChatCompletions>?>(
-            () => Client.GetChatCompletionsAsync(DeploymentOrModelName, chatOptions, cancellationToken)).ConfigureAwait(false);
-
-        if (response is null)
-        {
-            throw new KernelException("Chat completions null response");
-        }
-
-        var responseData = response.Value;
-
-        if (responseData.Choices.Count == 0)
-        {
-            throw new KernelException("Chat completions not found");
-        }
-
-        CaptureUsageDetails(responseData.Usage);
-
-        if (functionNames is null)
-        {
-            return responseData.Choices.Select(chatChoice => new ChatResult(responseData, chatChoice)).ToList();
-        }
-
-        if (!responseData.IsFunctionCallResponse(functionNames))
-        {
-            return responseData.Choices.Select(chatChoice => new ChatResult(responseData, chatChoice)).ToList();
-        }
-        return responseData.Choices.Select(choice => choice.IsFunctionCall(functionNames)
-                ? new ChatResult(responseData, choice, true)
-                : new ChatResult(responseData, choice)).Cast<IChatResult>()
-            .ToList();
-    }
-
-
-    protected private async IAsyncEnumerable<T> InternalGetChatStreamingUpdatesAsync<T>(
-        IEnumerable<SemanticKernel.AI.ChatCompletion.ChatMessage> chat,
-        PromptExecutionSettings? requestSettings,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        Verify.NotNull(chat);
-
-        var chatRequestSettings = OpenAIPromptExecutionSettings.FromRequestSettings(requestSettings);
-
-        ValidateMaxTokens(chatRequestSettings.MaxTokens);
-
-        var options = CreateChatCompletionsOptions(chatRequestSettings, chat);
-
-        Response<StreamingChatCompletions>? response = await RunRequestAsync<Response<StreamingChatCompletions>>(
-            () => Client.GetChatCompletionsStreamingAsync(DeploymentOrModelName, options, cancellationToken)).ConfigureAwait(false);
-
-        if (response is null)
-        {
-            throw new KernelException("Chat completions null response");
-        }
-
-        using var streamingChatCompletions = response.Value;
-        Dictionary<string, object> responseMetadata = GetResponseMetadata(streamingChatCompletions);
-
-        var choiceIndex = 0;
-
-        await foreach (var choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken).ConfigureAwait(false))
-        {
-            await foreach (var chatMessage in choice.GetMessageStreaming(cancellationToken).ConfigureAwait(false))
+            if (functionNames is null)
             {
+                return responseData.Choices.Select(chatChoice => new ChatResult(responseData, chatChoice)).ToList();
+            }
+
+            if (!responseData.IsFunctionCallResponse(functionNames))
+            {
+                return responseData.Choices.Select(chatChoice => new ChatResult(responseData, chatChoice)).ToList();
+            }
+            return responseData.Choices.Select(choice => choice.IsFunctionCall(functionNames)
+                    ? new ChatResult(responseData, choice, true)
+                    : new ChatResult(responseData, choice)).Cast<IChatResult>()
+                .ToList();
+        }
+
+        protected private async IAsyncEnumerable<T> InternalGetChatStreamingUpdatesAsync<T>(
+            IEnumerable<SemanticKernel.AI.ChatCompletion.ChatMessage> chat,
+            PromptExecutionSettings? requestSettings,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            Verify.NotNull(chat);
+
+            var chatRequestSettings = OpenAIPromptExecutionSettings.FromRequestSettings(requestSettings);
+
+            ValidateMaxTokens(chatRequestSettings.MaxTokens);
+
+            var options = CreateChatCompletionsOptions(chatRequestSettings, chat, this.DeploymentOrModelName);
+
+            var response = await RunRequestAsync<StreamingResponse<StreamingChatCompletionsUpdate>>(
+                () => this.Client.GetChatCompletionsStreamingAsync(options, cancellationToken)).ConfigureAwait(false);
+
+            if (response is null)
+            {
+                throw new KernelException("Chat completions null response");
+            }
+
+            Dictionary<string, object>? responseMetadata = null;
+
+            await foreach (StreamingChatCompletionsUpdate update in response)
+            {
+                responseMetadata ??= GetResponseMetadata(update);
+
                 if (typeof(T) == typeof(string))
                 {
-                    yield return (T)(object)chatMessage.Content;
+                    yield return (T)(object)update.ContentUpdate;
 
                     continue;
                 }
@@ -318,208 +319,197 @@ public abstract class ClientBase
                 if (typeof(T) == typeof(StreamingChatContent) ||
                     typeof(T) == typeof(StreamingContent))
                 {
-                    yield return (T)(object)new StreamingChatContent(chatMessage, choiceIndex, responseMetadata);
+                    yield return (T)(object)new StreamingChatContent(update, update.ChoiceIndex ?? 0, responseMetadata);
 
                     continue;
                 }
 
                 throw new NotSupportedException($"Type {typeof(T)} is not supported");
             }
-            choiceIndex++;
-        }
-    }
-
-
-    /// <summary>
-    /// Create a new empty chat instance
-    /// </summary>
-    /// <param name="instructions">Optional chat instructions for the AI service</param>
-    /// <returns>Chat object</returns>
-    protected private static OpenAIChatHistory InternalCreateNewChat(string? instructions = null) => new(instructions);
-
-
-    /// <summary>
-    /// Create a new chat instance based on chat history.
-    /// </summary>
-    /// <param name="chatHistory">Instance of <see cref="ChatHistory"/>.</param>
-    /// <returns>Chat object</returns>
-    protected private static OpenAIChatHistory InternalCreateNewChat(ChatHistory chatHistory) => new(chatHistory);
-
-
-    protected private async Task<IReadOnlyList<ITextResult>> InternalGetChatResultsAsTextAsync(
-        string text,
-        PromptExecutionSettings? requestSettings,
-        CancellationToken cancellationToken = default)
-    {
-        ChatHistory chat = PrepareChatHistory(text, requestSettings, out var chatSettings);
-
-        return (await InternalGetChatResultsAsync(chat, chatSettings, cancellationToken).ConfigureAwait(false))
-            .OfType<ITextResult>()
-            .ToList();
-    }
-
-
-    protected private void AddAttribute(string key, string? value)
-    {
-        if (!string.IsNullOrEmpty(value))
-        {
-            InternalAttributes.Add(key, value!);
-        }
-    }
-
-
-    private static OpenAIChatHistory PrepareChatHistory(string text, PromptExecutionSettings? requestSettings, out OpenAIPromptExecutionSettings settings)
-    {
-        settings = OpenAIPromptExecutionSettings.FromRequestSettings(requestSettings);
-
-        if (XmlPromptParser.TryParse(text, out List<PromptNode> nodes) && ChatPromptParser.TryParse(nodes, out var chatHistory))
-        {
-            return InternalCreateNewChat(chatHistory);
         }
 
-        var chat = InternalCreateNewChat(settings.ChatSystemPrompt);
-        chat.AddUserMessage(text);
-        return chat;
-    }
+        /// <summary>
+        /// Create a new empty chat instance
+        /// </summary>
+        /// <param name="instructions">Optional chat instructions for the AI service</param>
+        /// <returns>Chat object</returns>
+        protected private static OpenAIChatHistory InternalCreateNewChat(string? instructions = null) => new(instructions);
 
+        /// <summary>
+        /// Create a new chat instance based on chat history.
+        /// </summary>
+        /// <param name="chatHistory">Instance of <see cref="ChatHistory"/>.</param>
+        /// <returns>Chat object</returns>
+        protected private static OpenAIChatHistory InternalCreateNewChat(ChatHistory chatHistory) => new(chatHistory);
 
-    private static CompletionsOptions CreateCompletionsOptions(string text, OpenAIPromptExecutionSettings requestSettings)
-    {
-        if (requestSettings.ResultsPerPrompt is < 1 or > MaxResultsPerPrompt)
+        protected private async Task<IReadOnlyList<ITextResult>> InternalGetChatResultsAsTextAsync(
+            string text,
+            PromptExecutionSettings? requestSettings,
+            CancellationToken cancellationToken = default)
         {
-            throw new ArgumentOutOfRangeException($"{nameof(requestSettings)}.{nameof(requestSettings.ResultsPerPrompt)}", requestSettings.ResultsPerPrompt, $"The value must be in range between 1 and {MaxResultsPerPrompt}, inclusive.");
+            ChatHistory chat = PrepareChatHistory(text, requestSettings, out var chatSettings);
+
+            return (await InternalGetChatResultsAsync(chat, chatSettings, cancellationToken).ConfigureAwait(false))
+                .OfType<ITextResult>()
+                .ToList();
         }
 
-        var options = new CompletionsOptions
+        protected private void AddAttribute(string key, string? value)
         {
-            Prompts = { text.Replace("\r\n", "\n") }, // normalize line endings
-            MaxTokens = requestSettings.MaxTokens,
-            Temperature = (float?)requestSettings.Temperature,
-            NucleusSamplingFactor = (float?)requestSettings.TopP,
-            FrequencyPenalty = (float?)requestSettings.FrequencyPenalty,
-            PresencePenalty = (float?)requestSettings.PresencePenalty,
-            Echo = false,
-            ChoicesPerPrompt = requestSettings.ResultsPerPrompt,
-            GenerationSampleCount = requestSettings.ResultsPerPrompt,
-            LogProbabilityCount = null,
-            User = null
-        };
-
-        foreach (KeyValuePair<int, int> keyValue in requestSettings.TokenSelectionBiases)
-        {
-            options.TokenSelectionBiases.Add(keyValue.Key, keyValue.Value);
-        }
-
-        if (requestSettings.StopSequences is { Count: > 0 })
-        {
-            foreach (var s in requestSettings.StopSequences)
+            if (!string.IsNullOrEmpty(value))
             {
-                options.StopSequences.Add(s);
+                InternalAttributes.Add(key, value!);
             }
         }
 
-        return options;
-    }
-
-
-    internal static ChatCompletionsOptions CreateChatCompletionsOptions(OpenAIPromptExecutionSettings requestSettings, IEnumerable<SemanticKernel.AI.ChatCompletion.ChatMessage> chatHistory)
-    {
-        if (requestSettings.ResultsPerPrompt is < 1 or > MaxResultsPerPrompt)
+        private static OpenAIChatHistory PrepareChatHistory(string text, PromptExecutionSettings? requestSettings, out OpenAIPromptExecutionSettings settings)
         {
-            throw new ArgumentOutOfRangeException($"{nameof(requestSettings)}.{nameof(requestSettings.ResultsPerPrompt)}", requestSettings.ResultsPerPrompt, $"The value must be in range between 1 and {MaxResultsPerPrompt}, inclusive.");
+            settings = OpenAIPromptExecutionSettings.FromRequestSettings(requestSettings);
+
+            if (XmlPromptParser.TryParse(text, out List<PromptNode> nodes) && ChatPromptParser.TryParse(nodes, out var chatHistory))
+            {
+                return InternalCreateNewChat(chatHistory);
+            }
+
+            var chat = InternalCreateNewChat(settings.ChatSystemPrompt);
+            chat.AddUserMessage(text);
+            return chat;
         }
 
-        var options = requestSettings switch
+        private static CompletionsOptions CreateCompletionsOptions(string text, OpenAIPromptExecutionSettings requestSettings, string deploymentOrModelName)
         {
-            FunctionCallRequestSettings functionCallRequestSettings => new ChatCompletionsOptions
+            if (requestSettings.ResultsPerPrompt is < 1 or > MaxResultsPerPrompt)
             {
-                MaxTokens = functionCallRequestSettings.MaxTokens,
-                Temperature = (float?)functionCallRequestSettings.Temperature,
-                NucleusSamplingFactor = (float?)functionCallRequestSettings.TopP,
-                FrequencyPenalty = (float?)functionCallRequestSettings.FrequencyPenalty,
-                PresencePenalty = (float?)functionCallRequestSettings.PresencePenalty,
-                ChoiceCount = requestSettings.ResultsPerPrompt,
-                FunctionCall = functionCallRequestSettings.TargetFunctionCall,
-                Functions = functionCallRequestSettings.CallableFunctions
-            },
-            _ => new ChatCompletionsOptions
+                throw new ArgumentOutOfRangeException($"{nameof(requestSettings)}.{nameof(requestSettings.ResultsPerPrompt)}", requestSettings.ResultsPerPrompt, $"The value must be in range between 1 and {MaxResultsPerPrompt}, inclusive.");
+            }
+
+            var options = new CompletionsOptions
             {
+                Prompts = { text.Replace("\r\n", "\n") }, // normalize line endings
                 MaxTokens = requestSettings.MaxTokens,
                 Temperature = (float?)requestSettings.Temperature,
                 NucleusSamplingFactor = (float?)requestSettings.TopP,
                 FrequencyPenalty = (float?)requestSettings.FrequencyPenalty,
                 PresencePenalty = (float?)requestSettings.PresencePenalty,
-                ChoiceCount = requestSettings.ResultsPerPrompt
-            }
-        };
+                Echo = false,
+                ChoicesPerPrompt = requestSettings.ResultsPerPrompt,
+                GenerationSampleCount = requestSettings.ResultsPerPrompt,
+                LogProbabilityCount = null,
+                User = null,
+                DeploymentName = deploymentOrModelName
+            };
 
-        foreach (KeyValuePair<int, int> keyValue in requestSettings.TokenSelectionBiases)
-        {
-            options.TokenSelectionBiases.Add(keyValue.Key, keyValue.Value);
-        }
-
-        if (requestSettings.StopSequences is { Count: > 0 })
-        {
-            foreach (var s in requestSettings.StopSequences)
+            foreach (KeyValuePair<int, int> keyValue in requestSettings.TokenSelectionBiases)
             {
-                options.StopSequences.Add(s);
+                options.TokenSelectionBiases.Add(keyValue.Key, keyValue.Value);
             }
-        }
 
-        foreach (var message in chatHistory)
-        {
-            var azureMessage = new ChatMessage(new ChatRole(message.Role.Label), message.Content);
-
-            if (message.AdditionalProperties?.TryGetValue(NameProperty, out var name) is true)
+            if (requestSettings.StopSequences is { Count: > 0 })
             {
-                azureMessage.Name = name;
-
-                if (message.AdditionalProperties?.TryGetValue(ArgumentsProperty, out var arguments) is true)
+                foreach (var s in requestSettings.StopSequences)
                 {
-                    azureMessage.FunctionCall = new FunctionCall(name, arguments);
+                    options.StopSequences.Add(s);
                 }
             }
 
-            options.Messages.Add(azureMessage);
+            return options;
         }
-        return options;
-    }
 
-
-    private static void ValidateMaxTokens(int? maxTokens)
-    {
-        if (maxTokens.HasValue && maxTokens < 1)
+        internal static ChatCompletionsOptions CreateChatCompletionsOptions(OpenAIPromptExecutionSettings requestSettings, IEnumerable<SemanticKernel.AI.ChatCompletion.ChatMessage> chatHistory, string deploymentOrModelName)
         {
-            throw new KernelException($"MaxTokens {maxTokens} is not valid, the value must be greater than zero");
+            if (requestSettings.ResultsPerPrompt is < 1 or > MaxResultsPerPrompt)
+            {
+                throw new ArgumentOutOfRangeException($"{nameof(requestSettings)}.{nameof(requestSettings.ResultsPerPrompt)}", requestSettings.ResultsPerPrompt, $"The value must be in range between 1 and {MaxResultsPerPrompt}, inclusive.");
+            }
+
+            var options = requestSettings switch
+            {
+                FunctionCallRequestSettings functionCallRequestSettings => new ChatCompletionsOptions
+                {
+                    MaxTokens = functionCallRequestSettings.MaxTokens,
+                    Temperature = (float?)functionCallRequestSettings.Temperature,
+                    NucleusSamplingFactor = (float?)functionCallRequestSettings.TopP,
+                    FrequencyPenalty = (float?)functionCallRequestSettings.FrequencyPenalty,
+                    PresencePenalty = (float?)functionCallRequestSettings.PresencePenalty,
+                    ChoiceCount = requestSettings.ResultsPerPrompt,
+                    FunctionCall = functionCallRequestSettings.TargetFunctionCall,
+                    Functions = functionCallRequestSettings.CallableFunctions
+                },
+                _ => new ChatCompletionsOptions
+                {
+                    MaxTokens = requestSettings.MaxTokens,
+                    Temperature = (float?)requestSettings.Temperature,
+                    NucleusSamplingFactor = (float?)requestSettings.TopP,
+                    FrequencyPenalty = (float?)requestSettings.FrequencyPenalty,
+                    PresencePenalty = (float?)requestSettings.PresencePenalty,
+                    ChoiceCount = requestSettings.ResultsPerPrompt
+                }
+            };
+
+            foreach (KeyValuePair<int, int> keyValue in requestSettings.TokenSelectionBiases)
+            {
+                options.TokenSelectionBiases.Add(keyValue.Key, keyValue.Value);
+            }
+
+            if (requestSettings.StopSequences is { Count: > 0 })
+            {
+                foreach (var s in requestSettings.StopSequences)
+                {
+                    options.StopSequences.Add(s);
+                }
+            }
+
+            foreach (var message in chatHistory)
+            {
+                var azureMessage = new ChatMessage(new ChatRole(message.Role.Label), message.Content);
+
+                if (message.AdditionalProperties?.TryGetValue(NameProperty, out var name) is true)
+                {
+                    azureMessage.Name = name;
+
+                    if (message.AdditionalProperties?.TryGetValue(ArgumentsProperty, out var arguments) is true)
+                    {
+                        azureMessage.FunctionCall = new FunctionCall(name, arguments);
+                    }
+                }
+
+                options.Messages.Add(azureMessage);
+            }
+            return options;
         }
-    }
 
-
-    private static async Task<T> RunRequestAsync<T>(Func<Task<T>> request)
-    {
-        try
+        private static void ValidateMaxTokens(int? maxTokens)
         {
-            return await request.Invoke().ConfigureAwait(false);
+            if (maxTokens.HasValue && maxTokens < 1)
+            {
+                throw new KernelException($"MaxTokens {maxTokens} is not valid, the value must be greater than zero");
+            }
         }
-        catch (RequestFailedException e)
+
+        private static async Task<T> RunRequestAsync<T>(Func<Task<T>> request)
         {
-            throw e.ToHttpOperationException();
+            try
+            {
+                return await request.Invoke().ConfigureAwait(false);
+            }
+            catch (RequestFailedException e)
+            {
+                throw e.ToHttpOperationException();
+            }
+        }
+
+        /// <summary>
+        /// Captures usage details, including token information.
+        /// </summary>
+        /// <param name="usage">Instance of <see cref="CompletionsUsage"/> with usage details.</param>
+        private void CaptureUsageDetails(CompletionsUsage usage)
+        {
+            Logger.LogInformation(
+                "Prompt tokens: {PromptTokens}. Completion tokens: {CompletionTokens}. Total tokens: {TotalTokens}",
+                usage.PromptTokens, usage.CompletionTokens, usage.TotalTokens);
+
+            s_promptTokensCounter.Add(usage.PromptTokens);
+            s_completionTokensCounter.Add(usage.CompletionTokens);
+            s_totalTokensCounter.Add(usage.TotalTokens);
         }
     }
-
-
-    /// <summary>
-    /// Captures usage details, including token information.
-    /// </summary>
-    /// <param name="usage">Instance of <see cref="CompletionsUsage"/> with usage details.</param>
-    private void CaptureUsageDetails(CompletionsUsage usage)
-    {
-        Logger.LogInformation(
-            "Prompt tokens: {PromptTokens}. Completion tokens: {CompletionTokens}. Total tokens: {TotalTokens}",
-            usage.PromptTokens, usage.CompletionTokens, usage.TotalTokens);
-
-        s_promptTokensCounter.Add(usage.PromptTokens);
-        s_completionTokensCounter.Add(usage.CompletionTokens);
-        s_totalTokensCounter.Add(usage.TotalTokens);
-    }
-}

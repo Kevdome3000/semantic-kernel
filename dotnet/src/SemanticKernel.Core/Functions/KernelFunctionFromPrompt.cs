@@ -9,14 +9,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using AI;
 using AI.TextCompletion;
 using Events;
 using Extensions.Logging;
-using Extensions.Logging.Abstractions;
 using Orchestration;
 
 #pragma warning restore IDE0130
@@ -123,22 +121,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     }
 
 
-    /// <summary>
-    /// List of function parameters
-    /// </summary>
-    public IReadOnlyList<KernelParameterMetadata> Parameters => this._promptTemplate.Parameters;
-
-
-    /// <inheritdoc/>
-    protected override KernelFunctionMetadata GetMetadataCore() =>
-        this._metadata ??=
-            new KernelFunctionMetadata(this.Name)
-            {
-                Description = this._promptTemplateConfig.Description,
-                Parameters = this.Parameters
-            };
-
-
     /// <inheritdoc/>
     protected override async Task<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
@@ -218,13 +200,12 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         IPromptTemplate template,
         PromptTemplateConfig promptTemplateConfig,
         string functionName,
-        ILoggerFactory? loggerFactory = null) : base(functionName, promptTemplateConfig.Description, promptTemplateConfig.ModelSettings)
+        ILoggerFactory? loggerFactory = null) : base(functionName, promptTemplateConfig.Description, template.Parameters, null, promptTemplateConfig.ModelSettings)
     {
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(KernelFunctionFactory)) : NullLogger.Instance;
 
         this._promptTemplate = template;
         this._promptTemplateConfig = promptTemplateConfig;
-        Verify.ParametersUniqueness(this.Parameters);
     }
 
 
@@ -232,7 +213,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
     private readonly ILogger _logger;
     private readonly PromptTemplateConfig _promptTemplateConfig;
-    private KernelFunctionMetadata? _metadata;
     private readonly IPromptTemplate _promptTemplate;
 
 
@@ -250,7 +230,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     /// <summary>Add default values to the context variables if the variable is not defined</summary>
     private void AddDefaultValues(ContextVariables variables)
     {
-        foreach (var parameter in this.Parameters)
+        foreach (var parameter in this._promptTemplate.Parameters)
         {
             if (!variables.ContainsKey(parameter.Name) && parameter.DefaultValue != null)
             {

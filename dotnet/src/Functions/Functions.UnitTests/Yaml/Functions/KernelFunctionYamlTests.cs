@@ -19,7 +19,7 @@ public class KernelFunctionYamlTests
         Assert.NotNull(function);
         Assert.Equal("SayHello", function.Name);
         Assert.Equal("Say hello to the specified person using the specified language", function.Description);
-        Assert.Equal(2, function.GetMetadata().Parameters.Count);
+        Assert.Equal(2, function.Metadata.Parameters.Count);
         //Assert.Equal(0, function.ExecutionSettings.Count);
     }
 
@@ -49,7 +49,7 @@ public class KernelFunctionYamlTests
         Assert.NotNull(function);
         Assert.Equal("SayHello", function.Name);
         Assert.Equal("Say hello to the specified person using the specified language", function.Description);
-        Assert.Equal(2, function.GetMetadata().Parameters.Count);
+        Assert.Equal(2, function.Metadata.Parameters.Count);
     }
 
 

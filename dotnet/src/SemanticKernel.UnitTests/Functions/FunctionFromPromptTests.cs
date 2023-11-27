@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+
+
 // ReSharper disable StringLiteralTypo
 
 namespace SemanticKernel.UnitTests.Functions;
@@ -266,7 +268,7 @@ public class FunctionFromPromptTests
         {
             invoking++;
 
-            if (e.Function.GetMetadata().Name == "SkipMe")
+            if (e.Function.Name == "SkipMe")
             {
                 e.Skip();
             }
@@ -274,7 +276,7 @@ public class FunctionFromPromptTests
 
         sut.FunctionInvoked += (sender, e) =>
         {
-            invokedFunction = e.Function.GetMetadata().Name;
+            invokedFunction = e.Function.Name;
             invoked++;
         };
 

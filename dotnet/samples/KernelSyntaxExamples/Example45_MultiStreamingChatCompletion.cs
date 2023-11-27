@@ -89,9 +89,9 @@ public static class Example45_MultiStreamingChatCompletion
                 roleDisplayed.Add(chatUpdate.ChoiceIndex);
             }
 
-            if (chatUpdate.Content is { Length: > 0 })
+            if (chatUpdate.ContentUpdate is { Length: > 0 })
             {
-                newContent += chatUpdate.Content;
+                newContent += chatUpdate.ContentUpdate;
             }
 
             if (!messagePerChoice.ContainsKey(chatUpdate.ChoiceIndex))

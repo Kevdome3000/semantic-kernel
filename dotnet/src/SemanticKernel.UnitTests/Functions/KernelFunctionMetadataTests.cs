@@ -81,7 +81,7 @@ public class KernelFunctionMetadataTests
         var function = KernelFunctionFactory.CreateFromMethod(Method(ValidFunctionName), loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
-        KernelFunctionMetadata fv = function.GetMetadata();
+        var fv = function.Metadata;
 
         // Assert
         Assert.Equal("ValidFunctionName", fv.Name);
@@ -94,7 +94,7 @@ public class KernelFunctionMetadataTests
         // Act
         var function = KernelFunctionFactory.CreateFromMethod(Method(ValidFunctionNameAsync), loggerFactory: this._logger.Object);
         Assert.NotNull(function);
-        KernelFunctionMetadata fv = function.GetMetadata();
+        KernelFunctionMetadata fv = function.Metadata;
 
         // Assert
         Assert.Equal("ValidFunctionName", fv.Name);
@@ -114,7 +114,7 @@ public class KernelFunctionMetadataTests
         var function = KernelFunctionFactory.CreateFromMethod(Method(TestFunctionName), loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
-        KernelFunctionMetadata fv = function.GetMetadata();
+        KernelFunctionMetadata fv = function.Metadata;
 
         // Assert
         Assert.Equal("NewTestFunctionName", fv.Name);
@@ -139,7 +139,7 @@ public class KernelFunctionMetadataTests
         var function = KernelFunctionFactory.CreateFromMethod(Method(TestFunctionName), loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
-        KernelFunctionMetadata fv = function.GetMetadata();
+        KernelFunctionMetadata fv = function.Metadata;
 
         // Assert
         Assert.Equal("function description", fv.Description);
@@ -164,7 +164,7 @@ public class KernelFunctionMetadataTests
         var function = KernelFunctionFactory.CreateFromMethod(Method(TestFunctionName), loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
-        KernelFunctionMetadata fv = function.GetMetadata();
+        KernelFunctionMetadata fv = function.Metadata;
 
         // Assert
         Assert.Equal(string.Empty, fv.Description);
@@ -189,7 +189,7 @@ public class KernelFunctionMetadataTests
         var function = KernelFunctionFactory.CreateFromMethod(Method(TestFunctionName), loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
-        KernelFunctionMetadata fv = function.GetMetadata();
+        KernelFunctionMetadata fv = function.Metadata;
 
         // Assert
         var emptyList = new List<KernelParameterMetadata>();

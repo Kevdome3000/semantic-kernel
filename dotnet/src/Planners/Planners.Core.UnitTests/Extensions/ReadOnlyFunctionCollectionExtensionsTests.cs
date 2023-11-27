@@ -116,8 +116,8 @@ public class ReadOnlyFunctionCollectionExtensionsTests
                 KernelFunctionFactory.CreateFromMethod(() => { }, "nativeFunctionName", "description"),
             }),
         };
-        var functionView = new KernelFunctionMetadata(plugins["pluginName"]["functionName"].GetMetadata()) { PluginName = "pluginName" };
-        var nativeFunctionView = new KernelFunctionMetadata(plugins["pluginName"]["nativeFunctionName"].GetMetadata()) { PluginName = "pluginName" };
+        var functionView = new KernelFunctionMetadata(plugins["pluginName"]["functionName"].Metadata) { PluginName = "pluginName" };
+        var nativeFunctionView = new KernelFunctionMetadata(plugins["pluginName"]["nativeFunctionName"].Metadata) { PluginName = "pluginName" };
 
         var kernel = new Kernel(new Mock<IAIServiceProvider>().Object, plugins);
 
@@ -189,8 +189,8 @@ public class ReadOnlyFunctionCollectionExtensionsTests
 
         var kernel = new Kernel(new Mock<IAIServiceProvider>().Object, plugins);
 
-        var functionView = new KernelFunctionMetadata(plugins["pluginName"]["functionName"].GetMetadata()) { PluginName = "pluginName" };
-        var nativeFunctionView = new KernelFunctionMetadata(plugins["pluginName"]["nativeFunctionName"].GetMetadata()) { PluginName = "pluginName" };
+        var functionView = new KernelFunctionMetadata(plugins["pluginName"]["functionName"].Metadata) { PluginName = "pluginName" };
+        var nativeFunctionView = new KernelFunctionMetadata(plugins["pluginName"]["nativeFunctionName"].Metadata) { PluginName = "pluginName" };
 
         var memoryQueryResult =
             new MemoryQueryResult(

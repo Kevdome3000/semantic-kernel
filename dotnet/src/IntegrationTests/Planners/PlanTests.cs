@@ -182,13 +182,13 @@ public sealed class PlanTests : IDisposable
 
         void FunctionInvoking(object? sender, FunctionInvokingEventArgs e)
         {
-            invokingListFunctions.Add(e.Function.GetMetadata());
+            invokingListFunctions.Add(e.Function.Metadata);
             invokingCalls++;
         }
 
         void FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
         {
-            invokedListFunctions.Add(e.Function.GetMetadata());
+            invokedListFunctions.Add(e.Function.Metadata);
             invokedCalls++;
         }
 
