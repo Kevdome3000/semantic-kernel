@@ -93,7 +93,7 @@ public abstract class KernelFunction
         using var activity = s_activitySource.StartActivity(this.Name);
         ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name);
 
-        logger.LogTrace("Function invoking.");
+        logger.LogTrace("Function invoking");
 
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -107,7 +107,7 @@ public abstract class KernelFunction
 
             if (invokingEventArgs is not null && (invokingEventArgs.IsSkipRequested || invokingEventArgs.CancelToken.IsCancellationRequested))
             {
-                logger.LogTrace("Function canceled or skipped prior to invocation.");
+                logger.LogTrace("Function canceled or skipped prior to invocation");
 
                 return new FunctionResult(this.Name, variables)
                 {
@@ -118,7 +118,7 @@ public abstract class KernelFunction
 
             var result = await this.InvokeCoreAsync(kernel, variables, requestSettings, cancellationToken).ConfigureAwait(false);
 
-            logger.LogTrace("Function succeeded.");
+            logger.LogTrace("Function succeeded");
 
             // Invoke the post hook.
             (var invokedEventArgs, result) = this.CallFunctionInvoked(kernel, variables, result);
