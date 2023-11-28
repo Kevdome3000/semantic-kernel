@@ -65,7 +65,7 @@ public class PromptTemplateConfigTests
 {
   ""schema"": 1,
   ""description"": """",
-  ""models"": 
+  ""execution_settings"": 
   [
     {
       ""model_id"": ""gpt-4"",
@@ -102,8 +102,8 @@ public class PromptTemplateConfigTests
 
         // Assert
         Assert.NotNull(promptTemplateConfig);
-        Assert.NotNull(promptTemplateConfig.ModelSettings);
-        Assert.Equal(2, promptTemplateConfig.ModelSettings.Count);
+        Assert.NotNull(promptTemplateConfig.ExecutionSettings);
+        Assert.Equal(2, promptTemplateConfig.ExecutionSettings.Count);
     }
 
 
@@ -115,7 +115,7 @@ public class PromptTemplateConfigTests
 {
   ""schema"": 1,
   ""description"": """",
-  ""models"": 
+  ""execution_settings"": 
   [
     {
       ""model_id"": ""gpt-4"",
@@ -139,7 +139,7 @@ public class PromptTemplateConfigTests
 
         // Assert
         Assert.NotNull(promptTemplateConfig);
-        Assert.NotNull(promptTemplateConfig.ModelSettings?.FirstOrDefault<PromptExecutionSettings>());
-        Assert.Equal("gpt-4", promptTemplateConfig?.ModelSettings.FirstOrDefault<PromptExecutionSettings>()?.ModelId);
+        Assert.NotNull(promptTemplateConfig.ExecutionSettings?.FirstOrDefault<PromptExecutionSettings>());
+        Assert.Equal("gpt-4", promptTemplateConfig?.ExecutionSettings.FirstOrDefault<PromptExecutionSettings>()?.ModelId);
     }
 }

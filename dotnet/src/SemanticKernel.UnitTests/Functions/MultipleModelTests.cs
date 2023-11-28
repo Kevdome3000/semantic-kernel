@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.UnitTests.Functions;
-
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -10,7 +8,7 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Moq;
 using Xunit;
 
-
+namespace SemanticKernel.UnitTests.Functions;
 public class MultipleModelTests
 {
     [Fact]
@@ -30,9 +28,10 @@ public class MultipleModelTests
             .WithAIService("service2", mockTextCompletion2.Object, true)
             .Build();
 
-        var templateConfig = new PromptTemplateConfig();
-        templateConfig.ModelSettings.Add(new PromptExecutionSettings() { ServiceId = "service1" });
-        KernelFunction func = kernel.CreateFunctionFromPrompt("template", templateConfig, "functionName");
+        var promptConfig = new PromptTemplateConfig();
+        promptConfig.Template = "template";
+        promptConfig.ExecutionSettings.Add(new PromptExecutionSettings() { ServiceId = "service1" });
+        var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
         // Act
         await kernel.InvokeAsync(func);
@@ -41,7 +40,6 @@ public class MultipleModelTests
         mockTextCompletion1.Verify(a => a.GetCompletionsAsync("template", It.IsAny<PromptExecutionSettings>(), It.IsAny<CancellationToken>()), Times.Once());
         mockTextCompletion2.Verify(a => a.GetCompletionsAsync("template", It.IsAny<PromptExecutionSettings>(), It.IsAny<CancellationToken>()), Times.Never());
     }
-
 
     [Fact]
     public async Task ItFailsIfInvalidServiceIdIsProvidedAsync()
@@ -55,9 +53,10 @@ public class MultipleModelTests
             .WithAIService("service2", mockTextCompletion2.Object, true)
             .Build();
 
-        var templateConfig = new PromptTemplateConfig();
-        templateConfig.ModelSettings.Add(new PromptExecutionSettings() { ServiceId = "service3" });
-        var func = kernel.CreateFunctionFromPrompt("template", templateConfig, "functionName");
+        var promptConfig = new PromptTemplateConfig();
+        promptConfig.Template = "template";
+        promptConfig.ExecutionSettings.Add(new PromptExecutionSettings() { ServiceId = "service3" });
+        var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
         // Act
         var exception = await Assert.ThrowsAsync<KernelException>(() => kernel.InvokeAsync(func));
@@ -65,7 +64,6 @@ public class MultipleModelTests
         // Assert
         Assert.Equal("Service of type Microsoft.SemanticKernel.AI.TextCompletion.ITextCompletion and name service3 not registered.", exception.Message);
     }
-
 
     [Theory]
     [InlineData(new string[] { "service1" }, 1, new int[] { 1, 0, 0 })]
@@ -91,13 +89,13 @@ public class MultipleModelTests
             .WithAIService("service3", mockTextCompletion3.Object, defaultServiceIndex == 2)
             .Build();
 
-        var templateConfig = new PromptTemplateConfig();
-
+        var promptConfig = new PromptTemplateConfig();
+        promptConfig.Template = "template";
         foreach (var serviceId in serviceIds)
         {
-            templateConfig.ModelSettings.Add(new PromptExecutionSettings() { ServiceId = serviceId });
+            promptConfig.ExecutionSettings.Add(new PromptExecutionSettings() { ServiceId = serviceId });
         }
-        var func = kernel.CreateFunctionFromPrompt("template", templateConfig, "functionName");
+        var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
         // Act
         await kernel.InvokeAsync(func);
@@ -107,7 +105,6 @@ public class MultipleModelTests
         mockTextCompletion2.Verify(a => a.GetCompletionsAsync("template", It.Is<PromptExecutionSettings>(settings => settings.ServiceId == "service2"), It.IsAny<CancellationToken>()), Times.Exactly(callCount[1]));
         mockTextCompletion3.Verify(a => a.GetCompletionsAsync("template", It.Is<PromptExecutionSettings>(settings => settings.ServiceId == "service3"), It.IsAny<CancellationToken>()), Times.Exactly(callCount[2]));
     }
-
 
     [Fact]
     public async Task ItUsesServiceIdWithJsonPromptTemplateConfigAsync()
@@ -130,9 +127,9 @@ public class MultipleModelTests
             .Build();
 
         var json = @"{
-  ""schema"": 1,
+  ""template"": ""template"",
   ""description"": ""Semantic function"",
-  ""models"": [
+  ""execution_settings"": [
     {
       ""service_id"": ""service2"",
       ""max_tokens"": 100,
@@ -158,8 +155,8 @@ public class MultipleModelTests
   ]
 }";
 
-        var templateConfig = PromptTemplateConfig.FromJson(json);
-        var func = kernel.CreateFunctionFromPrompt("template", templateConfig, "functionName");
+        var promptConfig = PromptTemplateConfig.FromJson(json);
+        var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
         // Act
         await kernel.InvokeAsync(func);

@@ -16,7 +16,6 @@ using RepoUtils;
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 
-
 /**
  * The following example shows how to plug into SK a custom text completion model.
  *
@@ -41,7 +40,6 @@ public static class Example16_CustomLLM
     of art, music, or literature. AI can also improve our well-being and happiness by
     providing personalized recommendations, entertainment, and assistance. AI is awesome";
 
-
     public static async Task RunAsync()
     {
         await CustomTextCompletionWithSKFunctionAsync();
@@ -49,7 +47,6 @@ public static class Example16_CustomLLM
         await CustomTextCompletionAsync();
         await CustomTextCompletionStreamAsync();
     }
-
 
     private static async Task CustomTextCompletionWithSKFunctionAsync()
     {
@@ -77,7 +74,6 @@ public static class Example16_CustomLLM
         ));
     }
 
-
     private static async Task CustomTextCompletionAsync()
     {
         Console.WriteLine("======== Custom LLM  - Text Completion - Raw ========");
@@ -87,7 +83,6 @@ public static class Example16_CustomLLM
 
         Console.WriteLine(result);
     }
-
 
     private static async Task CustomTextCompletionStreamAsync()
     {
@@ -100,10 +95,9 @@ public static class Example16_CustomLLM
         await TextCompletionStreamAsync(prompt, textCompletion);
     }
 
-
     private static async Task TextCompletionStreamAsync(string prompt, ITextCompletion textCompletion)
     {
-        var requestSettings = new OpenAIPromptExecutionSettings()
+        var executionSettings = new OpenAIPromptExecutionSettings()
         {
             MaxTokens = 100,
             FrequencyPenalty = 0,
@@ -113,8 +107,7 @@ public static class Example16_CustomLLM
         };
 
         Console.WriteLine("Prompt: " + prompt);
-
-        await foreach (var message in textCompletion.GetStreamingContentAsync(prompt, requestSettings))
+        await foreach (var message in textCompletion.GetStreamingContentAsync(prompt, executionSettings))
         {
             Console.Write(message);
         }
@@ -122,17 +115,15 @@ public static class Example16_CustomLLM
         Console.WriteLine();
     }
 
-
     private sealed class MyTextCompletionService : ITextCompletion
     {
         public string? ModelId { get; private set; }
 
         public IReadOnlyDictionary<string, string> Attributes => new Dictionary<string, string>();
 
-
-        public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, PromptExecutionSettings? requestSettings, CancellationToken cancellationToken = default)
+        public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, PromptExecutionSettings? executionSettings, CancellationToken cancellationToken = default)
         {
-            this.ModelId = requestSettings?.ModelId;
+            this.ModelId = executionSettings?.ModelId;
 
             return Task.FromResult<IReadOnlyList<ITextResult>>(new List<ITextResult>
             {
@@ -140,8 +131,7 @@ public static class Example16_CustomLLM
             });
         }
 
-
-        public async IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, PromptExecutionSettings? requestSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        public async IAsyncEnumerable<T> GetStreamingContentAsync<T>(string prompt, PromptExecutionSettings? executionSettings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             if (typeof(T) == typeof(MyStreamingContent) ||
                 typeof(T) == typeof(StreamingContent))
@@ -156,32 +146,27 @@ public static class Example16_CustomLLM
         }
     }
 
-
     private sealed class MyStreamingContent : StreamingContent
     {
         public override int ChoiceIndex => 0;
 
         public string Content { get; }
 
-
         public MyStreamingContent(string content) : base(content)
         {
             this.Content = $"{content} ";
         }
-
 
         public override byte[] ToByteArray()
         {
             return Encoding.UTF8.GetBytes(this.Content);
         }
 
-
         public override string ToString()
         {
             return this.Content;
         }
     }
-
 
     private sealed class MyTextCompletionStreamingResult : ITextResult
     {
@@ -193,7 +178,6 @@ public static class Example16_CustomLLM
         });
 
         public ModelResult ModelResult => this._modelResult;
-
 
         public async Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
         {

@@ -85,10 +85,10 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     protected override async Task<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
         ContextVariables variables,
-        PromptExecutionSettings? requestSettings,
+        PromptExecutionSettings? executionSettings,
         CancellationToken cancellationToken)
     {
-        return await this._function(null, requestSettings, kernel, variables, cancellationToken).ConfigureAwait(false);
+        return await this._function(null, executionSettings, kernel, variables, cancellationToken).ConfigureAwait(false);
     }
 
 
@@ -96,11 +96,10 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     protected override async IAsyncEnumerable<T> InvokeCoreStreamingAsync<T>(
         Kernel kernel,
         ContextVariables variables,
-        PromptExecutionSettings? requestSettings = null,
+        PromptExecutionSettings? executionSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var functionResult = await this.InvokeCoreAsync(kernel, variables, requestSettings, cancellationToken).ConfigureAwait(false);
-
+        var functionResult = await this.InvokeCoreAsync(kernel, variables, executionSettings, cancellationToken).ConfigureAwait(false);
         if (functionResult.Value is T)
         {
             yield return (T)functionResult.Value;
@@ -136,7 +135,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     /// <summary>Delegate used to invoke the underlying delegate.</summary>
     private delegate ValueTask<FunctionResult> ImplementationFunc(
         ITextCompletion? textCompletion,
-        PromptExecutionSettings? requestSettings,
+        PromptExecutionSettings? executionSettings,
         Kernel kernel,
         ContextVariables variables,
         CancellationToken cancellationToken);
@@ -218,7 +217,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         Func<string, object?, ContextVariables, Kernel, ValueTask<FunctionResult>> returnFunc = GetReturnValueMarshalerDelegate(method);
 
         // Create the func
-        ValueTask<FunctionResult> Function(ITextCompletion? text, PromptExecutionSettings? requestSettings, Kernel kernel, ContextVariables variables, CancellationToken cancellationToken)
+        ValueTask<FunctionResult> Function(ITextCompletion? text, PromptExecutionSettings? executionSettings, Kernel kernel, ContextVariables variables, CancellationToken cancellationToken)
         {
             // Create the arguments.
             object?[] args = parameterFuncs.Length != 0 ? new object?[parameterFuncs.Length] : Array.Empty<object?>();

@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "description": "Rewrite the given based on the given style.",
-  "models": [
+  "description": "Automatically generate compact notes for any text or text document",
+  "execution_settings": [
     {
       "max_tokens": 256,
       "temperature": 0.0,
@@ -9,19 +9,5 @@
       "presence_penalty": 0.0,
       "frequency_penalty": 0.0
     }
-  ],
-  "input": {
-    "parameters": [
-      {
-        "name": "input",
-        "description": "The text to rewrite.",
-        "defaultValue": ""
-      },
-        {
-            "name": "style",
-            "description": "The style to rewrite the text in.",
-            "defaultValue": "formal"
-        }
-    ]
-  }
+  ]
 }

@@ -9,7 +9,6 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
-
 /**
  * The following example shows how to use Semantic Kernel with Multiple Results Text Completion as streaming
  */
@@ -21,7 +20,6 @@ public static class Example45_MultiStreamingChatCompletion
         await AzureOpenAIMultiStreamingChatCompletionAsync();
         await OpenAIMultiStreamingChatCompletionAsync();
     }
-
 
     private static async Task AzureOpenAIMultiStreamingChatCompletionAsync()
     {
@@ -35,7 +33,6 @@ public static class Example45_MultiStreamingChatCompletion
         await StreamingChatCompletionAsync(azureOpenAIChatCompletion);
     }
 
-
     private static async Task OpenAIMultiStreamingChatCompletionAsync()
     {
         Console.WriteLine("======== Open AI - Multiple Text Completion - Raw Streaming ========");
@@ -47,10 +44,9 @@ public static class Example45_MultiStreamingChatCompletion
         await StreamingChatCompletionAsync(openAIChatCompletion);
     }
 
-
     private static async Task StreamingChatCompletionAsync(IChatCompletion chatCompletion)
     {
-        var requestSettings = new OpenAIPromptExecutionSettings()
+        var executionSettings = new OpenAIPromptExecutionSettings()
         {
             MaxTokens = 200,
             FrequencyPenalty = 0,
@@ -64,25 +60,22 @@ public static class Example45_MultiStreamingChatCompletion
 
         PrepareDisplay();
         var prompt = "Hi, I'm looking for 5 random title names for sci-fi books";
-        await ProcessStreamAsyncEnumerableAsync(chatCompletion, prompt, requestSettings, consoleLinesPerResult);
+        await ProcessStreamAsyncEnumerableAsync(chatCompletion, prompt, executionSettings, consoleLinesPerResult);
 
         Console.WriteLine();
 
-        Console.SetCursorPosition(0, requestSettings.ResultsPerPrompt * consoleLinesPerResult);
+        Console.SetCursorPosition(0, executionSettings.ResultsPerPrompt * consoleLinesPerResult);
         Console.WriteLine();
     }
 
-
-    private static async Task ProcessStreamAsyncEnumerableAsync(IChatCompletion chatCompletion, string prompt, OpenAIPromptExecutionSettings requestSettings, int consoleLinesPerResult)
+    private static async Task ProcessStreamAsyncEnumerableAsync(IChatCompletion chatCompletion, string prompt, OpenAIPromptExecutionSettings executionSettings, int consoleLinesPerResult)
     {
         var roleDisplayed = new List<int>();
         var messagePerChoice = new Dictionary<int, string>();
-
-        await foreach (var chatUpdate in chatCompletion.GetStreamingContentAsync<StreamingChatContent>(prompt, requestSettings))
+        await foreach (var chatUpdate in chatCompletion.GetStreamingContentAsync<StreamingChatContent>(prompt, executionSettings))
         {
             string newContent = string.Empty;
             Console.SetCursorPosition(0, chatUpdate.ChoiceIndex * consoleLinesPerResult);
-
             if (!roleDisplayed.Contains(chatUpdate.ChoiceIndex) && chatUpdate.Role.HasValue)
             {
                 newContent = $"Role: {chatUpdate.Role.Value}\n";
@@ -104,7 +97,6 @@ public static class Example45_MultiStreamingChatCompletion
         }
     }
 
-
     /// <summary>
     /// Break enough lines as the current console window size to display the results
     /// </summary>
@@ -115,7 +107,6 @@ public static class Example45_MultiStreamingChatCompletion
             Console.WriteLine();
         }
     }
-
 
     /// <summary>
     /// Outputs the last message of the chat history

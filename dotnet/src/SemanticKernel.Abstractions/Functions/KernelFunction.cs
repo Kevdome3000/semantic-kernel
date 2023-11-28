@@ -96,13 +96,13 @@ public abstract class KernelFunction
     /// </summary>
     /// <param name="kernel">The kernel.</param>
     /// <param name="variables">Context variables</param>
-    /// <param name="requestSettings">LLM completion settings (for semantic functions only)</param>
+    /// <param name="executionSettings">LLM completion settings (for semantic functions only)</param>
     /// <returns>The updated context, potentially a new one if context switching is implemented.</returns>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     public async Task<FunctionResult> InvokeAsync(
         Kernel kernel,
         ContextVariables variables,
-        PromptExecutionSettings? requestSettings = null,
+        PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
     {
         using var activity = s_activitySource.StartActivity(this.Name);
@@ -131,7 +131,7 @@ public abstract class KernelFunction
                 };
             }
 
-            var result = await this.InvokeCoreAsync(kernel, variables, requestSettings, cancellationToken).ConfigureAwait(false);
+            var result = await this.InvokeCoreAsync(kernel, variables, executionSettings, cancellationToken).ConfigureAwait(false);
 
             logger.LogTrace("Function succeeded.");
 
@@ -178,13 +178,13 @@ public abstract class KernelFunction
     /// </summary>
     /// <param name="kernel">The kernel</param>
     /// <param name="variables">SK context variables</param>
-    /// <param name="requestSettings">LLM completion settings (for semantic functions only)</param>
+    /// <param name="executionSettings">LLM completion settings (for semantic functions only)</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A asynchronous list of streaming content chunks</returns>
     public async IAsyncEnumerable<T> InvokeStreamingAsync<T>(
         Kernel kernel,
         ContextVariables variables,
-        PromptExecutionSettings? requestSettings = null,
+        PromptExecutionSettings? executionSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         using var activity = s_activitySource.StartActivity(this.Name);
@@ -202,7 +202,7 @@ public abstract class KernelFunction
             yield break;
         }
 
-        await foreach (var genericChunk in this.InvokeCoreStreamingAsync<T>(kernel, variables, requestSettings, cancellationToken))
+        await foreach (var genericChunk in this.InvokeCoreStreamingAsync<T>(kernel, variables, executionSettings, cancellationToken))
         {
             yield return genericChunk;
         }
@@ -217,13 +217,13 @@ public abstract class KernelFunction
     /// </summary>
     /// <param name="kernel">The kernel.</param>
     /// <param name="variables">SK context variables</param>
-    /// <param name="requestSettings">LLM completion settings (for semantic functions only)</param>
+    /// <param name="executionSettings">LLM completion settings (for semantic functions only)</param>
     /// <returns>The updated context, potentially a new one if context switching is implemented.</returns>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     protected abstract IAsyncEnumerable<T> InvokeCoreStreamingAsync<T>(
         Kernel kernel,
         ContextVariables variables,
-        PromptExecutionSettings? requestSettings = null,
+        PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default);
 
 
@@ -232,13 +232,13 @@ public abstract class KernelFunction
     /// </summary>
     /// <param name="kernel">The kernel.</param>
     /// <param name="variables">Context variables</param>
-    /// <param name="requestSettings">LLM completion settings (for semantic functions only)</param>
+    /// <param name="executionSettings">LLM completion settings (for semantic functions only)</param>
     /// <returns>The updated context, potentially a new one if context switching is implemented.</returns>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     protected abstract Task<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
         ContextVariables variables,
-        PromptExecutionSettings? requestSettings,
+        PromptExecutionSettings? executionSettings,
         CancellationToken cancellationToken);
 
 
