@@ -371,17 +371,17 @@ public class StepwisePlanner
     {
         var descriptions = await this._kernel.Plugins.GetFunctionsManualAsync(this.Config, question, this._logger, cancellationToken).ConfigureAwait(false);
         variables.Set("functionDescriptions", descriptions);
-        var promptTemplate = this._promptTemplateFactory.Create(this._manualTemplate, new PromptTemplateConfig());
+        var promptTemplate = this._promptTemplateFactory.Create(new PromptTemplateConfig() { Template = this._manualTemplate});
         return await promptTemplate.RenderAsync(kernel, variables, cancellationToken).ConfigureAwait(false);
     }
 
 
     private Task<string> GetUserQuestionAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken)
-        => this._promptTemplateFactory.Create(this._questionTemplate, new PromptTemplateConfig()).RenderAsync(kernel, variables, cancellationToken);
+        => this._promptTemplateFactory.Create(new PromptTemplateConfig() { Template = _questionTemplate}).RenderAsync(kernel, variables, cancellationToken);
 
 
     private Task<string> GetSystemMessageAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken)
-        => this._promptTemplateFactory.Create(this._promptTemplate, new PromptTemplateConfig()).RenderAsync(kernel, variables, cancellationToken);
+        => this._promptTemplateFactory.Create(new PromptTemplateConfig() { Template = _promptTemplate}).RenderAsync(kernel, variables, cancellationToken);
 
     #endregion setup helpers
 
@@ -427,7 +427,7 @@ public class StepwisePlanner
     {
         if (aiService is IChatCompletion chatCompletion)
         {
-            var llmResponse = (await chatCompletion.GenerateMessageAsync(chatHistory, this._promptConfig.GetDefaultRequestSettings(), token).ConfigureAwait(false));
+            var llmResponse = (await chatCompletion.GenerateMessageAsync(chatHistory, this._promptConfig.ExecutionSettings.FirstOrDefault(), token).ConfigureAwait(false));
             return llmResponse;
         }
         else if (aiService is ITextCompletion textCompletion)
@@ -442,7 +442,7 @@ public class StepwisePlanner
             }
 
             thoughtProcess = $"{thoughtProcess}\n";
-            IReadOnlyList<ITextResult> results = await textCompletion.GetCompletionsAsync(thoughtProcess, this._promptConfig.GetDefaultRequestSettings(), token).ConfigureAwait(false);
+            IReadOnlyList<ITextResult> results = await textCompletion.GetCompletionsAsync(thoughtProcess, this._promptConfig.ExecutionSettings.FirstOrDefault(), token).ConfigureAwait(false);
 
             if (results.Count == 0)
             {
