@@ -35,7 +35,8 @@ public sealed class HandlebarsPromptTemplateTests
         // Arrange
         this._variables.Set("bar", "Bar");
         var template = "Foo {{bar}}";
-        var target = (HandlebarsPromptTemplate)this._factory.Create(template, new PromptTemplateConfig() { TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat });
+        var promptConfig = new PromptTemplateConfig() { TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat, Template = template };
+        var target = (HandlebarsPromptTemplate)this._factory.Create(promptConfig);
 
         // Act
         var prompt = await target.RenderAsync(this._kernel, this._variables);
@@ -51,7 +52,8 @@ public sealed class HandlebarsPromptTemplateTests
         // Arrange
         this._kernel.ImportPluginFromObject<Foo>();
         var template = "Foo {{Foo_Bar}}";
-        var target = (HandlebarsPromptTemplate)this._factory.Create(template, new PromptTemplateConfig() { TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat });
+        var promptConfig = new PromptTemplateConfig() { TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat, Template = template };
+        var target = (HandlebarsPromptTemplate)this._factory.Create(promptConfig);
 
         // Act
         var prompt = await target.RenderAsync(this._kernel, this._variables);
@@ -67,7 +69,8 @@ public sealed class HandlebarsPromptTemplateTests
         // Arrange
         this._kernel.ImportPluginFromObject<Foo>();
         var template = "Foo {{Foo_Bar}} {{Foo_Baz}}";
-        var target = (HandlebarsPromptTemplate)this._factory.Create(template, new PromptTemplateConfig() { TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat });
+        var promptConfig = new PromptTemplateConfig() { TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat, Template = template };
+        var target = (HandlebarsPromptTemplate)this._factory.Create(promptConfig);
 
         // Act
         var prompt = await target.RenderAsync(this._kernel, this._variables);
@@ -78,58 +81,27 @@ public sealed class HandlebarsPromptTemplateTests
 
 
     [Fact]
-    public void ItReturnsParameters()
+    public async Task ItUsesDefaultValuesAsync()
     {
         // Arrange
-        var promptTemplateConfig = new PromptTemplateConfig()
+        var promptConfig = new PromptTemplateConfig()
         {
             TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat
         };
-        promptTemplateConfig.Input.Parameters.Add(new InputParameter()
+        promptConfig.InputParameters.Add(new InputParameter()
         {
             Name = "bar",
             Description = "Bar",
             DefaultValue = "Bar"
         });
-        promptTemplateConfig.Input.Parameters.Add(new InputParameter()
+        promptConfig.InputParameters.Add(new InputParameter()
         {
             Name = "baz",
             Description = "Baz",
             DefaultValue = "Baz"
         });
-        var template = "Foo {{Bar}} {{Baz}}";
-        var target = (HandlebarsPromptTemplate)this._factory.Create(template, promptTemplateConfig);
-
-        // Act
-        var parameters = target.Parameters;
-
-        // Assert   
-        Assert.Equal(2, parameters.Count);
-    }
-
-
-    [Fact]
-    public async Task ItUsesDefaultValuesAsync()
-    {
-        // Arrange
-        var promptTemplateConfig = new PromptTemplateConfig()
-        {
-            TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat
-        };
-        promptTemplateConfig.Input.Parameters.Add(new InputParameter()
-        {
-            Name = "Bar",
-            Description = "Bar",
-            DefaultValue = "Bar"
-        });
-        promptTemplateConfig.Input.Parameters.Add(new InputParameter()
-        {
-            Name = "Baz",
-            Description = "Baz",
-            DefaultValue = "Baz"
-        });
-        var template = "Foo {{Bar}} {{Baz}}";
-        var target = (HandlebarsPromptTemplate)this._factory.Create(template, promptTemplateConfig);
+        promptConfig.Template = "Foo {{bar}} {{baz}}";
+        var target = (HandlebarsPromptTemplate)this._factory.Create(promptConfig);
 
         // Act
         var prompt = await target.RenderAsync(this._kernel, this._variables);

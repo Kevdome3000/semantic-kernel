@@ -47,7 +47,7 @@ public static class Example36_MultiCompletion
 
     private static async Task ChatCompletionAsync(IChatCompletion chatCompletion)
     {
-        var requestSettings = new OpenAIPromptExecutionSettings()
+        var executionSettings = new OpenAIPromptExecutionSettings()
         {
             MaxTokens = 200,
             FrequencyPenalty = 0,

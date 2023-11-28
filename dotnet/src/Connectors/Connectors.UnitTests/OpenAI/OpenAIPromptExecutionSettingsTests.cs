@@ -20,19 +20,19 @@ public class OpenAIPromptExecutionSettingsTests
     {
         // Arrange
         // Act
-        OpenAIPromptExecutionSettings requestSettings = OpenAIPromptExecutionSettings.FromRequestSettings(null, 128);
+        OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromRequestSettings(null, 128);
 
         // Assert
-        Assert.NotNull(requestSettings);
-        Assert.Equal(0, requestSettings.Temperature);
-        Assert.Equal(0, requestSettings.TopP);
-        Assert.Equal(0, requestSettings.FrequencyPenalty);
-        Assert.Equal(0, requestSettings.PresencePenalty);
-        Assert.Equal(1, requestSettings.ResultsPerPrompt);
-        Assert.Equal(Array.Empty<string>(), requestSettings.StopSequences);
-        Assert.Equal(new Dictionary<int, int>(), requestSettings.TokenSelectionBiases);
-        Assert.Null(requestSettings.ServiceId);
-        Assert.Equal(128, requestSettings.MaxTokens);
+        Assert.NotNull(executionSettings);
+        Assert.Equal(0, executionSettings.Temperature);
+        Assert.Equal(0, executionSettings.TopP);
+        Assert.Equal(0, executionSettings.FrequencyPenalty);
+        Assert.Equal(0, executionSettings.PresencePenalty);
+        Assert.Equal(1, executionSettings.ResultsPerPrompt);
+        Assert.Equal(Array.Empty<string>(), executionSettings.StopSequences);
+        Assert.Equal(new Dictionary<int, int>(), executionSettings.TokenSelectionBiases);
+        Assert.Null(executionSettings.ServiceId);
+        Assert.Equal(128, executionSettings.MaxTokens);
     }
 
 
@@ -55,11 +55,11 @@ public class OpenAIPromptExecutionSettingsTests
         };
 
         // Act
-        OpenAIPromptExecutionSettings requestSettings = OpenAIPromptExecutionSettings.FromRequestSettings(actualSettings);
+        OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromRequestSettings(actualSettings);
 
         // Assert
-        Assert.NotNull(requestSettings);
-        Assert.Equal(actualSettings, requestSettings);
+        Assert.NotNull(executionSettings);
+        Assert.Equal(actualSettings, executionSettings);
     }
 
 
@@ -73,11 +73,11 @@ public class OpenAIPromptExecutionSettingsTests
         };
 
         // Act
-        OpenAIPromptExecutionSettings requestSettings = OpenAIPromptExecutionSettings.FromRequestSettings(actualSettings, null);
+        OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromRequestSettings(actualSettings, null);
 
         // Assert
-        Assert.NotNull(requestSettings);
-        Assert.Equal(actualSettings.ServiceId, requestSettings.ServiceId);
+        Assert.NotNull(executionSettings);
+        Assert.Equal(actualSettings.ServiceId, executionSettings.ServiceId);
     }
 
 
@@ -104,10 +104,10 @@ public class OpenAIPromptExecutionSettingsTests
         };
 
         // Act
-        OpenAIPromptExecutionSettings requestSettings = OpenAIPromptExecutionSettings.FromRequestSettings(actualSettings, null);
+        OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromRequestSettings(actualSettings, null);
 
         // Assert
-        AssertRequestSettings(requestSettings);
+        AssertRequestSettings(executionSettings);
     }
 
 
@@ -134,10 +134,10 @@ public class OpenAIPromptExecutionSettingsTests
         };
 
         // Act
-        OpenAIPromptExecutionSettings requestSettings = OpenAIPromptExecutionSettings.FromRequestSettings(actualSettings);
+        OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromRequestSettings(actualSettings);
 
         // Assert
-        AssertRequestSettings(requestSettings);
+        AssertRequestSettings(executionSettings);
     }
 
 
@@ -160,10 +160,10 @@ public class OpenAIPromptExecutionSettingsTests
         var actualSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(json);
 
         // Act
-        OpenAIPromptExecutionSettings requestSettings = OpenAIPromptExecutionSettings.FromRequestSettings(actualSettings);
+        OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromRequestSettings(actualSettings);
 
         // Assert
-        AssertRequestSettings(requestSettings);
+        AssertRequestSettings(executionSettings);
     }
 
 
@@ -186,25 +186,25 @@ public class OpenAIPromptExecutionSettingsTests
         var actualSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(json);
 
         // Act
-        OpenAIPromptExecutionSettings requestSettings = OpenAIPromptExecutionSettings.FromRequestSettings(actualSettings);
+        OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromRequestSettings(actualSettings);
 
         // Assert
-        AssertRequestSettings(requestSettings);
+        AssertRequestSettings(executionSettings);
     }
 
 
-    private static void AssertRequestSettings(OpenAIPromptExecutionSettings requestSettings)
+    private static void AssertRequestSettings(OpenAIPromptExecutionSettings executionSettings)
     {
-        Assert.NotNull(requestSettings);
-        Assert.Equal(0.7, requestSettings.Temperature);
-        Assert.Equal(0.7, requestSettings.TopP);
-        Assert.Equal(0.7, requestSettings.FrequencyPenalty);
-        Assert.Equal(0.7, requestSettings.PresencePenalty);
-        Assert.Equal(2, requestSettings.ResultsPerPrompt);
-        Assert.Equal(new string[] { "foo", "bar" }, requestSettings.StopSequences);
-        Assert.Equal("chat system prompt", requestSettings.ChatSystemPrompt);
-        Assert.Equal(new Dictionary<int, int>() { { 1, 2 }, { 3, 4 } }, requestSettings.TokenSelectionBiases);
-        Assert.Equal("service", requestSettings.ServiceId);
-        Assert.Equal(128, requestSettings.MaxTokens);
+        Assert.NotNull(executionSettings);
+        Assert.Equal(0.7, executionSettings.Temperature);
+        Assert.Equal(0.7, executionSettings.TopP);
+        Assert.Equal(0.7, executionSettings.FrequencyPenalty);
+        Assert.Equal(0.7, executionSettings.PresencePenalty);
+        Assert.Equal(2, executionSettings.ResultsPerPrompt);
+        Assert.Equal(new string[] { "foo", "bar" }, executionSettings.StopSequences);
+        Assert.Equal("chat system prompt", executionSettings.ChatSystemPrompt);
+        Assert.Equal(new Dictionary<int, int>() { { 1, 2 }, { 3, 4 } }, executionSettings.TokenSelectionBiases);
+        Assert.Equal("service", executionSettings.ServiceId);
+        Assert.Equal(128, executionSettings.MaxTokens);
     }
 }

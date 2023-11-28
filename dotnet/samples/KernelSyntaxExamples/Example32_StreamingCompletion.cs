@@ -49,7 +49,7 @@ public static class Example32_StreamingCompletion
 
     private static async Task TextCompletionStreamAsync(ITextCompletion textCompletion)
     {
-        var requestSettings = new OpenAIPromptExecutionSettings()
+        var executionSettings = new OpenAIPromptExecutionSettings()
         {
             MaxTokens = 100,
             FrequencyPenalty = 0,
@@ -62,7 +62,7 @@ public static class Example32_StreamingCompletion
 
         Console.WriteLine("Prompt: " + prompt);
 
-        await foreach (string message in textCompletion.GetStreamingContentAsync<string>(prompt, requestSettings))
+        await foreach (string message in textCompletion.GetStreamingContentAsync<string>(prompt, executionSettings))
         {
             Console.Write(message);
         }

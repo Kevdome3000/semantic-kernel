@@ -17,21 +17,15 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
     /// <summary>
     /// Constructor for PromptTemplate.
     /// </summary>
-    /// <param name="templateString">Prompt template string.</param>
-    /// <param name="promptTemplateConfig">Prompt template configuration</param>
+    /// <param name="promptConfig">Prompt template configuration</param>
     /// <param name="loggerFactory">Logger factory</param>
-    public HandlebarsPromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig, ILoggerFactory? loggerFactory = null)
+    public HandlebarsPromptTemplate(PromptTemplateConfig promptConfig, ILoggerFactory? loggerFactory = null)
     {
         this._loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
         this._logger = this._loggerFactory.CreateLogger(typeof(HandlebarsPromptTemplate));
-        this._templateString = templateString;
-        this._promptTemplateConfig = promptTemplateConfig;
+        this._promptModel = promptConfig;
         this._parameters = new(() => this.InitParameters());
     }
-
-
-    /// <inheritdoc/>
-    public IReadOnlyList<KernelParameterMetadata> Parameters => this._parameters.Value;
 
 
     /// <inheritdoc/>
@@ -51,7 +45,7 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
             }
         }
 
-        var template = handlebars.Compile(this._templateString);
+        var template = handlebars.Compile(this._promptModel.Template);
 
         var prompt = template(this.GetVariables(variables));
 
@@ -63,16 +57,15 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
 
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger _logger;
-    private readonly string _templateString;
-    private readonly PromptTemplateConfig _promptTemplateConfig;
+    private readonly PromptTemplateConfig _promptModel;
     private readonly Lazy<IReadOnlyList<KernelParameterMetadata>> _parameters;
 
 
     private List<KernelParameterMetadata> InitParameters()
     {
-        List<KernelParameterMetadata> parameters = new(this._promptTemplateConfig.Input.Parameters.Count);
+        List<KernelParameterMetadata> parameters = new(this._promptModel.InputParameters.Count);
 
-        foreach (var p in this._promptTemplateConfig.Input.Parameters)
+        foreach (var p in this._promptModel.InputParameters)
         {
             parameters.Add(new KernelParameterMetadata(p.Name)
             {
@@ -89,7 +82,7 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
     {
         Dictionary<string, string> result = new();
 
-        foreach (var p in this._promptTemplateConfig.Input.Parameters)
+        foreach (var p in this._promptModel.InputParameters)
         {
             if (!string.IsNullOrEmpty(p.DefaultValue))
             {

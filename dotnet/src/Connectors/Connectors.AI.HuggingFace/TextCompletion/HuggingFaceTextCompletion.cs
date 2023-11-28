@@ -80,7 +80,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
     /// <inheritdoc/>
     public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
         string text,
-        PromptExecutionSettings? requestSettings = null,
+        PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default)
     {
         return await this.ExecuteGetCompletionsAsync(text, cancellationToken).ConfigureAwait(false);
@@ -90,7 +90,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
     /// <inheritdoc/>
     public async IAsyncEnumerable<T> GetStreamingContentAsync<T>(
         string prompt,
-        PromptExecutionSettings? requestSettings = null,
+        PromptExecutionSettings? executionSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         foreach (var result in await this.ExecuteGetCompletionsAsync(prompt, cancellationToken).ConfigureAwait(false))

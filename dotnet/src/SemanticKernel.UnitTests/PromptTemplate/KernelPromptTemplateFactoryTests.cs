@@ -16,7 +16,7 @@ public sealed class KernelPromptTemplateFactoryTests
         var target = new KernelPromptTemplateFactory();
 
         // Act
-        var result = target.Create(templateString, new PromptTemplateConfig());
+        var result = target.Create(new PromptTemplateConfig(templateString));
 
         // Assert
         Assert.NotNull(result);
@@ -32,7 +32,7 @@ public sealed class KernelPromptTemplateFactoryTests
         var target = new KernelPromptTemplateFactory();
 
         // Act
-        var result = target.Create(templateString, new PromptTemplateConfig() { TemplateFormat = "semantic-kernel" });
+        var result = target.Create(new PromptTemplateConfig(templateString) { TemplateFormat = "semantic-kernel" });
 
         // Assert
         Assert.NotNull(result);
@@ -49,6 +49,6 @@ public sealed class KernelPromptTemplateFactoryTests
 
         // Act
         // Assert
-        Assert.Throws<KernelException>(() => target.Create(templateString, new PromptTemplateConfig() { TemplateFormat = "unknown-format" }));
+        Assert.Throws<KernelException>(() => target.Create(new PromptTemplateConfig(templateString) { TemplateFormat = "unknown-format" }));
     }
 }

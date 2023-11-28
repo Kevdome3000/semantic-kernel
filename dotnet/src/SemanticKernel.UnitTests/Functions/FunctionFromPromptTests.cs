@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-
-
 // ReSharper disable StringLiteralTypo
 
 namespace SemanticKernel.UnitTests.Functions;
@@ -55,13 +53,14 @@ public class FunctionFromPromptTests
             .WithAIService("x", mockTextCompletion.Object)
             .Build();
 
-        var templateConfig = new PromptTemplateConfig();
-        templateConfig.ModelSettings.Add(new OpenAIPromptExecutionSettings()
+        var promptConfig = new PromptTemplateConfig();
+        promptConfig.Template = "template";
+        promptConfig.ExecutionSettings.Add(new OpenAIPromptExecutionSettings()
         {
             ChatSystemPrompt = providedSystemChatPrompt
         });
 
-        var func = kernel.CreateFunctionFromPrompt("template", templateConfig, "pluginName");
+        var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
         // Act
         await kernel.InvokeAsync(func);
@@ -88,8 +87,9 @@ public class FunctionFromPromptTests
             .WithAIService("service2", mockTextCompletion2.Object, true)
             .Build();
 
-        var templateConfig = new PromptTemplateConfig();
-        var func = kernel.CreateFunctionFromPrompt("template", templateConfig, "pluginName");
+        var promptConfig = new PromptTemplateConfig();
+        promptConfig.Template = "template";
+        var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
         // Act
         await kernel.InvokeAsync(func);
@@ -117,9 +117,10 @@ public class FunctionFromPromptTests
             .WithAIService("service2", mockTextCompletion2.Object, true)
             .Build();
 
-        var templateConfig = new PromptTemplateConfig();
-        templateConfig.ModelSettings.Add(new PromptExecutionSettings() { ServiceId = "service1" });
-        var func = kernel.CreateFunctionFromPrompt("template", templateConfig, "pluginName");
+        var promptConfig = new PromptTemplateConfig();
+        promptConfig.Template = "template";
+        promptConfig.ExecutionSettings.Add(new PromptExecutionSettings() { ServiceId = "service1" });
+        var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
         // Act
         await kernel.InvokeAsync(func);
@@ -142,9 +143,10 @@ public class FunctionFromPromptTests
             .WithAIService("service2", mockTextCompletion2.Object, true)
             .Build();
 
-        var templateConfig = new PromptTemplateConfig();
-        templateConfig.ModelSettings.Add(new PromptExecutionSettings() { ServiceId = "service3" });
-        var func = kernel.CreateFunctionFromPrompt("template", templateConfig, "pluginName");
+        var promptConfig = new PromptTemplateConfig();
+        promptConfig.Template = "template";
+        promptConfig.ExecutionSettings.Add(new PromptExecutionSettings() { ServiceId = "service3" });
+        var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
         // Act
         var exception = await Assert.ThrowsAsync<KernelException>(() => kernel.InvokeAsync(func));

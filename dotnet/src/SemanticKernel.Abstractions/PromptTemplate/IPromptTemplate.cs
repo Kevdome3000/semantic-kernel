@@ -4,7 +4,6 @@
 
 namespace Microsoft.SemanticKernel;
 
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Orchestration;
@@ -15,12 +14,6 @@ using Orchestration;
 /// </summary>
 public interface IPromptTemplate
 {
-    /// <summary>
-    /// The list of parameters required by the template, using configuration and template info.
-    /// </summary>
-    IReadOnlyList<KernelParameterMetadata> Parameters { get; }
-
-
     /// <summary>
     /// Render the template using the information in the context
     /// </summary>

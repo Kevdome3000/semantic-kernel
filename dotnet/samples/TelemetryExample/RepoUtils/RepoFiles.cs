@@ -3,6 +3,7 @@
 using System.IO;
 using System.Reflection;
 
+
 internal static class RepoFiles
 {
     /// <summary>
@@ -18,6 +19,7 @@ internal static class RepoFiles
         {
             var currDir = Path.GetFullPath(Assembly.GetExecutingAssembly().Location);
             bool found;
+
             do
             {
                 result = Path.Join(currDir, pathToFind);

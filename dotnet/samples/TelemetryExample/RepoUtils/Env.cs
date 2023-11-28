@@ -20,12 +20,14 @@ internal sealed class Env
             .Build();
 
         var value = configuration[name];
+
         if (!string.IsNullOrEmpty(value))
         {
             return value;
         }
 
         value = Environment.GetEnvironmentVariable(name);
+
         if (string.IsNullOrEmpty(value))
         {
             throw new ArgumentException($"Secret / Env var not set: {name}");

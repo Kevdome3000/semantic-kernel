@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Extensions;
@@ -17,6 +18,12 @@ using Microsoft.Extensions.Logging;
 /// </summary>
 public static class KernelOpenAIPluginExtensions
 {
+    private static readonly JsonSerializerOptions s_jsonOptionsOpenAIManifest =
+        new()
+        {
+            Converters = { new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower) },
+        };
+
     // TODO: Review XML comments
 
 
@@ -204,7 +211,7 @@ public static class KernelOpenAIPluginExtensions
         try
         {
             pluginJson = JsonNode.Parse(openAIManifest)!;
-            openAIAuthConfig = pluginJson["auth"].Deserialize<OpenAIAuthenticationConfig>()!;
+            openAIAuthConfig = pluginJson["auth"].Deserialize<OpenAIAuthenticationConfig>(s_jsonOptionsOpenAIManifest)!;
         }
         catch (JsonException ex)
         {

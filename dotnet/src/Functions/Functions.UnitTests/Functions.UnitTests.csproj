@@ -13,13 +13,16 @@
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/test/TestInternalUtilities.props" />
   <ItemGroup>
     <None Remove="Grpc\protoV3.proto" />
+    <None Remove="OpenAPI\TestPlugins\ai-plugin.json"/>
+    <None Remove="OpenAPI\TestPlugins\ai-plugin2.json"/>
     <None Remove="OpenAPI\TestPlugins\documentV3_1.yaml" />
     <None Remove="OpenAPI\TestPlugins\nonCompliant_documentV3_0.json" />
     <None Remove="OpenAPI\TestPlugins\openapi.json" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Grpc\Protobuf\TestPlugins\protoV3.proto" />
-      <EmbeddedResource Include="OpenAPI\TestPlugins\ai-plugin.json"/>
+    <EmbeddedResource Include="OpenAPI\TestPlugins\ai-plugin.json"/>
+    <EmbeddedResource Include="OpenAPI\TestPlugins\ai-plugin2.json"/>
     <EmbeddedResource Include="OpenAPI\TestPlugins\documentV2_0.json" />
     <EmbeddedResource Include="OpenAPI\TestPlugins\nonCompliant_documentV3_0.json" />
     <EmbeddedResource Include="OpenAPI\TestPlugins\documentV3_1.yaml" />

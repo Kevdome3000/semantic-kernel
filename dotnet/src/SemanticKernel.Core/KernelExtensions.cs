@@ -88,20 +88,22 @@ public static class KernelExtensions
     /// </summary>
     /// <param name="kernel">The kernel.</param>
     /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
-    /// <param name="requestSettings">Optional LLM request settings</param>
+    /// <param name="executionSettings">Optional LLM execution settings</param>
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
     /// <param name="description">Optional description, useful for the planner</param>
+    /// <param name="promptTemplateFactory">Optional: Prompt template factory</param>
     /// <returns>A function ready to use</returns>
     public static KernelFunction CreateFunctionFromPrompt(
         this Kernel kernel,
         string promptTemplate,
-        PromptExecutionSettings? requestSettings = null,
+        PromptExecutionSettings? executionSettings = null,
         string? functionName = null,
-        string? description = null)
+        string? description = null,
+        IPromptTemplateFactory? promptTemplateFactory = null)
     {
         Verify.NotNull(kernel);
 
-        return KernelFunctionFactory.CreateFromPrompt(promptTemplate, requestSettings, functionName, description, kernel.LoggerFactory);
+        return KernelFunctionFactory.CreateFromPrompt(promptTemplate, executionSettings, functionName, description, promptTemplateFactory, kernel.LoggerFactory);
     }
 
 
@@ -109,21 +111,17 @@ public static class KernelExtensions
     /// Creates a semantic function passing in the definition in natural language, i.e. the prompt template.
     /// </summary>
     /// <param name="kernel">The kernel.</param>
-    /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
-    /// <param name="promptTemplateConfig">Prompt template configuration.</param>
-    /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
+    /// <param name="promptConfig">Prompt template configuration.</param>
     /// <param name="promptTemplateFactory">Prompt template factory</param>
     /// <returns>A function ready to use</returns>
     public static KernelFunction CreateFunctionFromPrompt(
         this Kernel kernel,
-        string promptTemplate,
-        PromptTemplateConfig promptTemplateConfig,
-        string? functionName = null,
+        PromptTemplateConfig promptConfig,
         IPromptTemplateFactory? promptTemplateFactory = null)
     {
         Verify.NotNull(kernel);
 
-        return KernelFunctionFactory.CreateFromPrompt(promptTemplate, promptTemplateConfig, functionName, promptTemplateFactory, kernel.LoggerFactory);
+        return KernelFunctionFactory.CreateFromPrompt(promptConfig, promptTemplateFactory, kernel.LoggerFactory);
     }
 
 
@@ -132,18 +130,18 @@ public static class KernelExtensions
     /// </summary>
     /// <param name="kernel">The kernel.</param>
     /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
-    /// <param name="promptTemplateConfig">Prompt template configuration.</param>
+    /// <param name="promptConfig">Prompt template configuration.</param>
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
     /// <returns>A function ready to use</returns>
     public static KernelFunction CreateFunctionFromPrompt(
         this Kernel kernel,
         IPromptTemplate promptTemplate,
-        PromptTemplateConfig promptTemplateConfig,
+        PromptTemplateConfig promptConfig,
         string? functionName = null)
     {
         Verify.NotNull(kernel);
 
-        return KernelFunctionFactory.CreateFromPrompt(promptTemplate, promptTemplateConfig, functionName, kernel.LoggerFactory);
+        return KernelFunctionFactory.CreateFromPrompt(promptTemplate, promptConfig, kernel.LoggerFactory);
     }
 
     #endregion
@@ -290,23 +288,24 @@ public static class KernelExtensions
 
             // Load prompt configuration. Note: the configuration is optional.
             var configPath = Path.Combine(functionDirectory, ConfigFile);
-            var promptTemplateConfig = File.Exists(configPath) ? PromptTemplateConfig.FromJson(File.ReadAllText(configPath)) : new PromptTemplateConfig();
+            var promptConfig = File.Exists(configPath) ? PromptTemplateConfig.FromJson(File.ReadAllText(configPath)) : new PromptTemplateConfig();
+            promptConfig.Name = functionName;
 
             if (logger.IsEnabled(LogLevel.Trace))
             {
-                logger.LogTrace("Config {0}: {1}", functionName, JsonSerializer.Serialize(promptTemplateConfig, JsonOptionsCache.WriteIndented));
+                logger.LogTrace("Config {0}: {1}", functionName, JsonSerializer.Serialize(promptConfig, JsonOptionsCache.WriteIndented));
             }
 
             // Load prompt template
-            var promptTemplate = File.ReadAllText(promptPath);
-            IPromptTemplate? promptTemplateInstance = factory.Create(promptTemplate, promptTemplateConfig);
+            promptConfig.Template = File.ReadAllText(promptPath);
+            IPromptTemplate? promptTemplateInstance = factory.Create(promptConfig);
 
             if (logger.IsEnabled(LogLevel.Trace))
             {
                 logger.LogTrace("Registering function {0}.{1} loaded from {2}", pluginName, functionName, functionDirectory);
             }
 
-            plugin.AddFunction(kernel.CreateFunctionFromPrompt(promptTemplateInstance, promptTemplateConfig, functionName));
+            plugin.AddFunction(kernel.CreateFunctionFromPrompt(promptTemplateInstance, promptConfig));
         }
 
         return plugin;
@@ -370,19 +369,19 @@ public static class KernelExtensions
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance</param>
     /// <param name="promptTemplate">Plain language definition of the prompt, using SK prompt template language</param>
-    /// <param name="requestSettings">Optional LLM request settings</param>
+    /// <param name="executionSettings">Optional LLM request settings</param>
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
     /// <param name="description">Optional description, useful for the planner</param>
     /// <returns>Function execution result</returns>
     public static Task<FunctionResult> InvokePromptAsync(
         this Kernel kernel,
         string promptTemplate,
-        PromptExecutionSettings? requestSettings = null,
+        PromptExecutionSettings? executionSettings = null,
         string? functionName = null,
         string? description = null) =>
         kernel.InvokeAsync((KernelFunction)KernelFunctionFactory.CreateFromPrompt(
             promptTemplate,
-            requestSettings,
+            executionSettings,
             functionName,
             description));
 
@@ -448,7 +447,7 @@ public static class KernelExtensions
     {
         Verify.NotNull(kernel);
 
-        return function.InvokeAsync(kernel, variables, requestSettings: null, cancellationToken);
+        return function.InvokeAsync(kernel, variables, executionSettings: null, cancellationToken);
     }
 
 
