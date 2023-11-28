@@ -13,7 +13,7 @@ public class SamplePluginsTests
     public void CanLoadSamplePluginsRequestSettings()
     {
         // Arrange
-        var kernel = new KernelBuilder().Build();
+        var kernel = new Kernel();
 
         // Act
         TestHelpers.ImportAllSamplePlugins(kernel);
@@ -35,7 +35,7 @@ public class SamplePluginsTests
     public void CanLoadSampleSkillsCompletions()
     {
         // Arrange
-        var kernel = new KernelBuilder().Build();
+        var kernel = new Kernel();
 
         // Act
         TestHelpers.ImportAllSampleSkills(kernel);

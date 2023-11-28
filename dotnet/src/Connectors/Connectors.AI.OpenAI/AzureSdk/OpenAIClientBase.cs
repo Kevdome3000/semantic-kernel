@@ -6,9 +6,7 @@ using System.Net.Http;
 using System.Runtime.CompilerServices;
 using Azure.AI.OpenAI;
 using Azure.Core;
-using Azure.Core.Pipeline;
 using Extensions.Logging;
-using Http;
 using Services;
 
 
@@ -25,7 +23,7 @@ public abstract class OpenAIClientBase : ClientBase
     /// <summary>
     /// OpenAI / Azure OpenAI Client
     /// </summary>
-    protected private override OpenAIClient Client { get; }
+    private protected override OpenAIClient Client { get; }
 
 
     /// <summary>
@@ -36,7 +34,7 @@ public abstract class OpenAIClientBase : ClientBase
     /// <param name="organization">OpenAI Organization Id (usually optional).</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    protected private OpenAIClientBase(
+    private protected OpenAIClientBase(
         string modelId,
         string apiKey,
         string? organization = null,
@@ -46,16 +44,16 @@ public abstract class OpenAIClientBase : ClientBase
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        DeploymentOrModelName = modelId;
+        this.DeploymentOrModelName = modelId;
 
-        var options = GetClientOptions(httpClient);
+        var options = GetOpenAIClientOptions(httpClient);
 
         if (!string.IsNullOrWhiteSpace(organization))
         {
             options.AddPolicy(new AddHeaderRequestPolicy("OpenAI-Organization", organization!), HttpPipelinePosition.PerCall);
         }
 
-        Client = new OpenAIClient(apiKey, options);
+        this.Client = new OpenAIClient(apiKey, options);
     }
 
 
@@ -67,7 +65,7 @@ public abstract class OpenAIClientBase : ClientBase
     /// <param name="modelId">Azure OpenAI model ID or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    protected private OpenAIClientBase(
+    private protected OpenAIClientBase(
         string modelId,
         OpenAIClient openAIClient,
         ILoggerFactory? loggerFactory = null) : base(loggerFactory)
@@ -75,8 +73,8 @@ public abstract class OpenAIClientBase : ClientBase
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
-        DeploymentOrModelName = modelId;
-        Client = openAIClient;
+        this.DeploymentOrModelName = modelId;
+        this.Client = openAIClient;
     }
 
 
@@ -84,33 +82,8 @@ public abstract class OpenAIClientBase : ClientBase
     /// Logs OpenAI action details.
     /// </summary>
     /// <param name="callerMemberName">Caller member name. Populated automatically by runtime.</param>
-    protected private void LogActionDetails([CallerMemberName] string? callerMemberName = default)
+    private protected void LogActionDetails([CallerMemberName] string? callerMemberName = default)
     {
-        Logger.LogInformation("Action: {Action}. OpenAI Model ID: {ModelId}", callerMemberName, DeploymentOrModelName);
-    }
-
-
-    /// <summary>
-    /// Options used by the OpenAI client, e.g. User Agent.
-    /// </summary>
-    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
-    /// <returns>An instance of <see cref="OpenAIClientOptions"/>.</returns>
-    private static OpenAIClientOptions GetClientOptions(HttpClient? httpClient)
-    {
-        var options = new OpenAIClientOptions
-        {
-            Diagnostics =
-            {
-                ApplicationId = HttpHeaderValues.UserAgent
-            }
-        };
-
-        if (httpClient != null)
-        {
-            options.Transport = new HttpClientTransport(httpClient);
-            options.RetryPolicy = new RetryPolicy(0); //Disabling Azure SDK retry policy to use the one provided by the custom HTTP client.
-        }
-
-        return options;
+        this.Logger.LogInformation("Action: {Action}. OpenAI Model ID: {ModelId}.", callerMemberName, this.DeploymentOrModelName);
     }
 }

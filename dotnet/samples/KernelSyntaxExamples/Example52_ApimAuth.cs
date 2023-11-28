@@ -9,10 +9,9 @@ using Azure.AI.OpenAI;
 using Azure.Core;
 using Azure.Core.Pipeline;
 using Azure.Identity;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using RepoUtils;
 
 
@@ -27,7 +26,7 @@ public static class Example52_ApimAuth
         var subscriptionKey = Env.Var("Apim__SubscriptionKey");
 
         // Use interactive browser login
-        string[] scopes = { "https://cognitiveservices.azure.com/.default" };
+        string[] scopes = new string[] { "https://cognitiveservices.azure.com/.default" };
         var credential = new InteractiveBrowserCredential();
         var requestContext = new TokenRequestContext(scopes);
         var accessToken = await credential.GetTokenAsync(requestContext);
@@ -45,33 +44,25 @@ public static class Example52_ApimAuth
             Transport = new HttpClientTransport(httpClient),
             Diagnostics =
             {
-                LoggedHeaderNames = { "ErrorSource", "ErrorReason", "ErrorMessage", "ErrorScope", "ErrorSection", "ErrorStatusCode" }
+                LoggedHeaderNames = { "ErrorSource", "ErrorReason", "ErrorMessage", "ErrorScope", "ErrorSection", "ErrorStatusCode" },
             }
         };
         var openAIClient = new OpenAIClient(apimUri, new BearerTokenCredential(accessToken), clientOptions);
 
-        // Create logger factory with default level as warning
-        using ILoggerFactory loggerFactory = LoggerFactory.Create(builder =>
+        var kernel = new KernelBuilder().ConfigureServices(c =>
         {
-            builder
-                .SetMinimumLevel(LogLevel.Warning)
-                .AddConsole();
-        });
-
-        var kernel = new KernelBuilder()
-            .WithLoggerFactory(loggerFactory)
-            .WithAIService<IChatCompletion>(TestConfiguration.AzureOpenAI.ChatDeploymentName, loggerFactory =>
-                new AzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.ChatDeploymentName, openAIClient, loggerFactory: loggerFactory))
-            .Build();
+            c.AddLogging(c => c.SetMinimumLevel(LogLevel.Warning).AddConsole());
+            c.AddAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.ChatDeploymentName, openAIClient);
+        }).Build();
 
         // Load semantic plugin defined with prompt templates
         string folder = RepoFiles.SamplePluginsPath();
 
-        var plugin = kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "FunPlugin"));
+        kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "FunPlugin"));
 
         // Run
         var result = await kernel.InvokeAsync(
-            plugin["Excuses"],
+            kernel.Plugins["FunPlugin"]["Excuses"],
             "I have no homework"
         );
         Console.WriteLine(result.GetValue<string>());
@@ -87,9 +78,20 @@ public class BearerTokenCredential : TokenCredential
 
 
     // Constructor that takes a Bearer token string and its expiration date
-    public BearerTokenCredential(AccessToken accessToken) => _accessToken = accessToken;
+    public BearerTokenCredential(AccessToken accessToken)
+    {
+        this._accessToken = accessToken;
+    }
 
-    public override AccessToken GetToken(TokenRequestContext requestContext, CancellationToken cancellationToken) => _accessToken;
 
-    public override ValueTask<AccessToken> GetTokenAsync(TokenRequestContext requestContext, CancellationToken cancellationToken) => new(_accessToken);
+    public override AccessToken GetToken(TokenRequestContext requestContext, CancellationToken cancellationToken)
+    {
+        return this._accessToken;
+    }
+
+
+    public override ValueTask<AccessToken> GetTokenAsync(TokenRequestContext requestContext, CancellationToken cancellationToken)
+    {
+        return new ValueTask<AccessToken>(this._accessToken);
+    }
 }

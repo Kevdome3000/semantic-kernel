@@ -23,10 +23,10 @@ public static class QdrantMemoryBuilderExtensions
         string endpoint,
         int vectorSize)
     {
-        builder.WithMemoryStore((loggerFactory, httpHandlerFactory) =>
+        builder.WithMemoryStore((loggerFactory, injectedClient) =>
         {
             var client = new QdrantVectorDbClient(
-                HttpClientProvider.GetHttpClient(httpHandlerFactory, null, loggerFactory),
+                HttpClientProvider.GetHttpClient(injectedClient),
                 vectorSize,
                 endpoint,
                 loggerFactory);
@@ -52,10 +52,10 @@ public static class QdrantMemoryBuilderExtensions
         int vectorSize,
         string? endpoint = null)
     {
-        builder.WithMemoryStore((loggerFactory, httpHandlerFactory) =>
+        builder.WithMemoryStore((loggerFactory, injectedClient) =>
         {
             var client = new QdrantVectorDbClient(
-                HttpClientProvider.GetHttpClient(httpHandlerFactory, httpClient, loggerFactory),
+                HttpClientProvider.GetHttpClient(httpClient ?? injectedClient),
                 vectorSize,
                 endpoint,
                 loggerFactory);

@@ -47,7 +47,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
         this._attributes.Add(IAIServiceExtensions.ModelIdKey, this._model);
         this._attributes.Add(IAIServiceExtensions.EndpointKey, this._endpoint);
 
-        this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
+        this._httpClient = HttpClientProvider.GetHttpClient();
     }
 
 
@@ -66,7 +66,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
 
         this._model = model;
         this._apiKey = apiKey;
-        this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
+        this._httpClient = HttpClientProvider.GetHttpClient(httpClient);
         this._endpoint = endpoint;
         this._attributes.Add(IAIServiceExtensions.ModelIdKey, this._model);
         this._attributes.Add(IAIServiceExtensions.EndpointKey, this._endpoint ?? HuggingFaceApiEndpoint);

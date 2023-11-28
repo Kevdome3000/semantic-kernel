@@ -1,29 +1,25 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
-namespace Microsoft.SemanticKernel.Planning.Sequential.UnitTests;
-
-using AI;
-using AI.TextCompletion;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Orchestration;
 using Moq;
-using Orchestration;
-using Services;
 using Xunit;
 using Xunit.Abstractions;
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace Microsoft.SemanticKernel.Planning.Sequential.UnitTests;
 #pragma warning restore IDE0130 // Namespace does not match folder structure
-
 
 public class SequentialPlanParserTests
 {
     private readonly ITestOutputHelper _testOutputHelper;
 
-
     public SequentialPlanParserTests(ITestOutputHelper testOutputHelper)
     {
         this._testOutputHelper = testOutputHelper;
     }
-
 
     [Fact]
     public void CanCallToPlanFromXml()
@@ -96,7 +92,6 @@ public class SequentialPlanParserTests
         );
     }
 
-
     [Fact]
     public void InvalidPlanExecutePlanReturnsInvalidResult()
     {
@@ -108,7 +103,6 @@ public class SequentialPlanParserTests
         // Act
         Assert.Throws<KernelException>(() => planString.ToPlanFromXml("Solve the equation x^2 = 2.", kernel.Plugins.GetFunctionCallback()));
     }
-
 
     // Test that contains a #text node in the plan
     [Theory]
@@ -141,7 +135,6 @@ public class SequentialPlanParserTests
         Assert.Equal("Echo", plan.Steps[0].Name);
     }
 
-
     [Theory]
     [InlineData("Test the functionFlowRunner", @"<goal>Test the functionFlowRunner</goal>
                                                  <plan>
@@ -169,7 +162,6 @@ public class SequentialPlanParserTests
         Assert.Equal("MockPlugin", plan.Steps[0].PluginName);
         Assert.Equal("Echo", plan.Steps[0].Name);
     }
-
 
     [Theory]
     [InlineData("Test the functionFlowRunner", @"<goal>Test the functionFlowRunner</goal>
@@ -199,7 +191,6 @@ public class SequentialPlanParserTests
         Assert.Equal("Global", plan.Steps[0].PluginName);
         Assert.Equal("Echo", plan.Steps[0].Name);
     }
-
 
     // Test that contains a #text node in the plan
     [Theory]
@@ -250,7 +241,6 @@ public class SequentialPlanParserTests
         }
     }
 
-
     [Theory]
     [InlineData("Test the functionFlowRunner",
         @"Possible result: <goal>Test the functionFlowRunner</goal>
@@ -294,7 +284,6 @@ public class SequentialPlanParserTests
         Assert.Equal("Echo", plan.Steps[0].Name);
     }
 
-
     [Theory]
     [InlineData(@"<plan> <function.CodeSearch.codesearchresults_post organization=""MyOrg"" project=""Proj"" api_version=""7.1-preview.1"" server_url=""https://faketestorg.dev.azure.com/"" payload=""{&quot;searchText&quot;:&quot;test&quot;,&quot;$top&quot;:3,&quot;filters&quot;:{&quot;Repository/Project&quot;:[&quot;Proj&quot;],&quot;Repository/Repository&quot;:[&quot;Repo&quot;]}}"" content_type=""application/json"" appendToResult=""RESULT__TOP_THREE_RESULTS"" /> </plan>")]
     [InlineData("<plan>\n  <function.CodeSearch.codesearchresults_post organization=\"MyOrg\" project=\"MyProject\" api_version=\"7.1-preview.1\" payload=\"{&quot;searchText&quot;: &quot;MySearchText&quot;, &quot;filters&quot;: {&quot;pathFilters&quot;: [&quot;MyRepo&quot;]} }\" setContextVariable=\"SEARCH_RESULTS\"/>\n</plan><!-- END -->")]
@@ -321,7 +310,6 @@ public class SequentialPlanParserTests
         Assert.Equal("CodeSearch", plan.Steps[0].PluginName);
         Assert.Equal("codesearchresults_post", plan.Steps[0].Name);
     }
-
 
     // test that a <tag> that is not <function> will just get skipped
     [Theory]
@@ -358,7 +346,6 @@ public class SequentialPlanParserTests
         Assert.Equal("Echo", plan.Steps[1].Name);
     }
 
-
     private Kernel CreateKernel(string testPlanString, KernelPluginCollection? plugins = null)
     {
         plugins ??= new KernelPluginCollection();
@@ -380,8 +367,9 @@ public class SequentialPlanParserTests
             .Setup(ss => ss.SelectAIService<ITextCompletion>(It.IsAny<Kernel>(), It.IsAny<ContextVariables>(), It.IsAny<KernelFunction>()))
             .Returns((textCompletion.Object, new PromptExecutionSettings()));
 
-        var serviceProvider = new Mock<IAIServiceProvider>();
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton<IAIServiceSelector>(serviceSelector.Object);
 
-        return new Kernel(serviceProvider.Object, plugins, serviceSelector.Object);
+        return new Kernel(serviceCollection.BuildServiceProvider(), plugins);
     }
 }

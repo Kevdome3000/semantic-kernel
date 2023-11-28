@@ -56,7 +56,7 @@ public sealed class SequentialPlanner
             });
 
         this._kernel = kernel;
-        this._logger = this._kernel.LoggerFactory.CreateLogger(this.GetType());
+        this._logger = kernel.GetService<ILoggerFactory>().CreateLogger(this.GetType());
     }
 
 

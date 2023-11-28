@@ -4,6 +4,7 @@
 // ReSharper disable once CheckNamespace - Using the namespace of IKernel
 namespace Microsoft.SemanticKernel;
 
+using Extensions.Logging;
 using Functions.Yaml.Functions;
 
 #pragma warning restore IDE0130
@@ -26,7 +27,7 @@ public static class KernelFunctionsPromptYamlExtensions
         string resourceName,
         IPromptTemplateFactory? promptTemplateFactory = null)
     {
-        return KernelFunctionYaml.FromPromptYamlResource(resourceName, promptTemplateFactory, kernel.LoggerFactory);
+        return KernelFunctionYaml.FromPromptYamlResource(resourceName, promptTemplateFactory, kernel.GetService<ILoggerFactory>());
     }
 
 
@@ -44,6 +45,6 @@ public static class KernelFunctionsPromptYamlExtensions
         string? pluginName = null,
         IPromptTemplateFactory? promptTemplateFactory = null)
     {
-        return KernelFunctionYaml.FromPromptYaml(text, promptTemplateFactory, kernel.LoggerFactory);
+        return KernelFunctionYaml.FromPromptYaml(text, promptTemplateFactory, kernel.GetService<ILoggerFactory>());
     }
 }

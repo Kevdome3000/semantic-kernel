@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using RepoUtils;
-// ReSharper disable once InconsistentNaming
 
+// ReSharper disable once InconsistentNaming
 
 // ReSharper disable once InconsistentNaming
 public static class Example09_FunctionTypes
@@ -18,7 +18,7 @@ public static class Example09_FunctionTypes
 
         var kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
+            .WithOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
 
         var variables = new ContextVariables();

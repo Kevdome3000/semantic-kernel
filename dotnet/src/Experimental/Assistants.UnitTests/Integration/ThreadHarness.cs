@@ -49,7 +49,7 @@ public sealed class ThreadHarness
     {
         var assistant =
             await new AssistantBuilder()
-                .WithOpenAIChatCompletionService(TestConfig.SupportedGpt35TurboModel, TestConfig.OpenAIApiKey)
+                .AddOpenAIChatCompletion(TestConfig.SupportedGpt35TurboModel, TestConfig.OpenAIApiKey)
                 .WithName("DeleteMe")
                 .BuildAsync()
                 .ConfigureAwait(true);

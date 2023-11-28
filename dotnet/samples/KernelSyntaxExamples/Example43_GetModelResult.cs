@@ -24,7 +24,7 @@ public static class Example43_GetModelResult
         Console.WriteLine("======== Inline Function Definition + Result ========");
 
         Kernel kernel = new KernelBuilder()
-            .WithOpenAIChatCompletionService(
+            .WithOpenAIChatCompletion(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey)
             .Build();
@@ -65,7 +65,7 @@ public static class Example43_GetModelResult
 
         // Getting the error details
         kernel = new KernelBuilder()
-            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, "Invalid Key")
+            .WithOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, "Invalid Key")
             .Build();
         var errorFunction = kernel.CreateFunctionFromPrompt(FunctionDefinition);
 
@@ -80,7 +80,7 @@ public static class Example43_GetModelResult
         }
 #pragma warning restore CA1031 // Do not catch general exception types
 
-        string OutputExceptionDetail(Exception? exception)
+        static string OutputExceptionDetail(Exception? exception)
         {
             return exception switch
             {

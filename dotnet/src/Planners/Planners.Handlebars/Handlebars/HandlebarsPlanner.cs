@@ -40,7 +40,7 @@ public sealed class HandlebarsPlanner
     {
         this._kernel = kernel;
         this._config = config ?? new HandlebarsPlannerConfig();
-        this._logger = kernel.LoggerFactory.CreateLogger(this.GetType());
+        this._logger = kernel.GetService<ILoggerFactory>().CreateLogger(this.GetType());
     }
 
 

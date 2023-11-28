@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.AI.OpenAI;
 using AzureSdk;
 using Extensions.Logging;
 using SemanticKernel.AI.Embeddings;
@@ -34,12 +35,28 @@ public sealed class OpenAITextEmbeddingGeneration : OpenAIClientBase, ITextEmbed
         ILoggerFactory? loggerFactory = null
     ) : base(modelId, apiKey, organization, httpClient, loggerFactory)
     {
-        AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+    }
+
+
+    /// <summary>
+    /// Create an instance of the OpenAI text embedding connector
+    /// </summary>
+    /// <param name="modelId">Model name</param>
+    /// <param name="openAIClient">Custom <see cref="OpenAIClient"/> for HTTP requests.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public OpenAITextEmbeddingGeneration(
+        string modelId,
+        OpenAIClient openAIClient,
+        ILoggerFactory? loggerFactory = null
+    ) : base(modelId, openAIClient, loggerFactory)
+    {
+        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
     }
 
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Attributes => InternalAttributes;
+    public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
 
 
     /// <summary>
@@ -52,7 +69,7 @@ public sealed class OpenAITextEmbeddingGeneration : OpenAIClientBase, ITextEmbed
         IList<string> data,
         CancellationToken cancellationToken = default)
     {
-        LogActionDetails();
-        return InternalGetEmbeddingsAsync(data, cancellationToken);
+        this.LogActionDetails();
+        return this.InternalGetEmbeddingsAsync(data, cancellationToken);
     }
 }

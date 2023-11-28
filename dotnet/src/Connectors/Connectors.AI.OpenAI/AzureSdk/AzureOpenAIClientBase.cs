@@ -8,9 +8,7 @@ using System.Runtime.CompilerServices;
 using Azure;
 using Azure.AI.OpenAI;
 using Azure.Core;
-using Azure.Core.Pipeline;
 using Extensions.Logging;
-using Http;
 using Services;
 
 
@@ -27,7 +25,7 @@ public abstract class AzureOpenAIClientBase : ClientBase
     /// <summary>
     /// OpenAI / Azure OpenAI Client
     /// </summary>
-    protected private override OpenAIClient Client { get; }
+    private protected override OpenAIClient Client { get; }
 
 
     /// <summary>
@@ -38,7 +36,7 @@ public abstract class AzureOpenAIClientBase : ClientBase
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    protected private AzureOpenAIClientBase(
+    private protected AzureOpenAIClientBase(
         string deploymentName,
         string endpoint,
         string apiKey,
@@ -50,10 +48,10 @@ public abstract class AzureOpenAIClientBase : ClientBase
         Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        var options = GetClientOptions(httpClient);
+        var options = GetOpenAIClientOptions(httpClient);
 
-        DeploymentOrModelName = deploymentName;
-        Client = new OpenAIClient(new Uri(endpoint), new AzureKeyCredential(apiKey), options);
+        this.DeploymentOrModelName = deploymentName;
+        this.Client = new OpenAIClient(new Uri(endpoint), new AzureKeyCredential(apiKey), options);
     }
 
 
@@ -65,7 +63,7 @@ public abstract class AzureOpenAIClientBase : ClientBase
     /// <param name="credential">Token credential, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    protected private AzureOpenAIClientBase(
+    private protected AzureOpenAIClientBase(
         string deploymentName,
         string endpoint,
         TokenCredential credential,
@@ -76,10 +74,10 @@ public abstract class AzureOpenAIClientBase : ClientBase
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
 
-        var options = GetClientOptions(httpClient);
+        var options = GetOpenAIClientOptions(httpClient);
 
-        DeploymentOrModelName = deploymentName;
-        Client = new OpenAIClient(new Uri(endpoint), credential, options);
+        this.DeploymentOrModelName = deploymentName;
+        this.Client = new OpenAIClient(new Uri(endpoint), credential, options);
     }
 
 
@@ -91,7 +89,7 @@ public abstract class AzureOpenAIClientBase : ClientBase
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    protected private AzureOpenAIClientBase(
+    private protected AzureOpenAIClientBase(
         string deploymentName,
         OpenAIClient openAIClient,
         ILoggerFactory? loggerFactory = null) : base(loggerFactory)
@@ -99,35 +97,10 @@ public abstract class AzureOpenAIClientBase : ClientBase
         Verify.NotNullOrWhiteSpace(deploymentName);
         Verify.NotNull(openAIClient);
 
-        DeploymentOrModelName = deploymentName;
-        Client = openAIClient;
+        this.DeploymentOrModelName = deploymentName;
+        this.Client = openAIClient;
 
-        AddAttribute(DeploymentNameKey, deploymentName);
-    }
-
-
-    /// <summary>
-    /// Options used by the Azure OpenAI client, e.g. User Agent.
-    /// </summary>
-    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
-    /// <returns>An instance of <see cref="OpenAIClientOptions"/>.</returns>
-    private static OpenAIClientOptions GetClientOptions(HttpClient? httpClient)
-    {
-        var options = new OpenAIClientOptions
-        {
-            Diagnostics =
-            {
-                ApplicationId = HttpHeaderValues.UserAgent
-            }
-        };
-
-        if (httpClient != null)
-        {
-            options.Transport = new HttpClientTransport(httpClient);
-            options.RetryPolicy = new RetryPolicy(0); //Disabling Azure SDK retry policy to use the one provided by the custom HTTP client.
-        }
-
-        return options;
+        this.AddAttribute(DeploymentNameKey, deploymentName);
     }
 
 
@@ -135,8 +108,8 @@ public abstract class AzureOpenAIClientBase : ClientBase
     /// Logs Azure OpenAI action details.
     /// </summary>
     /// <param name="callerMemberName">Caller member name. Populated automatically by runtime.</param>
-    protected private void LogActionDetails([CallerMemberName] string? callerMemberName = default)
+    private protected void LogActionDetails([CallerMemberName] string? callerMemberName = default)
     {
-        Logger.LogInformation("Action: {Action}. Azure OpenAI Deployment Name: {DeploymentName}.", callerMemberName, DeploymentOrModelName);
+        this.Logger.LogInformation("Action: {Action}. Azure OpenAI Deployment Name: {DeploymentName}.", callerMemberName, this.DeploymentOrModelName);
     }
 }

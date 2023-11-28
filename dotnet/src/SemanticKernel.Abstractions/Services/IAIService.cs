@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 
 /// <summary>
-/// Represents an empty interface for AI services.
+/// Represents an AI service.
 /// </summary>
 public interface IAIService
 {

@@ -39,7 +39,7 @@ public static class Example14_SemanticMemory
 
         var memoryWithACS = new MemoryBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", TestConfiguration.OpenAI.ApiKey)
+            .WithOpenAITextEmbeddingGeneration("text-embedding-ada-002", TestConfiguration.OpenAI.ApiKey)
             .WithMemoryStore(new AzureCognitiveSearchMemoryStore(TestConfiguration.ACS.Endpoint, TestConfiguration.ACS.ApiKey))
             .Build();
 
@@ -60,7 +60,7 @@ public static class Example14_SemanticMemory
 
         var memoryWithCustomDb = new MemoryBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", TestConfiguration.OpenAI.ApiKey)
+            .WithOpenAITextEmbeddingGeneration("text-embedding-ada-002", TestConfiguration.OpenAI.ApiKey)
             .WithMemoryStore(new VolatileMemoryStore())
             .Build();
 

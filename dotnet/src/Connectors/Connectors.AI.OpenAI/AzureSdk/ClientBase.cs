@@ -1,25 +1,29 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 using System.Linq;
+using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.AI.OpenAI;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
-using Microsoft.SemanticKernel.Prompt;
-
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+using Azure.Core.Pipeline;
+using ChatCompletion;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
+using Http;
+using Prompt;
+using SemanticKernel.AI;
+using SemanticKernel.AI.ChatCompletion;
+using SemanticKernel.AI.TextCompletion;
 
 #pragma warning disable CA2208 // Instantiate argument exceptions correctly
+
 
 /// <summary>
 /// Base class for AI clients that provides common functionality for interacting with OpenAI services.
@@ -30,11 +34,13 @@ public abstract class ClientBase
     private const string NameProperty = "Name";
     private const string ArgumentsProperty = "Arguments";
 
+
     // Prevent external inheritors
     private protected ClientBase(ILoggerFactory? loggerFactory = null)
     {
         this.Logger = loggerFactory is not null ? loggerFactory.CreateLogger(this.GetType()) : NullLogger.Instance;
     }
+
 
     /// <summary>
     /// Model Id or Deployment Name
@@ -88,6 +94,7 @@ public abstract class ClientBase
             unit: "{token}",
             description: "Number of tokens used");
 
+
     /// <summary>
     /// Creates completions for the prompt and settings.
     /// </summary>
@@ -125,10 +132,11 @@ public abstract class ClientBase
         return responseData.Choices.Select(choice => new TextResult(responseData, choice)).ToList();
     }
 
+
     private protected async IAsyncEnumerable<T> InternalGetTextStreamingUpdatesAsync<T>(
         string prompt,
-    PromptExecutionSettings? executionSettings,
-    [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        PromptExecutionSettings? executionSettings,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         OpenAIPromptExecutionSettings textRequestSettings = OpenAIPromptExecutionSettings.FromRequestSettings(executionSettings, OpenAIPromptExecutionSettings.DefaultTextMaxTokens);
 
@@ -141,6 +149,7 @@ public abstract class ClientBase
 
         int choiceIndex = 0;
         Dictionary<string, object>? responseMetadata = null;
+
         await foreach (Completions completions in response)
         {
             responseMetadata ??= GetResponseMetadata(completions);
@@ -151,6 +160,7 @@ public abstract class ClientBase
                 if (typeof(T) == typeof(string))
                 {
                     yield return (T)(object)choice.Text;
+
                     continue;
                 }
 
@@ -159,6 +169,7 @@ public abstract class ClientBase
                     typeof(T) == typeof(StreamingContent))
                 {
                     yield return (T)(object)new StreamingTextContent(choice.Text, choice.Index, choice, responseMetadata);
+
                     continue;
                 }
 
@@ -167,6 +178,7 @@ public abstract class ClientBase
             choiceIndex++;
         }
     }
+
 
     private static Dictionary<string, object> GetResponseMetadata(Completions completions)
     {
@@ -178,6 +190,7 @@ public abstract class ClientBase
         };
     }
 
+
     private static Dictionary<string, object> GetResponseMetadata(StreamingChatCompletionsUpdate completions)
     {
         return new Dictionary<string, object>()
@@ -186,6 +199,7 @@ public abstract class ClientBase
             { $"{nameof(StreamingChatCompletionsUpdate)}.{nameof(completions.Created)}", completions.Created },
         };
     }
+
 
     /// <summary>
     /// Generates an embedding from the given <paramref name="data"/>.
@@ -198,6 +212,7 @@ public abstract class ClientBase
         CancellationToken cancellationToken = default)
     {
         var result = new List<ReadOnlyMemory<float>>(data.Count);
+
         foreach (string text in data)
         {
             var options = new EmbeddingsOptions(this.DeploymentOrModelName, new[] { text });
@@ -220,6 +235,7 @@ public abstract class ClientBase
 
         return result;
     }
+
 
     /// <summary>
     /// Generate a new chat message
@@ -261,6 +277,7 @@ public abstract class ClientBase
         return responseData.Choices.Select(chatChoice => new ChatResult(responseData, chatChoice)).ToList();
     }
 
+
     private protected async IAsyncEnumerable<T> InternalGetChatStreamingUpdatesAsync<T>(
         IEnumerable<SemanticKernel.AI.ChatCompletion.ChatMessage> chat,
         PromptExecutionSettings? executionSettings,
@@ -275,7 +292,7 @@ public abstract class ClientBase
         var options = CreateChatCompletionsOptions(chatRequestSettings, chat, this.DeploymentOrModelName);
 
         var response = await RunRequestAsync<StreamingResponse<StreamingChatCompletionsUpdate>>(
-           () => this.Client.GetChatCompletionsStreamingAsync(options, cancellationToken)).ConfigureAwait(false);
+            () => this.Client.GetChatCompletionsStreamingAsync(options, cancellationToken)).ConfigureAwait(false);
 
         if (response is null)
         {
@@ -283,6 +300,7 @@ public abstract class ClientBase
         }
 
         Dictionary<string, object>? responseMetadata = null;
+
         await foreach (StreamingChatCompletionsUpdate update in response)
         {
             responseMetadata ??= GetResponseMetadata(update);
@@ -290,6 +308,7 @@ public abstract class ClientBase
             if (typeof(T) == typeof(string))
             {
                 yield return (T)(object)update.ContentUpdate;
+
                 continue;
             }
 
@@ -298,12 +317,14 @@ public abstract class ClientBase
                 typeof(T) == typeof(StreamingContent))
             {
                 yield return (T)(object)new StreamingChatContent(update, update.ChoiceIndex ?? 0, responseMetadata);
+
                 continue;
             }
 
             throw new NotSupportedException($"Type {typeof(T)} is not supported");
         }
     }
+
 
     /// <summary>
     /// Create a new empty chat instance
@@ -315,6 +336,7 @@ public abstract class ClientBase
         return new OpenAIChatHistory(instructions);
     }
 
+
     /// <summary>
     /// Create a new chat instance based on chat history.
     /// </summary>
@@ -324,6 +346,7 @@ public abstract class ClientBase
     {
         return new OpenAIChatHistory(chatHistory);
     }
+
 
     private protected async Task<IReadOnlyList<ITextResult>> InternalGetChatResultsAsTextAsync(
         string text,
@@ -337,6 +360,7 @@ public abstract class ClientBase
             .ToList();
     }
 
+
     private protected void AddAttribute(string key, string? value)
     {
         if (!string.IsNullOrEmpty(value))
@@ -344,6 +368,27 @@ public abstract class ClientBase
             this.InternalAttributes.Add(key, value!);
         }
     }
+
+
+    /// <summary>Gets options to use for an OpenAIClient</summary>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <returns>An instance of <see cref="OpenAIClientOptions"/>.</returns>
+    internal static OpenAIClientOptions GetOpenAIClientOptions(HttpClient? httpClient)
+    {
+        OpenAIClientOptions options = new()
+        {
+            Diagnostics = { ApplicationId = HttpHeaderValues.UserAgent }
+        };
+
+        if (httpClient is not null)
+        {
+            options.Transport = new HttpClientTransport(httpClient);
+            options.RetryPolicy = new RetryPolicy(maxRetries: 0); // Disable Azure SDK retry policy if and only if a custom HttpClient is provided.
+        }
+
+        return options;
+    }
+
 
     private static OpenAIChatHistory PrepareChatHistory(string text, PromptExecutionSettings? executionSettings, out OpenAIPromptExecutionSettings settings)
     {
@@ -358,6 +403,7 @@ public abstract class ClientBase
         chat.AddUserMessage(text);
         return chat;
     }
+
 
     private static CompletionsOptions CreateCompletionsOptions(string text, OpenAIPromptExecutionSettings executionSettings, string deploymentOrModelName)
     {
@@ -398,6 +444,7 @@ public abstract class ClientBase
         return options;
     }
 
+
     private static ChatCompletionsOptions CreateChatCompletionsOptions(OpenAIPromptExecutionSettings executionSettings, IEnumerable<SemanticKernel.AI.ChatCompletion.ChatMessage> chatHistory, string deploymentOrModelName)
     {
         if (executionSettings.ResultsPerPrompt is < 1 or > MaxResultsPerPrompt)
@@ -424,13 +471,14 @@ public abstract class ClientBase
                 options.Functions = executionSettings.Functions.Select(f => f.ToFunctionDefinition()).ToList();
             }
             else if (executionSettings.FunctionCall != OpenAIPromptExecutionSettings.FunctionCallNone
-                    && !string.IsNullOrEmpty(executionSettings.FunctionCall))
+                     && !string.IsNullOrEmpty(executionSettings.FunctionCall))
             {
                 var filteredFunctions = executionSettings.Functions
                     .Where(f => f.FullyQualifiedName.Equals(executionSettings.FunctionCall, StringComparison.OrdinalIgnoreCase))
                     .ToList();
 
                 OpenAIFunction? function = filteredFunctions.FirstOrDefault();
+
                 if (function is not null)
                 {
                     options.FunctionCall = function.ToFunctionDefinition();
@@ -472,6 +520,7 @@ public abstract class ClientBase
         return options;
     }
 
+
     private static void ValidateMaxTokens(int? maxTokens)
     {
         if (maxTokens.HasValue && maxTokens < 1)
@@ -479,6 +528,7 @@ public abstract class ClientBase
             throw new KernelException($"MaxTokens {maxTokens} is not valid, the value must be greater than zero");
         }
     }
+
 
     private static async Task<T> RunRequestAsync<T>(Func<Task<T>> request)
     {
@@ -491,6 +541,7 @@ public abstract class ClientBase
             throw e.ToHttpOperationException();
         }
     }
+
 
     /// <summary>
     /// Captures usage details, including token information.

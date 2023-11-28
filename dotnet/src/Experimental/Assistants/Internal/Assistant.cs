@@ -12,9 +12,8 @@ using AI.ChatCompletion;
 using AI.TextCompletion;
 using Connectors.AI.OpenAI.ChatCompletion;
 using Extensions;
-using Http;
+using Microsoft.Extensions.DependencyInjection;
 using Models;
-using Services;
 
 
 /// <summary>
@@ -93,15 +92,10 @@ internal sealed class Assistant : IAssistant
         this._model = model;
         this._restContext = restContext;
 
-        var services = new AIServiceCollection();
-        services.SetService<IChatCompletion>(chatService);
-        services.SetService<ITextCompletion>(chatService);
-        this.Kernel =
-            new Kernel(
-                services.Build(),
-                plugins,
-                httpHandlerFactory: NullHttpHandlerFactory.Instance,
-                loggerFactory: null);
+        var services = new ServiceCollection();
+        services.AddSingleton<IChatCompletion>(chatService);
+        services.AddSingleton<ITextCompletion>(chatService);
+        this.Kernel = new Kernel(services.BuildServiceProvider(), plugins is not null ? new KernelPluginCollection(plugins) : null);
     }
 
 

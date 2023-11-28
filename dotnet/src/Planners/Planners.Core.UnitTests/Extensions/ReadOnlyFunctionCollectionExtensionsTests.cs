@@ -1,15 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
-namespace Microsoft.SemanticKernel.Planning.UnitTests;
-
-using Memory;
+using Microsoft.SemanticKernel.Memory;
 using Moq;
-using Services;
 using Xunit;
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace Microsoft.SemanticKernel.Planning.UnitTests;
 #pragma warning restore IDE0130 // Namespace does not match folder structure
-
 
 public class ReadOnlyFunctionCollectionExtensionsTests
 {
@@ -20,7 +17,6 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         return config;
     }
 
-
     private async IAsyncEnumerable<T> GetAsyncEnumerableAsync<T>(IEnumerable<T> results)
     {
         foreach (T result in results)
@@ -28,7 +24,6 @@ public class ReadOnlyFunctionCollectionExtensionsTests
             yield return await Task.FromResult(result);
         }
     }
-
 
     [Theory]
     [InlineData(typeof(ActionPlannerConfig))]
@@ -39,7 +34,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         // Arrange
         var plugins = new KernelPluginCollection();
         var cancellationToken = default(CancellationToken);
-        var kernel = new Kernel(new Mock<IAIServiceProvider>().Object, plugins);
+        var kernel = new Kernel(new Mock<IServiceProvider>().Object, plugins);
 
         // Arrange Mock Memory and Result
         var memory = new Mock<ISemanticTextMemory>();
@@ -58,7 +53,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
                 x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .Returns(asyncEnumerable);
 
-        var serviceProvider = new Mock<IAIServiceProvider>();
+        var serviceProvider = new Mock<IServiceProvider>();
         var serviceSelector = new Mock<IAIServiceSelector>();
 
         // Arrange GetAvailableFunctionsAsync parameters
@@ -97,7 +92,6 @@ public class ReadOnlyFunctionCollectionExtensionsTests
             Times.Once);
     }
 
-
     [Theory]
     [InlineData(typeof(ActionPlannerConfig))]
     [InlineData(typeof(SequentialPlannerConfig))]
@@ -119,7 +113,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         var functionView = new KernelFunctionMetadata(plugins["pluginName"]["functionName"].Metadata) { PluginName = "pluginName" };
         var nativeFunctionView = new KernelFunctionMetadata(plugins["pluginName"]["nativeFunctionName"].Metadata) { PluginName = "pluginName" };
 
-        var kernel = new Kernel(new Mock<IAIServiceProvider>().Object, plugins);
+        var kernel = new Kernel(new Mock<IServiceProvider>().Object, plugins);
 
         var memoryQueryResult =
             new MemoryQueryResult(
@@ -138,7 +132,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
                 x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .Returns(asyncEnumerable);
 
-        var serviceProvider = new Mock<IAIServiceProvider>();
+        var serviceProvider = new Mock<IServiceProvider>();
         var serviceSelector = new Mock<IAIServiceSelector>();
 
         // Arrange GetAvailableFunctionsAsync parameters
@@ -167,7 +161,6 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         Assert.Equivalent(nativeFunctionView, result[1]);
     }
 
-
     [Theory]
     [InlineData(typeof(ActionPlannerConfig))]
     [InlineData(typeof(SequentialPlannerConfig))]
@@ -187,7 +180,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
             }),
         };
 
-        var kernel = new Kernel(new Mock<IAIServiceProvider>().Object, plugins);
+        var kernel = new Kernel(new Mock<IServiceProvider>().Object, plugins);
 
         var functionView = new KernelFunctionMetadata(plugins["pluginName"]["functionName"].Metadata) { PluginName = "pluginName" };
         var nativeFunctionView = new KernelFunctionMetadata(plugins["pluginName"]["nativeFunctionName"].Metadata) { PluginName = "pluginName" };
@@ -209,7 +202,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
                 x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .Returns(asyncEnumerable);
 
-        var serviceProvider = new Mock<IAIServiceProvider>();
+        var serviceProvider = new Mock<IServiceProvider>();
         var serviceSelector = new Mock<IAIServiceSelector>();
 
         // Arrange GetAvailableFunctionsAsync parameters
@@ -238,7 +231,6 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         Assert.Equivalent(nativeFunctionView, result[1]);
     }
 
-
     [Theory]
     [InlineData(typeof(ActionPlannerConfig))]
     [InlineData(typeof(SequentialPlannerConfig))]
@@ -246,13 +238,13 @@ public class ReadOnlyFunctionCollectionExtensionsTests
     public async Task CanCallGetAvailableFunctionsAsyncWithDefaultRelevancyAsync(Type t)
     {
         // Arrange
-        var serviceProvider = new Mock<IAIServiceProvider>();
+        var serviceProvider = new Mock<IServiceProvider>();
         var serviceSelector = new Mock<IAIServiceSelector>();
 
         var plugins = new KernelPluginCollection();
         var cancellationToken = default(CancellationToken);
 
-        var kernel = new Kernel(new Mock<IAIServiceProvider>().Object, plugins);
+        var kernel = new Kernel(new Mock<IServiceProvider>().Object, plugins);
 
         // Arrange Mock Memory and Result
         var memory = new Mock<ISemanticTextMemory>();

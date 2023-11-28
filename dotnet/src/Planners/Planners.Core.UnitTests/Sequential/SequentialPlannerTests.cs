@@ -1,17 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
-namespace Microsoft.SemanticKernel.Planning.Sequential.UnitTests;
-
-using AI;
-using AI.TextCompletion;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Orchestration;
 using Moq;
-using Orchestration;
-using Services;
 using Xunit;
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace Microsoft.SemanticKernel.Planning.Sequential.UnitTests;
 #pragma warning restore IDE0130 // Namespace does not match folder structure
-
 
 public sealed class SequentialPlannerTests
 {
@@ -45,7 +43,6 @@ public sealed class SequentialPlannerTests
         Assert.Contains(plan.Steps, step => plugins.TryGetFunction(step.PluginName, step.Name, out var _));
     }
 
-
     [Fact]
     public async Task EmptyGoalThrowsAsync()
     {
@@ -57,7 +54,6 @@ public sealed class SequentialPlannerTests
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(async () => await planner.CreatePlanAsync(""));
     }
-
 
     [Fact]
     public async Task InvalidXMLThrowsAsync()
@@ -71,7 +67,6 @@ public sealed class SequentialPlannerTests
         var exception = await Assert.ThrowsAsync<KernelException>(async () => await planner.CreatePlanAsync("goal"));
         Assert.True(exception?.InnerException?.Message?.Contains("Failed to parse plan xml strings", StringComparison.InvariantCulture));
     }
-
 
     [Fact]
     public void UsesPromptDelegateWhenProvided()
@@ -90,7 +85,6 @@ public sealed class SequentialPlannerTests
         // Assert
         getPromptTemplateMock.Verify(x => x(), Times.Once());
     }
-
 
     private Kernel CreateKernel(string testPlanString, KernelPluginCollection? plugins = null)
     {
@@ -113,11 +107,11 @@ public sealed class SequentialPlannerTests
             .Setup(ss => ss.SelectAIService<ITextCompletion>(It.IsAny<Kernel>(), It.IsAny<ContextVariables>(), It.IsAny<KernelFunction>()))
             .Returns((textCompletion.Object, new PromptExecutionSettings()));
 
-        var serviceProvider = new Mock<IAIServiceProvider>();
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton<IAIServiceSelector>(serviceSelector.Object);
 
-        return new Kernel(serviceProvider.Object, plugins, serviceSelector.Object);
+        return new Kernel(serviceCollection.BuildServiceProvider(), plugins);
     }
-
 
     private KernelPluginCollection CreatePluginCollection()
     {

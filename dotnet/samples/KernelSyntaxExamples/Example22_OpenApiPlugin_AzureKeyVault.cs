@@ -8,7 +8,6 @@ using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Plugins;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Reliability.Basic;
 using RepoUtils;
 
 #pragma warning disable CA1861 // Avoid constant arrays as arguments
@@ -35,11 +34,6 @@ public static class Example22_OpenApiPlugin_AzureKeyVault
     {
         var kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithRetryBasic(new BasicRetryConfig
-            {
-                MaxRetryCount = 3,
-                UseExponentialBackoff = true
-            })
             .Build();
 
         var type = typeof(PluginResourceNames);
@@ -54,7 +48,7 @@ public static class Example22_OpenApiPlugin_AzureKeyVault
             new OpenApiFunctionExecutionParameters
             {
                 AuthCallback = authenticationProvider.AuthenticateRequestAsync,
-                ServerUrlOverride = new Uri(TestConfiguration.KeyVault.Endpoint)
+                ServerUrlOverride = new Uri(TestConfiguration.KeyVault.Endpoint),
             });
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
@@ -67,7 +61,7 @@ public static class Example22_OpenApiPlugin_AzureKeyVault
 
         var result = functionResult.GetValue<RestApiOperationResponse>();
 
-        Console.WriteLine("GetSecret function result: {0}", result?.Content);
+        Console.WriteLine("GetSecret function result: {0}", result?.Content?.ToString());
     }
 
 
@@ -103,6 +97,6 @@ public static class Example22_OpenApiPlugin_AzureKeyVault
 
         var result = functionResult.GetValue<RestApiOperationResponse>();
 
-        Console.WriteLine("SetSecret function result: {0}", result?.Content);
+        Console.WriteLine("SetSecret function result: {0}", result?.Content?.ToString());
     }
 }

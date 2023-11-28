@@ -36,7 +36,7 @@ internal class FlowExecutor : IFlowExecutor
     /// <summary>
     /// The logger
     /// </summary>
-    private readonly ILogger<FlowExecutor> _logger;
+    private readonly ILogger _logger;
 
     /// <summary>
     /// The global plugin collection
@@ -102,7 +102,7 @@ internal class FlowExecutor : IFlowExecutor
         this._kernelBuilder = kernelBuilder;
         this._systemKernel = kernelBuilder.Build();
 
-        this._logger = this._systemKernel.LoggerFactory.CreateLogger<FlowExecutor>();
+        this._logger = this._systemKernel.GetService<ILoggerFactory>().CreateLogger(typeof(FlowExecutor));
         this._config = config ?? new FlowOrchestratorConfig();
 
         this._flowStatusProvider = statusProvider;
@@ -718,7 +718,7 @@ internal class FlowExecutor : IFlowExecutor
 
     private static KernelFunction CreateSemanticFunction(Kernel kernel, string functionName, string promptTemplate, PromptTemplateConfig config)
     {
-        var factory = new KernelPromptTemplateFactory(kernel.LoggerFactory);
+        var factory = new KernelPromptTemplateFactory(kernel.GetService<ILoggerFactory>());
         var template = factory.Create(promptTemplate, config);
         return kernel.CreateFunctionFromPrompt(template, config, functionName);
     }

@@ -27,7 +27,7 @@ public class PluginTests
         string countryCode)
     {
         // Arrange
-        var kernel = new KernelBuilder().Build();
+        var kernel = new Kernel();
         using HttpClient httpClient = new();
 
         var plugin = await kernel.ImportPluginFromOpenAIAsync(
@@ -58,7 +58,7 @@ public class PluginTests
         string countryCode)
     {
         // Arrange
-        var kernel = new KernelBuilder().Build();
+        var kernel = new Kernel();
         using HttpClient httpClient = new();
 
         var plugin = await kernel.ImportPluginFromOpenApiAsync(
@@ -89,7 +89,7 @@ public class PluginTests
         string countryCode)
     {
         // Arrange
-        var kernel = new KernelBuilder().Build();
+        var kernel = new Kernel();
         using HttpClient httpClient = new();
 
         var plugin = await kernel.ImportPluginFromOpenApiAsync(
@@ -127,7 +127,7 @@ public class PluginTests
         string payload)
     {
         // Arrange
-        var kernel = new KernelBuilder().Build();
+        var kernel = new Kernel();
         using HttpClient httpClient = new();
 
         //note that this plugin is not compliant according to the underlying validator in SK
@@ -159,7 +159,7 @@ public class PluginTests
         // Arrange
         using (var stream = System.IO.File.OpenRead(pluginFilePath))
         {
-            var kernel = new KernelBuilder().Build();
+            var kernel = new Kernel();
             using HttpClient httpClient = new();
 
             //note that this plugin is not compliant according to the underlying validator in SK
@@ -190,7 +190,7 @@ public class PluginTests
         string payload)
     {
         // Arrange
-        var kernel = new KernelBuilder().Build();
+        var kernel = new Kernel();
         using HttpClient httpClient = new();
 
         //note that this plugin is not compliant according to the underlying validator in SK

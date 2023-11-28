@@ -20,9 +20,9 @@ public static class Example63_ChatCompletionPrompts
         ";
 
         var kernel = new KernelBuilder()
-            .WithOpenAIChatCompletionService(
-                TestConfiguration.OpenAI.ChatModelId,
-                TestConfiguration.OpenAI.ApiKey)
+            .WithOpenAIChatCompletion(
+                modelId: TestConfiguration.OpenAI.ChatModelId,
+                apiKey: TestConfiguration.OpenAI.ApiKey)
             .Build();
 
         var textSemanticFunction = kernel.CreateFunctionFromPrompt(TextPrompt);

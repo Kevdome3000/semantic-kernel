@@ -11,6 +11,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using AI;
+using Extensions.DependencyInjection;
 using Extensions.Logging;
 using Orchestration;
 using Text;
@@ -43,7 +44,7 @@ public static class KernelExtensions
     {
         Verify.NotNull(kernel);
 
-        return KernelFunctionFactory.CreateFromMethod(method.Method, method.Target, functionName, description, parameters, returnParameter, kernel.LoggerFactory);
+        return KernelFunctionFactory.CreateFromMethod(method.Method, method.Target, functionName, description, parameters, returnParameter, kernel.GetService<ILoggerFactory>());
     }
 
 
@@ -70,7 +71,7 @@ public static class KernelExtensions
     {
         Verify.NotNull(kernel);
 
-        return KernelFunctionFactory.CreateFromMethod(method, target, functionName, description, parameters, returnParameter, kernel.LoggerFactory);
+        return KernelFunctionFactory.CreateFromMethod(method, target, functionName, description, parameters, returnParameter, kernel.GetService<ILoggerFactory>());
     }
 
     #endregion
@@ -103,7 +104,7 @@ public static class KernelExtensions
     {
         Verify.NotNull(kernel);
 
-        return KernelFunctionFactory.CreateFromPrompt(promptTemplate, executionSettings, functionName, description, promptTemplateFactory, kernel.LoggerFactory);
+        return KernelFunctionFactory.CreateFromPrompt(promptTemplate, executionSettings, functionName, description, promptTemplateFactory, kernel.GetService<ILoggerFactory>());
     }
 
 
@@ -121,7 +122,7 @@ public static class KernelExtensions
     {
         Verify.NotNull(kernel);
 
-        return KernelFunctionFactory.CreateFromPrompt(promptConfig, promptTemplateFactory, kernel.LoggerFactory);
+        return KernelFunctionFactory.CreateFromPrompt(promptConfig, promptTemplateFactory, kernel.GetService<ILoggerFactory>());
     }
 
 
@@ -141,7 +142,7 @@ public static class KernelExtensions
     {
         Verify.NotNull(kernel);
 
-        return KernelFunctionFactory.CreateFromPrompt(promptTemplate, promptConfig, kernel.LoggerFactory);
+        return KernelFunctionFactory.CreateFromPrompt(promptTemplate, promptConfig, kernel.GetService<ILoggerFactory>());
     }
 
     #endregion
@@ -163,7 +164,7 @@ public static class KernelExtensions
     {
         Verify.NotNull(kernel);
 
-        return KernelPluginFactory.CreateFromObject<T>(pluginName, kernel.LoggerFactory);
+        return KernelPluginFactory.CreateFromObject<T>(pluginName, kernel.GetService<ILoggerFactory>());
     }
 
 
@@ -180,7 +181,7 @@ public static class KernelExtensions
     {
         Verify.NotNull(kernel);
 
-        return KernelPluginFactory.CreateFromObject(target, pluginName, kernel.LoggerFactory);
+        return KernelPluginFactory.CreateFromObject(target, pluginName, kernel.GetService<ILoggerFactory>());
     }
 
     #endregion
@@ -206,6 +207,25 @@ public static class KernelExtensions
     }
 
 
+    /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/> and adds it into the plugin collection.</summary>
+    /// <typeparam name="T">Specifies the type of the object to wrap.</typeparam>
+    /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
+    /// <param name="pluginName">
+    /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <typeparamref name="T"/>.
+    /// </param>
+    /// <param name="serviceProvider">Service provider from which to resolve dependencies, such as <see cref="ILoggerFactory"/>.</param>
+    /// <remarks>
+    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// </remarks>
+    public static IKernelPlugin AddPluginFromObject<T>(this ICollection<IKernelPlugin> plugins, string? pluginName = null, IServiceProvider? serviceProvider = null)
+        where T : new()
+    {
+        IKernelPlugin plugin = KernelPluginFactory.CreateFromObject<T>(pluginName, serviceProvider?.GetService<ILoggerFactory>());
+        plugins.Add(plugin);
+        return plugin;
+    }
+
+
     /// <summary>Creates a plugin that wraps the specified target object and imports it into the <paramref name="kernel"/>'s plugin collection.</summary>
     /// <param name="kernel">The kernel.</param>
     /// <param name="target">The instance of the class to be wrapped.</param>
@@ -219,6 +239,24 @@ public static class KernelExtensions
     {
         IKernelPlugin plugin = CreatePluginFromObject(kernel, target, pluginName);
         kernel.Plugins.Add(plugin);
+        return plugin;
+    }
+
+
+    /// <summary>Creates a plugin that wraps the specified target object and adds it into the plugin collection.</summary>
+    /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
+    /// <param name="target">The instance of the class to be wrapped.</param>
+    /// <param name="pluginName">
+    /// Name of the plugin for function collection and prompt templates. If the value is null, a plugin name is derived from the type of the <paramref name="target"/>.
+    /// </param>
+    /// <param name="serviceProvider">Service provider from which to resolve dependencies, such as <see cref="ILoggerFactory"/>.</param>
+    /// <remarks>
+    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// </remarks>
+    public static IKernelPlugin AddPluginFromObject(this ICollection<IKernelPlugin> plugins, object target, string? pluginName = null, IServiceProvider? serviceProvider = null)
+    {
+        IKernelPlugin plugin = KernelPluginFactory.CreateFromObject(target, pluginName, serviceProvider?.GetService<ILoggerFactory>());
+        plugins.Add(plugin);
         return plugin;
     }
 
@@ -269,10 +307,10 @@ public static class KernelExtensions
         Verify.ValidPluginName(pluginName, kernel.Plugins);
         Verify.DirectoryExists(pluginDirectory);
 
-        var factory = promptTemplateFactory ?? new KernelPromptTemplateFactory(kernel.LoggerFactory);
+        var factory = promptTemplateFactory ?? new KernelPromptTemplateFactory(kernel.GetService<ILoggerFactory>());
 
         KernelPlugin plugin = new(pluginName);
-        ILogger logger = kernel.LoggerFactory.CreateLogger(typeof(Kernel));
+        ILogger logger = kernel.GetService<ILoggerFactory>().CreateLogger(typeof(Kernel));
 
         foreach (string functionDirectory in Directory.EnumerateDirectories(pluginDirectory))
         {

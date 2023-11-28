@@ -2,7 +2,6 @@
 
 namespace SemanticKernel.UnitTests.TemplateEngine.Blocks;
 
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
@@ -15,7 +14,7 @@ public class NamedArgBlockTests
     public void ItHasTheCorrectType()
     {
         // Act
-        var target = new NamedArgBlock("a=$b", NullLoggerFactory.Instance);
+        var target = new NamedArgBlock("a=$b");
 
         // Assert
         Assert.Equal(BlockTypes.NamedArg, target.Type);
@@ -32,7 +31,7 @@ public class NamedArgBlockTests
     public void ItTrimsSpaces(string input, string expected)
     {
         // Act + Assert
-        Assert.Equal(expected, new NamedArgBlock(input, NullLoggerFactory.Instance).Content);
+        Assert.Equal(expected, new NamedArgBlock(input).Content);
     }
 
 

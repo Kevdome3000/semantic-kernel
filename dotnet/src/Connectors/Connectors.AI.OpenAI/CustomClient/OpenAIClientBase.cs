@@ -33,21 +33,21 @@ public abstract class OpenAIClientBase
     /// </summary>
     /// <param name="httpClient">The HttpClient used for making HTTP requests.</param>
     /// <param name="loggerFactory">The ILoggerFactory used to create a logger for logging. If null, no logging will be performed.</param>
-    protected private OpenAIClientBase(HttpClient? httpClient, ILoggerFactory? loggerFactory = null)
+    private protected OpenAIClientBase(HttpClient? httpClient, ILoggerFactory? loggerFactory = null)
     {
-        _httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, false);
-        _logger = loggerFactory is not null ? loggerFactory.CreateLogger(GetType()) : NullLogger.Instance;
+        this._httpClient = HttpClientProvider.GetHttpClient(httpClient);
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(this.GetType()) : NullLogger.Instance;
     }
 
 
     /// <summary>
     /// Storage for AI service attributes.
     /// </summary>
-    protected private Dictionary<string, string> InternalAttributes = new();
+    private protected Dictionary<string, string> InternalAttributes = new();
 
 
     /// <summary>Adds headers to use for OpenAI HTTP requests.</summary>
-    protected private virtual void AddRequestHeaders(HttpRequestMessage request)
+    private protected virtual void AddRequestHeaders(HttpRequestMessage request)
     {
         request.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
     }
@@ -60,12 +60,12 @@ public abstract class OpenAIClientBase
     /// <param name="requestBody">Request payload</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>List of text embeddings</returns>
-    protected private async Task<IList<ReadOnlyMemory<float>>> ExecuteTextEmbeddingRequestAsync(
+    private protected async Task<IList<ReadOnlyMemory<float>>> ExecuteTextEmbeddingRequestAsync(
         string url,
         string requestBody,
         CancellationToken cancellationToken = default)
     {
-        var result = await ExecutePostRequestAsync<TextEmbeddingResponse>(url, requestBody, cancellationToken).ConfigureAwait(false);
+        var result = await this.ExecutePostRequestAsync<TextEmbeddingResponse>(url, requestBody, cancellationToken).ConfigureAwait(false);
 
         if (result.Embeddings is not { Count: >= 1 })
         {
@@ -84,13 +84,13 @@ public abstract class OpenAIClientBase
     /// <param name="extractResponseFunc">Function to invoke to extract the desired portion of the image generation response.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>List of image URLs</returns>
-    protected private async Task<IList<string>> ExecuteImageGenerationRequestAsync(
+    private protected async Task<IList<string>> ExecuteImageGenerationRequestAsync(
         string url,
         string requestBody,
         Func<ImageGenerationResponse.Image, string> extractResponseFunc,
         CancellationToken cancellationToken = default)
     {
-        var result = await ExecutePostRequestAsync<ImageGenerationResponse>(url, requestBody, cancellationToken).ConfigureAwait(false);
+        var result = await this.ExecutePostRequestAsync<ImageGenerationResponse>(url, requestBody, cancellationToken).ConfigureAwait(false);
         return result.Images.Select(extractResponseFunc).ToList();
     }
 
@@ -100,11 +100,11 @@ public abstract class OpenAIClientBase
     /// </summary>
     /// <param name="key">Attribute key</param>
     /// <param name="value">Attribute value</param>
-    protected private void AddAttribute(string key, string? value)
+    private protected void AddAttribute(string key, string? value)
     {
         if (!string.IsNullOrEmpty(value))
         {
-            InternalAttributes.Add(key, value!);
+            this.InternalAttributes.Add(key, value!);
         }
     }
 
@@ -122,17 +122,17 @@ public abstract class OpenAIClientBase
     private readonly HttpClient _httpClient;
 
 
-    protected private async Task<T> ExecutePostRequestAsync<T>(string url, string requestBody, CancellationToken cancellationToken = default)
+    private protected async Task<T> ExecutePostRequestAsync<T>(string url, string requestBody, CancellationToken cancellationToken = default)
     {
         using var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
-        using var response = await ExecuteRequestAsync(url, HttpMethod.Post, content, cancellationToken).ConfigureAwait(false);
+        using var response = await this.ExecuteRequestAsync(url, HttpMethod.Post, content, cancellationToken).ConfigureAwait(false);
         string responseJson = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
-        T result = JsonDeserialize<T>(responseJson);
+        T result = this.JsonDeserialize<T>(responseJson);
         return result;
     }
 
 
-    protected private T JsonDeserialize<T>(string responseJson)
+    private protected T JsonDeserialize<T>(string responseJson)
     {
         var result = JsonSerializer.Deserialize<T>(responseJson, JsonOptionsCache.ReadPermissive);
 
@@ -145,20 +145,20 @@ public abstract class OpenAIClientBase
     }
 
 
-    protected private async Task<HttpResponseMessage> ExecuteRequestAsync(string url, HttpMethod method, HttpContent? content, CancellationToken cancellationToken = default)
+    private protected async Task<HttpResponseMessage> ExecuteRequestAsync(string url, HttpMethod method, HttpContent? content, CancellationToken cancellationToken = default)
     {
         using var request = new HttpRequestMessage(method, url);
 
-        AddRequestHeaders(request);
+        this.AddRequestHeaders(request);
 
         if (content != null)
         {
             request.Content = content;
         }
 
-        var response = await _httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
+        var response = await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
 
-        _logger.LogDebug("HTTP response: {0} {1}", (int)response.StatusCode, response.StatusCode.ToString("G"));
+        this._logger.LogDebug("HTTP response: {0} {1}", (int)response.StatusCode, response.StatusCode.ToString("G"));
 
         return response;
     }
