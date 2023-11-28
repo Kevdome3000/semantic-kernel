@@ -4,8 +4,6 @@
 // ReSharper disable once CheckNamespace - Using NS of Plan
 namespace Microsoft.SemanticKernel.Planning;
 
-using TemplateEngine;
-
 #pragma warning restore IDE0130
 
 
