@@ -40,10 +40,8 @@ public sealed class HandlebarsPlannerTests : IDisposable
         kernel.ImportPluginFromObject(new EmailPluginFake(), expectedPlugin);
         TestHelpers.ImportSamplePlugins(kernel, "FunPlugin");
 
-        var planner = new HandlebarsPlanner(kernel);
-
         // Act
-        var plan = await planner.CreatePlanAsync(prompt);
+        var plan = await new HandlebarsPlanner().CreatePlanAsync(kernel, prompt);
 
         // Assert expected function
         Assert.Contains(
@@ -62,10 +60,8 @@ public sealed class HandlebarsPlannerTests : IDisposable
         Kernel kernel = this.InitializeKernel();
         TestHelpers.ImportSamplePlugins(kernel, "WriterPlugin", "MiscPlugin");
 
-        var planner = new HandlebarsPlanner(kernel);
-
         // Act
-        var plan = await planner.CreatePlanAsync(prompt);
+        var plan = await new HandlebarsPlanner().CreatePlanAsync(kernel, prompt);
 
         // Assert
         Assert.Contains(

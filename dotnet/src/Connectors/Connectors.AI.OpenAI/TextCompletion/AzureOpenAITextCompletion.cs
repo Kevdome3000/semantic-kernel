@@ -19,14 +19,14 @@ using Services;
 /// Azure OpenAI text completion client.
 /// TODO: forward ETW logging to ILogger, see https://learn.microsoft.com/en-us/dotnet/azure/sdk/logging
 /// </summary>
-public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
+public sealed class AzureOpenAITextCompletion : AzureOpenAIClientBase, ITextCompletion
 {
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
 
 
     /// <summary>
-    /// Creates a new AzureTextCompletion client instance using API Key auth
+    /// Creates a new <see cref="AzureOpenAITextCompletion"/> client instance using API Key auth
     /// </summary>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
@@ -34,7 +34,7 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
     /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public AzureTextCompletion(
+    public AzureOpenAITextCompletion(
         string deploymentName,
         string endpoint,
         string apiKey,
@@ -47,7 +47,7 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
 
 
     /// <summary>
-    /// Creates a new AzureTextCompletion client instance supporting AAD auth
+    /// Creates a new <see cref="AzureOpenAITextCompletion"/> client instance supporting AAD auth
     /// </summary>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
@@ -55,7 +55,7 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
     /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public AzureTextCompletion(
+    public AzureOpenAITextCompletion(
         string deploymentName,
         string endpoint,
         TokenCredential credential,
@@ -68,13 +68,13 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
 
 
     /// <summary>
-    /// Creates a new AzureTextCompletion client instance using the specified OpenAIClient
+    /// Creates a new <see cref="AzureOpenAITextCompletion"/> client instance using the specified OpenAIClient
     /// </summary>
     /// <param name="deploymentName">Azure OpenAI model ID or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
     /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public AzureTextCompletion(
+    public AzureOpenAITextCompletion(
         string deploymentName,
         OpenAIClient openAIClient,
         string? modelId = null,

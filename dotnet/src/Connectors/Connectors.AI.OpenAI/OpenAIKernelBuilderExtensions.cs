@@ -65,7 +65,7 @@ public static class OpenAIServiceCollectionExtensions
             c.AddKeyedSingleton<ITextCompletion>(serviceId, (serviceProvider, _) =>
             {
                 var client = CreateAzureOpenAIClient(deploymentName, endpoint, new AzureKeyCredential(apiKey), httpClient ?? serviceProvider.GetService<HttpClient>());
-                return new AzureTextCompletion(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
+                return new AzureOpenAITextCompletion(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
             });
         });
     }
@@ -97,7 +97,7 @@ public static class OpenAIServiceCollectionExtensions
         return services.AddKeyedSingleton<ITextCompletion>(serviceId, (serviceProvider, _) =>
         {
             var client = CreateAzureOpenAIClient(deploymentName, endpoint, new AzureKeyCredential(apiKey), serviceProvider.GetService<HttpClient>());
-            return new AzureTextCompletion(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
+            return new AzureOpenAITextCompletion(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
         });
     }
 
@@ -132,7 +132,7 @@ public static class OpenAIServiceCollectionExtensions
             c.AddKeyedSingleton<ITextCompletion>(serviceId, (serviceProvider, _) =>
             {
                 var client = CreateAzureOpenAIClient(deploymentName, endpoint, credentials, httpClient ?? serviceProvider.GetService<HttpClient>());
-                return new AzureTextCompletion(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
+                return new AzureOpenAITextCompletion(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
             });
         });
     }
@@ -164,7 +164,7 @@ public static class OpenAIServiceCollectionExtensions
         return services.AddKeyedSingleton<ITextCompletion>(serviceId, (serviceProvider, _) =>
         {
             var client = CreateAzureOpenAIClient(deploymentName, endpoint, credentials, serviceProvider.GetService<HttpClient>());
-            return new AzureTextCompletion(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
+            return new AzureOpenAITextCompletion(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
         });
     }
 
@@ -192,7 +192,7 @@ public static class OpenAIServiceCollectionExtensions
         return builder.ConfigureServices(c =>
         {
             c.AddKeyedSingleton<ITextCompletion>(serviceId, (serviceProvider, _) =>
-                new AzureTextCompletion(
+                new AzureOpenAITextCompletion(
                     deploymentName,
                     openAIClient,
                     modelId,
@@ -222,7 +222,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNull(openAIClient);
 
         return services.AddKeyedSingleton<ITextCompletion>(serviceId, (serviceProvider, _) =>
-            new AzureTextCompletion(
+            new AzureOpenAITextCompletion(
                 deploymentName,
                 openAIClient,
                 modelId,

@@ -2,7 +2,6 @@
 
 namespace Microsoft.SemanticKernel.TemplateEngine.Handlebars;
 
-using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,7 +23,6 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
         this._loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
         this._logger = this._loggerFactory.CreateLogger(typeof(HandlebarsPromptTemplate));
         this._promptModel = promptConfig;
-        this._parameters = new(() => this.InitParameters());
     }
 
 
@@ -58,24 +56,6 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger _logger;
     private readonly PromptTemplateConfig _promptModel;
-    private readonly Lazy<IReadOnlyList<KernelParameterMetadata>> _parameters;
-
-
-    private List<KernelParameterMetadata> InitParameters()
-    {
-        List<KernelParameterMetadata> parameters = new(this._promptModel.InputParameters.Count);
-
-        foreach (var p in this._promptModel.InputParameters)
-        {
-            parameters.Add(new KernelParameterMetadata(p.Name)
-            {
-                Description = p.Description,
-                DefaultValue = p.DefaultValue
-            });
-        }
-
-        return parameters;
-    }
 
 
     private Dictionary<string, string> GetVariables(ContextVariables variables)

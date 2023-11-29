@@ -2,7 +2,6 @@
 
 namespace Microsoft.SemanticKernel.Services;
 
-using System;
 using System.Linq;
 using AI;
 using Extensions.DependencyInjection;
@@ -13,9 +12,9 @@ using Orchestration;
 /// Implementation of <see cref="IAIServiceSelector"/> that selects the AI service based on the order of the model settings.
 /// Uses the service id to select the preferred service provider and then returns the service and associated model settings.
 /// </summary>
-internal sealed class OrderedIAIServiceSelector : IAIServiceSelector
+internal sealed class OrderedAIServiceSelector : IAIServiceSelector
 {
-    public static OrderedIAIServiceSelector Instance { get; } = new();
+    public static OrderedAIServiceSelector Instance { get; } = new();
 
 
     /// <inheritdoc/>
@@ -52,7 +51,7 @@ internal sealed class OrderedIAIServiceSelector : IAIServiceSelector
                 }
                 else if (!string.IsNullOrEmpty(model.ModelId))
                 {
-                    var service = this.GetServiceByModelId<T>(kernel.Services, model.ModelId!);
+                    var service = this.GetServiceByModelId<T>(kernel, model.ModelId!);
 
                     if (service is not null)
                     {
@@ -77,9 +76,9 @@ internal sealed class OrderedIAIServiceSelector : IAIServiceSelector
     }
 
 
-    private T? GetServiceByModelId<T>(IServiceProvider serviceProvider, string modelId) where T : IAIService
+    private T? GetServiceByModelId<T>(Kernel kernel, string modelId) where T : class, IAIService
     {
-        var services = serviceProvider.GetServices<T>();
+        var services = kernel.GetAllServices<T>();
 
         foreach (var service in services)
         {
