@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Planning;
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -11,10 +9,10 @@ using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using AI;
-using Orchestration;
-using Text;
+using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.Text;
 
+namespace Microsoft.SemanticKernel.Planning;
 
 /// <summary>
 /// Standard Semantic Kernel callable plan.
@@ -67,7 +65,6 @@ public sealed class Plan
     [JsonPropertyName("plugin_name")]
     public string PluginName { get; set; } = string.Empty;
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="Plan"/> class with a goal description.
     /// </summary>
@@ -79,7 +76,6 @@ public sealed class Plan
         this.Description = goal;
     }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="Plan"/> class with a goal description and steps.
     /// </summary>
@@ -89,7 +85,6 @@ public sealed class Plan
     {
         this.AddSteps(steps);
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Plan"/> class with a goal description and steps.
@@ -101,7 +96,6 @@ public sealed class Plan
         this.AddSteps(steps);
     }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="Plan"/> class with a function.
     /// </summary>
@@ -112,7 +106,6 @@ public sealed class Plan
         this.Name = function.Name;
         this.Description = function.Description;
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Plan"/> class with a function and steps.
@@ -147,7 +140,6 @@ public sealed class Plan
         this.AddSteps(steps.ToArray());
     }
 
-
     /// <summary>
     /// Deserialize a JSON string into a Plan object.
     /// TODO: the context should never be null, it's required internally
@@ -169,15 +161,15 @@ public sealed class Plan
         return plan;
     }
 
-
     /// <summary>
     /// Get JSON representation of the plan.
     /// </summary>
     /// <param name="indented">Whether to emit indented JSON</param>
     /// <returns>Plan serialized using JSON format</returns>
     public string ToJson(bool indented = false) =>
-        indented ? JsonSerializer.Serialize(this, JsonOptionsCache.WriteIndented) : JsonSerializer.Serialize(this);
-
+        indented ?
+            JsonSerializer.Serialize(this, JsonOptionsCache.WriteIndented) :
+            JsonSerializer.Serialize(this);
 
     /// <summary>
     /// Adds one or more existing plans to the end of the current plan as steps.
@@ -191,7 +183,6 @@ public sealed class Plan
         this._steps.AddRange(steps);
     }
 
-
     /// <summary>
     /// Adds one or more new steps to the end of the current plan.
     /// </summary>
@@ -203,7 +194,6 @@ public sealed class Plan
     {
         this._steps.AddRange(steps.Select(step => new Plan(step)));
     }
-
 
     /// <summary>
     /// Runs the next step in the plan using the provided kernel instance and variables.
@@ -222,11 +212,10 @@ public sealed class Plan
         return this.InvokeNextStepAsync(kernel, variables, cancellationToken);
     }
 
-
     /// <summary>
     /// Invoke the next step of the plan
     /// </summary>
-    /// <param name="kernel">The kernel</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="variables">Context variables to use</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The updated plan</returns>
@@ -241,9 +230,7 @@ public sealed class Plan
         return this;
     }
 
-
     #region ISKFunction implementation
-
     /// <summary>
     /// Gets the name of the function.
     /// </summary>
@@ -262,7 +249,6 @@ public sealed class Plan
     /// in case it may be beneficial for the model to recommend invoking the function.
     /// </remarks>
     public string Description { get; }
-
 
     /// <summary>
     /// Gets the metadata describing the function.
@@ -305,11 +291,10 @@ public sealed class Plan
         };
     }
 
-
     /// <summary>
     /// Invoke the <see cref="KernelFunction"/>.
     /// </summary>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="input">Plan input</param>
     public async Task<FunctionResult> InvokeAsync(
         Kernel kernel,
@@ -321,20 +306,19 @@ public sealed class Plan
         return await this.InvokeAsync(kernel, contextVariables).ConfigureAwait(false);
     }
 
-
     /// <summary>
     /// Invoke the <see cref="KernelFunction"/>.
     /// </summary>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="variables">Context variables</param>
     /// <param name="executionSettings">LLM completion settings (for semantic functions only)</param>
     /// <returns>The updated context, potentially a new one if context switching is implemented.</returns>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     public async Task<FunctionResult> InvokeAsync(
-        Kernel kernel,
-        ContextVariables? variables = null,
+    Kernel kernel,
+    ContextVariables? variables = null,
     PromptExecutionSettings? executionSettings = null,
-        CancellationToken cancellationToken = default)
+    CancellationToken cancellationToken = default)
     {
         variables ??= new ContextVariables();
         var result = new FunctionResult(this.Name, variables);
@@ -369,7 +353,6 @@ public sealed class Plan
                 {
                     return result;
                 }
-
                 if (stepResult.IsSkipRequested)
                 {
                     continue;
@@ -386,7 +369,6 @@ public sealed class Plan
     }
 
     #endregion ISKFunction implementation
-
 
     /// <summary>
     /// Expand variables in the input string.
@@ -411,11 +393,10 @@ public sealed class Plan
         return result;
     }
 
-
     /// <summary>
     /// Invoke the next step of the plan
     /// </summary>
-    /// <param name="kernel">The kernel</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="variables">Context variables to use</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Next step result</returns>
@@ -433,7 +414,6 @@ public sealed class Plan
             var result = await step.InvokeAsync(kernel, functionVariables, null, cancellationToken).ConfigureAwait(false);
 
             var resultValue = (result.TryGetVariableValue(MainKey, out string? value) ? value : string.Empty).Trim();
-
 
             #region Update State
 
@@ -468,7 +448,6 @@ public sealed class Plan
 
             #endregion Update State
 
-
             this.NextStepIndex++;
 
             return result;
@@ -476,7 +455,6 @@ public sealed class Plan
 
         throw new InvalidOperationException("There isn't a next step");
     }
-
 
     /// <summary>
     /// Set functions for a plan and its steps.
@@ -511,7 +489,6 @@ public sealed class Plan
         return plan;
     }
 
-
     /// <summary>
     /// Add any missing variables from a plan state variables to the context.
     /// </summary>
@@ -526,7 +503,6 @@ public sealed class Plan
             }
         }
     }
-
 
     /// <summary>
     /// Update the context with the outputs from the current step.
@@ -553,7 +529,6 @@ public sealed class Plan
 
         return variables;
     }
-
 
     /// <summary>
     /// Update the function result with the outputs from the current state.
@@ -582,7 +557,6 @@ public sealed class Plan
         return functionResult;
     }
 
-
     /// <summary>
     /// Get the variables for the next step in the plan.
     /// </summary>
@@ -599,7 +573,6 @@ public sealed class Plan
         // - Plan.Description
 
         var input = string.Empty;
-
         if (!string.IsNullOrEmpty(step.Parameters.Input))
         {
             input = this.ExpandFromVariables(variables, step.Parameters.Input!);
@@ -628,7 +601,6 @@ public sealed class Plan
         // - Step Parameters (pull from variables or state by a key value)
         // - All other variables. These are carried over in case the function wants access to the ambient content.
         var functionParameters = step.GetMetadata();
-
         foreach (var param in functionParameters.Parameters)
         {
             if (param.Name.Equals(MainKey, StringComparison.OrdinalIgnoreCase))
@@ -655,7 +627,6 @@ public sealed class Plan
             }
 
             var expandedValue = this.ExpandFromVariables(variables, item.Value);
-
             if (!expandedValue.Equals(item.Value, StringComparison.OrdinalIgnoreCase))
             {
                 stepVariables.Set(item.Key, expandedValue);
@@ -684,7 +655,6 @@ public sealed class Plan
 
         return stepVariables;
     }
-
 
     private static string GetRandomPlanName() => "plan" + Guid.NewGuid().ToString("N");
 

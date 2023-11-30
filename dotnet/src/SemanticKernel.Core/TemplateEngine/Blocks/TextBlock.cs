@@ -2,8 +2,7 @@
 
 namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
-using Microsoft.Extensions.Logging;
-using Orchestration;
+using Extensions.Logging;
 
 
 internal sealed class TextBlock : Block, ITextRendering
@@ -30,7 +29,8 @@ internal sealed class TextBlock : Block, ITextRendering
     }
 
 
-    public string Render(ContextVariables? variables)
+    /// <inheritdoc/>
+    public string Render(KernelArguments? arguments)
     {
         return this.Content;
     }

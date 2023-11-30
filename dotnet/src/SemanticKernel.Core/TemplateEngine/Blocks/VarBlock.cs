@@ -4,7 +4,6 @@ namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
 using System.Text.RegularExpressions;
 using Extensions.Logging;
-using Orchestration;
 
 
 internal sealed class VarBlock : Block, ITextRendering
@@ -66,9 +65,10 @@ internal sealed class VarBlock : Block, ITextRendering
 #pragma warning restore CA2254
 
 
-    public string Render(ContextVariables? variables)
+    /// <inheritdoc/>
+    public string Render(KernelArguments? arguments)
     {
-        if (variables == null) { return string.Empty; }
+        if (arguments == null) { return string.Empty; }
 
         if (string.IsNullOrEmpty(this.Name))
         {
@@ -77,7 +77,7 @@ internal sealed class VarBlock : Block, ITextRendering
             throw new KernelException(ErrMsg);
         }
 
-        if (variables.TryGetValue(this.Name, out string? value))
+        if (arguments.TryGetValue(this.Name, out string? value))
         {
             return value;
         }

@@ -15,7 +15,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.Orchestration;
 using TestSettings;
 using Xunit;
 using Xunit.Abstractions;

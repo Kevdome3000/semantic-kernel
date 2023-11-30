@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.AI.Embeddings;
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Services;
+using Services;
 
-namespace Microsoft.SemanticKernel.AI.Embeddings;
 
 /// <summary>
 /// Represents a generator of embeddings.
@@ -20,7 +21,11 @@ public interface IEmbeddingGeneration<TValue, TEmbedding> : IAIService
     /// Generates an embedding from the given <paramref name="data"/>.
     /// </summary>
     /// <param name="data">List of strings to generate embeddings for</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>List of embeddings</returns>
-    Task<IList<ReadOnlyMemory<TEmbedding>>> GenerateEmbeddingsAsync(IList<TValue> data, CancellationToken cancellationToken = default);
+    Task<IList<ReadOnlyMemory<TEmbedding>>> GenerateEmbeddingsAsync(
+        IList<TValue> data,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default);
 }

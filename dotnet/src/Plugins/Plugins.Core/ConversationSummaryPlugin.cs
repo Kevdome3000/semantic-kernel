@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using AI;
-using Orchestration;
 using Text;
 
 
@@ -16,7 +15,7 @@ using Text;
 public class ConversationSummaryPlugin
 {
     /// <summary>
-    /// The max tokens to process in a single semantic function call.
+    /// The max tokens to process in a single prompt function call.
     /// </summary>
     private const int MaxTokens = 1024;
 
@@ -41,17 +40,17 @@ public class ConversationSummaryPlugin
         };
 
         this._summarizeConversationFunction = KernelFunctionFactory.CreateFromPrompt(
-            SemanticFunctionConstants.SummarizeConversationDefinition,
+            PromptFunctionConstants.SummarizeConversationDefinition,
             description: "Given a section of a conversation transcript, summarize the part of the conversation.",
             executionSettings: settings);
 
         this._conversationActionItemsFunction = KernelFunctionFactory.CreateFromPrompt(
-            SemanticFunctionConstants.GetConversationActionItemsDefinition,
+            PromptFunctionConstants.GetConversationActionItemsDefinition,
             description: "Given a section of a conversation transcript, identify action items.",
             executionSettings: settings);
 
         this._conversationTopicsFunction = KernelFunctionFactory.CreateFromPrompt(
-            SemanticFunctionConstants.GetConversationTopicsDefinition,
+            PromptFunctionConstants.GetConversationTopicsDefinition,
             description: "Analyze a conversation transcript and extract key topics worth remembering.",
             executionSettings: settings);
     }
@@ -61,58 +60,55 @@ public class ConversationSummaryPlugin
     /// Given a long conversation transcript, summarize the conversation.
     /// </summary>
     /// <param name="input">A long conversation transcript.</param>
-    /// <param name="kernel">The kernel</param>
-    /// <param name="variables">The context variables for function execution.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     [KernelFunction, Description("Given a long conversation transcript, summarize the conversation.")]
     public Task<string> SummarizeConversationAsync(
         [Description("A long conversation transcript.")]
         string input,
-        Kernel kernel,
-        ContextVariables variables) =>
-        ProcessAsync(this._summarizeConversationFunction, input, kernel, variables);
+        Kernel kernel) =>
+        ProcessAsync(this._summarizeConversationFunction, input, kernel);
 
 
     /// <summary>
     /// Given a long conversation transcript, identify action items.
     /// </summary>
     /// <param name="input">A long conversation transcript.</param>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="variables">The context variables for function execution.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     [KernelFunction, Description("Given a long conversation transcript, identify action items.")]
     public Task<string> GetConversationActionItemsAsync(
         [Description("A long conversation transcript.")]
         string input,
-        Kernel kernel,
-        ContextVariables variables) =>
-        ProcessAsync(this._conversationActionItemsFunction, input, kernel, variables);
+        Kernel kernel) =>
+        ProcessAsync(this._conversationActionItemsFunction, input, kernel);
 
 
     /// <summary>
     /// Given a long conversation transcript, identify topics.
     /// </summary>
     /// <param name="input">A long conversation transcript.</param>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="variables">The context variables for function execution.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     [KernelFunction, Description("Given a long conversation transcript, identify topics worth remembering.")]
     public Task<string> GetConversationTopicsAsync(
         [Description("A long conversation transcript.")]
         string input,
-        Kernel kernel,
-        ContextVariables variables) =>
-        ProcessAsync(this._conversationTopicsFunction, input, kernel, variables);
+        Kernel kernel) =>
+        ProcessAsync(this._conversationTopicsFunction, input, kernel);
 
 
-    private static async Task<string> ProcessAsync(KernelFunction func, string input, Kernel kernel, ContextVariables variables)
+    private static async Task<string> ProcessAsync(KernelFunction func, string input, Kernel kernel)
     {
         List<string> lines = TextChunker.SplitPlainTextLines(input, MaxTokens);
         List<string> paragraphs = TextChunker.SplitPlainTextParagraphs(lines, MaxTokens);
 
         string[] results = new string[paragraphs.Count];
 
+        var arguments = new KernelArguments();
+
         for (int i = 0; i < results.Length; i++)
         {
-            variables.Update(paragraphs[i]);
-            results[i] = (await func.InvokeAsync(kernel, variables).ConfigureAwait(false)).GetValue<string>() ?? "";
+            arguments[KernelArguments.InputParameterName] = paragraphs[i];
+
+            results[i] = (await func.InvokeAsync(kernel, arguments).ConfigureAwait(false)).GetValue<string>() ?? "";
         }
 
         return string.Join("\n", results);

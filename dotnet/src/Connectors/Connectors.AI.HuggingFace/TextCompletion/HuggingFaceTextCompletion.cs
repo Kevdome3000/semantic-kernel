@@ -81,6 +81,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
     public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
         string text,
         PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
         return await this.ExecuteGetCompletionsAsync(text, cancellationToken).ConfigureAwait(false);
@@ -91,6 +92,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
     public async IAsyncEnumerable<T> GetStreamingContentAsync<T>(
         string prompt,
         PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         foreach (var result in await this.ExecuteGetCompletionsAsync(prompt, cancellationToken).ConfigureAwait(false))

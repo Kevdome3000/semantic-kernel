@@ -93,7 +93,10 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
 
 
     /// <inheritdoc/>
-    public async Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(IList<string> data, CancellationToken cancellationToken = default)
+    public async Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
+        IList<string> data,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
     {
         return await this.ExecuteEmbeddingRequestAsync(data, cancellationToken).ConfigureAwait(false);
     }

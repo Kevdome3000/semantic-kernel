@@ -12,7 +12,6 @@ using Diagnostics;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
 using Models;
-using Orchestration;
 
 
 /// <summary>
@@ -20,23 +19,6 @@ using Orchestration;
 /// </summary>
 public sealed class TaskListPlugin
 {
-    /// <summary>
-    /// <see cref="ContextVariables"/> parameter names.
-    /// </summary>
-    public static class Parameters
-    {
-        /// <summary>
-        /// Task reminder as DateTimeOffset.
-        /// </summary>
-        public const string Reminder = "reminder";
-
-        /// <summary>
-        /// Whether to include completed tasks.
-        /// </summary>
-        public const string IncludeCompleted = "includeCompleted";
-    }
-
-
     private readonly ITaskManagementConnector _connector;
     private readonly ILogger _logger;
 

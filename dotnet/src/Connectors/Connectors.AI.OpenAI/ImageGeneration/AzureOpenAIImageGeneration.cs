@@ -112,7 +112,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 
 
     /// <inheritdoc/>
-    public async Task<string> GenerateImageAsync(string description, int width, int height, CancellationToken cancellationToken = default)
+    public async Task<string> GenerateImageAsync(string description, int width, int height, Kernel? kernel = null, CancellationToken cancellationToken = default)
     {
         var operationId = await StartImageGenerationAsync(description, width, height, cancellationToken).ConfigureAwait(false);
         var result = await GetImageGenerationResultAsync(operationId, cancellationToken).ConfigureAwait(false);

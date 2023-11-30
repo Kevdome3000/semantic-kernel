@@ -4,7 +4,6 @@ namespace Microsoft.SemanticKernel.Events;
 
 using System;
 using System.Collections.Generic;
-using Orchestration;
 
 
 /// <summary>
@@ -16,14 +15,13 @@ public abstract class KernelEventArgs : EventArgs
     /// Initializes a new instance of the <see cref="KernelEventArgs"/> class.
     /// </summary>
     /// <param name="function">Kernel function</param>
-    /// <param name="variables">Context variables related to the event</param>
-    internal KernelEventArgs(KernelFunction function, ContextVariables variables)
+    /// <param name="arguments">Kernel function arguments</param>
+    internal KernelEventArgs(KernelFunction function, KernelArguments arguments)
     {
         Verify.NotNull(function);
-        Verify.NotNull(variables);
 
         this.Function = function;
-        this.Variables = variables;
+        this.Arguments = arguments;
         this.Metadata = new();
     }
 
@@ -34,9 +32,9 @@ public abstract class KernelEventArgs : EventArgs
     public KernelFunction Function { get; }
 
     /// <summary>
-    /// Variables related to the event.
+    /// Kernel function arguments.
     /// </summary>
-    public ContextVariables Variables { get; }
+    public KernelArguments Arguments { get; }
 
     /// <summary>
     /// Metadata for storing additional information about function execution result.

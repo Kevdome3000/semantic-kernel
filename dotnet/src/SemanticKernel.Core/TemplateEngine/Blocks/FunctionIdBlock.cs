@@ -5,7 +5,6 @@ namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Extensions.Logging;
-using Orchestration;
 
 
 internal sealed class FunctionIdBlock : Block, ITextRendering
@@ -58,7 +57,8 @@ internal sealed class FunctionIdBlock : Block, ITextRendering
     }
 
 
-    public string Render(ContextVariables? variables)
+    /// <inheritdoc/>
+    public string Render(KernelArguments? arguments)
     {
         return this.Content;
     }

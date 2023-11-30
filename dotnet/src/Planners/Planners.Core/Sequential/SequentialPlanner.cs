@@ -1,18 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using NS of Plan
-namespace Microsoft.SemanticKernel.Planning;
-
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using AI;
-using Extensions.Logging;
-using Orchestration;
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.AI;
 
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - Using NS of Plan
+namespace Microsoft.SemanticKernel.Planning;
 #pragma warning restore IDE0130
-
 
 /// <summary>
 /// A planner that uses semantic function to create a sequential plan.
@@ -22,11 +19,10 @@ public sealed class SequentialPlanner
     private const string StopSequence = "<!-- END -->";
     private const string AvailableFunctionsKey = "available_functions";
 
-
     /// <summary>
     /// Initialize a new instance of the <see cref="SequentialPlanner"/> class.
     /// </summary>
-    /// <param name="kernel">The semantic kernel instance.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="config">The planner configuration.</param>
     public SequentialPlanner(
         Kernel kernel,
@@ -59,7 +55,6 @@ public sealed class SequentialPlanner
         this._logger = kernel.GetService<ILoggerFactory>().CreateLogger(this.GetType());
     }
 
-
     /// <summary>Creates a plan for the specified goal.</summary>
     /// <param name="goal">The goal for which a plan should be created.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
@@ -76,7 +71,6 @@ public sealed class SequentialPlanner
             planToString: static (Plan plan) => plan.ToSafePlanString(),
             this, goal, this._logger, cancellationToken);
     }
-
 
     private async Task<Plan> CreatePlanCoreAsync(string goal, CancellationToken cancellationToken)
     {
@@ -101,7 +95,6 @@ public sealed class SequentialPlanner
         var getFunctionCallback = this.Config.GetFunctionCallback ?? this._kernel.Plugins.GetFunctionCallback();
 
         Plan plan;
-
         try
         {
             plan = planResultString!.ToPlanFromXml(goal, getFunctionCallback, this.Config.AllowMissingFunctions);
@@ -118,7 +111,6 @@ public sealed class SequentialPlanner
 
         return plan;
     }
-
 
     private SequentialPlannerConfig Config { get; }
 

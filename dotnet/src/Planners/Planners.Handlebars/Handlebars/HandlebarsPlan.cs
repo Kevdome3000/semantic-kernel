@@ -5,7 +5,6 @@ namespace Microsoft.SemanticKernel.Planning.Handlebars;
 
 using System.Collections.Generic;
 using System.Threading;
-using Orchestration;
 
 
 /// <summary>
@@ -49,19 +48,17 @@ public sealed class HandlebarsPlan
     /// <summary>
     /// Invokes the Handlebars plan.
     /// </summary>
-    /// <param name="kernel">The kernel instance.</param>
-    /// <param name="contextVariables">The execution context variables.</param>
-    /// <param name="variables">The variables.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="arguments">The arguments.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The plan result.</returns>
     public FunctionResult Invoke(
         Kernel kernel,
-        ContextVariables contextVariables,
-        Dictionary<string, object?> variables,
+        Dictionary<string, object?> arguments,
         CancellationToken cancellationToken = default)
     {
-        string? results = HandlebarsTemplateEngineExtensions.Render(kernel, contextVariables, this._template, variables, cancellationToken);
-        contextVariables.Update(results);
-        return new FunctionResult("HandlebarsPlanner", contextVariables, results?.Trim());
+        string? result = HandlebarsTemplateEngineExtensions.Render(kernel, this._template, arguments, cancellationToken);
+
+        return new FunctionResult("HandlebarsPlanner", result, kernel.Culture);
     }
 }

@@ -12,7 +12,7 @@ using YamlDotNet.Serialization;
 /// <summary>
 /// Deserializer for <see cref="PromptExecutionSettings"/>.
 /// </summary>
-internal class PromptExecutionSettingsNodeDeserializer : INodeDeserializer
+internal sealed class PromptExecutionSettingsNodeDeserializer : INodeDeserializer
 {
     /// <inheritdoc/>
     public bool Deserialize(IParser reader, Type expectedType, Func<IParser, Type, object?> nestedObjectDeserializer, out object? value)

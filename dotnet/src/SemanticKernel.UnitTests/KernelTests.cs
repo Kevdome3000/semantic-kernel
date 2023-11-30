@@ -16,7 +16,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Events;
-using Microsoft.SemanticKernel.Orchestration;
 using Moq;
 using Xunit;
 
@@ -480,7 +479,7 @@ public class KernelTests
 
         kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs args) =>
         {
-            args.Variables.Update(ExpectedValue);
+            args.SetResultValue(ExpectedValue);
         };
 
         // Act
@@ -503,7 +502,7 @@ public class KernelTests
 
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs args) =>
         {
-            args.Variables["injectedVariable"] = ExpectedValue;
+            args.Arguments["injectedVariable"] = ExpectedValue;
         };
 
         // Act
@@ -625,18 +624,13 @@ public class KernelTests
 
 
         [KernelFunction, Description("Export info."), KernelName("ReadFunctionCollectionAsync")]
-        public async Task ReadFunctionCollectionAsync(ContextVariables variables, Kernel kernel)
+        public async Task ReadFunctionCollectionAsync(Kernel kernel)
         {
             await Task.Delay(0);
 
             if (kernel.Plugins == null)
             {
                 Assert.Fail("Functions collection is missing");
-            }
-
-            foreach (var function in kernel.Plugins.GetFunctionsMetadata())
-            {
-                variables[$"{function.PluginName}.{function.Name}"] = function.Description;
             }
         }
     }

@@ -2,10 +2,6 @@
 
 namespace Microsoft.SemanticKernel.Events;
 
-using AI;
-using Orchestration;
-
-
 /// <summary>
 /// Event arguments available to the Kernel.PromptRendering event.
 /// </summary>
@@ -15,16 +11,8 @@ public class PromptRenderingEventArgs : KernelEventArgs
     /// Initializes a new instance of the <see cref="PromptRenderingEventArgs"/> class.
     /// </summary>
     /// <param name="function">Kernel function</param>
-    /// <param name="variables">Context variables related to the event</param>
-    /// <param name="executionSettings">request settings used by the AI service</param>
-    public PromptRenderingEventArgs(KernelFunction function, ContextVariables variables, PromptExecutionSettings? executionSettings) : base(function, variables)
+    /// <param name="arguments">Kernel function arguments</param>
+    public PromptRenderingEventArgs(KernelFunction function, KernelArguments arguments) : base(function, arguments)
     {
-        this.RequestSettings = executionSettings; // TODO clone these settings
     }
-
-
-    /// <summary>
-    /// Request settings for the AI service.
-    /// </summary>
-    public PromptExecutionSettings? RequestSettings { get; }
 }

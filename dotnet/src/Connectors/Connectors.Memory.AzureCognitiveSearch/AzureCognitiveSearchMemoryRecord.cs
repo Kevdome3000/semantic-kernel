@@ -1,43 +1,50 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch;
+
 using System;
 using System.Text;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Text;
+using SemanticKernel.Memory;
+using Text;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch;
 
 /// <summary>
 /// Azure Cognitive Search record and index definition.
 /// Note: once defined, index cannot be modified.
 /// </summary>
-public class AzureCognitiveSearchMemoryRecord
+internal sealed class AzureCognitiveSearchMemoryRecord
 {
     /// <summary>
     /// ID field name.
     /// </summary>
     public const string IdField = "Id";
+
     /// <summary>
     /// Text field name.
     /// </summary>
     public const string TextField = "Text";
+
     /// <summary>
     /// Embedding field name.
     /// </summary>
     public const string EmbeddingField = "Embedding";
+
     /// <summary>
     /// External source name field name.
     /// </summary>
     public const string ExternalSourceNameField = "ExternalSourceName";
+
     /// <summary>
     /// Description field name.
     /// </summary>
     public const string DescriptionField = "Description";
+
     /// <summary>
     /// Additional metadata field name.
     /// </summary>
     public const string AdditionalMetadataField = "AdditionalMetadata";
+
     /// <summary>
     /// Is reference field name.
     /// </summary>
@@ -90,6 +97,7 @@ public class AzureCognitiveSearchMemoryRecord
     [JsonPropertyName(IsReferenceField)]
     public bool IsReference { get; set; } = false;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureCognitiveSearchMemoryRecord"/> class.
     /// Required by JSON deserializer.
@@ -97,6 +105,7 @@ public class AzureCognitiveSearchMemoryRecord
     public AzureCognitiveSearchMemoryRecord()
     {
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureCognitiveSearchMemoryRecord"/> class with the specified ID.
@@ -106,6 +115,7 @@ public class AzureCognitiveSearchMemoryRecord
     {
         this.Id = EncodeId(id);
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureCognitiveSearchMemoryRecord"/> class with the specified parameters.
@@ -135,6 +145,7 @@ public class AzureCognitiveSearchMemoryRecord
         this.AdditionalMetadata = additionalMetadata;
     }
 
+
     /// <summary>
     /// Converts the current instance to a <see cref="MemoryRecordMetadata"/> object.
     /// </summary>
@@ -149,6 +160,7 @@ public class AzureCognitiveSearchMemoryRecord
             externalSourceName: this.ExternalSourceName,
             additionalMetadata: this.AdditionalMetadata ?? string.Empty);
     }
+
 
     /// <summary>
     /// Creates a new <see cref="AzureCognitiveSearchMemoryRecord"/> object from the specified <see cref="MemoryRecord"/>.
@@ -168,6 +180,7 @@ public class AzureCognitiveSearchMemoryRecord
         );
     }
 
+
     /// <summary>
     /// Converts the current instance to a <see cref="MemoryRecord"/> object.
     /// </summary>
@@ -181,6 +194,7 @@ public class AzureCognitiveSearchMemoryRecord
             key: this.Id);
     }
 
+
     /// <summary>
     /// Encodes the specified ID using a URL-safe algorithm.
     /// ACS keys can contain only letters, digits, underscore, dash, equal sign, recommending
@@ -188,18 +202,19 @@ public class AzureCognitiveSearchMemoryRecord
     /// </summary>
     /// <param name="realId">The original ID.</param>
     /// <returns>The encoded ID.</returns>
-    protected internal static string EncodeId(string realId)
+    internal static string EncodeId(string realId)
     {
         var bytes = Encoding.UTF8.GetBytes(realId);
         return Convert.ToBase64String(bytes);
     }
+
 
     /// <summary>
     /// Decodes the specified encoded ID.
     /// </summary>
     /// <param name="encodedId">The encoded ID.</param>
     /// <returns>The decoded ID.</returns>
-    private protected static string DecodeId(string encodedId)
+    private static string DecodeId(string encodedId)
     {
         var bytes = Convert.FromBase64String(encodedId);
         return Encoding.UTF8.GetString(bytes);

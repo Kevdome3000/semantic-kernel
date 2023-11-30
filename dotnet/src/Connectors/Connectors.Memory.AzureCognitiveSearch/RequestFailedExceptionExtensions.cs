@@ -10,7 +10,7 @@ using Http;
 /// <summary>
 /// Provides extension methods for the <see cref="RequestFailedException"/> class.
 /// </summary>
-public static class RequestFailedExceptionExtensions
+internal static class RequestFailedExceptionExtensions
 {
     /// <summary>
     /// Converts a <see cref="RequestFailedException"/> to an <see cref="HttpOperationException"/>.

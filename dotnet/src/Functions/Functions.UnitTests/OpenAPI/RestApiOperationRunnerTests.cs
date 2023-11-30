@@ -81,7 +81,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             }
         };
 
-        var arguments = new Dictionary<string, string>
+        var arguments = new KernelArguments
         {
             { "payload", JsonSerializer.Serialize(payload) },
             { "content-type", "application/json" }
@@ -145,7 +145,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             payload: null
         );
 
-        var arguments = new Dictionary<string, string>
+        var arguments = new KernelArguments
         {
             { "payload", "fake-input-value" },
             { "content-type", "text/plain" }
@@ -186,7 +186,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     public async Task ItShouldAddHeadersToHttpRequestAsync()
     {
         // Arrange
-        var headers = new Dictionary<string, string>
+        var headers = new KernelArguments
         {
             { "fake-header", string.Empty }
         };
@@ -201,7 +201,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             headers
         );
 
-        var arguments = new Dictionary<string, string>
+        var arguments = new KernelArguments
         {
             { "fake-header", "fake-header-value" }
         };
@@ -223,7 +223,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     public async Task ItShouldAddUserAgentHeaderToHttpRequestIfConfiguredAsync()
     {
         // Arrange
-        var headers = new Dictionary<string, string>
+        var headers = new KernelArguments
         {
             { "fake-header", string.Empty }
         };
@@ -238,7 +238,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             headers
         );
 
-        var arguments = new Dictionary<string, string>
+        var arguments = new KernelArguments
         {
             { "fake-header", "fake-header-value" }
         };
@@ -281,11 +281,11 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             HttpMethod.Post,
             "fake-description",
             new List<RestApiOperationParameter>(),
-            new Dictionary<string, string>(),
+            new KernelArguments(),
             payload
         );
 
-        var arguments = new Dictionary<string, string>();
+        var arguments = new KernelArguments();
         arguments.Add("name", "fake-name-value");
         arguments.Add("enabled", "true");
 
@@ -345,11 +345,11 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             HttpMethod.Post,
             "fake-description",
             new List<RestApiOperationParameter>(),
-            new Dictionary<string, string>(),
+            new KernelArguments(),
             payload
         );
 
-        var arguments = new Dictionary<string, string>();
+        var arguments = new KernelArguments();
         arguments.Add("name", "fake-string-value");
         arguments.Add("enabled", "true");
         arguments.Add("cardinality", "8");
@@ -434,11 +434,11 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             HttpMethod.Post,
             "fake-description",
             new List<RestApiOperationParameter>(),
-            new Dictionary<string, string>(),
+            new KernelArguments(),
             payload
         );
 
-        var arguments = new Dictionary<string, string>();
+        var arguments = new KernelArguments();
         arguments.Add("upn", "fake-sender-upn");
         arguments.Add("receiver.upn", "fake-receiver-upn");
         arguments.Add("receiver.alternative.upn", "fake-receiver-alternative-upn");
@@ -504,11 +504,11 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             HttpMethod.Post,
             "fake-description",
             new List<RestApiOperationParameter>(),
-            new Dictionary<string, string>(),
+            new KernelArguments(),
             payload: null
         );
 
-        var arguments = new Dictionary<string, string>();
+        var arguments = new KernelArguments();
 
         var sut = new RestApiOperationRunner(
             this._httpClient,
@@ -533,11 +533,11 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             HttpMethod.Post,
             "fake-description",
             new List<RestApiOperationParameter>(),
-            new Dictionary<string, string>(),
+            new KernelArguments(),
             payload: null
         );
 
-        var arguments = new Dictionary<string, string>();
+        var arguments = new KernelArguments();
 
         var sut = new RestApiOperationRunner(
             this._httpClient,
@@ -566,11 +566,11 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             HttpMethod.Post,
             "fake-description",
             new List<RestApiOperationParameter>(),
-            new Dictionary<string, string>(),
+            new KernelArguments(),
             payload
         );
 
-        var arguments = new Dictionary<string, string>
+        var arguments = new KernelArguments
         {
             { "payload", "fake-input-value" },
         };
@@ -608,11 +608,11 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             HttpMethod.Post,
             "fake-description",
             new List<RestApiOperationParameter>(),
-            new Dictionary<string, string>(),
+            new KernelArguments(),
             payload: null
         );
 
-        var arguments = new Dictionary<string, string>
+        var arguments = new KernelArguments
         {
             { "payload", "fake-input-value" },
             { "content-type", $"{contentType}" },
@@ -656,11 +656,11 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             HttpMethod.Post,
             "fake-description",
             new List<RestApiOperationParameter>(),
-            new Dictionary<string, string>(),
+            new KernelArguments(),
             payload
         );
 
-        var arguments = new Dictionary<string, string>();
+        var arguments = new KernelArguments();
 
         var sut = new RestApiOperationRunner(
             this._httpClient,
@@ -704,11 +704,11 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             HttpMethod.Post,
             "fake-description",
             new List<RestApiOperationParameter>(),
-            new Dictionary<string, string>(),
+            new KernelArguments(),
             payload
         );
 
-        var arguments = new Dictionary<string, string>();
+        var arguments = new KernelArguments();
         arguments.Add("upn", "fake-sender-upn");
 
         var sut = new RestApiOperationRunner(
@@ -762,11 +762,11 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             HttpMethod.Get,
             "fake-description",
             new List<RestApiOperationParameter>() { firstParameter, secondParameter },
-            new Dictionary<string, string>(),
+            new KernelArguments(),
             payload: null
         );
 
-        var arguments = new Dictionary<string, string>
+        var arguments = new KernelArguments
         {
             { "p1", "v1" },
             { "p2", "v2" },
@@ -812,11 +812,11 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             HttpMethod.Get,
             "fake-description",
             new List<RestApiOperationParameter>() { firstParameter, secondParameter },
-            new Dictionary<string, string>(),
+            new KernelArguments(),
             payload: null
         );
 
-        var arguments = new Dictionary<string, string>
+        var arguments = new KernelArguments
         {
             { "p1", "v1" },
             { "p2", "v2" },
@@ -862,11 +862,11 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             HttpMethod.Get,
             "fake-description",
             new List<RestApiOperationParameter>() { firstParameter, secondParameter },
-            new Dictionary<string, string>(),
+            new KernelArguments(),
             payload: null
         );
 
-        var arguments = new Dictionary<string, string>
+        var arguments = new KernelArguments
         {
             { "p2", "v2" }, //Providing argument for the required parameter only
         };
@@ -903,11 +903,11 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             HttpMethod.Get,
             "fake-description",
             new List<RestApiOperationParameter>() { parameter },
-            new Dictionary<string, string>(),
+            new KernelArguments(),
             payload: null
         );
 
-        var arguments = new Dictionary<string, string>(); //Providing no arguments
+        var arguments = new KernelArguments(); //Providing no arguments
 
         var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
 
@@ -936,11 +936,11 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             HttpMethod.Post,
             "fake-description",
             new List<RestApiOperationParameter>(),
-            new Dictionary<string, string>(),
+            new KernelArguments(),
             payload: null
         );
 
-        var arguments = new Dictionary<string, string>
+        var arguments = new KernelArguments
         {
             { "payload", JsonSerializer.Serialize(new { value = "fake-value" }) },
             { "content-type", "application/json" }
@@ -980,11 +980,11 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             HttpMethod.Post,
             "fake-description",
             new List<RestApiOperationParameter>(),
-            new Dictionary<string, string>(),
+            new KernelArguments(),
             payload: null
         );
 
-        var arguments = new Dictionary<string, string>
+        var arguments = new KernelArguments
         {
             { "payload", JsonSerializer.Serialize(new { value = "fake-value" }) },
             { "content-type", "application/json" }
@@ -1017,11 +1017,11 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             HttpMethod.Post,
             "fake-description",
             new List<RestApiOperationParameter>(),
-            new Dictionary<string, string>(),
+            new KernelArguments(),
             payload: null
         );
 
-        var arguments = new Dictionary<string, string>
+        var arguments = new KernelArguments
         {
             { "payload", JsonSerializer.Serialize(new { value = "fake-value" }) },
             { "content-type", "application/json" }
@@ -1102,7 +1102,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             HttpMethod.Get,
             "fake-description",
             new List<RestApiOperationParameter>(),
-            new Dictionary<string, string>(),
+            new KernelArguments(),
             null,
             responses.ToDictionary(item => item.Item1, item => item.Item2)
         );
@@ -1110,7 +1110,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
 
         // Act
-        var result = await sut.RunAsync(operation, new Dictionary<string, string>());
+        var result = await sut.RunAsync(operation, new KernelArguments());
 
         Assert.NotNull(result);
         var expected = responses.First(r => r.Item1 == expectedStatusCode).Item2.Schema;

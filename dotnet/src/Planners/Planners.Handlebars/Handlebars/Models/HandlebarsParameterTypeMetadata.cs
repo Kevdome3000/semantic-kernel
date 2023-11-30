@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 #pragma warning restore IDE0130
 
 
-internal class HandlebarsParameterTypeMetadata
+internal sealed class HandlebarsParameterTypeMetadata
 {
     [JsonPropertyName("name")]
     public string Name { get; set; } = string.Empty;

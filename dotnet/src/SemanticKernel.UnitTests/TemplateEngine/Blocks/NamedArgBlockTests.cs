@@ -3,7 +3,6 @@
 namespace SemanticKernel.UnitTests.TemplateEngine.Blocks;
 
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Xunit;
 
@@ -216,7 +215,6 @@ public class NamedArgBlockTests
     {
         // Arrange
         var target = new NamedArgBlock($"a=${name}");
-        var variables = new ContextVariables { [name] = "value" };
 
         // Act + Assert
         Assert.Equal(isValid, target.IsValid(out _));

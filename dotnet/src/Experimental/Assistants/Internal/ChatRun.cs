@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Extensions;
 using Models;
-using Orchestration;
 
 
 /// <summary>
@@ -146,7 +145,7 @@ internal sealed class ChatRun
         {
             var function = this._kernel.GetAssistantTool(functionDetails.Name);
 
-            var variables = new ContextVariables();
+            var stringArguments = new KernelArguments();
 
             if (!string.IsNullOrWhiteSpace(functionDetails.Arguments))
             {
@@ -154,11 +153,11 @@ internal sealed class ChatRun
 
                 foreach (var argument in arguments)
                 {
-                    variables[argument.Key] = argument.Value.ToString();
+                    stringArguments[argument.Key] = argument.Value.ToString();
                 }
             }
 
-            var results = await this._kernel.InvokeAsync(function, variables, cancellationToken).ConfigureAwait(false);
+            var results = await this._kernel.InvokeAsync(function, stringArguments, cancellationToken).ConfigureAwait(false);
 
             return results.GetValue<string>() ?? string.Empty;
         }

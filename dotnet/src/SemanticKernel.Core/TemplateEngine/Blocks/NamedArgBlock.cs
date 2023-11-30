@@ -4,7 +4,6 @@ namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
 using System.Text.RegularExpressions;
 using Extensions.Logging;
-using Orchestration;
 
 
 /// <summary>
@@ -64,36 +63,32 @@ internal sealed class NamedArgBlock : Block, ITextRendering
 
     /// <summary>
     /// Gets the rendered value of the function argument. If the value is a <see cref="ValBlock"/>, the value stays the same.
-    /// If the value is a <see cref="VarBlock"/>, the value of the variable is determined by the context variables passed in.
+    /// If the value is a <see cref="VarBlock"/>, the value of the variable is determined by the arguments passed in.
     /// </summary>
-    /// <param name="variables">Variables to use for rendering the named argument value when the value is a <see cref="VarBlock"/>.</param>
+    /// <param name="arguments">Arguments to use for rendering the named argument value when the value is a <see cref="VarBlock"/>.</param>
     /// <returns></returns>
-    internal string GetValue(ContextVariables? variables)
+    internal string GetValue(KernelArguments? arguments)
     {
         var valueIsValidValBlock = this._valBlock != null && this._valBlock.IsValid(out var errorMessage);
 
         if (valueIsValidValBlock)
         {
-            return this._valBlock!.Render(variables);
+            return this._valBlock!.Render(arguments);
         }
 
         var valueIsValidVarBlock = this._argValueAsVarBlock != null && this._argValueAsVarBlock.IsValid(out var errorMessage2);
 
         if (valueIsValidVarBlock)
         {
-            return this._argValueAsVarBlock!.Render(variables);
+            return this._argValueAsVarBlock!.Render(arguments);
         }
 
         return string.Empty;
     }
 
 
-    /// <summary>
-    /// Renders the named arg block.
-    /// </summary>
-    /// <param name="variables"></param>
-    /// <returns></returns>
-    public string Render(ContextVariables? variables)
+    /// <inheritdoc/>
+    public string Render(KernelArguments? arguments)
     {
         return this.Content;
     }

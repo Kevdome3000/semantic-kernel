@@ -3,7 +3,6 @@
 namespace SemanticKernel.UnitTests.TemplateEngine.Blocks;
 
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Xunit;
 
@@ -59,13 +58,13 @@ public class VarBlockTests
     {
         // Arrange
         var target = new VarBlock("  $var \n ");
-        var variables = new ContextVariables
+        var arguments = new KernelArguments()
         {
             ["foo"] = "bar"
         };
 
         // Act
-        var result = target.Render(variables);
+        var result = target.Render(arguments);
 
         // Assert
         Assert.Equal(string.Empty, result);
@@ -77,14 +76,14 @@ public class VarBlockTests
     {
         // Arrange
         var target = new VarBlock("  $var \n ");
-        var variables = new ContextVariables
+        var arguments = new KernelArguments()
         {
             ["foo"] = "bar",
             ["var"] = "able",
         };
 
         // Act
-        var result = target.Render(variables);
+        var result = target.Render(arguments);
 
         // Assert
         Assert.Equal("able", result);
@@ -95,7 +94,7 @@ public class VarBlockTests
     public void ItThrowsIfTheVarNameIsEmpty()
     {
         // Arrange
-        var variables = new ContextVariables
+        var arguments = new KernelArguments()
         {
             ["foo"] = "bar",
             ["var"] = "able",
@@ -103,7 +102,7 @@ public class VarBlockTests
         var target = new VarBlock(" $ ");
 
         // Act + Assert
-        Assert.Throws<KernelException>(() => target.Render(variables));
+        Assert.Throws<KernelException>(() => target.Render(arguments));
     }
 
 
@@ -156,10 +155,10 @@ public class VarBlockTests
     {
         // Arrange
         var target = new VarBlock($" ${name} ");
-        var variables = new ContextVariables { [name] = "value" };
+        var arguments = new KernelArguments { [name] = "value" };
 
         // Act
-        var result = target.Render(variables);
+        var result = target.Render(arguments);
 
         // Assert
         Assert.Equal(isValid, target.IsValid(out _));

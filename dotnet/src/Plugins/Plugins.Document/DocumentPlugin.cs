@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
 using FileSystem;
-using Orchestration;
 
 //**********************************************************************************************************************
 // EXAMPLE USAGE
@@ -39,18 +38,6 @@ using Orchestration;
 /// </summary>
 public sealed class DocumentPlugin
 {
-    /// <summary>
-    /// <see cref="ContextVariables"/> parameter names.
-    /// </summary>
-    public static class Parameters
-    {
-        /// <summary>
-        /// Document file path.
-        /// </summary>
-        public const string FilePath = "filePath";
-    }
-
-
     private readonly IDocumentConnector _documentConnector;
     private readonly IFileSystemConnector _fileSystemConnector;
     private readonly ILogger _logger;
@@ -71,7 +58,7 @@ public sealed class DocumentPlugin
 
 
     /// <summary>
-    /// Read all text from a document, using <see cref="ContextVariables.Input"/> as the file path.
+    /// Read all text from a document, using the filePath argument as the file path.
     /// </summary>
     [KernelFunction, Description("Read all text from a document")]
     public async Task<string> ReadTextAsync(
@@ -86,7 +73,7 @@ public sealed class DocumentPlugin
 
 
     /// <summary>
-    /// Append the text in <see cref="ContextVariables.Input"/> to a document. If the document doesn't exist, it will be created.
+    /// Append the text specified by the text argument to a document. If the document doesn't exist, it will be created.
     /// </summary>
     [KernelFunction, Description("Append text to a document. If the document doesn't exist, it will be created.")]
     public async Task AppendTextAsync(

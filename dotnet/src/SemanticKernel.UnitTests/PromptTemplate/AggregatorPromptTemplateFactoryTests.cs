@@ -6,7 +6,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Orchestration;
 using Xunit;
 
 
@@ -74,7 +73,7 @@ public sealed class AggregatorPromptTemplateFactoryTests
         }
 
 
-        public Task<string> RenderAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
+        public Task<string> RenderAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(this._promptModel.Template);
         }
@@ -106,7 +105,7 @@ public sealed class AggregatorPromptTemplateFactoryTests
         }
 
 
-        public Task<string> RenderAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
+        public Task<string> RenderAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(this._promptModel.Template);
         }

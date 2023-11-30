@@ -8,10 +8,9 @@ using System.Threading.Tasks;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
 using HandlebarsDotNet;
-using Orchestration;
 
 
-internal class HandlebarsPromptTemplate : IPromptTemplate
+internal sealed class HandlebarsPromptTemplate : IPromptTemplate
 {
     /// <summary>
     /// Constructor for PromptTemplate.
@@ -27,7 +26,7 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
 
 
     /// <inheritdoc/>
-    public async Task<string> RenderAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
+    public async Task<string> RenderAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
     {
         var handlebars = HandlebarsDotNet.Handlebars.Create();
 
@@ -37,15 +36,15 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
             {
                 handlebars.RegisterHelper($"{plugin.Name}_{function.Name}", (writer, hcontext, parameters) =>
                 {
-                    var result = function.InvokeAsync(kernel, variables).GetAwaiter().GetResult();
-                    writer.WriteSafeString(result.GetValue<string>());
+                    var result = function.InvokeAsync(kernel, arguments).GetAwaiter().GetResult();
+                    writer.WriteSafeString(result.ToString());
                 });
             }
         }
 
         var template = handlebars.Compile(this._promptModel.Template);
 
-        var prompt = template(this.GetVariables(variables));
+        var prompt = template(this.GetVariables(arguments));
 
         return await Task.FromResult(prompt).ConfigureAwait(true);
     }
@@ -58,7 +57,7 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
     private readonly PromptTemplateConfig _promptModel;
 
 
-    private Dictionary<string, string> GetVariables(ContextVariables variables)
+    private Dictionary<string, string> GetVariables(KernelArguments? arguments)
     {
         Dictionary<string, string> result = new();
 
@@ -70,7 +69,12 @@ internal class HandlebarsPromptTemplate : IPromptTemplate
             }
         }
 
-        foreach (var kvp in variables)
+        if (arguments == null)
+        {
+            return result;
+        }
+
+        foreach (var kvp in arguments)
         {
             result[kvp.Key] = kvp.Value;
         }

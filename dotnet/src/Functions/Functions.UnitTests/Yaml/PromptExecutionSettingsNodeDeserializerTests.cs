@@ -13,7 +13,7 @@ using YamlDotNet.Serialization.NamingConventions;
 public sealed class PromptExecutionSettingsNodeDeserializerTests
 {
     [Fact]
-    public void ItShouldCreateSemanticFunctionFromYamlWithCustomModelSettings()
+    public void ItShouldCreatePromptFunctionFromYamlWithCustomModelSettings()
     {
         // Arrange
         var deserializer = new DeserializerBuilder()

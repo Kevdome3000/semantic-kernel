@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel.Plugins.Core;
 
 
 // ReSharper disable once InconsistentNaming
-public static class Example01_NativeFunctions
+public static class Example01_MethodFunctions
 {
     public static Task RunAsync()
     {

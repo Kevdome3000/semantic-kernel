@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Diagnostics;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
-using Orchestration;
 
 
 /// <summary>
@@ -18,18 +17,6 @@ using Orchestration;
 /// </summary>
 public sealed class CloudDrivePlugin
 {
-    /// <summary>
-    /// <see cref="ContextVariables"/> parameter names.
-    /// </summary>
-    public static class Parameters
-    {
-        /// <summary>
-        /// Document file path.
-        /// </summary>
-        public const string DestinationPath = "destinationPath";
-    }
-
-
     private readonly ICloudDriveConnector _connector;
     private readonly ILogger _logger;
 

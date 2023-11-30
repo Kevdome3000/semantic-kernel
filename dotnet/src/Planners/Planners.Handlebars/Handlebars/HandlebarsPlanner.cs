@@ -11,7 +11,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using AI.ChatCompletion;
-using Orchestration;
+using Extensions.Logging;
 
 
 /// <summary>
@@ -38,7 +38,7 @@ public sealed class HandlebarsPlanner
 
 
     /// <summary>Creates a plan for the specified goal.</summary>
-    /// <param name="kernel">The kernel.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="goal">The goal for which a plan should be created.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The created plan.</returns>
@@ -49,8 +49,13 @@ public sealed class HandlebarsPlanner
     {
         Verify.NotNullOrWhiteSpace(goal);
 
-        // TODO (@teresaqhoang): Add instrumentation without depending on planners.core
-        return this.CreatePlanCoreAsync(kernel, goal, cancellationToken);
+        var logger = kernel.GetService<ILoggerFactory>().CreateLogger(typeof(HandlebarsPlanner));
+
+        return PlannerInstrumentation.CreatePlanAsync(
+            static (HandlebarsPlanner planner, Kernel kernel, string goal, CancellationToken cancellationToken)
+                => planner.CreatePlanCoreAsync(kernel, goal, cancellationToken),
+            static (HandlebarsPlan plan) => plan.ToString(),
+            this, kernel, goal, logger, cancellationToken);
     }
 
 
@@ -70,16 +75,13 @@ public sealed class HandlebarsPlanner
         // Get the chat completion results
         var completionResults = await chatCompletion.GenerateMessageAsync(chatMessages, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        var contextVariables = new ContextVariables();
-        contextVariables.Update(completionResults);
-
-        if (contextVariables.Input.IndexOf("Additional helpers may be required", StringComparison.OrdinalIgnoreCase) >= 0)
+        if (completionResults?.IndexOf("Additional helpers may be required", StringComparison.OrdinalIgnoreCase) >= 0)
         {
             var functionNames = availableFunctions.ToList().Select(func => $"{func.PluginName}{HandlebarsTemplateEngineExtensions.ReservedNameDelimiter}{func.Name}");
-            throw new KernelException($"Unable to create plan for goal with available functions.\nGoal: {goal}\nAvailable Functions: {string.Join(", ", functionNames)}\nPlanner output:\n{contextVariables.Input}");
+            throw new KernelException($"Unable to create plan for goal with available functions.\nGoal: {goal}\nAvailable Functions: {string.Join(", ", functionNames)}\nPlanner output:\n{completionResults}");
         }
 
-        Match match = Regex.Match(contextVariables.Input, @"```\s*(handlebars)?\s*(.*)\s*```", RegexOptions.Singleline);
+        Match match = Regex.Match(completionResults, @"```\s*(handlebars)?\s*(.*)\s*```", RegexOptions.Singleline);
 
         if (!match.Success)
         {
@@ -222,7 +224,7 @@ public sealed class HandlebarsPlanner
         Dictionary<string, string> complexParameterSchemas)
     {
         var plannerTemplate = this.ReadPrompt("CreatePlanPrompt.handlebars");
-        var variables = new Dictionary<string, object?>()
+        var arguments = new Dictionary<string, object?>()
         {
             { "functions", availableFunctions },
             { "goal", goal },
@@ -234,7 +236,7 @@ public sealed class HandlebarsPlanner
             { "lastError", this._config.LastError }
         };
 
-        return HandlebarsTemplateEngineExtensions.Render(kernel, new ContextVariables(), plannerTemplate, variables);
+        return HandlebarsTemplateEngineExtensions.Render(kernel, plannerTemplate, arguments);
     }
 
 

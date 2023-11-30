@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Functions.UnitTests.Grpc;
+
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -10,11 +12,11 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Functions.Grpc;
 using Microsoft.SemanticKernel.Functions.Grpc.Model;
 using Xunit;
 
-namespace SemanticKernel.Functions.UnitTests.Grpc;
 
 public sealed class GrpcRunnerTests : IDisposable
 {
@@ -28,6 +30,7 @@ public sealed class GrpcRunnerTests : IDisposable
     /// </summary>
     private readonly HttpClient _httpClient;
 
+
     /// <summary>
     /// Creates an instance of a <see cref="GrpcRunnerTests"/> class.
     /// </summary>
@@ -37,6 +40,7 @@ public sealed class GrpcRunnerTests : IDisposable
 
         this._httpClient = new HttpClient(this._httpMessageHandlerStub);
     }
+
 
     [Fact]
     public async Task ShouldUseAddressProvidedInGrpcOperationAsync()
@@ -57,7 +61,7 @@ public sealed class GrpcRunnerTests : IDisposable
         operation.Package = "greet";
         operation.Address = "https://fake-random-test-host";
 
-        var arguments = new Dictionary<string, string>();
+        var arguments = new KernelArguments();
         arguments.Add("payload", JsonSerializer.Serialize(new { name = "author" }));
 
         // Act
@@ -67,6 +71,7 @@ public sealed class GrpcRunnerTests : IDisposable
         Assert.NotNull(this._httpMessageHandlerStub.RequestUri);
         Assert.Equal("https://fake-random-test-host/greet.Greeter/SayHello", this._httpMessageHandlerStub.RequestUri.AbsoluteUri);
     }
+
 
     [Fact]
     public async Task ShouldUseAddressOverrideFromArgumentsAsync()
@@ -87,7 +92,7 @@ public sealed class GrpcRunnerTests : IDisposable
         operation.Package = "greet";
         operation.Address = "https://fake-random-test-host";
 
-        var arguments = new Dictionary<string, string>();
+        var arguments = new KernelArguments();
         arguments.Add("payload", JsonSerializer.Serialize(new { name = "author" }));
         arguments.Add("address", "https://fake-random-test-host-from-args");
 
@@ -98,6 +103,7 @@ public sealed class GrpcRunnerTests : IDisposable
         Assert.NotNull(this._httpMessageHandlerStub.RequestUri);
         Assert.Equal("https://fake-random-test-host-from-args/greet.Greeter/SayHello", this._httpMessageHandlerStub.RequestUri.AbsoluteUri);
     }
+
 
     [Fact]
     public async Task ShouldRunOperationsWithSimpleDataContractAsync()
@@ -121,7 +127,7 @@ public sealed class GrpcRunnerTests : IDisposable
         operation.Package = "greet";
         operation.Address = "https://fake-random-test-host";
 
-        var arguments = new Dictionary<string, string>();
+        var arguments = new KernelArguments();
         arguments.Add("payload", JsonSerializer.Serialize(new { name = "author" }));
 
         // Act
@@ -147,6 +153,7 @@ public sealed class GrpcRunnerTests : IDisposable
         Assert.Equal(new byte[] { 0, 0, 0, 0, 8, 10, 6, 97, 117, 116, 104, 111, 114 }, this._httpMessageHandlerStub.RequestContent);
     }
 
+
     /// <summary>
     /// Disposes resources used by this class.
     /// </summary>
@@ -156,6 +163,7 @@ public sealed class GrpcRunnerTests : IDisposable
 
         this._httpClient.Dispose();
     }
+
 
     private sealed class HttpMessageHandlerStub : DelegatingHandler
     {
@@ -171,11 +179,13 @@ public sealed class GrpcRunnerTests : IDisposable
 
         public HttpResponseMessage ResponseToReturn { get; set; }
 
+
         public HttpMessageHandlerStub()
         {
             this.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
             this.ResponseToReturn.Content = new StringContent("{}", Encoding.UTF8, MediaTypeNames.Application.Json);
         }
+
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {

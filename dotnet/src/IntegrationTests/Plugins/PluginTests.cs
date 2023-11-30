@@ -9,7 +9,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
-using Microsoft.SemanticKernel.Orchestration;
 using Xunit;
 
 
@@ -35,14 +34,14 @@ public class PluginTests
             new Uri(pluginEndpoint),
             new OpenAIFunctionExecutionParameters(httpClient));
 
-        var contextVariables = new ContextVariables();
-        contextVariables["q"] = query;
-        contextVariables["size"] = size.ToString(System.Globalization.CultureInfo.InvariantCulture);
-        contextVariables["budget"] = budget.ToString(System.Globalization.CultureInfo.InvariantCulture);
-        contextVariables["countryCode"] = countryCode;
+        var arguments = new KernelArguments();
+        arguments["q"] = query;
+        arguments["size"] = size.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        arguments["budget"] = budget.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        arguments["countryCode"] = countryCode;
 
         // Act
-        await plugin[functionName].InvokeAsync(kernel, contextVariables);
+        await plugin[functionName].InvokeAsync(kernel, arguments);
     }
 
 
@@ -66,14 +65,14 @@ public class PluginTests
             new Uri(pluginEndpoint),
             new OpenApiFunctionExecutionParameters(httpClient));
 
-        var contextVariables = new ContextVariables();
-        contextVariables["q"] = query;
-        contextVariables["size"] = size.ToString(System.Globalization.CultureInfo.InvariantCulture);
-        contextVariables["budget"] = budget.ToString(System.Globalization.CultureInfo.InvariantCulture);
-        contextVariables["countryCode"] = countryCode;
+        var arguments = new KernelArguments();
+        arguments["q"] = query;
+        arguments["size"] = size.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        arguments["budget"] = budget.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        arguments["countryCode"] = countryCode;
 
         // Act
-        await plugin[functionName].InvokeAsync(kernel, contextVariables);
+        await plugin[functionName].InvokeAsync(kernel, arguments);
     }
 
 
@@ -97,14 +96,14 @@ public class PluginTests
             new Uri(pluginEndpoint),
             new OpenApiFunctionExecutionParameters(httpClient));
 
-        var contextVariables = new ContextVariables();
-        contextVariables["q"] = query;
-        contextVariables["size"] = size.ToString(System.Globalization.CultureInfo.InvariantCulture);
-        contextVariables["budget"] = budget.ToString(System.Globalization.CultureInfo.InvariantCulture);
-        contextVariables["countryCode"] = countryCode;
+        var arguments = new KernelArguments();
+        arguments["q"] = query;
+        arguments["size"] = size.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        arguments["budget"] = budget.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        arguments["countryCode"] = countryCode;
 
         // Act
-        var result = (await kernel.InvokeAsync(plugin[functionName], contextVariables)).GetValue<RestApiOperationResponse>();
+        var result = (await kernel.InvokeAsync(plugin[functionName], arguments)).GetValue<RestApiOperationResponse>();
 
         // Assert
         Assert.NotNull(result);
@@ -136,11 +135,11 @@ public class PluginTests
             new Uri(pluginEndpoint),
             new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
 
-        var contextVariables = new ContextVariables();
-        contextVariables["payload"] = payload;
+        var arguments = new KernelArguments();
+        arguments["payload"] = payload;
 
         // Act
-        await plugin[functionName].InvokeAsync(kernel, contextVariables);
+        await plugin[functionName].InvokeAsync(kernel, arguments);
     }
 
 
@@ -168,11 +167,11 @@ public class PluginTests
                 stream,
                 new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
 
-            var contextVariables = new ContextVariables();
-            contextVariables["payload"] = payload;
+            var arguments = new KernelArguments();
+            arguments["payload"] = payload;
 
             // Act
-            await plugin[functionName].InvokeAsync(kernel, contextVariables);
+            await plugin[functionName].InvokeAsync(kernel, arguments);
         }
     }
 
@@ -199,10 +198,10 @@ public class PluginTests
             pluginFilePath,
             new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
 
-        var contextVariables = new ContextVariables();
-        contextVariables["payload"] = payload;
+        var arguments = new KernelArguments();
+        arguments["payload"] = payload;
 
         // Act
-        await plugin[functionName].InvokeAsync(kernel, contextVariables);
+        await plugin[functionName].InvokeAsync(kernel, arguments);
     }
 }

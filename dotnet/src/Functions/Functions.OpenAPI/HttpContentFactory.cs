@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using System.Net.Http;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
-
 namespace Microsoft.SemanticKernel.Functions.OpenAPI;
+
+using System.Net.Http;
+using Model;
+
 
 /// <summary>
 /// Represents a delegate for creating HTTP content for a REST API operation.
@@ -12,4 +12,4 @@ namespace Microsoft.SemanticKernel.Functions.OpenAPI;
 /// <param name="payload">The operation payload metadata.</param>
 /// <param name="arguments">The operation arguments.</param>
 /// <returns>The HTTP content representing the operation payload.</returns>
-internal delegate HttpContent HttpContentFactory(RestApiOperationPayload? payload, IDictionary<string, string> arguments);
+internal delegate HttpContent HttpContentFactory(RestApiOperationPayload? payload, KernelArguments arguments);

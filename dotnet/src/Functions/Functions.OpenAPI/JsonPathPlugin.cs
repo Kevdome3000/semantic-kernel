@@ -7,7 +7,6 @@ using System.ComponentModel;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Orchestration;
 
 
 /// <summary>
@@ -15,18 +14,6 @@ using Orchestration;
 /// </summary>
 public sealed class JsonPathPlugin
 {
-    /// <summary>
-    /// <see cref="ContextVariables"/> parameter names.
-    /// </summary>
-    public static class Parameters
-    {
-        /// <summary>
-        /// JSON path.
-        /// </summary>
-        public const string JsonPath = "jsonpath";
-    }
-
-
     /// <summary>
     /// Retrieve the value of a JSON element from a JSON string using a JsonPath query.
     /// </summary>
