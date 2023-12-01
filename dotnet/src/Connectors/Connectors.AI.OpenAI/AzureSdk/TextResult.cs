@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
-using Orchestration;
+using SemanticKernel.AI;
 using SemanticKernel.AI.TextCompletion;
 
 
@@ -17,12 +17,16 @@ internal sealed class TextResult : ITextResult
 
     public TextResult(Completions resultData, Choice choice)
     {
-        _modelResult = new ModelResult(new TextModelResult(resultData, choice));
-        _choice = choice;
+        this._modelResult = new(new TextModelResult(resultData, choice));
+        this._choice = choice;
     }
 
 
-    public ModelResult ModelResult => _modelResult;
+    public ModelResult ModelResult => this._modelResult;
 
-    public Task<string> GetCompletionAsync(CancellationToken cancellationToken = default) => Task.FromResult(_choice.Text);
+
+    public Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(this._choice.Text);
+    }
 }

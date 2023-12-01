@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using NS of KernelConfig
 namespace Microsoft.SemanticKernel;
 
 using System.Net.Http;
@@ -10,8 +8,6 @@ using AI.TextCompletion;
 using Connectors.AI.HuggingFace.TextCompletion;
 using Connectors.AI.HuggingFace.TextEmbedding;
 using Extensions.DependencyInjection;
-
-#pragma warning restore IDE0130
 
 
 /// <summary>

@@ -1,13 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable IDE0130
-namespace Microsoft.SemanticKernel.Experimental.Orchestration;
-
 using System.Collections.Generic;
 using System.Linq;
 
-#pragma warning restore IDE0130
-
+namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 
 /// <summary>
 /// Flow data model
@@ -22,7 +18,6 @@ public sealed class Flow : FlowStep
 {
     private List<FlowStep> _steps;
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="Flow"/> class.
     /// </summary>
@@ -33,7 +28,6 @@ public sealed class Flow : FlowStep
         this.Name = name;
         this._steps = new List<FlowStep>();
     }
-
 
     /// <summary>
     /// Steps of the flow
@@ -49,7 +43,6 @@ public sealed class Flow : FlowStep
     /// </summary>
     public string Name { get; set; }
 
-
     /// <summary>
     /// Adds a step to the flow
     /// </summary>
@@ -58,7 +51,6 @@ public sealed class Flow : FlowStep
     {
         this._steps.Add(step);
     }
-
 
     /// <summary>
     /// Adds steps to the flow
@@ -69,14 +61,12 @@ public sealed class Flow : FlowStep
         this._steps.AddRange(steps);
     }
 
-
     /// <inheritdoc/>
     public override IEnumerable<string> Requires
     {
         get
         {
             var requires = new List<string>();
-
             foreach (var step in this._steps)
             {
                 requires.AddRange(step.Requires);

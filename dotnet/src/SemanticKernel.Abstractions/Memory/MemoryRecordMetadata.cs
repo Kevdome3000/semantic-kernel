@@ -1,13 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Memory;
+
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Memory;
 
 /// <summary>
 /// Class representing the metadata associated with a Semantic Kernel memory.
 /// </summary>
+[Experimental("SKEXP0003")]
 public class MemoryRecordMetadata : ICloneable
 {
     /// <summary>
@@ -54,6 +57,7 @@ public class MemoryRecordMetadata : ICloneable
     [JsonPropertyName("additional_metadata")]
     public string AdditionalMetadata { get; }
 
+
     /// <summary>
     /// Constructor.
     /// </summary>
@@ -80,6 +84,7 @@ public class MemoryRecordMetadata : ICloneable
         this.Description = description;
         this.AdditionalMetadata = additionalMetadata;
     }
+
 
     /// <summary>
     /// Creates a shallow copy of <see cref="MemoryRecordMetadata"/>.

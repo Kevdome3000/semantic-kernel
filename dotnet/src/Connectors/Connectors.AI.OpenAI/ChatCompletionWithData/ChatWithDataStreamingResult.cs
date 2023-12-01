@@ -4,15 +4,16 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using AzureSdk;
-using Orchestration;
+using SemanticKernel.AI;
 using SemanticKernel.AI.ChatCompletion;
 
 
+[Experimental("SKEXP0010")]
 internal sealed class ChatWithDataStreamingResult
 {
     public ModelResult ModelResult { get; }

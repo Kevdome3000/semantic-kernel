@@ -72,9 +72,9 @@ public sealed class TextMemoryPlugin
     /// </example>
     [KernelFunction, Description("Key-based lookup for a specific memory")]
     public async Task<string> RetrieveAsync(
-        [KernelName(CollectionParam), Description("Memories collection associated with the memory to retrieve"), DefaultValue(DefaultCollection)]
+        [Description("Memories collection associated with the memory to retrieve"), DefaultValue(DefaultCollection)]
         string? collection,
-        [KernelName(KeyParam), Description("The key associated with the memory to retrieve")]
+        [Description("The key associated with the memory to retrieve")]
         string key,
         ILoggerFactory? loggerFactory,
         CancellationToken cancellationToken = default)
@@ -107,11 +107,11 @@ public sealed class TextMemoryPlugin
     public async Task<string> RecallAsync(
         [Description("The input text to find related memories for")]
         string input,
-        [KernelName(CollectionParam), Description("Memories collection to search"), DefaultValue(DefaultCollection)]
+        [Description("Memories collection to search"), DefaultValue(DefaultCollection)]
         string collection,
-        [KernelName(RelevanceParam), Description("The relevance score, from 0.0 to 1.0, where 1.0 means perfect match"), DefaultValue(DefaultRelevance)]
+        [Description("The relevance score, from 0.0 to 1.0, where 1.0 means perfect match"), DefaultValue(DefaultRelevance)]
         double? relevance,
-        [KernelName(LimitParam), Description("The maximum number of relevant memories to recall"), DefaultValue(DefaultLimit)]
+        [Description("The maximum number of relevant memories to recall"), DefaultValue(DefaultLimit)]
         int? limit,
         ILoggerFactory? loggerFactory,
         CancellationToken cancellationToken = default)
@@ -158,9 +158,9 @@ public sealed class TextMemoryPlugin
     public async Task SaveAsync(
         [Description("The information to save")]
         string input,
-        [KernelName(CollectionParam), Description("Memories collection associated with the information to save"), DefaultValue(DefaultCollection)]
+        [Description("Memories collection associated with the information to save"), DefaultValue(DefaultCollection)]
         string collection,
-        [KernelName(KeyParam), Description("The key associated with the information to save")]
+        [Description("The key associated with the information to save")]
         string key,
         ILoggerFactory? loggerFactory,
         CancellationToken cancellationToken = default)
@@ -187,9 +187,9 @@ public sealed class TextMemoryPlugin
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     [KernelFunction, Description("Remove specific memory")]
     public async Task RemoveAsync(
-        [KernelName(CollectionParam), Description("Memories collection associated with the information to save"), DefaultValue(DefaultCollection)]
+        [Description("Memories collection associated with the information to save"), DefaultValue(DefaultCollection)]
         string collection,
-        [KernelName(KeyParam), Description("The key associated with the information to save")]
+        [Description("The key associated with the information to save")]
         string key,
         ILoggerFactory? loggerFactory,
         CancellationToken cancellationToken = default)

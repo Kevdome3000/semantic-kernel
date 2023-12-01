@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
-using Microsoft.SemanticKernel.Orchestration;
-
-#pragma warning disable IDE0130
-
 namespace Microsoft.SemanticKernel;
+
+using AI;
+using Connectors.AI.HuggingFace.TextCompletion;
+
 
 /// <summary>
 /// Provides an extension method for working with Hugging Face model results.

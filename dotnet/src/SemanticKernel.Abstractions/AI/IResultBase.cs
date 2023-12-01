@@ -2,9 +2,6 @@
 
 namespace Microsoft.SemanticKernel.AI;
 
-using Orchestration;
-
-
 /// <summary>
 /// Interface for model results
 /// </summary>

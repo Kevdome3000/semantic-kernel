@@ -5,6 +5,7 @@ namespace Microsoft.SemanticKernel.Text;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 
@@ -14,6 +15,7 @@ using System.Text;
 /// For plain text, split looking at new lines first, then periods, and so on.
 /// For markdown, split looking at punctuation first, and so on.
 /// </summary>
+[Experimental("SKEXP0055")]
 public static class TextChunker
 {
     /// <summary>
@@ -36,6 +38,7 @@ public static class TextChunker
     /// <param name="maxTokensPerLine">Maximum number of tokens per line.</param>
     /// <param name="tokenCounter">Function to count tokens in a string. If not supplied, the default counter will be used.</param>
     /// <returns>List of lines.</returns>
+    [Experimental("SKEXP0055")]
     public static List<string> SplitPlainTextLines(string text, int maxTokensPerLine, TokenCounter? tokenCounter = null) =>
         InternalSplitLines(text, maxTokensPerLine, trim: true, s_plaintextSplitOptions, tokenCounter);
 
@@ -47,6 +50,7 @@ public static class TextChunker
     /// <param name="maxTokensPerLine">Maximum number of tokens per line.</param>
     /// <param name="tokenCounter">Function to count tokens in a string. If not supplied, the default counter will be used.</param>
     /// <returns>List of lines.</returns>
+    [Experimental("SKEXP0055")]
     public static List<string> SplitMarkDownLines(string text, int maxTokensPerLine, TokenCounter? tokenCounter = null) =>
         InternalSplitLines(text, maxTokensPerLine, trim: true, s_markdownSplitOptions, tokenCounter);
 
@@ -60,6 +64,7 @@ public static class TextChunker
     /// <param name="chunkHeader">Text to be prepended to each individual chunk.</param>
     /// <param name="tokenCounter">Function to count tokens in a string. If not supplied, the default counter will be used.</param>
     /// <returns>List of paragraphs.</returns>
+    [Experimental("SKEXP0055")]
     public static List<string> SplitPlainTextParagraphs(List<string> lines, int maxTokensPerParagraph, int overlapTokens = 0, string? chunkHeader = null, TokenCounter? tokenCounter = null) =>
         InternalSplitTextParagraphs(lines, maxTokensPerParagraph, overlapTokens, chunkHeader, static (text, maxTokens, tokenCounter) => InternalSplitLines(text, maxTokens, trim: false, s_plaintextSplitOptions, tokenCounter), tokenCounter);
 
@@ -73,10 +78,12 @@ public static class TextChunker
     /// <param name="chunkHeader">Text to be prepended to each individual chunk.</param>
     /// <param name="tokenCounter">Function to count tokens in a string. If not supplied, the default counter will be used.</param>
     /// <returns>List of paragraphs.</returns>
+    [Experimental("SKEXP0055")]
     public static List<string> SplitMarkdownParagraphs(List<string> lines, int maxTokensPerParagraph, int overlapTokens = 0, string? chunkHeader = null, TokenCounter? tokenCounter = null) =>
         InternalSplitTextParagraphs(lines, maxTokensPerParagraph, overlapTokens, chunkHeader, static (text, maxTokens, tokenCounter) => InternalSplitLines(text, maxTokens, trim: false, s_markdownSplitOptions, tokenCounter), tokenCounter);
 
 
+    [Experimental("SKEXP0055")]
     private static List<string> InternalSplitTextParagraphs(List<string> lines, int maxTokensPerParagraph, int overlapTokens, string? chunkHeader, Func<string, int, TokenCounter?, List<string>> longLinesSplitter, TokenCounter? tokenCounter)
     {
         if (maxTokensPerParagraph <= 0)
@@ -107,6 +114,7 @@ public static class TextChunker
     }
 
 
+    [Experimental("SKEXP0055")]
     private static List<string> BuildParagraph(IEnumerable<string> truncatedLines, int maxTokensPerParagraph, TokenCounter? tokenCounter)
     {
         StringBuilder paragraphBuilder = new();
@@ -147,6 +155,7 @@ public static class TextChunker
     }
 
 
+    [Experimental("SKEXP0055")]
     private static List<string> ProcessParagraphs(List<string> paragraphs, int adjustedMaxTokensPerParagraph, int overlapTokens, string? chunkHeader, Func<string, int, TokenCounter?, List<string>> longLinesSplitter, TokenCounter? tokenCounter)
     {
         // distribute text more evenly in the last paragraphs when the last paragraph is too short.
@@ -212,6 +221,7 @@ public static class TextChunker
     }
 
 
+    [Experimental("SKEXP0055")]
     private static List<string> InternalSplitLines(string text, int maxTokensPerLine, bool trim, string?[] splitOptions, TokenCounter? tokenCounter)
     {
         var result = new List<string>();
@@ -235,6 +245,7 @@ public static class TextChunker
     }
 
 
+    [Experimental("SKEXP0055")]
     private static (List<string>, bool) Split(List<string> input, int maxTokens, ReadOnlySpan<char> separators, bool trim, TokenCounter? tokenCounter)
     {
         bool inputWasSplit = false;
@@ -251,6 +262,7 @@ public static class TextChunker
     }
 
 
+    [Experimental("SKEXP0055")]
     private static (List<string>, bool) Split(ReadOnlySpan<char> input, string? inputString, int maxTokens, ReadOnlySpan<char> separators, bool trim, TokenCounter? tokenCounter)
     {
         Debug.Assert(inputString is null || input.SequenceEqual(inputString.AsSpan()));

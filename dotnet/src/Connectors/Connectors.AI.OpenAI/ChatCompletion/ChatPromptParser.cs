@@ -4,7 +4,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
 using System;
 using System.Collections.Generic;
-using Prompt;
+using Prompts;
 using SemanticKernel.AI.ChatCompletion;
 
 
@@ -46,7 +46,11 @@ internal static class ChatPromptParser
     /// Checks if <see cref="PromptNode"/> is valid chat message.
     /// </summary>
     /// <param name="node">Instance of <see cref="PromptNode"/>.</param>
-    private static bool IsValidChatMessage(PromptNode node) => node.TagName.Equals(MessageTagName, StringComparison.OrdinalIgnoreCase) &&
-                                                               node.Attributes.ContainsKey(RoleAttributeName) &&
-                                                               node.Content is not null;
+    private static bool IsValidChatMessage(PromptNode node)
+    {
+        return
+            node.TagName.Equals(MessageTagName, StringComparison.OrdinalIgnoreCase) &&
+            node.Attributes.ContainsKey(RoleAttributeName) &&
+            node.Content is not null;
+    }
 }

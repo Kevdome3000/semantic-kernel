@@ -239,15 +239,15 @@ public class OrderedAIServiceConfigurationProviderTests
 
     private sealed class AIService : IAIService
     {
-        public IReadOnlyDictionary<string, string> Attributes => new Dictionary<string, string>();
+        public IReadOnlyDictionary<string, object?> Attributes => new Dictionary<string, object?>();
     }
 
 
     private sealed class TextCompletion : ITextCompletion
     {
-        public IReadOnlyDictionary<string, string> Attributes => this._attributes;
+        public IReadOnlyDictionary<string, object?> Attributes => this._attributes;
 
-        private readonly Dictionary<string, string> _attributes = new();
+        private readonly Dictionary<string, object?> _attributes = new();
 
 
         public TextCompletion(string? modelId = null)
@@ -259,7 +259,7 @@ public class OrderedAIServiceConfigurationProviderTests
         }
 
 
-        public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }

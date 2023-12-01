@@ -3,11 +3,13 @@
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 
 /// <summary>
 /// Represents result of a chat completion with data.
 /// </summary>
+[Experimental("SKEXP0010")]
 public class ChatWithDataModelResult
 {
     /// <summary>

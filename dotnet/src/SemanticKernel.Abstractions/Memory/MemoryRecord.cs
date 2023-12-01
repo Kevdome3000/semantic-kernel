@@ -3,6 +3,7 @@
 namespace Microsoft.SemanticKernel.Memory;
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Text;
@@ -11,6 +12,7 @@ using Text;
 /// <summary>
 /// IMPORTANT: this is a storage schema. Changing the fields will invalidate existing metadata stored in persistent vector DBs.
 /// </summary>
+[Experimental("SKEXP0003")]
 public class MemoryRecord : DataEntryBase
 {
     /// <summary>

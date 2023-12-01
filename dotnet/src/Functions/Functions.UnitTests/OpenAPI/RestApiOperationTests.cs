@@ -23,10 +23,10 @@ public class RestApiOperationTests
             HttpMethod.Get,
             "fake_description",
             new List<RestApiOperationParameter>(),
-            new Dictionary<string, string>()
+            new Dictionary<string, string?>()
         );
 
-        var arguments = new Dictionary<string, string>();
+        var arguments = new Dictionary<string, string?>();
 
         // Act
         var url = sut.BuildOperationUrl(arguments);
@@ -47,12 +47,12 @@ public class RestApiOperationTests
             HttpMethod.Get,
             "fake_description",
             new List<RestApiOperationParameter>(),
-            new Dictionary<string, string>()
+            new Dictionary<string, string?>()
         );
 
         var fakeHostUrlOverride = "https://fake-random-test-host-override";
 
-        var arguments = new Dictionary<string, string>();
+        var arguments = new Dictionary<string, string?>();
 
         // Act
         var url = sut.BuildOperationUrl(arguments, serverUrlOverride: new Uri(fakeHostUrlOverride));
@@ -73,10 +73,10 @@ public class RestApiOperationTests
             HttpMethod.Get,
             "fake_description",
             new List<RestApiOperationParameter>(),
-            new Dictionary<string, string>()
+            new Dictionary<string, string?>()
         );
 
-        var arguments = new Dictionary<string, string>
+        var arguments = new Dictionary<string, string?>
         {
             { "fake-path-parameter", "fake-path-value" }
         };
@@ -108,9 +108,9 @@ public class RestApiOperationTests
             HttpMethod.Get,
             "fake_description",
             new List<RestApiOperationParameter> { parameterMetadata },
-            new Dictionary<string, string>());
+            new Dictionary<string, string?>());
 
-        var arguments = new Dictionary<string, string>();
+        var arguments = new Dictionary<string, string?>();
 
         // Act
         var url = sut.BuildOperationUrl(arguments);
@@ -146,11 +146,11 @@ public class RestApiOperationTests
             HttpMethod.Get,
             "fake_description",
             new List<RestApiOperationParameter> { firstParameterMetadata, secondParameterMetadata },
-            new Dictionary<string, string>());
+            new Dictionary<string, string?>());
 
         var fakeHostUrlOverride = "https://fake-random-test-host-override";
 
-        var arguments = new Dictionary<string, string>
+        var arguments = new Dictionary<string, string?>
         {
             { "fake-path", "fake-path-value" },
         };
@@ -167,13 +167,13 @@ public class RestApiOperationTests
     public void ItShouldRenderHeaderValuesFromArguments()
     {
         // Arrange
-        var rawHeaders = new Dictionary<string, string>
+        var rawHeaders = new Dictionary<string, string?>
         {
             { "fake_header_one", string.Empty },
             { "fake_header_two", string.Empty }
         };
 
-        var arguments = new Dictionary<string, string>
+        var arguments = new Dictionary<string, string?>
         {
             { "fake_header_one", "fake_header_one_value" },
             { "fake_header_two", "fake_header_two_value" }
@@ -199,7 +199,7 @@ public class RestApiOperationTests
     public void ItShouldUseHeaderValuesIfTheyAreAlreadyProvided()
     {
         // Arrange
-        var rawHeaders = new Dictionary<string, string>
+        var rawHeaders = new Dictionary<string, string?>
         {
             { "fake_header_one", "fake_header_one_value" },
             { "fake_header_two", "fake_header_two_value" }
@@ -209,7 +209,7 @@ public class RestApiOperationTests
             rawHeaders);
 
         // Act
-        var headers = sut.RenderHeaders(new Dictionary<string, string>());
+        var headers = sut.RenderHeaders(new Dictionary<string, string?>());
 
         // Assert
         Assert.Equal(2, headers.Count);
@@ -226,7 +226,7 @@ public class RestApiOperationTests
     public void ItShouldThrowExceptionIfHeadersHaveNoValuesAndHeadersMetadataNotSupplied()
     {
         // Arrange
-        var rawHeaders = new Dictionary<string, string>
+        var rawHeaders = new Dictionary<string, string?>
         {
             { "fake_header_one", string.Empty },
             { "fake_header_two", string.Empty }
@@ -237,7 +237,7 @@ public class RestApiOperationTests
         var sut = new RestApiOperation("fake_id", new Uri("http://fake_url"), "fake_path", HttpMethod.Get, "fake_description", metadata, rawHeaders);
 
         // Act
-        void Act() => sut.RenderHeaders(new Dictionary<string, string>());
+        void Act() => sut.RenderHeaders(new Dictionary<string, string?>());
 
         // Assert
         Assert.Throws<KernelException>(Act);
@@ -248,7 +248,7 @@ public class RestApiOperationTests
     public void ShouldThrowExceptionIfNoValueProvidedForRequiredHeader()
     {
         // Arrange
-        var rawHeaders = new Dictionary<string, string>
+        var rawHeaders = new Dictionary<string, string?>
         {
             { "fake_header_one", string.Empty },
             { "fake_header_two", string.Empty }
@@ -263,7 +263,7 @@ public class RestApiOperationTests
         var sut = new RestApiOperation("fake_id", new Uri("http://fake_url"), "fake_path", HttpMethod.Get, "fake_description", metadata, rawHeaders);
 
         // Act
-        void Act() => sut.RenderHeaders(new Dictionary<string, string>());
+        void Act() => sut.RenderHeaders(new Dictionary<string, string?>());
 
         // Assert
         Assert.Throws<KernelException>(Act);
@@ -274,7 +274,7 @@ public class RestApiOperationTests
     public void ItShouldSkipOptionalHeaderHavingNeitherValueNorDefaultValue()
     {
         // Arrange
-        var rawHeaders = new Dictionary<string, string>
+        var rawHeaders = new Dictionary<string, string?>
         {
             { "fake_header_one", string.Empty },
             { "fake_header_two", string.Empty }
@@ -286,7 +286,7 @@ public class RestApiOperationTests
             new(name: "fake_header_two", type: "string", isRequired: false, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple)
         };
 
-        var arguments = new Dictionary<string, string>
+        var arguments = new Dictionary<string, string?>
         {
             { "fake_header_one", "fake_header_one_value" }
         };
@@ -308,7 +308,7 @@ public class RestApiOperationTests
     public void ShouldUseDefaultValueForOptionalHeaderIfNoValueProvided()
     {
         // Arrange
-        var rawHeaders = new Dictionary<string, string>
+        var rawHeaders = new Dictionary<string, string?>
         {
             { "fake_header_one", string.Empty },
             { "fake_header_two", string.Empty }
@@ -320,7 +320,7 @@ public class RestApiOperationTests
             new(name: "fake_header_two", type: "string", isRequired: false, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple, defaultValue: "fake_header_two_default_value")
         };
 
-        var arguments = new Dictionary<string, string>
+        var arguments = new Dictionary<string, string?>
         {
             { "fake_header_one", "fake_header_one_value" } //Argument is only provided for the first parameter and not for the second one
         };

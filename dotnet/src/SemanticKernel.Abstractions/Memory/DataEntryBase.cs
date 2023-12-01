@@ -1,13 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Memory;
+
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Memory;
 
 /// <summary>
 /// A base class for data entries.
 /// </summary>
+[Experimental("SKEXP0003")]
 public class DataEntryBase
 {
     /// <summary>
@@ -21,6 +24,7 @@ public class DataEntryBase
         this.Key = key ?? string.Empty;
         this.Timestamp = timestamp;
     }
+
 
     /// <summary>
     /// Gets the key of the data.

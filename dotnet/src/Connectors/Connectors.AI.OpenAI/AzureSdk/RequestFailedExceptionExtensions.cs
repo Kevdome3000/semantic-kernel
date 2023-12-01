@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
 using System.Net;
 using Azure;
@@ -10,7 +10,7 @@ using Http;
 /// <summary>
 /// Provides extension methods for the <see cref="RequestFailedException"/> class.
 /// </summary>
-public static class RequestFailedExceptionExtensions
+internal static class RequestFailedExceptionExtensions
 {
     /// <summary>
     /// Converts a <see cref="RequestFailedException"/> to an <see cref="HttpOperationException"/>.

@@ -1,16 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable IDE0130
-namespace Microsoft.SemanticKernel.Experimental.Orchestration;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Execution;
+using Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 
-#pragma warning restore IDE0130
-
+namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 
 /// <summary>
 /// Step within a <see cref="Flow"/> which defines the step goal, available plugins, required and provided variables.
@@ -27,7 +23,6 @@ public class FlowStep
 
     private Func<Kernel, Dictionary<object, string?>, IEnumerable<object>>? _pluginsFactory;
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="FlowStep"/> class.
     /// </summary>
@@ -38,7 +33,6 @@ public class FlowStep
         this.Goal = goal;
         this._pluginsFactory = pluginsFactory;
     }
-
 
     /// <summary>
     /// Goal of the step
@@ -90,21 +84,18 @@ public class FlowStep
         }
     }
 
-
     private List<object> GetPlugins(Dictionary<object, string?> globalPlugins, Kernel kernel)
     {
         return this._pluginTypes.Select(kvp =>
         {
             var pluginName = kvp.Key;
             var globalPlugin = globalPlugins.FirstOrDefault(_ => _.Key.GetType().Name.Contains(pluginName)).Key;
-
             if (globalPlugin != null)
             {
                 return globalPlugin;
             }
 
             var type = kvp.Value;
-
             if (type != null)
             {
                 try
@@ -127,7 +118,6 @@ public class FlowStep
         }).Where(plugin => plugin != null).ToList()!;
     }
 
-
     private static Dictionary<string, Type?> GetPluginTypes(List<string>? value)
     {
         Dictionary<string, Type?> plugins = new();
@@ -147,7 +137,6 @@ public class FlowStep
                 }
 
                 var type = types.FirstOrDefault(predicate: t => t.FullName?.Equals(pluginName, StringComparison.OrdinalIgnoreCase) ?? false);
-
                 if (type is null)
                 {
                     type = types.FirstOrDefault(t => t.FullName?.Contains(pluginName) ?? false);
@@ -167,7 +156,6 @@ public class FlowStep
         return plugins;
     }
 
-
     /// <summary>
     /// Register the required arguments for the step
     /// </summary>
@@ -178,7 +166,6 @@ public class FlowStep
         this._requires.AddRange(requiredArguments);
     }
 
-
     /// <summary>
     /// Register the arguments provided by the step
     /// </summary>
@@ -188,7 +175,6 @@ public class FlowStep
         this.ValidateArguments(providedArguments);
         this._provides.AddRange(providedArguments);
     }
-
 
     /// <summary>
     /// Register the arguments passed through by the step
@@ -210,7 +196,6 @@ public class FlowStep
         this._passthrough.AddRange(passthroughArguments);
     }
 
-
     /// <summary>
     /// Get the plugin instances registered with the step
     /// </summary>
@@ -227,7 +212,6 @@ public class FlowStep
         return Enumerable.Empty<object>();
     }
 
-
     /// <summary>
     /// Check if the step depends on another step
     /// </summary>
@@ -237,7 +221,6 @@ public class FlowStep
     {
         return this.Requires.Intersect(otherStep.Provides).Any();
     }
-
 
     private void ValidateArguments(string[] arguments)
     {

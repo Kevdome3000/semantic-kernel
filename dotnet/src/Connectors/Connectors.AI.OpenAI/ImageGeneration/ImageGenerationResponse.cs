@@ -10,6 +10,7 @@ using System.Text.Json.Serialization;
 /// <summary>
 /// Image generation response
 /// </summary>
+[Experimental("SKEXP0012")]
 public class ImageGenerationResponse
 {
     /// <summary>

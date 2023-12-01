@@ -4,7 +4,7 @@ namespace SemanticKernel.UnitTests.Prompt;
 
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.SemanticKernel.Prompt;
+using Microsoft.SemanticKernel.Prompts;
 using Xunit;
 
 

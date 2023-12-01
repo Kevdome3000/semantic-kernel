@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Azure.Core;
-using AzureSdk;
 using Extensions.Logging;
 using SemanticKernel.AI;
 using SemanticKernel.AI.TextCompletion;
@@ -17,12 +16,10 @@ using Services;
 
 /// <summary>
 /// Azure OpenAI text completion client.
-/// TODO: forward ETW logging to ILogger, see https://learn.microsoft.com/en-us/dotnet/azure/sdk/logging
 /// </summary>
-public sealed class AzureOpenAITextCompletion : AzureOpenAIClientBase, ITextCompletion
+public sealed class AzureOpenAITextCompletion : ITextCompletion
 {
-    /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
+    private readonly AzureOpenAIClientCore _core;
 
 
     /// <summary>
@@ -40,9 +37,10 @@ public sealed class AzureOpenAITextCompletion : AzureOpenAIClientBase, ITextComp
         string apiKey,
         string? modelId = null,
         HttpClient? httpClient = null,
-        ILoggerFactory? loggerFactory = null) : base(deploymentName, endpoint, apiKey, httpClient, loggerFactory)
+        ILoggerFactory? loggerFactory = null)
     {
-        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        this._core = new(deploymentName, endpoint, apiKey, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextCompletion)));
+        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
 
@@ -61,9 +59,11 @@ public sealed class AzureOpenAITextCompletion : AzureOpenAIClientBase, ITextComp
         TokenCredential credential,
         string? modelId = null,
         HttpClient? httpClient = null,
-        ILoggerFactory? loggerFactory = null) : base(deploymentName, endpoint, credential, httpClient, loggerFactory)
+        ILoggerFactory? loggerFactory = null)
     {
-        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        this._core = new(deploymentName, endpoint, credential, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextCompletion)));
+
+        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
 
@@ -78,21 +78,27 @@ public sealed class AzureOpenAITextCompletion : AzureOpenAIClientBase, ITextComp
         string deploymentName,
         OpenAIClient openAIClient,
         string? modelId = null,
-        ILoggerFactory? loggerFactory = null) : base(deploymentName, openAIClient, loggerFactory)
+        ILoggerFactory? loggerFactory = null)
     {
-        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        this._core = new(deploymentName, openAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextCompletion)));
+
+        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
 
     /// <inheritdoc/>
+    public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
+
+
+    /// <inheritdoc/>
     public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
-        string text,
+        string prompt,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        this.LogActionDetails();
-        return this.InternalGetTextResultsAsync(text, executionSettings, kernel, cancellationToken);
+        this._core.LogActionDetails();
+        return this._core.GetTextResultsAsync(prompt, executionSettings, kernel, cancellationToken);
     }
 
 
@@ -103,6 +109,6 @@ public sealed class AzureOpenAITextCompletion : AzureOpenAIClientBase, ITextComp
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return this.InternalGetTextStreamingUpdatesAsync<T>(prompt, executionSettings, kernel, cancellationToken);
+        return this._core.GetTextStreamingUpdatesAsync<T>(prompt, executionSettings, kernel, cancellationToken);
     }
 }

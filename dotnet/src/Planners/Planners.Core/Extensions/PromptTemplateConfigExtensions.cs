@@ -1,14 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-// ReSharper disable once CheckNamespace - Using the namespace of Kernel
-#pragma warning disable IDE0130
+using Microsoft.SemanticKernel.AI;
+
 namespace Microsoft.SemanticKernel.Planning;
-
-using System.Linq;
-using AI;
-
-#pragma warning restore IDE0130
-
 
 /// <summary>
 /// Extension methods for PromptTemplateConfig
@@ -22,7 +16,11 @@ internal static class PromptTemplateConfigExtensions
     /// <param name="maxTokens">Value of max tokens to set</param>
     internal static void SetMaxTokens(this PromptTemplateConfig config, int maxTokens)
     {
-        PromptExecutionSettings executionSettings = config.ExecutionSettings.FirstOrDefault() ?? new();
+        PromptExecutionSettings executionSettings = config.GetDefaultRequestSettings() ?? new();
+        if (config.ModelSettings.Count == 0)
+        {
+            config.ModelSettings.Add(executionSettings);
+        }
         executionSettings.ExtensionData["max_tokens"] = maxTokens;
     }
 }

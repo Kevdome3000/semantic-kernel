@@ -145,7 +145,7 @@ internal sealed class ChatRun
         {
             var function = this._kernel.GetAssistantTool(functionDetails.Name);
 
-            var stringArguments = new KernelArguments();
+            var functionArguments = new KernelArguments();
 
             if (!string.IsNullOrWhiteSpace(functionDetails.Arguments))
             {
@@ -153,13 +153,19 @@ internal sealed class ChatRun
 
                 foreach (var argument in arguments)
                 {
-                    stringArguments[argument.Key] = argument.Value.ToString();
+                    functionArguments[argument.Key] = argument.Value.ToString();
                 }
             }
 
-            var results = await this._kernel.InvokeAsync(function, stringArguments, cancellationToken).ConfigureAwait(false);
+            var result = await function.InvokeAsync(this._kernel, functionArguments, cancellationToken).ConfigureAwait(false);
 
-            return results.GetValue<string>() ?? string.Empty;
+            if (result.ValueType == typeof(AssistantResponse))
+            {
+                var response = result.GetValue<AssistantResponse>()!;
+                return response.Response ?? string.Empty;
+            }
+
+            return result.GetValue<string>() ?? string.Empty;
         }
     }
 }

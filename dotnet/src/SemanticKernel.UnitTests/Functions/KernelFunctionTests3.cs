@@ -3,7 +3,6 @@
 namespace SemanticKernel.UnitTests.Functions;
 
 using System;
-using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -81,7 +80,7 @@ public sealed class KernelFunctionTests3
         }
 
         // Assert
-        Assert.Equal(3, count);
+        Assert.Equal(2, count);
     }
 
 
@@ -153,12 +152,6 @@ public sealed class KernelFunctionTests3
 
     private sealed class InvalidPlugin
     {
-        [KernelFunction]
-        public void Invalid1([KernelName("input"), Description("The x parameter")] string x, [KernelName("input"), Description("The y parameter")] string y)
-        {
-        }
-
-
         [KernelFunction]
         public void Invalid2(string y, CustomUnknownType n)
         {

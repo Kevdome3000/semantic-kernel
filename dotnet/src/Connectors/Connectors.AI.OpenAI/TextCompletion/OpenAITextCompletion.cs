@@ -7,7 +7,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
-using AzureSdk;
 using Extensions.Logging;
 using SemanticKernel.AI;
 using SemanticKernel.AI.TextCompletion;
@@ -16,10 +15,12 @@ using Services;
 
 /// <summary>
 /// OpenAI text completion service.
-/// TODO: forward ETW logging to ILogger, see https://learn.microsoft.com/en-us/dotnet/azure/sdk/logging
 /// </summary>
-public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
+public sealed class OpenAITextCompletion : ITextCompletion
 {
+    private readonly OpenAIClientCore _core;
+
+
     /// <summary>
     /// Create an instance of the OpenAI text completion connector
     /// </summary>
@@ -33,11 +34,12 @@ public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
         string apiKey,
         string? organization = null,
         HttpClient? httpClient = null,
-        ILoggerFactory? loggerFactory = null
-    ) : base(modelId, apiKey, organization, httpClient, loggerFactory)
+        ILoggerFactory? loggerFactory = null)
     {
-        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
-        this.AddAttribute(OrganizationKey, organization);
+        this._core = new(modelId, apiKey, organization, httpClient, loggerFactory?.CreateLogger(typeof(OpenAITextCompletion)));
+
+        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        this._core.AddAttribute(OpenAIClientCore.OrganizationKey, organization);
     }
 
 
@@ -50,26 +52,27 @@ public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
     public OpenAITextCompletion(
         string modelId,
         OpenAIClient openAIClient,
-        ILoggerFactory? loggerFactory = null
-    ) : base(modelId, openAIClient, loggerFactory)
+        ILoggerFactory? loggerFactory = null)
     {
-        this.AddAttribute(IAIServiceExtensions.ModelIdKey, modelId);
+        this._core = new(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAITextCompletion)));
+
+        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Attributes => this.InternalAttributes;
+    public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
 
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
-        string text,
+        string prompt,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        this.LogActionDetails();
-        return this.InternalGetTextResultsAsync(text, executionSettings, kernel, cancellationToken);
+        this._core.LogActionDetails();
+        return this._core.GetTextResultsAsync(prompt, executionSettings, kernel, cancellationToken);
     }
 
 
@@ -80,6 +83,6 @@ public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return this.InternalGetTextStreamingUpdatesAsync<T>(prompt, executionSettings, kernel, cancellationToken);
+        return this._core.GetTextStreamingUpdatesAsync<T>(prompt, executionSettings, kernel, cancellationToken);
     }
 }

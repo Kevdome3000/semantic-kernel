@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
 using System;
 using System.Collections.Generic;
@@ -34,7 +34,7 @@ public class OpenAIFunctionResponse
     /// If there is no plugin name, this is the same as the function name.
     /// </summary>
     public string FullyQualifiedName =>
-        string.IsNullOrEmpty(PluginName) ? FunctionName : $"{PluginName}{OpenAIFunction.NameSeparator}{FunctionName}";
+        string.IsNullOrEmpty(this.PluginName) ? this.FunctionName : $"{this.PluginName}{OpenAIFunction.NameSeparator}{this.FunctionName}";
 
 
     /// <summary>
@@ -48,7 +48,7 @@ public class OpenAIFunctionResponse
 
         if (functionCall.Name.Contains(OpenAIFunction.NameSeparator))
         {
-            var parts = functionCall.Name.Split(new[] { OpenAIFunction.NameSeparator }, StringSplitOptions.RemoveEmptyEntries);
+            var parts = functionCall.Name.Split(new string[] { OpenAIFunction.NameSeparator }, StringSplitOptions.RemoveEmptyEntries);
             response.PluginName = parts[0];
             response.FunctionName = parts[1];
         }

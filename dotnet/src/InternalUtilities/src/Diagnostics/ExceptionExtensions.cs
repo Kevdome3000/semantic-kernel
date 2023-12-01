@@ -1,12 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using NS of Exception
 namespace System;
 
 using Threading;
-
-#pragma warning restore IDE0130
 
 
 /// <summary>

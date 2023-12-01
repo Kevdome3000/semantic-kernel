@@ -103,7 +103,7 @@ public class KernelFunctionMetadataTests
     public void ItSupportsValidFunctionSKNameAttributeOverride()
     {
         // Arrange
-        [KernelName("NewTestFunctionName")]
+        [KernelFunction("NewTestFunctionName")]
         static void TestFunctionName()
         {
         }

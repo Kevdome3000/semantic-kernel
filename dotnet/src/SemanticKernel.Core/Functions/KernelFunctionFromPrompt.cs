@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using the main namespace
 namespace Microsoft.SemanticKernel;
 
 using System;
@@ -17,8 +15,6 @@ using AI.TextCompletion;
 using Events;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
-
-#pragma warning restore IDE0130
 
 
 /// <summary>
@@ -50,6 +46,8 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null)
     {
+        Verify.NotNullOrWhiteSpace(promptTemplate);
+
         var promptConfig = new PromptTemplateConfig
         {
             Name = functionName ?? RandomFunctionName(),
@@ -227,7 +225,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     {
         foreach (var parameter in this._promptConfig.InputParameters)
         {
-            if (!arguments.ContainsKey(parameter.Name) && parameter.DefaultValue != null)
+            if (!arguments.ContainsName(parameter.Name) && parameter.DefaultValue != null)
             {
                 arguments[parameter.Name] = parameter.DefaultValue;
             }

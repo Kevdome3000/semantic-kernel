@@ -4,6 +4,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -12,11 +13,11 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using AzureSdk;
 using ChatCompletion;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
 using Http;
+using Prompts;
 using SemanticKernel.AI;
 using SemanticKernel.AI.ChatCompletion;
 using SemanticKernel.AI.TextCompletion;
@@ -28,6 +29,7 @@ using Text;
 /// Azure OpenAI Chat Completion with data client.
 /// More information: <see href="https://learn.microsoft.com/en-us/azure/ai-services/openai/use-your-data-quickstart"/>
 /// </summary>
+[Experimental("SKEXP0010")]
 public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCompletion
 {
     /// <summary>
@@ -47,19 +49,17 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
 
         this._httpClient = HttpClientProvider.GetHttpClient(httpClient);
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(this.GetType()) : NullLogger.Instance;
-        this._attributes.Add(IAIServiceExtensions.ModelIdKey, config.CompletionModelId);
+        this._attributes.Add(AIServiceExtensions.ModelIdKey, config.CompletionModelId);
     }
 
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, string> Attributes => this._attributes;
+    public IReadOnlyDictionary<string, object?> Attributes => this._attributes;
 
 
     /// <inheritdoc/>
     public ChatHistory CreateNewChat(string? instructions = null)
-    {
-        return new OpenAIChatHistory(instructions);
-    }
+        => InternalCreateNewChat(instructions);
 
 
     /// <inheritdoc/>
@@ -80,17 +80,33 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
 
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
-        string text,
+    public async Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
+        string prompt,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        OpenAIPromptExecutionSettings chatRequestSettings = OpenAIPromptExecutionSettings.FromRequestSettingsWithData(executionSettings);
+        OpenAIPromptExecutionSettings chatExecutionSettings = OpenAIPromptExecutionSettings.FromRequestSettingsWithData(executionSettings);
 
-        var chat = this.PrepareChatHistory(text, chatRequestSettings);
+        var chat = InternalCreateNewChat(prompt, chatExecutionSettings);
 
-        return (await this.GetChatCompletionsAsync(chat, chatRequestSettings, kernel, cancellationToken).ConfigureAwait(false))
+        return (await this.GetChatCompletionsAsync(chat, chatExecutionSettings, kernel, cancellationToken).ConfigureAwait(false))
+            .ToList();
+    }
+
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
+        string prompt,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
+    {
+        OpenAIPromptExecutionSettings chatExecutionSettings = OpenAIPromptExecutionSettings.FromRequestSettingsWithData(executionSettings);
+
+        var chat = InternalCreateNewChat(prompt, chatExecutionSettings);
+
+        return (await this.GetChatCompletionsAsync(chat, chatExecutionSettings, kernel, cancellationToken).ConfigureAwait(false))
             .OfType<ITextResult>()
             .ToList();
     }
@@ -103,11 +119,11 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        OpenAIPromptExecutionSettings chatRequestSettings = OpenAIPromptExecutionSettings.FromRequestSettingsWithData(executionSettings);
+        OpenAIPromptExecutionSettings chatExecutionSettings = OpenAIPromptExecutionSettings.FromRequestSettingsWithData(executionSettings);
 
-        var chat = this.PrepareChatHistory(prompt, chatRequestSettings);
+        var chat = InternalCreateNewChat(prompt, chatExecutionSettings);
 
-        return this.GetStreamingContentAsync<T>(chat, chatRequestSettings, kernel, cancellationToken);
+        return this.GetStreamingContentAsync<T>(chat, chatExecutionSettings, kernel, cancellationToken);
     }
 
 
@@ -138,7 +154,7 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
 
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
-    private readonly Dictionary<string, string> _attributes = new();
+    private readonly Dictionary<string, object?> _attributes = new();
 
 
     private void ValidateConfig(AzureOpenAIChatCompletionWithDataConfig config)
@@ -338,11 +354,34 @@ public sealed class AzureOpenAIChatCompletionWithData : IChatCompletion, ITextCo
     }
 
 
-    private ChatHistory PrepareChatHistory(string text, OpenAIPromptExecutionSettings executionSettings)
+    /// <summary>
+    /// Create a new empty chat instance
+    /// </summary>
+    /// <param name="text">Optional chat instructions for the AI service</param>
+    /// <param name="executionSettings">Execution settings</param>
+    /// <returns>Chat object</returns>
+    private static OpenAIChatHistory InternalCreateNewChat(string? text = null, OpenAIPromptExecutionSettings? executionSettings = null)
     {
-        var chat = this.CreateNewChat(executionSettings.ChatSystemPrompt);
+        // If text is not provided, create an empty chat with the system prompt if provided
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return new OpenAIChatHistory(executionSettings?.ChatSystemPrompt);
+        }
 
-        chat.AddUserMessage(text);
+        // Try to parse the text as a chat history
+        if (XmlPromptParser.TryParse(text!, out var nodes) && ChatPromptParser.TryParse(nodes, out var chatHistory))
+        {
+            return new OpenAIChatHistory(chatHistory);
+        }
+
+        // If settings is not provided, create a new chat with the text as the system prompt
+        var chat = new OpenAIChatHistory(executionSettings?.ChatSystemPrompt ?? text);
+
+        if (executionSettings is not null)
+        {
+            // If settings is provided, add the prompt as the user message
+            chat.AddUserMessage(text!);
+        }
 
         return chat;
     }

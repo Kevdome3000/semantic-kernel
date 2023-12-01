@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
 using System;
 using System.Collections.Generic;
@@ -174,7 +174,7 @@ public class OpenAIFunction
     /// <param name="description">The object description.</param>
     /// <returns>Return JSON Schema document or null if the type is null</returns>
     [return: NotNullIfNotNull("type")]
-    public static KernelJsonSchema? GetJsonSchema(Type? type, string? description)
+    internal static KernelJsonSchema? GetJsonSchema(Type? type, string? description)
     {
         KernelJsonSchema? schema = null;
 

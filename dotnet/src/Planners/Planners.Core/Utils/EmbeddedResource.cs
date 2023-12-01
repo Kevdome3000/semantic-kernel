@@ -1,12 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable IDE0130
-namespace Microsoft.SemanticKernel.Planning;
-
 using System.IO;
 using System.Reflection;
 
-#pragma warning restore IDE0130
+namespace Microsoft.SemanticKernel.Planning;
 
 
 internal static class EmbeddedResource

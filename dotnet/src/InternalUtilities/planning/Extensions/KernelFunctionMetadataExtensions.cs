@@ -1,13 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable IDE0130
 namespace Microsoft.SemanticKernel.Planning;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
-#pragma warning restore IDE0130
 
 
 /// <summary>

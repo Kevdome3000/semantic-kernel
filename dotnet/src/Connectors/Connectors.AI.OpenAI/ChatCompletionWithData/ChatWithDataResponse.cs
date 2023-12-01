@@ -4,11 +4,13 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes
 
 
+[Experimental("SKEXP0010")]
 internal sealed class ChatWithDataResponse
 {
     [JsonPropertyName("id")]

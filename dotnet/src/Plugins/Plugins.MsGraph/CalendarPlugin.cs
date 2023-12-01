@@ -50,8 +50,7 @@ public sealed class CalendarPlugin
     /// </summary>
     [KernelFunction, Description("Add an event to my calendar.")]
     public async Task AddEventAsync(
-        [Description("Event subject"), KernelName("input")]
-        string subject,
+        [Description("Event subject")] string input,
         [Description("Event start date/time as DateTimeOffset")]
         DateTimeOffset start,
         [Description("Event end date/time as DateTimeOffset")]
@@ -63,14 +62,14 @@ public sealed class CalendarPlugin
         [Description("Event attendees, separated by ',' or ';'.")]
         string? attendees = null)
     {
-        if (string.IsNullOrWhiteSpace(subject))
+        if (string.IsNullOrWhiteSpace(input))
         {
-            throw new ArgumentException($"{nameof(subject)} variable was null or whitespace", nameof(subject));
+            throw new ArgumentException($"{nameof(input)} variable was null or whitespace", nameof(input));
         }
 
         CalendarEvent calendarEvent = new()
         {
-            Subject = subject,
+            Subject = input,
             Start = start,
             End = end,
             Location = location,

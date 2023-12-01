@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using NS of Plan
 namespace Microsoft.SemanticKernel.Planning;
 
 using System.ComponentModel;
@@ -11,12 +9,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using AI.ChatCompletion;
 using Connectors.AI.OpenAI;
-using Connectors.AI.OpenAI.AzureSdk;
 using Extensions.Logging;
 using Functions.OpenAPI.Model;
 using Json.More;
-
-#pragma warning restore IDE0130
 
 
 /// <summary>
@@ -37,7 +32,7 @@ public sealed class FunctionCallingStepwisePlanner
         this._kernel = kernel;
         this._chatCompletion = kernel.GetService<IChatCompletion>();
 
-        ILoggerFactory loggerFactory = kernel.GetService<ILoggerFactory>();
+        ILoggerFactory loggerFactory = kernel.LoggerFactory;
 
         // Initialize prompt renderer
         this._promptTemplateFactory = new KernelPromptTemplateFactory(loggerFactory);

@@ -4,7 +4,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
 
 using System.Threading;
 using System.Threading.Tasks;
-using Orchestration;
+using SemanticKernel.AI;
 using SemanticKernel.AI.TextCompletion;
 
 

@@ -1,16 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Planning;
+
 using System;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+using Extensions.Logging;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - using planners namespace
-namespace Microsoft.SemanticKernel.Planning;
-#pragma warning restore IDE0130
 
 /// <summary>Surrounds the invocation of a planner with logging and metrics.</summary>
 public static class PlannerInstrumentation
@@ -23,21 +21,26 @@ public static class PlannerInstrumentation
 
     /// <summary><see cref="Histogram{T}"/> to record plan creation duration.</summary>
     private static readonly Histogram<double> s_createPlanDuration = s_meter.CreateHistogram<double>(
-        name: "sk.planning.create_plan.duration",
-        unit: "s",
-        description: "Duration time of plan creation.");
+        "sk.planning.create_plan.duration",
+        "s",
+        "Duration time of plan creation.");
+
 
     /// <summary>Invokes the supplied <paramref name="createPlanAsync"/> delegate, surrounded by logging and metrics.</summary>
     public static async Task<TPlan> CreatePlanAsync<TPlanner, TPlan>(
-        Func<TPlanner, string, CancellationToken, Task<TPlan>> createPlanAsync,
+        Func<TPlanner, Kernel, string, CancellationToken, Task<TPlan>> createPlanAsync,
         Func<TPlan, string> planToString,
-        TPlanner planner, string goal, ILogger logger, CancellationToken cancellationToken)
+        TPlanner planner,
+        Kernel kernel,
+        string goal,
+        ILogger logger,
+        CancellationToken cancellationToken)
         where TPlanner : class
         where TPlan : class
     {
         string plannerName = planner.GetType().FullName;
 
-        using var _ = s_activitySource.StartActivity(plannerName);
+        using Activity? _ = s_activitySource.StartActivity(plannerName);
 
         if (logger.IsEnabled(LogLevel.Trace))
         {
@@ -50,9 +53,10 @@ public static class PlannerInstrumentation
 
         TagList tags = new() { { "sk.planner.name", plannerName } };
         long startingTimestamp = Stopwatch.GetTimestamp();
+
         try
         {
-            var plan = await createPlanAsync(planner, goal, cancellationToken).ConfigureAwait(false);
+            TPlan? plan = await createPlanAsync(planner, kernel, goal, cancellationToken).ConfigureAwait(false);
 
             if (logger.IsEnabled(LogLevel.Information))
             {

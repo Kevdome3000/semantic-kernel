@@ -1,13 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using the main namespace
 namespace Microsoft.SemanticKernel;
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-
-#pragma warning restore IDE0130
 
 
 /// <summary>

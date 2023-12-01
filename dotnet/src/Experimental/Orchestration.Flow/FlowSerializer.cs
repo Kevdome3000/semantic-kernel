@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable IDE0130
-namespace Microsoft.SemanticKernel.Experimental.Orchestration;
-
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
@@ -10,8 +7,7 @@ using System.Text.Json.Serialization;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
-#pragma warning restore IDE0130
-
+namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 
 /// <summary>
 /// Serializer for <see cref="Flow"/>
@@ -24,7 +20,6 @@ public static class FlowSerializer
         PropertyNameCaseInsensitive = true,
         Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
     };
-
 
     /// <summary>
     /// Deserialize flow from yaml
@@ -42,7 +37,6 @@ public static class FlowSerializer
         return UpCast(flow);
     }
 
-
     /// <summary>
     /// Deserialize flow from json
     /// </summary>
@@ -51,11 +45,10 @@ public static class FlowSerializer
     public static Flow? DeserializeFromJson(string json)
     {
         var flow = JsonSerializer.Deserialize<FlowModel>(json, s_deserializeOptions) ??
-                   throw new JsonException("Failed to deserialize flow");
+            throw new JsonException("Failed to deserialize flow");
 
         return UpCast(flow);
     }
-
 
     private static Flow UpCast(FlowModel flow)
     {
@@ -71,7 +64,6 @@ public static class FlowSerializer
         return result;
     }
 
-
     private static FlowStep UpCast(FlowStepModel step)
     {
         FlowStep result = string.IsNullOrEmpty(step.FlowName) ? new FlowStep(step.Goal) : new ReferenceFlowStep(step.FlowName!);
@@ -86,14 +78,12 @@ public static class FlowSerializer
         return result;
     }
 
-
     private static void PopulateVariables(FlowStep step, FlowStepModel model)
     {
         step.AddProvides(model.Provides.ToArray());
         step.AddRequires(model.Requires.ToArray());
         step.AddPassthrough(model.Passthrough.ToArray());
     }
-
 
     private class FlowStepModel
     {
@@ -115,7 +105,6 @@ public static class FlowSerializer
 
         public string? FlowName { get; set; }
     }
-
 
     private class FlowModel : FlowStepModel
     {

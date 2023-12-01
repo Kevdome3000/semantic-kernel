@@ -1,18 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using the main namespace
 namespace Microsoft.SemanticKernel;
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-#pragma warning restore IDE0130
-
 
 /// <summary>
-/// Provides read-only metadata for an <see cref="KernelFunction"/>.
+/// Provides read-only metadata for a <see cref="KernelFunction"/>.
 /// </summary>
 public sealed class KernelFunctionMetadata
 {

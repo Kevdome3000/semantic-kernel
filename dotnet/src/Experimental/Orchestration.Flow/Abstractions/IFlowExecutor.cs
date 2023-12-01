@@ -1,10 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
-
 using System.Threading.Tasks;
-using SemanticKernel.Orchestration;
 
+namespace Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
 
 /// <summary>
 /// Flow executor interface

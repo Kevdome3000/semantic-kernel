@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -15,6 +16,7 @@ using SemanticKernel.AI.ChatCompletion;
 /// <summary>
 /// Streaming chat result update.
 /// </summary>
+[Experimental("SKEXP0010")]
 public sealed class StreamingChatWithDataContent : StreamingContent
 {
     /// <inheritdoc/>

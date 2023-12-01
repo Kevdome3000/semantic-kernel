@@ -4,9 +4,11 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 
+[Experimental("SKEXP0010")]
 internal sealed class ChatWithDataRequest
 {
     [JsonPropertyName("temperature")]

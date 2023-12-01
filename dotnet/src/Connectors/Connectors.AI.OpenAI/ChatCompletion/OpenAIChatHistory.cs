@@ -9,7 +9,7 @@ using SemanticKernel.AI.ChatCompletion;
 /// OpenAI Chat content
 /// See https://platform.openai.com/docs/guides/chat for details
 /// </summary>
-public class OpenAIChatHistory : ChatHistory
+internal sealed class OpenAIChatHistory : ChatHistory
 {
     /// <summary>
     /// Create a new and empty chat history
@@ -19,7 +19,7 @@ public class OpenAIChatHistory : ChatHistory
     {
         if (!string.IsNullOrWhiteSpace(systemMessage))
         {
-            AddSystemMessage(systemMessage!);
+            this.AddSystemMessage(systemMessage!);
         }
     }
 
@@ -27,12 +27,8 @@ public class OpenAIChatHistory : ChatHistory
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIChatHistory"/> class based on <see cref="ChatHistory"/>.
     /// </summary>
-    /// <param name="chatHistory"></param>
-    public OpenAIChatHistory(ChatHistory chatHistory)
+    /// <param name="chatHistory">The <see cref="ChatHistory"/> to copy into this new instance.</param>
+    public OpenAIChatHistory(ChatHistory chatHistory) : base(chatHistory)
     {
-        chatHistory.ForEach(message =>
-        {
-            AddMessage(message.Role, message.Content);
-        });
     }
 }

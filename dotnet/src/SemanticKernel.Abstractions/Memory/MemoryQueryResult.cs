@@ -3,6 +3,7 @@
 namespace Microsoft.SemanticKernel.Memory;
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Text;
 
@@ -10,6 +11,7 @@ using Text;
 /// <summary>
 /// Copy of metadata associated with a memory entry.
 /// </summary>
+[Experimental("SKEXP0003")]
 public class MemoryQueryResult
 {
     /// <summary>

@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+
+
 // ReSharper disable StringLiteralTypo
 
 namespace SemanticKernel.UnitTests.Functions;
@@ -130,7 +132,7 @@ public class FunctionFromPromptTests
 
 
     [Fact]
-    public async Task RunAsyncHandlesPreInvocationAsync()
+    public async Task InvokeAsyncHandlesPreInvocationAsync()
     {
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
@@ -154,7 +156,7 @@ public class FunctionFromPromptTests
 
 
     [Fact]
-    public async Task RunAsyncHandlesPreInvocationWasCancelledAsync()
+    public async Task InvokeAsyncHandlesPreInvocationWasCancelledAsync()
     {
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
@@ -178,7 +180,7 @@ public class FunctionFromPromptTests
 
 
     [Fact]
-    public async Task RunAsyncHandlesPreInvocationCancelationDontRunSubsequentFunctionsInThePipelineAsync()
+    public async Task InvokeAsyncHandlesPreInvocationCancelationDontRunSubsequentFunctionsInThePipelineAsync()
     {
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
@@ -202,7 +204,7 @@ public class FunctionFromPromptTests
 
 
     [Fact]
-    public async Task RunAsyncPreInvocationCancelationDontTriggerInvokedHandlerAsync()
+    public async Task InvokeAsyncPreInvocationCancelationDontTriggerInvokedHandlerAsync()
     {
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
@@ -229,44 +231,7 @@ public class FunctionFromPromptTests
 
 
     [Fact]
-    public async Task RunAsyncPreInvocationSkipDontTriggerInvokedHandlerAsync()
-    {
-        // Arrange
-        var (mockTextResult, mockTextCompletion) = this.SetupMocks();
-        var sut = new KernelBuilder().ConfigureServices(c => c.AddSingleton<ITextCompletion>(mockTextCompletion.Object)).Build();
-        var function = KernelFunctionFactory.CreateFromPrompt("Write one phrase about UnitTests", functionName: "SkipMe");
-        var invoked = 0;
-        var invoking = 0;
-        string invokedFunction = string.Empty;
-
-        sut.FunctionInvoking += (sender, e) =>
-        {
-            invoking++;
-
-            if (e.Function.Name == "SkipMe")
-            {
-                e.Skip();
-            }
-        };
-
-        sut.FunctionInvoked += (sender, e) =>
-        {
-            invokedFunction = e.Function.Name;
-            invoked++;
-        };
-
-        // Act
-        var result = await sut.InvokeAsync(function);
-
-        // Assert
-        Assert.Equal(1, invoking);
-        Assert.Equal(0, invoked);
-        Assert.Equal("", invokedFunction);
-    }
-
-
-    [Fact]
-    public async Task RunAsyncHandlesPostInvocationAsync()
+    public async Task InvokeAsyncHandlesPostInvocationAsync()
     {
         // Arrange
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
@@ -290,7 +255,7 @@ public class FunctionFromPromptTests
 
 
     [Fact]
-    public async Task RunAsyncChangeVariableInvokingHandlerAsync()
+    public async Task InvokeAsyncChangeVariableInvokingHandlerAsync()
     {
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().ConfigureServices(c => c.AddSingleton<ITextCompletion>(mockTextCompletion.Object)).Build();
@@ -314,7 +279,7 @@ public class FunctionFromPromptTests
 
 
     [Fact]
-    public async Task RunAsyncChangeVariableInvokedHandlerAsync()
+    public async Task InvokeAsyncChangeVariableInvokedHandlerAsync()
     {
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var sut = new KernelBuilder().ConfigureServices(c => c.AddSingleton<ITextCompletion>(mockTextCompletion.Object)).Build();

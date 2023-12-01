@@ -1,9 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable SKEXP0001
-
-namespace SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests;
-
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -13,8 +9,8 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.Orchestration;
 
+namespace SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests;
 
 public sealed class CollectEmailPlugin
 {
@@ -36,7 +32,6 @@ Do not expose the regex unless asked.
 
     private readonly PromptExecutionSettings _chatRequestSettings;
 
-
     public CollectEmailPlugin(Kernel kernel)
     {
         this._chat = kernel.GetService<IChatCompletion>();
@@ -48,30 +43,27 @@ Do not expose the regex unless asked.
         };
     }
 
-
-    [KernelFunction]
+    [KernelFunction("ConfigureEmailAddress")]
     [Description("Useful to assist in configuration of email address, must be called after email provided")]
-    [KernelName("ConfigureEmailAddress")]
     public async Task<string> CollectEmailAsync(
-        [KernelName("email_address")] [Description("The email address provided by the user, pass no matter what the value is")]
-        string email,
+        [Description("The email address provided by the user, pass no matter what the value is")]
+        string email_address,
         ContextVariables variables)
     {
         var chat = this._chat.CreateNewChat(SystemPrompt);
         chat.AddUserMessage(Goal);
 
         ChatHistory? chatHistory = variables.GetChatHistory();
-
         if (chatHistory?.Any() ?? false)
         {
             chat.AddRange(chatHistory);
         }
 
-        if (!string.IsNullOrEmpty(email) && IsValidEmail(email))
+        if (!string.IsNullOrEmpty(email_address) && IsValidEmail(email_address))
         {
-            variables["email_address"] = email;
+            variables["email_address"] = email_address;
 
-            return "Thanks for providing the info, the following email would be used in subsequent steps: " + email;
+            return "Thanks for providing the info, the following email would be used in subsequent steps: " + email_address;
         }
 
         // invalid email, prompt user to provide a valid email
@@ -79,7 +71,6 @@ Do not expose the regex unless asked.
         variables.PromptInput();
         return await this._chat.GenerateMessageAsync(chat, this._chatRequestSettings).ConfigureAwait(false);
     }
-
 
     private static bool IsValidEmail(string email)
     {

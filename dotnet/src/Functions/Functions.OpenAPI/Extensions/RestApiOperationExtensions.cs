@@ -1,15 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
-
-#pragma warning restore IDE0130
 
 
 /// <summary>

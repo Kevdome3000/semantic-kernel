@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
 using System;
 using System.Collections.Generic;
@@ -38,10 +38,10 @@ public sealed class TextModelResult
     /// <param name="choiceData"> A choice object to populate the fields relative to the resulting choice.</param>
     internal TextModelResult(Completions completionsData, Choice choiceData)
     {
-        Id = completionsData.Id;
-        Created = completionsData.Created;
-        PromptFilterResults = completionsData.PromptFilterResults;
-        Choice = choiceData;
-        Usage = completionsData.Usage;
+        this.Id = completionsData.Id;
+        this.Created = completionsData.Created;
+        this.PromptFilterResults = completionsData.PromptFilterResults;
+        this.Choice = choiceData;
+        this.Usage = completionsData.Usage;
     }
 }

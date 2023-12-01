@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable IDE0130
-
 namespace Microsoft.SemanticKernel;
 
 using System;

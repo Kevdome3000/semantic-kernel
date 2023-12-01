@@ -2,12 +2,14 @@
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 
 /// <summary>
 /// Image generation request
 /// </summary>
+[Experimental("SKEXP0012")]
 public sealed class ImageGenerationRequest
 {
     /// <summary>

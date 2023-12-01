@@ -1,12 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable IDE0130
-
-namespace Microsoft.SemanticKernel;
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
 using Azure.AI.OpenAI;
-using Connectors.AI.OpenAI.AzureSdk;
-using Orchestration;
+using SemanticKernel.AI;
 
 
 /// <summary>

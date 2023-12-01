@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.Planning.Handlebars;
 
 using System;
@@ -49,7 +48,7 @@ public sealed class HandlebarsPlanner
     {
         Verify.NotNullOrWhiteSpace(goal);
 
-        var logger = kernel.GetService<ILoggerFactory>().CreateLogger(typeof(HandlebarsPlanner));
+        var logger = kernel.LoggerFactory.CreateLogger(typeof(HandlebarsPlanner));
 
         return PlannerInstrumentation.CreatePlanAsync(
             static (HandlebarsPlanner planner, Kernel kernel, string goal, CancellationToken cancellationToken)

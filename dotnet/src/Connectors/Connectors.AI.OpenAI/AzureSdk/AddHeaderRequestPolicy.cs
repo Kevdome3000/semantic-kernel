@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
 using Azure.Core;
 using Azure.Core.Pipeline;
@@ -17,13 +17,13 @@ internal sealed class AddHeaderRequestPolicy : HttpPipelineSynchronousPolicy
 
     public AddHeaderRequestPolicy(string headerName, string headerValue)
     {
-        _headerName = headerName;
-        _headerValue = headerValue;
+        this._headerName = headerName;
+        this._headerValue = headerValue;
     }
 
 
     public override void OnSendingRequest(HttpMessage message)
     {
-        message.Request.Headers.Add(_headerName, _headerValue);
+        message.Request.Headers.Add(this._headerName, this._headerValue);
     }
 }
