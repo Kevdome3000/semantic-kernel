@@ -76,7 +76,7 @@ public class StepwisePlanner
         Verify.NotNullOrWhiteSpace(goal);
 
         Task<Plan> task = PlannerInstrumentation.CreatePlanAsync(
-            static (StepwisePlanner planner, string goal, CancellationToken _) =>
+            static (StepwisePlanner planner, Kernel kernel, string goal, CancellationToken _) =>
             {
                 Plan plan = new(planner._nativeFunctions["ExecutePlan"])
                 {
@@ -87,7 +87,7 @@ public class StepwisePlanner
                 return Task.FromResult(plan);
             },
             static (Plan plan) => plan.ToSafePlanString(),
-            this, goal, this._logger, CancellationToken.None);
+            this, _kernel, goal, this._logger, CancellationToken.None);
 
         // The instrumentation doesn't do any asynchronous work other than invoke the supplied callback,
         // which we know will complete synchronously, so we can safely use GetResult without incurring
@@ -110,7 +110,7 @@ public class StepwisePlanner
     public async Task<string> ExecutePlanAsync(
         [Description("The question to answer")]
         string question,
-        ContextVariables contextVariables,
+        KernelArguments contextVariables,
         CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(question))
@@ -143,7 +143,7 @@ public class StepwisePlanner
             return this.ParseResult(actionText);
         }
 
-        string? TryGetFinalAnswer(SystemStep step, int iterations, ContextVariables variables)
+        string? TryGetFinalAnswer(SystemStep step, int iterations, KernelArguments variables)
         {
             // If a final answer is found, update the context to be returned
             if (!string.IsNullOrEmpty(step.FinalAnswer))
@@ -320,12 +320,12 @@ public class StepwisePlanner
 
     #region setup helpers
 
-    private async Task<ChatHistory> InitializeChatHistoryAsync(Kernel kernel, ChatHistory chatHistory, IAIService aiService, string question, ContextVariables variables, CancellationToken cancellationToken)
+    private async Task<ChatHistory> InitializeChatHistoryAsync(Kernel kernel, ChatHistory chatHistory, IAIService aiService, string question, KernelArguments variables, CancellationToken cancellationToken)
     {
         string userManual = await this.GetUserManualAsync(kernel, question, variables, cancellationToken).ConfigureAwait(false);
         string userQuestion = await this.GetUserQuestionAsync(kernel, variables, cancellationToken).ConfigureAwait(false);
 
-        var systemVariables = new ContextVariables();
+        var systemVariables = new KernelArguments();
 
         systemVariables.Set("suffix", this.Config.Suffix);
         systemVariables.Set("functionDescriptions", userManual);
@@ -354,19 +354,19 @@ public class StepwisePlanner
         return chatHistory;
     }
 
-    private async Task<string> GetUserManualAsync(Kernel kernel, string question, ContextVariables variables, CancellationToken cancellationToken)
+    private async Task<string> GetUserManualAsync(Kernel kernel, string question, KernelArguments variables, CancellationToken cancellationToken)
     {
         var descriptions = await this._kernel.Plugins.GetFunctionsManualAsync(this.Config, question, this._logger, cancellationToken).ConfigureAwait(false);
         variables.Set("functionDescriptions", descriptions);
-        var promptTemplate = this._promptTemplateFactory.Create(this._manualTemplate, new PromptTemplateConfig());
+        var promptTemplate = this._promptTemplateFactory.Create(new PromptTemplateConfig() { Template = this._manualTemplate });
         return await promptTemplate.RenderAsync(kernel, variables, cancellationToken).ConfigureAwait(false);
     }
 
-    private Task<string> GetUserQuestionAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken)
-        => this._promptTemplateFactory.Create(this._questionTemplate, new PromptTemplateConfig()).RenderAsync(kernel, variables, cancellationToken);
+    private Task<string> GetUserQuestionAsync(Kernel kernel, KernelArguments variables, CancellationToken cancellationToken)
+        => this._promptTemplateFactory.Create(new PromptTemplateConfig() { Template = _questionTemplate}).RenderAsync(kernel, variables, cancellationToken);
 
-    private Task<string> GetSystemMessageAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken)
-        => this._promptTemplateFactory.Create(this._promptTemplate, new PromptTemplateConfig()).RenderAsync(kernel, variables, cancellationToken);
+    private Task<string> GetSystemMessageAsync(Kernel kernel, KernelArguments variables, CancellationToken cancellationToken)
+        => this._promptTemplateFactory.Create(new PromptTemplateConfig() { Template = _promptTemplate}).RenderAsync(kernel, variables, cancellationToken);
 
     #endregion setup helpers
 
@@ -376,7 +376,8 @@ public class StepwisePlanner
     {
         var skipStart = startingMessageCount;
         var skipCount = 0;
-        var lastObservationIndex = chatHistory.FindLastIndex(m => m.Content.StartsWith(Observation, StringComparison.OrdinalIgnoreCase));
+        var lastObservation = chatHistory.LastOrDefault(m => m.Content.StartsWith(Observation, StringComparison.OrdinalIgnoreCase));
+        var lastObservationIndex = lastObservation is not null ? chatHistory.IndexOf(lastObservation) : -1;
         var messagesToKeep = lastObservationIndex >= 0 ? chatHistory.Count - lastObservationIndex : 0;
 
         string? originalThought = null;
@@ -398,8 +399,8 @@ public class StepwisePlanner
 
         if (skipCount > 0 && originalThought is not null)
         {
-            reducedChatHistory.InsertMessage(skipStart, AuthorRole.Assistant, string.Format(CultureInfo.InvariantCulture, TrimMessageFormat, skipCount));
-            reducedChatHistory.InsertMessage(skipStart, AuthorRole.Assistant, originalThought);
+            // reducedChatHistory.InsertMessage(skipStart, AuthorRole.Assistant, string.Format(CultureInfo.InvariantCulture, TrimMessageFormat, skipCount));
+            // reducedChatHistory.InsertMessage(skipStart, AuthorRole.Assistant, originalThought);
         }
 
         return this.GetCompletionAsync(aiService, reducedChatHistory, stepsTaken.Count == 0, token);
@@ -409,7 +410,7 @@ public class StepwisePlanner
     {
         if (aiService is IChatCompletion chatCompletion)
         {
-            var llmResponse = (await chatCompletion.GenerateMessageAsync(chatHistory, this._promptConfig.GetDefaultRequestSettings(), token).ConfigureAwait(false));
+            var llmResponse = (await chatCompletion.GenerateMessageAsync(chatHistory, this._promptConfig.ExecutionSettings.FirstOrDefault(), _kernel, cancellationToken: token).ConfigureAwait(false));
             return llmResponse;
         }
         else if (aiService is ITextCompletion textCompletion)
@@ -424,7 +425,7 @@ public class StepwisePlanner
             }
 
             thoughtProcess = $"{thoughtProcess}\n";
-            IReadOnlyList<ITextResult> results = await textCompletion.GetCompletionsAsync(thoughtProcess, this._promptConfig.GetDefaultRequestSettings(), token).ConfigureAwait(false);
+            IReadOnlyList<ITextResult> results = await textCompletion.GetCompletionsAsync(thoughtProcess, this._promptConfig.ExecutionSettings.FirstOrDefault(), _kernel, token).ConfigureAwait(false);
 
             if (results.Count == 0)
             {
@@ -563,9 +564,9 @@ public class StepwisePlanner
         }
     }
 
-    private ContextVariables CreateActionContextVariables(Dictionary<string, string> actionVariables)
+    private KernelArguments CreateActionContextVariables(Dictionary<string, string> actionVariables)
     {
-        ContextVariables vars = new();
+        KernelArguments vars = new();
         if (actionVariables != null)
         {
             foreach (var kvp in actionVariables)
@@ -602,7 +603,7 @@ public class StepwisePlanner
         return false;
     }
 
-    private static void AddExecutionStatsToContextVariables(List<SystemStep> stepsTaken, ContextVariables variables, int iterations)
+    private static void AddExecutionStatsToContextVariables(List<SystemStep> stepsTaken, KernelArguments variables, int iterations)
     {
         variables.Set("stepCount", stepsTaken.Count.ToString(CultureInfo.InvariantCulture));
         variables.Set("stepsTaken", JsonSerializer.Serialize(stepsTaken));

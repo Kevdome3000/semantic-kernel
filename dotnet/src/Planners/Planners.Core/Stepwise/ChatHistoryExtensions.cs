@@ -5,7 +5,7 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Planning;
-
+#pragma warning disable SKEXP0003
 /// <summary>
 /// Extension methods for <see cref="ChatHistory"/> class.
 /// </summary>

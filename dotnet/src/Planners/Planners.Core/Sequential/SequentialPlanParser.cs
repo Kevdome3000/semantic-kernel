@@ -124,7 +124,7 @@ internal static class SequentialPlanParser
                             var planStep = new Plan(pluginFunction);
                             planStep.PluginName = pluginName;
 
-                            var functionVariables = new ContextVariables();
+                            var functionVariables = new KernelArguments();
                             var functionOutputs = new List<string>();
                             var functionResults = new List<string>();
 

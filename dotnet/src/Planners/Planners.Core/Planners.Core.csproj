@@ -5,6 +5,7 @@
     <AssemblyName>Microsoft.SemanticKernel.Planners.Core</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Planning</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <NoWarn>$(NoWarn);SKEXP0003;SKEXP0003</NoWarn>
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />

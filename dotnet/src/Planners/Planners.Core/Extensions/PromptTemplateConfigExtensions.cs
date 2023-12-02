@@ -16,10 +16,10 @@ internal static class PromptTemplateConfigExtensions
     /// <param name="maxTokens">Value of max tokens to set</param>
     internal static void SetMaxTokens(this PromptTemplateConfig config, int maxTokens)
     {
-        PromptExecutionSettings executionSettings = config.GetDefaultRequestSettings() ?? new();
-        if (config.ModelSettings.Count == 0)
+        PromptExecutionSettings executionSettings = new();
+        if (config.ExecutionSettings.Count == 0)
         {
-            config.ModelSettings.Add(executionSettings);
+            config.ExecutionSettings.Add(executionSettings);
         }
         executionSettings.ExtensionData["max_tokens"] = maxTokens;
     }

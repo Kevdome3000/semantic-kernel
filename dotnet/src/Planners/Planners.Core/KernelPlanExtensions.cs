@@ -32,7 +32,7 @@ public static class KernelPlanExtensions
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     public static Task<Plan> StepAsync(this Kernel kernel, string input, Plan plan, CancellationToken cancellationToken = default)
     {
-        return kernel.StepAsync(new ContextVariables(input), plan, cancellationToken);
+        return kernel.StepAsync(new KernelArguments(input), plan, cancellationToken);
     }
 
     /// <summary>
@@ -43,7 +43,7 @@ public static class KernelPlanExtensions
     /// <param name="plan">Plan to run</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Result of the plan execution</returns>
-    public static Task<Plan> StepAsync(this Kernel kernel, ContextVariables variables, Plan plan, CancellationToken cancellationToken = default)
+    public static Task<Plan> StepAsync(this Kernel kernel, KernelArguments variables, Plan plan, CancellationToken cancellationToken = default)
     {
         return plan.RunNextStepAsync(kernel, variables, cancellationToken);
     }

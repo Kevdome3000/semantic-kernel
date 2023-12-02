@@ -46,7 +46,7 @@ public sealed class ActionPlanner
     // Planner semantic function
     private readonly KernelFunction _plannerFunction;
 
-    private readonly ContextVariables _contextVariables;
+    private readonly KernelArguments _contextVariables;
     private readonly Kernel _kernel;
     private readonly ILogger _logger;
 
@@ -83,7 +83,7 @@ public sealed class ActionPlanner
         kernel.ImportPluginFromObject(this, pluginName: PluginName);
 
         // Create context and logger
-        this._contextVariables = new ContextVariables();
+        this._contextVariables = new KernelArguments();
         this._logger = kernel.LoggerFactory.CreateLogger(this.GetType());
     }
 
@@ -99,9 +99,9 @@ public sealed class ActionPlanner
         Verify.NotNullOrWhiteSpace(goal);
 
         return PlannerInstrumentation.CreatePlanAsync(
-            static (ActionPlanner planner, string goal, CancellationToken cancellationToken) => planner.CreatePlanCoreAsync(goal, cancellationToken),
+            static (ActionPlanner planner, Kernel kernel, string goal, CancellationToken cancellationToken) => planner.CreatePlanCoreAsync(goal, cancellationToken),
             static (Plan plan) => plan.ToSafePlanString(),
-            this, goal, this._logger, cancellationToken);
+            this, _kernel, goal, this._logger, cancellationToken);
     }
 
     private async Task<Plan> CreatePlanCoreAsync(string goal, CancellationToken cancellationToken)
@@ -180,7 +180,7 @@ public sealed class ActionPlanner
     [KernelFunction, Description("List a few good examples of plans to generate")]
     public string GoodExamples(
         [Description("The current goal processed by the planner")] string goal,
-        ContextVariables variables)
+        KernelArguments variables)
     {
         return @"
 [EXAMPLE]
@@ -221,7 +221,7 @@ Goal: create a file called ""something.txt"".
     [KernelFunction, Description("List a few edge case examples of plans to handle")]
     public string EdgeCaseExamples(
         [Description("The current goal processed by the planner")] string goal,
-        ContextVariables variables)
+        KernelArguments variables)
     {
         return @"
 [EXAMPLE]

@@ -64,16 +64,16 @@ public sealed class SequentialPlanner
         Verify.NotNullOrWhiteSpace(goal);
 
         return PlannerInstrumentation.CreatePlanAsync(
-            createPlanAsync: static (SequentialPlanner planner, string goal, CancellationToken cancellationToken) => planner.CreatePlanCoreAsync(goal, cancellationToken),
+            createPlanAsync: static (SequentialPlanner planner, Kernel kernel, string goal, CancellationToken cancellationToken) => planner.CreatePlanCoreAsync(goal, cancellationToken),
             planToString: static (Plan plan) => plan.ToSafePlanString(),
-            this, goal, this._logger, cancellationToken);
+            this, _kernel, goal, this._logger, cancellationToken);
     }
 
     private async Task<Plan> CreatePlanCoreAsync(string goal, CancellationToken cancellationToken)
     {
         string relevantFunctionsManual = await this._kernel.Plugins.GetFunctionsManualAsync(this.Config, goal, null, cancellationToken).ConfigureAwait(false);
 
-        ContextVariables vars = new(goal)
+        KernelArguments vars = new(goal)
         {
             [AvailableFunctionsKey] = relevantFunctionsManual
         };

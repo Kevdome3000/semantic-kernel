@@ -14,6 +14,9 @@ using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Planning;
 
+using System.Globalization;
+
+
 /// <summary>
 /// Standard Semantic Kernel callable plan.
 /// Plan is used to create trees of <see cref="KernelFunction"/>s.
@@ -27,8 +30,7 @@ public sealed class Plan
     /// State of the plan
     /// </summary>
     [JsonPropertyName("state")]
-    [JsonConverter(typeof(ContextVariablesConverter))]
-    public ContextVariables State { get; } = new();
+    public KernelArguments State { get; } = new();
 
     /// <summary>
     /// Steps of the plan
@@ -40,8 +42,7 @@ public sealed class Plan
     /// Parameters for the plan, used to pass information to the next step
     /// </summary>
     [JsonPropertyName("parameters")]
-    [JsonConverter(typeof(ContextVariablesConverter))]
-    public ContextVariables Parameters { get; set; } = new();
+    public KernelArguments Parameters { get; set; } = new();
 
     /// <summary>
     /// Outputs for the plan, used to pass information to the caller
@@ -124,8 +125,8 @@ public sealed class Plan
         string pluginName,
         string description,
         int nextStepIndex,
-        ContextVariables state,
-        ContextVariables parameters,
+        KernelArguments state,
+        KernelArguments parameters,
         IList<string> outputs,
         IReadOnlyList<Plan> steps)
     {
@@ -207,7 +208,7 @@ public sealed class Plan
     /// The context variables contain the necessary information for executing the plan, such as the functions and logger.
     /// The method returns a task representing the asynchronous execution of the plan's next step.
     /// </remarks>
-    public Task<Plan> RunNextStepAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
+    public Task<Plan> RunNextStepAsync(Kernel kernel, KernelArguments variables, CancellationToken cancellationToken = default)
     {
         return this.InvokeNextStepAsync(kernel, variables, cancellationToken);
     }
@@ -220,7 +221,7 @@ public sealed class Plan
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The updated plan</returns>
     /// <exception cref="KernelException">If an error occurs while running the plan</exception>
-    public async Task<Plan> InvokeNextStepAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
+    public async Task<Plan> InvokeNextStepAsync(Kernel kernel, KernelArguments variables, CancellationToken cancellationToken = default)
     {
         if (this.HasNextStep)
         {
@@ -300,7 +301,7 @@ public sealed class Plan
         Kernel kernel,
         string input)
     {
-        var contextVariables = new ContextVariables();
+        var contextVariables = new KernelArguments();
         contextVariables.Update(input);
 
         return await this.InvokeAsync(kernel, contextVariables).ConfigureAwait(false);
@@ -316,12 +317,12 @@ public sealed class Plan
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     public async Task<FunctionResult> InvokeAsync(
     Kernel kernel,
-    ContextVariables? variables = null,
+    KernelArguments? variables = null,
     PromptExecutionSettings? executionSettings = null,
     CancellationToken cancellationToken = default)
     {
-        variables ??= new ContextVariables();
-        var result = new FunctionResult(this.Name, variables);
+        variables ??= new KernelArguments();
+        var result = new FunctionResult(this.Name, variables, CultureInfo.CurrentCulture);
 
         if (this.Function is not null)
         {
@@ -331,10 +332,10 @@ public sealed class Plan
             AddStateVariablesToContextVariables(this.State, variables);
 
             var functionVariables = this.GetNextStepVariables(variables, this);
-
+            functionVariables.ExecutionSettings = executionSettings;
             // Execute the step
             result = await this.Function
-                .InvokeAsync(kernel, functionVariables, executionSettings, cancellationToken)
+                .InvokeAsync(kernel, functionVariables, cancellationToken)
                 .ConfigureAwait(false);
             this.UpdateFunctionResultWithOutputs(result);
         }
@@ -360,7 +361,7 @@ public sealed class Plan
 
                 this.UpdateContextWithOutputs(variables);
 
-                result = new FunctionResult(this.Name, variables, variables.Input);
+                result = new FunctionResult(this.Name, variables.Input, CultureInfo.CurrentCulture);
                 this.UpdateFunctionResultWithOutputs(result);
             }
         }
@@ -376,7 +377,7 @@ public sealed class Plan
     /// <param name="variables">Variables to use for expansion.</param>
     /// <param name="input">Input string to expand.</param>
     /// <returns>Expanded string.</returns>
-    internal string ExpandFromVariables(ContextVariables variables, string input)
+    internal string ExpandFromVariables(KernelArguments variables, string input)
     {
         var result = input;
         var matches = s_variablesRegex.Matches(input);
@@ -401,7 +402,7 @@ public sealed class Plan
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Next step result</returns>
     /// <exception cref="KernelException">If an error occurs while running the plan</exception>
-    private async Task<FunctionResult> InternalInvokeNextStepAsync(Kernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
+    private async Task<FunctionResult> InternalInvokeNextStepAsync(Kernel kernel, KernelArguments variables, CancellationToken cancellationToken = default)
     {
         if (this.HasNextStep)
         {
@@ -413,7 +414,7 @@ public sealed class Plan
             // Execute the step
             var result = await step.InvokeAsync(kernel, functionVariables, null, cancellationToken).ConfigureAwait(false);
 
-            var resultValue = (result.TryGetVariableValue(MainKey, out string? value) ? value : string.Empty).Trim();
+            var resultValue = (result.TryGetMetadataValue(MainKey, out string? value) ? value : string.Empty)?.Trim();
 
             #region Update State
 
@@ -436,14 +437,7 @@ public sealed class Plan
             // Update state with outputs (if any)
             foreach (var item in step.Outputs)
             {
-                if (result.TryGetVariableValue(item, out string? val))
-                {
-                    this.State.Set(item, val);
-                }
-                else
-                {
-                    this.State.Set(item, resultValue);
-                }
+                this.State.Set(item, result.TryGetMetadataValue(item, out string? val) ? val : resultValue);
             }
 
             #endregion Update State
@@ -492,7 +486,7 @@ public sealed class Plan
     /// <summary>
     /// Add any missing variables from a plan state variables to the context.
     /// </summary>
-    private static void AddStateVariablesToContextVariables(ContextVariables vars, ContextVariables contextVariables)
+    private static void AddStateVariablesToContextVariables(KernelArguments vars, KernelArguments contextVariables)
     {
         // Loop through vars and add anything missing to context
         foreach (var item in vars)
@@ -509,7 +503,7 @@ public sealed class Plan
     /// </summary>
     /// <param name="variables">The context variables to update.</param>
     /// <returns>The updated context variables.</returns>
-    private ContextVariables UpdateContextWithOutputs(ContextVariables variables)
+    private KernelArguments UpdateContextWithOutputs(KernelArguments variables)
     {
         var resultString = this.State.TryGetValue(DefaultResultKey, out string? result) ? result : this.State.ToString();
         variables.Update(resultString);
@@ -548,7 +542,7 @@ public sealed class Plan
             {
                 functionResult.Metadata[output] = value;
             }
-            else if (functionResult.TryGetVariableValue(output, out var val))
+            else if (functionResult.TryGetMetadataValue<string>(output, out var val))
             {
                 functionResult.Metadata[output] = val;
             }
@@ -563,7 +557,7 @@ public sealed class Plan
     /// <param name="variables">The current context variables.</param>
     /// <param name="step">The next step in the plan.</param>
     /// <returns>The context variables for the next step in the plan.</returns>
-    private ContextVariables GetNextStepVariables(ContextVariables variables, Plan step)
+    private KernelArguments GetNextStepVariables(KernelArguments variables, Plan step)
     {
         // Priority for Input
         // - Parameters (expand from variables if needed)
@@ -594,7 +588,7 @@ public sealed class Plan
             input = this.Description;
         }
 
-        var stepVariables = new ContextVariables(input);
+        var stepVariables = new KernelArguments(input);
 
         // Priority for remaining stepVariables is:
         // - Function Parameters (pull from variables or state by a key value)
@@ -621,7 +615,7 @@ public sealed class Plan
         foreach (var item in step.Parameters)
         {
             // Don't overwrite variable values that are already set
-            if (stepVariables.ContainsKey(item.Key))
+            if (stepVariables.ContainsName(item.Key))
             {
                 continue;
             }
@@ -647,7 +641,7 @@ public sealed class Plan
 
         foreach (KeyValuePair<string, string> item in variables)
         {
-            if (!stepVariables.ContainsKey(item.Key))
+            if (!stepVariables.ContainsName(item.Key))
             {
                 stepVariables.Set(item.Key, item.Value);
             }
