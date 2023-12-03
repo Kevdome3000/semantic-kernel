@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Functions.Yaml;
+namespace Microsoft.SemanticKernel;
 
 using System;
 using System.Collections.Generic;
@@ -28,17 +28,19 @@ internal sealed class PromptExecutionSettingsNodeDeserializer : INodeDeserialize
 
         foreach (var kv in (Dictionary<string, object>)dictionary!)
         {
-            if (kv.Key == "service_id")
+            switch (kv.Key)
             {
-                modelSettings.ServiceId = (string)kv.Value;
-            }
-            else if (kv.Key == "model_id")
-            {
-                modelSettings.ModelId = (string)kv.Value;
-            }
-            else
-            {
-                modelSettings.ExtensionData.Add(kv.Key, kv.Value);
+                case "service_id":
+                    modelSettings.ServiceId = (string)kv.Value;
+                    break;
+
+                case "model_id":
+                    modelSettings.ModelId = (string)kv.Value;
+                    break;
+
+                default:
+                    modelSettings.ExtensionData.Add(kv.Key, kv.Value);
+                    break;
             }
         }
 

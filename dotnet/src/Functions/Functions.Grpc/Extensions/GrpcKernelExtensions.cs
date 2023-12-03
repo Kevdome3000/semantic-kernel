@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Functions.Grpc.Extensions;
+namespace Microsoft.SemanticKernel.Plugins.Grpc;
 
 using System;
 using System.IO;
@@ -9,8 +9,8 @@ using System.Net.Http;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using Extensions.DependencyInjection;
+using Extensions.Logging;
 using Model;
 using Protobuf;
 

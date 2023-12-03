@@ -3,9 +3,9 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using RepoUtils;
 // ReSharper disable once InconsistentNaming
-using Microsoft.SemanticKernel;
 
 
 // ReSharper disable once InconsistentNaming
@@ -139,7 +139,7 @@ public class LocalExamplePlugin
     public FunctionResult Type10()
     {
         Console.WriteLine("Running function type 10");
-        return new FunctionResult(string.Empty);
+        return new FunctionResult(KernelFunctionFactory.CreateFromMethod(() => { }));
     }
 
 
@@ -148,6 +148,6 @@ public class LocalExamplePlugin
     {
         await Task.Delay(0);
         Console.WriteLine("Running function type 10");
-        return new FunctionResult("result");
+        return new FunctionResult(KernelFunctionFactory.CreateFromMethod(() => { }));
     }
 }

@@ -178,6 +178,7 @@ Jane: Goodbye!
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureOpenAIChatCompletion(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.ChatModelId,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
             .Build();

@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Functions.Grpc.Protobuf;
+namespace Microsoft.SemanticKernel.Plugins.Grpc.Protobuf;
 
 using System;
 using System.Collections.Generic;

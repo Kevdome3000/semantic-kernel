@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
+namespace Microsoft.SemanticKernel.Plugins.OpenAPI;
 
 using System;
 using System.Collections.Generic;
@@ -11,9 +11,9 @@ using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
+using Extensions.DependencyInjection;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
 using Model;
 using OpenApi;
 

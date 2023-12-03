@@ -34,7 +34,7 @@ public class OrderedAIServiceConfigurationProviderTests
     public void ItGetsAIServiceConfigurationForSingleAIService()
     {
         // Arrange
-        var kernel = new KernelBuilder().ConfigureServices(c =>
+        var kernel = new KernelBuilder().WithServices(c =>
         {
             c.AddKeyedSingleton<IAIService>("service1", new AIService());
         }).Build();
@@ -54,9 +54,9 @@ public class OrderedAIServiceConfigurationProviderTests
     public void ItGetsAIServiceConfigurationForSingleTextCompletion()
     {
         // Arrange
-        var kernel = new KernelBuilder().ConfigureServices(c =>
+        var kernel = new KernelBuilder().WithServices(c =>
         {
-            c.AddKeyedSingleton<ITextCompletion>("service1", new TextCompletion());
+            c.AddKeyedSingleton<ITextCompletion>("service1", new TextCompletion("model_id"));
         }).Build();
         var function = kernel.CreateFunctionFromPrompt("Hello AI");
         var serviceSelector = new OrderedAIServiceSelector();
@@ -74,10 +74,10 @@ public class OrderedAIServiceConfigurationProviderTests
     public void ItGetsAIServiceConfigurationForTextCompletionByServiceId()
     {
         // Arrange
-        var kernel = new KernelBuilder().ConfigureServices(c =>
+        var kernel = new KernelBuilder().WithServices(c =>
         {
-            c.AddKeyedSingleton<ITextCompletion>("service1", new TextCompletion());
-            c.AddKeyedSingleton<ITextCompletion>("service2", new TextCompletion());
+            c.AddKeyedSingleton<ITextCompletion>("service1", new TextCompletion("model_id"));
+            c.AddKeyedSingleton<ITextCompletion>("service2", new TextCompletion("model_id"));
         }).Build();
 
         var executionSettings = new PromptExecutionSettings() { ServiceId = "service2" };
@@ -97,10 +97,10 @@ public class OrderedAIServiceConfigurationProviderTests
     public void ItThrowsAnSKExceptionForNotFoundService()
     {
         // Arrange
-        var kernel = new KernelBuilder().ConfigureServices(c =>
+        var kernel = new KernelBuilder().WithServices(c =>
         {
-            c.AddKeyedSingleton<ITextCompletion>("service1", new TextCompletion());
-            c.AddKeyedSingleton<ITextCompletion>("service2", new TextCompletion());
+            c.AddKeyedSingleton<ITextCompletion>("service1", new TextCompletion("model_id"));
+            c.AddKeyedSingleton<ITextCompletion>("service2", new TextCompletion("model_id"));
         }).Build();
 
         var executionSettings = new PromptExecutionSettings() { ServiceId = "service3" };
@@ -117,10 +117,10 @@ public class OrderedAIServiceConfigurationProviderTests
     public void ItUsesDefaultServiceForEmptyModelSettings()
     {
         // Arrange
-        var kernel = new KernelBuilder().ConfigureServices(c =>
+        var kernel = new KernelBuilder().WithServices(c =>
         {
-            c.AddKeyedSingleton<ITextCompletion>("service1", new TextCompletion());
-            c.AddKeyedSingleton<ITextCompletion>("service2", new TextCompletion());
+            c.AddKeyedSingleton<ITextCompletion>("service1", new TextCompletion("model_id"));
+            c.AddKeyedSingleton<ITextCompletion>("service2", new TextCompletion("model_id"));
         }).Build();
         var function = kernel.CreateFunctionFromPrompt("Hello AI");
         var serviceSelector = new OrderedAIServiceSelector();
@@ -139,10 +139,10 @@ public class OrderedAIServiceConfigurationProviderTests
     {
         // Arrange
         // Arrange
-        var kernel = new KernelBuilder().ConfigureServices(c =>
+        var kernel = new KernelBuilder().WithServices(c =>
         {
-            c.AddKeyedSingleton<ITextCompletion>("service1", new TextCompletion());
-            c.AddKeyedSingleton<ITextCompletion>("service2", new TextCompletion());
+            c.AddKeyedSingleton<ITextCompletion>("service1", new TextCompletion("model_id"));
+            c.AddKeyedSingleton<ITextCompletion>("service2", new TextCompletion("model_id"));
         }).Build();
         var executionSettings = new PromptExecutionSettings();
         var function = kernel.CreateFunctionFromPrompt("Hello AI", executionSettings);
@@ -161,10 +161,10 @@ public class OrderedAIServiceConfigurationProviderTests
     public void ItUsesDefaultServiceAndSettingsEmptyServiceId()
     {
         // Arrange
-        var kernel = new KernelBuilder().ConfigureServices(c =>
+        var kernel = new KernelBuilder().WithServices(c =>
         {
-            c.AddKeyedSingleton<ITextCompletion>("service1", new TextCompletion());
-            c.AddKeyedSingleton<ITextCompletion>("service2", new TextCompletion());
+            c.AddKeyedSingleton<ITextCompletion>("service1", new TextCompletion("model_id"));
+            c.AddKeyedSingleton<ITextCompletion>("service2", new TextCompletion("model_id"));
         }).Build();
         var executionSettings = new PromptExecutionSettings() { ServiceId = "" };
         var function = kernel.CreateFunctionFromPrompt("Hello AI", executionSettings);
@@ -187,11 +187,11 @@ public class OrderedAIServiceConfigurationProviderTests
     public void ItGetsAIServiceConfigurationByOrder(string[] serviceIds, string expectedServiceId)
     {
         // Arrange
-        var kernel = new KernelBuilder().ConfigureServices(c =>
+        var kernel = new KernelBuilder().WithServices(c =>
         {
-            c.AddKeyedSingleton<ITextCompletion>("service1", new TextCompletion());
-            c.AddKeyedSingleton<ITextCompletion>("service2", new TextCompletion());
-            c.AddKeyedSingleton<ITextCompletion>("service3", new TextCompletion());
+            c.AddKeyedSingleton<ITextCompletion>("service1", new TextCompletion("model_id"));
+            c.AddKeyedSingleton<ITextCompletion>("service2", new TextCompletion("model_id"));
+            c.AddKeyedSingleton<ITextCompletion>("service3", new TextCompletion("model_id"));
         }).Build();
         var executionSettings = new List<PromptExecutionSettings>();
 
@@ -215,7 +215,7 @@ public class OrderedAIServiceConfigurationProviderTests
     public void ItGetsAIServiceConfigurationForTextCompletionByModelId()
     {
         // Arrange
-        var kernel = new KernelBuilder().ConfigureServices(c =>
+        var kernel = new KernelBuilder().WithServices(c =>
         {
             c.AddKeyedSingleton<ITextCompletion>(null, new TextCompletion("model1"));
             c.AddKeyedSingleton<ITextCompletion>(null, new TextCompletion("model2"));
@@ -250,12 +250,9 @@ public class OrderedAIServiceConfigurationProviderTests
         private readonly Dictionary<string, object?> _attributes = new();
 
 
-        public TextCompletion(string? modelId = null)
+        public TextCompletion(string modelId)
         {
-            if (modelId is not null)
-            {
-                this._attributes.Add("ModelId", modelId);
-            }
+            this._attributes.Add("ModelId", modelId);
         }
 
 

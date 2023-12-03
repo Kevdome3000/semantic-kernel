@@ -14,7 +14,7 @@ public class FunctionInvokedEventArgsTests
     public void ResultValuePropertyShouldBeInitializedByOriginalOne()
     {
         //Arrange
-        var originalResults = new FunctionResult("fake-function-name", 36, CultureInfo.InvariantCulture);
+        var originalResults = new FunctionResult(KernelFunctionFactory.CreateFromMethod(() => { }), 36, CultureInfo.InvariantCulture);
 
         var sut = new FunctionInvokedEventArgs(KernelFunctionFactory.CreateFromMethod(() => { }), new KernelArguments(), originalResults);
 
@@ -27,7 +27,7 @@ public class FunctionInvokedEventArgsTests
     public void ResultValuePropertyShouldBeUpdated()
     {
         //Arrange
-        var originalResults = new FunctionResult("fake-function-name", 36, CultureInfo.InvariantCulture);
+        var originalResults = new FunctionResult(KernelFunctionFactory.CreateFromMethod(() => { }), 36, CultureInfo.InvariantCulture);
 
         var sut = new FunctionInvokedEventArgs(KernelFunctionFactory.CreateFromMethod(() => { }), new KernelArguments(), originalResults);
 

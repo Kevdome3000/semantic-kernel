@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Functions.UnitTests.Grpc.Protobuf;
+
 using System.IO;
 using System.Linq;
-using Microsoft.SemanticKernel.Functions.Grpc.Protobuf;
-using SemanticKernel.Functions.UnitTests.Grpc.Protobuf.TestPlugins;
+using Microsoft.SemanticKernel.Plugins.Grpc.Protobuf;
+using TestPlugins;
 using Xunit;
 
-namespace SemanticKernel.Functions.UnitTests.Grpc.Protobuf;
 
 public sealed class ProtoDocumentParserV30Tests
 {
@@ -20,6 +21,7 @@ public sealed class ProtoDocumentParserV30Tests
     /// </summary>
     private readonly Stream _protoDocument;
 
+
     /// <summary>
     /// Creates an instance of a <see cref="ProtoDocumentParserV30Tests"/> class.
     /// </summary>
@@ -29,6 +31,7 @@ public sealed class ProtoDocumentParserV30Tests
 
         this._sut = new ProtoDocumentParser();
     }
+
 
     [Fact]
     public void ShouldCreateOperationsForAllServicesInProtoDocument()
@@ -48,6 +51,7 @@ public sealed class ProtoDocumentParserV30Tests
         Assert.NotNull(farewellerServiceOperations);
         Assert.Contains(farewellerServiceOperations, o => o.Name == "SayGoodbye");
     }
+
 
     [Fact]
     public void ShouldParseSimpleOperationRequestDataContract()
@@ -76,6 +80,7 @@ public sealed class ProtoDocumentParserV30Tests
         Assert.Equal(1, nameField.Number);
         Assert.Equal("TYPE_STRING", nameField.TypeName);
     }
+
 
     [Fact]
     public void ShouldParseSimpleOperationResponseDataContract()

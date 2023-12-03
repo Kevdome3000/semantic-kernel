@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
+namespace Microsoft.SemanticKernel.Plugins.OpenAPI.Authentication;
 
 using System;
 using System.Net.Http;

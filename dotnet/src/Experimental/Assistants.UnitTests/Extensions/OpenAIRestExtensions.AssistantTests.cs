@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Experimental.Assistants.UnitTests.Extensions;
+namespace SemanticKernel.Experimental.Assistants.UnitTests;
 
 using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 using Moq;

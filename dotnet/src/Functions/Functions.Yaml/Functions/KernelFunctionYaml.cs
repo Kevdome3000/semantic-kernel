@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Functions.Yaml.Functions;
+namespace Microsoft.SemanticKernel;
 
 using System.IO;
 using System.Reflection;
@@ -26,15 +26,10 @@ public static class KernelFunctionYaml
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null)
     {
-        var assembly = Assembly.GetExecutingAssembly();
-        string resourcePath = resourceName;
-
-        using Stream stream = assembly.GetManifestResourceStream(resourcePath);
-        using StreamReader reader = new(stream);
-        var text = reader.ReadToEnd();
+        using StreamReader reader = new(Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName));
 
         return FromPromptYaml(
-            text,
+            reader.ReadToEnd(),
             promptTemplateFactory,
             loggerFactory);
     }

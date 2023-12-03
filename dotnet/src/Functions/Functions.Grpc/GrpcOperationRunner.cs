@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Functions.Grpc;
+namespace Microsoft.SemanticKernel.Plugins.Grpc;
 
 using System;
 using System.Globalization;

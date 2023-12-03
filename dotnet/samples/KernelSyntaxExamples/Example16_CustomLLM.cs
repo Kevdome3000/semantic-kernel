@@ -55,7 +55,7 @@ public static class Example16_CustomLLM
     {
         Console.WriteLine("======== Custom LLM - Text Completion - SKFunction ========");
 
-        Kernel kernel = new KernelBuilder().ConfigureServices(c =>
+        Kernel kernel = new KernelBuilder().WithServices(c =>
         {
             c.AddSingleton(ConsoleLogger.LoggerFactory)
                 // Add your text completion service as a singleton instance

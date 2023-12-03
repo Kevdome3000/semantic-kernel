@@ -10,8 +10,8 @@ using System.Threading.Tasks;
 using AI.ChatCompletion;
 using Connectors.AI.OpenAI;
 using Extensions.Logging;
-using Functions.OpenAPI.Model;
 using Json.More;
+using Plugins.OpenAPI.Model;
 
 
 /// <summary>

@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
+namespace Microsoft.SemanticKernel.Plugins.OpenAPI.OpenApi;
 
 using System.Collections.Generic;
 using System.IO;

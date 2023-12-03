@@ -3,8 +3,8 @@
 namespace SemanticKernel.Functions.UnitTests.OpenAPI.Builders.Serialization;
 
 using System;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Builders.Serialization;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
+using Microsoft.SemanticKernel.Plugins.OpenAPI.Builders.Serialization;
+using Microsoft.SemanticKernel.Plugins.OpenAPI.Model;
 using Xunit;
 
 

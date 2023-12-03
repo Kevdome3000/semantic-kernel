@@ -26,7 +26,7 @@ public class MultipleModelTests
         mockTextCompletion2.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
         mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
 
-        var kernel = new KernelBuilder().ConfigureServices(c =>
+        var kernel = new KernelBuilder().WithServices(c =>
         {
             c.AddKeyedSingleton("service1", mockTextCompletion1.Object);
             c.AddKeyedSingleton("service2", mockTextCompletion2.Object);
@@ -53,7 +53,7 @@ public class MultipleModelTests
         var mockTextCompletion1 = new Mock<ITextCompletion>();
         var mockTextCompletion2 = new Mock<ITextCompletion>();
 
-        var kernel = new KernelBuilder().ConfigureServices(c =>
+        var kernel = new KernelBuilder().WithServices(c =>
         {
             c.AddKeyedSingleton("service1", mockTextCompletion1.Object);
             c.AddKeyedSingleton("service2", mockTextCompletion2.Object);
@@ -88,7 +88,7 @@ public class MultipleModelTests
         mockTextCompletion3.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
         mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
 
-        var kernel = new KernelBuilder().ConfigureServices(c =>
+        var kernel = new KernelBuilder().WithServices(c =>
         {
             c.AddKeyedSingleton("service1", mockTextCompletion1.Object);
             c.AddKeyedSingleton("service2", mockTextCompletion2.Object);
@@ -128,7 +128,7 @@ public class MultipleModelTests
         mockTextCompletion3.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
         mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
 
-        var kernel = new KernelBuilder().ConfigureServices(c =>
+        var kernel = new KernelBuilder().WithServices(c =>
         {
             c.AddKeyedSingleton("service1", mockTextCompletion1.Object);
             c.AddKeyedSingleton("service2", mockTextCompletion2.Object);

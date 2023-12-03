@@ -3,7 +3,6 @@
 namespace SemanticKernel.Functions.UnitTests.Markdown.Functions;
 
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Functions.Markdown.Functions;
 using Xunit;
 
 

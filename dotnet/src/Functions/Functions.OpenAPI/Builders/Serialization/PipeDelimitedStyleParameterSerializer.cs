@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.Builders.Serialization;
+namespace Microsoft.SemanticKernel.Plugins.OpenAPI.Builders.Serialization;
 
 using System;
 using System.Text.Json.Nodes;

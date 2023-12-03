@@ -3,7 +3,7 @@
 namespace SemanticKernel.Functions.UnitTests.OpenAPI;
 
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
+using Microsoft.SemanticKernel.Plugins.OpenAPI.Model;
 using TestResponses;
 using Xunit;
 

@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Plugins.OpenAPI.Authentication;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Identity.Client;
+using Identity.Client;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
 
 /// <summary>
 /// Uses the Microsoft Authentication Library (MSAL) to authenticate HTTP requests.
@@ -25,6 +26,7 @@ public class InteractiveMsalAuthenticationProvider : BearerAuthenticationProvide
     {
     }
 
+
     /// <summary>
     /// Gets an access token using the Microsoft Authentication Library (MSAL).
     /// </summary>
@@ -42,6 +44,7 @@ public class InteractiveMsalAuthenticationProvider : BearerAuthenticationProvide
 
         IEnumerable<IAccount> accounts = await app.GetAccountsAsync().ConfigureAwait(false);
         AuthenticationResult result;
+
         try
         {
             result = await app.AcquireTokenSilent(scopes, accounts.FirstOrDefault())

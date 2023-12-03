@@ -1,12 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Plugins.OpenAPI.Authentication;
+
 using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
 
 /// <summary>
 /// Retrieves authentication content (e.g. username/password, API key) via the provided delegate and
@@ -15,6 +17,7 @@ namespace Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
 public class BasicAuthenticationProvider
 {
     private readonly Func<Task<string>> _credentials;
+
 
     /// <summary>
     /// Creates an instance of the <see cref="BasicAuthenticationProvider"/> class.
@@ -25,11 +28,13 @@ public class BasicAuthenticationProvider
         this._credentials = credentials;
     }
 
+
     /// <summary>
     /// Applies the authentication content to the provided HTTP request message.
     /// </summary>
     /// <param name="request">The HTTP request message.</param>
-    public async Task AuthenticateRequestAsync(HttpRequestMessage request)
+    /// <param name="cancellationToken">The cancellation token.</param>
+    public async Task AuthenticateRequestAsync(HttpRequestMessage request, CancellationToken cancellationToken = default)
     {
         // Base64 encode
         string encodedContent = Convert.ToBase64String(Encoding.UTF8.GetBytes(await this._credentials().ConfigureAwait(false)));

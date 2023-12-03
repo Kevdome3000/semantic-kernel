@@ -1,10 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Functions.Markdown.Extensions;
+namespace Microsoft.SemanticKernel;
 
 using System.IO;
-using Functions;
-using Microsoft.Extensions.Logging;
+using Extensions.Logging;
 
 
 /// <summary>
@@ -28,6 +27,9 @@ public static class MarkdownKernelExtensions
         string? pluginName = null,
         IPromptTemplateFactory? promptTemplateFactory = null)
     {
+        Verify.NotNull(kernel);
+        Verify.NotNull(resourceName);
+
         functionName ??= Path.GetFileNameWithoutExtension(resourceName);
         return KernelFunctionMarkdown.FromPromptMarkdownResource(resourceName, functionName, pluginName, promptTemplateFactory, kernel.LoggerFactory);
     }
@@ -51,6 +53,10 @@ public static class MarkdownKernelExtensions
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null)
     {
+        Verify.NotNull(kernel);
+        Verify.NotNull(text);
+        Verify.NotNull(functionName);
+
         return KernelFunctionMarkdown.FromPromptMarkdown(text, functionName, pluginName, promptTemplateFactory, kernel.LoggerFactory);
     }
 }

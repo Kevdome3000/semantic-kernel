@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Functions.UnitTests.OpenAPI;
+
 using System;
-using Microsoft.SemanticKernel.Functions.OpenAPI;
+using Microsoft.SemanticKernel.Plugins.OpenAPI;
 using Xunit;
 
-namespace SemanticKernel.Functions.UnitTests.OpenAPI;
 
 public class JsonPathPluginTests
 {
@@ -39,6 +40,7 @@ public class JsonPathPluginTests
   ]
 }";
 
+
     [Theory]
     [InlineData("$.Manufacturers[0].Products[0].Name", "Anvil")] // single value
     [InlineData("$.Manufacturers[0].Products[0].Foo", "")] // no value
@@ -50,6 +52,7 @@ public class JsonPathPluginTests
 
         Assert.Equal(expected, actual, StringComparer.OrdinalIgnoreCase);
     }
+
 
     [Theory]
     [InlineData("$..Products[?(@.Price >= 50)].Name", "[\"Anvil\",\"Elbow Grease\"]")] // multiple values

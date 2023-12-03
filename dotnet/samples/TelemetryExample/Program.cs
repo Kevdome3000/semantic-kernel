@@ -86,7 +86,7 @@ public sealed class Program
         var result = plan.Invoke(kernel, new Dictionary<string, object?>(), CancellationToken.None);
 
         Console.WriteLine("Result:");
-        Console.WriteLine(result.GetValue<string>());
+        Console.WriteLine(result);
     }
 
 
@@ -100,6 +100,7 @@ public sealed class Program
             .WithLoggerFactory(loggerFactory)
             .WithAzureOpenAIChatCompletion(
                 Env.Var("AzureOpenAI__ChatDeploymentName"),
+                Env.Var("AzureOpenAI__ChatModelId"),
                 Env.Var("AzureOpenAI__Endpoint"),
                 Env.Var("AzureOpenAI__ApiKey"))
             .Build();

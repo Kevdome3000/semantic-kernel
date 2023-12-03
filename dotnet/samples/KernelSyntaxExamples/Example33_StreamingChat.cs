@@ -37,6 +37,7 @@ public static class Example33_StreamingChat
 
         AzureOpenAIChatCompletion azureOpenAIChatCompletion = new(
             TestConfiguration.AzureOpenAI.ChatDeploymentName,
+            TestConfiguration.AzureOpenAI.ChatModelId,
             TestConfiguration.AzureOpenAI.Endpoint,
             TestConfiguration.AzureOpenAI.ApiKey);
 

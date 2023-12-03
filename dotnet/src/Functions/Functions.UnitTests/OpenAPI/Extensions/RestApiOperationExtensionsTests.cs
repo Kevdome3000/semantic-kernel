@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Functions.UnitTests.OpenAPI.Extensions;
+namespace SemanticKernel.Functions.UnitTests.OpenAPI;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
+using Microsoft.SemanticKernel.Plugins.OpenAPI.Model;
 using Xunit;
 
 

@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
+namespace Microsoft.SemanticKernel.Plugins.OpenAPI.OpenAI;
 
 using System;
 using System.Collections.Generic;
@@ -39,6 +39,7 @@ public record OpenAIAuthenticationConfig
     /// <summary>
     /// The authorization content type.
     /// </summary>
+    [JsonPropertyName("authorization_content_type")]
     public string? AuthorizationContentType { get; set; }
 
     /// <summary>

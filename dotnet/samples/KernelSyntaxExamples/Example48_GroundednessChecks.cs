@@ -67,6 +67,7 @@ after this event Caroline became his wife.""";
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureOpenAIChatCompletion(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.ChatModelId,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
@@ -132,6 +133,7 @@ which are not grounded in the original.
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureOpenAIChatCompletion(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.ChatModelId,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
@@ -148,7 +150,7 @@ which are not grounded in the original.
         Console.WriteLine($" Goal: {ask} \n\n Template: {plan}");
 
         var result = plan.Invoke(kernel, new Dictionary<string, object?>(), CancellationToken.None);
-        Console.WriteLine(result.GetValue<string>());
+        Console.WriteLine(result);
     }
 }
 

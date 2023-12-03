@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Plugins.OpenAPI.Authentication;
+
 using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
 
 /// <summary>
 /// Retrieves a token via the provided delegate and applies it to HTTP requests using the
@@ -15,6 +16,7 @@ public class BearerAuthenticationProvider
 {
     private readonly Func<Task<string>> _bearerToken;
 
+
     /// <summary>
     /// Creates an instance of the <see cref="BearerAuthenticationProvider"/> class.
     /// </summary>
@@ -23,6 +25,7 @@ public class BearerAuthenticationProvider
     {
         this._bearerToken = bearerToken;
     }
+
 
     /// <summary>
     /// Applies the token to the provided HTTP request message.

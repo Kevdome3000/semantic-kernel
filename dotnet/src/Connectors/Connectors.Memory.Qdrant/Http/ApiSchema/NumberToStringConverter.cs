@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
+
 using System;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes: Used for Json Deserialization
 internal sealed class NumberToStringConverter : JsonConverter<string>
 {
@@ -31,6 +32,7 @@ internal sealed class NumberToStringConverter : JsonConverter<string>
                 throw new NotSupportedException($"{nameof(JsonTokenType)}.{reader.TokenType}");
         }
     }
+
 
     public override void Write(Utf8JsonWriter writer, string @value, JsonSerializerOptions options)
     {

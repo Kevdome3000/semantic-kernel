@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Functions.UnitTests.OpenAPI.Authentication;
+
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
+using Microsoft.SemanticKernel.Plugins.OpenAPI.Authentication;
 using Xunit;
 
-namespace SemanticKernel.Functions.UnitTests.OpenAPI.Authentication;
 
 public class BearerAuthenticationProviderTests
 {

@@ -23,11 +23,12 @@ public static class Example72_KernelStreaming
     {
         string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
         string chatDeploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName;
+        string chatModelId = TestConfiguration.AzureOpenAI.ChatModelId;
         string endpoint = TestConfiguration.AzureOpenAI.Endpoint;
 
-        if (apiKey == null || chatDeploymentName == null || endpoint == null)
+        if (apiKey == null || chatDeploymentName == null || chatModelId == null || endpoint == null)
         {
-            Console.WriteLine("Azure endpoint, apiKey, or deploymentName not found. Skipping example.");
+            Console.WriteLine("Azure endpoint, apiKey, deploymentName or modelId not found. Skipping example.");
             return;
         }
 
@@ -35,6 +36,7 @@ public static class Example72_KernelStreaming
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureOpenAIChatCompletion(
                 deploymentName: chatDeploymentName,
+                modelId: chatModelId,
                 endpoint: endpoint,
                 serviceId: "AzureOpenAIChat",
                 apiKey: apiKey)

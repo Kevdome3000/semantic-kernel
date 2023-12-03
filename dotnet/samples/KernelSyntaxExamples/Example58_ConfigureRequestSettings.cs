@@ -21,11 +21,12 @@ public static class Example58_ConfigureRequestSettings
         string serviceId = TestConfiguration.AzureOpenAI.ServiceId;
         string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
         string chatDeploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName;
+        string chatModelId = TestConfiguration.AzureOpenAI.ChatModelId;
         string endpoint = TestConfiguration.AzureOpenAI.Endpoint;
 
-        if (serviceId == null || apiKey == null || chatDeploymentName == null || endpoint == null)
+        if (serviceId == null || apiKey == null || chatDeploymentName == null || chatModelId == null || endpoint == null)
         {
-            Console.WriteLine("AzureOpenAI serviceId, endpoint, apiKey, or deploymentName not found. Skipping example.");
+            Console.WriteLine("AzureOpenAI serviceId, modelId, endpoint, apiKey, or deploymentName not found. Skipping example.");
             return;
         }
 
@@ -33,6 +34,7 @@ public static class Example58_ConfigureRequestSettings
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureOpenAIChatCompletion(
                 deploymentName: chatDeploymentName,
+                modelId: chatModelId,
                 endpoint: endpoint,
                 serviceId: serviceId,
                 apiKey: apiKey)

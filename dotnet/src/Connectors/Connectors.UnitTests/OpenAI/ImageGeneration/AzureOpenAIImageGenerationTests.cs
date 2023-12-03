@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Connectors.UnitTests.OpenAI.ImageGeneration;
+
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -10,7 +12,6 @@ using Moq;
 using Moq.Protected;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.OpenAI.ImageGeneration;
 
 /// <summary>
 /// Unit tests for <see cref="AzureOpenAIImageGenerationTests"/> class.
@@ -36,15 +37,16 @@ public sealed class AzureOpenAIImageGenerationTests
             .ReturnsAsync(generationResult);
 
         httpClientHandler
-           .Protected()
-           .Setup<Task<HttpResponseMessage>>(
-               "SendAsync",
-               ItExpr.Is<HttpRequestMessage>(request => request.RequestUri!.AbsolutePath.Contains("openai/operations/images")),
-               ItExpr.IsAny<CancellationToken>())
-           .ReturnsAsync(imageResult);
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.Is<HttpRequestMessage>(request => request.RequestUri!.AbsolutePath.Contains("openai/operations/images")),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(imageResult);
 
         return new HttpClient(httpClientHandler.Object);
     }
+
 
     /// <summary>
     /// Creates an instance of <see cref="HttpResponseMessage"/> to return with test data.
@@ -59,6 +61,7 @@ public sealed class AzureOpenAIImageGenerationTests
         return response;
     }
 
+
     [Fact]
     public async Task ItShouldGenerateImageSuccussedAsync()
     {
@@ -67,7 +70,7 @@ public sealed class AzureOpenAIImageGenerationTests
         using var imageResult = CreateResponseMessage(HttpStatusCode.OK, "image_result_test_response.json");
         using var mockHttpClient = GetHttpClientMock(generateResult, imageResult);
 
-        var generation = new AzureOpenAIImageGeneration("https://fake-endpoint/", "fake-api-key", mockHttpClient);
+        var generation = new AzureOpenAIImageGeneration("https://fake-endpoint/", "gake-model-id", "fake-api-key", mockHttpClient);
 
         //Act
         var result = await generation.GenerateImageAsync("description", 256, 256);

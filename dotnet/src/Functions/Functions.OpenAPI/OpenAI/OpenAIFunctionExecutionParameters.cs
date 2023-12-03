@@ -1,10 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.OpenAI;
+namespace Microsoft.SemanticKernel.Plugins.OpenAPI.OpenAI;
 
 using System;
 using System.Net.Http;
-using Extensions;
 using Http;
 
 

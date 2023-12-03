@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Functions.UnitTests.OpenAPI.Builders.Serialization;
+
 using System;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Builders.Serialization;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
+using Microsoft.SemanticKernel.Plugins.OpenAPI.Builders.Serialization;
+using Microsoft.SemanticKernel.Plugins.OpenAPI.Model;
 using Xunit;
 
-namespace SemanticKernel.Functions.UnitTests.OpenAPI.Builders.Serialization;
 
 public class FormStyleParametersSerializerTests
 {
@@ -14,13 +15,13 @@ public class FormStyleParametersSerializerTests
     {
         // Arrange
         var parameter = new RestApiOperationParameter(
-                name: "id",
-                type: "array",
-                isRequired: true,
-                expand: true, //Specify generating a separate parameter for each array item.
-                location: RestApiOperationParameterLocation.Query,
-                style: RestApiOperationParameterStyle.Form,
-                arrayItemType: "integer");
+            name: "id",
+            type: "array",
+            isRequired: true,
+            expand: true, //Specify generating a separate parameter for each array item.
+            location: RestApiOperationParameterLocation.Query,
+            style: RestApiOperationParameterStyle.Form,
+            arrayItemType: "integer");
 
         // Act
         var result = FormStyleParameterSerializer.Serialize(parameter, "[1,2,3]");
@@ -31,18 +32,19 @@ public class FormStyleParametersSerializerTests
         Assert.Equal("id=1&id=2&id=3", result);
     }
 
+
     [Fact]
     public void ItShouldCreateParameterWithCommaSeparatedValuePerArrayItem()
     {
         // Arrange
         var parameter = new RestApiOperationParameter(
-                name: "id",
-                type: "array",
-                isRequired: true,
-                expand: false, //Specify generating a parameter with comma-separated values for each array item.
-                location: RestApiOperationParameterLocation.Query,
-                style: RestApiOperationParameterStyle.Form,
-                arrayItemType: "integer");
+            name: "id",
+            type: "array",
+            isRequired: true,
+            expand: false, //Specify generating a parameter with comma-separated values for each array item.
+            location: RestApiOperationParameterLocation.Query,
+            style: RestApiOperationParameterStyle.Form,
+            arrayItemType: "integer");
 
         // Act
         var result = FormStyleParameterSerializer.Serialize(parameter, "[1,2,3]");
@@ -53,17 +55,18 @@ public class FormStyleParametersSerializerTests
         Assert.Equal("id=1,2,3", result);
     }
 
+
     [Fact]
     public void ItShouldCreateParameterForPrimitiveValue()
     {
         // Arrange
         var parameter = new RestApiOperationParameter(
-                name: "id",
-                type: "integer",
-                isRequired: true,
-                expand: false,
-                location: RestApiOperationParameterLocation.Query,
-                style: RestApiOperationParameterStyle.Form);
+            name: "id",
+            type: "integer",
+            isRequired: true,
+            expand: false,
+            location: RestApiOperationParameterLocation.Query,
+            style: RestApiOperationParameterStyle.Form);
 
         // Act
         var result = FormStyleParameterSerializer.Serialize(parameter, "28");
@@ -73,6 +76,7 @@ public class FormStyleParametersSerializerTests
 
         Assert.Equal("id=28", result);
     }
+
 
     [Theory]
     [InlineData(":", "%3a")]
@@ -93,6 +97,7 @@ public class FormStyleParametersSerializerTests
         Assert.EndsWith(encodedEquivalent, result, StringComparison.Ordinal);
     }
 
+
     [Theory]
     [InlineData(":", "%3a")]
     [InlineData("/", "%2f")]
@@ -111,6 +116,7 @@ public class FormStyleParametersSerializerTests
 
         Assert.EndsWith(encodedEquivalent, result, StringComparison.Ordinal);
     }
+
 
     [Theory]
     [InlineData(":", "%3a")]

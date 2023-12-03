@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Plugins.Document.OpenXml;
+
 using System.IO;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
-using Microsoft.SemanticKernel.Plugins.Document.OpenXml.Extensions;
 
-namespace Microsoft.SemanticKernel.Plugins.Document.OpenXml;
 
 /// <summary>
 /// Connector for Microsoft Word (.docx) files
@@ -27,6 +27,7 @@ public class WordDocumentConnector : IDocumentConnector
         return wordprocessingDocument.ReadText();
     }
 
+
     /// <summary>
     /// Initialize a document from the given stream.
     /// </summary>
@@ -44,6 +45,7 @@ public class WordDocumentConnector : IDocumentConnector
         // This is a workaround for a bug with the OpenXML SDK [TODO: add bug number]
         using (WordprocessingDocument wordprocessingDocument = WordprocessingDocument.Open(stream, false)) { }
     }
+
 
     /// <summary>
     /// Append the specified text to the document. This requires read-write permissions.

@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Experimental.Assistants.UnitTests.Extensions;
+namespace SemanticKernel.Experimental.Assistants.UnitTests;
 
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
+using Microsoft.SemanticKernel.Experimental.Assistants;
 using Xunit;
 
 

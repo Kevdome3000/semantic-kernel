@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI;
+namespace Microsoft.SemanticKernel.Plugins.OpenAPI;
 
 using System;
 using System.IO;
@@ -9,8 +9,8 @@ using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using Authentication;
+using Extensions.Logging;
 using Http;
-using Microsoft.Extensions.Logging;
 
 
 internal static class DocumentLoader
@@ -28,7 +28,7 @@ internal static class DocumentLoader
 
         if (authCallback is not null)
         {
-            await authCallback(request).ConfigureAwait(false);
+            await authCallback(request, cancellationToken).ConfigureAwait(false);
         }
 
         logger.LogTrace("Importing document from {0}", uri);

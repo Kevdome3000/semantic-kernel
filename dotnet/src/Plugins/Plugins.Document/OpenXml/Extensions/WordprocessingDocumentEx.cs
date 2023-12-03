@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Plugins.Document.OpenXml;
+
 using System;
 using System.Text;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 
-namespace Microsoft.SemanticKernel.Plugins.Document.OpenXml.Extensions;
 
 /// <summary>
 /// Extension methods for DocumentFormat.OpenXml.Packaging.WordprocessingDocument
@@ -23,23 +24,27 @@ internal static class WordprocessingDocumentEx
         mainPart.Document.AppendChild(new Body());
     }
 
+
     internal static string ReadText(this WordprocessingDocument wordprocessingDocument)
     {
         StringBuilder sb = new();
 
         var mainPart = wordprocessingDocument.MainDocumentPart;
+
         if (mainPart is null)
         {
             throw new InvalidOperationException("The main document part is missing.");
         }
 
         var body = mainPart.Document.Body;
+
         if (body is null)
         {
             throw new InvalidOperationException("The document body is missing.");
         }
 
         var paras = body.Descendants<Paragraph>();
+
         if (paras != null)
         {
             foreach (Paragraph para in paras)
@@ -51,6 +56,7 @@ internal static class WordprocessingDocumentEx
         return sb.ToString();
     }
 
+
     internal static void AppendText(this WordprocessingDocument wordprocessingDocument, string text)
     {
         if (text is null)
@@ -59,12 +65,14 @@ internal static class WordprocessingDocumentEx
         }
 
         MainDocumentPart? mainPart = wordprocessingDocument.MainDocumentPart;
+
         if (mainPart is null)
         {
             throw new InvalidOperationException("The main document part is missing.");
         }
 
         Body? body = mainPart.Document.Body;
+
         if (body is null)
         {
             throw new InvalidOperationException("The document body is missing.");

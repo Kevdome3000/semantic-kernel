@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Functions.UnitTests.OpenAPI.Extensions;
+namespace SemanticKernel.Functions.UnitTests.OpenAPI;
 
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -11,9 +11,9 @@ using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
-using Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
+using Microsoft.SemanticKernel.Plugins.OpenAPI;
+using Microsoft.SemanticKernel.Plugins.OpenAPI.Model;
+using Microsoft.SemanticKernel.Plugins.OpenAPI.OpenApi;
 using TestPlugins;
 using Xunit;
 

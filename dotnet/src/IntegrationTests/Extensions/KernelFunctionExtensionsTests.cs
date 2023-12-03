@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.IntegrationTests.Extensions;
+namespace SemanticKernel.IntegrationTests;
 
 using System;
 using System.Collections.Generic;
@@ -29,8 +29,8 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
     {
         Kernel target = new KernelBuilder()
             .WithLoggerFactory(this._logger)
-            .ConfigureServices(c => c.AddSingleton<ITextCompletion>(new RedirectTextCompletion()))
-            .ConfigurePlugins(plugins => plugins.AddPluginFromObject<EmailPluginFake>())
+            .WithServices(c => c.AddSingleton<ITextCompletion>(new RedirectTextCompletion()))
+            .WithPlugins(plugins => plugins.AddPluginFromObject<EmailPluginFake>())
             .Build();
 
         var prompt = $"Hey {{{{{nameof(EmailPluginFake)}.GetEmailAddress}}}}";
@@ -48,8 +48,8 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
     {
         Kernel target = new KernelBuilder()
             .WithLoggerFactory(this._logger)
-            .ConfigureServices(c => c.AddSingleton<ITextCompletion>(new RedirectTextCompletion()))
-            .ConfigurePlugins(plugins => plugins.AddPluginFromObject<EmailPluginFake>())
+            .WithServices(c => c.AddSingleton<ITextCompletion>(new RedirectTextCompletion()))
+            .WithPlugins(plugins => plugins.AddPluginFromObject<EmailPluginFake>())
             .Build();
 
         var prompt = $"Hey {{{{{nameof(EmailPluginFake)}.GetEmailAddress \"a person\"}}}}";

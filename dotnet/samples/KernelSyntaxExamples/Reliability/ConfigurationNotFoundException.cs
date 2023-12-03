@@ -14,16 +14,19 @@ public sealed class ConfigurationNotFoundException : Exception
     public ConfigurationNotFoundException(string section, string key)
         : base($"Configuration key '{section}:{key}' not found")
     {
-        Section = section;
-        Key = key;
+        this.Section = section;
+        this.Key = key;
     }
 
 
     public ConfigurationNotFoundException(string section)
-        : base($"Configuration section '{section}' not found") => Section = section;
+        : base($"Configuration section '{section}' not found")
+    {
+        this.Section = section;
+    }
 
 
-    public ConfigurationNotFoundException()
+    public ConfigurationNotFoundException() : base()
     {
     }
 
