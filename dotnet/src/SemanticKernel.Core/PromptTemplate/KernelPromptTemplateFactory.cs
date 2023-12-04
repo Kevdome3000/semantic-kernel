@@ -2,6 +2,7 @@
 
 namespace Microsoft.SemanticKernel;
 
+using System.Diagnostics.CodeAnalysis;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
 
@@ -25,13 +26,17 @@ public sealed class KernelPromptTemplateFactory : IPromptTemplateFactory
 
 
     /// <inheritdoc/>
-    public IPromptTemplate Create(PromptTemplateConfig promptConfig)
+    public bool TryCreate(PromptTemplateConfig templateConfig, [NotNullWhen(true)] out IPromptTemplate? result)
     {
-        if (promptConfig.TemplateFormat.Equals(PromptTemplateConfig.SemanticKernelTemplateFormat, System.StringComparison.Ordinal))
+        Verify.NotNull(templateConfig);
+
+        if (templateConfig.TemplateFormat.Equals(PromptTemplateConfig.SemanticKernelTemplateFormat, System.StringComparison.Ordinal))
         {
-            return new KernelPromptTemplate(promptConfig, this._loggerFactory);
+            result = new KernelPromptTemplate(templateConfig, this._loggerFactory);
+            return true;
         }
 
-        throw new KernelException($"Prompt template format {promptConfig.TemplateFormat} is not supported.");
+        result = null;
+        return false;
     }
 }

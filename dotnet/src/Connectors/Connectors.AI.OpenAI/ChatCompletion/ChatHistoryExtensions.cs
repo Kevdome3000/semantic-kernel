@@ -4,6 +4,7 @@ namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text;
 using Azure.AI.OpenAI;
 using Connectors.AI.OpenAI;
 
@@ -26,25 +27,7 @@ public static class OpenAIChatHistoryExtensions
     {
         Verify.NotNull(chatHistory);
 
-        chatHistory.AddMessage(s_functionAuthorRole, message, new Dictionary<string, string>(1) { { "Name", functionName } });
-    }
-
-
-    /// <summary>
-    /// Add an assistant message to the chat history.
-    /// </summary>
-    /// <param name="chatHistory">Chat history</param>
-    /// <param name="chatResult">Chat result from the model</param>
-    public static void AddAssistantMessage(this ChatHistory chatHistory, IChatResult chatResult)
-    {
-        Verify.NotNull(chatHistory);
-
-        var chatMessage = chatResult.ModelResult.GetOpenAIChatResult().Choice.Message;
-
-        if (!string.IsNullOrEmpty(chatMessage.Content) || chatMessage.FunctionCall is not null)
-        {
-            chatHistory.AddAssistantMessage(chatMessage.Content, chatMessage.FunctionCall);
-        }
+        chatHistory.AddMessage(s_functionAuthorRole, message, metadata: new Dictionary<string, object?>(1) { { OpenAIChatMessageContent.FunctionNameProperty, functionName } });
     }
 
 
@@ -59,11 +42,12 @@ public static class OpenAIChatHistoryExtensions
         chatHistory!.AddMessage(
             AuthorRole.Assistant,
             message ?? string.Empty,
+            Encoding.UTF8,
             functionCall is not null
-                ? new Dictionary<string, string>(2)
+                ? new Dictionary<string, object?>(2)
                 {
-                    { "Name", functionCall.Name },
-                    { "Arguments", functionCall.Arguments }
+                    { OpenAIChatMessageContent.FunctionNameProperty, functionCall.Name },
+                    { OpenAIChatMessageContent.FunctionArgumentsProperty, functionCall.Arguments }
                 }
                 : null);
     }

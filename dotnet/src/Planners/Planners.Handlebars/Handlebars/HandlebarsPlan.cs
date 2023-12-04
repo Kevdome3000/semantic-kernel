@@ -2,7 +2,6 @@
 
 namespace Microsoft.SemanticKernel.Planning.Handlebars;
 
-using System.Collections.Generic;
 using System.Threading;
 
 
@@ -53,7 +52,7 @@ public sealed class HandlebarsPlan
     /// <returns>The plan result.</returns>
     public string Invoke(
         Kernel kernel,
-        Dictionary<string, object?> arguments,
+        KernelArguments arguments,
         CancellationToken cancellationToken = default)
     {
         return HandlebarsTemplateEngineExtensions.Render(kernel, this._template, arguments, cancellationToken);

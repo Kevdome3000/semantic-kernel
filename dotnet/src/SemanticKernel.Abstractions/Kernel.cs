@@ -55,8 +55,8 @@ public sealed class Kernel
         IServiceProvider? services = null,
         KernelPluginCollection? plugins = null)
     {
-        Services = services ?? EmptyServiceProvider.Instance;
-        _plugins = plugins;
+        this.Services = services ?? EmptyServiceProvider.Instance;
+        this._plugins = plugins;
     }
 
 
@@ -85,14 +85,14 @@ public sealed class Kernel
     /// </list>
     /// </remarks>
     public Kernel Clone() =>
-        new(Services, _plugins is { Count: > 0 } ? new KernelPluginCollection(_plugins) : null)
+        new(this.Services, this._plugins is { Count: > 0 } ? new KernelPluginCollection(this._plugins) : null)
         {
-            FunctionInvoking = FunctionInvoking,
-            FunctionInvoked = FunctionInvoked,
-            PromptRendering = PromptRendering,
-            PromptRendered = PromptRendered,
-            _data = _data is { Count: > 0 } ? new Dictionary<string, object?>(_data) : null,
-            _culture = _culture
+            FunctionInvoking = this.FunctionInvoking,
+            FunctionInvoked = this.FunctionInvoked,
+            PromptRendering = this.PromptRendering,
+            PromptRendered = this.PromptRendered,
+            _data = this._data is { Count: > 0 } ? new Dictionary<string, object?>(this._data) : null,
+            _culture = this._culture,
         };
 
 
@@ -100,9 +100,9 @@ public sealed class Kernel
     /// Gets the collection of plugins available through the kernel.
     /// </summary>
     public KernelPluginCollection Plugins =>
-        _plugins ??
-        Interlocked.CompareExchange(ref _plugins, new KernelPluginCollection(), null) ??
-        _plugins;
+        this._plugins ??
+        Interlocked.CompareExchange(ref this._plugins, new KernelPluginCollection(), null) ??
+        this._plugins;
 
     /// <summary>
     /// Gets the service provider used to query for services available through the kernel.
@@ -121,8 +121,8 @@ public sealed class Kernel
     [AllowNull]
     public CultureInfo Culture
     {
-        get => _culture;
-        set => _culture = value ?? CultureInfo.InvariantCulture;
+        get => this._culture;
+        set => this._culture = value ?? CultureInfo.InvariantCulture;
     }
 
     /// <summary>
@@ -131,7 +131,7 @@ public sealed class Kernel
     /// <remarks>
     /// This behaves the same as calling <see cref="GetService{ILoggerFactory}"/>.
     /// </remarks>
-    public ILoggerFactory LoggerFactory => GetService<ILoggerFactory>();
+    public ILoggerFactory LoggerFactory => this.GetService<ILoggerFactory>();
 
     /// <summary>
     /// Gets a dictionary for ambient data associated with the kernel.
@@ -140,9 +140,9 @@ public sealed class Kernel
     /// This may be used to flow arbitrary data in and out of operations performed with this kernel instance.
     /// </remarks>
     public IDictionary<string, object?> Data =>
-        _data ??
-        Interlocked.CompareExchange(ref _data, new Dictionary<string, object?>(), null) ??
-        _data;
+        this._data ??
+        Interlocked.CompareExchange(ref this._data, new Dictionary<string, object?>(), null) ??
+        this._data;
 
     /// <summary>
     /// Provides an event that's raised prior to a function's invocation.
@@ -188,10 +188,10 @@ public sealed class Kernel
 
         if (serviceId is not null)
         {
-            if (Services is IKeyedServiceProvider)
+            if (this.Services is IKeyedServiceProvider)
             {
                 // We were given a service ID, so we need to use the keyed service lookup.
-                service = Services.GetKeyedService<T>(serviceId);
+                service = this.Services.GetKeyedService<T>(serviceId);
             }
         }
         else
@@ -200,11 +200,11 @@ public sealed class Kernel
             // a service registered without an ID. If we can't find one, then we try to match with
             // a service registered with an ID. In both cases, if there were multiple, this will match
             // with whichever was registered last.
-            service = Services.GetService<T>();
+            service = this.Services.GetService<T>();
 
-            if (service is null && Services is IKeyedServiceProvider)
+            if (service is null && this.Services is IKeyedServiceProvider)
             {
-                service = GetAllServices<T>().LastOrDefault();
+                service = this.GetAllServices<T>().LastOrDefault();
             }
 
             // If no service could be found, special-case specific services to provide a default.
@@ -227,7 +227,7 @@ public sealed class Kernel
         {
             string message =
                 serviceId is null ? $"Service of type '{typeof(T)}' not registered." :
-                Services is not IKeyedServiceProvider ? $"Key '{serviceId}' specified but service provider '{Services}' is not a {nameof(IKeyedServiceProvider)}." :
+                this.Services is not IKeyedServiceProvider ? $"Key '{serviceId}' specified but service provider '{this.Services}' is not a {nameof(IKeyedServiceProvider)}." :
                 $"Service of type '{typeof(T)}' and key '{serviceId}' not registered.";
 
             throw new KernelException(message);
@@ -244,24 +244,24 @@ public sealed class Kernel
     /// <remarks>There is no guaranteed ordering on the results.</remarks>
     public IEnumerable<T> GetAllServices<T>() where T : class
     {
-        if (Services is IKeyedServiceProvider)
+        if (this.Services is IKeyedServiceProvider)
         {
             // M.E.DI doesn't support querying for a service without a key, and it also doesn't
             // support AnyKey currently: https://github.com/dotnet/runtime/issues/91466
             // As a workaround, KernelBuilder injects a service containing the type-to-all-keys
             // mapping. We can query for that service and and then use it to try to get a service.
-            if (Services.GetKeyedService<Dictionary<Type, HashSet<object?>>>(KernelServiceTypeToKeyMappings) is { } typeToKeyMappings)
+            if (this.Services.GetKeyedService<Dictionary<Type, HashSet<object?>>>(KernelServiceTypeToKeyMappings) is { } typeToKeyMappings)
             {
                 if (typeToKeyMappings.TryGetValue(typeof(T), out HashSet<object?> keys))
                 {
-                    return keys.SelectMany(key => Services.GetKeyedServices<T>(key));
+                    return keys.SelectMany(key => this.Services.GetKeyedServices<T>(key));
                 }
 
                 return Enumerable.Empty<T>();
             }
         }
 
-        if (Services is EmptyServiceProvider)
+        if (this.Services is EmptyServiceProvider)
         {
             // If the Kernel is created without a service provider, it uses a simple empty implementation.
             // But the GetServices extension relies on the service provider special-casing enumerables.
@@ -269,7 +269,7 @@ public sealed class Kernel
             return Enumerable.Empty<T>();
         }
 
-        return Services.GetServices<T>();
+        return this.Services.GetServices<T>();
     }
 
     #endregion
@@ -281,9 +281,9 @@ public sealed class Kernel
     {
         FunctionInvokingEventArgs? eventArgs = null;
 
-        if (FunctionInvoking is { } functionInvoking)
+        if (this.FunctionInvoking is { } functionInvoking)
         {
-            eventArgs = new FunctionInvokingEventArgs(function, arguments);
+            eventArgs = new(function, arguments);
             functionInvoking.Invoke(this, eventArgs);
         }
 
@@ -295,9 +295,9 @@ public sealed class Kernel
     {
         FunctionInvokedEventArgs? eventArgs = null;
 
-        if (FunctionInvoked is { } functionInvoked)
+        if (this.FunctionInvoked is { } functionInvoked)
         {
-            eventArgs = new FunctionInvokedEventArgs(function, arguments, result);
+            eventArgs = new(function, arguments, result);
             functionInvoked.Invoke(this, eventArgs);
         }
 
@@ -309,9 +309,9 @@ public sealed class Kernel
     {
         PromptRenderingEventArgs? eventArgs = null;
 
-        if (PromptRendering is { } promptRendering)
+        if (this.PromptRendering is { } promptRendering)
         {
-            eventArgs = new PromptRenderingEventArgs(function, arguments);
+            eventArgs = new(function, arguments);
             promptRendering.Invoke(this, eventArgs);
         }
 
@@ -323,9 +323,9 @@ public sealed class Kernel
     {
         PromptRenderedEventArgs? eventArgs = null;
 
-        if (PromptRendered is { } promptRendered)
+        if (this.PromptRendered is { } promptRendered)
         {
-            eventArgs = new PromptRenderedEventArgs(function, arguments, renderedPrompt);
+            eventArgs = new(function, arguments, renderedPrompt);
             promptRendered.Invoke(this, eventArgs);
         }
 
@@ -355,7 +355,7 @@ public sealed class Kernel
         Verify.NotNull(function);
         Verify.NotNull(input);
 
-        return function.InvokeAsync(this, input, null, cancellationToken);
+        return function.InvokeAsync(this, input, executionSettings: null, cancellationToken);
     }
 
 
@@ -400,7 +400,7 @@ public sealed class Kernel
     {
         Verify.NotNullOrWhiteSpace(functionName);
 
-        KernelFunction function = Plugins.GetFunction(pluginName, functionName);
+        var function = this.Plugins.GetFunction(pluginName, functionName);
 
         return function.InvokeAsync(this, arguments, cancellationToken);
     }
@@ -417,11 +417,11 @@ public sealed class Kernel
     /// <param name="arguments">The arguments to pass to the invocation of <paramref name="function"/>. If null, no arguments will be supplied.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The streamed resulting content from invoking <paramref name="function"/>.</returns>
-    public IAsyncEnumerable<StreamingContent> InvokeStreamingAsync(KernelFunction function, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<StreamingContentBase> InvokeStreamingAsync(KernelFunction function, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(function);
 
-        return function.InvokeStreamingAsync<StreamingContent>(this, arguments, CancellationToken.None);
+        return function.InvokeStreamingAsync<StreamingContentBase>(this, arguments, CancellationToken.None);
     }
 
 
@@ -447,12 +447,12 @@ public sealed class Kernel
     /// <param name="input">The single argument to use as the <see cref="KernelArguments.InputParameterName"/> to the function.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The streamed resulting content from invoking <paramref name="function"/>.</returns>
-    public IAsyncEnumerable<StreamingContent> InvokeStreamingAsync(KernelFunction function, string input, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<StreamingContentBase> InvokeStreamingAsync(KernelFunction function, string input, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(function);
         Verify.NotNull(input);
 
-        return InvokeStreamingAsync<StreamingContent>(function, input, CancellationToken.None);
+        return this.InvokeStreamingAsync<StreamingContentBase>(function, input, CancellationToken.None);
     }
 
 
@@ -468,7 +468,7 @@ public sealed class Kernel
         Verify.NotNull(function);
         Verify.NotNull(input);
 
-        return function.InvokeStreamingAsync<T>(this, input, null, cancellationToken);
+        return function.InvokeStreamingAsync<T>(this, input, executionSettings: null, cancellationToken);
     }
 
     #endregion

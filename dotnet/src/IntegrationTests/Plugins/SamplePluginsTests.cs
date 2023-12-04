@@ -10,7 +10,7 @@ using Xunit;
 public class SamplePluginsTests
 {
     [Fact]
-    public void CanLoadSamplePluginsRequestSettings()
+    public void CanLoadSamplePluginsExecutionSettings()
     {
         // Arrange
         var kernel = new Kernel();

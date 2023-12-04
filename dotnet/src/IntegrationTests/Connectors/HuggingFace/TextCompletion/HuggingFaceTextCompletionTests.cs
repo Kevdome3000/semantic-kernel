@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.IntegrationTests.Connectors.HuggingFace.TextCompletion;
+
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -8,7 +10,6 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Connectors.HuggingFace.TextCompletion;
 
 /// <summary>
 /// Integration tests for <see cref="HuggingFaceTextCompletion"/>.
@@ -20,6 +21,7 @@ public sealed class HuggingFaceTextCompletionTests
 
     private readonly IConfigurationRoot _configuration;
 
+
     public HuggingFaceTextCompletionTests()
     {
         // Load configuration
@@ -29,6 +31,7 @@ public sealed class HuggingFaceTextCompletionTests
             .AddEnvironmentVariables()
             .Build();
     }
+
 
     [Fact(Skip = "This test is for manual verification.")]
     public async Task HuggingFaceLocalAndRemoteTextCompletionAsync()
@@ -40,16 +43,17 @@ public sealed class HuggingFaceTextCompletionTests
         var huggingFaceRemote = new HuggingFaceTextCompletion(Model, apiKey: this.GetApiKey());
 
         // Act
-        var localResponse = await huggingFaceLocal.CompleteAsync(Input);
-        var remoteResponse = await huggingFaceRemote.CompleteAsync(Input);
+        var localResponse = await huggingFaceLocal.GetTextContentAsync(Input);
+        var remoteResponse = await huggingFaceRemote.GetTextContentAsync(Input);
 
         // Assert
-        Assert.NotNull(localResponse);
-        Assert.NotNull(remoteResponse);
+        Assert.NotNull(localResponse.Text);
+        Assert.NotNull(remoteResponse.Text);
 
-        Assert.StartsWith(Input, localResponse, StringComparison.Ordinal);
-        Assert.StartsWith(Input, remoteResponse, StringComparison.Ordinal);
+        Assert.StartsWith(Input, localResponse.Text, StringComparison.Ordinal);
+        Assert.StartsWith(Input, remoteResponse.Text, StringComparison.Ordinal);
     }
+
 
     [Fact(Skip = "This test is for manual verification.")]
     public async Task RemoteHuggingFaceTextCompletionWithCustomHttpClientAsync()
@@ -63,13 +67,14 @@ public sealed class HuggingFaceTextCompletionTests
         var huggingFaceRemote = new HuggingFaceTextCompletion(Model, apiKey: this.GetApiKey(), httpClient: httpClient);
 
         // Act
-        var remoteResponse = await huggingFaceRemote.CompleteAsync(Input);
+        var remoteResponse = await huggingFaceRemote.GetTextContentAsync(Input);
 
         // Assert
-        Assert.NotNull(remoteResponse);
+        Assert.NotNull(remoteResponse.Text);
 
-        Assert.StartsWith(Input, remoteResponse, StringComparison.Ordinal);
+        Assert.StartsWith(Input, remoteResponse.Text, StringComparison.Ordinal);
     }
+
 
     private string GetApiKey()
     {

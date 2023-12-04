@@ -337,7 +337,7 @@ public static class KernelExtensions
 
             // Load prompt template
             promptConfig.Template = File.ReadAllText(promptPath);
-            IPromptTemplate? promptTemplateInstance = factory.Create(promptConfig);
+            IPromptTemplate promptTemplateInstance = factory.Create(promptConfig);
 
             if (logger.IsEnabled(LogLevel.Trace))
             {
@@ -444,7 +444,7 @@ public static class KernelExtensions
     /// <param name="promptTemplateFactory">Prompt template factory</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Function execution result</returns>
-    public static IAsyncEnumerable<StreamingContent> InvokePromptStreamingAsync(
+    public static IAsyncEnumerable<StreamingContentBase> InvokePromptStreamingAsync(
         this Kernel kernel,
         string promptTemplate,
         KernelArguments? arguments = null,
@@ -459,7 +459,7 @@ public static class KernelExtensions
             arguments?.ExecutionSettings,
             promptTemplateFactory: promptTemplateFactory);
 
-        return function.InvokeStreamingAsync<StreamingContent>(kernel, arguments, cancellationToken);
+        return function.InvokeStreamingAsync<StreamingContentBase>(kernel, arguments, cancellationToken);
     }
 
     #endregion

@@ -17,35 +17,35 @@ using Models;
 internal sealed class Assistant : IAssistant
 {
     /// <inheritdoc/>
-    public string Id => _model.Id;
+    public string Id => this._model.Id;
 
     /// <inheritdoc/>
     public Kernel Kernel { get; }
 
     /// <inheritdoc/>
-    public KernelPluginCollection Plugins => Kernel.Plugins;
+    public KernelPluginCollection Plugins => this.Kernel.Plugins;
 
     /// <inheritdoc/>
 #pragma warning disable CA1720 // Identifier contains type name - We don't control the schema
 #pragma warning disable CA1716 // Identifiers should not match keywords
-    public string Object => _model.Object;
+    public string Object => this._model.Object;
 #pragma warning restore CA1720 // Identifier contains type name - We don't control the schema
 #pragma warning restore CA1716 // Identifiers should not match keywords
 
     /// <inheritdoc/>
-    public long CreatedAt => _model.CreatedAt;
+    public long CreatedAt => this._model.CreatedAt;
 
     /// <inheritdoc/>
-    public string? Name => _model.Name;
+    public string? Name => this._model.Name;
 
     /// <inheritdoc/>
-    public string? Description => _model.Description;
+    public string? Description => this._model.Description;
 
     /// <inheritdoc/>
-    public string Model => _model.Model;
+    public string Model => this._model.Model;
 
     /// <inheritdoc/>
-    public string Instructions => _model.Instructions;
+    public string Instructions => this._model.Instructions;
 
     private readonly OpenAIRestContext _restContext;
     private readonly AssistantModel _model;
@@ -65,7 +65,7 @@ internal sealed class Assistant : IAssistant
         IEnumerable<IKernelPlugin>? plugins = null,
         CancellationToken cancellationToken = default)
     {
-        AssistantModel resultModel =
+        var resultModel =
             await restContext.CreateAssistantModelAsync(assistantModel, cancellationToken).ConfigureAwait(false) ??
             throw new KernelException("Unexpected failure creating assistant: no result.");
 
@@ -81,28 +81,33 @@ internal sealed class Assistant : IAssistant
         OpenAIRestContext restContext,
         IEnumerable<IKernelPlugin>? plugins = null)
     {
-        _model = model;
-        _restContext = restContext;
+        this._model = model;
+        this._restContext = restContext;
 
-        KernelBuilder builder =
+        this.Kernel =
             new KernelBuilder()
-                .WithOpenAIChatCompletion(_model.Model, _restContext.ApiKey);
-
-        Kernel = builder.Build();
+                .WithOpenAIChatCompletion(this._model.Model, this._restContext.ApiKey)
+                .Build();
 
         if (plugins is not null)
         {
-            Kernel.Plugins.AddRange(plugins);
+            this.Kernel.Plugins.AddRange(plugins);
         }
     }
 
 
     /// <inheritdoc/>
-    public Task<IChatThread> NewThreadAsync(CancellationToken cancellationToken = default) => ChatThread.CreateAsync(_restContext, cancellationToken);
+    public Task<IChatThread> NewThreadAsync(CancellationToken cancellationToken = default)
+    {
+        return ChatThread.CreateAsync(this._restContext, cancellationToken);
+    }
 
 
     /// <inheritdoc/>
-    public Task<IChatThread> GetThreadAsync(string id, CancellationToken cancellationToken = default) => ChatThread.GetAsync(_restContext, id, cancellationToken);
+    public Task<IChatThread> GetThreadAsync(string id, CancellationToken cancellationToken = default)
+    {
+        return ChatThread.GetAsync(this._restContext, id, cancellationToken);
+    }
 
 
     /// <summary>
@@ -111,20 +116,21 @@ internal sealed class Assistant : IAssistant
     /// <param name="input">The user input</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>An assistant response (<see cref="AssistantResponse"/></returns>
-    [KernelFunction] [Description("Provide input to assistant a response")]
+    [KernelFunction, Description("Provide user message to assistant and retrieve the assistant response.")]
     public async Task<AssistantResponse> AskAsync(
-        [Description("The input for the assistant.")]
+        [Description("The user message provided to the assistant.")]
         string input,
         CancellationToken cancellationToken = default)
     {
-        IChatThread? thread = await NewThreadAsync(cancellationToken).ConfigureAwait(false);
+        var thread = await this.NewThreadAsync(cancellationToken).ConfigureAwait(false);
+
         await thread.AddUserMessageAsync(input, cancellationToken).ConfigureAwait(false);
-        IEnumerable<IChatMessage>? message = await thread.InvokeAsync(this, cancellationToken).ConfigureAwait(false);
-        AssistantResponse response =
+        var message = await thread.InvokeAsync(this, cancellationToken).ConfigureAwait(false);
+        var response =
             new AssistantResponse
             {
                 ThreadId = thread.Id,
-                Response = string.Concat(message.Select(m => m.Content))
+                Response = string.Concat(message.Select(m => m.Content)),
             };
 
         return response;

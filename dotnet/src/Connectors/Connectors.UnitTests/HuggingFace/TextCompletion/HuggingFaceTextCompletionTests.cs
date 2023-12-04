@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Connectors.UnitTests.HuggingFace.TextCompletion;
+
 using System;
 using System.Linq;
 using System.Net.Http;
@@ -8,7 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.HuggingFace.TextCompletion;
 
 /// <summary>
 /// Unit tests for <see cref="HuggingFaceTextCompletion"/> class.
@@ -18,6 +19,7 @@ public sealed class HuggingFaceTextCompletionTests : IDisposable
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
 
+
     public HuggingFaceTextCompletionTests()
     {
         this._messageHandlerStub = new HttpMessageHandlerStub();
@@ -26,6 +28,7 @@ public sealed class HuggingFaceTextCompletionTests : IDisposable
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
     }
 
+
     [Fact]
     public async Task SpecifiedModelShouldBeUsedAsync()
     {
@@ -33,11 +36,12 @@ public sealed class HuggingFaceTextCompletionTests : IDisposable
         var sut = new HuggingFaceTextCompletion("fake-model", httpClient: this._httpClient);
 
         //Act
-        await sut.GetCompletionsAsync("fake-text");
+        await sut.GetTextContentsAsync("fake-text");
 
         //Assert
         Assert.EndsWith("/fake-model", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
     }
+
 
     [Fact]
     public async Task NoAuthorizationHeaderShouldBeAddedIfApiKeyIsNotProvidedAsync()
@@ -46,11 +50,12 @@ public sealed class HuggingFaceTextCompletionTests : IDisposable
         var sut = new HuggingFaceTextCompletion("fake-model", apiKey: null, httpClient: this._httpClient);
 
         //Act
-        await sut.GetCompletionsAsync("fake-text");
+        await sut.GetTextContentsAsync("fake-text");
 
         //Assert
         Assert.False(this._messageHandlerStub.RequestHeaders?.Contains("Authorization"));
     }
+
 
     [Fact]
     public async Task AuthorizationHeaderShouldBeAddedIfApiKeyIsProvidedAsync()
@@ -59,7 +64,7 @@ public sealed class HuggingFaceTextCompletionTests : IDisposable
         var sut = new HuggingFaceTextCompletion("fake-model", apiKey: "fake-api-key", httpClient: this._httpClient);
 
         //Act
-        await sut.GetCompletionsAsync("fake-text");
+        await sut.GetTextContentsAsync("fake-text");
 
         //Assert
         Assert.True(this._messageHandlerStub.RequestHeaders?.Contains("Authorization"));
@@ -70,6 +75,7 @@ public sealed class HuggingFaceTextCompletionTests : IDisposable
         Assert.Equal("Bearer fake-api-key", value);
     }
 
+
     [Fact]
     public async Task UserAgentHeaderShouldBeUsedAsync()
     {
@@ -77,7 +83,7 @@ public sealed class HuggingFaceTextCompletionTests : IDisposable
         var sut = new HuggingFaceTextCompletion("fake-model", httpClient: this._httpClient);
 
         //Act
-        await sut.GetCompletionsAsync("fake-text");
+        await sut.GetTextContentsAsync("fake-text");
 
         //Assert
         Assert.True(this._messageHandlerStub.RequestHeaders?.Contains("User-Agent"));
@@ -88,6 +94,7 @@ public sealed class HuggingFaceTextCompletionTests : IDisposable
         Assert.Equal("Semantic-Kernel", value);
     }
 
+
     [Fact]
     public async Task ProvidedEndpointShouldBeUsedAsync()
     {
@@ -95,11 +102,12 @@ public sealed class HuggingFaceTextCompletionTests : IDisposable
         var sut = new HuggingFaceTextCompletion("fake-model", endpoint: "https://fake-random-test-host/fake-path", httpClient: this._httpClient);
 
         //Act
-        await sut.GetCompletionsAsync("fake-text");
+        await sut.GetTextContentsAsync("fake-text");
 
         //Assert
         Assert.StartsWith("https://fake-random-test-host/fake-path", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
     }
+
 
     [Fact]
     public async Task HttpClientBaseAddressShouldBeUsedAsync()
@@ -110,11 +118,12 @@ public sealed class HuggingFaceTextCompletionTests : IDisposable
         var sut = new HuggingFaceTextCompletion("fake-model", httpClient: this._httpClient);
 
         //Act
-        await sut.GetCompletionsAsync("fake-text");
+        await sut.GetTextContentsAsync("fake-text");
 
         //Assert
         Assert.StartsWith("https://fake-random-test-host/fake-path", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
     }
+
 
     [Fact]
     public async Task DefaultAddressShouldBeUsedAsync()
@@ -123,11 +132,12 @@ public sealed class HuggingFaceTextCompletionTests : IDisposable
         var sut = new HuggingFaceTextCompletion("fake-model", httpClient: this._httpClient);
 
         //Act
-        await sut.GetCompletionsAsync("fake-text");
+        await sut.GetTextContentsAsync("fake-text");
 
         //Assert
         Assert.StartsWith("https://api-inference.huggingface.co/models", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
     }
+
 
     [Fact]
     public async Task ModelUrlShouldBeBuiltSuccessfullyAsync()
@@ -136,11 +146,12 @@ public sealed class HuggingFaceTextCompletionTests : IDisposable
         var sut = new HuggingFaceTextCompletion("fake-model", endpoint: "https://fake-random-test-host/fake-path", httpClient: this._httpClient);
 
         //Act
-        await sut.GetCompletionsAsync("fake-text");
+        await sut.GetTextContentsAsync("fake-text");
 
         //Assert
         Assert.Equal("https://fake-random-test-host/fake-path/fake-model", this._messageHandlerStub.RequestUri?.AbsoluteUri);
     }
+
 
     [Fact]
     public async Task ShouldSendPromptToServiceAsync()
@@ -149,7 +160,7 @@ public sealed class HuggingFaceTextCompletionTests : IDisposable
         var sut = new HuggingFaceTextCompletion("fake-model", httpClient: this._httpClient);
 
         //Act
-        await sut.GetCompletionsAsync("fake-text");
+        await sut.GetTextContentsAsync("fake-text");
 
         //Assert
         var requestPayload = JsonSerializer.Deserialize<TextCompletionRequest>(this._messageHandlerStub.RequestContent);
@@ -158,6 +169,7 @@ public sealed class HuggingFaceTextCompletionTests : IDisposable
         Assert.Equal("fake-text", requestPayload.Input);
     }
 
+
     [Fact]
     public async Task ShouldHandleServiceResponseAsync()
     {
@@ -165,17 +177,17 @@ public sealed class HuggingFaceTextCompletionTests : IDisposable
         var sut = new HuggingFaceTextCompletion("fake-model", endpoint: "https://fake-random-test-host/fake-path", httpClient: this._httpClient);
 
         //Act
-        var result = await sut.GetCompletionsAsync("fake-text");
+        var contents = await sut.GetTextContentsAsync("fake-test");
 
         //Assert
-        Assert.NotNull(result);
+        Assert.NotNull(contents);
 
-        var completions = result.SingleOrDefault();
-        Assert.NotNull(completions);
+        var content = contents.SingleOrDefault();
+        Assert.NotNull(content);
 
-        var completion = await completions.GetCompletionAsync();
-        Assert.Equal("This is test completion response", completion);
+        Assert.Equal("This is test completion response", content);
     }
+
 
     public void Dispose()
     {

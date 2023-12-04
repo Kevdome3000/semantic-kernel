@@ -2,24 +2,21 @@
 
 namespace Microsoft.SemanticKernel.PromptTemplate.Handlebars;
 
+using System.Diagnostics.CodeAnalysis;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
 
 
 /// <summary>
-/// Implementation of <see cref="IPromptTemplateFactory"/> for the handlebars prompt template format.
+/// Provides an <see cref="IPromptTemplateFactory"/> for the handlebars prompt template format.
 /// </summary>
 public class HandlebarsPromptTemplateFactory : IPromptTemplateFactory
 {
-    /// <summary>
-    /// Handlebars template format.
-    /// </summary>
+    /// <summary>The name of the Handlebars template format.</summary>
     public const string HandlebarsTemplateFormat = "handlebars";
 
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="HandlebarsPromptTemplateFactory"/> class.
-    /// </summary>
+    /// <summary>Initializes the instance.</summary>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public HandlebarsPromptTemplateFactory(ILoggerFactory? loggerFactory = null)
     {
@@ -28,14 +25,18 @@ public class HandlebarsPromptTemplateFactory : IPromptTemplateFactory
 
 
     /// <inheritdoc/>
-    public IPromptTemplate Create(PromptTemplateConfig promptConfig)
+    public bool TryCreate(PromptTemplateConfig templateConfig, [NotNullWhen(true)] out IPromptTemplate? result)
     {
-        if (promptConfig.TemplateFormat.Equals(HandlebarsTemplateFormat, System.StringComparison.Ordinal))
+        Verify.NotNull(templateConfig);
+
+        if (templateConfig.TemplateFormat.Equals(HandlebarsTemplateFormat, System.StringComparison.Ordinal))
         {
-            return new HandlebarsPromptTemplate(promptConfig, this._loggerFactory);
+            result = new HandlebarsPromptTemplate(templateConfig, this._loggerFactory);
+            return true;
         }
 
-        throw new KernelException($"Prompt template format {promptConfig.TemplateFormat} is not supported.");
+        result = null;
+        return false;
     }
 
 

@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+
+
 // ReSharper disable StringLiteralTypo
 
 namespace SemanticKernel.UnitTests.Functions;
@@ -22,10 +24,10 @@ public class FunctionFromMethodTests
         var sut = KernelFunctionFactory.CreateFromMethod(() => nativeContent);
 
         var chunkCount = 0;
-        StreamingContent? lastChunk = null;
+        StreamingContentBase? lastChunk = null;
 
         // Act
-        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContent>(kernel))
+        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContentBase>(kernel))
         {
             chunkCount++;
             lastChunk = chunk;
@@ -34,7 +36,7 @@ public class FunctionFromMethodTests
         // Assert
         Assert.Equal(1, chunkCount);
         Assert.NotNull(lastChunk);
-        Assert.IsAssignableFrom<StreamingContent>(lastChunk);
+        Assert.IsAssignableFrom<StreamingContentBase>(lastChunk);
         Assert.IsType<StreamingMethodContent>(lastChunk);
 
         var methodContent = lastChunk as StreamingMethodContent;
@@ -64,7 +66,7 @@ public class FunctionFromMethodTests
         };
 
         // Act
-        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContent>(kernel))
+        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContentBase>(kernel))
         {
         }
 
@@ -88,7 +90,7 @@ public class FunctionFromMethodTests
         var chunkCount = 0;
 
         // Act
-        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContent>(kernel))
+        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContentBase>(kernel))
         {
             chunkCount++;
         }
@@ -114,7 +116,7 @@ public class FunctionFromMethodTests
         var chunkCount = 0;
 
         // Act
-        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContent>(kernel))
+        await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContentBase>(kernel))
         {
             chunkCount++;
         }

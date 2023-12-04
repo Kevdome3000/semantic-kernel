@@ -2,7 +2,6 @@
 
 namespace Microsoft.SemanticKernel.Planning.Handlebars;
 
-using System;
 using System.IO;
 using System.Reflection;
 
@@ -43,35 +42,5 @@ public static class HandlebarsPlannerExtensions
         var resourceName = $"{name}{supplementalNamespace}.{fileName}";
 
         return assembly.GetManifestResourceStream(resourceName)!;
-    }
-
-
-    /// <summary>
-    /// Start the stopwatch.
-    /// </summary>
-    public static void StartStopwatch(this HandlebarsPlanner planner)
-    {
-        if (planner.Stopwatch.IsRunning)
-        {
-            throw new InvalidOperationException("Stopwatch is already running.");
-        }
-
-        planner.Stopwatch.Start();
-    }
-
-
-    /// <summary>
-    /// Stop the stopwatch and return the elapsed time in milliseconds.
-    /// </summary>
-    /// <exception cref="InvalidOperationException"></exception>
-    public static double StopStopwatch(this HandlebarsPlanner planner)
-    {
-        if (planner.Stopwatch.IsRunning)
-        {
-            planner.Stopwatch.Stop();
-            return planner.Stopwatch.Elapsed.TotalMilliseconds;
-        }
-
-        throw new InvalidOperationException("Stopwatch is not running.");
     }
 }

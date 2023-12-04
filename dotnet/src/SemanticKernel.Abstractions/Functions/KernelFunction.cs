@@ -73,7 +73,7 @@ public abstract class KernelFunction
     /// <param name="parameters">Function parameters metadata</param>
     /// <param name="returnParameter">Function return parameter metadata</param>
     /// <param name="executionSettings">Prompt execution settings.</param>
-    protected KernelFunction(string name, string description, IReadOnlyList<KernelParameterMetadata> parameters, KernelReturnParameterMetadata? returnParameter = null, IEnumerable<PromptExecutionSettings>? executionSettings = null)
+    protected KernelFunction(string name, string description, IReadOnlyList<KernelParameterMetadata> parameters, KernelReturnParameterMetadata? returnParameter = null, List<PromptExecutionSettings>? executionSettings = null)
     {
         Verify.NotNull(name);
         Verify.ParametersUniqueness(parameters);
@@ -84,7 +84,7 @@ public abstract class KernelFunction
             Parameters = parameters,
             ReturnParameter = returnParameter ?? new()
         };
-        ExecutionSettings = executionSettings ?? Enumerable.Empty<PromptExecutionSettings>();
+        ExecutionSettings = executionSettings;
     }
 
 
@@ -215,10 +215,10 @@ public abstract class KernelFunction
     /// <param name="arguments">The function arguments</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A asynchronous list of streaming result chunks</returns>
-    public IAsyncEnumerable<StreamingContent> InvokeStreamingAsync(
+    public IAsyncEnumerable<StreamingContentBase> InvokeStreamingAsync(
         Kernel kernel,
         KernelArguments? arguments = null,
-        CancellationToken cancellationToken = default) => InvokeStreamingAsync<StreamingContent>(kernel, arguments, cancellationToken);
+        CancellationToken cancellationToken = default) => InvokeStreamingAsync<StreamingContentBase>(kernel, arguments, cancellationToken);
 
 
     /// <summary>

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
@@ -83,7 +82,7 @@ public sealed class Program
         Console.WriteLine("Original plan:");
         Console.WriteLine(plan.ToString());
 
-        var result = plan.Invoke(kernel, new Dictionary<string, object?>(), CancellationToken.None);
+        var result = plan.Invoke(kernel, new KernelArguments(), CancellationToken.None);
 
         Console.WriteLine("Result:");
         Console.WriteLine(result);

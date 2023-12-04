@@ -1,7 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Plugins.OpenAPI;
+namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
+using System.Collections.Generic;
 using System.Net.Http;
 using Model;
 
@@ -12,4 +13,4 @@ using Model;
 /// <param name="payload">The operation payload metadata.</param>
 /// <param name="arguments">The operation arguments.</param>
 /// <returns>The HTTP content representing the operation payload.</returns>
-internal delegate HttpContent HttpContentFactory(RestApiOperationPayload? payload, KernelArguments arguments);
+internal delegate HttpContent HttpContentFactory(RestApiOperationPayload? payload, IDictionary<string, string> arguments);

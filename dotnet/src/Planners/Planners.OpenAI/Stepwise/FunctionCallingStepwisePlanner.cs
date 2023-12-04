@@ -11,7 +11,7 @@ using AI.ChatCompletion;
 using Connectors.AI.OpenAI;
 using Extensions.Logging;
 using Json.More;
-using Plugins.OpenAPI.Model;
+using Plugins.OpenApi.Model;
 
 
 /// <summary>
@@ -66,7 +66,7 @@ public sealed class FunctionCallingStepwisePlanner
 
         // Request completion for initial plan
         var chatHistoryForPlan = await this.BuildChatHistoryForInitialPlanAsync(question, cancellationToken).ConfigureAwait(false);
-        string initialPlan = (await this._chatCompletion.GenerateMessageAsync(chatHistoryForPlan, null /* request settings */, this._kernel, cancellationToken).ConfigureAwait(false));
+        string initialPlan = await this._chatCompletion.GetChatMessageContentAsync(chatHistoryForPlan, null /* execution settings */, this._kernel, cancellationToken).ConfigureAwait(false);
 
         var chatHistoryForSteps = await this.BuildChatHistoryForStepAsync(question, initialPlan, cancellationToken).ConfigureAwait(false);
 
@@ -80,11 +80,11 @@ public sealed class FunctionCallingStepwisePlanner
 
             // For each step, request another completion to select a function for that step
             chatHistoryForSteps.AddUserMessage(StepwiseUserMessage);
-            var chatResult = await this.GetCompletionWithFunctionsAsync(chatHistoryForSteps, cancellationToken).ConfigureAwait(false);
-            chatHistoryForSteps.AddAssistantMessage(chatResult);
+            var chatMessage = (OpenAIChatMessageContent)await this.GetCompletionWithFunctionsAsync(chatHistoryForSteps, cancellationToken).ConfigureAwait(false);
+            chatHistoryForSteps.AddAssistantMessage(chatMessage!.Content);
 
             // Check for function response
-            if (!this.TryGetFunctionResponse(chatResult, out OpenAIFunctionResponse? functionResponse, out string? functionResponseError))
+            if (!this.TryGetFunctionResponse(chatMessage, out OpenAIFunctionResponse? functionResponse, out string? functionResponseError))
             {
                 // No function response found. Either AI returned a chat message, or something went wrong when parsing the function.
                 // Log the error (if applicable), then let the planner continue.
@@ -147,12 +147,12 @@ public sealed class FunctionCallingStepwisePlanner
 
     #region private
 
-    private async Task<IChatResult> GetCompletionWithFunctionsAsync(
+    private async Task<ChatMessageContent> GetCompletionWithFunctionsAsync(
         ChatHistory chatHistory,
         CancellationToken cancellationToken)
     {
-        var executionSettings = this.PrepareOpenAIRequestSettingsWithFunctions();
-        return (await this._chatCompletion.GetChatCompletionsAsync(chatHistory, executionSettings, this._kernel, cancellationToken).ConfigureAwait(false))[0];
+        var executionSettings = this.PrepareOpenAIExecutionSettingsWithFunctions();
+        return (await this._chatCompletion.GetChatMessageContentAsync(chatHistory, executionSettings, this._kernel, cancellationToken).ConfigureAwait(false));
     }
 
 
@@ -162,7 +162,7 @@ public sealed class FunctionCallingStepwisePlanner
     }
 
 
-    private OpenAIPromptExecutionSettings PrepareOpenAIRequestSettingsWithFunctions()
+    private OpenAIPromptExecutionSettings PrepareOpenAIExecutionSettingsWithFunctions()
     {
         var executionSettings = this.Config.ModelSettings ?? new OpenAIPromptExecutionSettings();
         executionSettings.FunctionCallBehavior = FunctionCallBehavior.EnableKernelFunctions;
@@ -174,7 +174,7 @@ public sealed class FunctionCallingStepwisePlanner
         string goal,
         CancellationToken cancellationToken)
     {
-        var chatHistory = this._chatCompletion.CreateNewChat();
+        var chatHistory = new ChatHistory();
 
         var arguments = new KernelArguments();
         string functionsManual = await this.GetFunctionsManualAsync(cancellationToken).ConfigureAwait(false);
@@ -193,7 +193,7 @@ public sealed class FunctionCallingStepwisePlanner
         string initialPlan,
         CancellationToken cancellationToken)
     {
-        var chatHistory = this._chatCompletion.CreateNewChat();
+        var chatHistory = new ChatHistory();
 
         // Add system message with context about the initial goal/plan
         var arguments = new KernelArguments();
@@ -207,14 +207,14 @@ public sealed class FunctionCallingStepwisePlanner
     }
 
 
-    private bool TryGetFunctionResponse(IChatResult chatResult, [NotNullWhen(true)] out OpenAIFunctionResponse? functionResponse, out string? errorMessage)
+    private bool TryGetFunctionResponse(OpenAIChatMessageContent chatMessage, [NotNullWhen(true)] out OpenAIFunctionResponse? functionResponse, out string? errorMessage)
     {
         functionResponse = null;
         errorMessage = null;
 
         try
         {
-            functionResponse = chatResult.GetOpenAIFunctionResponse();
+            functionResponse = chatMessage.GetOpenAIFunctionResponse();
         }
         catch (JsonException)
         {

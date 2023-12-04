@@ -16,7 +16,7 @@ using Xunit;
 public class OpenAIPromptExecutionSettingsTests
 {
     [Fact]
-    public void ItCreatesOpenAIRequestSettingsWithCorrectDefaults()
+    public void ItCreatesOpenAIExecutionSettingsWithCorrectDefaults()
     {
         // Arrange
         // Act
@@ -37,7 +37,7 @@ public class OpenAIPromptExecutionSettingsTests
 
 
     [Fact]
-    public void ItUsesExistingOpenAIRequestSettings()
+    public void ItUsesExistingOpenAIExecutionSettings()
     {
         // Arrange
         OpenAIPromptExecutionSettings actualSettings = new()
@@ -64,7 +64,7 @@ public class OpenAIPromptExecutionSettingsTests
 
 
     [Fact]
-    public void ItCanUseOpenAIRequestSettings()
+    public void ItCanUseOpenAIExecutionSettings()
     {
         // Arrange
         PromptExecutionSettings actualSettings = new()
@@ -82,7 +82,7 @@ public class OpenAIPromptExecutionSettingsTests
 
 
     [Fact]
-    public void ItCreatesOpenAIRequestSettingsFromExtraPropertiesSnakeCase()
+    public void ItCreatesOpenAIExecutionSettingsFromExtraPropertiesSnakeCase()
     {
         // Arrange
         PromptExecutionSettings actualSettings = new()
@@ -107,12 +107,12 @@ public class OpenAIPromptExecutionSettingsTests
         OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(actualSettings, null);
 
         // Assert
-        AssertRequestSettings(executionSettings);
+        AssertExecutionSettings(executionSettings);
     }
 
 
     [Fact]
-    public void ItCreatesOpenAIRequestSettingsFromExtraPropertiesAsStrings()
+    public void ItCreatesOpenAIExecutionSettingsFromExtraPropertiesAsStrings()
     {
         // Arrange
         PromptExecutionSettings actualSettings = new()
@@ -137,12 +137,12 @@ public class OpenAIPromptExecutionSettingsTests
         OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(actualSettings, null);
 
         // Assert
-        AssertRequestSettings(executionSettings);
+        AssertExecutionSettings(executionSettings);
     }
 
 
     [Fact]
-    public void ItCreatesOpenAIRequestSettingsFromJsonSnakeCase()
+    public void ItCreatesOpenAIExecutionSettingsFromJsonSnakeCase()
     {
         // Arrange
         var json = @"{
@@ -163,11 +163,11 @@ public class OpenAIPromptExecutionSettingsTests
         OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(actualSettings);
 
         // Assert
-        AssertRequestSettings(executionSettings);
+        AssertExecutionSettings(executionSettings);
     }
 
 
-    private static void AssertRequestSettings(OpenAIPromptExecutionSettings executionSettings)
+    private static void AssertExecutionSettings(OpenAIPromptExecutionSettings executionSettings)
     {
         Assert.NotNull(executionSettings);
         Assert.Equal(0.7, executionSettings.Temperature);
