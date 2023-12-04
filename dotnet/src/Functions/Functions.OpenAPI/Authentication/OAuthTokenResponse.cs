@@ -8,7 +8,7 @@ using System.Text.Json.Serialization;
 /// <summary>
 /// Represents the authentication section for an OpenAI plugin.
 /// </summary>
-public record OAuthTokenResponse
+public class OAuthTokenResponse
 {
     /// <summary>
     /// The type of access token.

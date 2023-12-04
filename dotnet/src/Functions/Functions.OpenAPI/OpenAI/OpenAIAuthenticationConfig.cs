@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 /// <summary>
 /// Represents the authentication section for an OpenAI plugin.
 /// </summary>
-public record OpenAIAuthenticationConfig
+public class OpenAIAuthenticationConfig
 {
     /// <summary>
     /// The type of authentication.

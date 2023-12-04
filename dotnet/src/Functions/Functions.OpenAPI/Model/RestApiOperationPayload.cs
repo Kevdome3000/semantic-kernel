@@ -8,7 +8,7 @@ using System.Collections.Generic;
 /// <summary>
 /// The REST API operation payload.
 /// </summary>
-public record RestApiOperationPayload
+public class RestApiOperationPayload
 {
     /// <summary>
     /// The payload MediaType.
