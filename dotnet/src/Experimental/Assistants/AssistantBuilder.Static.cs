@@ -1,16 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants;
-
-using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Extensions;
-using Internal;
-using Models;
-using YamlDotNet.Serialization;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Experimental.Assistants;
+using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
+using Microsoft.SemanticKernel.Experimental.Assistants.Internal;
+using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
 
 /// <summary>
@@ -18,60 +15,6 @@ using YamlDotNet.Serialization;
 /// </summary>
 public partial class AssistantBuilder
 {
-    /// <summary>
-    /// Create a new assistant from a yaml formatted string.
-    /// </summary>
-    /// <param name="apiKey">The OpenAI API key</param>
-    /// <param name="model">The LLM name</param>
-    /// <param name="template">YAML assistant definition.</param>
-    /// <param name="plugins">Plugins to associate with the tool.</param>
-    /// <param name="cancellationToken">A cancellation token</param>
-    /// <returns>The requested <see cref="IAssistant">.</see></returns>
-    public static async Task<IAssistant> FromDefinitionAsync(
-        string apiKey,
-        string model,
-        string template,
-        IEnumerable<IKernelPlugin>? plugins = null,
-        CancellationToken cancellationToken = default)
-    {
-        IDeserializer deserializer = new DeserializerBuilder().Build();
-
-        AssistantConfigurationModel assistantKernelModel = deserializer.Deserialize<AssistantConfigurationModel>(template);
-
-        return
-            await new AssistantBuilder()
-                .AddOpenAIChatCompletion(model, apiKey)
-                .WithInstructions(assistantKernelModel.Instructions.Trim())
-                .WithName(assistantKernelModel.Name.Trim())
-                .WithDescription(assistantKernelModel.Description.Trim())
-                .WithPlugins(plugins ?? Array.Empty<IKernelPlugin>())
-                .BuildAsync(cancellationToken)
-                .ConfigureAwait(false);
-    }
-
-
-    /// <summary>
-    /// Create a new assistant from a yaml template.
-    /// </summary>
-    /// <param name="apiKey">The OpenAI API key</param>
-    /// <param name="model">The LLM name</param>
-    /// <param name="definitionPath">Path to a configuration file.</param>
-    /// <param name="plugins">Plugins to associate with the tool.</param>
-    /// <param name="cancellationToken">A cancellation token</param>
-    /// <returns>The requested <see cref="IAssistant">.</see></returns>
-    public static Task<IAssistant> FromTemplateAsync(
-        string apiKey,
-        string model,
-        string definitionPath,
-        IEnumerable<IKernelPlugin>? plugins = null,
-        CancellationToken cancellationToken = default)
-    {
-        string yamlContent = File.ReadAllText(definitionPath);
-
-        return FromDefinitionAsync(apiKey, model, yamlContent, plugins, cancellationToken);
-    }
-
-
     /// <summary>
     /// Create a new assistant.
     /// </summary>
@@ -87,7 +30,7 @@ public partial class AssistantBuilder
         string instructions,
         string? name = null,
         string? description = null) => await new AssistantBuilder()
-        .AddOpenAIChatCompletion(model, apiKey)
+        .WithOpenAIChatCompletion(model, apiKey)
         .WithInstructions(instructions)
         .WithName(name)
         .WithDescription(description)

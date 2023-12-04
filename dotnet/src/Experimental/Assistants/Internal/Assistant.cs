@@ -49,6 +49,7 @@ internal sealed class Assistant : IAssistant
 
     private readonly OpenAIRestContext _restContext;
     private readonly AssistantModel _model;
+    private IKernelPlugin? _assistantPlugin;
 
 
     /// <summary>
@@ -96,6 +97,9 @@ internal sealed class Assistant : IAssistant
     }
 
 
+    public IKernelPlugin AsPlugin() => this._assistantPlugin ?? this.DefinePlugin();
+
+
     /// <inheritdoc/>
     public Task<IChatThread> NewThreadAsync(CancellationToken cancellationToken = default)
     {
@@ -116,8 +120,7 @@ internal sealed class Assistant : IAssistant
     /// <param name="input">The user input</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>An assistant response (<see cref="AssistantResponse"/></returns>
-    [KernelFunction, Description("Provide user message to assistant and retrieve the assistant response.")]
-    public async Task<AssistantResponse> AskAsync(
+    private async Task<AssistantResponse> AskAsync(
         [Description("The user message provided to the assistant.")]
         string input,
         CancellationToken cancellationToken = default)
@@ -134,5 +137,16 @@ internal sealed class Assistant : IAssistant
             };
 
         return response;
+    }
+
+
+    private IKernelPlugin DefinePlugin()
+    {
+        var assistantPlugin = new KernelPlugin(this.Name ?? this.Id);
+
+        var functionAsk = KernelFunctionFactory.CreateFromMethod(this.AskAsync, description: this.Description);
+        assistantPlugin.AddFunction(functionAsk);
+
+        return this._assistantPlugin = assistantPlugin;
     }
 }

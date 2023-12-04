@@ -62,6 +62,11 @@ public interface IAssistant
 
 
     /// <summary>
+    /// Expose the assistant as a plugin.
+    /// </summary>
+    public IKernelPlugin AsPlugin();
+
+    /// <summary>
     /// Creates a new assistant chat thread.
     /// </summary>
     /// <param name="cancellationToken">A cancellation token</param>
