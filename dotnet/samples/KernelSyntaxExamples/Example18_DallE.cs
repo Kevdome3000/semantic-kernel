@@ -50,7 +50,7 @@ public static class Example18_DallE
 
         Console.WriteLine("======== Chat with images ========");
 
-        IChatCompletion chatGPT = kernel.GetService<IChatCompletion>();
+        IChatCompletionService chatGPT = kernel.GetService<IChatCompletionService>();
         var chatHistory = new ChatHistory(
             "You're chatting with a user. Instead of replying directly to the user" +
             " provide the description of an image that expresses what you want to say." +
@@ -119,7 +119,7 @@ public static class Example18_DallE
 
         Console.WriteLine("======== Chat with images ========");
 
-        IChatCompletion chatGPT = kernel.GetService<IChatCompletion>();
+        IChatCompletionService chatGPT = kernel.GetService<IChatCompletionService>();
         var chatHistory = new ChatHistory(
             "You're chatting with a user. Instead of replying directly to the user" +
             " provide the description of an image that expresses what you want to say." +

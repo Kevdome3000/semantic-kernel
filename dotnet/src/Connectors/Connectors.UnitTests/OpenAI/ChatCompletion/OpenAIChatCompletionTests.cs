@@ -15,7 +15,7 @@ using Xunit;
 
 
 /// <summary>
-/// Unit tests for <see cref="OpenAIChatCompletion"/>
+/// Unit tests for <see cref="OpenAIChatCompletionService"/>
 /// </summary>
 public sealed class OpenAIChatCompletionTests : IDisposable
 {
@@ -72,7 +72,7 @@ public sealed class OpenAIChatCompletionTests : IDisposable
     public async Task ItCreatesCorrectFunctionsWhenUsingAutoAsync()
     {
         // Arrange
-        var chatCompletion = new OpenAIChatCompletion(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
             { Content = new StringContent(ChatCompletionResponse) };
 
@@ -93,7 +93,7 @@ public sealed class OpenAIChatCompletionTests : IDisposable
     public async Task ItCreatesCorrectFunctionsWhenUsingNowAsync()
     {
         // Arrange
-        var chatCompletion = new OpenAIChatCompletion(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
             { Content = new StringContent(ChatCompletionResponse) };
         this._executionSettings.FunctionCallBehavior = FunctionCallBehavior.RequireFunction(this._timepluginNow);
@@ -114,7 +114,7 @@ public sealed class OpenAIChatCompletionTests : IDisposable
     public async Task ItCreatesNoFunctionsWhenUsingNoneAsync()
     {
         // Arrange
-        var chatCompletion = new OpenAIChatCompletion(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
             { Content = new StringContent(ChatCompletionResponse) };
         this._executionSettings.FunctionCallBehavior = null;
@@ -134,7 +134,7 @@ public sealed class OpenAIChatCompletionTests : IDisposable
     public async Task ItAddsNameToChatMessageAsync()
     {
         // Arrange
-        var chatCompletion = new OpenAIChatCompletion(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
             { Content = new StringContent(ChatCompletionResponse) };
         var chatHistory = new ChatHistory();
@@ -156,7 +156,7 @@ public sealed class OpenAIChatCompletionTests : IDisposable
     public async Task ItAddsNameAndArgumentsToChatMessageAsync()
     {
         // Arrange
-        var chatCompletion = new OpenAIChatCompletion(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
             { Content = new StringContent(ChatCompletionResponse) };
         var chatHistory = new ChatHistory();

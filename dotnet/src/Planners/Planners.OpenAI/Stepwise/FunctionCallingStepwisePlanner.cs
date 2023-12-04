@@ -30,7 +30,7 @@ public sealed class FunctionCallingStepwisePlanner
     {
         Verify.NotNull(kernel);
         this._kernel = kernel;
-        this._chatCompletion = kernel.GetService<IChatCompletion>();
+        this._chatCompletionService = kernel.GetService<IChatCompletionService>();
 
         ILoggerFactory loggerFactory = kernel.LoggerFactory;
 
@@ -66,7 +66,7 @@ public sealed class FunctionCallingStepwisePlanner
 
         // Request completion for initial plan
         var chatHistoryForPlan = await this.BuildChatHistoryForInitialPlanAsync(question, cancellationToken).ConfigureAwait(false);
-        string initialPlan = await this._chatCompletion.GetChatMessageContentAsync(chatHistoryForPlan, null /* execution settings */, this._kernel, cancellationToken).ConfigureAwait(false);
+        string initialPlan = await this._chatCompletionService.GetChatMessageContentAsync(chatHistoryForPlan, null /* execution settings */, this._kernel, cancellationToken).ConfigureAwait(false);
 
         var chatHistoryForSteps = await this.BuildChatHistoryForStepAsync(question, initialPlan, cancellationToken).ConfigureAwait(false);
 
@@ -152,7 +152,7 @@ public sealed class FunctionCallingStepwisePlanner
         CancellationToken cancellationToken)
     {
         var executionSettings = this.PrepareOpenAIExecutionSettingsWithFunctions();
-        return (await this._chatCompletion.GetChatMessageContentAsync(chatHistory, executionSettings, this._kernel, cancellationToken).ConfigureAwait(false));
+        return await this._chatCompletionService.GetChatMessageContentAsync(chatHistory, executionSettings, this._kernel, cancellationToken).ConfigureAwait(false);
     }
 
 
@@ -285,7 +285,7 @@ public sealed class FunctionCallingStepwisePlanner
 
     // Context used to access the list of functions in the kernel
     private readonly Kernel _kernel;
-    private readonly IChatCompletion _chatCompletion;
+    private readonly IChatCompletionService _chatCompletionService;
     private readonly ILogger? _logger;
 
     /// <summary>

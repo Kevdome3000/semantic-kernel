@@ -15,9 +15,9 @@ using Services;
 
 
 /// <summary>
-/// OpenAI chat completion client.
+/// OpenAI chat completion service.
 /// </summary>
-public sealed class OpenAIChatCompletion : IChatCompletion, ITextCompletion
+public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextCompletion
 {
     private readonly OpenAIClientCore _core;
 
@@ -30,14 +30,14 @@ public sealed class OpenAIChatCompletion : IChatCompletion, ITextCompletion
     /// <param name="organization">OpenAI Organization Id (usually optional)</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public OpenAIChatCompletion(
+    public OpenAIChatCompletionService(
         string modelId,
         string apiKey,
         string? organization = null,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(modelId, apiKey, organization, httpClient, loggerFactory?.CreateLogger(typeof(OpenAIChatCompletion)));
+        this._core = new(modelId, apiKey, organization, httpClient, loggerFactory?.CreateLogger(typeof(OpenAIChatCompletionService)));
 
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
         this._core.AddAttribute(OpenAIClientCore.OrganizationKey, organization);
@@ -50,12 +50,12 @@ public sealed class OpenAIChatCompletion : IChatCompletion, ITextCompletion
     /// <param name="modelId">Model name</param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public OpenAIChatCompletion(
+    public OpenAIChatCompletionService(
         string modelId,
         OpenAIClient openAIClient,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAIChatCompletion)));
+        this._core = new(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAIChatCompletionService)));
 
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }

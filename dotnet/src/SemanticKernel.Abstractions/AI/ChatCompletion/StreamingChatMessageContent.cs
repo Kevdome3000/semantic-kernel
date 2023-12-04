@@ -8,7 +8,7 @@ using System.Text.Json.Serialization;
 
 
 /// <summary>
-/// Abstraction of chat message content chunks when using streaming from <see cref="IChatCompletion"/> interface.
+/// Abstraction of chat message content chunks when using streaming from <see cref="IChatCompletionService"/> interface.
 /// </summary>
 /// <remarks>
 /// Represents a chat message content chunk that was streamed from the remote model.

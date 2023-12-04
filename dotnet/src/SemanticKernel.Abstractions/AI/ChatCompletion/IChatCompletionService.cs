@@ -10,9 +10,9 @@ using Services;
 
 
 /// <summary>
-/// Interface for chat completion services
+/// Interface for chat completion services.
 /// </summary>
-public interface IChatCompletion : IAIService
+public interface IChatCompletionService : IAIService
 {
     /// <summary>
     /// Get chat multiple chat content choices for the prompt and settings.

@@ -12,7 +12,7 @@ using Xunit;
 
 
 /// <summary>
-/// Unit tests for <see cref="AzureOpenAIChatCompletionWithData"/>
+/// Unit tests for <see cref="AzureOpenAIChatCompletionWithDataService"/>
 /// </summary>
 public sealed class AzureOpenAIChatCompletionWithDataTests : IDisposable
 {
@@ -36,7 +36,7 @@ public sealed class AzureOpenAIChatCompletionWithDataTests : IDisposable
     {
         // Arrange
         const string ExpectedUri = "https://fake-completion-endpoint/openai/deployments/fake-completion-model-id/extensions/chat/completions?api-version=fake-api-version";
-        var chatCompletion = new AzureOpenAIChatCompletionWithData(this._config, this._httpClient);
+        var chatCompletion = new AzureOpenAIChatCompletionWithDataService(this._config, this._httpClient);
 
         // Act
         await chatCompletion.GetChatMessageContentsAsync(new ChatHistory());
@@ -62,7 +62,7 @@ public sealed class AzureOpenAIChatCompletionWithDataTests : IDisposable
         var config = this.GetConfig();
         config.CompletionApiVersion = string.Empty;
 
-        var chatCompletion = new AzureOpenAIChatCompletionWithData(config, this._httpClient);
+        var chatCompletion = new AzureOpenAIChatCompletionWithDataService(config, this._httpClient);
 
         // Act
         await chatCompletion.GetChatMessageContentsAsync(new ChatHistory());

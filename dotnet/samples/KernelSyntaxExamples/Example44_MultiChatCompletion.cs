@@ -25,13 +25,13 @@ public static class Example44_MultiChatCompletion
     {
         Console.WriteLine("======== Azure OpenAI - Multiple Chat Completion ========");
 
-        AzureOpenAIChatCompletion azureOpenAIChatCompletion = new(
+        AzureOpenAIChatCompletionService chatCompletionService = new(
             TestConfiguration.AzureOpenAI.ChatDeploymentName,
             TestConfiguration.AzureOpenAI.ChatModelId,
             TestConfiguration.AzureOpenAI.Endpoint,
             TestConfiguration.AzureOpenAI.ApiKey);
 
-        await RunChatAsync(azureOpenAIChatCompletion);
+        await RunChatAsync(chatCompletionService);
     }
 
 
@@ -39,13 +39,13 @@ public static class Example44_MultiChatCompletion
     {
         Console.WriteLine("======== Open AI - Multiple Chat Completion ========");
 
-        OpenAIChatCompletion openAIChatCompletion = new(modelId: TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
+        OpenAIChatCompletionService chatCompletionService = new(modelId: TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
 
-        await RunChatAsync(openAIChatCompletion);
+        await RunChatAsync(chatCompletionService);
     }
 
 
-    private static async Task RunChatAsync(IChatCompletion chatCompletion)
+    private static async Task RunChatAsync(IChatCompletionService chatCompletionService)
     {
         var chatHistory = new ChatHistory("You are a librarian, expert about books");
 
@@ -63,7 +63,7 @@ public static class Example44_MultiChatCompletion
         };
 
         // First bot assistant message
-        foreach (var chatMessageChoice in await chatCompletion.GetChatMessageContentsAsync(chatHistory, chatExecutionSettings))
+        foreach (var chatMessageChoice in await chatCompletionService.GetChatMessageContentsAsync(chatHistory, chatExecutionSettings))
         {
             chatHistory.AddMessage(chatMessageChoice!);
             await MessageOutputAsync(chatHistory);
