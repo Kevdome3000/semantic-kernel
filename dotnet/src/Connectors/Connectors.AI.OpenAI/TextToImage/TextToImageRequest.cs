@@ -1,16 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextToImage;
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 
 /// <summary>
-/// Image generation request
+/// Text to image request
 /// </summary>
 [Experimental("SKEXP0012")]
-public sealed class ImageGenerationRequest
+public sealed class TextToImageRequest
 {
     /// <summary>
     /// Image prompt

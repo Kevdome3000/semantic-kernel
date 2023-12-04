@@ -1,22 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextToImage;
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 
 /// <summary>
-/// Image generation response
+/// Text to image response
 /// </summary>
 [Experimental("SKEXP0012")]
-public class AzureOpenAIImageGenerationResponse
+public class AzureOpenAITextToImageResponse
 {
     /// <summary>
-    /// Image generation result
+    /// Text to image result
     /// </summary>
     [JsonPropertyName("result")]
-    public ImageGenerationResponse? Result { get; set; }
+    public TextToImageResponse? Result { get; set; }
 
     /// <summary>
     /// Request Id

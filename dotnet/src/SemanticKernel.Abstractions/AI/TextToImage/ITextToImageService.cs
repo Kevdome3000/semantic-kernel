@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.AI.ImageGeneration;
+namespace Microsoft.SemanticKernel.AI.TextToImage;
 
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
@@ -9,10 +9,10 @@ using Services;
 
 
 /// <summary>
-/// Interface for image generation services
+/// Interface for text to image services
 /// </summary>
 [Experimental("SKEXP0002")]
-public interface IImageGeneration : IAIService
+public interface ITextToImageService : IAIService
 {
     /// <summary>
     /// Generate an image matching the given description
