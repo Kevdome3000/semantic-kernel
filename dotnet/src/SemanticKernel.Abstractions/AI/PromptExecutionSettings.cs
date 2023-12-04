@@ -5,12 +5,12 @@ namespace Microsoft.SemanticKernel.AI;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using ChatCompletion;
-using TextCompletion;
+using TextGeneration;
 
 
 /// <summary>
 /// Execution settings for an AI request.
-/// Implementors of <see cref="ITextCompletion"/> or <see cref="IChatCompletionService"/> can extend this
+/// Implementors of <see cref="ITextGenerationService"/> or <see cref="IChatCompletionService"/> can extend this
 /// if the service they are calling supports additional properties. For an example please reference
 /// the Microsoft.SemanticKernel.Connectors.AI.OpenAI.OpenAIPromptExecutionSettings implementation.
 /// </summary>
@@ -30,7 +30,7 @@ public class PromptExecutionSettings
     /// This identifies the AI model these settings are configured for e.g., gpt-4, gpt-3.5-turbo
     /// </summary>
     [JsonPropertyName("model_id")]
-    public string ModelId { get; set; } = string.Empty;
+    public string? ModelId { get; set; } = null;
 
     /// <summary>
     /// Extra properties

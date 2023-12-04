@@ -20,7 +20,7 @@ using Extensions.Logging.Abstractions;
 using Http;
 using SemanticKernel.AI;
 using SemanticKernel.AI.ChatCompletion;
-using SemanticKernel.AI.TextCompletion;
+using SemanticKernel.AI.TextGeneration;
 using Services;
 using Text;
 
@@ -30,7 +30,7 @@ using Text;
 /// More information: <see href="https://learn.microsoft.com/en-us/azure/ai-services/openai/use-your-data-quickstart"/>
 /// </summary>
 [Experimental("SKEXP0010")]
-public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionService, ITextCompletion
+public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionService, ITextGenerationService
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureOpenAIChatCompletionWithDataService"/> class.

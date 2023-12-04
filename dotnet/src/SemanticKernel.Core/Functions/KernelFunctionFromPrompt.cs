@@ -10,7 +10,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using AI;
-using AI.TextCompletion;
+using AI.TextGeneration;
 using Events;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
@@ -127,14 +127,14 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     {
         this.AddDefaultValues(arguments);
 
-        (var textCompletion, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+        (var textGeneration, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 
         if (renderedEventArgs?.Cancel is true)
         {
             throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.PromptRendered)} event handler requested cancellation before function invocation.");
         }
 
-        var textContent = await textCompletion.GetTextContentAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
+        var textContent = await textGeneration.GetTextContentAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
 
         IDictionary<string, object?> metadata = textContent.Metadata ?? new Dictionary<string, object?>();
         metadata.Add(KernelEventArgsExtensions.RenderedPromptMetadataKey, renderedPrompt);
@@ -150,14 +150,14 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     {
         this.AddDefaultValues(arguments);
 
-        (var textCompletion, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+        (var textGeneration, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 
         if (renderedEventArgs?.Cancel ?? false)
         {
             yield break;
         }
 
-        await foreach (var content in textCompletion.GetStreamingTextContentsAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken))
+        await foreach (var content in textGeneration.GetStreamingTextContentsAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -224,11 +224,11 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     }
 
 
-    private async Task<(ITextCompletion, string, PromptRenderedEventArgs?)> RenderPromptAsync(Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
+    private async Task<(ITextGenerationService, string, PromptRenderedEventArgs?)> RenderPromptAsync(Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
     {
         var serviceSelector = kernel.GetService<IAIServiceSelector>();
-        (var textCompletion, var defaultExecutionSettings) = serviceSelector.SelectAIService<ITextCompletion>(kernel, this, arguments);
-        Verify.NotNull(textCompletion);
+        (var textGeneration, var defaultExecutionSettings) = serviceSelector.SelectAIService<ITextGenerationService>(kernel, this, arguments);
+        Verify.NotNull(textGeneration);
 
         arguments.ExecutionSettings ??= defaultExecutionSettings;
 
@@ -238,7 +238,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         var renderedEventArgs = kernel.OnPromptRendered(this, arguments, renderedPrompt);
 
-        return (textCompletion, renderedPrompt, renderedEventArgs);
+        return (textGeneration, renderedPrompt, renderedEventArgs);
     }
 
 

@@ -10,14 +10,14 @@ using Azure.AI.OpenAI;
 using Extensions.Logging;
 using SemanticKernel.AI;
 using SemanticKernel.AI.ChatCompletion;
-using SemanticKernel.AI.TextCompletion;
+using SemanticKernel.AI.TextGeneration;
 using Services;
 
 
 /// <summary>
 /// OpenAI chat completion service.
 /// </summary>
-public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextCompletion
+public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextGenerationService
 {
     private readonly OpenAIClientCore _core;
 

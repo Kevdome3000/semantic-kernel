@@ -18,7 +18,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using AI;
-using AI.TextCompletion;
+using AI.TextGeneration;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
 using Text;
@@ -130,7 +130,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
     /// <summary>Delegate used to invoke the underlying delegate.</summary>
     private delegate ValueTask<FunctionResult> ImplementationFunc(
-        ITextCompletion? textCompletion,
+        ITextGenerationService? textGeneration,
         Kernel kernel,
         KernelFunction function,
         KernelArguments arguments,
@@ -213,7 +213,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         Func<Kernel, KernelFunction, object?, ValueTask<FunctionResult>> returnFunc = GetReturnValueMarshalerDelegate(method);
 
         // Create the func
-        ValueTask<FunctionResult> Function(ITextCompletion? text, Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
+        ValueTask<FunctionResult> Function(ITextGenerationService? text, Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
         {
             // Create the arguments.
             object?[] args = parameterFuncs.Length != 0 ? new object?[parameterFuncs.Length] : Array.Empty<object?>();

@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
+namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextGeneration;
 
 using System.Text.Json.Serialization;
 
@@ -8,7 +8,7 @@ using System.Text.Json.Serialization;
 /// <summary>
 /// HTTP schema to perform completion request.
 /// </summary>
-public sealed class TextCompletionRequest
+public sealed class TextGenerationRequest
 {
     /// <summary>
     /// Prompt to complete.

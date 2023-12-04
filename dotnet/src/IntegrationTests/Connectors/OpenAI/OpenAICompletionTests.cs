@@ -56,7 +56,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         Kernel target = this._kernelBuilder
             .WithLoggerFactory(this._logger)
-            .WithOpenAITextCompletion(
+            .WithOpenAITextGeneration(
                 serviceId: openAIConfiguration.ServiceId,
                 modelId: openAIConfiguration.ModelId,
                 apiKey: openAIConfiguration.ApiKey)
@@ -94,7 +94,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
 
     [Fact(Skip = "Skipping while we investigate issue with GitHub actions.")]
-    public async Task CanUseOpenAiChatForTextCompletionAsync()
+    public async Task CanUseOpenAiChatForTextGenerationAsync()
     {
         // Note: we use OpenAI Chat Completion and GPT 3.5 Turbo
         KernelBuilder builder = this._kernelBuilder.WithLoggerFactory(this._logger);
@@ -188,7 +188,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         Kernel target = this._kernelBuilder
             .WithLoggerFactory(this._testOutputHelper)
-            .WithOpenAITextCompletion(
+            .WithOpenAITextGeneration(
                 serviceId: openAIConfiguration.ServiceId,
                 modelId: openAIConfiguration.ModelId,
                 apiKey: "INVALID_KEY") // Use an invalid API key to force a 401 Unauthorized response
@@ -224,7 +224,7 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.NotNull(azureOpenAIConfiguration);
 
         // Use an invalid API key to force a 401 Unauthorized response
-        builder.WithAzureOpenAITextCompletion(
+        builder.WithAzureOpenAITextGeneration(
             deploymentName: azureOpenAIConfiguration.DeploymentName,
             modelId: azureOpenAIConfiguration.ModelId,
             endpoint: azureOpenAIConfiguration.Endpoint,
@@ -260,7 +260,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         // Use an invalid API key to force a 401 Unauthorized response
         Kernel target = this._kernelBuilder
-            .WithOpenAITextCompletion(
+            .WithOpenAITextGeneration(
                 modelId: openAIConfiguration.ModelId,
                 apiKey: "INVALID_KEY",
                 serviceId: openAIConfiguration.ServiceId)
@@ -284,7 +284,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         Kernel target = this._kernelBuilder
             .WithLoggerFactory(this._testOutputHelper)
-            .WithAzureOpenAITextCompletion(
+            .WithAzureOpenAITextGeneration(
                 deploymentName: azureOpenAIConfiguration.DeploymentName,
                 modelId: azureOpenAIConfiguration.ModelId,
                 endpoint: azureOpenAIConfiguration.Endpoint,
@@ -310,7 +310,7 @@ public sealed class OpenAICompletionTests : IDisposable
         // Arrange
         Kernel target = this._kernelBuilder
             .WithLoggerFactory(this._testOutputHelper)
-            .WithAzureOpenAITextCompletion(
+            .WithAzureOpenAITextGeneration(
                 deploymentName: azureOpenAIConfiguration.DeploymentName,
                 modelId: azureOpenAIConfiguration.ModelId,
                 endpoint: azureOpenAIConfiguration.Endpoint,
@@ -485,7 +485,7 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.NotNull(azureOpenAIConfiguration.ApiKey);
         Assert.NotNull(azureOpenAIConfiguration.ServiceId);
 
-        kernelBuilder.WithAzureOpenAITextCompletion(
+        kernelBuilder.WithAzureOpenAITextGeneration(
             deploymentName: azureOpenAIConfiguration.DeploymentName,
             modelId: azureOpenAIConfiguration.ModelId,
             endpoint: azureOpenAIConfiguration.Endpoint,
@@ -502,7 +502,7 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.NotNull(azureOpenAIConfiguration.DeploymentName);
         Assert.NotNull(azureOpenAIConfiguration.Endpoint);
 
-        kernelBuilder.WithAzureOpenAITextCompletion(
+        kernelBuilder.WithAzureOpenAITextGeneration(
             deploymentName: azureOpenAIConfiguration.DeploymentName,
             modelId: azureOpenAIConfiguration.ModelId,
             endpoint: azureOpenAIConfiguration.Endpoint,

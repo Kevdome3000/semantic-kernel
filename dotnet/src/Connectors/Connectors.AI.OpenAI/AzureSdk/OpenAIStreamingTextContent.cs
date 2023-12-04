@@ -4,7 +4,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
 using System.Collections.Generic;
 using System.Text;
-using SemanticKernel.AI.TextCompletion;
+using SemanticKernel.AI.TextGeneration;
 
 
 /// <summary>

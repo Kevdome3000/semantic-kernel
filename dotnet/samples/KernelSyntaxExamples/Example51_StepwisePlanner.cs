@@ -13,7 +13,6 @@ using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using NCalcPlugins;
 using RepoUtils;
 
-
 /**
  * This example shows how to use Stepwise Planner to create and run a stepwise plan for a given goal.
  */
@@ -29,7 +28,6 @@ public static class Example51_StepwisePlanner
     internal static string? TextModelOverride = null; //"text-davinci-003";
 
     internal static string? Suffix = null;
-
 
     public static async Task RunAsync()
     {
@@ -47,14 +45,13 @@ public static class Example51_StepwisePlanner
         {
             for (int i = 0; i < 1; i++)
             {
-                await RunTextCompletionAsync(question);
+                await RunTextGenerationAsync(question);
                 await RunChatCompletionAsync(question);
             }
         }
 
         PrintResults();
     }
-
 
     // print out summary table of ExecutionResults
     private static void PrintResults()
@@ -67,14 +64,12 @@ public static class Example51_StepwisePlanner
         {
             Console.WriteLine("Question: " + question);
             Console.WriteLine("Mode\tModel\tAnswer\tStepsTaken\tIterations\tTimeTaken");
-
             foreach (var er in s_executionResults.OrderByDescending(s => s.model).Where(s => s.question == question))
             {
                 Console.WriteLine($"{er.mode}\t{er.model}\t{er.stepsTaken}\t{er.iterations}\t{er.timeTaken}\t{er.answer}");
             }
         }
     }
-
 
     private struct ExecutionResult
     {
@@ -87,19 +82,16 @@ public static class Example51_StepwisePlanner
         public string? timeTaken;
     }
 
-
     private static readonly List<ExecutionResult> s_executionResults = new();
 
-
-    private static async Task RunTextCompletionAsync(string question)
+    private static async Task RunTextGenerationAsync(string question)
     {
-        Console.WriteLine("RunTextCompletion");
+        Console.WriteLine("RunTextGeneration");
         ExecutionResult currentExecutionResult = default;
-        currentExecutionResult.mode = "RunTextCompletion";
+        currentExecutionResult.mode = "RunTextGeneration";
         var kernel = GetKernel(ref currentExecutionResult);
         await RunWithQuestionAsync(kernel, currentExecutionResult, question, TextMaxTokens);
     }
-
 
     private static async Task RunChatCompletionAsync(string question, string? model = null)
     {
@@ -109,7 +101,6 @@ public static class Example51_StepwisePlanner
         var kernel = GetKernel(ref currentExecutionResult, true, model);
         await RunWithQuestionAsync(kernel, currentExecutionResult, question, ChatMaxTokens);
     }
-
 
     private static async Task RunWithQuestionAsync(Kernel kernel, ExecutionResult currentExecutionResult, string question, int? MaxTokens = null)
     {
@@ -194,12 +185,10 @@ public static class Example51_StepwisePlanner
         Console.WriteLine("*****************************************************");
     }
 
-
     private static Kernel GetKernel(ref ExecutionResult result, bool useChat = false, string? model = null)
     {
         var builder = new KernelBuilder();
         var maxTokens = 0;
-
         if (useChat)
         {
             builder.WithAzureOpenAIChatCompletion(
@@ -212,7 +201,7 @@ public static class Example51_StepwisePlanner
         }
         else
         {
-            builder.WithAzureOpenAITextCompletion(
+            builder.WithAzureOpenAITextGeneration(
                 model ?? TextModelOverride ?? TestConfiguration.AzureOpenAI.DeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey);

@@ -10,7 +10,7 @@ using Fakes;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Xunit;
 using Xunit.Abstractions;
@@ -29,7 +29,7 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
     {
         Kernel target = new KernelBuilder()
             .WithLoggerFactory(this._logger)
-            .WithServices(c => c.AddSingleton<ITextCompletion>(new RedirectTextCompletion()))
+            .WithServices(c => c.AddSingleton<ITextGenerationService>(new RedirectTextGenerationService()))
             .WithPlugins(plugins => plugins.AddPluginFromObject<EmailPluginFake>())
             .Build();
 
@@ -48,7 +48,7 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
     {
         Kernel target = new KernelBuilder()
             .WithLoggerFactory(this._logger)
-            .WithServices(c => c.AddSingleton<ITextCompletion>(new RedirectTextCompletion()))
+            .WithServices(c => c.AddSingleton<ITextGenerationService>(new RedirectTextGenerationService()))
             .WithPlugins(plugins => plugins.AddPluginFromObject<EmailPluginFake>())
             .Build();
 
@@ -71,7 +71,7 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
     }
 
 
-    private sealed class RedirectTextCompletion : ITextCompletion
+    private sealed class RedirectTextGenerationService : ITextGenerationService
     {
         public string? ModelId => null;
 

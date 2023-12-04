@@ -4,9 +4,9 @@ namespace Microsoft.SemanticKernel;
 
 using System.Net.Http;
 using AI.Embeddings;
-using AI.TextCompletion;
-using Connectors.AI.HuggingFace.TextCompletion;
+using AI.TextGeneration;
 using Connectors.AI.HuggingFace.TextEmbedding;
+using Connectors.AI.HuggingFace.TextGeneration;
 using Extensions.DependencyInjection;
 
 
@@ -16,16 +16,16 @@ using Extensions.DependencyInjection;
 public static class HuggingFaceKernelBuilderExtensions
 {
     /// <summary>
-    /// Adds an Hugging Face text completion service with the specified configuration.
+    /// Adds an Hugging Face text generation service with the specified configuration.
     /// </summary>
     /// <param name="builder">The <see cref="KernelBuilder"/> instance to augment.</param>
     /// <param name="model">The name of the Hugging Face model.</param>
     /// <param name="apiKey">The API key required for accessing the Hugging Face service.</param>
-    /// <param name="endpoint">The endpoint URL for the text completion service.</param>
+    /// <param name="endpoint">The endpoint URL for the text generation service.</param>
     /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    public static KernelBuilder WithHuggingFaceTextCompletion(
+    public static KernelBuilder WithHuggingFaceTextGeneration(
         this KernelBuilder builder,
         string model,
         string? apiKey = null,
@@ -38,22 +38,22 @@ public static class HuggingFaceKernelBuilderExtensions
 
         return builder.WithServices(c =>
         {
-            c.AddKeyedSingleton<ITextCompletion>(serviceId, (serviceProvider, _) =>
-                new HuggingFaceTextCompletion(model, apiKey, HttpClientProvider.GetHttpClient(httpClient, serviceProvider), endpoint));
+            c.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
+                new HuggingFaceTextGenerationService(model, apiKey, HttpClientProvider.GetHttpClient(httpClient, serviceProvider), endpoint));
         });
     }
 
 
     /// <summary>
-    /// Adds an Hugging Face text completion service with the specified configuration.
+    /// Adds an Hugging Face text generation service with the specified configuration.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="model">The name of the Hugging Face model.</param>
     /// <param name="apiKey">The API key required for accessing the Hugging Face service.</param>
-    /// <param name="endpoint">The endpoint URL for the text completion service.</param>
+    /// <param name="endpoint">The endpoint URL for the text generation service.</param>
     /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
-    public static IServiceCollection AddHuggingFaceTextCompletion(
+    public static IServiceCollection AddHuggingFaceTextGeneration(
         this IServiceCollection services,
         string model,
         string? apiKey = null,
@@ -63,8 +63,8 @@ public static class HuggingFaceKernelBuilderExtensions
         Verify.NotNull(services);
         Verify.NotNull(model);
 
-        return services.AddKeyedSingleton<ITextCompletion>(serviceId, (serviceProvider, _) =>
-            new HuggingFaceTextCompletion(model, apiKey, HttpClientProvider.GetHttpClient(serviceProvider), endpoint));
+        return services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
+            new HuggingFaceTextGenerationService(model, apiKey, HttpClientProvider.GetHttpClient(serviceProvider), endpoint));
     }
 
 

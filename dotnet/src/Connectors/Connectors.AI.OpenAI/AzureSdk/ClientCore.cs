@@ -24,7 +24,7 @@ using Extensions.Logging.Abstractions;
 using Http;
 using SemanticKernel.AI;
 using SemanticKernel.AI.ChatCompletion;
-using SemanticKernel.AI.TextCompletion;
+using SemanticKernel.AI.TextGeneration;
 
 // TODO: forward ETW logging to ILogger, see https://learn.microsoft.com/en-us/dotnet/azure/sdk/logging
 

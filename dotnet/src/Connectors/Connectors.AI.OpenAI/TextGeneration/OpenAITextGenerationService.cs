@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextGeneration;
 
 using System.Collections.Generic;
 using System.Net.Http;
@@ -9,14 +9,14 @@ using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Extensions.Logging;
 using SemanticKernel.AI;
-using SemanticKernel.AI.TextCompletion;
+using SemanticKernel.AI.TextGeneration;
 using Services;
 
 
 /// <summary>
-/// OpenAI text completion service.
+/// OpenAI text generation service.
 /// </summary>
-public sealed class OpenAITextCompletion : ITextCompletion
+public sealed class OpenAITextGenerationService : ITextGenerationService
 {
     private readonly OpenAIClientCore _core;
 
@@ -25,21 +25,21 @@ public sealed class OpenAITextCompletion : ITextCompletion
 
 
     /// <summary>
-    /// Create an instance of the OpenAI text completion connector
+    /// Create an instance of the OpenAI text generation connector
     /// </summary>
     /// <param name="modelId">Model name</param>
     /// <param name="apiKey">OpenAI API Key</param>
     /// <param name="organization">OpenAI Organization Id (usually optional)</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public OpenAITextCompletion(
+    public OpenAITextGenerationService(
         string modelId,
         string apiKey,
         string? organization = null,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(modelId, apiKey, organization, httpClient, loggerFactory?.CreateLogger(typeof(OpenAITextCompletion)));
+        this._core = new(modelId, apiKey, organization, httpClient, loggerFactory?.CreateLogger(typeof(OpenAITextGenerationService)));
 
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
         this._core.AddAttribute(OpenAIClientCore.OrganizationKey, organization);
@@ -47,17 +47,17 @@ public sealed class OpenAITextCompletion : ITextCompletion
 
 
     /// <summary>
-    /// Create an instance of the OpenAI text completion connector
+    /// Create an instance of the OpenAI text generation connector
     /// </summary>
     /// <param name="modelId">Model name</param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public OpenAITextCompletion(
+    public OpenAITextGenerationService(
         string modelId,
         OpenAIClient openAIClient,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAITextCompletion)));
+        this._core = new(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAITextGenerationService)));
 
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
