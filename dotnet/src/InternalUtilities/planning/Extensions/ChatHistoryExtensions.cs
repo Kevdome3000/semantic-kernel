@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Linq;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Text;
-
 namespace Microsoft.SemanticKernel.Planning;
+
+using System.Linq;
+using AI.ChatCompletion;
+using Text;
+
 #pragma warning disable SKEXP0003
 /// <summary>
 /// Extension methods for <see cref="ChatHistory"/> class.
@@ -14,21 +15,20 @@ internal static class ChatHistoryExtensions
     /// <summary>
     /// Returns the number of tokens in the chat history.
     /// </summary>
-    // <param name="chatHistory">The chat history.</param>
-    // <param name="additionalMessage">An additional message to include in the token count.</param>
-    // <param name="skipStart">The index to start skipping messages.</param>
-    // <param name="skipCount">The number of messages to skip.</param>
-    // <param name="tokenCounter">The token counter to use.</param>
+    /// <param name="chatHistory">The chat history.</param>
+    /// <param name="additionalMessage">An additional message to include in the token count.</param>
+    /// <param name="skipStart">The index to start skipping messages.</param>
+    /// <param name="skipCount">The number of messages to skip.</param>
+    /// <param name="tokenCounter">The token counter to use.</param>
     internal static int GetTokenCount(this ChatHistory chatHistory, string? additionalMessage = null, int skipStart = 0, int skipCount = 0, TextChunker.TokenCounter? tokenCounter = null)
     {
-        return tokenCounter is null ?
-            Default(chatHistory, additionalMessage, skipStart, skipCount) :
-            Custom(chatHistory, additionalMessage, skipStart, skipCount, tokenCounter);
+        return tokenCounter is null ? Default(chatHistory, additionalMessage, skipStart, skipCount) : Custom(chatHistory, additionalMessage, skipStart, skipCount, tokenCounter);
 
         static int Default(ChatHistory chatHistory, string? additionalMessage, int skipStart, int skipCount)
         {
             int chars = 0;
             bool prevMsg = false;
+
             for (int i = 0; i < chatHistory.Count; i++)
             {
                 if (i >= skipStart && i < skipStart + skipCount)
