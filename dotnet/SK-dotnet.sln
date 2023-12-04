@@ -193,8 +193,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Schema", "Schema", "{873281
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Planners.Handlebars.UnitTests", "src\Planners\Planners.Handlebars.UnitTests\Planners.Handlebars.UnitTests.csproj", "{3FC4A81B-8ABE-473F-BC7C-6F4885775534}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Planners.Core", "src\Planners\Planners.Core\Planners.Core.csproj", "{03852136-74D3-4A87-A9D5-D0FAF9232A55}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -445,12 +443,6 @@ Global
 		{3FC4A81B-8ABE-473F-BC7C-6F4885775534}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{3FC4A81B-8ABE-473F-BC7C-6F4885775534}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3FC4A81B-8ABE-473F-BC7C-6F4885775534}.Release|Any CPU.Build.0 = Release|Any CPU
-		{03852136-74D3-4A87-A9D5-D0FAF9232A55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{03852136-74D3-4A87-A9D5-D0FAF9232A55}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{03852136-74D3-4A87-A9D5-D0FAF9232A55}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
-		{03852136-74D3-4A87-A9D5-D0FAF9232A55}.Publish|Any CPU.Build.0 = Publish|Any CPU
-		{03852136-74D3-4A87-A9D5-D0FAF9232A55}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{03852136-74D3-4A87-A9D5-D0FAF9232A55}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -515,7 +507,6 @@ Global
 		{3F4E0DC5-2241-4EF2-9F69-E7EC7834D349} = {A7DAB812-81CF-4931-B38C-468A3261C4C8}
 		{873281F6-9C31-4641-98AE-F1D2844DE9F0} = {A7DAB812-81CF-4931-B38C-468A3261C4C8}
 		{3FC4A81B-8ABE-473F-BC7C-6F4885775534} = {A21FAC7C-0C09-4EAD-843B-926ACEF73C80}
-		{03852136-74D3-4A87-A9D5-D0FAF9232A55} = {A21FAC7C-0C09-4EAD-843B-926ACEF73C80}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}

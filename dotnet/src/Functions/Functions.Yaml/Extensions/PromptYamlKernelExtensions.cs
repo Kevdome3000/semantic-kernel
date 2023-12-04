@@ -2,8 +2,6 @@
 
 namespace Microsoft.SemanticKernel;
 
-using Functions.Yaml.Functions;
-
 
 /// <summary>
 /// Class for extensions methods to define functions using prompt YAML format.

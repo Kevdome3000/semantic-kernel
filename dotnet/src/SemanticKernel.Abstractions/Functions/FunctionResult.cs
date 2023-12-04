@@ -82,7 +82,7 @@ public sealed class FunctionResult
     /// <summary>
     /// Function result object.
     /// </summary>
-    internal object? Value { get; }
+    public object? Value { get; }
 
     /// <summary>
     /// The culture configured on the Kernel that executed the function.
