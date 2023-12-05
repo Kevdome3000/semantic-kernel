@@ -15,7 +15,7 @@ using Moq;
 using Xunit;
 
 
-public sealed class KernelFunctionTests2
+public sealed class KernelFunctionFromMethodTests1
 {
     private static readonly KernelFunction s_nopFunction = KernelFunctionFactory.CreateFromMethod(() => { });
 
@@ -26,7 +26,7 @@ public sealed class KernelFunctionTests2
     private static string s_actual = string.Empty;
 
 
-    public KernelFunctionTests2()
+    public KernelFunctionFromMethodTests1()
     {
         this._kernel = new Kernel();
         this._logger = new Mock<ILoggerFactory>();
