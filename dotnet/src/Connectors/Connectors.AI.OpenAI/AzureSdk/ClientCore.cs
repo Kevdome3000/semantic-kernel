@@ -1,5 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable CA2208 // Instantiate argument exceptions correctly
+
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -14,19 +18,16 @@ using System.Threading.Tasks;
 using Azure;
 using Azure.AI.OpenAI;
 using Azure.Core.Pipeline;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.AI.TextGeneration;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
-using Microsoft.SemanticKernel.Http;
-
-#pragma warning disable CA2208 // Instantiate argument exceptions correctly
-
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+using ChatCompletion;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
+using Http;
+using SemanticKernel.AI;
+using SemanticKernel.AI.ChatCompletion;
+using SemanticKernel.AI.TextGeneration;
 
 // TODO: forward ETW logging to ILogger, see https://learn.microsoft.com/en-us/dotnet/azure/sdk/logging
+
 
 /// <summary>
 /// Base class for AI clients that provides common functionality for interacting with OpenAI services.
@@ -35,10 +36,12 @@ internal abstract class ClientCore
 {
     private const int MaxResultsPerPrompt = 128;
 
+
     internal ClientCore(ILogger? logger = null)
     {
         this.Logger = logger ?? NullLogger.Instance;
     }
+
 
     /// <summary>
     /// Model Id or Deployment Name
@@ -92,6 +95,7 @@ internal abstract class ClientCore
             unit: "{token}",
             description: "Number of tokens used");
 
+
     /// <summary>
     /// Creates completions for the prompt and settings.
     /// </summary>
@@ -113,6 +117,7 @@ internal abstract class ClientCore
         var options = CreateCompletionsOptions(text, textExecutionSettings, this.DeploymentOrModelName);
 
         var responseData = (await RunRequestAsync(() => this.Client.GetCompletionsAsync(options, cancellationToken)).ConfigureAwait(false)).Value;
+
         if (responseData.Choices.Count == 0)
         {
             throw new KernelException("Text completions not found");
@@ -120,8 +125,9 @@ internal abstract class ClientCore
 
         this.CaptureUsageDetails(responseData.Usage);
         var metadata = GetResponseMetadata(responseData);
-        return responseData.Choices.Select(choice => new TextContent(choice.Text, choice, Encoding.UTF8, metadata)).ToList();
+        return responseData.Choices.Select(choice => new TextContent(choice.Text, this.DeploymentOrModelName, choice, Encoding.UTF8, metadata)).ToList();
     }
+
 
     internal async IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(
         string prompt,
@@ -138,15 +144,18 @@ internal abstract class ClientCore
         StreamingResponse<Completions>? response = await RunRequestAsync(() => this.Client.GetCompletionsStreamingAsync(options, cancellationToken)).ConfigureAwait(false);
 
         Dictionary<string, object?>? metadata = null;
+
         await foreach (Completions completions in response)
         {
             metadata ??= GetResponseMetadata(completions);
+
             foreach (Choice choice in completions.Choices)
             {
-                yield return new OpenAIStreamingTextContent(choice.Text, choice.Index, choice, metadata);
+                yield return new OpenAIStreamingTextContent(choice.Text, choice.Index, this.DeploymentOrModelName, choice, metadata);
             }
         }
     }
+
 
     private static Dictionary<string, object?> GetResponseMetadata(Completions completions)
     {
@@ -159,6 +168,7 @@ internal abstract class ClientCore
         };
     }
 
+
     private static Dictionary<string, object?> GetResponseMetadata(ChatCompletions completions)
     {
         return new Dictionary<string, object?>(4)
@@ -170,6 +180,7 @@ internal abstract class ClientCore
         };
     }
 
+
     private static Dictionary<string, object?> GetResponseMetadata(StreamingChatCompletionsUpdate completions)
     {
         return new Dictionary<string, object?>(2)
@@ -178,6 +189,7 @@ internal abstract class ClientCore
             { nameof(completions.Created), completions.Created },
         };
     }
+
 
     /// <summary>
     /// Generates an embedding from the given <paramref name="data"/>.
@@ -192,11 +204,13 @@ internal abstract class ClientCore
         CancellationToken cancellationToken)
     {
         var result = new List<ReadOnlyMemory<float>>(data.Count);
+
         foreach (string text in data)
         {
             var options = new EmbeddingsOptions(this.DeploymentOrModelName, new[] { text });
 
             Response<Embeddings> response = await RunRequestAsync(() => this.Client.GetEmbeddingsAsync(options, cancellationToken)).ConfigureAwait(false);
+
             if (response.Value.Data.Count == 0)
             {
                 throw new KernelException("Text embedding not found");
@@ -207,6 +221,7 @@ internal abstract class ClientCore
 
         return result;
     }
+
 
     /// <summary>
     /// Generate a new chat message
@@ -238,6 +253,7 @@ internal abstract class ClientCore
             // Make the request.
             var responseData = (await RunRequestAsync(() => this.Client.GetChatCompletionsAsync(chatOptions, cancellationToken)).ConfigureAwait(false)).Value;
             this.CaptureUsageDetails(responseData.Usage);
+
             if (responseData.Choices.Count == 0)
             {
                 throw new KernelException("Chat completions not found");
@@ -249,14 +265,15 @@ internal abstract class ClientCore
             // Or if we are auto-invoking but we somehow end up with other than 1 choice even though only 1 was requested, similarly bail.
             if (!autoInvoke || responseData.Choices.Count != 1)
             {
-                return responseData.Choices.Select(chatChoice => new OpenAIChatMessageContent(chatChoice.Message, metadata)).ToList();
+                return responseData.Choices.Select(chatChoice => new OpenAIChatMessageContent(chatChoice.Message, this.DeploymentOrModelName, metadata)).ToList();
             }
 
             // Get our single result and extract the function call information. If this isn't a function call, or if it is
             // but we're unable to find the function or extract the relevant information, just return the single result.
             ChatChoice resultChoice = responseData.Choices[0];
-            OpenAIChatMessageContent result = new(resultChoice.Message, metadata);
+            OpenAIChatMessageContent result = new(resultChoice.Message, this.DeploymentOrModelName, metadata);
             OpenAIFunctionResponse? functionCallResponse = null;
+
             try
             {
                 functionCallResponse = result.GetOpenAIFunctionResponse();
@@ -267,6 +284,7 @@ internal abstract class ClientCore
                 {
                     this.Logger.LogError(e, "Failed to parse function call response for '{FunctionName}'", resultChoice.Message.FunctionCall.Name);
                 }
+
                 if (this.Logger.IsEnabled(LogLevel.Trace))
                 {
                     this.Logger.LogTrace("Invalid function call arguments: '{FunctionArguments}'", resultChoice.Message.FunctionCall.Arguments);
@@ -310,6 +328,7 @@ internal abstract class ClientCore
         }
     }
 
+
     internal async IAsyncEnumerable<OpenAIStreamingChatMessageContent> GetStreamingChatMessageContentsAsync(
         ChatHistory chat,
         PromptExecutionSettings? executionSettings,
@@ -339,6 +358,7 @@ internal abstract class ClientCore
             StringBuilder? functionArgumentsBuilder = null;
             ChatRole? streamedRole = default;
             CompletionsFinishReason finishReason = default;
+
             await foreach (StreamingChatCompletionsUpdate update in response.ConfigureAwait(false))
             {
                 metadata ??= GetResponseMetadata(update);
@@ -367,7 +387,7 @@ internal abstract class ClientCore
                     }
                 }
 
-                yield return new OpenAIStreamingChatMessageContent(update, update.ChoiceIndex ?? 0, metadata);
+                yield return new OpenAIStreamingChatMessageContent(update, update.ChoiceIndex ?? 0, this.DeploymentOrModelName, metadata);
             }
 
             // If we don't have a function call to invoke, we're done.
@@ -382,6 +402,7 @@ internal abstract class ClientCore
             Debug.Assert(autoInvoke);
             FunctionCall functionCall = new(functionName!, functionArgumentsBuilder?.ToString() ?? string.Empty);
             OpenAIFunctionResponse? functionCallResponse = null;
+
             try
             {
                 functionCallResponse = OpenAIFunctionResponse.FromFunctionCall(functionCall);
@@ -392,6 +413,7 @@ internal abstract class ClientCore
                 {
                     this.Logger.LogError(e, "Failed to parse function call response for '{FunctionName}'", functionCall.Name);
                 }
+
                 if (this.Logger.IsEnabled(LogLevel.Trace))
                 {
                     this.Logger.LogTrace("Invalid function call arguments: '{FunctionArguments}'", functionCall.Arguments);
@@ -436,6 +458,7 @@ internal abstract class ClientCore
         }
     }
 
+
     internal async IAsyncEnumerable<StreamingTextContent> GetChatAsTextStreamingContentsAsync(
         string prompt,
         PromptExecutionSettings? executionSettings,
@@ -447,9 +470,10 @@ internal abstract class ClientCore
 
         await foreach (var chatUpdate in this.GetStreamingChatMessageContentsAsync(chat, executionSettings, kernel, cancellationToken))
         {
-            yield return new StreamingTextContent(chatUpdate.Content, chatUpdate.ChoiceIndex, chatUpdate, Encoding.UTF8, chatUpdate.Metadata);
+            yield return new StreamingTextContent(chatUpdate.Content, chatUpdate.ChoiceIndex, chatUpdate.ModelId, chatUpdate, Encoding.UTF8, chatUpdate.Metadata);
         }
     }
+
 
     internal async Task<IReadOnlyList<TextContent>> GetChatAsTextContentsAsync(
         string text,
@@ -461,9 +485,10 @@ internal abstract class ClientCore
 
         ChatHistory chat = ClientCore.CreateNewChat(text, chatSettings);
         return (await this.GetChatMessageContentsAsync(chat, chatSettings, kernel, cancellationToken).ConfigureAwait(false))
-            .Select(chat => new TextContent(chat.Content, chat, Encoding.UTF8, chat.Metadata))
+            .Select(chat => new TextContent(chat.Content, chat.ModelId, chat, Encoding.UTF8, chat.Metadata))
             .ToList();
     }
+
 
     internal void AddAttribute(string key, string? value)
     {
@@ -472,6 +497,7 @@ internal abstract class ClientCore
             this.Attributes.Add(key, value!);
         }
     }
+
 
     /// <summary>Gets options to use for an OpenAIClient</summary>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
@@ -492,6 +518,7 @@ internal abstract class ClientCore
         return options;
     }
 
+
     /// <summary>
     /// Create a new empty chat instance
     /// </summary>
@@ -502,6 +529,7 @@ internal abstract class ClientCore
     {
         // If settings is not provided, create a new chat with the text as the system prompt
         var chat = new OpenAIChatHistory(executionSettings?.ChatSystemPrompt ?? text);
+
         if (executionSettings is not null)
         {
             // If settings is provided, add the prompt as the user message
@@ -510,6 +538,7 @@ internal abstract class ClientCore
 
         return chat;
     }
+
 
     private static CompletionsOptions CreateCompletionsOptions(string text, OpenAIPromptExecutionSettings executionSettings, string deploymentOrModelName)
     {
@@ -550,6 +579,7 @@ internal abstract class ClientCore
         return options;
     }
 
+
     private static ChatCompletionsOptions CreateChatCompletionsOptions(
         OpenAIPromptExecutionSettings executionSettings,
         ChatHistory chatHistory,
@@ -577,6 +607,7 @@ internal abstract class ClientCore
             case FunctionCallBehavior.KernelFunctions kfcb when kernel is not null:
                 // Provide all of the functions available in the kernel.
                 options.Functions = kernel.Plugins.GetFunctionsMetadata().Select(f => f.ToOpenAIFunction().ToFunctionDefinition()).ToList();
+
                 if (options.Functions.Count > 0)
                 {
                     options.FunctionCall = FunctionDefinition.Auto;
@@ -586,6 +617,7 @@ internal abstract class ClientCore
             case FunctionCallBehavior.EnabledFunctions efcb:
                 // Provide only those functions explicitly provided via the options.
                 options.Functions = efcb.Functions;
+
                 if (options.Functions.Count > 0)
                 {
                     options.FunctionCall = FunctionDefinition.Auto;
@@ -638,6 +670,7 @@ internal abstract class ClientCore
         return options;
     }
 
+
     private static void ValidateMaxTokens(int? maxTokens)
     {
         if (maxTokens.HasValue && maxTokens < 1)
@@ -645,6 +678,7 @@ internal abstract class ClientCore
             throw new ArgumentException($"MaxTokens {maxTokens} is not valid, the value must be greater than zero");
         }
     }
+
 
     private static void ValidateAutoInvoke(bool autoInvoke, int resultsPerPrompt)
     {
@@ -655,6 +689,7 @@ internal abstract class ClientCore
             throw new ArgumentException($"{nameof(FunctionCallBehavior)}.{nameof(FunctionCallBehavior.AutoInvoke)} may only be used with a {nameof(OpenAIPromptExecutionSettings.ResultsPerPrompt)} of 1.");
         }
     }
+
 
     private static async Task<T> RunRequestAsync<T>(Func<Task<T>> request)
     {
@@ -667,6 +702,7 @@ internal abstract class ClientCore
             throw e.ToHttpOperationException();
         }
     }
+
 
     /// <summary>
     /// Captures usage details, including token information.

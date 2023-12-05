@@ -1,14 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Connectors.UnitTests.HuggingFace.TextGeneration;
+
 using System;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextGeneration;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.HuggingFace.TextGeneration;
 
 /// <summary>
 /// Unit tests for <see cref="HuggingFaceTextGenerationService"/> class.
@@ -18,6 +21,7 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
 
+
     public HuggingFaceTextGenerationTests()
     {
         this._messageHandlerStub = new HttpMessageHandlerStub();
@@ -25,6 +29,7 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
 
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
     }
+
 
     [Fact]
     public async Task SpecifiedModelShouldBeUsedAsync()
@@ -39,6 +44,7 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
         Assert.EndsWith("/fake-model", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
     }
 
+
     [Fact]
     public async Task NoAuthorizationHeaderShouldBeAddedIfApiKeyIsNotProvidedAsync()
     {
@@ -51,6 +57,7 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
         //Assert
         Assert.False(this._messageHandlerStub.RequestHeaders?.Contains("Authorization"));
     }
+
 
     [Fact]
     public async Task AuthorizationHeaderShouldBeAddedIfApiKeyIsProvidedAsync()
@@ -70,6 +77,7 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
         Assert.Equal("Bearer fake-api-key", value);
     }
 
+
     [Fact]
     public async Task UserAgentHeaderShouldBeUsedAsync()
     {
@@ -88,6 +96,7 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
         Assert.Equal("Semantic-Kernel", value);
     }
 
+
     [Fact]
     public async Task ProvidedEndpointShouldBeUsedAsync()
     {
@@ -100,6 +109,7 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
         //Assert
         Assert.StartsWith("https://fake-random-test-host/fake-path", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
     }
+
 
     [Fact]
     public async Task HttpClientBaseAddressShouldBeUsedAsync()
@@ -116,6 +126,7 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
         Assert.StartsWith("https://fake-random-test-host/fake-path", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
     }
 
+
     [Fact]
     public async Task DefaultAddressShouldBeUsedAsync()
     {
@@ -129,6 +140,7 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
         Assert.StartsWith("https://api-inference.huggingface.co/models", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
     }
 
+
     [Fact]
     public async Task ModelUrlShouldBeBuiltSuccessfullyAsync()
     {
@@ -141,6 +153,7 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
         //Assert
         Assert.Equal("https://fake-random-test-host/fake-path/fake-model", this._messageHandlerStub.RequestUri?.AbsoluteUri);
     }
+
 
     [Fact]
     public async Task ShouldSendPromptToServiceAsync()
@@ -157,6 +170,7 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
 
         Assert.Equal("fake-text", requestPayload.Input);
     }
+
 
     [Fact]
     public async Task ShouldHandleServiceResponseAsync()
@@ -175,6 +189,71 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
 
         Assert.Equal("This is test completion response", content);
     }
+
+
+    [Fact]
+    public async Task GetTextContentsShouldHaveModelIdDefinedAsync()
+    {
+        //Arrange
+        var sut = new HuggingFaceTextGenerationService("fake-model", endpoint: "https://fake-random-test-host/fake-path", httpClient: this._httpClient);
+
+        //Act
+        var contents = await sut.GetTextContentsAsync("fake-test");
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent(@"
+            [
+                {
+                    ""generated_text"": ""Why the sky is blue? | Dept. of Science & Mathematics Education | University of Notre Dame\nWhen I was in high school I had a pretty simple conception of reality. I believed that if something made sense to me, then it must also be true. I believed that some problems were so fundamental that I couldn’t understand""
+                }
+            ]",
+                Encoding.UTF8,
+                "application/json")
+        };
+
+        // Act
+        var textContent = await sut.GetTextContentAsync("Any prompt");
+
+        // Assert
+        Assert.NotNull(textContent.ModelId);
+        Assert.Equal("fake-model", textContent.ModelId);
+    }
+
+
+    [Fact]
+    public async Task GetStreamingTextContentsShouldHaveModelIdDefinedAsync()
+    {
+        //Arrange
+        var sut = new HuggingFaceTextGenerationService("fake-model", endpoint: "https://fake-random-test-host/fake-path", httpClient: this._httpClient);
+
+        //Act
+        var contents = await sut.GetTextContentsAsync("fake-test");
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent(@"
+            [
+                {
+                    ""generated_text"": ""Why the sky is blue? | Dept. of Science & Mathematics Education | University of Notre Dame\nWhen I was in high school I had a pretty simple conception of reality. I believed that if something made sense to me, then it must also be true. I believed that some problems were so fundamental that I couldn’t understand""
+                }
+            ]",
+                Encoding.UTF8,
+                "application/json")
+        };
+
+        // Act
+        StreamingTextContent? lastTextContent = null;
+
+        await foreach (var textContent in sut.GetStreamingTextContentsAsync("Any prompt"))
+        {
+            lastTextContent = textContent;
+        }
+        ;
+
+        // Assert
+        Assert.NotNull(lastTextContent!.ModelId);
+        Assert.Equal("fake-model", lastTextContent.ModelId);
+    }
+
 
     public void Dispose()
     {
