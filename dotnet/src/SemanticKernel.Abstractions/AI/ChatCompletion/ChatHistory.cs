@@ -24,10 +24,7 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// <summary>
     /// Creates a new instance of the <see cref="ChatHistory"/> class
     /// </summary>
-    public ChatHistory()
-    {
-        this._messages = new();
-    }
+    public ChatHistory() => _messages = new List<ChatMessageContent>();
 
 
     /// <summary>
@@ -38,8 +35,8 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     {
         Verify.NotNullOrWhiteSpace(systemMessage);
 
-        this._messages = new();
-        this.AddSystemMessage(systemMessage);
+        _messages = new List<ChatMessageContent>();
+        AddSystemMessage(systemMessage);
     }
 
 
@@ -49,12 +46,12 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     public ChatHistory(IEnumerable<ChatMessageContent> messages)
     {
         Verify.NotNull(messages);
-        this._messages = new(messages);
+        _messages = new List<ChatMessageContent>(messages);
     }
 
 
     /// <summary>Gets the number of messages in the history.</summary>
-    public int Count => this._messages.Count;
+    public int Count => _messages.Count;
 
 
     /// <summary>
@@ -63,7 +60,7 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// <param name="chatMessageContent">Chat message content</param>
     public void AddMessage(ChatMessageContent chatMessageContent)
     {
-        this.Add(chatMessageContent);
+        Add(chatMessageContent);
     }
 
 
@@ -74,7 +71,7 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// <param name="metadata">Dictionary for any additional metadata</param>
     /// </summary>
     public void AddMessage(AuthorRole authorRole, string content, Encoding? encoding = null, IDictionary<string, object?>? metadata = null) =>
-        this.Add(new ChatMessageContent(authorRole, content, null, encoding, metadata));
+        Add(new ChatMessageContent(authorRole, content, null, encoding, metadata));
 
 
     /// <summary>
@@ -82,7 +79,7 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// </summary>
     /// <param name="content">Message content</param>
     public void AddUserMessage(string content) =>
-        this.AddMessage(AuthorRole.User, content);
+        AddMessage(AuthorRole.User, content);
 
 
     /// <summary>
@@ -90,7 +87,7 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// </summary>
     /// <param name="content">Message content</param>
     public void AddAssistantMessage(string content) =>
-        this.AddMessage(AuthorRole.Assistant, content);
+        AddMessage(AuthorRole.Assistant, content);
 
 
     /// <summary>
@@ -98,7 +95,7 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// </summary>
     /// <param name="content">Message content</param>
     public void AddSystemMessage(string content) =>
-        this.AddMessage(AuthorRole.System, content);
+        AddMessage(AuthorRole.System, content);
 
 
     /// <summary>Adds a message to the history.</summary>
@@ -107,7 +104,7 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     public void Add(ChatMessageContent item)
     {
         Verify.NotNull(item);
-        this._messages.Add(item);
+        _messages.Add(item);
     }
 
 
@@ -117,7 +114,7 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     public void AddRange(IEnumerable<ChatMessageContent> items)
     {
         Verify.NotNull(items);
-        this._messages.AddRange(items);
+        _messages.AddRange(items);
     }
 
 
@@ -128,7 +125,7 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     public void Insert(int index, ChatMessageContent item)
     {
         Verify.NotNull(item);
-        this._messages.Insert(index, item);
+        _messages.Insert(index, item);
     }
 
 
@@ -140,11 +137,11 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// <exception cref="ArgumentNullException"><paramref name="array"/> is null.</exception>
     /// <exception cref="ArgumentException">The number of messages in the history is greater than the available space from <paramref name="arrayIndex"/> to the end of <paramref name="array"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="arrayIndex"/> is less than 0.</exception>
-    public void CopyTo(ChatMessageContent[] array, int arrayIndex) => this._messages.CopyTo(array, arrayIndex);
+    public void CopyTo(ChatMessageContent[] array, int arrayIndex) => _messages.CopyTo(array, arrayIndex);
 
 
     /// <summary>Removes all messages from the history.</summary>
-    public void Clear() => this._messages.Clear();
+    public void Clear() => _messages.Clear();
 
 
     /// <summary>Gets or sets the message at the specified index in the history.</summary>
@@ -154,11 +151,11 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// <exception cref="ArgumentOutOfRangeException">The <paramref name="index"/> was not valid for this history.</exception>
     public ChatMessageContent this[int index]
     {
-        get => this._messages[index];
+        get => _messages[index];
         set
         {
             Verify.NotNull(value);
-            this._messages[index] = value;
+            _messages[index] = value;
         }
     }
 
@@ -170,7 +167,7 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     public bool Contains(ChatMessageContent item)
     {
         Verify.NotNull(item);
-        return this._messages.Contains(item);
+        return _messages.Contains(item);
     }
 
 
@@ -181,14 +178,14 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     public int IndexOf(ChatMessageContent item)
     {
         Verify.NotNull(item);
-        return this._messages.IndexOf(item);
+        return _messages.IndexOf(item);
     }
 
 
     /// <summary>Removes the message at the specified index from the history.</summary>
     /// <param name="index">The index of the message to remove.</param>
     /// <exception cref="ArgumentOutOfRangeException">The <paramref name="index"/> was not valid for this history.</exception>
-    public void RemoveAt(int index) => this._messages.RemoveAt(index);
+    public void RemoveAt(int index) => _messages.RemoveAt(index);
 
 
     /// <summary>Removes the first occurrence of the specified message from the history.</summary>
@@ -198,7 +195,21 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     public bool Remove(ChatMessageContent item)
     {
         Verify.NotNull(item);
-        return this._messages.Remove(item);
+        return _messages.Remove(item);
+    }
+
+
+    /// <summary>
+    /// Removes a range of messages from the history.
+    /// </summary>
+    /// <param name="index">The index of the range of elements to remove.</param>
+    /// <param name="count">The number of elements to remove.</param>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="index"/> is less than 0.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="count"/> is less than 0.</exception>
+    /// <exception cref="ArgumentException"><paramref name="count"/> and <paramref name="count"/> do not denote a valid range of messages.</exception>
+    public void RemoveRange(int index, int count)
+    {
+        this._messages.RemoveRange(index, count);
     }
 
 
@@ -207,9 +218,9 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
 
 
     /// <inheritdoc/>
-    IEnumerator<ChatMessageContent> IEnumerable<ChatMessageContent>.GetEnumerator() => this._messages.GetEnumerator();
+    IEnumerator<ChatMessageContent> IEnumerable<ChatMessageContent>.GetEnumerator() => _messages.GetEnumerator();
 
 
     /// <inheritdoc/>
-    IEnumerator IEnumerable.GetEnumerator() => this._messages.GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => _messages.GetEnumerator();
 }
