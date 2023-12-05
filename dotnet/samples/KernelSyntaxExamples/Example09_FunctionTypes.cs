@@ -5,8 +5,8 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using RepoUtils;
-// ReSharper disable once InconsistentNaming
 
+// ReSharper disable once InconsistentNaming
 
 // ReSharper disable once InconsistentNaming
 public static class Example09_FunctionTypes
@@ -89,7 +89,7 @@ public class LocalExamplePlugin
     [KernelFunction]
     public async Task<string> Type04Async(Kernel kernel)
     {
-        var summary = await kernel.InvokeAsync(kernel.Plugins["SummarizePlugin"]["Summarize"], new KernelArguments() { { "input", "blah blah blah" } });
+        var summary = await kernel.InvokeAsync(kernel.Plugins["SummarizePlugin"]["Summarize"], new("blah blah blah"));
         Console.WriteLine($"Running function type 4 [{summary}]");
         return "";
     }

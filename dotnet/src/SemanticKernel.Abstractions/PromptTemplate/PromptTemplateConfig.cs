@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
-
 namespace Microsoft.SemanticKernel;
 
 using System;
@@ -91,7 +89,7 @@ public sealed class PromptTemplateConfig
         return this.InputVariables.Select(p => new KernelParameterMetadata(p.Name)
         {
             Description = p.Description,
-            DefaultValue = p.DefaultValue
+            DefaultValue = p.Default
         }).ToList();
     }
 

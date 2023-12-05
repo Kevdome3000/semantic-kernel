@@ -3,14 +3,12 @@
 namespace SemanticKernel.Plugins.UnitTests.MsGraph;
 
 using System;
-using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.MsGraph;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Models;
 using Moq;
-using SemanticKernel.UnitTests;
 using Xunit;
 
 
@@ -41,13 +39,14 @@ public class CalendarPluginTests
         CalendarPlugin target = new(connectorMock.Object);
 
         // Act
-        var context = await FunctionHelpers.CallViaKernelAsync(target, "AddEvent",
-            ("input", anySubject),
-            ("start", anyStartTime.ToString(CultureInfo.InvariantCulture)),
-            ("end", anyEndTime.ToString(CultureInfo.InvariantCulture)),
-            ("location", anyLocation),
-            ("content", anyContent),
-            ("attendees", string.Join(";", anyAttendees)));
+        var context = await KernelPluginFactory.CreateFromObject(target)["AddEvent"].InvokeAsync(new(), new(anySubject)
+        {
+            ["start"] = anyStartTime,
+            ["end"] = anyEndTime,
+            ["location"] = anyLocation,
+            ["content"] = anyContent,
+            ["attendees"] = string.Join(";", anyAttendees)
+        });
 
         // Assert
         connectorMock.VerifyAll();
@@ -80,12 +79,13 @@ public class CalendarPluginTests
         CalendarPlugin target = new(connectorMock.Object);
 
         // Act
-        var context = await FunctionHelpers.CallViaKernelAsync(target, "AddEvent",
-            ("input", anySubject),
-            ("start", anyStartTime.ToString(CultureInfo.InvariantCulture)),
-            ("end", anyEndTime.ToString(CultureInfo.InvariantCulture)),
-            ("content", anyContent),
-            ("attendees", string.Join(";", anyAttendees)));
+        var context = await KernelPluginFactory.CreateFromObject(target)["AddEvent"].InvokeAsync(new(), new(anySubject)
+        {
+            ["start"] = anyStartTime,
+            ["end"] = anyEndTime,
+            ["content"] = anyContent,
+            ["attendees"] = string.Join(";", anyAttendees),
+        });
 
         // Assert
         connectorMock.VerifyAll();
@@ -118,12 +118,13 @@ public class CalendarPluginTests
         CalendarPlugin target = new(connectorMock.Object);
 
         // Act
-        var context = await FunctionHelpers.CallViaKernelAsync(target, "AddEvent",
-            ("input", anySubject),
-            ("start", anyStartTime.ToString(CultureInfo.InvariantCulture)),
-            ("end", anyEndTime.ToString(CultureInfo.InvariantCulture)),
-            ("location", anyLocation),
-            ("attendees", string.Join(";", anyAttendees)));
+        var context = await KernelPluginFactory.CreateFromObject(target)["AddEvent"].InvokeAsync(new(), new(anySubject)
+        {
+            ["start"] = anyStartTime,
+            ["end"] = anyEndTime,
+            ["location"] = anyLocation,
+            ["attendees"] = string.Join(";", anyAttendees),
+        });
 
         // Assert
         connectorMock.VerifyAll();
@@ -156,12 +157,13 @@ public class CalendarPluginTests
         CalendarPlugin target = new(connectorMock.Object);
 
         // Act
-        var context = await FunctionHelpers.CallViaKernelAsync(target, "AddEvent",
-            ("input", anySubject),
-            ("start", anyStartTime.ToString(CultureInfo.InvariantCulture)),
-            ("end", anyEndTime.ToString(CultureInfo.InvariantCulture)),
-            ("location", anyLocation),
-            ("content", anyContent));
+        var context = await KernelPluginFactory.CreateFromObject(target)["AddEvent"].InvokeAsync(new(), new(anySubject)
+        {
+            ["start"] = anyStartTime,
+            ["end"] = anyEndTime,
+            ["location"] = anyLocation,
+            ["attendees"] = anyContent,
+        });
 
         // Assert
         connectorMock.VerifyAll();
@@ -183,13 +185,13 @@ public class CalendarPluginTests
         CalendarPlugin target = new(connectorMock.Object);
 
         // Act and Assert
-        await Assert.ThrowsAsync<KernelException>(() => FunctionHelpers.CallViaKernelAsync(target, "AddEvent",
-            ("input", anySubject),
-            ("end", anyEndTime.ToString(CultureInfo.InvariantCulture)),
-            ("location", anyLocation),
-            ("content", anyContent),
-            ("attendees", string.Join(";", anyAttendees)))
-        );
+        await Assert.ThrowsAsync<KernelException>(() => KernelPluginFactory.CreateFromObject(target)["AddEvent"].InvokeAsync(new(), new(anySubject)
+        {
+            ["end"] = anyEndTime,
+            ["location"] = anyLocation,
+            ["content"] = anyContent,
+            ["attendees"] = string.Join(";", anyAttendees),
+        }));
     }
 
 
@@ -208,13 +210,13 @@ public class CalendarPluginTests
         CalendarPlugin target = new(connectorMock.Object);
 
         // Act
-        await Assert.ThrowsAsync<KernelException>(() => FunctionHelpers.CallViaKernelAsync(target, "AddEvent",
-            ("input", anySubject),
-            ("start", anyStartTime.ToString(CultureInfo.InvariantCulture)),
-            ("location", anyLocation),
-            ("content", anyContent),
-            ("attendees", string.Join(";", anyAttendees)))
-        );
+        await Assert.ThrowsAsync<KernelException>(() => KernelPluginFactory.CreateFromObject(target)["AddEvent"].InvokeAsync(new(), new(anySubject)
+        {
+            ["start"] = anyStartTime,
+            ["location"] = anyLocation,
+            ["content"] = anyContent,
+            ["attendees"] = string.Join(";", anyAttendees),
+        }));
     }
 
 
@@ -233,13 +235,14 @@ public class CalendarPluginTests
         CalendarPlugin target = new(connectorMock.Object);
 
         // Act & Assert
-        var ex = await Assert.ThrowsAsync<KernelException>(() => FunctionHelpers.CallViaKernelAsync(target, "AddEvent",
-            ("start", anyStartTime.ToString(CultureInfo.InvariantCulture)),
-            ("end", anyEndTime.ToString(CultureInfo.InvariantCulture)),
-            ("location", anyLocation),
-            ("content", anyContent),
-            ("attendees", string.Join(";", anyAttendees)))
-        );
+        var ex = await Assert.ThrowsAsync<KernelException>(() => KernelPluginFactory.CreateFromObject(target)["AddEvent"].InvokeAsync(new(), new()
+        {
+            ["start"] = anyStartTime,
+            ["end"] = anyEndTime,
+            ["location"] = anyLocation,
+            ["content"] = anyContent,
+            ["attendees"] = string.Join(";", anyAttendees),
+        }));
 
         Assert.True(ex.InnerException is ArgumentException);
         Assert.Equal("input", ((ArgumentException)ex.InnerException).ParamName);

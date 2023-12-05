@@ -11,7 +11,7 @@ using Extensions.Logging;
 
 
 /// <summary>Surrounds the invocation of a planner with logging and metrics.</summary>
-public static partial class PlannerInstrumentation
+internal static partial class PlannerInstrumentation
 {
     /// <summary><see cref="ActivitySource"/> for planning-related activities.</summary>
     private static readonly ActivitySource s_activitySource = new("Microsoft.SemanticKernel.Planning");
@@ -21,9 +21,9 @@ public static partial class PlannerInstrumentation
 
     /// <summary><see cref="Histogram{T}"/> to record plan creation duration.</summary>
     private static readonly Histogram<double> s_createPlanDuration = s_meter.CreateHistogram<double>(
-        "sk.planning.create_plan.duration",
-        "s",
-        "Duration time of plan creation.");
+        name: "sk.planning.create_plan.duration",
+        unit: "s",
+        description: "Duration time of plan creation.");
 
 
     /// <summary>Invokes the supplied <paramref name="createPlanAsync"/> delegate, surrounded by logging and metrics.</summary>
@@ -39,7 +39,7 @@ public static partial class PlannerInstrumentation
     {
         string plannerName = planner.GetType().FullName;
 
-        using Activity? _ = s_activitySource.StartActivity(plannerName);
+        using var _ = s_activitySource.StartActivity(plannerName);
 
         logger.LogPlanCreationStarted();
         logger.LogGoal(goal);
@@ -49,7 +49,7 @@ public static partial class PlannerInstrumentation
 
         try
         {
-            TPlan? plan = await createPlanAsync(planner, kernel, goal, cancellationToken).ConfigureAwait(false);
+            var plan = await createPlanAsync(planner, kernel, goal, cancellationToken).ConfigureAwait(false);
             logger.LogPlanCreated();
             logger.LogPlan(plan);
 

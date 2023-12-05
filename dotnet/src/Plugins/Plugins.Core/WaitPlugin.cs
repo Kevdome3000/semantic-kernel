@@ -10,11 +10,6 @@ using System.Threading.Tasks;
 /// <summary>
 /// WaitPlugin provides a set of functions to wait before making the rest of operations.
 /// </summary>
-/// <example>
-/// Usage: kernel.ImportFunctions(new WaitPlugin(), "wait");
-/// Examples:
-/// {{wait.seconds 10}}         => Wait 10 seconds
-/// </example>
 public sealed class WaitPlugin
 {
     private readonly TimeProvider _timeProvider;

@@ -431,7 +431,7 @@ public class KernelTests
         };
 
         // Act
-        var result = await kernel.InvokeAsync(function, originalInput);
+        var result = await kernel.InvokeAsync(function, new(originalInput));
 
         // Assert
         Assert.Equal(newInput, result.GetValue<string>());
@@ -453,7 +453,7 @@ public class KernelTests
         };
 
         // Act
-        var result = await kernel.InvokeAsync(function, originalInput);
+        var result = await kernel.InvokeAsync(function, new(originalInput));
 
         // Assert
         Assert.Equal(newInput, result.GetValue<string>());
@@ -658,7 +658,7 @@ public class KernelTests
         var kernel = new KernelBuilder().WithServices(c => c.AddSingleton<ITextGenerationService>(mockTextCompletion.Object)).Build();
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
         var sut = KernelFunctionFactory.CreateFromPrompt(prompt);
-        var variables = new KernelArguments { { "input", "importance" } };
+        var variables = new KernelArguments("importance");
 
         var chunkCount = 0;
 
