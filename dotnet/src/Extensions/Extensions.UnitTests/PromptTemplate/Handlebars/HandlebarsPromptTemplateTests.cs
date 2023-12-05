@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using static Microsoft.SemanticKernel.PromptTemplateConfig;
-
 namespace SemanticKernel.Extensions.UnitTests.PromptTemplate.Handlebars;
 
 using System;
@@ -88,13 +86,13 @@ public sealed class HandlebarsPromptTemplateTests
         {
             TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat
         };
-        promptConfig.InputParameters.Add(new InputParameter()
+        promptConfig.InputVariables.Add(new InputVariable()
         {
             Name = "bar",
             Description = "Bar",
             DefaultValue = "Bar"
         });
-        promptConfig.InputParameters.Add(new InputParameter()
+        promptConfig.InputVariables.Add(new InputVariable()
         {
             Name = "baz",
             Description = "Baz",

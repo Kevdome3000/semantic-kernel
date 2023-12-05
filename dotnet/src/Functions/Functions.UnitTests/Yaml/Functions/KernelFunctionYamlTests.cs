@@ -82,7 +82,7 @@ public class KernelFunctionYamlTests
     template:        Say hello world to {{$name}} in {{$language}}
     description:     Say hello to the specified person using the specified language
     name:            SayHello
-    input_parameters:
+    input_variables:
       - name:          name
         description:   The name of the person to greet
         default_value: John
@@ -96,7 +96,7 @@ public class KernelFunctionYamlTests
     template:        Say hello world to {{$name}} in {{$language}}
     description:     Say hello to the specified person using the specified language
     name:            SayHello
-    input_parameters:
+    input_variables:
       - name:          name
         description:   The name of the person to greet
         default_value: John
@@ -125,7 +125,7 @@ public class KernelFunctionYamlTests
     template:        Say hello world to {{$name}} in {{$language}}
     description:     Say hello to the specified person using the specified language
     name:            SayHello
-    input_parameters:
+    input_variables:
       - name:          name
         description:   The name of the person to greet
         default_value: John
