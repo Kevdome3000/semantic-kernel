@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.AI.TextGeneration;
-
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+namespace Microsoft.SemanticKernel.AI.TextGeneration;
 
 /// <summary>
 /// Class sponsor that holds extension methods for <see cref ="ITextGenerationService" /> interface.

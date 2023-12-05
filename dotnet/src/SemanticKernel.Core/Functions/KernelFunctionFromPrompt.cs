@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel;
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,12 +7,13 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using AI;
-using AI.TextGeneration;
-using Events;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.AI.TextGeneration;
+using Microsoft.SemanticKernel.Events;
 
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// A Semantic Kernel "Semantic" prompt function.
@@ -23,7 +22,6 @@ using Extensions.Logging.Abstractions;
 internal sealed class KernelFunctionFromPrompt : KernelFunction
 {
     // TODO: Revise these Create method XML comments
-
 
     /// <summary>
     /// Creates a string-to-string prompt function, with no direct support for input context.
@@ -67,7 +65,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             loggerFactory: loggerFactory);
     }
 
-
     /// <summary>
     /// Creates a string-to-string prompt function, with no direct support for input context.
     /// The function can be referenced in templates and will receive the context, but when invoked programmatically you
@@ -89,7 +86,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             promptConfig: promptConfig,
             loggerFactory: loggerFactory);
     }
-
 
     /// <summary>
     /// Allow to define a prompt function passing in the definition in natural language, i.e. the prompt template.
@@ -118,7 +114,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             loggerFactory: loggerFactory);
     }
 
-
     /// <inheritdoc/>j
     protected override async ValueTask<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
@@ -128,7 +123,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         this.AddDefaultValues(arguments);
 
         (var textGeneration, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
-
         if (renderedEventArgs?.Cancel is true)
         {
             throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.PromptRendered)} event handler requested cancellation before function invocation.");
@@ -142,7 +136,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         return new FunctionResult(this, textContent.Text, kernel.Culture, new Dictionary<string, object?>(metadata));
     }
 
-
     protected override async IAsyncEnumerable<T> InvokeCoreStreamingAsync<T>(
         Kernel kernel,
         KernelArguments arguments,
@@ -151,7 +144,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         this.AddDefaultValues(arguments);
 
         (var textGeneration, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
-
         if (renderedEventArgs?.Cancel ?? false)
         {
             yield break;
@@ -182,12 +174,10 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         // There is no post cancellation check to override the result as the stream data was already sent.
     }
 
-
     /// <summary>
     /// JSON serialized string representation of the function.
     /// </summary>
     public override string ToString() => JsonSerializer.Serialize(this);
-
 
     private KernelFunctionFromPrompt(
         IPromptTemplate template,
@@ -200,7 +190,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         this._promptConfig = promptConfig;
     }
 
-
     #region private
 
     private readonly ILogger _logger;
@@ -209,7 +198,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay => string.IsNullOrWhiteSpace(this.Description) ? this.Name : $"{this.Name} ({this.Description})";
-
 
     /// <summary>Add default values to the arguments if an argument is not defined</summary>
     private void AddDefaultValues(KernelArguments arguments)
@@ -222,7 +210,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             }
         }
     }
-
 
     private async Task<(ITextGenerationService, string, PromptRenderedEventArgs?)> RenderPromptAsync(Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
     {
@@ -241,11 +228,8 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         return (textGeneration, renderedPrompt, renderedEventArgs);
     }
 
-
     /// <summary>Create a random, valid function name.</summary>
     private static string RandomFunctionName() => $"func{Guid.NewGuid():N}";
 
     #endregion
-
-
 }

@@ -1,14 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel;
-
 using System.Net.Http;
-using AI.Embeddings;
-using AI.TextGeneration;
-using Connectors.AI.HuggingFace.TextEmbedding;
-using Connectors.AI.HuggingFace.TextGeneration;
-using Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.AI.TextGeneration;
+using Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextEmbedding;
+using Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextGeneration;
 
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Provides extension methods for the <see cref="KernelBuilder"/> class to configure Hugging Face connectors.
@@ -43,7 +42,6 @@ public static class HuggingFaceKernelBuilderExtensions
         });
     }
 
-
     /// <summary>
     /// Adds an Hugging Face text generation service with the specified configuration.
     /// </summary>
@@ -66,7 +64,6 @@ public static class HuggingFaceKernelBuilderExtensions
         return services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
             new HuggingFaceTextGenerationService(model, apiKey, HttpClientProvider.GetHttpClient(serviceProvider), endpoint));
     }
-
 
     /// <summary>
     /// Adds an Hugging Face text embedding generation service with the specified configuration.
@@ -93,7 +90,6 @@ public static class HuggingFaceKernelBuilderExtensions
                 new HuggingFaceTextEmbeddingGeneration(model, HttpClientProvider.GetHttpClient(httpClient, serviceProvider), endpoint));
         });
     }
-
 
     /// <summary>
     /// Adds an Hugging Face text embedding generation service with the specified configuration.

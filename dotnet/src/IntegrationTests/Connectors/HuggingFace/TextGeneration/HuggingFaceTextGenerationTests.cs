@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.IntegrationTests.Connectors.HuggingFace.TextGeneration;
-
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -10,6 +8,7 @@ using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextGeneration;
 using Xunit;
 
+namespace SemanticKernel.IntegrationTests.Connectors.HuggingFace.TextGeneration;
 
 /// <summary>
 /// Integration tests for <see cref="HuggingFaceTextGenerationService"/>.
@@ -21,7 +20,6 @@ public sealed class HuggingFaceTextGenerationTests
 
     private readonly IConfigurationRoot _configuration;
 
-
     public HuggingFaceTextGenerationTests()
     {
         // Load configuration
@@ -31,7 +29,6 @@ public sealed class HuggingFaceTextGenerationTests
             .AddEnvironmentVariables()
             .Build();
     }
-
 
     [Fact(Skip = "This test is for manual verification.")]
     public async Task HuggingFaceLocalAndRemoteTextGenerationAsync()
@@ -54,7 +51,6 @@ public sealed class HuggingFaceTextGenerationTests
         Assert.StartsWith(Input, remoteResponse.Text, StringComparison.Ordinal);
     }
 
-
     [Fact(Skip = "This test is for manual verification.")]
     public async Task RemoteHuggingFaceTextGenerationWithCustomHttpClientAsync()
     {
@@ -74,7 +70,6 @@ public sealed class HuggingFaceTextGenerationTests
 
         Assert.StartsWith(Input, remoteResponse.Text, StringComparison.Ordinal);
     }
-
 
     private string GetApiKey()
     {

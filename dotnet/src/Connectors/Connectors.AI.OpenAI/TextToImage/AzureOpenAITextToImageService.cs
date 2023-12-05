@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextToImage;
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -10,10 +8,11 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Extensions.Logging;
-using SemanticKernel.AI.TextToImage;
-using Services;
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.AI.TextToImage;
+using Microsoft.SemanticKernel.Services;
 
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextToImage;
 
 /// <summary>
 /// Azure OpenAI text to image service
@@ -54,7 +53,6 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
     /// </summary>
     private readonly string _apiVersion;
 
-
     /// <summary>
     /// Create a new instance of Azure OpenAI text to image service
     /// </summary>
@@ -66,13 +64,7 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
     /// <param name="maxRetryCount"> Maximum number of attempts to retrieve the text to image operation result.</param>
     /// <param name="apiVersion">Azure OpenAI Endpoint ApiVersion</param>
     public AzureOpenAITextToImageService(
-        string? endpoint,
-        string modelId,
-        string apiKey,
-        HttpClient? httpClient = null,
-        ILoggerFactory? loggerFactory = null,
-        int? maxRetryCount = null,
-        string? apiVersion = null)
+        string? endpoint, string modelId, string apiKey, HttpClient? httpClient = null, ILoggerFactory? loggerFactory = null, int? maxRetryCount = null, string? apiVersion = null)
     {
         Verify.NotNullOrWhiteSpace(apiKey);
         Verify.NotNull(modelId);
@@ -99,10 +91,8 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
         this._core.RequestCreated += (_, request) => request.Headers.Add("api-key", this._apiKey);
     }
 
-
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
-
 
     /// <inheritdoc/>
     public async Task<string> GenerateImageAsync(string description, int width, int height, Kernel? kernel = null, CancellationToken cancellationToken = default)
@@ -123,7 +113,6 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
         return result.Result.Images.First().Url;
     }
 
-
     /// <summary>
     /// Start an text to image task
     /// </summary>
@@ -135,7 +124,6 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
     private async Task<string> StartTextToImageAsync(string description, int width, int height, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(description);
-
         if (width != height || (width != 256 && width != 512 && width != 1024))
         {
             throw new ArgumentOutOfRangeException(nameof(width), width, "OpenAI can generate only square images of size 256x256, 512x512, or 1024x1024.");
@@ -158,7 +146,6 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
 
         return result.Id;
     }
-
 
     /// <summary>
     /// Retrieve the results of an text to image operation.
@@ -202,13 +189,11 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
         }
     }
 
-
     private string GetUri(string operation, params string[] parameters)
     {
         var uri = new Azure.Core.RequestUriBuilder();
         uri.Reset(new Uri(this._endpoint));
         uri.AppendPath(operation, false);
-
         foreach (var parameter in parameters)
         {
             uri.AppendPath("/" + parameter, false);
@@ -217,11 +202,10 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
         return uri.ToString();
     }
 
-
     private bool IsFailedOrCancelled(string status)
     {
         return status.Equals(AzureOpenAIImageOperationStatus.Failed, StringComparison.OrdinalIgnoreCase)
-               || status.Equals(AzureOpenAIImageOperationStatus.Cancelled, StringComparison.OrdinalIgnoreCase)
-               || status.Equals(AzureOpenAIImageOperationStatus.Deleted, StringComparison.OrdinalIgnoreCase);
+            || status.Equals(AzureOpenAIImageOperationStatus.Cancelled, StringComparison.OrdinalIgnoreCase)
+            || status.Equals(AzureOpenAIImageOperationStatus.Deleted, StringComparison.OrdinalIgnoreCase);
     }
 }

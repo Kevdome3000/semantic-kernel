@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.AI;
-
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using ChatCompletion;
-using TextGeneration;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.AI.TextGeneration;
 
+namespace Microsoft.SemanticKernel.AI;
 
 /// <summary>
 /// Execution settings for an AI request.

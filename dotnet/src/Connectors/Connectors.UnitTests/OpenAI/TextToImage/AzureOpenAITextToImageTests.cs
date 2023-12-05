@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Connectors.UnitTests.OpenAI.TextToImage;
-
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -12,6 +10,7 @@ using Moq;
 using Moq.Protected;
 using Xunit;
 
+namespace SemanticKernel.Connectors.UnitTests.OpenAI.TextToImage;
 
 /// <summary>
 /// Unit tests for <see cref="AzureOpenAITextToImageTests"/> class.
@@ -37,16 +36,15 @@ public sealed class AzureOpenAITextToImageTests
             .ReturnsAsync(generationResult);
 
         httpClientHandler
-            .Protected()
-            .Setup<Task<HttpResponseMessage>>(
-                "SendAsync",
-                ItExpr.Is<HttpRequestMessage>(request => request.RequestUri!.AbsolutePath.Contains("openai/operations/images")),
-                ItExpr.IsAny<CancellationToken>())
-            .ReturnsAsync(imageResult);
+           .Protected()
+           .Setup<Task<HttpResponseMessage>>(
+               "SendAsync",
+               ItExpr.Is<HttpRequestMessage>(request => request.RequestUri!.AbsolutePath.Contains("openai/operations/images")),
+               ItExpr.IsAny<CancellationToken>())
+           .ReturnsAsync(imageResult);
 
         return new HttpClient(httpClientHandler.Object);
     }
-
 
     /// <summary>
     /// Creates an instance of <see cref="HttpResponseMessage"/> to return with test data.
@@ -60,7 +58,6 @@ public sealed class AzureOpenAITextToImageTests
         response.Content = new StringContent(OpenAITestHelper.GetTestResponse(fileName), Encoding.UTF8, "application/json");
         return response;
     }
-
 
     [Fact]
     public async Task ItShouldGenerateImageSuccussedAsync()

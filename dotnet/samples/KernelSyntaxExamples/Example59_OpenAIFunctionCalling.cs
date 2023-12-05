@@ -12,7 +12,6 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.OpenApi.OpenAI;
 
-
 /**
  * This example shows how to use OpenAI's function calling capability via the chat completions interface.
  * For more information, see https://platform.openai.com/docs/guides/gpt/function-calling.
@@ -59,7 +58,6 @@ public static class Example59_OpenAIFunctionCalling
         await CompleteChatWithFunctionsAsync("Create a scarlet widget called bar", chatHistory, chatCompletionService, kernel, executionSettings);
     }
 
-
     private static async Task CompleteChatWithFunctionsAsync(string ask, ChatHistory chatHistory, IChatCompletionService chatCompletionService, Kernel kernel, OpenAIPromptExecutionSettings executionSettings)
     {
         Console.WriteLine($"\n\n======== Non-Streaming - {executionSettings.FunctionCallBehavior} ========\n");
@@ -70,7 +68,6 @@ public static class Example59_OpenAIFunctionCalling
         Console.WriteLine($"Assistant response: {chatHistory[chatHistory.Count - 1].Content}");
     }
 
-
     private static async Task StreamingCompleteChatWithFunctionsAsync(string ask, ChatHistory chatHistory, IChatCompletionService chatCompletionService, Kernel kernel, OpenAIPromptExecutionSettings executionSettings)
     {
         Console.WriteLine($"\n\n======== Streaming - {executionSettings.FunctionCallBehavior} ========\n");
@@ -80,11 +77,9 @@ public static class Example59_OpenAIFunctionCalling
         // Send request
         var fullContent = new List<StreamingChatMessageContent>();
         Console.Write("Assistant response: ");
-
         await foreach (var chatResult in chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel))
         {
             fullContent.Add(chatResult);
-
             if (chatResult.Content is { Length: > 0 })
             {
                 Console.Write(chatResult.Content);
@@ -93,14 +88,12 @@ public static class Example59_OpenAIFunctionCalling
         Console.WriteLine();
     }
 
-
     private enum WidgetColor
     {
         Red,
         Green,
         Blue
     }
-
 
     private sealed class WidgetPlugin
     {

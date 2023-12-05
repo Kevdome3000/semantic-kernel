@@ -8,7 +8,6 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
-
 /**
  * The following example shows how to use Semantic Kernel with Multiple Results Text Completion as streaming
  */
@@ -20,7 +19,6 @@ public static class Example45_MultiStreamingChatCompletion
         await AzureOpenAIMultiStreamingChatCompletionAsync();
         await OpenAIMultiStreamingChatCompletionAsync();
     }
-
 
     private static async Task AzureOpenAIMultiStreamingChatCompletionAsync()
     {
@@ -35,7 +33,6 @@ public static class Example45_MultiStreamingChatCompletion
         await StreamingChatCompletionAsync(chatCompletionService);
     }
 
-
     private static async Task OpenAIMultiStreamingChatCompletionAsync()
     {
         Console.WriteLine("======== Open AI - Multiple Text Completion - Raw Streaming ========");
@@ -46,7 +43,6 @@ public static class Example45_MultiStreamingChatCompletion
 
         await StreamingChatCompletionAsync(chatCompletionService);
     }
-
 
     private static async Task StreamingChatCompletionAsync(IChatCompletionService chatCompletionService)
     {
@@ -72,18 +68,15 @@ public static class Example45_MultiStreamingChatCompletion
         Console.WriteLine();
     }
 
-
     private static async Task ProcessStreamAsyncEnumerableAsync(IChatCompletionService chatCompletionService, string prompt, OpenAIPromptExecutionSettings executionSettings, int consoleLinesPerResult)
     {
         var roleDisplayed = new List<int>();
         var messagePerChoice = new Dictionary<int, string>();
         var chatHistory = new ChatHistory(prompt);
-
         await foreach (var chatUpdate in chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings))
         {
             string newContent = string.Empty;
             Console.SetCursorPosition(0, chatUpdate.ChoiceIndex * consoleLinesPerResult);
-
             if (!roleDisplayed.Contains(chatUpdate.ChoiceIndex) && chatUpdate.Role.HasValue)
             {
                 newContent = $"Role: {chatUpdate.Role.Value}\n";
@@ -105,7 +98,6 @@ public static class Example45_MultiStreamingChatCompletion
         }
     }
 
-
     /// <summary>
     /// Break enough lines as the current console window size to display the results
     /// </summary>
@@ -116,7 +108,6 @@ public static class Example45_MultiStreamingChatCompletion
             Console.WriteLine();
         }
     }
-
 
     /// <summary>
     /// Outputs the last message of the chat history

@@ -3,12 +3,9 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Experimental.Assistants;
-using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
 using Microsoft.SemanticKernel.Experimental.Assistants.Internal;
-using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
+namespace Microsoft.SemanticKernel.Experimental.Assistants;
 
 /// <summary>
 /// Context for interacting with OpenAI REST API.
@@ -29,13 +26,16 @@ public partial class AssistantBuilder
         string model,
         string instructions,
         string? name = null,
-        string? description = null) => await new AssistantBuilder()
-        .WithOpenAIChatCompletion(model, apiKey)
-        .WithInstructions(instructions)
-        .WithName(name)
-        .WithDescription(description)
-        .BuildAsync().ConfigureAwait(false);
-
+        string? description = null)
+    {
+        return
+            await new AssistantBuilder()
+                .WithOpenAIChatCompletion(model, apiKey)
+                .WithInstructions(instructions)
+                .WithName(name)
+                .WithDescription(description)
+                .BuildAsync().ConfigureAwait(false);
+    }
 
     /// <summary>
     /// Retrieve an existing assistant, by identifier.
@@ -51,8 +51,8 @@ public partial class AssistantBuilder
         IEnumerable<IKernelPlugin>? plugins = null,
         CancellationToken cancellationToken = default)
     {
-        OpenAIRestContext restContext = new OpenAIRestContext(apiKey);
-        AssistantModel resultModel =
+        var restContext = new OpenAIRestContext(apiKey);
+        var resultModel =
             await restContext.GetAssistantModelAsync(assistantId, cancellationToken).ConfigureAwait(false) ??
             throw new KernelException($"Unexpected failure retrieving assistant: no result. ({assistantId})");
 

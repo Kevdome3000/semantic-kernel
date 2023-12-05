@@ -1,11 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-
-
-// ReSharper disable StringLiteralTypo
-
-namespace SemanticKernel.UnitTests.Functions;
-
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -18,6 +12,9 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Moq;
 using Xunit;
 
+// ReSharper disable StringLiteralTypo
+
+namespace SemanticKernel.UnitTests.Functions;
 
 public class FunctionFromPromptTests
 {
@@ -37,7 +34,6 @@ public class FunctionFromPromptTests
         Assert.True(kernel.Plugins.TryGetFunction("jk", "joker", out _));
         Assert.True(kernel.Plugins.TryGetFunction("JK", "JOKER", out _));
     }
-
 
     [Theory]
     [InlineData(null, "Assistant is a large language model.")]
@@ -71,7 +67,6 @@ public class FunctionFromPromptTests
         mockTextGeneration.Verify(a => a.GetTextContentsAsync("template", It.Is<OpenAIPromptExecutionSettings>(c => c.ChatSystemPrompt == expectedSystemChatPrompt), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
     }
 
-
     [Fact]
     public async Task ItUsesServiceIdWhenProvidedAsync()
     {
@@ -102,7 +97,6 @@ public class FunctionFromPromptTests
         mockTextGeneration2.Verify(a => a.GetTextContentsAsync("template", It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Never());
     }
 
-
     [Fact]
     public async Task ItFailsIfInvalidServiceIdIsProvidedAsync()
     {
@@ -128,7 +122,6 @@ public class FunctionFromPromptTests
         Assert.Equal("Service of type Microsoft.SemanticKernel.AI.TextGeneration.ITextGenerationService and names service3 not registered.", exception.Message);
     }
 
-
     [Fact]
     public async Task InvokeAsyncHandlesPreInvocationAsync()
     {
@@ -151,7 +144,6 @@ public class FunctionFromPromptTests
         Assert.Equal(1, invoked);
         mockTextGeneration.Verify(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
     }
-
 
     [Fact]
     public async Task InvokeAsyncHandlesPreInvocationWasCancelledAsync()
@@ -177,7 +169,6 @@ public class FunctionFromPromptTests
         Assert.Null(ex.FunctionResult);
     }
 
-
     [Fact]
     public async Task InvokeAsyncHandlesPreInvocationCancelationDontRunSubsequentFunctionsInThePipelineAsync()
     {
@@ -201,7 +192,6 @@ public class FunctionFromPromptTests
         mockTextGeneration.Verify(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Never);
         Assert.Same(function, ex.Function);
     }
-
 
     [Fact]
     public async Task InvokeAsyncPreInvocationCancelationDontTriggerInvokedHandlerAsync()
@@ -229,7 +219,6 @@ public class FunctionFromPromptTests
         Assert.Equal(0, invoked);
     }
 
-
     [Fact]
     public async Task InvokeAsyncHandlesPostInvocationAsync()
     {
@@ -252,7 +241,6 @@ public class FunctionFromPromptTests
         Assert.Equal(1, invoked);
         mockTextGeneration.Verify(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
     }
-
 
     [Fact]
     public async Task InvokeAsyncChangeVariableInvokingHandlerAsync()
@@ -277,7 +265,6 @@ public class FunctionFromPromptTests
         Assert.Equal(newInput, originalInput);
     }
 
-
     [Fact]
     public async Task InvokeAsyncChangeVariableInvokedHandlerAsync()
     {
@@ -301,7 +288,6 @@ public class FunctionFromPromptTests
         Assert.Equal(newInput, originalInput);
     }
 
-
     [Fact]
     public async Task InvokeStreamingAsyncCallsConnectorStreamingApiAsync()
     {
@@ -315,7 +301,6 @@ public class FunctionFromPromptTests
         var variables = new KernelArguments { { "input", "importance" } };
 
         var chunkCount = 0;
-
         // Act
         await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContentBase>(kernel, variables))
         {
@@ -327,7 +312,6 @@ public class FunctionFromPromptTests
         mockTextGeneration.Verify(m => m.GetStreamingTextContentsAsync(It.IsIn("Write a simple phrase about UnitTests importance"), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
     }
 
-
     private (TextContent mockTextContent, Mock<ITextGenerationService> textCompletionMock) SetupMocks(string? completionResult = null)
     {
         var mockTextContent = new TextContent(completionResult ?? "LLM Result about UnitTests");
@@ -337,7 +321,6 @@ public class FunctionFromPromptTests
         return (mockTextContent, mockTextGenerationService);
     }
 
-
     private Mock<ITextGenerationService> SetupStreamingMocks<T>(params StreamingTextContent[] streamingContents)
     {
         var mockTextGenerationService = new Mock<ITextGenerationService>();
@@ -345,7 +328,6 @@ public class FunctionFromPromptTests
 
         return mockTextGenerationService;
     }
-
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 #pragma warning disable IDE1006 // Naming Styles

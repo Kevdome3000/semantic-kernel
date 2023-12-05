@@ -1,15 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants.Internal;
-
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Extensions;
-using Models;
+using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
+namespace Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 
 /// <summary>
 /// Represents an assistant that can call the model and use tools.
@@ -51,7 +49,6 @@ internal sealed class Assistant : IAssistant
     private readonly AssistantModel _model;
     private IKernelPlugin? _assistantPlugin;
 
-
     /// <summary>
     /// Create a new assistant.
     /// </summary>
@@ -72,7 +69,6 @@ internal sealed class Assistant : IAssistant
 
         return new Assistant(resultModel, restContext, plugins);
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Assistant"/> class.
@@ -96,9 +92,7 @@ internal sealed class Assistant : IAssistant
         }
     }
 
-
     public IKernelPlugin AsPlugin() => this._assistantPlugin ?? this.DefinePlugin();
-
 
     /// <inheritdoc/>
     public Task<IChatThread> NewThreadAsync(CancellationToken cancellationToken = default)
@@ -106,13 +100,11 @@ internal sealed class Assistant : IAssistant
         return ChatThread.CreateAsync(this._restContext, cancellationToken);
     }
 
-
     /// <inheritdoc/>
     public Task<IChatThread> GetThreadAsync(string id, CancellationToken cancellationToken = default)
     {
         return ChatThread.GetAsync(this._restContext, id, cancellationToken);
     }
-
 
     /// <summary>
     /// Marshal thread run through <see cref="KernelFunction"/> interface.
@@ -138,7 +130,6 @@ internal sealed class Assistant : IAssistant
 
         return response;
     }
-
 
     private IKernelPlugin DefinePlugin()
     {

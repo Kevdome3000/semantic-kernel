@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -11,13 +9,14 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
-using Http;
-using Text;
-using TextEmbedding;
-using TextToImage;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextToImage;
+using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.Text;
 
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
 /// <summary>Base type for OpenAI text to image clients.</summary>
 internal sealed class OpenAITextToImageClientCore
@@ -33,12 +32,10 @@ internal sealed class OpenAITextToImageClientCore
         this._logger = logger ?? NullLogger.Instance;
     }
 
-
     /// <summary>
     /// Storage for AI service attributes.
     /// </summary>
     internal Dictionary<string, object?> Attributes { get; } = new();
-
 
     /// <summary>
     /// Asynchronously sends a text embedding request for the text.
@@ -54,7 +51,6 @@ internal sealed class OpenAITextToImageClientCore
         CancellationToken cancellationToken = default)
     {
         var result = await this.ExecutePostRequestAsync<TextEmbeddingResponse>(url, requestBody, cancellationToken).ConfigureAwait(false);
-
         if (result.Embeddings is not { Count: >= 1 })
         {
             throw new KernelException("Embeddings not found");
@@ -62,7 +58,6 @@ internal sealed class OpenAITextToImageClientCore
 
         return result.Embeddings.Select(e => e.Values).ToList();
     }
-
 
     /// <summary>
     /// Run the HTTP request to generate a list of images
@@ -83,7 +78,6 @@ internal sealed class OpenAITextToImageClientCore
         return result.Images.Select(extractResponseFunc).ToList();
     }
 
-
     /// <summary>
     /// Add attribute to the internal attribute dictionary if the value is not null or empty.
     /// </summary>
@@ -97,7 +91,6 @@ internal sealed class OpenAITextToImageClientCore
         }
     }
 
-
     /// <summary>
     /// Logger
     /// </summary>
@@ -108,7 +101,6 @@ internal sealed class OpenAITextToImageClientCore
     /// </summary>
     private readonly HttpClient _httpClient;
 
-
     internal async Task<T> ExecutePostRequestAsync<T>(string url, string requestBody, CancellationToken cancellationToken = default)
     {
         using var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
@@ -118,14 +110,11 @@ internal sealed class OpenAITextToImageClientCore
         return result;
     }
 
-
     internal static T JsonDeserialize<T>(string responseJson) =>
         JsonSerializer.Deserialize<T>(responseJson, JsonOptionsCache.ReadPermissive) ??
-        throw new KernelException("Response JSON parse error");
-
+            throw new KernelException("Response JSON parse error");
 
     internal event EventHandler<HttpRequestMessage>? RequestCreated;
-
 
     internal async Task<HttpResponseMessage> ExecuteRequestAsync(string url, HttpMethod method, HttpContent? content, CancellationToken cancellationToken = default)
     {

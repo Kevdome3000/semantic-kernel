@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-
 using System.Collections.Generic;
 using System.Text;
-using SemanticKernel.AI.TextGeneration;
+using Microsoft.SemanticKernel.AI.TextGeneration;
 
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
 /// <summary>
 /// Azure OpenAI and OpenAI Specialized streaming text content.
@@ -27,13 +26,11 @@ public sealed class OpenAIStreamingTextContent : StreamingTextContent
     {
     }
 
-
     /// <inheritdoc/>
     public override byte[] ToByteArray()
     {
         return this.Encoding.GetBytes(this.ToString());
     }
-
 
     /// <inheritdoc/>
     public override string ToString()

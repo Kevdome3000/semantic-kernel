@@ -7,7 +7,6 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
-
 /**
  * The following example shows how to use Semantic Kernel with Multiple Results Text Completion as streaming
  */
@@ -19,7 +18,6 @@ public static class Example44_MultiChatCompletion
         await AzureOpenAIMultiChatCompletionAsync();
         await OpenAIMultiChatCompletionAsync();
     }
-
 
     private static async Task AzureOpenAIMultiChatCompletionAsync()
     {
@@ -34,7 +32,6 @@ public static class Example44_MultiChatCompletion
         await RunChatAsync(chatCompletionService);
     }
 
-
     private static async Task OpenAIMultiChatCompletionAsync()
     {
         Console.WriteLine("======== Open AI - Multiple Chat Completion ========");
@@ -43,7 +40,6 @@ public static class Example44_MultiChatCompletion
 
         await RunChatAsync(chatCompletionService);
     }
-
 
     private static async Task RunChatAsync(IChatCompletionService chatCompletionService)
     {
@@ -71,7 +67,6 @@ public static class Example44_MultiChatCompletion
 
         Console.WriteLine();
     }
-
 
     /// <summary>
     /// Outputs the last message of the chat history

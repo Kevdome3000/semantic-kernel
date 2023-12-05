@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.AI.TextGeneration;
-
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel.AI.TextGeneration;
 
 /// <summary>
 /// Represents text content return from a <see cref="ITextGenerationService" /> service.
@@ -23,7 +22,6 @@ public sealed class TextContent : ContentBase
     [JsonIgnore]
     public Encoding Encoding { get; set; }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="TextContent"/> class.
     /// </summary>
@@ -36,7 +34,6 @@ public sealed class TextContent : ContentBase
         this.Text = text;
         this.Encoding = encoding ?? Encoding.UTF8;
     }
-
 
     /// <inheritdoc/>
     public override string ToString()

@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Connectors.UnitTests.HuggingFace.TextGeneration;
-
 using System;
 using System.Linq;
 using System.Net.Http;
@@ -10,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextGeneration;
 using Xunit;
 
+namespace SemanticKernel.Connectors.UnitTests.HuggingFace.TextGeneration;
 
 /// <summary>
 /// Unit tests for <see cref="HuggingFaceTextGenerationService"/> class.
@@ -19,7 +18,6 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
 
-
     public HuggingFaceTextGenerationTests()
     {
         this._messageHandlerStub = new HttpMessageHandlerStub();
@@ -27,7 +25,6 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
 
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
     }
-
 
     [Fact]
     public async Task SpecifiedModelShouldBeUsedAsync()
@@ -42,7 +39,6 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
         Assert.EndsWith("/fake-model", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
     }
 
-
     [Fact]
     public async Task NoAuthorizationHeaderShouldBeAddedIfApiKeyIsNotProvidedAsync()
     {
@@ -55,7 +51,6 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
         //Assert
         Assert.False(this._messageHandlerStub.RequestHeaders?.Contains("Authorization"));
     }
-
 
     [Fact]
     public async Task AuthorizationHeaderShouldBeAddedIfApiKeyIsProvidedAsync()
@@ -75,7 +70,6 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
         Assert.Equal("Bearer fake-api-key", value);
     }
 
-
     [Fact]
     public async Task UserAgentHeaderShouldBeUsedAsync()
     {
@@ -94,7 +88,6 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
         Assert.Equal("Semantic-Kernel", value);
     }
 
-
     [Fact]
     public async Task ProvidedEndpointShouldBeUsedAsync()
     {
@@ -107,7 +100,6 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
         //Assert
         Assert.StartsWith("https://fake-random-test-host/fake-path", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
     }
-
 
     [Fact]
     public async Task HttpClientBaseAddressShouldBeUsedAsync()
@@ -124,7 +116,6 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
         Assert.StartsWith("https://fake-random-test-host/fake-path", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
     }
 
-
     [Fact]
     public async Task DefaultAddressShouldBeUsedAsync()
     {
@@ -138,7 +129,6 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
         Assert.StartsWith("https://api-inference.huggingface.co/models", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
     }
 
-
     [Fact]
     public async Task ModelUrlShouldBeBuiltSuccessfullyAsync()
     {
@@ -151,7 +141,6 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
         //Assert
         Assert.Equal("https://fake-random-test-host/fake-path/fake-model", this._messageHandlerStub.RequestUri?.AbsoluteUri);
     }
-
 
     [Fact]
     public async Task ShouldSendPromptToServiceAsync()
@@ -168,7 +157,6 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
 
         Assert.Equal("fake-text", requestPayload.Input);
     }
-
 
     [Fact]
     public async Task ShouldHandleServiceResponseAsync()
@@ -187,7 +175,6 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
 
         Assert.Equal("This is test completion response", content);
     }
-
 
     public void Dispose()
     {

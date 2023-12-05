@@ -1,10 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextToImage;
-
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextToImage;
 
 /// <summary>
 /// Text to image request
