@@ -124,6 +124,7 @@ public class KernelFunctionFromPromptTests
         Assert.Equal("Required service of type Microsoft.SemanticKernel.AI.TextGeneration.ITextGenerationService not registered. Expected serviceIds: service3.", exception.Message);
     }
 
+
     [Fact]
     public async Task ItParsesStandardizedPromptWhenServiceIsChatCompletionAsync()
     {
@@ -145,6 +146,7 @@ public class KernelFunctionFromPromptTests
         Assert.Equal("You are a helpful assistant.", fakeService.ChatHistory[0].Content);
         Assert.Equal("How many 20 cents can I get from 1 dollar?", fakeService.ChatHistory[1].Content);
     }
+
 
     [Fact]
     public async Task ItParsesStandardizedPromptWhenServiceIsStreamingChatCompletionAsync()
@@ -169,6 +171,7 @@ public class KernelFunctionFromPromptTests
         Assert.Equal("You are a helpful assistant.", fakeService.ChatHistory[0].Content);
         Assert.Equal("How many 20 cents can I get from 1 dollar?", fakeService.ChatHistory[1].Content);
     }
+
 
     [Fact]
     public async Task ItNotParsesStandardizedPromptWhenServiceIsOnlyTextCompletionAsync()
@@ -197,6 +200,7 @@ public class KernelFunctionFromPromptTests
 
         await kernel.InvokeAsync(function);
     }
+
 
     [Fact]
     public async Task ItNotParsesStandardizedPromptWhenStreamingInServiceIsOnlyTextCompletionAsync()
@@ -228,6 +232,7 @@ public class KernelFunctionFromPromptTests
         }
     }
 
+
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 #pragma warning disable IDE1006 // Naming Styles
     private async IAsyncEnumerable<T> ToAsyncEnumerable<T>(IEnumerable<T> enumeration)
@@ -240,10 +245,12 @@ public class KernelFunctionFromPromptTests
         }
     }
 
+
     private sealed class FakeChatAsTextService : ITextGenerationService, IChatCompletionService
     {
         public IReadOnlyDictionary<string, object?> Attributes => throw new NotImplementedException();
         public ChatHistory? ChatHistory { get; private set; }
+
 
         public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         {
@@ -251,6 +258,7 @@ public class KernelFunctionFromPromptTests
 
             return Task.FromResult<IReadOnlyList<ChatMessageContent>>(new List<ChatMessageContent> { new(AuthorRole.Assistant, "Something") });
         }
+
 
 #pragma warning disable IDE0036 // Order modifiers
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
@@ -262,10 +270,12 @@ public class KernelFunctionFromPromptTests
             yield return new StreamingChatMessageContent(AuthorRole.Assistant, "Something");
         }
 
+
         public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
+
 
         public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         {

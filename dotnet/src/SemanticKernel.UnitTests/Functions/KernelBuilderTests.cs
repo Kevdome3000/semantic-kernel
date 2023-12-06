@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.UnitTests.Functions;
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -13,7 +15,6 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextGeneration;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Functions;
 
 public class KernelBuilderTests
 {
@@ -23,6 +24,7 @@ public class KernelBuilderTests
         KernelBuilder builder = new();
         Assert.NotSame(builder.Build(), builder.Build());
     }
+
 
     [Fact]
     public void ItHasIdempotentServicesAndPlugins()
@@ -43,12 +45,14 @@ public class KernelBuilderTests
         }
     }
 
+
     [Fact]
     public void ItDefaultsDataToAnEmptyDictionary()
     {
         Kernel kernel = new KernelBuilder().Build();
         Assert.Empty(kernel.Data);
     }
+
 
     [Fact]
     public void ItDefaultsServiceSelectorToSingleton()
@@ -75,11 +79,13 @@ public class KernelBuilderTests
         Assert.Same(selector, kernel.GetRequiredService<IAIServiceSelector>());
     }
 
+
     private sealed class NopServiceSelector : IAIServiceSelector
     {
         (T?, PromptExecutionSettings?) IAIServiceSelector.SelectAIService<T>(Kernel kernel, KernelFunction function, KernelArguments arguments) where T : class =>
             throw new NotImplementedException();
     }
+
 
     [Fact]
     public void ItPropagatesPluginsToBuiltKernel()
@@ -96,12 +102,14 @@ public class KernelBuilderTests
         Assert.Contains(plugin2, kernel.Plugins);
     }
 
+
     [Fact]
     public void ItSuppliesServicesCollectionToPluginsBuilder()
     {
         KernelBuilder builder = new();
         Assert.Same(builder.Services, builder.Plugins.Services);
     }
+
 
     [Fact]
     public void ItBuildsServicesIntoKernel()
@@ -125,6 +133,7 @@ public class KernelBuilderTests
         Assert.Equal(3, kernel.GetAllServices<IFormatProvider>().Count());
     }
 
+
     [Fact]
     public void ItSupportsMultipleEqualNamedServices()
     {
@@ -141,6 +150,7 @@ public class KernelBuilderTests
 
         Assert.Equal(8, kernel.GetAllServices<IChatCompletionService>().Count());
     }
+
 
     [Fact]
     public void ItIsntNeededInDIContexts()
@@ -174,6 +184,7 @@ public class KernelBuilderTests
 
         //** WORKAROUND
         Dictionary<Type, HashSet<object?>> mapping = new();
+
         foreach (var descriptor in serviceCollection)
         {
             if (!mapping.TryGetValue(descriptor.ServiceType, out HashSet<object?>? keys))
@@ -188,6 +199,7 @@ public class KernelBuilderTests
         k = serviceCollection.BuildServiceProvider().GetService<Kernel>()!;
         Assert.Equal(4, k.GetAllServices<IChatCompletionService>().Count()); // now this is 4 as expected
     }
+
 
     [Fact]
     public void ItFindsAllPluginsToPopulatePluginsCollection()
@@ -204,6 +216,7 @@ public class KernelBuilderTests
 
         Assert.Equal(3, kernel.Plugins.Count);
     }
+
 
     [Fact]
     public void ItFindsPluginCollectionToUse()

@@ -1,16 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable CA1812 // Uninstantiated internal types
+
+namespace SemanticKernel.Extensions.UnitTests.PromptTemplate.Handlebars;
+
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.PromptTemplate.Handlebars;
-using SemanticKernel.Extensions.UnitTests.XunitHelpers;
 using Xunit;
+using XunitHelpers;
 
-#pragma warning disable CA1812 // Uninstantiated internal types
-
-namespace SemanticKernel.Extensions.UnitTests.PromptTemplate.Handlebars;
 
 public sealed class HandlebarsPromptTemplateTests
 {
@@ -18,12 +19,14 @@ public sealed class HandlebarsPromptTemplateTests
     private readonly Kernel _kernel;
     private readonly KernelArguments _arguments;
 
+
     public HandlebarsPromptTemplateTests()
     {
         this._factory = new(TestConsoleLogger.LoggerFactory);
         this._kernel = new();
         this._arguments = new(Guid.NewGuid().ToString("X"));
     }
+
 
     [Fact]
     public async Task ItRendersVariablesAsync()
@@ -41,6 +44,7 @@ public sealed class HandlebarsPromptTemplateTests
         Assert.Equal("Foo Bar", prompt);
     }
 
+
     [Fact]
     public async Task ItRendersFunctionsAsync()
     {
@@ -57,6 +61,7 @@ public sealed class HandlebarsPromptTemplateTests
         Assert.Equal("Foo Bar", prompt);
     }
 
+
     [Fact]
     public async Task ItRendersAsyncFunctionsAsync()
     {
@@ -72,6 +77,7 @@ public sealed class HandlebarsPromptTemplateTests
         // Assert   
         Assert.Equal("Foo Bar Baz", prompt);
     }
+
 
     [Fact]
     public async Task ItUsesDefaultValuesAsync()
@@ -103,10 +109,12 @@ public sealed class HandlebarsPromptTemplateTests
         Assert.Equal("Foo Bar Baz", prompt);
     }
 
+
     private sealed class Foo
     {
         [KernelFunction, Description("Return Bar")]
         public string Bar() => "Bar";
+
 
         [KernelFunction, Description("Return Baz")]
         public async Task<string> BazAsync()

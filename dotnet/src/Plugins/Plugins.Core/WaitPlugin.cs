@@ -5,7 +5,7 @@ namespace Microsoft.SemanticKernel.Plugins.Core;
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
+using Extensions.DependencyInjection;
 
 
 /// <summary>

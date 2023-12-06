@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel;
+
 using System;
 using System.ComponentModel;
 using System.Reflection;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using Extensions.DependencyInjection;
+using Extensions.Logging;
 
-namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Provides static factory methods for creating commonly-used plugin implementations.
@@ -32,6 +33,7 @@ public static class KernelPluginFactory
         return CreateFromObject(ActivatorUtilities.CreateInstance<T>(serviceProvider)!, pluginName, serviceProvider?.GetService<ILoggerFactory>());
     }
 
+
     /// <summary>Creates a plugin that wraps the specified target object.</summary>
     /// <param name="target">The instance of the class to be wrapped.</param>
     /// <param name="pluginName">
@@ -53,6 +55,7 @@ public static class KernelPluginFactory
 
         // Filter out non-SKFunctions and fail if two functions have the same name (with or without the same casing).
         KernelPlugin plugin = new(pluginName, target.GetType().GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description);
+
         foreach (MethodInfo method in methods)
         {
             if (method.GetCustomAttribute<KernelFunctionAttribute>() is not null)
@@ -60,6 +63,7 @@ public static class KernelPluginFactory
                 plugin.AddFunctionFromMethod(method, target, loggerFactory: loggerFactory);
             }
         }
+
         if (plugin.FunctionCount == 0)
         {
             throw new ArgumentException($"The {target.GetType()} instance doesn't expose any public [KernelFunction]-attributed methods.");
@@ -68,6 +72,7 @@ public static class KernelPluginFactory
         if (loggerFactory is not null)
         {
             ILogger logger = loggerFactory.CreateLogger(target.GetType());
+
             if (logger.IsEnabled(LogLevel.Trace))
             {
                 logger.LogTrace("Created plugin {PluginName} with {IncludedFunctions} [KernelFunction] methods out of {TotalMethods} methods found.", pluginName, plugin.FunctionCount, methods.Length);

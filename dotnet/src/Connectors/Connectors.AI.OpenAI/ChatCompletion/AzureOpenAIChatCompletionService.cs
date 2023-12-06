@@ -1,18 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
+
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Azure.Core;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.AI.TextGeneration;
-using Microsoft.SemanticKernel.Services;
+using Extensions.Logging;
+using SemanticKernel.AI;
+using SemanticKernel.AI.ChatCompletion;
+using SemanticKernel.AI.TextGeneration;
+using Services;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
 /// <summary>
 /// Azure OpenAI chat completion service.
@@ -21,6 +22,7 @@ public sealed class AzureOpenAIChatCompletionService : IChatCompletionService, I
 {
     /// <summary>Core implementation shared by Azure OpenAI clients.</summary>
     private readonly AzureOpenAIClientCore _core;
+
 
     /// <summary>
     /// Create an instance of the <see cref="AzureOpenAIChatCompletionService"/> connector with API key auth.
@@ -44,6 +46,7 @@ public sealed class AzureOpenAIChatCompletionService : IChatCompletionService, I
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
+
     /// <summary>
     /// Create an instance of the <see cref="AzureOpenAIChatCompletionService"/> connector with AAD auth.
     /// </summary>
@@ -65,6 +68,7 @@ public sealed class AzureOpenAIChatCompletionService : IChatCompletionService, I
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
+
     /// <summary>
     /// Creates a new <see cref="AzureOpenAIChatCompletionService"/> client instance using the specified <see cref="OpenAIClient"/>.
     /// </summary>
@@ -82,20 +86,25 @@ public sealed class AzureOpenAIChatCompletionService : IChatCompletionService, I
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
+
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
+
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         => this._core.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
 
+
     /// <inheritdoc/>
     public IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         => this._core.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
 
+
     /// <inheritdoc/>
     public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         => this._core.GetChatAsTextContentsAsync(prompt, executionSettings, kernel, cancellationToken);
+
 
     /// <inheritdoc/>
     public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)

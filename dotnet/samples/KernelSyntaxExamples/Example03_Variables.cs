@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Plugins;
 
+
 // ReSharper disable once InconsistentNaming
 public static class Example03_Variables
 {

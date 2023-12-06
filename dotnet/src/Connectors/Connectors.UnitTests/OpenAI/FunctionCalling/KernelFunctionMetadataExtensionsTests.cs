@@ -1,5 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable CA1812 // Uninstantiated internal types
+
+namespace SemanticKernel.Connectors.UnitTests.OpenAI.FunctionCalling;
+
 using System;
 using System.ComponentModel;
 using System.Linq;
@@ -7,9 +11,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Xunit;
 
-#pragma warning disable CA1812 // Uninstantiated internal types
-
-namespace SemanticKernel.Connectors.UnitTests.OpenAI.FunctionCalling;
 
 public sealed class KernelFunctionMetadataExtensionsTests
 {
@@ -36,6 +37,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = KernelJsonSchema.Parse("\"schema\"") }, result.ReturnParameter);
     }
 
+
     [Fact]
     public void ItCanConvertToOpenAIFunctionNoPluginName()
     {
@@ -58,6 +60,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         Assert.NotNull(result.ReturnParameter);
         Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = KernelJsonSchema.Parse("\"schema\"") }, result.ReturnParameter);
     }
+
 
     [Theory]
     [InlineData(false)]
@@ -95,6 +98,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = KernelJsonSchema.Parse("\"schema\"") }, result.ReturnParameter);
     }
 
+
     [Fact]
     public void ItCanConvertToOpenAIFunctionWithParameterNoType()
     {
@@ -122,6 +126,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         Assert.Equal(param1.IsRequired, outputParam.IsRequired);
         Assert.Equivalent(new OpenAIFunctionReturnParameter { Description = "retDesc", Schema = KernelJsonSchema.Parse("\"schema\"") }, result.ReturnParameter);
     }
+
 
     [Fact]
     public void ItCanConvertToOpenAIFunctionWithNoReturnParameterType()
@@ -152,6 +157,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         Assert.Equal("integer", outputParam.Schema.RootElement.GetProperty("type").GetString());
     }
 
+
     [Fact]
     public void ItCanCreateValidOpenAIFunctionManual()
     {
@@ -174,11 +180,13 @@ public sealed class KernelFunctionMetadataExtensionsTests
         );
     }
 
+
     private enum MyEnum
     {
         Value1,
         Value2
     }
+
 
     private sealed class MyPlugin
     {
@@ -187,7 +195,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
             [Description("String parameter")] string parameter1,
             [Description("Enum parameter")] MyEnum parameter2,
             [Description("DateTime parameter")] DateTime parameter3
-            )
+        )
         {
             return "return";
         }

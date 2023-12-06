@@ -35,8 +35,8 @@ public static class Example42_KernelBuilder
         // provides direct access to an underlying IServiceCollection.
         KernelBuilder builder = new();
         builder.Services.AddLogging(c => c.AddConsole().SetMinimumLevel(LogLevel.Information))
-                        .AddHttpClient()
-                        .AddAzureOpenAIChatCompletion(azureOpenAIChatDeploymentName, azureOpenAIChatModelId, azureOpenAIEndpoint, azureOpenAIKey);
+            .AddHttpClient()
+            .AddAzureOpenAIChatCompletion(azureOpenAIChatDeploymentName, azureOpenAIChatModelId, azureOpenAIEndpoint, azureOpenAIKey);
         Kernel kernel2 = builder.Build();
 
         // Plugins may also be configured via the corresponding Plugins property.

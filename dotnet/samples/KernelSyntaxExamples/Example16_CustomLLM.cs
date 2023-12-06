@@ -16,6 +16,7 @@ using RepoUtils;
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 
+
 /**
  * The following example shows how to plug into SK a custom text generation model.
  *
@@ -40,6 +41,7 @@ public static class Example16_CustomLLM
     of art, music, or literature. AI can also improve our well-being and happiness by
     providing personalized recommendations, entertainment, and assistance. AI is awesome";
 
+
     public static async Task RunAsync()
     {
         await CustomTextGenerationWithSKFunctionAsync();
@@ -47,6 +49,7 @@ public static class Example16_CustomLLM
         await CustomTextGenerationAsync();
         await CustomTextGenerationStreamAsync();
     }
+
 
     private static async Task CustomTextGenerationWithSKFunctionAsync()
     {
@@ -74,6 +77,7 @@ public static class Example16_CustomLLM
         ));
     }
 
+
     private static async Task CustomTextGenerationAsync()
     {
         Console.WriteLine("======== Custom LLM  - Text Completion - Raw ========");
@@ -83,6 +87,7 @@ public static class Example16_CustomLLM
 
         Console.WriteLine(result);
     }
+
 
     private static async Task CustomTextGenerationStreamAsync()
     {
@@ -94,6 +99,7 @@ public static class Example16_CustomLLM
         var prompt = "Write one paragraph why AI is awesome";
         await TextGenerationStreamAsync(prompt, textGeneration);
     }
+
 
     private static async Task TextGenerationStreamAsync(string prompt, ITextGenerationService textGeneration)
     {
@@ -107,6 +113,7 @@ public static class Example16_CustomLLM
         };
 
         Console.WriteLine("Prompt: " + prompt);
+
         await foreach (var message in textGeneration.GetStreamingTextContentsAsync(prompt, executionSettings))
         {
             Console.Write(message);
@@ -115,11 +122,13 @@ public static class Example16_CustomLLM
         Console.WriteLine();
     }
 
+
     private sealed class MyTextGenerationService : ITextGenerationService
     {
         public string? ModelId { get; private set; }
 
         public IReadOnlyDictionary<string, object?> Attributes => new Dictionary<string, object?>();
+
 
         public async IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
@@ -131,6 +140,7 @@ public static class Example16_CustomLLM
             }
         }
 
+
         public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         {
             return Task.FromResult<IReadOnlyList<TextContent>>(new List<TextContent>
@@ -140,16 +150,19 @@ public static class Example16_CustomLLM
         }
     }
 
+
     private sealed class MyStreamingContent : StreamingTextContent
     {
         public MyStreamingContent(string content) : base(content)
         {
         }
 
+
         public override byte[] ToByteArray()
         {
             return Encoding.UTF8.GetBytes(this.Text ?? string.Empty);
         }
+
 
         public override string ToString()
         {

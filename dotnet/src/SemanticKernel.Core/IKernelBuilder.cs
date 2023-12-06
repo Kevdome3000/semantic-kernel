@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.DependencyInjection;
-
 namespace Microsoft.SemanticKernel;
+
+using Extensions.DependencyInjection;
+
 
 /// <summary>Provides a builder for constructing instances of <see cref="Kernel"/>.</summary>
 public interface IKernelBuilder
@@ -13,6 +14,7 @@ public interface IKernelBuilder
     /// <summary>Gets a builder for adding collections as singletons to <see cref="Services"/>.</summary>
     IKernelBuilderPlugins Plugins { get; }
 
+
     /// <summary>Constructs a new instance of <see cref="Kernel"/> using all of the settings configured on the builder.</summary>
     /// <returns>The new <see cref="Kernel"/> instance.</returns>
     /// <remarks>
@@ -21,6 +23,7 @@ public interface IKernelBuilder
     /// </remarks>
     Kernel Build();
 }
+
 
 /// <summary>Provides a builder for adding plugins as singletons to a service collection.</summary>
 public interface IKernelBuilderPlugins

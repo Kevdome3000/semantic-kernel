@@ -1,5 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+// ReSharper disable StringLiteralTypo
+
+namespace SemanticKernel.UnitTests;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -18,9 +22,6 @@ using Microsoft.SemanticKernel.Events;
 using Moq;
 using Xunit;
 
-// ReSharper disable StringLiteralTypo
-
-namespace SemanticKernel.UnitTests;
 
 public class KernelTests
 {
@@ -38,6 +39,7 @@ public class KernelTests
         Assert.NotNull(kernel.Plugins.GetFunction("MYSK", "ReadFunctionCollectionAsync"));
     }
 
+
     [Fact]
     public async Task InvokeAsyncDoesNotRunWhenCancelledAsync()
     {
@@ -51,6 +53,7 @@ public class KernelTests
         // Act
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => kernel.InvokeAsync(functions["GetAnyValue"], cancellationToken: cts.Token));
     }
+
 
     [Fact]
     public async Task InvokeAsyncRunsWhenNotCancelledAsync()
@@ -68,6 +71,7 @@ public class KernelTests
         Assert.False(string.IsNullOrEmpty(result.GetValue<string>()));
     }
 
+
     [Fact]
     public void ItImportsPluginsNotCaseSensitive()
     {
@@ -81,6 +85,7 @@ public class KernelTests
         Assert.True(plugin.Contains("GETANYVALUE"));
     }
 
+
     [Fact]
     public void ItAllowsToImportTheSamePluginMultipleTimes()
     {
@@ -93,6 +98,7 @@ public class KernelTests
         kernel.ImportPluginFromType<MyPlugin>("plugin2");
         kernel.ImportPluginFromType<MyPlugin>("plugin3");
     }
+
 
     [Fact]
     public async Task InvokeAsyncHandlesPreInvocationAsync()
@@ -116,6 +122,7 @@ public class KernelTests
         Assert.Equal(1, handlerInvocations);
     }
 
+
     [Fact]
     public async Task RunStreamingAsyncHandlesPreInvocationAsync()
     {
@@ -137,6 +144,7 @@ public class KernelTests
         Assert.Equal(1, functionInvocations);
         Assert.Equal(1, handlerInvocations);
     }
+
 
     [Fact]
     public async Task RunStreamingAsyncHandlesPreInvocationWasCancelledAsync()
@@ -166,6 +174,7 @@ public class KernelTests
         Assert.Empty(e.Arguments);
     }
 
+
     [Fact]
     public async Task RunStreamingAsyncPreInvocationCancelationDontTriggerInvokedHandlerAsync()
     {
@@ -193,6 +202,7 @@ public class KernelTests
         Assert.Equal(0, invoked);
     }
 
+
     [Fact]
     public async Task InvokeStreamingAsyncDoesNotHandlePostInvocationAsync()
     {
@@ -216,6 +226,7 @@ public class KernelTests
         Assert.Equal(1, functionInvocations);
         Assert.Equal(0, handlerInvocations);
     }
+
 
     [Fact]
     public async Task InvokeAsyncHandlesPreInvocationWasCancelledAsync()
@@ -242,6 +253,7 @@ public class KernelTests
         Assert.Null(ex.FunctionResult);
     }
 
+
     [Fact]
     public async Task InvokeAsyncHandlesPreInvocationCancelationDontRunSubsequentFunctionsInThePipelineAsync()
     {
@@ -266,6 +278,7 @@ public class KernelTests
         Assert.Same(function, ex.Function);
         Assert.Null(ex.FunctionResult);
     }
+
 
     [Fact]
     public async Task InvokeAsyncPreInvocationCancelationDontTriggerInvokedHandlerAsync()
@@ -294,6 +307,7 @@ public class KernelTests
         Assert.Null(ex.FunctionResult);
     }
 
+
     [Fact]
     public async Task InvokeAsyncHandlesPostInvocationAsync()
     {
@@ -315,6 +329,7 @@ public class KernelTests
         Assert.Equal(1, functionInvocations);
         Assert.Equal(1, handlerInvocations);
     }
+
 
     [Fact]
     public async Task InvokeAsyncHandlesPostInvocationWithServicesAsync()
@@ -342,6 +357,7 @@ public class KernelTests
         mockTextCompletion.Verify(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
     }
 
+
     [Fact]
     public async Task InvokeAsyncHandlesPostInvocationAndCancellationExceptionContainsResultAsync()
     {
@@ -366,6 +382,7 @@ public class KernelTests
         Assert.NotNull(ex.FunctionResult);
         Assert.Same(result, ex.FunctionResult.GetValue<object>());
     }
+
 
     [Fact]
     public async Task InvokeAsyncHandlesPostInvocationAndCancellationExceptionContainsModifiedResultAsync()
@@ -394,6 +411,7 @@ public class KernelTests
         Assert.Same(newResult, ex.FunctionResult.GetValue<object>());
     }
 
+
     [Fact]
     public async Task InvokeAsyncChangeVariableInvokingHandlerAsync()
     {
@@ -414,6 +432,7 @@ public class KernelTests
         // Assert
         Assert.Equal(newInput, result.GetValue<string>());
     }
+
 
     [Fact]
     public async Task InvokeAsyncChangeVariableInvokedHandlerAsync()
@@ -436,6 +455,7 @@ public class KernelTests
         Assert.Equal(newInput, result.GetValue<string>());
     }
 
+
     [Fact]
     public async Task ItReturnsFunctionResultsCorrectlyAsync()
     {
@@ -451,6 +471,7 @@ public class KernelTests
         Assert.NotNull(result);
         Assert.Equal("Result", result.GetValue<string>());
     }
+
 
     [Fact]
     public async Task ItReturnsChangedResultsFromFunctionInvokedEventsAsync()
@@ -474,6 +495,7 @@ public class KernelTests
         Assert.Equal(ExpectedValue, result.GetValue<string>());
     }
 
+
     [Fact]
     public async Task ItReturnsChangedResultsFromFunctionInvokingEventsAsync()
     {
@@ -496,6 +518,7 @@ public class KernelTests
         Assert.Equal(ExpectedValue, result.GetValue<string>());
     }
 
+
     [Fact]
     public async Task ItCanFindAndRunFunctionAsync()
     {
@@ -513,6 +536,7 @@ public class KernelTests
         Assert.Equal("fake result", result.GetValue<string>());
     }
 
+
     [Fact]
     public void ItShouldBePossibleToSetAndGetCultureAssociatedWithKernel()
     {
@@ -528,6 +552,7 @@ public class KernelTests
         Assert.Equal(culture, kernel.Culture);
     }
 
+
     [Fact]
     public void ItDefaultsLoggerFactoryToNullLoggerFactory()
     {
@@ -537,6 +562,7 @@ public class KernelTests
         //Assert
         Assert.Same(NullLoggerFactory.Instance, kernel.LoggerFactory);
     }
+
 
     [Fact]
     public void ItDefaultsDataToEmptyDictionary()
@@ -548,6 +574,7 @@ public class KernelTests
         Assert.Empty(kernel.Data);
     }
 
+
     [Fact]
     public void ItDefaultsPluginsToEmptyCollection()
     {
@@ -557,6 +584,7 @@ public class KernelTests
         //Assert
         Assert.Empty(kernel.Plugins);
     }
+
 
     [Fact]
     public void InvariantCultureShouldBeReturnedIfNoCultureWasAssociatedWithKernel()
@@ -570,6 +598,7 @@ public class KernelTests
         //Assert
         Assert.Same(CultureInfo.InvariantCulture, culture);
     }
+
 
     [Fact]
     public void ItDeepClonesAllRelevantStateInClone()
@@ -611,6 +640,7 @@ public class KernelTests
         Assert.Empty(kernel4.Plugins);
     }
 
+
     [Fact]
     public async Task InvokeStreamingAsyncCallsConnectorStreamingApiAsync()
     {
@@ -626,6 +656,7 @@ public class KernelTests
         var variables = new KernelArguments("importance");
 
         var chunkCount = 0;
+
         // Act
         await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContentBase>(kernel, variables))
         {
@@ -637,6 +668,7 @@ public class KernelTests
         mockTextCompletion.Verify(m => m.GetStreamingTextContentsAsync(It.IsIn("Write a simple phrase about UnitTests importance"), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
     }
 
+
     private (TextContent mockTextContent, Mock<ITextGenerationService> textCompletionMock) SetupMocks(string? completionResult = null)
     {
         var mockTextContent = new TextContent(completionResult ?? "LLM Result about UnitTests");
@@ -646,6 +678,7 @@ public class KernelTests
         return (mockTextContent, mockTextCompletion);
     }
 
+
     private Mock<ITextGenerationService> SetupStreamingMocks(params StreamingTextContent[] streamingContents)
     {
         var mockTextCompletion = new Mock<ITextGenerationService>();
@@ -653,6 +686,7 @@ public class KernelTests
 
         return mockTextCompletion;
     }
+
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 #pragma warning disable IDE1006 // Naming Styles
@@ -666,6 +700,7 @@ public class KernelTests
         }
     }
 
+
     public class MyPlugin
     {
         [KernelFunction, Description("Return any value.")]
@@ -674,11 +709,13 @@ public class KernelTests
             return Guid.NewGuid().ToString();
         }
 
+
         [KernelFunction, Description("Just say hello")]
         public virtual void SayHello()
         {
             Console.WriteLine("Hello folks!");
         }
+
 
         [KernelFunction("ReadFunctionCollectionAsync"), Description("Export info.")]
         public async Task ReadFunctionCollectionAsync(Kernel kernel)

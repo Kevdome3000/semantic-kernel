@@ -256,6 +256,7 @@ public class NamedArgBlockTests
         Assert.Equal(28.2, result);
     }
 
+
     [Fact]
     public void ItRendersToNullWithNoArgument()
     {
@@ -268,6 +269,7 @@ public class NamedArgBlockTests
         // Assert
         Assert.Null(result);
     }
+
 
     [Fact]
     public void ItRendersToNullIfArgumentIsNull()

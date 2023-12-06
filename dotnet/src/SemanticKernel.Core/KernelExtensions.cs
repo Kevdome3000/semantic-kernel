@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -8,18 +10,20 @@ using System.Reflection;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Text;
+using AI;
+using Extensions.DependencyInjection;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
+using Text;
 
-namespace Microsoft.SemanticKernel;
 
 /// <summary>Extension methods for interacting with <see cref="Kernel"/>.</summary>
 public static class KernelExtensions
 {
+
+
     #region CreateFunctionFromMethod
+
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via a delegate.
     /// </summary>
@@ -42,6 +46,7 @@ public static class KernelExtensions
 
         return KernelFunctionFactory.CreateFromMethod(method.Method, method.Target, functionName, description, parameters, returnParameter, kernel.LoggerFactory);
     }
+
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
@@ -68,10 +73,14 @@ public static class KernelExtensions
 
         return KernelFunctionFactory.CreateFromMethod(method, target, functionName, description, parameters, returnParameter, kernel.LoggerFactory);
     }
+
     #endregion
 
+
     #region CreateFunctionFromPrompt
+
     // TODO: Revise these CreateFunctionFromPrompt method XML comments
+
 
     /// <summary>
     /// Creates a string-to-string prompt function, with no direct support for input context.
@@ -98,6 +107,7 @@ public static class KernelExtensions
         return KernelFunctionFactory.CreateFromPrompt(promptTemplate, executionSettings, functionName, description, promptTemplateFactory, kernel.LoggerFactory);
     }
 
+
     /// <summary>
     /// Creates a prompt function passing in the definition in natural language, i.e. the prompt template.
     /// </summary>
@@ -114,6 +124,7 @@ public static class KernelExtensions
 
         return KernelFunctionFactory.CreateFromPrompt(promptConfig, promptTemplateFactory, kernel.LoggerFactory);
     }
+
 
     /// <summary>
     /// Allow to define a prompt function passing in the definition in natural language, i.e. the prompt template.
@@ -133,9 +144,12 @@ public static class KernelExtensions
 
         return KernelFunctionFactory.CreateFromPrompt(promptTemplate, promptConfig, kernel.LoggerFactory);
     }
+
     #endregion
 
+
     #region CreatePluginFromType
+
     /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/>.</summary>
     /// <typeparam name="T">Specifies the type of the object to wrap.</typeparam>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
@@ -151,9 +165,12 @@ public static class KernelExtensions
 
         return KernelPluginFactory.CreateFromType<T>(pluginName, kernel.Services);
     }
+
     #endregion
 
+
     #region CreatePluginFromObject
+
     /// <summary>Creates a plugin that wraps the specified target object.</summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="target">The instance of the class to be wrapped.</param>
@@ -169,9 +186,12 @@ public static class KernelExtensions
 
         return KernelPluginFactory.CreateFromObject(target, pluginName, kernel.LoggerFactory);
     }
+
     #endregion
 
+
     #region ImportPlugin/AddFromType
+
     /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/> and imports it into the <paramref name="kernel"/>'s plugin collection.</summary>
     /// <typeparam name="T">Specifies the type of the object to wrap.</typeparam>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
@@ -187,6 +207,7 @@ public static class KernelExtensions
         kernel.Plugins.Add(plugin);
         return plugin;
     }
+
 
     /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/> and adds it into the plugin collection.</summary>
     /// <typeparam name="T">Specifies the type of the object to wrap.</typeparam>
@@ -207,6 +228,7 @@ public static class KernelExtensions
         return plugin;
     }
 
+
     /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/> and adds it into the plugin collection.</summary>
     /// <typeparam name="T">Specifies the type of the object to wrap.</typeparam>
     /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
@@ -225,6 +247,7 @@ public static class KernelExtensions
         return plugins;
     }
 
+
     /// <summary>Adds the <paramref name="plugin"/> to the <paramref name="plugins"/>.</summary>
     /// <param name="plugins">The plugin collection to which the plugin should be added.</param>
     /// <param name="plugin">The plugin to add.</param>
@@ -238,9 +261,12 @@ public static class KernelExtensions
 
         return plugins;
     }
+
     #endregion
 
+
     #region ImportPlugin/AddFromObject
+
     /// <summary>Creates a plugin that wraps the specified target object and imports it into the <paramref name="kernel"/>'s plugin collection.</summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="target">The instance of the class to be wrapped.</param>
@@ -256,6 +282,7 @@ public static class KernelExtensions
         kernel.Plugins.Add(plugin);
         return plugin;
     }
+
 
     /// <summary>Creates a plugin that wraps the specified target object and adds it into the plugin collection.</summary>
     /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
@@ -276,6 +303,7 @@ public static class KernelExtensions
         return plugin;
     }
 
+
     /// <summary>Creates a plugin that wraps the specified target object and adds it into the plugin collection.</summary>
     /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
     /// <param name="target">The instance of the class to be wrapped.</param>
@@ -293,9 +321,12 @@ public static class KernelExtensions
 
         return plugins;
     }
+
     #endregion
 
+
     #region CreatePluginFromDirectory
+
     /// <summary>Creates a plugin containing one function per child directory of the specified <paramref name="pluginDirectory"/>.</summary>
     /// <remarks>
     /// <para>
@@ -338,6 +369,7 @@ public static class KernelExtensions
         return CreatePluginFromPromptDirectory(pluginDirectory, pluginName, promptTemplateFactory, kernel.Services);
     }
 
+
     /// <summary>Creates a plugin containing one function per child directory of the specified <paramref name="pluginDirectory"/>.</summary>
     private static KernelPlugin CreatePluginFromPromptDirectory(
         string pluginDirectory,
@@ -364,6 +396,7 @@ public static class KernelExtensions
 
             // Continue only if prompt template exists
             var promptPath = Path.Combine(functionDirectory, PromptFile);
+
             if (!File.Exists(promptPath))
             {
                 continue;
@@ -371,9 +404,7 @@ public static class KernelExtensions
 
             // Load prompt configuration. Note: the configuration is optional.
             var configPath = Path.Combine(functionDirectory, ConfigFile);
-            var promptConfig = File.Exists(configPath) ?
-                PromptTemplateConfig.FromJson(File.ReadAllText(configPath)) :
-                new PromptTemplateConfig();
+            var promptConfig = File.Exists(configPath) ? PromptTemplateConfig.FromJson(File.ReadAllText(configPath)) : new PromptTemplateConfig();
             promptConfig.Name = functionName;
 
             if (logger.IsEnabled(LogLevel.Trace))
@@ -395,9 +426,12 @@ public static class KernelExtensions
 
         return plugin;
     }
+
     #endregion
 
+
     #region ImportPlugin/AddFromPromptDirectory
+
     /// <summary>
     /// Creates a plugin containing one function per child directory of the specified <paramref name="pluginDirectory"/>
     /// and imports it into the <paramref name="kernel"/>'s plugin collection.
@@ -442,6 +476,7 @@ public static class KernelExtensions
         kernel.Plugins.Add(plugin);
         return plugin;
     }
+
 
     /// <summary>
     /// Creates a plugin containing one function per child directory of the specified <paramref name="pluginDirectory"/>
@@ -490,9 +525,12 @@ public static class KernelExtensions
 
         return plugins;
     }
+
     #endregion
 
+
     #region InvokePromptAsync
+
     /// <summary>
     /// Invokes a prompt specified via a prompt template.
     /// </summary>
@@ -522,9 +560,12 @@ public static class KernelExtensions
 
         return kernel.InvokeAsync(function, arguments);
     }
+
     #endregion
 
+
     #region InvokePromptStreamingAsync
+
     /// <summary>
     /// Invokes a prompt specified via a prompt template and streams its results.
     /// </summary>
@@ -558,9 +599,12 @@ public static class KernelExtensions
 
         return function.InvokeStreamingAsync<StreamingContentBase>(kernel, arguments, cancellationToken);
     }
+
     #endregion
 
+
     #region InvokeAsync<T>
+
     /// <summary>
     /// Invokes the<see cref="KernelFunction"/>.
     /// </summary>
@@ -580,6 +624,7 @@ public static class KernelExtensions
         KernelArguments? arguments = null,
         CancellationToken cancellationToken = default)
         => (await kernel.InvokeAsync(function, arguments, cancellationToken).ConfigureAwait(false)).GetValue<TResult>();
+
 
     /// <summary>
     /// Invokes a function from <see cref="Kernel.Plugins"/> using the specified arguments.
@@ -604,9 +649,12 @@ public static class KernelExtensions
         KernelArguments? arguments = null,
         CancellationToken cancellationToken = default)
         => (await kernel.InvokeAsync(pluginName, functionName, arguments, cancellationToken).ConfigureAwait(false)).GetValue<TResult>();
+
     #endregion
 
+
     #region AddKernel for IServiceCollection
+
     /// <summary>Adds a <see cref="KernelPluginCollection"/> and <see cref="Kernel"/> services to the services collection.</summary>
     /// <param name="services">The service collection.</param>
     /// <returns>
@@ -635,5 +683,8 @@ public static class KernelExtensions
         // to the IServiceCollection.
         return new KernelBuilder(services);
     }
+
     #endregion
+
+
 }

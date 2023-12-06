@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel;
+
 using System;
 using System.Collections.Generic;
-using Microsoft.Extensions.DependencyInjection;
+using Extensions.DependencyInjection;
 
-namespace Microsoft.SemanticKernel;
 
 /// <summary>Provides a builder for constructing instances of <see cref="Kernel"/>.</summary>
 public sealed class KernelBuilder : IKernelBuilder

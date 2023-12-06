@@ -8,11 +8,13 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Events;
 using RepoUtils;
 
+
 // ReSharper disable once InconsistentNaming
 public static class Example57_KernelHooks
 {
     private static string? s_openAIModelId;
     private static string? s_openAIApiKey;
+
 
     public static async Task RunAsync()
     {
@@ -37,6 +39,7 @@ public static class Example57_KernelHooks
 
         await AfterInvokeCancellationAsync();
     }
+
 
     private static async Task GetUsageAsync()
     {
@@ -83,6 +86,7 @@ public static class Example57_KernelHooks
         Console.WriteLine($"Function Result: {result.GetValue<string>()}");
     }
 
+
     private static async Task GetRenderedPromptAsync()
     {
         Console.WriteLine("\n======== Get Rendered Prompt ========\n");
@@ -122,14 +126,15 @@ public static class Example57_KernelHooks
         Console.WriteLine($"Function Result: {result.GetValue<string>()}");
     }
 
+
     private static async Task ChangingResultAsync()
     {
         Console.WriteLine("\n======== Changing/Filtering Function Result ========\n");
 
         Kernel kernel = new KernelBuilder()
             .AddOpenAIChatCompletion(
-               modelId: s_openAIModelId!,
-               apiKey: s_openAIApiKey!)
+                modelId: s_openAIModelId!,
+                apiKey: s_openAIApiKey!)
             .Build();
 
         const string FunctionPrompt = "Write a paragraph about Handlers.";
@@ -156,14 +161,15 @@ public static class Example57_KernelHooks
         Console.WriteLine($"Function Result: {result.GetValue<string>()}");
     }
 
+
     private static async Task BeforeInvokeCancellationAsync()
     {
         Console.WriteLine("\n======== Cancelling Pipeline Execution - Invoking event ========\n");
 
         Kernel kernel = new KernelBuilder()
             .AddOpenAIChatCompletion(
-               modelId: s_openAIModelId!,
-               apiKey: s_openAIApiKey!)
+                modelId: s_openAIModelId!,
+                apiKey: s_openAIApiKey!)
             .Build();
 
         const string FunctionPrompt = "Write a paragraph about: Cancellation.";
@@ -191,14 +197,15 @@ public static class Example57_KernelHooks
         Console.WriteLine($"Function Invocation Times: {functionInvokedCount}");
     }
 
+
     private static async Task AfterInvokeCancellationAsync()
     {
         Console.WriteLine("\n======== Cancelling Pipeline Execution - Invoked event ========\n");
 
         Kernel kernel = new KernelBuilder()
             .AddOpenAIChatCompletion(
-               modelId: s_openAIModelId!,
-               apiKey: s_openAIApiKey!)
+                modelId: s_openAIModelId!,
+                apiKey: s_openAIApiKey!)
             .Build();
 
         int functionInvokingCount = 0;

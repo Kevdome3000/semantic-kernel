@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 
+
 /**
  * These examples show how to use HttpClient and HttpClientFactory within SK SDK.
  */
@@ -26,6 +27,7 @@ public static class Example41_HttpClientUsage
         return Task.CompletedTask;
     }
 
+
     /// <summary>
     /// Demonstrates the usage of the default HttpClient provided by the SK SDK.
     /// </summary>
@@ -37,6 +39,7 @@ public static class Example41_HttpClientUsage
                 apiKey: TestConfiguration.OpenAI.ApiKey) // If you need to use the default HttpClient from the SK SDK, simply omit the argument for the httpMessageInvoker parameter.
             .Build();
     }
+
 
     /// <summary>
     /// Demonstrates the usage of a custom HttpClient.
@@ -53,6 +56,7 @@ public static class Example41_HttpClientUsage
                 httpClient: httpClient)
             .Build();
     }
+
 
     /// <summary>
     /// Demonstrates the "basic usage" approach for HttpClientFactory.
@@ -75,6 +79,7 @@ public static class Example41_HttpClientUsage
                 .Build();
         });
     }
+
 
     /// <summary>
     /// Demonstrates the "named clients" approach for HttpClientFactory.

@@ -7,6 +7,7 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
+
 /**
  * The following example shows how to use Semantic Kernel with multiple streaming chat completion results.
  */
@@ -21,6 +22,7 @@ public static class Example45_MultiStreamingChatCompletion
         await OpenAIMultiStreamingChatCompletionAsync();
     }
 
+
     private static async Task AzureOpenAIMultiStreamingChatCompletionAsync()
     {
         Console.WriteLine("======== Azure OpenAI - Multiple Chat Completions - Raw Streaming ========");
@@ -34,6 +36,7 @@ public static class Example45_MultiStreamingChatCompletion
         await StreamingChatCompletionAsync(chatCompletionService, 3);
     }
 
+
     private static async Task OpenAIMultiStreamingChatCompletionAsync()
     {
         Console.WriteLine("======== OpenAI - Multiple Chat Completions - Raw Streaming ========");
@@ -45,13 +48,15 @@ public static class Example45_MultiStreamingChatCompletion
         await StreamingChatCompletionAsync(chatCompletionService, 3);
     }
 
+
     /// <summary>
     /// Streams the results of a chat completion request to the console.
     /// </summary>
     /// <param name="chatCompletionService">Chat completion service to use</param>
     /// <param name="numResultsPerPrompt">Number of results to get for each chat completion request</param>
-    private static async Task StreamingChatCompletionAsync(IChatCompletionService chatCompletionService,
-                                                           int numResultsPerPrompt)
+    private static async Task StreamingChatCompletionAsync(
+        IChatCompletionService chatCompletionService,
+        int numResultsPerPrompt)
     {
         var executionSettings = new OpenAIPromptExecutionSettings()
         {
@@ -79,11 +84,15 @@ public static class Example45_MultiStreamingChatCompletion
         Console.WriteLine();
     }
 
+
     /// <summary>
     /// Does the actual streaming and display of the chat completion.
     /// </summary>
-    private static async Task ProcessStreamAsyncEnumerableAsync(IChatCompletionService chatCompletionService, string prompt,
-                                                                OpenAIPromptExecutionSettings executionSettings, int consoleLinesPerResult)
+    private static async Task ProcessStreamAsyncEnumerableAsync(
+        IChatCompletionService chatCompletionService,
+        string prompt,
+        OpenAIPromptExecutionSettings executionSettings,
+        int consoleLinesPerResult)
     {
         var messagesPerChoice = new Dictionary<int, string>();
         var chatHistory = new ChatHistory(prompt);
@@ -111,6 +120,7 @@ public static class Example45_MultiStreamingChatCompletion
             Console.Write(messagesPerChoice[chatUpdate.ChoiceIndex]);
         }
     }
+
 
     /// <summary>
     /// Add enough new lines to clear the console window.

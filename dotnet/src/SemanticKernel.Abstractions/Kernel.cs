@@ -60,6 +60,7 @@ public sealed class Kernel
 
         // Store the provided plugins. If there weren't any, look in DI to see if there's a plugin collection.
         this._plugins = plugins ?? this.Services.GetService<KernelPluginCollection>();
+
         if (this._plugins is null)
         {
             // Otherwise, enumerate any plugins that may have been registered directly.
