@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.UnitTests.Utilities;
+
 using System;
 using System.ComponentModel;
 using System.Globalization;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Utilities;
 
 public class InternalTypeConverterTests
 {
@@ -20,6 +21,7 @@ public class InternalTypeConverterTests
         // Assert
         Assert.Equal(expectedString, result);
     }
+
 
     [Fact]
     public void ItCanConvertManyTypes()
@@ -110,6 +112,7 @@ public class InternalTypeConverterTests
         Assert.Null(InternalTypeConverter.ConvertToString((string?)null, culture));
     }
 
+
     [Fact]
     public void ItCallsCustomConverterSpecifiedByTypeConverterAttribute()
     {
@@ -124,15 +127,18 @@ public class InternalTypeConverterTests
         Assert.Equal("4", result);
     }
 
+
 #pragma warning disable CA1812 // Instantiated by reflection
     private sealed class MyCustomTypeConverter : TypeConverter
     {
         public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType)
             => destinationType == typeof(string);
 
+
         public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
             => ((MyCustomType)value!).Value.ToString(culture);
     }
+
 
     [TypeConverter(typeof(MyCustomTypeConverter))]
     private sealed class MyCustomType

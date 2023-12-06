@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.UnitTests.TemplateEngine;
+
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.SemanticKernel;
@@ -7,16 +9,17 @@ using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.TemplateEngine;
 
 public class TemplateTokenizerTests
 {
     private readonly TemplateTokenizer _target;
 
+
     public TemplateTokenizerTests()
     {
         this._target = new TemplateTokenizer();
     }
+
 
     [Theory]
     [InlineData(null, BlockTypes.Text)]
@@ -41,6 +44,7 @@ public class TemplateTokenizerTests
         Assert.Single(blocks);
         Assert.Equal(type, blocks[0].Type);
     }
+
 
     [Theory]
     [InlineData("", BlockTypes.Text)]
@@ -73,6 +77,7 @@ public class TemplateTokenizerTests
         Assert.Equal(type, blocks[0].Type);
     }
 
+
     [Theory]
     [InlineData(null, 1)]
     [InlineData("", 1)]
@@ -88,6 +93,7 @@ public class TemplateTokenizerTests
         // Assert
         Assert.Equal(blockCount, blocks.Count);
     }
+
 
     [Fact]
     public void ItTokenizesEdgeCasesCorrectly1()
@@ -112,6 +118,7 @@ public class TemplateTokenizerTests
         Assert.Equal("{{", blocks1[0].Content);
         Assert.Equal("a", blocks1[1].Content);
     }
+
 
     [Fact]
     public void ItTokenizesEdgeCasesCorrectly2()
@@ -141,6 +148,7 @@ public class TemplateTokenizerTests
         Assert.Equal(BlockTypes.Text, blocks[4].Type);
     }
 
+
     [Fact]
     public void ItTokenizesEdgeCasesCorrectly3()
     {
@@ -169,6 +177,7 @@ public class TemplateTokenizerTests
         Assert.Equal(BlockTypes.Text, blocks[4].Type);
     }
 
+
     [Theory]
     [InlineData("{{a$}}")]
     [InlineData("{{a$a}}")]
@@ -189,6 +198,7 @@ public class TemplateTokenizerTests
         Assert.Equal(BlockTypes.Code, blocks[0].Type);
         Assert.Equal(template.Substring(2, template.Length - 4).Trim(), blocks[0].Content);
     }
+
 
     [Fact]
     public void ItTokenizesATypicalPrompt()
@@ -228,6 +238,7 @@ public class TemplateTokenizerTests
         Assert.Equal(BlockTypes.Code, blocks[7].Type);
     }
 
+
     [Fact]
     public void ItTokenizesAFunctionCallWithMultipleArguments()
     {
@@ -247,6 +258,7 @@ public class TemplateTokenizerTests
         Assert.Equal(BlockTypes.Code, blocks[1].Type);
     }
 
+
     [Fact]
     public void ItThrowsWhenCodeBlockStartsWithNamedArg()
     {
@@ -261,6 +273,7 @@ public class TemplateTokenizerTests
         });
         Assert.Equal("Code tokenizer returned an incorrect first token type NamedArg", ex.Message);
     }
+
 
     [Fact]
     public void ItRendersVariables1()
@@ -366,6 +379,7 @@ public class TemplateTokenizerTests
         Assert.Equal(BlockTypes.Code, blocks[9].Type);
         Assert.Equal(BlockTypes.Code, renderedBlocks[9].Type);
     }
+
 
     private static List<Block> RenderBlocks(IList<Block> blocks, KernelArguments? arguments = null)
     {

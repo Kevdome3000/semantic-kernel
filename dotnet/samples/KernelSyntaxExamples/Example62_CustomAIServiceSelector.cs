@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Services;
 using RepoUtils;
 
+
 // ReSharper disable once InconsistentNaming
 public static class Example62_CustomAIServiceSelector
 {
@@ -61,6 +62,7 @@ public static class Example62_CustomAIServiceSelector
         Console.WriteLine(result.GetValue<string>());
     }
 
+
     /// <summary>
     /// Custom AI service selector that selects a GPT model.
     /// This selector just naively selects the first service that provides
@@ -76,6 +78,7 @@ public static class Example62_CustomAIServiceSelector
                 // Find the first service that has a model id that starts with "gpt"
                 var serviceModelId = service.GetModelId();
                 var endpoint = service.GetEndpoint();
+
                 if (!string.IsNullOrEmpty(serviceModelId) && serviceModelId.StartsWith("gpt", StringComparison.OrdinalIgnoreCase))
                 {
                     Console.WriteLine($"Selected model: {serviceModelId} {endpoint}");

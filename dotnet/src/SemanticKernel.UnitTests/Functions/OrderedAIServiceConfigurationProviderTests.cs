@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.UnitTests.Functions;
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -11,7 +13,6 @@ using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.Services;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Functions;
 
 public class OrderedAIServiceConfigurationProviderTests
 {
@@ -27,6 +28,7 @@ public class OrderedAIServiceConfigurationProviderTests
         // Assert
         Assert.Throws<KernelException>(() => serviceSelector.SelectAIService<ITextGenerationService>(kernel, function, new KernelArguments()));
     }
+
 
     [Fact]
     public void ItGetsAIServiceConfigurationForSingleAIService()
@@ -47,6 +49,7 @@ public class OrderedAIServiceConfigurationProviderTests
         Assert.Null(defaultExecutionSettings);
     }
 
+
     [Fact]
     public void ItGetsAIServiceConfigurationForSingleTextGeneration()
     {
@@ -65,6 +68,7 @@ public class OrderedAIServiceConfigurationProviderTests
         Assert.NotNull(aiService);
         Assert.Null(defaultExecutionSettings);
     }
+
 
     [Fact]
     public void ItGetsAIServiceConfigurationForTextGenerationByServiceId()
@@ -88,6 +92,7 @@ public class OrderedAIServiceConfigurationProviderTests
         Assert.Equal(executionSettings, defaultExecutionSettings);
     }
 
+
     [Fact]
     public void ItThrowsAnSKExceptionForNotFoundService()
     {
@@ -106,6 +111,7 @@ public class OrderedAIServiceConfigurationProviderTests
         // Assert
         Assert.Throws<KernelException>(() => serviceSelector.SelectAIService<ITextGenerationService>(kernel, function, new KernelArguments()));
     }
+
 
     [Fact]
     public void ItUsesDefaultServiceForNoExecutionSettings()
@@ -126,6 +132,7 @@ public class OrderedAIServiceConfigurationProviderTests
         Assert.Equal(kernel.GetRequiredService<ITextGenerationService>("service2"), aiService);
         Assert.Null(defaultExecutionSettings);
     }
+
 
     [Fact]
     public void ItUsesDefaultServiceAndSettingsForDefaultExecutionSettings()
@@ -149,6 +156,7 @@ public class OrderedAIServiceConfigurationProviderTests
         Assert.Equal(executionSettings, defaultExecutionSettings);
     }
 
+
     [Fact]
     public void ItUsesDefaultServiceAndSettingsEmptyServiceId()
     {
@@ -170,6 +178,7 @@ public class OrderedAIServiceConfigurationProviderTests
         Assert.Equal(executionSettings, defaultExecutionSettings);
     }
 
+
     [Theory]
     [InlineData(new string[] { "service1" }, "service1")]
     [InlineData(new string[] { "service2" }, "service2")]
@@ -186,6 +195,7 @@ public class OrderedAIServiceConfigurationProviderTests
             c.AddKeyedSingleton<ITextGenerationService>("service3", new TextGenerationService("model_id_3"));
         }).Build();
         var executionSettings = new List<PromptExecutionSettings>();
+
         foreach (var serviceId in serviceIds)
         {
             executionSettings.Add(new PromptExecutionSettings() { ServiceId = serviceId });
@@ -198,11 +208,13 @@ public class OrderedAIServiceConfigurationProviderTests
 
         // Assert
         Assert.Equal(kernel.GetRequiredService<ITextGenerationService>(expectedServiceId), aiService);
+
         if (!string.IsNullOrEmpty(defaultExecutionSettings!.ServiceId))
         {
             Assert.Equal(expectedServiceId, defaultExecutionSettings!.ServiceId);
         }
     }
+
 
     [Fact]
     public void ItGetsAIServiceConfigurationForTextGenerationByModelId()
@@ -227,11 +239,14 @@ public class OrderedAIServiceConfigurationProviderTests
         Assert.Equal(executionSettings, defaultExecutionSettings);
     }
 
+
     #region private
+
     private sealed class AIService : IAIService
     {
         public IReadOnlyDictionary<string, object?> Attributes => new Dictionary<string, object?>();
     }
+
 
     private sealed class TextGenerationService : ITextGenerationService
     {
@@ -239,20 +254,26 @@ public class OrderedAIServiceConfigurationProviderTests
 
         private readonly Dictionary<string, object?> _attributes = new();
 
+
         public TextGenerationService(string modelId)
         {
             this._attributes.Add("ModelId", modelId);
         }
+
 
         public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
+
         public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
     }
+
     #endregion
+
+
 }

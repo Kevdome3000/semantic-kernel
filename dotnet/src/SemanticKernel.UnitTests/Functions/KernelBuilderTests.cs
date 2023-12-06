@@ -141,11 +141,13 @@ public class KernelBuilderTests
         Assert.Same(selector, kernel.GetRequiredService<IAIServiceSelector>());
     }
 
+
     private sealed class NopServiceSelector : IAIServiceSelector
     {
         (T?, PromptExecutionSettings?) IAIServiceSelector.SelectAIService<T>(Kernel kernel, KernelFunction function, KernelArguments arguments) where T : class =>
             throw new NotImplementedException();
     }
+
 
     [Fact]
     public void ItPropagatesPluginsToBuiltKernel()

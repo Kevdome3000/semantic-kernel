@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel;
+
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI;
+using AI;
 
-namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Sponsor class for extension methods for <see cref="KernelFunction"/>.

@@ -52,10 +52,10 @@ public static class Example18_DallE
 
         IChatCompletionService chatGPT = kernel.GetRequiredService<IChatCompletionService>();
         var chatHistory = new ChatHistory(
-           "You're chatting with a user. Instead of replying directly to the user" +
-           " provide the description of an image that expresses what you want to say." +
-           " The user won't see your message, they will see only the image. The system " +
-           " generates an image using your description, so it's important you describe the image with details.");
+            "You're chatting with a user. Instead of replying directly to the user" +
+            " provide the description of an image that expresses what you want to say." +
+            " The user won't see your message, they will see only the image. The system " +
+            " generates an image using your description, so it's important you describe the image with details.");
 
         var msg = "Hi, I'm from Tokyo, where are you from?";
         chatHistory.AddUserMessage(msg);

@@ -1,16 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel;
+
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.TemplateEngine;
-using Microsoft.SemanticKernel.TemplateEngine.Blocks;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
+using TemplateEngine;
+using TemplateEngine.Blocks;
 
-namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Given a prompt, that might contain references to variables and functions:
@@ -41,18 +42,22 @@ public sealed class KernelPromptTemplate : IPromptTemplate
         this._tokenizer = new TemplateTokenizer(this._loggerFactory);
     }
 
+
     /// <inheritdoc/>
     public Task<string> RenderAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
     {
         return this.RenderAsync(this._blocks.Value, kernel, arguments, cancellationToken);
     }
 
+
     #region private
+
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger _logger;
     private readonly PromptTemplateConfig _promptModel;
     private readonly TemplateTokenizer _tokenizer;
     private readonly Lazy<List<Block>> _blocks;
+
 
     /// <summary>
     /// Given a prompt template string, extract all the blocks (text, variables, function calls)
@@ -79,6 +84,7 @@ public sealed class KernelPromptTemplate : IPromptTemplate
         return blocks;
     }
 
+
     /// <summary>
     /// Given a list of blocks render each block and compose the final result.
     /// </summary>
@@ -92,6 +98,7 @@ public sealed class KernelPromptTemplate : IPromptTemplate
         this._logger.LogTrace("Rendering list of {0} blocks", blocks.Count);
 
         var result = new StringBuilder();
+
         foreach (var block in blocks)
         {
             switch (block)
@@ -120,4 +127,6 @@ public sealed class KernelPromptTemplate : IPromptTemplate
     }
 
     #endregion
+
+
 }

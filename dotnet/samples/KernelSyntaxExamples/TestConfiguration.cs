@@ -5,20 +5,24 @@ using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Configuration;
 using Reliability;
 
+
 public sealed class TestConfiguration
 {
     private readonly IConfigurationRoot _configRoot;
     private static TestConfiguration? s_instance;
+
 
     private TestConfiguration(IConfigurationRoot configRoot)
     {
         this._configRoot = configRoot;
     }
 
+
     public static void Initialize(IConfigurationRoot configRoot)
     {
         s_instance = new TestConfiguration(configRoot);
     }
+
 
     public static OpenAIConfig OpenAI => LoadSection<OpenAIConfig>();
     public static AzureOpenAIConfig AzureOpenAI => LoadSection<AzureOpenAIConfig>();
@@ -39,6 +43,7 @@ public sealed class TestConfiguration
     public static KustoConfig Kusto => LoadSection<KustoConfig>();
     public static MongoDBConfig MongoDB => LoadSection<MongoDBConfig>();
 
+
     private static T LoadSection<T>([CallerMemberName] string? caller = null)
     {
         if (s_instance == null)
@@ -52,8 +57,9 @@ public sealed class TestConfiguration
             throw new ArgumentNullException(nameof(caller));
         }
         return s_instance._configRoot.GetSection(caller).Get<T>() ??
-            throw new ConfigurationNotFoundException(section: caller);
+               throw new ConfigurationNotFoundException(section: caller);
     }
+
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor.
     public class OpenAIConfig
@@ -63,6 +69,7 @@ public sealed class TestConfiguration
         public string EmbeddingModelId { get; set; }
         public string ApiKey { get; set; }
     }
+
 
     public class AzureOpenAIConfig
     {
@@ -76,12 +83,14 @@ public sealed class TestConfiguration
         public string ApiKey { get; set; }
     }
 
+
     public class AzureOpenAIEmbeddingsConfig
     {
         public string DeploymentName { get; set; }
         public string Endpoint { get; set; }
         public string ApiKey { get; set; }
     }
+
 
     public class AzureAISearchConfig
     {
@@ -90,11 +99,13 @@ public sealed class TestConfiguration
         public string IndexName { get; set; }
     }
 
+
     public class QdrantConfig
     {
         public string Endpoint { get; set; }
         public string Port { get; set; }
     }
+
 
     public class WeaviateConfig
     {
@@ -104,6 +115,7 @@ public sealed class TestConfiguration
         public string ApiKey { get; set; }
     }
 
+
     public class KeyVaultConfig
     {
         public string Endpoint { get; set; }
@@ -111,11 +123,13 @@ public sealed class TestConfiguration
         public string ClientSecret { get; set; }
     }
 
+
     public class HuggingFaceConfig
     {
         public string ApiKey { get; set; }
         public string ModelId { get; set; }
     }
+
 
     public class PineconeConfig
     {
@@ -123,10 +137,12 @@ public sealed class TestConfiguration
         public string Environment { get; set; }
     }
 
+
     public class BingConfig
     {
         public string ApiKey { get; set; }
     }
+
 
     public class GoogleConfig
     {
@@ -134,20 +150,24 @@ public sealed class TestConfiguration
         public string SearchEngineId { get; set; }
     }
 
+
     public class GithubConfig
     {
         public string PAT { get; set; }
     }
+
 
     public class PostgresConfig
     {
         public string ConnectionString { get; set; }
     }
 
+
     public class RedisConfig
     {
         public string Configuration { get; set; }
     }
+
 
     public class JiraConfig
     {
@@ -156,20 +176,24 @@ public sealed class TestConfiguration
         public string Domain { get; set; }
     }
 
+
     public class ChromaConfig
     {
         public string Endpoint { get; set; }
     }
+
 
     public class KustoConfig
     {
         public string ConnectionString { get; set; }
     }
 
+
     public class MongoDBConfig
     {
         public string ConnectionString { get; set; }
     }
+
 
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor.
 }

@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.UnitTests.PromptTemplate;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -8,11 +10,10 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
-using SemanticKernel.UnitTests.XunitHelpers;
 using Xunit;
 using Xunit.Abstractions;
+using XunitHelpers;
 
-namespace SemanticKernel.UnitTests.PromptTemplate;
 
 public sealed class KernelPromptTemplateTests
 {
@@ -22,6 +23,7 @@ public sealed class KernelPromptTemplateTests
     private readonly ITestOutputHelper _logger;
     private readonly Kernel _kernel;
 
+
     public KernelPromptTemplateTests(ITestOutputHelper testOutputHelper)
     {
         this._logger = testOutputHelper;
@@ -29,6 +31,7 @@ public sealed class KernelPromptTemplateTests
         this._arguments = new KernelArguments(Guid.NewGuid().ToString("X"));
         this._kernel = new Kernel();
     }
+
 
     [Fact]
     public async Task ItRendersVariablesValuesAndFunctionsAsync()
@@ -57,6 +60,7 @@ public sealed class KernelPromptTemplateTests
         Assert.Equal("This is a test template with function that accepts the positional argument 'input' and another one with argument \"c\" and 'd'", renderedPrompt);
     }
 
+
     [Fact]
     public async Task ItThrowsExceptionIfTemplateReferencesFunctionThatIsNotRegisteredAsync()
     {
@@ -70,6 +74,7 @@ public sealed class KernelPromptTemplateTests
         // Act and assert
         await Assert.ThrowsAsync<KeyNotFoundException>(async () => await target.RenderAsync(this._kernel, this._arguments));
     }
+
 
     [Fact]
     public async Task ItInsertsEmptyStringIfNoArgumentProvidedForVariableAsync()
@@ -87,11 +92,15 @@ public sealed class KernelPromptTemplateTests
         Assert.Equal("This is a test template that references variable that does not have argument .", result);
     }
 
+
     [Fact]
     public async Task ItCallsMethodWithEmptyStringAsArgumentIfNoArgumentProvidedForMethodParameterAsync()
     {
         // Arrange
-        string Foo(string input) { return "Result is " + input; }
+        string Foo(string input)
+        {
+            return "Result is " + input;
+        }
 
         this._kernel.Plugins.Add(new KernelPlugin("p", new[] { KernelFunctionFactory.CreateFromMethod(Method(Foo), this, "bar") }));
 
@@ -106,6 +115,7 @@ public sealed class KernelPromptTemplateTests
         Assert.NotNull(result);
         Assert.Equal("This is a test template that references variable that does not have argument. Result is .", result); // There's a space between the last "is" and the full stop.
     }
+
 
     [Fact]
     public async Task ItRendersCodeUsingInputAsync()
@@ -132,6 +142,7 @@ public sealed class KernelPromptTemplateTests
         Assert.Equal("foo-F(INPUT-BAR)-baz", result);
     }
 
+
     [Fact]
     public async Task ItRendersCodeUsingVariablesAsync()
     {
@@ -156,6 +167,7 @@ public sealed class KernelPromptTemplateTests
         // Assert
         Assert.Equal("foo-F(BAR)-baz", result);
     }
+
 
     [Fact]
     public async Task ItRendersCodeUsingNamedVariablesAsync()
@@ -188,6 +200,7 @@ public sealed class KernelPromptTemplateTests
         Assert.Equal("foo-[8/25/2023] Mario (42): \"Let's-a go!\"-baz", result);
     }
 
+
     [Fact]
     public async Task ItHandlesSyntaxErrorsAsync()
     {
@@ -200,6 +213,7 @@ public sealed class KernelPromptTemplateTests
         var result = await Assert.ThrowsAsync<KernelException>(() => target.RenderAsync(this._kernel, this._arguments));
         Assert.Equal($"Named argument values need to be prefixed with a quote or {Symbols.VarPrefix}.", result.Message);
     }
+
 
     [Fact]
     public async Task ItRendersCodeUsingImplicitInputAndNamedVariablesAsync()
@@ -233,6 +247,7 @@ public sealed class KernelPromptTemplateTests
         Assert.Equal("foo-[8/25/2023] Mario (42): \"Let's-a go!\"-baz", result);
     }
 
+
     [Fact]
     public async Task ItRendersAsyncCodeUsingImmutableVariablesAsync()
     {
@@ -246,10 +261,12 @@ public sealed class KernelPromptTemplateTests
         {
             return input;
         }
+
         string MyFunction2Async(string input)
         {
             return "B";
         }
+
         string MyFunction3Async(string myVar)
         {
             return myVar;
@@ -270,6 +287,7 @@ public sealed class KernelPromptTemplateTests
         // Assert
         Assert.Equal("A B C", result);
     }
+
 
     [Fact]
     public async Task ItRendersAsyncCodeUsingVariablesAsync()
@@ -299,6 +317,7 @@ public sealed class KernelPromptTemplateTests
         Assert.Equal("foo-BAR-baz", result);
     }
 
+
     [Fact]
     public async Task RenderVarValuesFunctionWithDiffArgTypesAsync()
     {
@@ -311,13 +330,13 @@ public sealed class KernelPromptTemplateTests
         DayOfWeek expected_e = DayOfWeek.Monday;
 
         KernelFunction func = KernelFunctionFactory.CreateFromMethod((string input, Guid g) =>
-        {
-            Assert.Equal(expected_s, input);
-            Assert.Equal(expected_g, g);
+            {
+                Assert.Equal(expected_s, input);
+                Assert.Equal(expected_g, g);
 
-            return $"string:{input}, Guid:{g}";
-        },
-        "f");
+                return $"string:{input}, Guid:{g}";
+            },
+            "f");
 
         this._kernel.Culture = new CultureInfo("fr-FR"); //In French culture, a comma is used as a decimal separator, and a slash is used as a date separator. See the Assert below.
         this._kernel.Plugins.Add(new KernelPlugin("p", new[] { func }));
@@ -340,6 +359,7 @@ public sealed class KernelPromptTemplateTests
         // Assert
         Assert.Equal("int:42, double:36,6, string:test, Guid:7ac656b1-c917-41c8-9ff5-e8f0eb51fbac, DateTime:05/12/2023 17:52, enum:Monday", result);
     }
+
 
     private static MethodInfo Method(Delegate method)
     {

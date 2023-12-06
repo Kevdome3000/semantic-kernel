@@ -476,7 +476,9 @@ public static class KernelExtensions
 
     #endregion
 
+
     #region InvokeAsync<T>
+
     /// <summary>
     /// Invokes the<see cref="KernelFunction"/>.
     /// </summary>
@@ -496,6 +498,7 @@ public static class KernelExtensions
         KernelArguments? arguments = null,
         CancellationToken cancellationToken = default)
         => (await kernel.InvokeAsync(function, arguments, cancellationToken).ConfigureAwait(false)).GetValue<TResult>();
+
 
     /// <summary>
     /// Invokes a function from <see cref="Kernel.Plugins"/> using the specified arguments.
@@ -520,5 +523,8 @@ public static class KernelExtensions
         KernelArguments? arguments = null,
         CancellationToken cancellationToken = default)
         => (await kernel.InvokeAsync(pluginName, functionName, arguments, cancellationToken).ConfigureAwait(false)).GetValue<TResult>();
+
     #endregion
+
+
 }

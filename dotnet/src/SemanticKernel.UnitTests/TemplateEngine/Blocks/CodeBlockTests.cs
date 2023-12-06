@@ -282,6 +282,7 @@ public class CodeBlockTests
         Assert.Null(result);
     }
 
+
     [Fact]
     public async Task ItReturnsArgumentValueAndTypeAsync()
     {
@@ -293,10 +294,13 @@ public class CodeBlockTests
         var varBlock = new VarBlock("$var");
         var namedArgBlock = new NamedArgBlock("p1=$a1");
 
-        this._kernel.Plugins.Add(new KernelPlugin("p", new[] { KernelFunctionFactory.CreateFromMethod((object p1) =>
+        this._kernel.Plugins.Add(new KernelPlugin("p", new[]
         {
-            canary = p1;
-        }, "f") }));
+            KernelFunctionFactory.CreateFromMethod((object p1) =>
+            {
+                canary = p1;
+            }, "f")
+        }));
 
         // Act
         var functionWithPositionedArgument = new CodeBlock(new List<Block> { funcId, varBlock }, "");
@@ -315,6 +319,7 @@ public class CodeBlockTests
         await variable.RenderCodeAsync(this._kernel, new() { ["var"] = expectedValue });
         Assert.Same(expectedValue, canary);
     }
+
 
     [Fact]
     public async Task ItDoesNotMutateOriginalArgumentsAsync()

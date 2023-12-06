@@ -24,10 +24,12 @@ using Pgvector.Npgsql;
 using RepoUtils;
 using StackExchange.Redis;
 
+
 // ReSharper disable once InconsistentNaming
 public static class Example15_TextMemoryPlugin
 {
     private const string MemoryCollectionName = "aboutMe";
+
 
     public static async Task RunAsync(CancellationToken cancellationToken = default)
     {
@@ -76,11 +78,13 @@ public static class Example15_TextMemoryPlugin
         await RunWithStoreAsync(store, cancellationToken);
     }
 
+
     private static async Task<IMemoryStore> CreateSampleSqliteMemoryStoreAsync()
     {
         IMemoryStore store = await SqliteMemoryStore.ConnectAsync("memories.sqlite");
         return store;
     }
+
 
     private static async Task<IMemoryStore> CreateSampleDuckDbMemoryStoreAsync()
     {
@@ -88,11 +92,13 @@ public static class Example15_TextMemoryPlugin
         return store;
     }
 
+
     private static IMemoryStore CreateSampleMongoDBMemoryStore()
     {
         IMemoryStore store = new MongoDBMemoryStore(TestConfiguration.MongoDB.ConnectionString, "memoryPluginExample");
         return store;
     }
+
 
     private static IMemoryStore CreateSampleAzureAISearchMemoryStore()
     {
@@ -100,11 +106,13 @@ public static class Example15_TextMemoryPlugin
         return store;
     }
 
+
     private static IMemoryStore CreateSampleChromaMemoryStore()
     {
         IMemoryStore store = new ChromaMemoryStore(TestConfiguration.Chroma.Endpoint, ConsoleLogger.LoggerFactory);
         return store;
     }
+
 
     private static IMemoryStore CreateSampleQdrantMemoryStore()
     {
@@ -112,17 +120,20 @@ public static class Example15_TextMemoryPlugin
         return store;
     }
 
+
     private static IMemoryStore CreateSamplePineconeMemoryStore()
     {
         IMemoryStore store = new PineconeMemoryStore(TestConfiguration.Pinecone.Environment, TestConfiguration.Pinecone.ApiKey, ConsoleLogger.LoggerFactory);
         return store;
     }
 
+
     private static IMemoryStore CreateSampleWeaviateMemoryStore()
     {
         IMemoryStore store = new WeaviateMemoryStore(TestConfiguration.Weaviate.Endpoint, TestConfiguration.Weaviate.ApiKey);
         return store;
     }
+
 
     private static async Task<IMemoryStore> CreateSampleRedisMemoryStoreAsync()
     {
@@ -133,6 +144,7 @@ public static class Example15_TextMemoryPlugin
         return store;
     }
 
+
     private static IMemoryStore CreateSamplePostgresMemoryStore()
     {
         NpgsqlDataSourceBuilder dataSourceBuilder = new(TestConfiguration.Postgres.ConnectionString);
@@ -142,12 +154,14 @@ public static class Example15_TextMemoryPlugin
         return store;
     }
 
+
     private static IMemoryStore CreateSampleKustoMemoryStore()
     {
         var connectionString = new Kusto.Data.KustoConnectionStringBuilder(TestConfiguration.Kusto.ConnectionString).WithAadUserPromptAuthentication();
         IMemoryStore store = new KustoMemoryStore(connectionString, "MyDatabase");
         return store;
     }
+
 
     private static async Task RunWithStoreAsync(IMemoryStore memoryStore, CancellationToken cancellationToken)
     {
@@ -231,12 +245,12 @@ public static class Example15_TextMemoryPlugin
         Console.WriteLine("Ask: where did I grow up?");
 
         await foreach (var answer in textMemory.SearchAsync(
-            collection: MemoryCollectionName,
-            query: "where did I grow up?",
-            limit: 2,
-            minRelevanceScore: 0.79,
-            withEmbeddings: true,
-            cancellationToken: cancellationToken))
+                           collection: MemoryCollectionName,
+                           query: "where did I grow up?",
+                           limit: 2,
+                           minRelevanceScore: 0.79,
+                           withEmbeddings: true,
+                           cancellationToken: cancellationToken))
         {
             Console.WriteLine($"Answer: {answer.Metadata.Text}");
         }
@@ -315,6 +329,7 @@ Answer:
 
         Console.WriteLine("Printing Collections in DB...");
         var collections = memoryStore.GetCollectionsAsync(cancellationToken);
+
         await foreach (var collection in collections)
         {
             Console.WriteLine(collection);
@@ -327,6 +342,7 @@ Answer:
 
         Console.WriteLine($"Printing Collections in DB (after removing {MemoryCollectionName})...");
         collections = memoryStore.GetCollectionsAsync(cancellationToken);
+
         await foreach (var collection in collections)
         {
             Console.WriteLine(collection);

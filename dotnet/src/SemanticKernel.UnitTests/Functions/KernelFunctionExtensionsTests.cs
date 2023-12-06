@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.UnitTests.Functions;
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Functions;
 
 public class KernelFunctionExtensionsTests
 {
@@ -22,6 +23,7 @@ public class KernelFunctionExtensionsTests
 
         Assert.Equal(expectedValue, resultValueInvokeSignature2);
     }
+
 
     public class ComplexObjectTestData : IEnumerable<object[]>
     {

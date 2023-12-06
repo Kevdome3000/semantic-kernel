@@ -1,18 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.IntegrationTests;
+
 using System;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
+using Connectors.OpenAI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.PromptTemplate.Handlebars;
-using SemanticKernel.IntegrationTests.Connectors.OpenAI;
-using SemanticKernel.IntegrationTests.TestSettings;
+using TestSettings;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests;
 
 public sealed class PromptTests : IDisposable
 {
@@ -33,6 +34,7 @@ public sealed class PromptTests : IDisposable
         this._kernelBuilder = new KernelBuilder();
     }
 
+
     [Theory]
     [InlineData("SemanticKernel.IntegrationTests.prompts.GenerateStory.yaml", false)]
     [InlineData("SemanticKernel.IntegrationTests.prompts.GenerateStoryHandlebars.yaml", true)]
@@ -50,14 +52,15 @@ public sealed class PromptTests : IDisposable
 
         // Act
         FunctionResult actual = await kernel.InvokeAsync(function, arguments: new()
-            {
-                { "topic", "Dog" },
-                { "length", "3" },
-            });
+        {
+            { "topic", "Dog" },
+            { "length", "3" },
+        });
 
         // Assert
         Assert.Contains("Dog", actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
+
 
     #region private methods
 
@@ -66,16 +69,19 @@ public sealed class PromptTests : IDisposable
     private readonly XunitLogger<Kernel> _logger;
     private readonly RedirectOutput _testOutputHelper;
 
+
     public void Dispose()
     {
         this.Dispose(true);
         GC.SuppressFinalize(this);
     }
 
+
     ~PromptTests()
     {
         this.Dispose(false);
     }
+
 
     private void Dispose(bool disposing)
     {
@@ -85,6 +91,7 @@ public sealed class PromptTests : IDisposable
             this._testOutputHelper.Dispose();
         }
     }
+
 
     private void ConfigureAzureOpenAI(KernelBuilder kernelBuilder)
     {
@@ -103,5 +110,8 @@ public sealed class PromptTests : IDisposable
             apiKey: azureOpenAIConfiguration.ApiKey,
             serviceId: azureOpenAIConfiguration.ServiceId);
     }
+
     #endregion
+
+
 }
