@@ -3,7 +3,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using RepoUtils;
 
 
 /**
@@ -28,8 +27,7 @@ public static class Example20_HuggingFace
         Console.WriteLine("\n======== HuggingFace Inference API example ========\n");
 
         Kernel kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithHuggingFaceTextGeneration(
+            .AddHuggingFaceTextGeneration(
                 model: TestConfiguration.HuggingFace.ModelId,
                 apiKey: TestConfiguration.HuggingFace.ApiKey)
             .Build();
@@ -64,8 +62,7 @@ public static class Example20_HuggingFace
         const string Endpoint = "http://localhost:5000/completions";
 
         Kernel kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithHuggingFaceTextGeneration(
+            .AddHuggingFaceTextGeneration(
                 model: Model,
                 endpoint: Endpoint,
                 apiKey: TestConfiguration.HuggingFace.ApiKey)

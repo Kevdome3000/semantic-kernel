@@ -60,8 +60,7 @@ public static class Example65_HandlebarsPlanner
         }
 
         var kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureOpenAIChatCompletion(
+            .AddAzureOpenAIChatCompletion(
                 deploymentName: chatDeploymentName,
                 modelId: chatModelId,
                 endpoint: endpoint,
@@ -71,11 +70,11 @@ public static class Example65_HandlebarsPlanner
 
         if (pluginDirectoryNames[0] == StringParamsDictionaryPlugin.PluginName)
         {
-            kernel.ImportPluginFromObject(new StringParamsDictionaryPlugin(), StringParamsDictionaryPlugin.PluginName);
+            kernel.ImportPluginFromType<StringParamsDictionaryPlugin>(StringParamsDictionaryPlugin.PluginName);
         }
         else if (pluginDirectoryNames[0] == ComplexParamsDictionaryPlugin.PluginName)
         {
-            kernel.ImportPluginFromObject(new ComplexParamsDictionaryPlugin(), ComplexParamsDictionaryPlugin.PluginName);
+            kernel.ImportPluginFromType<ComplexParamsDictionaryPlugin>(ComplexParamsDictionaryPlugin.PluginName);
         }
         else if (pluginDirectoryNames[0] == CourseraPluginName)
         {

@@ -1,13 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Planners.UnitTests.Handlebars;
-
 using System.ComponentModel;
 using System.Globalization;
 using HandlebarsDotNet;
-using Planning.Handlebars;
+using Microsoft.SemanticKernel.Planning.Handlebars;
 using Xunit;
 
+#pragma warning disable CA1812 // Uninstantiated internal types
+
+namespace Microsoft.SemanticKernel.Planners.UnitTests.Handlebars;
 
 public sealed class HandlebarsTemplateEngineExtensionsTests
 {
@@ -26,7 +27,6 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         Assert.Equal("Hello World!", result);
     }
 
-
     [Fact]
     public void ShouldRenderTemplateWithSystemHelpers()
     {
@@ -41,7 +41,6 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         // Assert
         Assert.Equal("Equal", result);
     }
-
 
     [Fact]
     public void ShouldRenderTemplateWithArrayHelper()
@@ -58,7 +57,6 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         Assert.Equal("123", result);
     }
 
-
     [Fact]
     public void ShouldRenderTemplateWithRangeHelper()
     {
@@ -73,7 +71,6 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         // Assert
         Assert.Equal("12345", result);
     }
-
 
     [Fact]
     public void ShouldRenderTemplateWithConcatHelper()
@@ -90,7 +87,6 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         Assert.Equal("Hello World!", result);
     }
 
-
     [Fact]
     public void ShouldRenderTemplateWithJsonHelper()
     {
@@ -98,9 +94,9 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         var kernel = this.InitializeKernel();
         var template = "{{json person}}";
         var arguments = new KernelArguments
-        {
-            { "person", new { name = "Alice", age = 25 } }
-        };
+            {
+                { "person", new { name = "Alice", age = 25 } }
+            };
 
         // Act
         var result = HandlebarsTemplateEngineExtensions.Render(kernel, template, arguments);
@@ -108,7 +104,6 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         // Assert
         Assert.Equal("{\"name\":\"Alice\",\"age\":25}", result);
     }
-
 
     [Fact]
     public void ShouldRenderTemplateWithMessageHelper()
@@ -125,7 +120,6 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         Assert.Equal("<title~>Hello World!</title~>", result);
     }
 
-
     [Fact]
     public void ShouldRenderTemplateWithRawHelper()
     {
@@ -140,7 +134,6 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         // Assert
         Assert.Equal("{{x}}", result);
     }
-
 
     [Fact]
     public void ShouldRenderTemplateWithSetAndGetHelpers()
@@ -157,7 +150,6 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         Assert.Equal("10", result);
     }
 
-
     [Fact]
     public void ShouldRenderTemplateWithFunctionHelpers()
     {
@@ -165,7 +157,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         var kernel = this.InitializeKernel();
         var template = "Foo {{Foo-Bar}}";
         var arguments = new KernelArguments();
-        kernel.ImportPluginFromObject(new Foo(), "Foo");
+        kernel.ImportPluginFromType<Foo>();
 
         // Act
         var result = HandlebarsTemplateEngineExtensions.Render(kernel, template, arguments);
@@ -174,7 +166,6 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         Assert.Equal("Foo Bar", result);
     }
 
-
     [Fact]
     public void ShouldRenderTemplateWithFunctionHelpersWithPositionalArguments()
     {
@@ -182,7 +173,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         var kernel = this.InitializeKernel();
         var template = "{{Foo-Combine \"Bar\" \"Baz\"}}"; // Use positional arguments instead of hashed arguments
         var arguments = new KernelArguments();
-        kernel.ImportPluginFromObject(new Foo(), "Foo");
+        kernel.ImportPluginFromType<Foo>();
 
         // Act
         var result = HandlebarsTemplateEngineExtensions.Render(kernel, template, arguments);
@@ -191,7 +182,6 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         Assert.Equal("BazBar", result);
     }
 
-
     [Fact]
     public void ShouldRenderTemplateWithFunctionHelpersWitHashArguments()
     {
@@ -199,7 +189,7 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         var kernel = this.InitializeKernel();
         var template = "{{Foo-Combine x=\"Bar\" y=\"Baz\"}}"; // Use positional arguments instead of hashed arguments
         var variables = new KernelArguments();
-        kernel.ImportPluginFromObject(new Foo(), "Foo");
+        kernel.ImportPluginFromType<Foo>();
 
         // Act
         var result = HandlebarsTemplateEngineExtensions.Render(kernel, template, variables);
@@ -208,7 +198,6 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         Assert.Equal("BazBar", result);
     }
 
-
     [Fact]
     public void ShouldThrowExceptionWhenMissingRequiredParameter()
     {
@@ -216,12 +205,11 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         var kernel = this.InitializeKernel();
         var template = "{{Foo-Combine x=\"Bar\"}}";
         var arguments = new KernelArguments();
-        kernel.ImportPluginFromObject(new Foo(), "Foo");
+        kernel.ImportPluginFromType<Foo>();
 
         // Assert
         Assert.Throws<KernelException>(() => HandlebarsTemplateEngineExtensions.Render(kernel, template, arguments));
     }
-
 
     [Fact]
     public void ShouldThrowExceptionWhenFunctionHelperHasInvalidParameterType()
@@ -230,12 +218,11 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         var kernel = this.InitializeKernel();
         var template = "{{Foo-StringifyInt x=\"twelve\"}}";
         var arguments = new KernelArguments();
-        kernel.ImportPluginFromObject(new Foo(), "Foo");
+        kernel.ImportPluginFromType<Foo>();
 
         // Assert
         Assert.Throws<ArgumentOutOfRangeException>(() => HandlebarsTemplateEngineExtensions.Render(kernel, template, arguments));
     }
-
 
     [Fact]
     public void ShouldThrowExceptionWhenFunctionHelperIsNotDefined()
@@ -244,25 +231,21 @@ public sealed class HandlebarsTemplateEngineExtensionsTests
         var kernel = this.InitializeKernel();
         var template = "{{Foo-Random x=\"random\"}}";
         var arguments = new KernelArguments();
-        kernel.ImportPluginFromObject(new Foo(), "Foo");
+        kernel.ImportPluginFromType<Foo>();
 
         // Assert
         Assert.Throws<HandlebarsRuntimeException>(() => HandlebarsTemplateEngineExtensions.Render(kernel, template, arguments));
     }
 
-
     private Kernel InitializeKernel() => new();
-
 
     private sealed class Foo
     {
         [KernelFunction, Description("Return Bar")]
         public string Bar() => "Bar";
 
-
         [KernelFunction, Description("Return words concatenated")]
         public string Combine([Description("First word")] string x, [Description("Second word")] string y) => y + x;
-
 
         [KernelFunction, Description("Return number as string")]
         public string StringifyInt([Description("Number to stringify")] int x) => x.ToString(CultureInfo.InvariantCulture);

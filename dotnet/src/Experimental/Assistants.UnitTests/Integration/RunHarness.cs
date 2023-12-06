@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 #define DISABLEHOST // Comment line to enable
-namespace SemanticKernel.Experimental.Assistants.UnitTests.Integration;
-
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
@@ -11,6 +9,9 @@ using Microsoft.SemanticKernel.Experimental.Assistants;
 using Xunit;
 using Xunit.Abstractions;
 
+#pragma warning disable CA1812 // Uninstantiated internal types
+
+namespace SemanticKernel.Experimental.Assistants.UnitTests.Integration;
 
 /// <summary>
 /// Dev harness for manipulating runs.
@@ -31,7 +32,6 @@ public sealed class RunHarness
 
     private readonly ITestOutputHelper _output;
 
-
     /// <summary>
     /// Test constructor.
     /// </summary>
@@ -39,7 +39,6 @@ public sealed class RunHarness
     {
         this._output = output;
     }
-
 
     /// <summary>
     /// Verify creation of run.
@@ -64,7 +63,6 @@ public sealed class RunHarness
             "That was great!  Tell me another.").ConfigureAwait(true);
     }
 
-
     /// <summary>
     /// Verify creation of run.
     /// </summary>
@@ -87,14 +85,13 @@ public sealed class RunHarness
             "It rains a lot in Seattle.").ConfigureAwait(true);
     }
 
-
     /// <summary>
     /// Verify creation of run.
     /// </summary>
     [Fact(Skip = SkipReason)]
     public async Task VerifyFunctionLifecycleAsync()
     {
-        var gamePlugin = KernelPluginFactory.CreateFromObject<GuessingGame>();
+        var gamePlugin = KernelPluginFactory.CreateFromType<GuessingGame>();
 
         var assistant =
             await new AssistantBuilder()
@@ -114,7 +111,6 @@ public sealed class RunHarness
             "What is the answer?").ConfigureAwait(true);
     }
 
-
     private async Task ChatAsync(IChatThread thread, IAssistant assistant, params string[] messages)
     {
         foreach (var message in messages)
@@ -127,7 +123,6 @@ public sealed class RunHarness
         }
     }
 
-
     private void LogMessages(IEnumerable<IChatMessage> messages)
     {
         foreach (var message in messages)
@@ -135,7 +130,6 @@ public sealed class RunHarness
             this.LogMessage(message);
         }
     }
-
 
     private void LogMessage(IChatMessage message)
     {
@@ -145,7 +139,6 @@ public sealed class RunHarness
         this._output.WriteLine($"# {message.AssistantId}");
     }
 
-
     private sealed class GuessingGame
     {
         /// <summary>
@@ -153,7 +146,6 @@ public sealed class RunHarness
         /// </summary>
         [KernelFunction, Description("Get the guessing game question")]
         public string GetQuestion() => "What color am I thinking of?";
-
 
         /// <summary>
         /// Get the answer

@@ -7,13 +7,12 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
-using Moq;
 using Xunit;
 
 
 public class CodeBlockTests
 {
-    private readonly Kernel _kernel = new(new Mock<IServiceProvider>().Object);
+    private readonly Kernel _kernel = new();
 
 
     [Fact]

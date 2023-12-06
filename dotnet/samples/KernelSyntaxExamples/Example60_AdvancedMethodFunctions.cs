@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 
+#pragma warning disable CA1812 // Uninstantiated internal types
 
 /**
  * This example shows different ways how to define and execute method functions using custom and primitive types.
@@ -19,7 +20,6 @@ public static class Example60_AdvancedMethodFunctions
         await MethodFunctionsChainingAsync();
     }
 
-
     #region Method Functions Chaining
 
     /// <summary>
@@ -29,9 +29,9 @@ public static class Example60_AdvancedMethodFunctions
     {
         Console.WriteLine("Running Method Function Chaining example...");
 
-        var kernel = new KernelBuilder().Build();
+        var kernel = new Kernel();
 
-        var functions = kernel.ImportPluginFromObject<FunctionsChainingPlugin>();
+        var functions = kernel.ImportPluginFromType<FunctionsChainingPlugin>();
 
         var customType = await kernel.InvokeAsync<MyCustomType>(functions["Function1"]);
 
@@ -39,14 +39,12 @@ public static class Example60_AdvancedMethodFunctions
         Console.WriteLine($"CustomType.Text: {customType.Text}"); // From Function1 + From Function2
     }
 
-
     /// <summary>
     /// Plugin example with two method functions, where one function is called from another.
     /// </summary>
     private sealed class FunctionsChainingPlugin
     {
         public const string PluginName = nameof(FunctionsChainingPlugin);
-
 
         [KernelFunction]
         public async Task<MyCustomType> Function1Async(Kernel kernel)
@@ -61,7 +59,6 @@ public static class Example60_AdvancedMethodFunctions
             };
         }
 
-
         [KernelFunction]
         public static MyCustomType Function2()
         {
@@ -74,7 +71,6 @@ public static class Example60_AdvancedMethodFunctions
     }
 
     #endregion
-
 
     #region Custom Type
 
@@ -95,7 +91,6 @@ public static class Example60_AdvancedMethodFunctions
         public string? Text { get; set; }
     }
 
-
     /// <summary>
     /// Implementation of <see cref="TypeConverter"/> for <see cref="MyCustomType"/>.
     /// In this example, object instance is serialized with <see cref="JsonSerializer"/> from System.Text.Json,
@@ -107,7 +102,6 @@ public static class Example60_AdvancedMethodFunctions
     {
         public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType) => true;
 
-
         /// <summary>
         /// This method is used to convert object from string to actual type. This will allow to pass object to
         /// method function which requires it.
@@ -116,7 +110,6 @@ public static class Example60_AdvancedMethodFunctions
         {
             return JsonSerializer.Deserialize<MyCustomType>((string)value);
         }
-
 
         /// <summary>
         /// This method is used to convert actual type to string representation, so it can be passed to AI
@@ -129,6 +122,4 @@ public static class Example60_AdvancedMethodFunctions
     }
 
     #endregion
-
-
 }

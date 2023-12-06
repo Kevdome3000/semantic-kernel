@@ -8,6 +8,8 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Connectors.OpenAI;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.PromptTemplate.Handlebars;
 using TestSettings;
@@ -32,6 +34,7 @@ public sealed class PromptTests : IDisposable
             .Build();
 
         this._kernelBuilder = new KernelBuilder();
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
     }
 
 
@@ -41,7 +44,7 @@ public sealed class PromptTests : IDisposable
     public async Task GenerateStoryTestAsync(string resourceName, bool isHandlebars)
     {
         // Arrange
-        var builder = this._kernelBuilder.WithLoggerFactory(this._logger);
+        var builder = this._kernelBuilder;
         this.ConfigureAzureOpenAI(builder);
         var kernel = builder.Build();
 
@@ -103,7 +106,7 @@ public sealed class PromptTests : IDisposable
         Assert.NotNull(azureOpenAIConfiguration.ApiKey);
         Assert.NotNull(azureOpenAIConfiguration.ServiceId);
 
-        kernelBuilder.WithAzureOpenAITextGeneration(
+        kernelBuilder.AddAzureOpenAITextGeneration(
             deploymentName: azureOpenAIConfiguration.DeploymentName,
             modelId: azureOpenAIConfiguration.ModelId,
             endpoint: azureOpenAIConfiguration.Endpoint,

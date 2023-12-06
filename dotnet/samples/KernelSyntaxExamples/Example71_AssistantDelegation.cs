@@ -35,7 +35,7 @@ public static class Example71_AssistantDelegation
             return;
         }
 
-        var plugin = KernelPluginFactory.CreateFromObject<MenuPlugin>();
+        var plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
 
         var menuAssistant =
             await new AssistantBuilder()

@@ -24,7 +24,7 @@ public class MathPluginTests
     public void ItCanBeImported()
     {
         // Act - Assert no exception occurs e.g. due to reflection
-        Assert.NotNull(KernelPluginFactory.CreateFromObject<MathPlugin>("math"));
+        Assert.NotNull(KernelPluginFactory.CreateFromType<MathPlugin>("math"));
     }
 
 
@@ -95,7 +95,7 @@ public class MathPluginTests
     public async Task AddWhenInvalidInitialValueShouldThrowAsync(string initialValue)
     {
         // Arrange
-        KernelFunction func = KernelPluginFactory.CreateFromObject<MathPlugin>()["Add"];
+        KernelFunction func = KernelPluginFactory.CreateFromType<MathPlugin>()["Add"];
 
         // Act
         var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
@@ -125,7 +125,7 @@ public class MathPluginTests
     public async Task AddWhenInvalidAmountShouldThrowAsync(string amount)
     {
         // Arrange
-        KernelFunction func = KernelPluginFactory.CreateFromObject<MathPlugin>()["Add"];
+        KernelFunction func = KernelPluginFactory.CreateFromType<MathPlugin>()["Add"];
 
         // Act
         var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
@@ -154,7 +154,7 @@ public class MathPluginTests
     public async Task SubtractWhenInvalidInitialValueShouldThrowAsync(string initialValue)
     {
         // Arrange
-        KernelFunction func = KernelPluginFactory.CreateFromObject<MathPlugin>()["Subtract"];
+        KernelFunction func = KernelPluginFactory.CreateFromType<MathPlugin>()["Subtract"];
 
         // Act
         var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
@@ -184,7 +184,7 @@ public class MathPluginTests
     public async Task SubtractAsyncWhenInvalidAmountShouldThrowAsync(string amount)
     {
         // Arrange
-        KernelFunction func = KernelPluginFactory.CreateFromObject<MathPlugin>()["Subtract"];
+        KernelFunction func = KernelPluginFactory.CreateFromType<MathPlugin>()["Subtract"];
 
         // Act
         var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>

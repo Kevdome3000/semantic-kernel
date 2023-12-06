@@ -7,7 +7,6 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.Memory.AzureAISearch;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Plugins.Memory;
-using RepoUtils;
 
 /* The files contains two examples about SK Semantic Memory.
  *
@@ -38,7 +37,6 @@ public static class Example14_SemanticMemory
          */
 
         var memoryWithACS = new MemoryBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAITextEmbeddingGeneration("text-embedding-ada-002", TestConfiguration.OpenAI.ApiKey)
             .WithMemoryStore(new AzureAISearchMemoryStore(TestConfiguration.AzureAISearch.Endpoint, TestConfiguration.AzureAISearch.ApiKey))
             .Build();
@@ -59,7 +57,6 @@ public static class Example14_SemanticMemory
          */
 
         var memoryWithCustomDb = new MemoryBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAITextEmbeddingGeneration("text-embedding-ada-002", TestConfiguration.OpenAI.ApiKey)
             .WithMemoryStore(new VolatileMemoryStore())
             .Build();

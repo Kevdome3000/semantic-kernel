@@ -5,6 +5,7 @@ namespace Microsoft.SemanticKernel.Plugins.Core;
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
 
 /// <summary>
@@ -27,7 +28,8 @@ public sealed class WaitPlugin
     /// Initializes a new instance of the <see cref="WaitPlugin"/> class.
     /// </summary>
     /// <param name="timeProvider">An optional time provider. If not provided, a default time provider will be used.</param>
-    public WaitPlugin(TimeProvider? timeProvider) =>
+    [ActivatorUtilitiesConstructor]
+    public WaitPlugin(TimeProvider? timeProvider = null) =>
         this._timeProvider = timeProvider ?? TimeProvider.System;
 
 

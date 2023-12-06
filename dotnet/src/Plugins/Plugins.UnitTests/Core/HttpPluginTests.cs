@@ -38,7 +38,7 @@ public class HttpPluginTests : IDisposable
     public void ItCanBeImported()
     {
         // Act - Assert no exception occurs e.g. due to reflection
-        Assert.NotNull(KernelPluginFactory.CreateFromObject<HttpPlugin>("http"));
+        Assert.NotNull(KernelPluginFactory.CreateFromType<HttpPlugin>("http"));
     }
 
 
