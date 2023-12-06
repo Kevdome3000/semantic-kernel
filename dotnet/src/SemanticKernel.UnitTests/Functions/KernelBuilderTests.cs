@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
@@ -103,7 +104,7 @@ public class KernelBuilderTests
             .WithLoggerFactory(loggerFactory2)
             .Build();
 
-        Assert.Same(loggerFactory2, kernel.GetService<ILoggerFactory>());
+        Assert.Same(loggerFactory2, kernel.GetRequiredService<ILoggerFactory>());
         Assert.Same(loggerFactory2, kernel.LoggerFactory);
     }
 
@@ -112,10 +113,39 @@ public class KernelBuilderTests
     public void ItDefaultsLoggerFactoryToNullLoggerFactory()
     {
         Kernel kernel = new KernelBuilder().Build();
-        Assert.Same(NullLoggerFactory.Instance, kernel.GetService<ILoggerFactory>());
+        Assert.Throws<KernelException>(() => kernel.GetRequiredService<ILoggerFactory>());
         Assert.Same(NullLoggerFactory.Instance, kernel.LoggerFactory);
     }
 
+
+    [Fact]
+    public void ItDefaultsServiceSelectorToSingleton()
+    {
+        Kernel kernel = new KernelBuilder().Build();
+        Assert.Null(kernel.Services.GetService<IAIServiceSelector>());
+        Assert.NotNull(kernel.ServiceSelector);
+        Assert.Same(kernel.ServiceSelector, kernel.ServiceSelector);
+        Assert.Throws<KernelException>(() => kernel.GetRequiredService<IAIServiceSelector>());
+
+        kernel = new Kernel();
+        Assert.Null(kernel.Services.GetService<IAIServiceSelector>());
+        Assert.NotNull(kernel.ServiceSelector);
+        Assert.Same(kernel.ServiceSelector, kernel.ServiceSelector);
+        Assert.Throws<KernelException>(() => kernel.GetRequiredService<IAIServiceSelector>());
+
+        NopServiceSelector selector = new();
+
+        kernel = new KernelBuilder().WithAIServiceSelector(selector).Build();
+        Assert.Same(selector, kernel.Services.GetService<IAIServiceSelector>());
+        Assert.Same(selector, kernel.ServiceSelector);
+        Assert.Same(selector, kernel.GetRequiredService<IAIServiceSelector>());
+    }
+
+    private sealed class NopServiceSelector : IAIServiceSelector
+    {
+        (T?, PromptExecutionSettings?) IAIServiceSelector.SelectAIService<T>(Kernel kernel, KernelFunction function, KernelArguments arguments) where T : class =>
+            throw new NotImplementedException();
+    }
 
     [Fact]
     public void ItPropagatesPluginsToBuiltKernel()
@@ -226,8 +256,8 @@ public class KernelBuilderTests
             })
             .Build();
 
-        Assert.IsType<OpenAIChatCompletionService>(kernel.GetService<IChatCompletionService>("openai"));
-        Assert.IsType<AzureOpenAITextGenerationService>(kernel.GetService<ITextGenerationService>("azureopenai"));
+        Assert.IsType<OpenAIChatCompletionService>(kernel.GetRequiredService<IChatCompletionService>("openai"));
+        Assert.IsType<AzureOpenAITextGenerationService>(kernel.GetRequiredService<ITextGenerationService>("azureopenai"));
 
         Assert.Equal(2, kernel.GetAllServices<ITextGenerationService>().Count());
         Assert.Single(kernel.GetAllServices<IChatCompletionService>());
@@ -288,8 +318,8 @@ public class KernelBuilderTests
 
         Assert.NotNull(k);
         Assert.Same(plugins, k.Plugins);
-        Assert.IsAssignableFrom<IChatCompletionService>(k.GetService<IChatCompletionService>("azureopenai1"));
-        Assert.IsAssignableFrom<IChatCompletionService>(k.GetService<IChatCompletionService>("azureopenai2"));
+        Assert.IsAssignableFrom<IChatCompletionService>(k.GetRequiredService<IChatCompletionService>("azureopenai1"));
+        Assert.IsAssignableFrom<IChatCompletionService>(k.GetRequiredService<IChatCompletionService>("azureopenai2"));
 
         // This should be 4, not 2. However, there is currently a limitation with Microsoft.Extensions.DependencyInjection
         // that prevents GetAllServices from enumerating named services. KernelBuilder works around this,

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
-using Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch;
+using Microsoft.SemanticKernel.Connectors.Memory.AzureAISearch;
 using Microsoft.SemanticKernel.Connectors.Memory.Chroma;
 using Microsoft.SemanticKernel.Connectors.Memory.DuckDB;
 using Microsoft.SemanticKernel.Connectors.Memory.Kusto;
@@ -24,12 +24,10 @@ using Pgvector.Npgsql;
 using RepoUtils;
 using StackExchange.Redis;
 
-
 // ReSharper disable once InconsistentNaming
 public static class Example15_TextMemoryPlugin
 {
     private const string MemoryCollectionName = "aboutMe";
-
 
     public static async Task RunAsync(CancellationToken cancellationToken = default)
     {
@@ -51,8 +49,8 @@ public static class Example15_TextMemoryPlugin
         // MongoDB Memory Store - a store that persists data in a MongoDB database
         // store = CreateSampleMongoDBMemoryStore();
 
-        // Azure Cognitive Search Memory Store - a store that persists data in a hosted Azure Cognitive Search database
-        // store = CreateSampleAzureCognitiveSearchMemoryStore();
+        // Azure AI Search Memory Store - a store that persists data in a hosted Azure AI Search database
+        // store = CreateSampleAzureAISearchMemoryStore();
 
         // Qdrant Memory Store - a store that persists data in a local or remote Qdrant database
         // store = CreateSampleQdrantMemoryStore();
@@ -78,13 +76,11 @@ public static class Example15_TextMemoryPlugin
         await RunWithStoreAsync(store, cancellationToken);
     }
 
-
     private static async Task<IMemoryStore> CreateSampleSqliteMemoryStoreAsync()
     {
         IMemoryStore store = await SqliteMemoryStore.ConnectAsync("memories.sqlite");
         return store;
     }
-
 
     private static async Task<IMemoryStore> CreateSampleDuckDbMemoryStoreAsync()
     {
@@ -92,20 +88,17 @@ public static class Example15_TextMemoryPlugin
         return store;
     }
 
-
     private static IMemoryStore CreateSampleMongoDBMemoryStore()
     {
         IMemoryStore store = new MongoDBMemoryStore(TestConfiguration.MongoDB.ConnectionString, "memoryPluginExample");
         return store;
     }
 
-
-    private static IMemoryStore CreateSampleAzureCognitiveSearchMemoryStore()
+    private static IMemoryStore CreateSampleAzureAISearchMemoryStore()
     {
-        IMemoryStore store = new AzureCognitiveSearchMemoryStore(TestConfiguration.ACS.Endpoint, TestConfiguration.ACS.ApiKey);
+        IMemoryStore store = new AzureAISearchMemoryStore(TestConfiguration.AzureAISearch.Endpoint, TestConfiguration.AzureAISearch.ApiKey);
         return store;
     }
-
 
     private static IMemoryStore CreateSampleChromaMemoryStore()
     {
@@ -113,13 +106,11 @@ public static class Example15_TextMemoryPlugin
         return store;
     }
 
-
     private static IMemoryStore CreateSampleQdrantMemoryStore()
     {
         IMemoryStore store = new QdrantMemoryStore(TestConfiguration.Qdrant.Endpoint, 1536, ConsoleLogger.LoggerFactory);
         return store;
     }
-
 
     private static IMemoryStore CreateSamplePineconeMemoryStore()
     {
@@ -127,13 +118,11 @@ public static class Example15_TextMemoryPlugin
         return store;
     }
 
-
     private static IMemoryStore CreateSampleWeaviateMemoryStore()
     {
         IMemoryStore store = new WeaviateMemoryStore(TestConfiguration.Weaviate.Endpoint, TestConfiguration.Weaviate.ApiKey);
         return store;
     }
-
 
     private static async Task<IMemoryStore> CreateSampleRedisMemoryStoreAsync()
     {
@@ -144,7 +133,6 @@ public static class Example15_TextMemoryPlugin
         return store;
     }
 
-
     private static IMemoryStore CreateSamplePostgresMemoryStore()
     {
         NpgsqlDataSourceBuilder dataSourceBuilder = new(TestConfiguration.Postgres.ConnectionString);
@@ -154,14 +142,12 @@ public static class Example15_TextMemoryPlugin
         return store;
     }
 
-
     private static IMemoryStore CreateSampleKustoMemoryStore()
     {
         var connectionString = new Kusto.Data.KustoConnectionStringBuilder(TestConfiguration.Kusto.ConnectionString).WithAadUserPromptAuthentication();
         IMemoryStore store = new KustoMemoryStore(connectionString, "MyDatabase");
         return store;
     }
-
 
     private static async Task RunWithStoreAsync(IMemoryStore memoryStore, CancellationToken cancellationToken)
     {
@@ -245,12 +231,12 @@ public static class Example15_TextMemoryPlugin
         Console.WriteLine("Ask: where did I grow up?");
 
         await foreach (var answer in textMemory.SearchAsync(
-                           collection: MemoryCollectionName,
-                           query: "where did I grow up?",
-                           limit: 2,
-                           minRelevanceScore: 0.79,
-                           withEmbeddings: true,
-                           cancellationToken: cancellationToken))
+            collection: MemoryCollectionName,
+            query: "where did I grow up?",
+            limit: 2,
+            minRelevanceScore: 0.79,
+            withEmbeddings: true,
+            cancellationToken: cancellationToken))
         {
             Console.WriteLine($"Answer: {answer.Metadata.Text}");
         }
@@ -281,7 +267,7 @@ public static class Example15_TextMemoryPlugin
         */
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////
-        // PART 3: TextMemoryPlugin Recall in a Prompt Function
+        // PART 4: TextMemoryPlugin Recall in a Prompt Function
         //
         // Looks up related memories when rendering a prompt template, then sends the rendered prompt to
         // the text generation model to answer a natural language query.
@@ -308,6 +294,7 @@ Answer:
         result = await kernel.InvokeAsync(aboutMeOracle, new("Do I live in the same town where I grew up?")
         {
             [TextMemoryPlugin.CollectionParam] = MemoryCollectionName,
+            [TextMemoryPlugin.LimitParam] = "2",
             [TextMemoryPlugin.RelevanceParam] = "0.79",
         }, cancellationToken);
 
@@ -328,7 +315,6 @@ Answer:
 
         Console.WriteLine("Printing Collections in DB...");
         var collections = memoryStore.GetCollectionsAsync(cancellationToken);
-
         await foreach (var collection in collections)
         {
             Console.WriteLine(collection);
@@ -341,7 +327,6 @@ Answer:
 
         Console.WriteLine($"Printing Collections in DB (after removing {MemoryCollectionName})...");
         collections = memoryStore.GetCollectionsAsync(cancellationToken);
-
         await foreach (var collection in collections)
         {
             Console.WriteLine(collection);

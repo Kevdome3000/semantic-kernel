@@ -4,9 +4,7 @@
 namespace Microsoft.SemanticKernel;
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Globalization;
 
 
@@ -76,7 +74,7 @@ public sealed class FunctionResult
 
     /// <inheritdoc/>
     public override string ToString() =>
-        ConvertToString(this.Value, this.Culture) ?? string.Empty;
+        InternalTypeConverter.ConvertToString(this.Value, this.Culture) ?? string.Empty;
 
 
     /// <summary>
@@ -89,44 +87,4 @@ public sealed class FunctionResult
     /// </summary>
 
     internal CultureInfo Culture { get; }
-
-
-    private static string? ConvertToString(object? value, CultureInfo culture)
-    {
-        if (value == null) { return null; }
-
-        var sourceType = value.GetType();
-
-        var converterFunction = GetTypeConverterDelegate(sourceType);
-
-        return converterFunction == null
-            ? value.ToString()
-            : converterFunction(value, culture);
-    }
-
-
-    private static Func<object?, CultureInfo, string?>? GetTypeConverterDelegate(Type sourceType) =>
-        s_converters.GetOrAdd(sourceType, static sourceType =>
-        {
-            // Strings just render as themselves.
-            if (sourceType == typeof(string))
-            {
-                return (input, cultureInfo) => (string)input!;
-            }
-
-            // Look up and use a type converter.
-            if (TypeConverterFactory.GetTypeConverter(sourceType) is TypeConverter converter && converter.CanConvertTo(typeof(string)))
-            {
-                return (input, cultureInfo) =>
-                {
-                    return converter.ConvertToString(context: null, cultureInfo, input);
-                };
-            }
-
-            return null;
-        });
-
-
-    /// <summary>Converter functions for converting types to strings.</summary>
-    private static readonly ConcurrentDictionary<Type, Func<object?, CultureInfo, string?>?> s_converters = new();
 }

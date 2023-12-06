@@ -1,18 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel;
-
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
-using TemplateEngine;
-using TemplateEngine.Blocks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.TemplateEngine;
+using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Given a prompt, that might contain references to variables and functions:
@@ -43,25 +41,18 @@ public sealed class KernelPromptTemplate : IPromptTemplate
         this._tokenizer = new TemplateTokenizer(this._loggerFactory);
     }
 
-
     /// <inheritdoc/>
     public Task<string> RenderAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
     {
-        // Make sure all arguments are of string type. This is temporary check until non-string arguments are supported.
-        AssertArgumentOfStringType(arguments);
-
         return this.RenderAsync(this._blocks.Value, kernel, arguments, cancellationToken);
     }
 
-
     #region private
-
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger _logger;
     private readonly PromptTemplateConfig _promptModel;
     private readonly TemplateTokenizer _tokenizer;
     private readonly Lazy<List<Block>> _blocks;
-
 
     /// <summary>
     /// Given a prompt template string, extract all the blocks (text, variables, function calls)
@@ -69,7 +60,7 @@ public sealed class KernelPromptTemplate : IPromptTemplate
     /// <param name="templateText">Prompt template (see skprompt.txt files)</param>
     /// <param name="validate">Whether to validate the blocks syntax, or just return the blocks found, which could contain invalid code</param>
     /// <returns>A list of all the blocks, ie the template tokenized in text, variables and function calls</returns>
-    internal List<Block> ExtractBlocks(string? templateText, bool validate = true)
+    private List<Block> ExtractBlocks(string? templateText, bool validate = true)
     {
         this._logger.LogTrace("Extracting blocks from template: {0}", templateText);
         var blocks = this._tokenizer.Tokenize(templateText);
@@ -88,7 +79,6 @@ public sealed class KernelPromptTemplate : IPromptTemplate
         return blocks;
     }
 
-
     /// <summary>
     /// Given a list of blocks render each block and compose the final result.
     /// </summary>
@@ -97,22 +87,21 @@ public sealed class KernelPromptTemplate : IPromptTemplate
     /// <param name="arguments">The arguments.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The prompt template ready to be used for an AI request.</returns>
-    internal async Task<string> RenderAsync(List<Block> blocks, Kernel kernel, KernelArguments? arguments, CancellationToken cancellationToken = default)
+    private async Task<string> RenderAsync(List<Block> blocks, Kernel kernel, KernelArguments? arguments, CancellationToken cancellationToken = default)
     {
         this._logger.LogTrace("Rendering list of {0} blocks", blocks.Count);
 
         var result = new StringBuilder();
-
         foreach (var block in blocks)
         {
             switch (block)
             {
                 case ITextRendering staticBlock:
-                    result.Append(staticBlock.Render(arguments));
+                    result.Append(InternalTypeConverter.ConvertToString(staticBlock.Render(arguments), kernel.Culture));
                     break;
 
                 case ICodeRendering dynamicBlock:
-                    result.Append(await dynamicBlock.RenderCodeAsync(kernel, arguments, cancellationToken).ConfigureAwait(false));
+                    result.Append(InternalTypeConverter.ConvertToString(await dynamicBlock.RenderCodeAsync(kernel, arguments, cancellationToken).ConfigureAwait(false), kernel.Culture));
                     break;
 
                 default:
@@ -130,46 +119,5 @@ public sealed class KernelPromptTemplate : IPromptTemplate
         return resultString;
     }
 
-
-    /// <summary>
-    /// Given a list of blocks, render the Variable Blocks, replacing placeholders with the actual value in memory.
-    /// </summary>
-    /// <param name="blocks">List of blocks, typically all the blocks found in a template.</param>
-    /// <param name="arguments">Arguments to use for rendering.</param>
-    /// <returns>An updated list of blocks where Variable Blocks have rendered to Text Blocks.</returns>
-    internal IList<Block> RenderVariables(IList<Block> blocks, KernelArguments? arguments)
-    {
-        this._logger.LogTrace("Rendering variables");
-        return blocks.Select(block => block.Type != BlockTypes.Variable
-            ? block
-            : new TextBlock(((ITextRendering)block).Render(arguments), this._loggerFactory)).ToList();
-    }
-
-
-    /// <summary>
-    /// Validates that all the KernelArguments are of string type.
-    /// </summary>
-    /// <param name="arguments">The collection of KernelArguments to validate.</param>
-    /// <exception cref="KernelException">Thrown when an argument is not of type string.</exception>
-    private static void AssertArgumentOfStringType(KernelArguments? arguments)
-    {
-        if (arguments == null)
-        {
-            return;
-        }
-
-        foreach (var argument in arguments)
-        {
-            if (argument.Value is string)
-            {
-                continue;
-            }
-
-            throw new KernelException($"Non-string kernel prompt template arguments are not supported in Release Candidate 1. This feature will be available soon, but for now, please ensure that all arguments are strings. Argument '{argument.Key}' is of type '{argument.Value?.GetType()}'.");
-        }
-    }
-
     #endregion
-
-
 }

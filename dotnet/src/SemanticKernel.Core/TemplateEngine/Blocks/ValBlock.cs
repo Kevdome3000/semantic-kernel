@@ -65,7 +65,7 @@ internal sealed class ValBlock : Block, ITextRendering
 
 
     /// <inheritdoc/>
-    public string Render(KernelArguments? arguments)
+    public object? Render(KernelArguments? arguments)
     {
         return this._value;
     }

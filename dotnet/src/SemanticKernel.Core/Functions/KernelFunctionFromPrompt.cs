@@ -136,10 +136,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         var textContent = await textGeneration.GetTextContentAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
 
-        IDictionary<string, object?> metadata = textContent.Metadata ?? new Dictionary<string, object?>();
-        metadata.Add(KernelEventArgsExtensions.RenderedPromptMetadataKey, renderedPrompt);
-
-        return new FunctionResult(this, textContent.Text, kernel.Culture, new Dictionary<string, object?>(metadata));
+        return new FunctionResult(this, textContent.Text, kernel.Culture, textContent.Metadata);
     }
 
 
@@ -226,7 +223,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
     private async Task<(ITextGenerationService, string, PromptRenderedEventArgs?)> RenderPromptAsync(Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
     {
-        var serviceSelector = kernel.GetService<IAIServiceSelector>();
+        var serviceSelector = kernel.ServiceSelector;
         (var textGeneration, var defaultExecutionSettings) = serviceSelector.SelectAIService<ITextGenerationService>(kernel, this, arguments);
         Verify.NotNull(textGeneration);
 

@@ -33,7 +33,7 @@ public static class Example18_DallE
             .WithOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
 
-        ITextToImageService dallE = kernel.GetService<ITextToImageService>();
+        ITextToImageService dallE = kernel.GetRequiredService<ITextToImageService>();
 
         var imageDescription = "A cute baby sea otter";
         var image = await dallE.GenerateImageAsync(imageDescription, 256, 256);
@@ -50,7 +50,7 @@ public static class Example18_DallE
 
         Console.WriteLine("======== Chat with images ========");
 
-        IChatCompletionService chatGPT = kernel.GetService<IChatCompletionService>();
+        IChatCompletionService chatGPT = kernel.GetRequiredService<IChatCompletionService>();
         var chatHistory = new ChatHistory(
            "You're chatting with a user. Instead of replying directly to the user" +
            " provide the description of an image that expresses what you want to say." +
@@ -103,7 +103,7 @@ public static class Example18_DallE
             .WithAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.ChatModelId, TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
 
-        ITextToImageService dallE = kernel.GetService<ITextToImageService>();
+        ITextToImageService dallE = kernel.GetRequiredService<ITextToImageService>();
         var imageDescription = "A cute baby sea otter";
         var image = await dallE.GenerateImageAsync(imageDescription, 256, 256);
 
@@ -119,7 +119,7 @@ public static class Example18_DallE
 
         Console.WriteLine("======== Chat with images ========");
 
-        IChatCompletionService chatGPT = kernel.GetService<IChatCompletionService>();
+        IChatCompletionService chatGPT = kernel.GetRequiredService<IChatCompletionService>();
         var chatHistory = new ChatHistory(
             "You're chatting with a user. Instead of replying directly to the user" +
             " provide the description of an image that expresses what you want to say." +

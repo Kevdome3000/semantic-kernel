@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch;
-
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -17,37 +15,36 @@ using Azure.Search.Documents;
 using Azure.Search.Documents.Indexes;
 using Azure.Search.Documents.Indexes.Models;
 using Azure.Search.Documents.Models;
-using Http;
-using SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.Memory;
 
+namespace Microsoft.SemanticKernel.Connectors.Memory.AzureAISearch;
 
 /// <summary>
-/// AzureCognitiveSearchMemoryStore is a memory store implementation using Azure Cognitive Search.
+/// <see cref="AzureAISearchMemoryStore"/> is a memory store implementation using Azure AI Search.
 /// </summary>
-public class AzureCognitiveSearchMemoryStore : IMemoryStore
+public class AzureAISearchMemoryStore : IMemoryStore
 {
     /// <summary>
-    /// Create a new instance of memory storage using Azure Cognitive Search.
+    /// Create a new instance of memory storage using Azure AI Search.
     /// </summary>
-    /// <param name="endpoint">Azure Cognitive Search URI, e.g. "https://contoso.search.windows.net"</param>
+    /// <param name="endpoint">Azure AI Search URI, e.g. "https://contoso.search.windows.net"</param>
     /// <param name="apiKey">API Key</param>
-    public AzureCognitiveSearchMemoryStore(string endpoint, string apiKey)
+    public AzureAISearchMemoryStore(string endpoint, string apiKey)
     {
         AzureKeyCredential credentials = new(apiKey);
         this._adminClient = new SearchIndexClient(new Uri(endpoint), credentials, GetClientOptions());
     }
 
-
     /// <summary>
-    /// Create a new instance of memory storage using Azure Cognitive Search.
+    /// Create a new instance of memory storage using Azure AI Search.
     /// </summary>
-    /// <param name="endpoint">Azure Cognitive Search URI, e.g. "https://contoso.search.windows.net"</param>
+    /// <param name="endpoint">Azure AI Search URI, e.g. "https://contoso.search.windows.net"</param>
     /// <param name="credentials">Azure service</param>
-    public AzureCognitiveSearchMemoryStore(string endpoint, TokenCredential credentials)
+    public AzureAISearchMemoryStore(string endpoint, TokenCredential credentials)
     {
         this._adminClient = new SearchIndexClient(new Uri(endpoint), credentials, GetClientOptions());
     }
-
 
     /// <inheritdoc />
     public Task CreateCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
@@ -56,13 +53,11 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
         return Task.CompletedTask;
     }
 
-
     /// <inheritdoc />
     public IAsyncEnumerable<string> GetCollectionsAsync(CancellationToken cancellationToken = default)
     {
         return RunMemoryStoreOperation(() => this.GetIndexesAsync(cancellationToken));
     }
-
 
     /// <inheritdoc />
     public async Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancellationToken = default)
@@ -80,7 +75,6 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
             .ConfigureAwait(false);
     }
 
-
     /// <inheritdoc />
     public Task DeleteCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
@@ -89,28 +83,25 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
         return RunMemoryStoreOperation(() => this._adminClient.DeleteIndexAsync(normalizedIndexName, cancellationToken));
     }
 
-
     /// <inheritdoc />
     public Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default)
     {
         var normalizedIndexName = this.NormalizeIndexName(collectionName);
 
-        return RunMemoryStoreOperation(() => this.UpsertRecordAsync(normalizedIndexName, AzureCognitiveSearchMemoryRecord.FromMemoryRecord(record), cancellationToken));
+        return RunMemoryStoreOperation(() => this.UpsertRecordAsync(normalizedIndexName, AzureAISearchMemoryRecord.FromMemoryRecord(record), cancellationToken));
     }
-
 
     /// <inheritdoc />
     public async IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var normalizedIndexName = this.NormalizeIndexName(collectionName);
 
-        var searchRecords = records.Select(AzureCognitiveSearchMemoryRecord.FromMemoryRecord).ToList();
+        var searchRecords = records.Select(AzureAISearchMemoryRecord.FromMemoryRecord).ToList();
 
         var result = await RunMemoryStoreOperation(() => this.UpsertBatchAsync(normalizedIndexName, searchRecords, cancellationToken)).ConfigureAwait(false);
 
         foreach (var x in result) { yield return x; }
     }
-
 
     /// <inheritdoc />
     public async Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancellationToken = default)
@@ -118,16 +109,16 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
         var normalizedIndexName = this.NormalizeIndexName(collectionName);
         var client = this.GetSearchClient(normalizedIndexName);
 
-        var encodedId = AzureCognitiveSearchMemoryRecord.EncodeId(key);
+        var encodedId = AzureAISearchMemoryRecord.EncodeId(key);
 
-        Response<AzureCognitiveSearchMemoryRecord>? result;
+        Response<AzureAISearchMemoryRecord>? result;
 
         try
         {
             result = await RunMemoryStoreOperation(async () =>
             {
                 return await client
-                    .GetDocumentAsync<AzureCognitiveSearchMemoryRecord>(encodedId, cancellationToken: cancellationToken)
+                    .GetDocumentAsync<AzureAISearchMemoryRecord>(encodedId, cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
             }).ConfigureAwait(false);
         }
@@ -145,7 +136,6 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
         return result.Value.ToMemoryRecord();
     }
 
-
     /// <inheritdoc />
     public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(
         string collectionName,
@@ -156,11 +146,9 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
         foreach (var key in keys)
         {
             var record = await this.GetAsync(collectionName, key, withEmbeddings, cancellationToken).ConfigureAwait(false);
-
             if (record != null) { yield return record; }
         }
     }
-
 
     /// <inheritdoc />
     public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(
@@ -174,7 +162,6 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
             .FirstOrDefaultAsync(cancellationToken)
             .ConfigureAwait(false);
     }
-
 
     /// <inheritdoc />
     public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(
@@ -195,7 +182,7 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
         RawVectorQuery vectorQuery = new()
         {
             KNearestNeighborsCount = limit,
-            Fields = { AzureCognitiveSearchMemoryRecord.EmbeddingField },
+            Fields = { AzureAISearchMemoryRecord.EmbeddingField },
             Vector = MemoryMarshal.TryGetArray(embedding, out var array) && array.Count == embedding.Length ? array.Array! : embedding.ToArray(),
         };
 
@@ -204,14 +191,13 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
             VectorQueries = { vectorQuery }
         };
 
-        Response<SearchResults<AzureCognitiveSearchMemoryRecord>>? searchResult = null;
-
+        Response<SearchResults<AzureAISearchMemoryRecord>>? searchResult = null;
         try
         {
             searchResult = await RunMemoryStoreOperation(async () =>
             {
                 return await client
-                    .SearchAsync<AzureCognitiveSearchMemoryRecord>(null, options, cancellationToken: cancellationToken)
+                    .SearchAsync<AzureAISearchMemoryRecord>(null, options, cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
             }).ConfigureAwait(false);
         }
@@ -223,8 +209,7 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
         if (searchResult == null) { yield break; }
 
         var minAzureSearchScore = CosineSimilarityToScore(minRelevanceScore);
-
-        await foreach (SearchResult<AzureCognitiveSearchMemoryRecord>? doc in searchResult.Value.GetResultsAsync())
+        await foreach (SearchResult<AzureAISearchMemoryRecord>? doc in searchResult.Value.GetResultsAsync())
         {
             if (doc == null || doc.Score < minAzureSearchScore) { continue; }
 
@@ -234,23 +219,20 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
         }
     }
 
-
     /// <inheritdoc />
     public Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default)
     {
         return this.RemoveBatchAsync(collectionName, new[] { key }, cancellationToken);
     }
 
-
     /// <inheritdoc />
     public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
         var normalizedIndexName = this.NormalizeIndexName(collectionName);
 
-        var records = keys.Select(x => new AzureCognitiveSearchMemoryRecord(x));
+        var records = keys.Select(x => new AzureAISearchMemoryRecord(x));
 
         var client = this.GetSearchClient(normalizedIndexName);
-
         try
         {
             await RunMemoryStoreOperation(() => client.DeleteDocumentsAsync(records, cancellationToken: cancellationToken)).ConfigureAwait(false);
@@ -260,7 +242,6 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
             // Index not found, no data to delete
         }
     }
-
 
     #region private
 
@@ -277,7 +258,6 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
     private readonly ConcurrentDictionary<string, SearchClient> _clientsByIndex = new();
 
     private readonly SearchIndexClient _adminClient;
-
 
     /// <summary>
     /// Create a new search index.
@@ -302,18 +282,18 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
         {
             Fields = new List<SearchField>
             {
-                new SimpleField(AzureCognitiveSearchMemoryRecord.IdField, SearchFieldDataType.String) { IsKey = true },
-                new(AzureCognitiveSearchMemoryRecord.EmbeddingField, SearchFieldDataType.Collection(SearchFieldDataType.Single))
+                new SimpleField(AzureAISearchMemoryRecord.IdField, SearchFieldDataType.String) { IsKey = true },
+                new(AzureAISearchMemoryRecord.EmbeddingField, SearchFieldDataType.Collection(SearchFieldDataType.Single))
                 {
                     IsSearchable = true,
                     VectorSearchDimensions = embeddingSize,
                     VectorSearchProfile = ProfileName
                 },
-                new(AzureCognitiveSearchMemoryRecord.TextField, SearchFieldDataType.String) { IsFilterable = true, IsFacetable = true },
-                new SimpleField(AzureCognitiveSearchMemoryRecord.DescriptionField, SearchFieldDataType.String) { IsFilterable = true, IsFacetable = true },
-                new SimpleField(AzureCognitiveSearchMemoryRecord.AdditionalMetadataField, SearchFieldDataType.String) { IsFilterable = true, IsFacetable = true },
-                new SimpleField(AzureCognitiveSearchMemoryRecord.ExternalSourceNameField, SearchFieldDataType.String) { IsFilterable = true, IsFacetable = true },
-                new SimpleField(AzureCognitiveSearchMemoryRecord.IsReferenceField, SearchFieldDataType.Boolean) { IsFilterable = true, IsFacetable = true },
+                new(AzureAISearchMemoryRecord.TextField, SearchFieldDataType.String) { IsFilterable = true, IsFacetable = true },
+                new SimpleField(AzureAISearchMemoryRecord.DescriptionField, SearchFieldDataType.String) { IsFilterable = true, IsFacetable = true },
+                new SimpleField(AzureAISearchMemoryRecord.AdditionalMetadataField, SearchFieldDataType.String) { IsFilterable = true, IsFacetable = true },
+                new SimpleField(AzureAISearchMemoryRecord.ExternalSourceNameField, SearchFieldDataType.String) { IsFilterable = true, IsFacetable = true },
+                new SimpleField(AzureAISearchMemoryRecord.IsReferenceField, SearchFieldDataType.Boolean) { IsFilterable = true, IsFacetable = true },
             },
             VectorSearch = new VectorSearch
             {
@@ -331,31 +311,27 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
         return this._adminClient.CreateIndexAsync(newIndex, cancellationToken);
     }
 
-
     private async IAsyncEnumerable<string> GetIndexesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var indexes = this._adminClient.GetIndexesAsync(cancellationToken).ConfigureAwait(false);
-
         await foreach (SearchIndex? index in indexes)
         {
             yield return index.Name;
         }
     }
 
-
     private async Task<string> UpsertRecordAsync(
         string indexName,
-        AzureCognitiveSearchMemoryRecord record,
+        AzureAISearchMemoryRecord record,
         CancellationToken cancellationToken = default)
     {
-        var list = await this.UpsertBatchAsync(indexName, new List<AzureCognitiveSearchMemoryRecord> { record }, cancellationToken).ConfigureAwait(false);
+        var list = await this.UpsertBatchAsync(indexName, new List<AzureAISearchMemoryRecord> { record }, cancellationToken).ConfigureAwait(false);
         return list.First();
     }
 
-
     private async Task<List<string>> UpsertBatchAsync(
         string indexName,
-        IList<AzureCognitiveSearchMemoryRecord> records,
+        IList<AzureAISearchMemoryRecord> records,
         CancellationToken cancellationToken = default)
     {
         var keys = new List<string>();
@@ -375,7 +351,6 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
         }
 
         Response<IndexDocumentsResult>? result;
-
         try
         {
             result = await UpsertCode().ConfigureAwait(false);
@@ -394,9 +369,8 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
         return result.Value.Results.Select(x => x.Key).ToList();
     }
 
-
     /// <summary>
-    /// Normalize index name to match ACS rules.
+    /// Normalize index name to match Azure AI Search rules.
     /// The method doesn't handle all the error scenarios, leaving it to the service
     /// to throw an error for edge cases not handled locally.
     /// </summary>
@@ -417,7 +391,6 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
         return s_replaceIndexNameSymbolsRegex.Replace(indexName.Trim(), "-");
     }
 
-
     /// <summary>
     /// Get a search client for the index specified.
     /// Note: the index might not exist, but we avoid checking everytime and the extra latency.
@@ -436,9 +409,8 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
         return client;
     }
 
-
     /// <summary>
-    /// Options used by the Azure Cognitive Search client, e.g. User Agent.
+    /// Options used by the Azure AI Search client, e.g. User Agent.
     /// See also https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/core/Azure.Core/src/DiagnosticsOptions.cs
     /// </summary>
     private static SearchClientOptions GetClientOptions()
@@ -451,7 +423,6 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
             },
         };
     }
-
 
     /// <summary>
     /// Executes a memory store operation by invoking the provided operation delegate.
@@ -471,14 +442,12 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
         }
     }
 
-
     private static double ScoreToCosineSimilarity(double score)
     {
-        // Azure Cognitive Search score formula. The min value is 0.333 for cosine similarity -1.
+        // Azure AI Search score formula. The min value is 0.333 for cosine similarity -1.
         score = Math.Max(score, 1.0 / 3);
         return 2 - 1 / score;
     }
-
 
     private static double CosineSimilarityToScore(double similarity)
     {
@@ -486,6 +455,4 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
     }
 
     #endregion
-
-
 }

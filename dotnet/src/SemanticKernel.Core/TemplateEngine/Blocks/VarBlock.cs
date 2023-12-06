@@ -66,7 +66,7 @@ internal sealed class VarBlock : Block, ITextRendering
 
 
     /// <inheritdoc/>
-    public string Render(KernelArguments? arguments)
+    public object? Render(KernelArguments? arguments)
     {
         if (arguments == null) { return string.Empty; }
 
@@ -79,7 +79,7 @@ internal sealed class VarBlock : Block, ITextRendering
 
         if (arguments.TryGetValue(this.Name, out object? value))
         {
-            return (string?)value ?? string.Empty;
+            return value ?? string.Empty;
         }
 
         this.Logger.LogWarning("Variable `{0}{1}` not found", Symbols.VarPrefix, this.Name);
