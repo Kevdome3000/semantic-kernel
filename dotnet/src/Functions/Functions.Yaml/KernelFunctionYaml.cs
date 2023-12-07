@@ -29,10 +29,10 @@ public static class KernelFunctionYaml
             .WithNodeDeserializer(new PromptExecutionSettingsNodeDeserializer())
             .Build();
 
-        var promptFunctionModel = deserializer.Deserialize<PromptTemplateConfig>(text);
+        var promptTemplateConfig = deserializer.Deserialize<PromptTemplateConfig>(text);
 
         return KernelFunctionFactory.CreateFromPrompt(
-            promptFunctionModel,
+            promptTemplateConfig,
             promptTemplateFactory,
             loggerFactory);
     }

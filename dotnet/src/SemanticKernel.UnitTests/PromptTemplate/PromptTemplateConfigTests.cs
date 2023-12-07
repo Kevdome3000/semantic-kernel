@@ -5,8 +5,7 @@ namespace SemanticKernel.UnitTests.PromptTemplate;
 using System.Linq;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Xunit;
 
 

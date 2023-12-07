@@ -1,16 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Planning.Handlebars;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using AI.ChatCompletion;
-using Extensions.Logging;
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.ChatCompletion;
 
+namespace Microsoft.SemanticKernel.Planning.Handlebars;
 
 /// <summary>
 /// Represents a Handlebars planner.
@@ -18,7 +17,6 @@ using Extensions.Logging;
 public sealed class HandlebarsPlanner
 {
     private readonly HandlebarsPlannerConfig _config;
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HandlebarsPlanner"/> class.
@@ -28,7 +26,6 @@ public sealed class HandlebarsPlanner
     {
         this._config = config ?? new HandlebarsPlannerConfig();
     }
-
 
     /// <summary>Creates a plan for the specified goal.</summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
@@ -49,7 +46,6 @@ public sealed class HandlebarsPlanner
                 => planner.CreatePlanCoreAsync(kernel, goal, cancellationToken),
             this, kernel, goal, logger, cancellationToken);
     }
-
 
     private async Task<HandlebarsPlan> CreatePlanCoreAsync(Kernel kernel, string goal, CancellationToken cancellationToken = default)
     {
@@ -74,7 +70,6 @@ public sealed class HandlebarsPlanner
         }
 
         Match match = Regex.Match(completionResults.Content, @"```\s*(handlebars)?\s*(.*)\s*```", RegexOptions.Singleline);
-
         if (!match.Success)
         {
             throw new KernelException("Could not find the plan in the results");
@@ -93,7 +88,6 @@ public sealed class HandlebarsPlanner
         return new HandlebarsPlan(planTemplate, createPlanPrompt);
     }
 
-
     private List<KernelFunctionMetadata> GetAvailableFunctionsManual(
         Kernel kernel,
         out HashSet<HandlebarsParameterTypeMetadata> complexParameterTypes,
@@ -105,17 +99,15 @@ public sealed class HandlebarsPlanner
 
         var availableFunctions = kernel.Plugins.GetFunctionsMetadata()
             .Where(s => !this._config.ExcludedPlugins.Contains(s.PluginName, StringComparer.OrdinalIgnoreCase)
-                        && !this._config.ExcludedFunctions.Contains(s.Name, StringComparer.OrdinalIgnoreCase)
-                        && !s.Name.Contains("Planner_Excluded"))
+                && !this._config.ExcludedFunctions.Contains(s.Name, StringComparer.OrdinalIgnoreCase)
+                && !s.Name.Contains("Planner_Excluded"))
             .ToList();
 
         var functionsMetadata = new List<KernelFunctionMetadata>();
-
         foreach (var skFunction in availableFunctions)
         {
             // Extract any complex parameter types for isolated render in prompt template
             var parametersMetadata = new List<KernelParameterMetadata>();
-
             foreach (var parameter in skFunction.Parameters)
             {
                 var paramToAdd = this.SetComplexTypeDefinition(parameter, complexParameterTypes, complexParameterSchemas);
@@ -139,7 +131,6 @@ public sealed class HandlebarsPlanner
         return functionsMetadata;
     }
 
-
     // Extract any complex types or schemas for isolated render in prompt template
     private KernelParameterMetadata SetComplexTypeDefinition(
         KernelParameterMetadata parameter,
@@ -151,7 +142,6 @@ public sealed class HandlebarsPlanner
         {
             // Async return type - need to extract the actual return type and override ParameterType property
             var type = parameter.ParameterType;
-
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Task<>))
             {
                 parameter = new(parameter) { ParameterType = type.GenericTypeArguments[0] }; // Actual Return Type
@@ -163,7 +153,6 @@ public sealed class HandlebarsPlanner
         {
             // Parse the schema to extract any primitive types and set in ParameterType property instead
             var parsedParameter = parameter.ParseJsonSchema();
-
             if (parsedParameter.Schema is not null)
             {
                 complexParameterSchemas[parameter.GetSchemaTypeName()] = parameter.Schema.RootElement.ToJsonString();
@@ -175,7 +164,6 @@ public sealed class HandlebarsPlanner
         return parameter;
     }
 
-
     private ChatHistory GetChatHistoryFromPrompt(string prompt, IChatCompletionService chatCompletionService)
     {
         // Extract the chat history from the rendered prompt
@@ -184,7 +172,6 @@ public sealed class HandlebarsPlanner
 
         // Add the chat history to the chat
         var chatMessages = new ChatHistory();
-
         foreach (Match m in matches.Cast<Match>())
         {
             string role = m.Groups[1].Value;
@@ -207,30 +194,27 @@ public sealed class HandlebarsPlanner
         return chatMessages;
     }
 
-
     private string GetHandlebarsTemplate(
-        Kernel kernel,
-        string goal,
+        Kernel kernel, string goal,
         List<KernelFunctionMetadata> availableFunctions,
         HashSet<HandlebarsParameterTypeMetadata> complexParameterTypes,
         Dictionary<string, string> complexParameterSchemas)
     {
         var plannerTemplate = this.ReadPrompt("CreatePlanPrompt.handlebars");
         var arguments = new KernelArguments()
-        {
-            { "functions", availableFunctions },
-            { "goal", goal },
-            { "reservedNameDelimiter", HandlebarsTemplateEngineExtensions.ReservedNameDelimiter },
-            { "allowLoops", this._config.AllowLoops },
-            { "complexTypeDefinitions", complexParameterTypes.Count > 0 && complexParameterTypes.Any(p => p.IsComplex) ? complexParameterTypes.Where(p => p.IsComplex) : null },
-            { "complexSchemaDefinitions", complexParameterSchemas.Count > 0 ? complexParameterSchemas : null },
-            { "lastPlan", this._config.LastPlan },
-            { "lastError", this._config.LastError }
-        };
+            {
+                { "functions", availableFunctions},
+                { "goal", goal },
+                { "reservedNameDelimiter", HandlebarsTemplateEngineExtensions.ReservedNameDelimiter},
+                { "allowLoops", this._config.AllowLoops },
+                { "complexTypeDefinitions", complexParameterTypes.Count > 0 && complexParameterTypes.Any(p => p.IsComplex) ? complexParameterTypes.Where(p => p.IsComplex) : null},
+                { "complexSchemaDefinitions", complexParameterSchemas.Count > 0 ? complexParameterSchemas : null},
+                { "lastPlan", this._config.LastPlan },
+                { "lastError", this._config.LastError }
+            };
 
         return HandlebarsTemplateEngineExtensions.Render(kernel, plannerTemplate, arguments);
     }
-
 
     private static string MinifyHandlebarsTemplate(string template)
     {

@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel;
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,12 +7,12 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using AI;
-using AI.TextGeneration;
-using Events;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Events;
+using Microsoft.SemanticKernel.TextGeneration;
 
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// A Semantic Kernel "Semantic" prompt function.
@@ -23,7 +21,6 @@ using Extensions.Logging.Abstractions;
 internal sealed class KernelFunctionFromPrompt : KernelFunction
 {
     // TODO: Revise these Create method XML comments
-
 
     /// <summary>
     /// Creates a string-to-string prompt function, with no direct support for input context.
@@ -67,7 +64,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             loggerFactory: loggerFactory);
     }
 
-
     /// <summary>
     /// Creates a string-to-string prompt function, with no direct support for input context.
     /// The function can be referenced in templates and will receive the context, but when invoked programmatically you
@@ -89,7 +85,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             promptConfig: promptConfig,
             loggerFactory: loggerFactory);
     }
-
 
     /// <summary>
     /// Allow to define a prompt function passing in the definition in natural language, i.e. the prompt template.
@@ -118,7 +113,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             loggerFactory: loggerFactory);
     }
 
-
     /// <inheritdoc/>j
     protected override async ValueTask<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
@@ -128,7 +122,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         this.AddDefaultValues(arguments);
 
         (var textGeneration, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
-
         if (renderedEventArgs?.Cancel is true)
         {
             throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.PromptRendered)} event handler requested cancellation before function invocation.");
@@ -139,8 +132,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         return new FunctionResult(this, textContent.Text, kernel.Culture, textContent.Metadata);
     }
 
-
-    protected override async IAsyncEnumerable<T> InvokeCoreStreamingAsync<T>(
+    protected override async IAsyncEnumerable<TResult> InvokeStreamingCoreAsync<TResult>(
         Kernel kernel,
         KernelArguments arguments,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -148,7 +140,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         this.AddDefaultValues(arguments);
 
         (var textGeneration, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
-
         if (renderedEventArgs?.Cancel ?? false)
         {
             yield break;
@@ -158,45 +149,47 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            yield return typeof(T) switch
+            yield return typeof(TResult) switch
             {
-                _ when typeof(T) == typeof(string)
-                    => (T)(object)content.ToString(),
+                _ when typeof(TResult) == typeof(string)
+                    => (TResult)(object)content.ToString(),
 
-                _ when content is T contentAsT
-                    => (T)contentAsT,
+                _ when content is TResult contentAsT
+                    => (TResult)contentAsT,
 
-                _ when content.InnerContent is T innerContentAsT
-                    => (T)innerContentAsT,
+                _ when content.InnerContent is TResult innerContentAsT
+                    => (TResult)innerContentAsT,
 
-                _ when typeof(T) == typeof(byte[])
-                    => (T)(object)content.ToByteArray(),
+                _ when typeof(TResult) == typeof(byte[])
+                    => (TResult)(object)content.ToByteArray(),
 
-                _ => throw new NotSupportedException($"The specific type {typeof(T)} is not supported. Support types are {typeof(StreamingTextContent)}, string, byte[], or a matching type for {typeof(StreamingTextContent)}.{nameof(StreamingTextContent.InnerContent)} property")
+                _ => throw new NotSupportedException($"The specific type {typeof(TResult)} is not supported. Support types are {typeof(StreamingTextContent)}, string, byte[], or a matching type for {typeof(StreamingTextContent)}.{nameof(StreamingTextContent.InnerContent)} property")
             };
         }
 
         // There is no post cancellation check to override the result as the stream data was already sent.
     }
 
-
     /// <summary>
     /// JSON serialized string representation of the function.
     /// </summary>
     public override string ToString() => JsonSerializer.Serialize(this);
 
-
     private KernelFunctionFromPrompt(
         IPromptTemplate template,
         PromptTemplateConfig promptConfig,
-        ILoggerFactory? loggerFactory = null) : base(promptConfig.Name, promptConfig.Description, promptConfig.GetKernelParametersMetadata(), null, promptConfig.ExecutionSettings)
+        ILoggerFactory? loggerFactory = null) : base(
+            promptConfig.Name,
+            promptConfig.Description,
+            promptConfig.GetKernelParametersMetadata(),
+            promptConfig.GetKernelReturnParameterMetadata(),
+            promptConfig.ExecutionSettings)
     {
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(KernelFunctionFactory)) : NullLogger.Instance;
 
         this._promptTemplate = template;
         this._promptConfig = promptConfig;
     }
-
 
     #region private
 
@@ -206,7 +199,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay => string.IsNullOrWhiteSpace(this.Description) ? this.Name : $"{this.Name} ({this.Description})";
-
 
     /// <summary>Add default values to the arguments if an argument is not defined</summary>
     private void AddDefaultValues(KernelArguments arguments)
@@ -219,7 +211,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             }
         }
     }
-
 
     private async Task<(ITextGenerationService, string, PromptRenderedEventArgs?)> RenderPromptAsync(Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
     {
@@ -238,11 +229,8 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         return (textGeneration, renderedPrompt, renderedEventArgs);
     }
 
-
     /// <summary>Create a random, valid function name.</summary>
     private static string RandomFunctionName() => $"func{Guid.NewGuid():N}";
 
     #endregion
-
-
 }

@@ -4,7 +4,6 @@ namespace SemanticKernel.UnitTests.Functions;
 
 using System.Collections.Generic;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
 using Xunit;
 
 

@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.AI;
-
 using System.Collections.Generic;
 
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Class that contains information about node in prompt.
@@ -40,7 +39,6 @@ internal class PromptNode
         get => this._childNodes ??= new();
         set => this._childNodes = value;
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptNode"/> class.

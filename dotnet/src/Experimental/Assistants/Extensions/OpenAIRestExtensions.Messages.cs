@@ -1,15 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
-
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using AI.ChatCompletion;
-using Internal;
-using Models;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Experimental.Assistants.Internal;
+using Microsoft.SemanticKernel.Experimental.Assistants.Models;
 
+namespace Microsoft.SemanticKernel.Experimental.Assistants;
 
 /// <summary>
 /// Supported OpenAI REST API actions for thread messages.
@@ -34,7 +33,7 @@ internal static partial class OpenAIRestExtensions
             new
             {
                 role = AuthorRole.User.Label,
-                content
+                content,
             };
 
         return
@@ -43,7 +42,6 @@ internal static partial class OpenAIRestExtensions
                 payload,
                 cancellationToken);
     }
-
 
     /// <summary>
     /// Retrieve an message by identifier.
@@ -57,10 +55,13 @@ internal static partial class OpenAIRestExtensions
         this OpenAIRestContext context,
         string threadId,
         string messageId,
-        CancellationToken cancellationToken = default) => context.ExecuteGetAsync<ThreadMessageModel>(
-        GetMessagesUrl(threadId, messageId),
-        cancellationToken);
-
+        CancellationToken cancellationToken = default)
+    {
+        return
+            context.ExecuteGetAsync<ThreadMessageModel>(
+                GetMessagesUrl(threadId, messageId),
+                cancellationToken);
+    }
 
     /// <summary>
     /// Retrieve all thread messages.
@@ -72,10 +73,13 @@ internal static partial class OpenAIRestExtensions
     public static Task<ThreadMessageListModel> GetMessagesAsync(
         this OpenAIRestContext context,
         string threadId,
-        CancellationToken cancellationToken = default) => context.ExecuteGetAsync<ThreadMessageListModel>(
-        GetMessagesUrl(threadId),
-        cancellationToken);
-
+        CancellationToken cancellationToken = default)
+    {
+        return
+            context.ExecuteGetAsync<ThreadMessageListModel>(
+                GetMessagesUrl(threadId),
+                cancellationToken);
+    }
 
     /// <summary>
     /// Retrieve all thread messages.
@@ -103,8 +107,13 @@ internal static partial class OpenAIRestExtensions
         return tasks.Select(t => t.Result).ToArray();
     }
 
+    internal static string GetMessagesUrl(string threadId)
+    {
+        return $"{BaseThreadUrl}/{threadId}/messages";
+    }
 
-    internal static string GetMessagesUrl(string threadId) => $"{BaseThreadUrl}/{threadId}/messages";
-
-    internal static string GetMessagesUrl(string threadId, string messageId) => $"{BaseThreadUrl}/{threadId}/messages/{messageId}";
+    internal static string GetMessagesUrl(string threadId, string messageId)
+    {
+        return $"{BaseThreadUrl}/{threadId}/messages/{messageId}";
+    }
 }

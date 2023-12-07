@@ -1,14 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable CA1710 // Identifiers should have correct suffix
-
-namespace Microsoft.SemanticKernel;
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using AI;
 
+#pragma warning disable CA1710 // Identifiers should have correct suffix
+
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Provides a collection of arguments for operations such as <see cref="KernelFunction"/>'s InvokeAsync
@@ -28,7 +26,6 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
     /// </summary>
     public const string InputParameterName = "input";
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelArguments"/> class with the specified AI execution settings.
     /// </summary>
@@ -38,7 +35,6 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
         this._arguments = new(StringComparer.OrdinalIgnoreCase);
         this.ExecutionSettings = executionSettings;
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelArguments"/> class that contains elements copied from the specified <see cref="IDictionary{TKey, TValue}"/>.
@@ -57,7 +53,6 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
         this.ExecutionSettings = executionSettings ?? (source as KernelArguments)?.ExecutionSettings;
     }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelArguments"/> class that contains a single input argument.
     /// </summary>
@@ -69,7 +64,6 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
         this.ExecutionSettings = executionSettings;
     }
 
-
     /// <summary>
     /// Gets or sets the prompt execution settings.
     /// </summary>
@@ -79,7 +73,6 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
     /// Gets the number of arguments contained in the <see cref="KernelArguments"/>.
     /// </summary>
     public int Count => this._arguments.Count;
-
 
     /// <summary>Adds the specified argument name and value to the <see cref="KernelArguments"/>.</summary>
     /// <param name="name">The name of the argument to add.</param>
@@ -92,7 +85,6 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
         this._arguments.Add(name, value);
     }
 
-
     /// <summary>Removes the argument value with the specified name from the <see cref="KernelArguments"/>.</summary>
     /// <param name="name">The name of the argument value to remove.</param>
     /// <exception cref="ArgumentNullException"><paramref name="name"/> is null.</exception>
@@ -102,13 +94,11 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
         return this._arguments.Remove(name);
     }
 
-
     /// <summary>Removes all arguments names and values from the <see cref="KernelArguments"/>.</summary>
     /// <remarks>
     /// This does not affect the <see cref="ExecutionSettings"/> property. To clear it as well, set it to null.
     /// </remarks>
     public void Clear() => this._arguments.Clear();
-
 
     /// <summary>Determines whether the <see cref="KernelArguments"/> contains an argument with the specified name.</summary>
     /// <param name="name">The name of the argument to locate.</param>
@@ -119,7 +109,6 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
         Verify.NotNull(name);
         return this._arguments.ContainsKey(name);
     }
-
 
     /// <summary>Gets the value associated with the specified argument name.</summary>
     /// <param name="name">The name of the argument value to get.</param>
@@ -134,7 +123,6 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
         Verify.NotNull(name);
         return this._arguments.TryGetValue(name, out value);
     }
-
 
     /// <summary>Gets or sets the value associated with the specified argument name.</summary>
     /// <param name="name">The name of the argument value to get or set.</param>
@@ -159,9 +147,7 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
     /// <summary>Gets an <see cref="ICollection{String}"/> of all of the arguments' values.</summary>
     public ICollection<object?> Values => this._arguments.Values;
 
-
     #region Interface implementations
-
     /// <inheritdoc/>
     ICollection<string> IDictionary<string, object?>.Keys => this._arguments.Keys;
 
@@ -184,55 +170,40 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
         set => this._arguments[key] = value;
     }
 
-
     /// <inheritdoc/>
     void IDictionary<string, object?>.Add(string key, object? value) => this._arguments.Add(key, value);
-
 
     /// <inheritdoc/>
     bool IDictionary<string, object?>.ContainsKey(string key) => this._arguments.ContainsKey(key);
 
-
     /// <inheritdoc/>
     bool IDictionary<string, object?>.Remove(string key) => this._arguments.Remove(key);
-
 
     /// <inheritdoc/>
     bool IDictionary<string, object?>.TryGetValue(string key, out object? value) => this._arguments.TryGetValue(key, out value);
 
-
     /// <inheritdoc/>
     void ICollection<KeyValuePair<string, object?>>.Add(KeyValuePair<string, object?> item) => this._arguments.Add(item.Key, item.Value);
-
 
     /// <inheritdoc/>
     bool ICollection<KeyValuePair<string, object?>>.Contains(KeyValuePair<string, object?> item) => ((ICollection<KeyValuePair<string, object?>>)this._arguments).Contains(item);
 
-
     /// <inheritdoc/>
     void ICollection<KeyValuePair<string, object?>>.CopyTo(KeyValuePair<string, object?>[] array, int arrayIndex) => ((ICollection<KeyValuePair<string, object?>>)this._arguments).CopyTo(array, arrayIndex);
-
 
     /// <inheritdoc/>
     bool ICollection<KeyValuePair<string, object?>>.Remove(KeyValuePair<string, object?> item) => this._arguments.Remove(item.Key);
 
-
     /// <inheritdoc/>
     IEnumerator<KeyValuePair<string, object?>> IEnumerable<KeyValuePair<string, object?>>.GetEnumerator() => this._arguments.GetEnumerator();
-
 
     /// <inheritdoc/>
     IEnumerator IEnumerable.GetEnumerator() => this._arguments.GetEnumerator();
 
-
     /// <inheritdoc/>
     bool IReadOnlyDictionary<string, object?>.ContainsKey(string key) => this._arguments.ContainsKey(key);
 
-
     /// <inheritdoc/>
     bool IReadOnlyDictionary<string, object?>.TryGetValue(string key, out object? value) => this._arguments.TryGetValue(key, out value);
-
     #endregion
-
-
 }

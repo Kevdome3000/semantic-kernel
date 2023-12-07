@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.AI.ChatCompletion;
-
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel.ChatCompletion;
 
 /// <summary>
 /// Abstraction of chat message content chunks when using streaming from <see cref="IChatCompletionService"/> interface.
@@ -31,7 +30,6 @@ public class StreamingChatMessageContent : StreamingContentBase
     [JsonIgnore]
     public Encoding Encoding { get; set; }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="StreamingChatMessageContent"/> class.
     /// </summary>
@@ -50,10 +48,8 @@ public class StreamingChatMessageContent : StreamingContentBase
         this.Encoding = encoding ?? Encoding.UTF8;
     }
 
-
     /// <inheritdoc/>
     public override string ToString() => this.Content ?? string.Empty;
-
 
     /// <inheritdoc/>
     public override byte[] ToByteArray() => this.Encoding.GetBytes(this.ToString());

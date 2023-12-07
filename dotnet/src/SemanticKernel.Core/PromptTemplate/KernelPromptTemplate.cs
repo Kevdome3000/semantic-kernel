@@ -67,7 +67,11 @@ public sealed class KernelPromptTemplate : IPromptTemplate
     /// <returns>A list of all the blocks, ie the template tokenized in text, variables and function calls</returns>
     private List<Block> ExtractBlocks(string? templateText, bool validate = true)
     {
-        this._logger.LogTrace("Extracting blocks from template: {0}", templateText);
+        if (this._logger.IsEnabled(LogLevel.Trace))
+        {
+            this._logger.LogTrace("Extracting blocks from template: {0}", templateText);
+        }
+
         var blocks = this._tokenizer.Tokenize(templateText);
 
         if (validate)
@@ -95,7 +99,10 @@ public sealed class KernelPromptTemplate : IPromptTemplate
     /// <returns>The prompt template ready to be used for an AI request.</returns>
     private async Task<string> RenderAsync(List<Block> blocks, Kernel kernel, KernelArguments? arguments, CancellationToken cancellationToken = default)
     {
-        this._logger.LogTrace("Rendering list of {0} blocks", blocks.Count);
+        if (this._logger.IsEnabled(LogLevel.Trace))
+        {
+            this._logger.LogTrace("Rendering list of {0} blocks", blocks.Count);
+        }
 
         var result = new StringBuilder();
 
@@ -121,7 +128,10 @@ public sealed class KernelPromptTemplate : IPromptTemplate
         string resultString = result.ToString();
 
         // Sensitive data, logging as trace, disabled by default
-        this._logger.LogTrace("Rendered prompt: {0}", resultString);
+        if (this._logger.IsEnabled(LogLevel.Trace))
+        {
+            this._logger.LogTrace("Rendered prompt: {0}", resultString);
+        }
 
         return resultString;
     }

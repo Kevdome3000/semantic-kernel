@@ -1,14 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel;
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
-using AI;
-using Extensions.Logging;
+using Microsoft.Extensions.Logging;
 
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Provides factory methods for creating commonly-used implementations of <see cref="KernelFunction"/>, such as
@@ -16,10 +14,7 @@ using Extensions.Logging;
 /// </summary>
 public static class KernelFunctionFactory
 {
-
-
     #region FromMethod
-
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via a delegate.
     /// </summary>
@@ -38,7 +33,6 @@ public static class KernelFunctionFactory
         KernelReturnParameterMetadata? returnParameter = null,
         ILoggerFactory? loggerFactory = null) =>
         CreateFromMethod(method.Method, method.Target, functionName, description, parameters, returnParameter, loggerFactory);
-
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
@@ -61,14 +55,10 @@ public static class KernelFunctionFactory
         KernelReturnParameterMetadata? returnParameter = null,
         ILoggerFactory? loggerFactory = null) =>
         KernelFunctionFromMethod.Create(method, target, functionName, description, parameters, returnParameter, loggerFactory);
-
     #endregion
 
-
     #region FromPrompt
-
     // TODO: Revise these Create method XML comments
-
 
     /// <summary>
     /// Creates a prompt function passing in the definition in natural language, i.e. the prompt template.
@@ -89,7 +79,6 @@ public static class KernelFunctionFactory
         ILoggerFactory? loggerFactory = null) =>
         KernelFunctionFromPrompt.Create(promptTemplate, executionSettings, functionName, description, promptTemplateFactory, loggerFactory);
 
-
     /// <summary>
     /// Create a prompt function instance, given a prompt function model.
     /// </summary>
@@ -102,7 +91,6 @@ public static class KernelFunctionFactory
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null) => KernelFunctionFromPrompt.Create(promptConfig, promptTemplateFactory, loggerFactory);
 
-
     /// <summary>
     /// Create a prompt function instance, given a prompt function model.
     /// </summary>
@@ -114,8 +102,5 @@ public static class KernelFunctionFactory
         IPromptTemplate promptTemplate,
         PromptTemplateConfig promptConfig,
         ILoggerFactory? loggerFactory = null) => KernelFunctionFromPrompt.Create(promptTemplate, promptConfig, loggerFactory);
-
     #endregion
-
-
 }

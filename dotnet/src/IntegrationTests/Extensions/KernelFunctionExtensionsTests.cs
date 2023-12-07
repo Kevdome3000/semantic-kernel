@@ -1,21 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.IntegrationTests;
-
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Fakes;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextGeneration;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.TextGeneration;
+using SemanticKernel.IntegrationTests.Fakes;
 using Xunit;
 using Xunit.Abstractions;
 
+namespace SemanticKernel.IntegrationTests;
 
 public sealed class KernelFunctionExtensionsTests : IDisposable
 {
@@ -23,7 +21,6 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
     {
         this._logger = new RedirectOutput(output);
     }
-
 
     [Fact]
     public async Task ItSupportsFunctionCallsAsync()
@@ -43,7 +40,6 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
         Assert.Equal("Hey johndoe1234@example.com", actual.GetValue<string>());
     }
 
-
     [Fact]
     public async Task ItSupportsFunctionCallsWithInputAsync()
     {
@@ -62,15 +58,12 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
         Assert.Equal("Hey a person@example.com", actual.GetValue<string>());
     }
 
-
     private readonly RedirectOutput _logger;
-
 
     public void Dispose()
     {
         this._logger.Dispose();
     }
-
 
     private sealed class RedirectTextGenerationService : ITextGenerationService
     {
@@ -78,12 +71,10 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
 
         public IReadOnlyDictionary<string, object?> Attributes => new Dictionary<string, object?>();
 
-
         public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings, Kernel? kernel, CancellationToken cancellationToken)
         {
             return Task.FromResult<IReadOnlyList<TextContent>>(new List<TextContent> { new(prompt) });
         }
-
 
         public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         {

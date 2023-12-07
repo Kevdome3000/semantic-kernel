@@ -1,15 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using AI;
-using Text;
+using Microsoft.SemanticKernel.Text;
 
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Prompt template configuration.
@@ -63,14 +61,12 @@ public sealed class PromptTemplateConfig
     [JsonPropertyName("execution_settings")]
     public List<PromptExecutionSettings> ExecutionSettings { get; set; } = new();
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptTemplateConfig"/> class.
     /// </summary>
     public PromptTemplateConfig()
     {
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptTemplateConfig"/> class.
@@ -80,7 +76,6 @@ public sealed class PromptTemplateConfig
         this.Template = template;
     }
 
-
     /// <summary>
     /// Return the input variables metadata.
     /// </summary>
@@ -89,10 +84,28 @@ public sealed class PromptTemplateConfig
         return this.InputVariables.Select(p => new KernelParameterMetadata(p.Name)
         {
             Description = p.Description,
-            DefaultValue = p.Default
+            DefaultValue = p.Default,
+            IsRequired = p.IsRequired,
+            Schema = string.IsNullOrEmpty(p.JsonSchema) ? null : KernelJsonSchema.Parse(p.JsonSchema!),
         }).ToList();
     }
 
+    /// <summary>
+    /// Return the output variable metadata.
+    /// </summary>
+    internal KernelReturnParameterMetadata? GetKernelReturnParameterMetadata()
+    {
+        if (this.OutputVariable is not null)
+        {
+            return new KernelReturnParameterMetadata
+            {
+                Description = this.OutputVariable.Description,
+                Schema = KernelJsonSchema.ParseOrNull(this.OutputVariable.JsonSchema),
+            };
+        }
+
+        return null;
+    }
 
     /// <summary>
     /// Creates a prompt template configuration from JSON.

@@ -1,10 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Planning;
-
 using System;
-using Connectors.AI.OpenAI;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 
+namespace Microsoft.SemanticKernel.Planning;
 
 /// <summary>
 /// Configuration for Stepwise planner instances.
@@ -19,21 +18,14 @@ public sealed class FunctionCallingStepwisePlannerConfig : PlannerConfigBase
         this.MaxTokens = 4000;
     }
 
-
     /// <summary>
     /// The ratio of tokens to allocate to the completion request. (prompt / (prompt + completion))
     /// </summary>
     public double MaxTokensRatio { get; set; } = 0.1;
 
-    internal int MaxCompletionTokens
-    {
-        get { return (int)(this.MaxTokens * this.MaxTokensRatio); }
-    }
+    internal int MaxCompletionTokens { get { return (int)(this.MaxTokens * this.MaxTokensRatio); } }
 
-    internal int MaxPromptTokens
-    {
-        get { return (int)(this.MaxTokens * (1 - this.MaxTokensRatio)); }
-    }
+    internal int MaxPromptTokens { get { return (int)(this.MaxTokens * (1 - this.MaxTokensRatio)); } }
 
     /// <summary>
     /// Delegate to get the prompt template string for the step execution phase.

@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.AI.ChatCompletion;
-
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel.ChatCompletion;
 
 /// <summary>
 /// A description of the intended purpose of a message within a chat completions interaction.
@@ -40,7 +39,6 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
     /// </remarks>
     public string Label { get; }
 
-
     /// <summary>
     /// Creates a new AuthorRole instance with the provided label.
     /// </summary>
@@ -51,7 +49,6 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
         Verify.NotNull(label, nameof(label));
         this.Label = label!;
     }
-
 
     /// <summary>
     /// Returns a value indicating whether two AuthorRole instances are equivalent, as determined by a
@@ -65,7 +62,6 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
         return left.Equals(right);
     }
 
-
     /// <summary>
     /// Returns a value indicating whether two AuthorRole instances are not equivalent, as determined by a
     /// case-insensitive comparison of their labels.
@@ -76,21 +72,17 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
     public static bool operator !=(AuthorRole left, AuthorRole right)
         => !(left == right);
 
-
     /// <inheritdoc/>
     public override bool Equals([NotNullWhen(true)] object? obj)
         => obj is AuthorRole otherRole && this == otherRole;
-
 
     /// <inheritdoc/>
     public override int GetHashCode()
         => this.Label.GetHashCode();
 
-
     /// <inheritdoc/>
     public bool Equals(AuthorRole other)
         => string.Equals(this.Label, other.Label, StringComparison.OrdinalIgnoreCase);
-
 
     /// <inheritdoc/>
     public override string ToString() => this.Label;
