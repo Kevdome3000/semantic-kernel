@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+
 using Azure.Core;
 using Azure.Core.Pipeline;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
 /// Helper class to inject headers into Azure SDK HTTP pipeline
@@ -13,11 +14,13 @@ internal sealed class AddHeaderRequestPolicy : HttpPipelineSynchronousPolicy
     private readonly string _headerName;
     private readonly string _headerValue;
 
+
     public AddHeaderRequestPolicy(string headerName, string headerValue)
     {
         this._headerName = headerName;
         this._headerValue = headerValue;
     }
+
 
     public override void OnSendingRequest(HttpMessage message)
     {

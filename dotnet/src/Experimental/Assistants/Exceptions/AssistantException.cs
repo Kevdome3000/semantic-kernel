@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Experimental.Assistants.Exceptions;
+
 using System;
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants.Exceptions;
 
 /// <summary>
 /// Assistant specific <see cref="KernelException"/>.
@@ -16,6 +17,7 @@ public class AssistantException : KernelException
     {
     }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="AssistantException"/> class with a specified error message.
     /// </summary>
@@ -23,6 +25,7 @@ public class AssistantException : KernelException
     public AssistantException(string? message) : base(message)
     {
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AssistantException"/> class with a specified error message and a reference to the inner exception that is the cause of this exception.

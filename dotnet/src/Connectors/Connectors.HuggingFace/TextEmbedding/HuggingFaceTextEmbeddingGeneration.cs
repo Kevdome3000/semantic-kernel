@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.HuggingFace;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,11 +9,10 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Embeddings;
-using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.Services;
+using Embeddings;
+using Http;
+using Services;
 
-namespace Microsoft.SemanticKernel.Connectors.HuggingFace;
 
 /// <summary>
 /// HuggingFace embedding generation service.
@@ -24,6 +25,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
     private readonly string? _endpoint;
     private readonly HttpClient _httpClient;
     private readonly Dictionary<string, object?> _attributes = new();
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HuggingFaceTextEmbeddingGeneration"/> class.
@@ -43,6 +45,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
         this._httpClient = HttpClientProvider.GetHttpClient();
     }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="HuggingFaceTextEmbeddingGeneration"/> class.
     /// </summary>
@@ -60,6 +63,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
         this._httpClient = HttpClientProvider.GetHttpClient();
     }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="HuggingFaceTextEmbeddingGeneration"/> class.
     /// </summary>
@@ -70,6 +74,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
     {
         Verify.NotNullOrWhiteSpace(model);
         Verify.NotNull(httpClient);
+
         if (httpClient.BaseAddress == null && string.IsNullOrEmpty(endpoint))
         {
             throw new ArgumentException($"The {nameof(httpClient)}.{nameof(HttpClient.BaseAddress)} and {nameof(endpoint)} are both null or empty. Please ensure at least one is provided.");
@@ -82,8 +87,10 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
         this._attributes.Add(AIServiceExtensions.EndpointKey, endpoint ?? httpClient.BaseAddress!.ToString());
     }
 
+
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, object?> Attributes => this._attributes;
+
 
     /// <inheritdoc/>
     public async Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
@@ -93,6 +100,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
     {
         return await this.ExecuteEmbeddingRequestAsync(data, cancellationToken).ConfigureAwait(false);
     }
+
 
     #region private ================================================================================
 
@@ -121,6 +129,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
         return embeddingResponse?.Embeddings?.Select(l => l.Embedding).ToList()!;
     }
 
+
     /// <summary>
     /// Retrieves the request URI based on the provided endpoint and model information.
     /// </summary>
@@ -148,4 +157,6 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
     }
 
     #endregion
+
+
 }

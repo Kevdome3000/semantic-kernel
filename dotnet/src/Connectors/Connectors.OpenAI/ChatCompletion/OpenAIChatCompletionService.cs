@@ -1,16 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.TextGeneration;
+using ChatCompletion;
+using Extensions.Logging;
+using Services;
+using TextGeneration;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
 /// OpenAI chat completion service.
@@ -18,6 +19,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextGenerationService
 {
     private readonly OpenAIClientCore _core;
+
 
     /// <summary>
     /// Create an instance of the OpenAI chat completion connector
@@ -40,6 +42,7 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextG
         this._core.AddAttribute(OpenAIClientCore.OrganizationKey, organization);
     }
 
+
     /// <summary>
     /// Create an instance of the OpenAI chat completion connector
     /// </summary>
@@ -56,20 +59,25 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextG
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
+
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, object?> Attributes => this.Attributes;
+
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         => this._core.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
 
+
     /// <inheritdoc/>
     public IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         => this._core.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
 
+
     /// <inheritdoc/>
     public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         => this._core.GetChatAsTextContentsAsync(prompt, executionSettings, kernel, cancellationToken);
+
 
     /// <inheritdoc/>
     public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)

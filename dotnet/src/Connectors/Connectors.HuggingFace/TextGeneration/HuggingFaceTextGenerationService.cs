@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.HuggingFace;
+
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -7,11 +9,10 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.TextGeneration;
+using Http;
+using Services;
+using TextGeneration;
 
-namespace Microsoft.SemanticKernel.Connectors.HuggingFace;
 
 /// <summary>
 /// HuggingFace text generation service.
@@ -27,6 +28,7 @@ public sealed class HuggingFaceTextGenerationService : ITextGenerationService
     private readonly HttpClient _httpClient;
     private readonly string? _apiKey;
     private readonly Dictionary<string, object?> _attributes = new();
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HuggingFaceTextGenerationService"/> class.
@@ -46,6 +48,7 @@ public sealed class HuggingFaceTextGenerationService : ITextGenerationService
 
         this._httpClient = HttpClientProvider.GetHttpClient();
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HuggingFaceTextGenerationService"/> class.
@@ -68,8 +71,10 @@ public sealed class HuggingFaceTextGenerationService : ITextGenerationService
         this._attributes.Add(AIServiceExtensions.EndpointKey, this._endpoint ?? HuggingFaceApiEndpoint);
     }
 
+
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, object?> Attributes => this._attributes;
+
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(
@@ -78,6 +83,7 @@ public sealed class HuggingFaceTextGenerationService : ITextGenerationService
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
         => this.InternalGetTextContentsAsync(prompt, cancellationToken);
+
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(
@@ -92,6 +98,7 @@ public sealed class HuggingFaceTextGenerationService : ITextGenerationService
         }
     }
 
+
     #region private ================================================================================
 
     private async Task<IReadOnlyList<TextContent>> InternalGetTextContentsAsync(string text, CancellationToken cancellationToken = default)
@@ -104,6 +111,7 @@ public sealed class HuggingFaceTextGenerationService : ITextGenerationService
         using var httpRequestMessage = HttpRequest.CreatePostRequest(this.GetRequestUri(), completionRequest);
 
         httpRequestMessage.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
+
         if (!string.IsNullOrEmpty(this._apiKey))
         {
             httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");
@@ -126,6 +134,7 @@ public sealed class HuggingFaceTextGenerationService : ITextGenerationService
         return completionResponse.ConvertAll(responseContent => new TextContent(responseContent.Text, this.GetModelId(), responseContent));
     }
 
+
     /// <summary>
     /// Retrieves the request URI based on the provided endpoint and model information.
     /// </summary>
@@ -147,5 +156,8 @@ public sealed class HuggingFaceTextGenerationService : ITextGenerationService
 
         return new Uri($"{baseUrl!.TrimEnd('/')}/{this._model}");
     }
+
     #endregion
+
+
 }

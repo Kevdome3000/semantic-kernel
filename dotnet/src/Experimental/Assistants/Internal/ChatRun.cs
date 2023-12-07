@@ -1,16 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Experimental.Assistants.Internal;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Experimental.Assistants.Exceptions;
-using Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
-using Microsoft.SemanticKernel.Experimental.Assistants.Models;
+using Exceptions;
+using Extensions;
+using Models;
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 
 /// <summary>
 /// Represents an execution run on a thread.
@@ -43,6 +44,7 @@ internal sealed class ChatRun
     private readonly Kernel _kernel;
 
     private ThreadRunModel _model;
+
 
     /// <inheritdoc/>
     public async Task<IList<string>> GetResultAsync(CancellationToken cancellationToken = default)
@@ -77,8 +79,7 @@ internal sealed class ChatRun
             {
                 throw new AssistantException($"Unexpected failure processing run: {this.Id}: {this._model.LastError?.Message ?? "Unknown"}");
             }
-        }
-        while (!CompletedState.Equals(this._model.Status, StringComparison.OrdinalIgnoreCase));
+        } while (!CompletedState.Equals(this._model.Status, StringComparison.OrdinalIgnoreCase));
 
         var messageIds =
             steps.Data
@@ -116,6 +117,7 @@ internal sealed class ChatRun
         }
     }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatRun"/> class.
     /// </summary>
@@ -128,6 +130,7 @@ internal sealed class ChatRun
         this._kernel = kernel;
         this._restContext = restContext;
     }
+
 
     private IEnumerable<Task<ToolResultModel>> ExecuteStep(ThreadRunStepModel step, CancellationToken cancellationToken)
     {
@@ -142,10 +145,12 @@ internal sealed class ChatRun
         }
     }
 
+
     private async Task<ToolResultModel> ProcessFunctionStepAsync(string callId, ThreadRunStepModel.FunctionDetailsModel functionDetails, CancellationToken cancellationToken)
     {
         var result = await InvokeFunctionCallAsync().ConfigureAwait(false);
         var toolResult = result as string;
+
         if (toolResult == null)
         {
             toolResult = JsonSerializer.Serialize(result);
@@ -163,9 +168,11 @@ internal sealed class ChatRun
             var function = this._kernel.GetAssistantTool(functionDetails.Name);
 
             var functionArguments = new KernelArguments();
+
             if (!string.IsNullOrWhiteSpace(functionDetails.Arguments))
             {
                 var arguments = JsonSerializer.Deserialize<Dictionary<string, object>>(functionDetails.Arguments)!;
+
                 foreach (var argument in arguments)
                 {
                     functionArguments[argument.Key] = argument.Value.ToString();
@@ -173,6 +180,7 @@ internal sealed class ChatRun
             }
 
             var result = await function.InvokeAsync(this._kernel, functionArguments, cancellationToken).ConfigureAwait(false);
+
             if (result.ValueType == typeof(AssistantResponse))
             {
                 return result.GetValue<AssistantResponse>()!;

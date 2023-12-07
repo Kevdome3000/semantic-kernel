@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+
 using System.Collections.Generic;
 using System.Linq;
 using Azure.AI.OpenAI;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>Represents a behavior for OpenAI function calling.</summary>
 public abstract class FunctionCallBehavior
@@ -27,6 +28,7 @@ public abstract class FunctionCallBehavior
     /// </remarks>
     public static FunctionCallBehavior AutoInvokeKernelFunctions { get; } = new KernelFunctions(autoInvoke: true);
 
+
     /// <summary>Gets an instance that will provide the specified list of functions to the service.</summary>
     /// <param name="functions">The functions that should be made available to the service.</param>
     /// <param name="autoInvoke">true to attempt to automatically handle a function call request; otherwise, false.</param>
@@ -36,6 +38,7 @@ public abstract class FunctionCallBehavior
         Verify.NotNull(functions);
         return new EnabledFunctions(functions, autoInvoke);
     }
+
 
     /// <summary>Gets an instance that will request the service to use the specified function.</summary>
     /// <param name="function">The function the service should request to use.</param>
@@ -47,12 +50,15 @@ public abstract class FunctionCallBehavior
         return new RequiredFunction(function, autoInvoke);
     }
 
+
     /// <summary>Initializes the instance.</summary>
     /// <param name="autoInvoke">true to attempt to automatically handle a function call request; otherwise, false.</param>
     private FunctionCallBehavior(bool autoInvoke) => this.AutoInvoke = autoInvoke;
 
+
     /// <summary>Gets whether to attempt to auto-invoke functions based on function call requests.</summary>
     internal bool AutoInvoke { get; }
+
 
     /// <summary>
     /// Represents a <see cref="FunctionCallBehavior"/> that will provide to the service all available functions from a
@@ -60,10 +66,14 @@ public abstract class FunctionCallBehavior
     /// </summary>
     internal sealed class KernelFunctions : FunctionCallBehavior
     {
-        internal KernelFunctions(bool autoInvoke) : base(autoInvoke) { }
+        internal KernelFunctions(bool autoInvoke) : base(autoInvoke)
+        {
+        }
+
 
         public override string ToString() => $"KernelFunctions(autoInvoke:{this.AutoInvoke})";
     }
+
 
     /// <summary>
     /// Represents a <see cref="FunctionCallBehavior"/> that provides a specified list of functions to the service.
@@ -73,19 +83,23 @@ public abstract class FunctionCallBehavior
         public EnabledFunctions(IEnumerable<OpenAIFunction> functions, bool autoInvoke) : base(autoInvoke) =>
             this.Functions = functions.Select(f => f.ToFunctionDefinition()).ToList();
 
+
         /// <summary>Gets the available list of functions.</summary>
         public List<FunctionDefinition> Functions { get; }
 
         public override string ToString() => $"EnabledFunctions(autoInvoke:{this.AutoInvoke}): {string.Join(", ", this.Functions.Select(f => f.Name))}";
     }
 
+
     /// <summary>Represents a <see cref="FunctionCallBehavior"/> that requests the service use a specific function.</summary>
     internal sealed class RequiredFunction : FunctionCallBehavior
     {
         private FunctionDefinition[]? _functionArray;
 
+
         public RequiredFunction(OpenAIFunction function, bool autoInvoke) : base(autoInvoke) =>
             this.Function = function.ToFunctionDefinition();
+
 
         /// <summary>Gets the target function.</summary>
         public FunctionDefinition Function { get; }

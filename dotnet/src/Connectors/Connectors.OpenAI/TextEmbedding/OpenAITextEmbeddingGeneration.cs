@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -7,11 +9,10 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Embeddings;
-using Microsoft.SemanticKernel.Services;
+using Embeddings;
+using Extensions.Logging;
+using Services;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
 /// OpenAI text embedding service.
@@ -20,6 +21,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 public sealed class OpenAITextEmbeddingGeneration : ITextEmbeddingGeneration
 {
     private readonly OpenAIClientCore _core;
+
 
     /// <summary>
     /// Create an instance of the OpenAI text embedding connector
@@ -41,6 +43,7 @@ public sealed class OpenAITextEmbeddingGeneration : ITextEmbeddingGeneration
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
+
     /// <summary>
     /// Create an instance of the OpenAI text embedding connector
     /// </summary>
@@ -56,8 +59,10 @@ public sealed class OpenAITextEmbeddingGeneration : ITextEmbeddingGeneration
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
+
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
+
 
     /// <inheritdoc/>
     public Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(

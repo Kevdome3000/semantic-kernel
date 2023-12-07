@@ -132,6 +132,7 @@ public static class Example70_Assistant
                 .BuildAsync();
 
         string? threadId = null;
+
         try
         {
             // Invoke assistant plugin function.
@@ -181,6 +182,7 @@ public static class Example70_Assistant
                 .BuildAsync();
 
         IChatThread? thread = null;
+
         try
         {
             // Display assistant identifier.

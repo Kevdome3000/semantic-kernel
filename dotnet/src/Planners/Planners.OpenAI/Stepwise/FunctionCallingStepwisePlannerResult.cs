@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.ChatCompletion;
-
 namespace Microsoft.SemanticKernel.Planning;
+
+using ChatCompletion;
+
 
 /// <summary>
 /// Result produced by the <see cref="FunctionCallingStepwisePlanner"/>.

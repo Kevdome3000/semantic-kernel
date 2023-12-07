@@ -1,14 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Experimental.Assistants.Internal;
+
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Experimental.Assistants.Exceptions;
-using Microsoft.SemanticKernel.Experimental.Assistants.Models;
+using Exceptions;
+using Models;
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 
 /// <summary>
 /// Represents an assistant that can call the model and use tools.
@@ -51,6 +52,7 @@ internal sealed class Assistant : IAssistant
     private IKernelPlugin? _assistantPlugin;
     private bool _isDeleted;
 
+
     /// <summary>
     /// Create a new assistant.
     /// </summary>
@@ -69,6 +71,7 @@ internal sealed class Assistant : IAssistant
 
         return new Assistant(resultModel, restContext, plugins);
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Assistant"/> class.
@@ -91,7 +94,9 @@ internal sealed class Assistant : IAssistant
         }
     }
 
+
     public IKernelPlugin AsPlugin() => this._assistantPlugin ?? this.DefinePlugin();
+
 
     /// <inheritdoc/>
     public Task<IChatThread> NewThreadAsync(CancellationToken cancellationToken = default)
@@ -101,6 +106,7 @@ internal sealed class Assistant : IAssistant
         return ChatThread.CreateAsync(this._restContext, cancellationToken);
     }
 
+
     /// <inheritdoc/>
     public Task<IChatThread> GetThreadAsync(string id, CancellationToken cancellationToken = default)
     {
@@ -108,6 +114,7 @@ internal sealed class Assistant : IAssistant
 
         return ChatThread.GetAsync(this._restContext, id, cancellationToken);
     }
+
 
     /// <inheritdoc/>
     public async Task DeleteThreadAsync(string? id, CancellationToken cancellationToken = default)
@@ -120,6 +127,7 @@ internal sealed class Assistant : IAssistant
         await this._restContext.DeleteThreadModelAsync(id!, cancellationToken).ConfigureAwait(false);
     }
 
+
     /// <inheritdoc/>
     public async Task DeleteAsync(CancellationToken cancellationToken = default)
     {
@@ -131,6 +139,7 @@ internal sealed class Assistant : IAssistant
         await this._restContext.DeleteAssistantModelAsync(this.Id, cancellationToken).ConfigureAwait(false);
         this._isDeleted = true;
     }
+
 
     /// <summary>
     /// Marshal thread run through <see cref="KernelFunction"/> interface.
@@ -157,6 +166,7 @@ internal sealed class Assistant : IAssistant
         return response;
     }
 
+
     private IKernelPlugin DefinePlugin()
     {
         var assistantPlugin = new KernelPlugin(this.Name ?? this.Id);
@@ -166,6 +176,7 @@ internal sealed class Assistant : IAssistant
 
         return this._assistantPlugin = assistantPlugin;
     }
+
 
     private void ThrowIfDeleted()
     {

@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.HuggingFace;
+
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Text;
+using Text;
 
-namespace Microsoft.SemanticKernel.Connectors.HuggingFace;
 
 /// <summary>
 /// Represents the response from the Hugging Face text embedding API.
@@ -24,6 +25,7 @@ public sealed class TextEmbeddingResponse
         [JsonConverter(typeof(ReadOnlyMemoryConverter))]
         public ReadOnlyMemory<float> Embedding { get; set; }
     }
+
 
     /// <summary>
     /// List of embeddings.

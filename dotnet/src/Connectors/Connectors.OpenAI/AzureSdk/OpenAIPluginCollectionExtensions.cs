@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
 /// Extension methods for <see cref="IReadOnlyKernelPluginCollection"/>.
@@ -34,6 +35,7 @@ public static class OpenAIPluginCollectionExtensions
 
         // Add parameters to arguments
         arguments = new KernelArguments();
+
         foreach (var parameter in response.Parameters)
         {
             arguments[parameter.Key] = parameter.Value.ToString();

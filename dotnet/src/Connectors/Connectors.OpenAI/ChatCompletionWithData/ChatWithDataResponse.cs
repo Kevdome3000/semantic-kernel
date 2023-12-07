@@ -1,13 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
-
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes
+
 
 [Experimental("SKEXP0010")]
 internal sealed class ChatWithDataResponse
@@ -30,12 +31,14 @@ internal sealed class ChatWithDataResponse
     [JsonPropertyName("object")]
     public string Object { get; set; } = string.Empty;
 
+
     [JsonConstructor]
     public ChatWithDataResponse(ChatWithDataUsage usage)
     {
         this.Usage = usage;
     }
 }
+
 
 [Experimental("SKEXP0010")]
 [SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Used for JSON deserialization")]
@@ -44,6 +47,7 @@ internal sealed class ChatWithDataChoice
     [JsonPropertyName("messages")]
     public IList<ChatWithDataMessage> Messages { get; set; } = Array.Empty<ChatWithDataMessage>();
 }
+
 
 [Experimental("SKEXP0010")]
 internal sealed class ChatWithDataUsage

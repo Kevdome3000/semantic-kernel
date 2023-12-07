@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 [Experimental("SKEXP0010")]
 [SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Used for JSON deserialization")]
@@ -27,6 +28,7 @@ internal sealed class ChatWithDataStreamingResponse
     public IList<ChatWithDataStreamingChoice> Choices { get; set; } = Array.Empty<ChatWithDataStreamingChoice>();
 }
 
+
 [Experimental("SKEXP0010")]
 [SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Used for JSON deserialization")]
 internal sealed class ChatWithDataStreamingChoice
@@ -38,6 +40,7 @@ internal sealed class ChatWithDataStreamingChoice
     public int Index { get; set; } = 0;
 }
 
+
 [Experimental("SKEXP0010")]
 [SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Used for JSON deserialization")]
 internal sealed class ChatWithDataStreamingMessage
@@ -48,6 +51,7 @@ internal sealed class ChatWithDataStreamingMessage
     [JsonPropertyName("end_turn")]
     public bool EndTurn { get; set; }
 }
+
 
 [Experimental("SKEXP0010")]
 internal sealed class ChatWithDataStreamingDelta

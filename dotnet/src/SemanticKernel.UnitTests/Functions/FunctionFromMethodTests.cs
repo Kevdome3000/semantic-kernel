@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-
-
 // ReSharper disable StringLiteralTypo
 
 namespace SemanticKernel.UnitTests.Functions;

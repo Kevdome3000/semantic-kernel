@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -8,11 +10,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Azure.Core;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Embeddings;
-using Microsoft.SemanticKernel.Services;
+using Embeddings;
+using Extensions.Logging;
+using Services;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
 /// Azure OpenAI text embedding service.
@@ -21,6 +22,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 public sealed class AzureOpenAITextEmbeddingGeneration : ITextEmbeddingGeneration
 {
     private readonly AzureOpenAIClientCore _core;
+
 
     /// <summary>
     /// Creates a new <see cref="AzureOpenAITextEmbeddingGeneration"/> client instance using API Key auth.
@@ -44,6 +46,7 @@ public sealed class AzureOpenAITextEmbeddingGeneration : ITextEmbeddingGeneratio
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
+
     /// <summary>
     /// Creates a new <see cref="AzureOpenAITextEmbeddingGeneration"/> client instance supporting AAD auth.
     /// </summary>
@@ -66,6 +69,7 @@ public sealed class AzureOpenAITextEmbeddingGeneration : ITextEmbeddingGeneratio
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
+
     /// <summary>
     /// Creates a new <see cref="AzureOpenAITextEmbeddingGeneration"/> client.
     /// </summary>
@@ -84,8 +88,10 @@ public sealed class AzureOpenAITextEmbeddingGeneration : ITextEmbeddingGeneratio
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
+
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
+
 
     /// <inheritdoc/>
     public Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(

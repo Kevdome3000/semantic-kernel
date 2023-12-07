@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -8,10 +10,9 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.TextToImage;
+using Extensions.Logging;
+using TextToImage;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
 /// OpenAI text to image service.
@@ -36,6 +37,7 @@ public sealed class OpenAITextToImageService : ITextToImageService
     /// </summary>
     private readonly string _authorizationHeaderValue;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAITextToImageService"/> class.
     /// </summary>
@@ -59,6 +61,7 @@ public sealed class OpenAITextToImageService : ITextToImageService
         this._core.RequestCreated += (_, request) =>
         {
             request.Headers.Add("Authorization", this._authorizationHeaderValue);
+
             if (!string.IsNullOrEmpty(this._organizationHeaderValue))
             {
                 request.Headers.Add("OpenAI-Organization", this._organizationHeaderValue);
@@ -66,13 +69,16 @@ public sealed class OpenAITextToImageService : ITextToImageService
         };
     }
 
+
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
+
 
     /// <inheritdoc/>
     public Task<string> GenerateImageAsync(string description, int width, int height, Kernel? kernel = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(description);
+
         if (width != height || width != 256 && width != 512 && width != 1024)
         {
             throw new ArgumentOutOfRangeException(nameof(width), width, "OpenAI can generate only square images of size 256x256, 512x512, or 1024x1024.");
@@ -81,10 +87,13 @@ public sealed class OpenAITextToImageService : ITextToImageService
         return this.GenerateImageAsync(description, width, height, "url", x => x.Url, cancellationToken);
     }
 
+
     private async Task<string> GenerateImageAsync(
         string description,
-        int width, int height,
-        string format, Func<TextToImageResponse.Image, string> extractResponse,
+        int width,
+        int height,
+        string format,
+        Func<TextToImageResponse.Image, string> extractResponse,
         CancellationToken cancellationToken)
     {
         Debug.Assert(width == height);

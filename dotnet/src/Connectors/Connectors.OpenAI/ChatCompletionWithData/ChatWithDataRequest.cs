@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 [Experimental("SKEXP0010")]
 internal sealed class ChatWithDataRequest
@@ -41,6 +42,7 @@ internal sealed class ChatWithDataRequest
     public IList<ChatWithDataMessage> Messages { get; set; } = Array.Empty<ChatWithDataMessage>();
 }
 
+
 [Experimental("SKEXP0010")]
 internal sealed class ChatWithDataSource
 {
@@ -53,6 +55,7 @@ internal sealed class ChatWithDataSource
     [JsonPropertyName("parameters")]
     public ChatWithDataSourceParameters Parameters { get; set; } = new ChatWithDataSourceParameters();
 }
+
 
 [Experimental("SKEXP0010")]
 internal sealed class ChatWithDataSourceParameters

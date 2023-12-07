@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Experimental.Assistants.Exceptions;
-
 namespace Microsoft.SemanticKernel.Experimental.Assistants.Extensions;
+
+using Exceptions;
+
 
 internal static class AssistantsKernelExtensions
 {

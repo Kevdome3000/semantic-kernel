@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel;
+
 using System.Text.Json;
+using Extensions.Logging;
 using Markdig;
 using Markdig.Syntax;
-using Microsoft.Extensions.Logging;
 
-namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Factory methods for creating <seealso cref="KernelFunction"/> instances.
@@ -35,7 +36,9 @@ public static class KernelFunctionMarkdown
             loggerFactory);
     }
 
+
     #region Private methods
+
     internal static PromptTemplateConfig CreateFromPromptMarkdown(string text, string functionName)
     {
         PromptTemplateConfig promptFunctionModel = new() { Name = functionName };
@@ -53,6 +56,7 @@ public static class KernelFunctionMarkdown
                     case "sk.execution_settings":
                         var modelSettings = codeBlock.Lines.ToString();
                         var executionSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(modelSettings);
+
                         if (executionSettings is not null)
                         {
                             promptFunctionModel.ExecutionSettings.Add(executionSettings);
@@ -64,5 +68,8 @@ public static class KernelFunctionMarkdown
 
         return promptFunctionModel;
     }
+
     #endregion
+
+
 }

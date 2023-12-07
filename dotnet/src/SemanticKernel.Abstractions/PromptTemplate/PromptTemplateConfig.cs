@@ -1,13 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Text;
+using Text;
 
-namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Prompt template configuration.
@@ -61,12 +62,14 @@ public sealed class PromptTemplateConfig
     [JsonPropertyName("execution_settings")]
     public List<PromptExecutionSettings> ExecutionSettings { get; set; } = new();
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptTemplateConfig"/> class.
     /// </summary>
     public PromptTemplateConfig()
     {
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptTemplateConfig"/> class.
@@ -75,6 +78,7 @@ public sealed class PromptTemplateConfig
     {
         this.Template = template;
     }
+
 
     /// <summary>
     /// Return the input variables metadata.
@@ -89,6 +93,7 @@ public sealed class PromptTemplateConfig
             Schema = string.IsNullOrEmpty(p.JsonSchema) ? null : KernelJsonSchema.Parse(p.JsonSchema!),
         }).ToList();
     }
+
 
     /// <summary>
     /// Return the output variable metadata.
@@ -106,6 +111,7 @@ public sealed class PromptTemplateConfig
 
         return null;
     }
+
 
     /// <summary>
     /// Creates a prompt template configuration from JSON.

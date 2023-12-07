@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Xml;
 
-namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Class to parse text prompt from XML format.
@@ -29,6 +30,7 @@ internal static class XmlPromptParser
         // - it would need to contain a the start of a tag
         // - it would need to contain a closing tag, which could include either </ or />
         int startPos;
+
         if (prompt is null ||
             (startPos = prompt.IndexOf('<')) < 0 ||
             (prompt.IndexOf("</", startPos + 1, StringComparison.Ordinal) < 0 &&
@@ -38,6 +40,7 @@ internal static class XmlPromptParser
         }
 
         var xmlDocument = new XmlDocument();
+
         try
         {
             xmlDocument.LoadXml($"<root>{prompt}</root>");
@@ -57,6 +60,7 @@ internal static class XmlPromptParser
 
         return result is not null;
     }
+
 
     /// <summary>
     /// Gets an instance of <see cref="PromptNode"/> from <see cref="XmlNode"/> and child nodes recursively.

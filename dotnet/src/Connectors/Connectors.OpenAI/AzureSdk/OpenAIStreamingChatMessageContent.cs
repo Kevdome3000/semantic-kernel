@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+
 using System.Collections.Generic;
 using System.Text;
 using Azure.AI.OpenAI;
-using Microsoft.SemanticKernel.ChatCompletion;
+using ChatCompletion;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
 /// Azure OpenAI and OpenAI Specialized streaming chat message content.
@@ -29,6 +30,7 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
     /// Function arguments fragment associated with this chunk
     /// </summary>
     public string? FunctionArgument { get; set; }
+
 
     /// <summary>
     /// Create a new instance of the <see cref="OpenAIStreamingChatMessageContent"/> class.
@@ -55,11 +57,14 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
         this.FunctionArgument = chatUpdate.FunctionArgumentsUpdate;
     }
 
+
     /// <inheritdoc/>
     public override byte[] ToByteArray() => this.Encoding.GetBytes(this.ToString());
 
+
     /// <inheritdoc/>
     public override string ToString() => this.Content ?? string.Empty;
+
 
     /// <summary>
     /// Retrieve the resulting function from the chat result.
@@ -70,6 +75,7 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
     {
         StringBuilder arguments = new();
         string? functionName = null;
+
         foreach (var message in fullContent)
         {
             functionName ??= message.FunctionName;

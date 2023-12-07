@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.ChatCompletion;
-
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+
+using ChatCompletion;
+
 
 /// <summary>
 /// OpenAI Chat content
@@ -21,6 +22,7 @@ internal sealed class OpenAIChatHistory : ChatHistory
             this.AddSystemMessage(systemMessage!);
         }
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIChatHistory"/> class based on <see cref="ChatHistory"/>.

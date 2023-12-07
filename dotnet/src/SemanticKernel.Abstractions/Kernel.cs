@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -7,13 +9,12 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Events;
-using Microsoft.SemanticKernel.Services;
+using Events;
+using Extensions.DependencyInjection;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
+using Services;
 
-namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Provides state for use throughout a Semantic Kernel workload.
@@ -29,10 +30,13 @@ public sealed class Kernel
 
     /// <summary>Dictionary containing ambient data stored in the kernel, lazily-initialized on first access.</summary>
     private Dictionary<string, object?>? _data;
+
     /// <summary><see cref="CultureInfo"/> to be used by any operations that need access to the culture, a format provider, etc.</summary>
     private CultureInfo _culture = CultureInfo.InvariantCulture;
+
     /// <summary>The collection of plugins, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
     private KernelPluginCollection? _plugins;
+
 
     /// <summary>
     /// Initializes a new instance of <see cref="Kernel"/>.
@@ -55,6 +59,7 @@ public sealed class Kernel
 
         // Store the provided plugins. If there weren't any, look in DI to see if there's a plugin collection.
         this._plugins = plugins ?? this.Services.GetService<KernelPluginCollection>();
+
         if (this._plugins is null)
         {
             // Otherwise, enumerate any plugins that may have been registered directly.
@@ -69,6 +74,7 @@ public sealed class Kernel
             }
         }
     }
+
 
     /// <summary>
     /// Clone the <see cref="Kernel"/> object to create a new instance that may be mutated without affecting the current instance.
@@ -104,6 +110,7 @@ public sealed class Kernel
             _data = this._data is { Count: > 0 } ? new Dictionary<string, object?>(this._data) : null,
             _culture = this._culture,
         };
+
 
     /// <summary>
     /// Gets the collection of plugins available through the kernel.
@@ -183,7 +190,9 @@ public sealed class Kernel
     /// </summary>
     public event EventHandler<PromptRenderedEventArgs>? PromptRendered;
 
+
     #region GetServices
+
     /// <summary>Gets a service from the <see cref="Services"/> collection.</summary>
     /// <typeparam name="T">Specifies the type of the service to get.</typeparam>
     /// <param name="serviceId">An object that specifies the key of the service to get.</param>
@@ -218,6 +227,7 @@ public sealed class Kernel
             // a service registered with an ID. In both cases, if there were multiple, this will match
             // with whichever was registered last.
             service = this.Services.GetService<T>();
+
             if (service is null && this.Services is IKeyedServiceProvider)
             {
                 service = this.GetAllServices<T>().LastOrDefault();
@@ -238,6 +248,7 @@ public sealed class Kernel
         // Return the found service.
         return service;
     }
+
 
     /// <summary>Gets all services of the specified type.</summary>
     /// <typeparam name="T">Specifies the type of the services to retrieve.</typeparam>
@@ -267,10 +278,13 @@ public sealed class Kernel
 
     #endregion
 
+
     #region Internal Event Helpers
+
     internal FunctionInvokingEventArgs? OnFunctionInvoking(KernelFunction function, KernelArguments arguments)
     {
         FunctionInvokingEventArgs? eventArgs = null;
+
         if (this.FunctionInvoking is { } functionInvoking)
         {
             eventArgs = new(function, arguments);
@@ -280,9 +294,11 @@ public sealed class Kernel
         return eventArgs;
     }
 
+
     internal FunctionInvokedEventArgs? OnFunctionInvoked(KernelFunction function, KernelArguments arguments, FunctionResult result)
     {
         FunctionInvokedEventArgs? eventArgs = null;
+
         if (this.FunctionInvoked is { } functionInvoked)
         {
             eventArgs = new(function, arguments, result);
@@ -292,9 +308,11 @@ public sealed class Kernel
         return eventArgs;
     }
 
+
     internal PromptRenderingEventArgs? OnPromptRendering(KernelFunction function, KernelArguments arguments)
     {
         PromptRenderingEventArgs? eventArgs = null;
+
         if (this.PromptRendering is { } promptRendering)
         {
             eventArgs = new(function, arguments);
@@ -304,9 +322,11 @@ public sealed class Kernel
         return eventArgs;
     }
 
+
     internal PromptRenderedEventArgs? OnPromptRendered(KernelFunction function, KernelArguments arguments, string renderedPrompt)
     {
         PromptRenderedEventArgs? eventArgs = null;
+
         if (this.PromptRendered is { } promptRendered)
         {
             eventArgs = new(function, arguments, renderedPrompt);
@@ -315,7 +335,9 @@ public sealed class Kernel
 
         return eventArgs;
     }
+
     #endregion
+
 
     #region InvokeAsync
 
@@ -340,6 +362,7 @@ public sealed class Kernel
 
         return function.InvokeAsync(this, arguments, cancellationToken);
     }
+
 
     /// <summary>
     /// Invokes a function from <see cref="Kernel.Plugins"/> using the specified arguments.
@@ -369,6 +392,7 @@ public sealed class Kernel
         return function.InvokeAsync(this, arguments, cancellationToken);
     }
 
+
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/>.
     /// </summary>
@@ -391,6 +415,7 @@ public sealed class Kernel
         FunctionResult result = await this.InvokeAsync(function, arguments, cancellationToken).ConfigureAwait(false);
         return result.GetValue<TResult>();
     }
+
 
     /// <summary>
     /// Invokes a function from <see cref="Plugins"/> using the specified arguments.
@@ -421,7 +446,9 @@ public sealed class Kernel
 
     #endregion
 
+
     #region InvokeStreamingAsync
+
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/> and streams its results.
     /// </summary>
@@ -444,6 +471,7 @@ public sealed class Kernel
         return function.InvokeStreamingAsync<StreamingContentBase>(this, arguments, CancellationToken.None);
     }
 
+
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/> and streams its results.
     /// </summary>
@@ -465,5 +493,8 @@ public sealed class Kernel
 
         return function.InvokeStreamingAsync<T>(this, arguments, cancellationToken);
     }
+
     #endregion
+
+
 }

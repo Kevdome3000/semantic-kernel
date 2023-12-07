@@ -1,7 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using Microsoft.SemanticKernel.Services;
-
 namespace Microsoft.SemanticKernel;
+
+using Services;
+
 
 /// <summary>
 /// Represents a selector which will return a tuple containing instances of <see cref="IAIService"/> and <see cref="PromptExecutionSettings"/> from the specified provider based on the model settings.

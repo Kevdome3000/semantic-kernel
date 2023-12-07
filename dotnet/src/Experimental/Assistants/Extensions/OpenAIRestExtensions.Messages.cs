@@ -1,14 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Experimental.Assistants;
+
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Experimental.Assistants.Internal;
-using Microsoft.SemanticKernel.Experimental.Assistants.Models;
+using ChatCompletion;
+using Internal;
+using Models;
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants;
 
 /// <summary>
 /// Supported OpenAI REST API actions for thread messages.
@@ -43,6 +44,7 @@ internal static partial class OpenAIRestExtensions
                 cancellationToken);
     }
 
+
     /// <summary>
     /// Retrieve an message by identifier.
     /// </summary>
@@ -63,6 +65,7 @@ internal static partial class OpenAIRestExtensions
                 cancellationToken);
     }
 
+
     /// <summary>
     /// Retrieve all thread messages.
     /// </summary>
@@ -80,6 +83,7 @@ internal static partial class OpenAIRestExtensions
                 GetMessagesUrl(threadId),
                 cancellationToken);
     }
+
 
     /// <summary>
     /// Retrieve all thread messages.
@@ -107,10 +111,12 @@ internal static partial class OpenAIRestExtensions
         return tasks.Select(t => t.Result).ToArray();
     }
 
+
     internal static string GetMessagesUrl(string threadId)
     {
         return $"{BaseThreadUrl}/{threadId}/messages";
     }
+
 
     internal static string GetMessagesUrl(string threadId, string messageId)
     {

@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
 /// Text to image response
@@ -30,6 +31,7 @@ public class TextToImageResponse
         [JsonPropertyName("b64_json")]
         public string AsBase64 { get; set; } = string.Empty;
     }
+
 
     /// <summary>
     /// List of possible images

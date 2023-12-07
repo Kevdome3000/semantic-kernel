@@ -1,13 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using Azure.AI.OpenAI;
 using Azure.Core;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Services;
+using Extensions.Logging;
+using Services;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
 /// Core implementation for OpenAI clients, providing common functionality and properties.
@@ -23,6 +24,7 @@ internal sealed class OpenAIClientCore : ClientCore
     /// OpenAI / Azure OpenAI Client
     /// </summary>
     internal override OpenAIClient Client { get; }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIClientCore"/> class.
@@ -54,6 +56,7 @@ internal sealed class OpenAIClientCore : ClientCore
         this.Client = new OpenAIClient(apiKey, options);
     }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIClientCore"/> class using the specified OpenAIClient.
     /// Note: instances created this way might not have the default diagnostics settings,
@@ -73,6 +76,7 @@ internal sealed class OpenAIClientCore : ClientCore
         this.DeploymentOrModelName = modelId;
         this.Client = openAIClient;
     }
+
 
     /// <summary>
     /// Logs OpenAI action details.

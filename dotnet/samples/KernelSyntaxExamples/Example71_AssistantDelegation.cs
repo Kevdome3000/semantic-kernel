@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel.Experimental.Assistants;
 using Plugins;
 using Resources;
 
+
 // ReSharper disable once InconsistentNaming
 /// <summary>
 /// Showcase complex Open AI Assistant interactions using semantic kernel.
@@ -19,6 +20,7 @@ public static class Example71_AssistantDelegation
     /// Currently this is limited to Open AI hosted services.
     /// </summary>
     private const string OpenAIFunctionEnabledModel = "gpt-3.5-turbo-1106";
+
 
     /// <summary>
     /// Show how to combine coordinate multiple assistants.
@@ -64,12 +66,13 @@ public static class Example71_AssistantDelegation
 
             var messages = new string[]
             {
-            "What's on the menu?",
-            "Can you talk like pirate?",
-            "Thank you",
+                "What's on the menu?",
+                "Can you talk like pirate?",
+                "Thank you",
             };
 
             thread = await toolAssistant.NewThreadAsync();
+
             foreach (var message in messages)
             {
                 var messageUser = await thread.AddUserMessageAsync(message);
@@ -89,6 +92,7 @@ public static class Example71_AssistantDelegation
         }
     }
 
+
     private static void DisplayMessages(IEnumerable<IChatMessage> messages)
     {
         foreach (var message in messages)
@@ -96,6 +100,7 @@ public static class Example71_AssistantDelegation
             DisplayMessage(message);
         }
     }
+
 
     private static void DisplayMessage(IChatMessage message)
     {

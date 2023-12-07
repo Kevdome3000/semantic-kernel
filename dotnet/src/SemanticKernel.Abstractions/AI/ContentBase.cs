@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel;
+
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Base class for all AI non-streaming results
@@ -29,6 +30,7 @@ public abstract class ContentBase
     /// </summary>
     public IDictionary<string, object?>? Metadata { get; }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ContentBase"/> class.
     /// </summary>
@@ -39,11 +41,13 @@ public abstract class ContentBase
     {
         this.ModelId = modelId;
         this.InnerContent = innerContent;
+
         if (metadata is not null)
         {
             this.Metadata = new Dictionary<string, object?>(metadata);
         }
     }
+
 
     /// <summary>
     /// Implicit conversion to string

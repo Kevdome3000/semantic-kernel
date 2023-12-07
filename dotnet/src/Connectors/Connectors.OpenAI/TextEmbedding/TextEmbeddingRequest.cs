@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
 /// A request to create embedding vector representing input text
@@ -19,6 +20,7 @@ public abstract class TextEmbeddingRequest
     public IList<string> Input { get; set; } = new List<string>();
 }
 
+
 /// <summary>
 /// An OpenAI embedding request
 /// </summary>
@@ -31,6 +33,7 @@ public sealed class OpenAITextEmbeddingRequest : TextEmbeddingRequest
     [JsonPropertyName("model")]
     public string Model { get; set; } = string.Empty;
 }
+
 
 /// <summary>
 /// An Azure OpenAI embedding request

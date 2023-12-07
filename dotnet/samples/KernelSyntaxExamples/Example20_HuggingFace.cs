@@ -3,6 +3,8 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+
+
 /**
  * The following example shows how to use Semantic Kernel with HuggingFace API.
  */
@@ -14,6 +16,7 @@ public static class Example20_HuggingFace
         await RunInferenceApiExampleAsync();
         await RunLlamaExampleAsync();
     }
+
 
     /// <summary>
     /// This example uses HuggingFace Inference API to access hosted models.
@@ -35,6 +38,7 @@ public static class Example20_HuggingFace
 
         Console.WriteLine(result.GetValue<string>());
     }
+
 
     /// <summary>
     /// This example uses HuggingFace Llama 2 model and local HTTP server from Semantic Kernel repository.

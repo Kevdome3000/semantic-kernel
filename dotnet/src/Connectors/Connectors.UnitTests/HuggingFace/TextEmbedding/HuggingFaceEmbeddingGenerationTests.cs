@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Connectors.UnitTests.HuggingFace.TextEmbedding;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +11,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.HuggingFace;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.HuggingFace.TextEmbedding;
 
 /// <summary>
 /// Unit tests for <see cref="HuggingFaceTextEmbeddingGeneration"/> class.
@@ -19,6 +20,7 @@ public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
 
+
     public HuggingFaceEmbeddingGenerationTests()
     {
         this._messageHandlerStub = new HttpMessageHandlerStub();
@@ -26,6 +28,7 @@ public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
 
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
     }
+
 
     [Fact]
     public async Task SpecifiedModelShouldBeUsedAsync()
@@ -39,6 +42,7 @@ public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
         //Assert
         Assert.EndsWith("/fake-model", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
     }
+
 
     [Fact]
     public async Task UserAgentHeaderShouldBeUsedAsync()
@@ -58,6 +62,7 @@ public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
         Assert.Equal("Semantic-Kernel", value);
     }
 
+
     [Fact]
     public async Task ProvidedEndpointShouldBeUsedAsync()
     {
@@ -70,6 +75,7 @@ public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
         //Assert
         Assert.StartsWith("https://fake-random-test-host/fake-path", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
     }
+
 
     [Fact]
     public async Task HttpClientBaseAddressShouldBeUsedAsync()
@@ -86,6 +92,7 @@ public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
         Assert.StartsWith("https://fake-random-test-host/fake-path", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
     }
 
+
     [Fact]
     public async Task ModelUrlShouldBeBuiltSuccessfullyAsync()
     {
@@ -98,6 +105,7 @@ public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
         //Assert
         Assert.Equal("https://fake-random-test-host/fake-path/fake-model", this._messageHandlerStub.RequestUri?.AbsoluteUri);
     }
+
 
     [Fact]
     public async Task ShouldSendDataToServiceAsync()
@@ -116,6 +124,7 @@ public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
         Assert.Equivalent(data, requestPayload.Input);
     }
 
+
     [Fact]
     public async Task ShouldHandleServiceResponseAsync()
     {
@@ -131,6 +140,7 @@ public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
         Assert.Single(embeddings);
         Assert.Equal(8, embeddings.First().Length);
     }
+
 
     public void Dispose()
     {

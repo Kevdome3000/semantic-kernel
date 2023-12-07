@@ -1,13 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Text;
+using ChatCompletion;
+using Text;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
 /// Execution settings for an OpenAI completion request.
@@ -131,6 +132,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// </summary>
     internal static int DefaultTextMaxTokens { get; } = 256;
 
+
     /// <summary>
     /// Create a new settings object with the values from another settings object.
     /// </summary>
@@ -155,6 +157,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
         var json = JsonSerializer.Serialize(executionSettings);
 
         var openAIExecutionSettings = JsonSerializer.Deserialize<OpenAIPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
+
         if (openAIExecutionSettings is not null)
         {
             return openAIExecutionSettings;
@@ -162,6 +165,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
 
         throw new ArgumentException($"Invalid execution settings, cannot convert to {nameof(OpenAIPromptExecutionSettings)}", nameof(executionSettings));
     }
+
 
     /// <summary>
     /// Create a new settings object with the values from another settings object.
@@ -183,9 +187,12 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
         return settings;
     }
 
+
     #region private ================================================================================
 
     private string _chatSystemPrompt = DefaultChatSystemPrompt;
 
     #endregion
+
+
 }

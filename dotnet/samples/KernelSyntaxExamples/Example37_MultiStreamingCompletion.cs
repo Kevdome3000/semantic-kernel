@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.TextGeneration;
 
+
 /**
  * The following example shows how to use Semantic Kernel with streaming Multiple Results Chat Completion
  */
@@ -17,6 +18,7 @@ public static class Example37_MultiStreamingCompletion
         await AzureOpenAIMultiChatCompletionStreamAsync();
         await OpenAIChatCompletionStreamAsync();
     }
+
 
     private static async Task AzureOpenAIMultiChatCompletionStreamAsync()
     {
@@ -31,6 +33,7 @@ public static class Example37_MultiStreamingCompletion
         await ChatCompletionStreamAsync(chatCompletionService);
     }
 
+
     private static async Task OpenAIChatCompletionStreamAsync()
     {
         Console.WriteLine("======== Open AI - Multiple Chat Completion - Raw Streaming ========");
@@ -41,6 +44,7 @@ public static class Example37_MultiStreamingCompletion
 
         await ChatCompletionStreamAsync(textGeneration);
     }
+
 
     private static async Task ChatCompletionStreamAsync(ITextGenerationService textGeneration)
     {
@@ -66,6 +70,7 @@ public static class Example37_MultiStreamingCompletion
         Console.WriteLine();
     }
 
+
     /// <summary>
     /// Break enough lines as the current console window size to display the results
     /// </summary>
@@ -76,9 +81,12 @@ public static class Example37_MultiStreamingCompletion
             Console.WriteLine();
         }
     }
+
+
     private static async Task ProcessStreamAsyncEnumerableAsync(ITextGenerationService chatCompletion, string prompt, OpenAIPromptExecutionSettings executionSettings, int consoleLinesPerResult)
     {
         var messagePerChoice = new Dictionary<int, string>();
+
         await foreach (var textUpdate in chatCompletion.GetStreamingTextContentsAsync(prompt, executionSettings))
         {
             string newContent = string.Empty;

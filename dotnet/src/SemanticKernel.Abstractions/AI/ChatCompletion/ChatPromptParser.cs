@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.ChatCompletion;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.SemanticKernel.ChatCompletion;
 
 /// <summary>
 /// Chat Prompt parser.
@@ -13,6 +14,7 @@ internal static class ChatPromptParser
 {
     private const string MessageTagName = "message";
     private const string RoleAttributeName = "role";
+
 
     /// <summary>
     /// Parses a prompt for an XML representation of a <see cref="ChatHistory"/>.
@@ -26,6 +28,7 @@ internal static class ChatPromptParser
         // The XML parsing is expensive, so we do a quick up-front check to make sure
         // the text contains "<message", as that's required in any valid XML prompt.
         const string MessageTagStart = "<" + MessageTagName;
+
         if (prompt is not null &&
             prompt.IndexOf(MessageTagStart, StringComparison.OrdinalIgnoreCase) >= 0 &&
             XmlPromptParser.TryParse(prompt, out var nodes) &&
@@ -37,6 +40,7 @@ internal static class ChatPromptParser
         chatHistory = null;
         return false;
     }
+
 
     /// <summary>
     /// Parses collection of <see cref="PromptNode"/> instances and sets output as <see cref="ChatHistory"/>.
@@ -61,6 +65,7 @@ internal static class ChatPromptParser
 
         return chatHistory is not null;
     }
+
 
     /// <summary>
     /// Checks if <see cref="PromptNode"/> is valid chat message.

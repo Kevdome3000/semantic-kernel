@@ -1,21 +1,23 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
+
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Embeddings;
-using SemanticKernel.IntegrationTests.TestSettings;
+using TestSettings;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
 public sealed class OpenAITextEmbeddingTests : IDisposable
 {
     private const int AdaVectorLength = 1536;
     private readonly IConfigurationRoot _configuration;
+
 
     public OpenAITextEmbeddingTests(ITestOutputHelper output)
     {
@@ -30,6 +32,7 @@ public sealed class OpenAITextEmbeddingTests : IDisposable
             .AddUserSecrets<OpenAITextEmbeddingTests>()
             .Build();
     }
+
 
     [Theory(Skip = "OpenAI will often throttle requests. This test is for manual verification.")]
     [InlineData("test sentence")]
@@ -49,6 +52,7 @@ public sealed class OpenAITextEmbeddingTests : IDisposable
         Assert.Equal(AdaVectorLength, singleResult.Length);
         Assert.Equal(3, batchResult.Count);
     }
+
 
     [Theory]
     [InlineData("test sentence")]
@@ -72,9 +76,11 @@ public sealed class OpenAITextEmbeddingTests : IDisposable
         Assert.Equal(3, batchResult.Count);
     }
 
+
     #region internals
 
     private readonly RedirectOutput _testOutputHelper;
+
 
     public void Dispose()
     {
@@ -82,10 +88,12 @@ public sealed class OpenAITextEmbeddingTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
+
     ~OpenAITextEmbeddingTests()
     {
         this.Dispose(false);
     }
+
 
     private void Dispose(bool disposing)
     {
@@ -96,4 +104,6 @@ public sealed class OpenAITextEmbeddingTests : IDisposable
     }
 
     #endregion
+
+
 }

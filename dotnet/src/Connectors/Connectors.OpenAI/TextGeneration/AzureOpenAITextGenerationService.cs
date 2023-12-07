@@ -1,16 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Azure.Core;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.TextGeneration;
+using Extensions.Logging;
+using Services;
+using TextGeneration;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
 /// Azure OpenAI text generation client.
@@ -21,6 +22,7 @@ public sealed class AzureOpenAITextGenerationService : ITextGenerationService
 
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
+
 
     /// <summary>
     /// Creates a new <see cref="AzureOpenAITextGenerationService"/> client instance using API Key auth
@@ -42,6 +44,7 @@ public sealed class AzureOpenAITextGenerationService : ITextGenerationService
         this._core = new(deploymentName, endpoint, apiKey, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextGenerationService)));
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
+
 
     /// <summary>
     /// Creates a new <see cref="AzureOpenAITextGenerationService"/> client instance supporting AAD auth
@@ -65,6 +68,7 @@ public sealed class AzureOpenAITextGenerationService : ITextGenerationService
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
+
     /// <summary>
     /// Creates a new <see cref="AzureOpenAITextGenerationService"/> client instance using the specified OpenAIClient
     /// </summary>
@@ -83,11 +87,13 @@ public sealed class AzureOpenAITextGenerationService : ITextGenerationService
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
+
     /// <inheritdoc/>
     public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
     {
         return this._core.GetTextResultsAsync(prompt, executionSettings, kernel, cancellationToken);
     }
+
 
     /// <inheritdoc/>
     public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)

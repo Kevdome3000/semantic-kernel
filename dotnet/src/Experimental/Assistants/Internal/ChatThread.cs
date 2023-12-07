@@ -1,14 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Experimental.Assistants.Internal;
+
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Experimental.Assistants.Exceptions;
-using Microsoft.SemanticKernel.Experimental.Assistants.Models;
+using Exceptions;
+using Models;
 
-namespace Microsoft.SemanticKernel.Experimental.Assistants.Internal;
 
 /// <summary>
 /// Represents a thread that contains messages.
@@ -20,6 +21,7 @@ internal sealed class ChatThread : IChatThread
 
     private readonly OpenAIRestContext _restContext;
     private bool _isDeleted;
+
 
     /// <summary>
     /// Create a new thread.
@@ -34,6 +36,7 @@ internal sealed class ChatThread : IChatThread
 
         return new ChatThread(threadModel, messageListModel: null, restContext);
     }
+
 
     /// <summary>
     /// Retrieve an existing thread.
@@ -50,6 +53,7 @@ internal sealed class ChatThread : IChatThread
         return new ChatThread(threadModel, messageListModel, restContext);
     }
 
+
     /// <inheritdoc/>
     public async Task<IChatMessage> AddUserMessageAsync(string message, CancellationToken cancellationToken = default)
     {
@@ -63,6 +67,7 @@ internal sealed class ChatThread : IChatThread
 
         return new ChatMessage(messageModel);
     }
+
 
     /// <inheritdoc/>
     public async Task<IEnumerable<IChatMessage>> InvokeAsync(IAssistant assistant, CancellationToken cancellationToken)
@@ -80,6 +85,7 @@ internal sealed class ChatThread : IChatThread
         return messages;
     }
 
+
     /// <summary>
     /// Delete an existing thread.
     /// </summary>
@@ -95,6 +101,7 @@ internal sealed class ChatThread : IChatThread
         this._isDeleted = true;
     }
 
+
     private async IAsyncEnumerable<IChatMessage> GetMessagesAsync(
         IList<string> messageIds,
         [EnumeratorCancellation] CancellationToken cancellationToken)
@@ -102,11 +109,13 @@ internal sealed class ChatThread : IChatThread
         this.ThrowIfDeleted();
 
         var messages = await this._restContext.GetMessagesAsync(this.Id, messageIds, cancellationToken).ConfigureAwait(false);
+
         foreach (var message in messages)
         {
             yield return new ChatMessage(message);
         }
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatThread"/> class.
@@ -119,6 +128,7 @@ internal sealed class ChatThread : IChatThread
         this.Id = threadModel.Id;
         this._restContext = restContext;
     }
+
 
     private void ThrowIfDeleted()
     {

@@ -1,5 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable CA1508 // Avoid dead conditional code
+
+namespace Microsoft.SemanticKernel;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -7,11 +11,8 @@ using System.Diagnostics.Metrics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+using Extensions.Logging;
 
-#pragma warning disable CA1508 // Avoid dead conditional code
-
-namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Represents a function that can be invoked as part of a Semantic Kernel workload.
@@ -70,6 +71,7 @@ public abstract class KernelFunction
     /// </summary>
     internal List<PromptExecutionSettings>? ExecutionSettings { get; }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunction"/> class.
     /// </summary>
@@ -94,6 +96,7 @@ public abstract class KernelFunction
         };
         this.ExecutionSettings = executionSettings;
     }
+
 
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/>.
@@ -121,6 +124,7 @@ public abstract class KernelFunction
         TagList tags = new() { { "sk.function.name", this.Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
         FunctionResult? functionResult = null;
+
         try
         {
             // Quick check for cancellation after logging about function start but before doing any real work.
@@ -128,6 +132,7 @@ public abstract class KernelFunction
 
             // Invoke pre-invocation event handler. If it requests cancellation, throw.
             var invokingEventArgs = kernel.OnFunctionInvoking(this, arguments);
+
             if (invokingEventArgs?.Cancel is true)
             {
                 throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.FunctionInvoking)} event handler requested cancellation before function invocation.");
@@ -138,6 +143,7 @@ public abstract class KernelFunction
 
             // Invoke the post-invocation event handler. If it requests cancellation, throw.
             var invokedEventArgs = kernel.OnFunctionInvoked(this, arguments, functionResult);
+
             if (invokedEventArgs is not null)
             {
                 // Apply any changes from the event handlers to final result.
@@ -166,6 +172,7 @@ public abstract class KernelFunction
         }
     }
 
+
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/>.
     /// </summary>
@@ -186,6 +193,7 @@ public abstract class KernelFunction
         return result.GetValue<TResult>();
     }
 
+
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/> and streams its results.
     /// </summary>
@@ -202,6 +210,7 @@ public abstract class KernelFunction
         KernelArguments? arguments = null,
         CancellationToken cancellationToken = default) =>
         this.InvokeStreamingAsync<StreamingContentBase>(kernel, arguments, cancellationToken);
+
 
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/> and streams its results.
@@ -231,9 +240,11 @@ public abstract class KernelFunction
 
         TagList tags = new() { { "sk.function.name", this.Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
+
         try
         {
             IAsyncEnumerator<TResult> enumerator;
+
             try
             {
                 // Quick check for cancellation after logging about function start but before doing any real work.
@@ -241,6 +252,7 @@ public abstract class KernelFunction
 
                 // Invoke pre-invocation event handler. If it requests cancellation, throw.
                 var invokingEventArgs = kernel.OnFunctionInvoking(this, arguments);
+
                 if (invokingEventArgs is not null && invokingEventArgs.Cancel)
                 {
                     throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.FunctionInvoking)} event handler requested cancellation before function invocation.");
@@ -290,12 +302,14 @@ public abstract class KernelFunction
             // Record the streaming duration metric and log the completion.
             TimeSpan duration = new((long)((Stopwatch.GetTimestamp() - startingTimestamp) * (10_000_000.0 / Stopwatch.Frequency)));
             s_streamingDuration.Record(duration.TotalSeconds, in tags);
+
             if (logger.IsEnabled(LogLevel.Information))
             {
                 logger.LogInformation("Function streaming completed. Duration: {Duration}s", duration.TotalSeconds);
             }
         }
     }
+
 
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/>.
@@ -309,6 +323,7 @@ public abstract class KernelFunction
         KernelArguments arguments,
         CancellationToken cancellationToken);
 
+
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/> and streams its results.
     /// </summary>
@@ -316,13 +331,21 @@ public abstract class KernelFunction
     /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
     /// <returns>The updated context, potentially a new one if context switching is implemented.</returns>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    protected abstract IAsyncEnumerable<TResult> InvokeStreamingCoreAsync<TResult>(Kernel kernel,
+    protected abstract IAsyncEnumerable<TResult> InvokeStreamingCoreAsync<TResult>(
+        Kernel kernel,
         KernelArguments arguments,
         CancellationToken cancellationToken);
 
+
     /// <summary>Handles special-cases for exception handling when invoking a function.</summary>
     private static void HandleException(
-        Exception ex, ILogger logger, KernelFunction kernelFunction, Kernel kernel, KernelArguments arguments, FunctionResult? result, ref TagList tags)
+        Exception ex,
+        ILogger logger,
+        KernelFunction kernelFunction,
+        Kernel kernel,
+        KernelArguments arguments,
+        FunctionResult? result,
+        ref TagList tags)
     {
         // Log the exception and add its type to the tags that'll be included with recording the invocation duration.
         tags.Add("error.type", ex.GetType().FullName);

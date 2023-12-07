@@ -1,23 +1,25 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Planning.Handlebars;
+namespace Microsoft.SemanticKernel.Planners.UnitTests.Handlebars;
+
+using ChatCompletion;
+using Extensions.DependencyInjection;
 using Moq;
+using Planning.Handlebars;
 using Xunit;
 
-namespace Microsoft.SemanticKernel.Planners.UnitTests.Handlebars;
 
 public sealed class HandlebarsPlannerTests
 {
     private const string PlanString =
-    @"```handlebars
+        @"```handlebars
         <plan>
             <function.SummarizePlugin.Summarize/>
             <function.WriterPlugin.Translate language=""French"" setContextVariable=""TRANSLATED_SUMMARY""/>
             <function.email.GetEmailAddress input=""John Doe"" setContextVariable=""EMAIL_ADDRESS""/>
             <function.email.SendEmail input=""$TRANSLATED_SUMMARY"" email_address=""$EMAIL_ADDRESS""/>
         </plan>```";
+
 
     [Theory]
     [InlineData("Summarize this text, translate it to French and send it to John Doe.")]
@@ -36,6 +38,7 @@ public sealed class HandlebarsPlannerTests
         Assert.True(!string.IsNullOrEmpty(plan.ToString()));
     }
 
+
     [Fact]
     public async Task EmptyGoalThrowsAsync()
     {
@@ -47,6 +50,7 @@ public sealed class HandlebarsPlannerTests
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(async () => await planner.CreatePlanAsync(kernel, string.Empty));
     }
+
 
     [Fact]
     public async Task InvalidXMLThrowsAsync()
@@ -60,6 +64,7 @@ public sealed class HandlebarsPlannerTests
         var exception = await Assert.ThrowsAsync<KernelException>(async () => await planner.CreatePlanAsync(kernel, "goal"));
         Assert.True(exception?.Message?.Contains("Could not find the plan in the results", StringComparison.InvariantCulture));
     }
+
 
     private Kernel CreateKernelWithMockCompletionResult(string testPlanString, KernelPluginCollection? plugins = null)
     {
@@ -83,6 +88,7 @@ public sealed class HandlebarsPlannerTests
 
         return new Kernel(serviceCollection.BuildServiceProvider(), plugins);
     }
+
 
     private KernelPluginCollection CreatePluginCollection()
     {

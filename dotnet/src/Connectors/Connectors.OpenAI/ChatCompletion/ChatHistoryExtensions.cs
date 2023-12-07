@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.ChatCompletion;
+
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using Azure.AI.OpenAI;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Connectors.OpenAI;
 
-namespace Microsoft.SemanticKernel.ChatCompletion;
 
 /// <summary>
 /// OpenAI-specific extensions to the <see cref="ChatHistory"/> class.
@@ -14,6 +15,7 @@ namespace Microsoft.SemanticKernel.ChatCompletion;
 public static class OpenAIChatHistoryExtensions
 {
     private static readonly AuthorRole s_functionAuthorRole = new("function");
+
 
     /// <summary>
     /// Add a function message to the chat history
@@ -28,6 +30,7 @@ public static class OpenAIChatHistoryExtensions
         chatHistory.AddMessage(s_functionAuthorRole, message, metadata: new Dictionary<string, object?>(1) { { OpenAIChatMessageContent.FunctionNameProperty, functionName } });
     }
 
+
     /// <summary>
     /// Add an assistant message to the chat history.
     /// </summary>
@@ -40,12 +43,12 @@ public static class OpenAIChatHistoryExtensions
             AuthorRole.Assistant,
             message ?? string.Empty,
             Encoding.UTF8,
-            functionCall is not null ?
-                new Dictionary<string, object?>(2)
+            functionCall is not null
+                ? new Dictionary<string, object?>(2)
                 {
                     { OpenAIChatMessageContent.FunctionNameProperty, functionCall.Name },
                     { OpenAIChatMessageContent.FunctionArgumentsProperty, functionCall.Arguments }
-                } :
-            null);
+                }
+                : null);
     }
 }

@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Text;
+using Text;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
 /// A response from an embedding request
@@ -32,6 +33,7 @@ public sealed class TextEmbeddingResponse
         [JsonPropertyName("index")]
         public int Index { get; set; }
     }
+
 
     /// <summary>
     /// A list of embeddings

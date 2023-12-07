@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.HuggingFace;
+
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.HuggingFace;
 
 /// <summary>
 /// HTTP schema to perform completion request.

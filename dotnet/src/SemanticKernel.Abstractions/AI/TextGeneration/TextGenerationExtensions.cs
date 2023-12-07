@@ -1,14 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.TextGeneration;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.ChatCompletion;
+using ChatCompletion;
 
-namespace Microsoft.SemanticKernel.TextGeneration;
 
 /// <summary>
 /// Class sponsor that holds extension methods for <see cref ="ITextGenerationService" /> interface.
@@ -32,6 +33,7 @@ public static class TextGenerationExtensions
         CancellationToken cancellationToken = default)
         => (await textGenerationService.GetTextContentsAsync(prompt, executionSettings, kernel, cancellationToken).ConfigureAwait(false))
             .Single();
+
 
     /// <summary>
     /// Get a single text generation result for the standardized prompt and settings.
@@ -59,6 +61,7 @@ public static class TextGenerationExtensions
         // When using against text generations, the prompt will be used as is.
         return await textGenerationService.GetTextContentAsync(prompt, executionSettings, kernel, cancellationToken).ConfigureAwait(false);
     }
+
 
     /// <summary>
     /// Get streaming results for the standardized prompt using the specified settings.

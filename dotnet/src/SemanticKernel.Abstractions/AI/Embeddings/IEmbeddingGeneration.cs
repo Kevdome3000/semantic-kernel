@@ -1,13 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Embeddings;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Services;
+using Services;
 
-namespace Microsoft.SemanticKernel.Embeddings;
 
 /// <summary>
 /// Represents a generator of embeddings.

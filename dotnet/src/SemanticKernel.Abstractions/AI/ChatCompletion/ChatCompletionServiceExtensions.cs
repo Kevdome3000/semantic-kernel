@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.ChatCompletion;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.ChatCompletion;
 
 /// <summary>
 /// Class sponsor that holds extension methods for <see cref="IChatCompletionService"/> interface.
@@ -42,6 +43,7 @@ public static class ChatCompletionServiceExtensions
         return chatCompletionService.GetChatMessageContentsAsync(new ChatHistory(prompt), executionSettings, kernel, cancellationToken);
     }
 
+
     /// <summary>
     /// Get a single chat message content for the prompt and settings.
     /// </summary>
@@ -60,6 +62,7 @@ public static class ChatCompletionServiceExtensions
         => (await chatCompletionService.GetChatMessageContentsAsync(prompt, executionSettings, kernel, cancellationToken).ConfigureAwait(false))
             .Single();
 
+
     /// <summary>
     /// Get a single chat message content for the chat history and settings provided.
     /// </summary>
@@ -77,6 +80,7 @@ public static class ChatCompletionServiceExtensions
         CancellationToken cancellationToken = default)
         => (await chatCompletionService.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken).ConfigureAwait(false))
             .Single();
+
 
     /// <summary>
     /// Get streaming chat message contents for the chat history provided using the specified settings.

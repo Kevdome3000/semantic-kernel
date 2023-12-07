@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.TextToImage;
+
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Services;
+using Services;
 
-namespace Microsoft.SemanticKernel.TextToImage;
 
 /// <summary>
 /// Interface for text to image services

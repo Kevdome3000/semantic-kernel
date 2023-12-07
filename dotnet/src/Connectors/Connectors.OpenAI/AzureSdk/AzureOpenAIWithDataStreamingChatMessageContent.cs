@@ -1,13 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
-using Microsoft.SemanticKernel.ChatCompletion;
+using ChatCompletion;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
 /// Azure Open AI WithData Specialized streaming chat message content.
@@ -24,6 +25,7 @@ public sealed class AzureOpenAIWithDataStreamingChatMessageContent : StreamingCh
     /// <inheritdoc/>
     public string? FunctionArgument { get; set; }
 
+
     /// <summary>
     /// Create a new instance of the <see cref="OpenAIStreamingChatMessageContent"/> class.
     /// </summary>
@@ -39,9 +41,10 @@ public sealed class AzureOpenAIWithDataStreamingChatMessageContent : StreamingCh
         this.Content = messageContent;
     }
 
+
     private bool IsValidMessage(ChatWithDataStreamingMessage message)
     {
         return !message.EndTurn &&
-            (message.Delta.Role is null || !message.Delta.Role.Equals(AuthorRole.Tool.Label, StringComparison.Ordinal));
+               (message.Delta.Role is null || !message.Delta.Role.Equals(AuthorRole.Tool.Label, StringComparison.Ordinal));
     }
 }

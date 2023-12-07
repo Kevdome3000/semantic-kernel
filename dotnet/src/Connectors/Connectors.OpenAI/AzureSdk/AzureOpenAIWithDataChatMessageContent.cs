@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Microsoft.SemanticKernel.ChatCompletion;
+using ChatCompletion;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
 /// OpenAI specialized with data chat message content
@@ -19,6 +20,7 @@ public sealed class AzureOpenAIWithDataChatMessageContent : ChatMessageContent
     /// For more information see <see href="https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/use-your-data#conversation-history-for-better-results"/>.
     /// </summary>
     public string? ToolContent { get; set; }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIChatMessageContent"/> class.

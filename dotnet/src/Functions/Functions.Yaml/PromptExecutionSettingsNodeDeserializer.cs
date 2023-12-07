@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel;
+
 using System;
 using System.Collections.Generic;
 using YamlDotNet.Core;
 using YamlDotNet.Serialization;
 
-namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Deserializer for <see cref="PromptExecutionSettings"/>.
@@ -23,6 +24,7 @@ internal sealed class PromptExecutionSettingsNodeDeserializer : INodeDeserialize
 
         var dictionary = nestedObjectDeserializer.Invoke(reader, typeof(Dictionary<string, object>));
         var modelSettings = new PromptExecutionSettings();
+
         foreach (var kv in (Dictionary<string, object>)dictionary!)
         {
             switch (kv.Key)

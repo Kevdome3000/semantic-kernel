@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.TextGeneration;
+
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.TextGeneration;
 
 /// <summary>
 /// Abstraction of text content chunks when using streaming from <see cref="ITextGenerationService"/> interface.
@@ -22,6 +23,7 @@ public class StreamingTextContent : StreamingContentBase
     [JsonIgnore]
     public Encoding Encoding { get; set; }
 
+
     /// <summary>
     /// Create a new instance of the <see cref="StreamingTextContent"/> class.
     /// </summary>
@@ -38,11 +40,13 @@ public class StreamingTextContent : StreamingContentBase
         this.Encoding = encoding ?? Encoding.UTF8;
     }
 
+
     /// <inheritdoc/>
     public override string ToString()
     {
         return this.Text ?? string.Empty;
     }
+
 
     /// <inheritdoc/>
     public override byte[] ToByteArray()

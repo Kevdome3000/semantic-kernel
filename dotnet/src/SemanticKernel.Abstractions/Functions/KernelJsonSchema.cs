@@ -32,6 +32,7 @@ public sealed class KernelJsonSchema
         return new(JsonSerializer.Deserialize<JsonElement>(jsonSchema!));
     }
 
+
     /// <summary>Parses a JSON Schema for a parameter type.</summary>
     /// <param name="jsonSchema">The JSON Schema as a string.</param>
     /// <returns>A parsed <see cref="KernelJsonSchema"/>.</returns>

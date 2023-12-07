@@ -1,15 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.TextGeneration;
+using Extensions.Logging;
+using Services;
+using TextGeneration;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
 /// OpenAI text generation service.
@@ -20,6 +21,7 @@ public sealed class OpenAITextGenerationService : ITextGenerationService
 
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
+
 
     /// <summary>
     /// Create an instance of the OpenAI text generation connector
@@ -42,6 +44,7 @@ public sealed class OpenAITextGenerationService : ITextGenerationService
         this._core.AddAttribute(OpenAIClientCore.OrganizationKey, organization);
     }
 
+
     /// <summary>
     /// Create an instance of the OpenAI text generation connector
     /// </summary>
@@ -58,11 +61,13 @@ public sealed class OpenAITextGenerationService : ITextGenerationService
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
+
     /// <inheritdoc/>
     public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
     {
         return this._core.GetTextResultsAsync(prompt, executionSettings, kernel, cancellationToken);
     }
+
 
     /// <inheritdoc/>
     public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
