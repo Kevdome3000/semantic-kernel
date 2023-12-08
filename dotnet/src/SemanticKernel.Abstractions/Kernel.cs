@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Events;
 using Extensions.DependencyInjection;
 using Extensions.Logging;
+using Extensions.Logging.Abstractions;
 using Services;
 
 

@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Extensions.DependencyInjection;
 using Extensions.Logging;
+using Extensions.Logging.Abstractions;
 using Model;
 using OpenApi;
 

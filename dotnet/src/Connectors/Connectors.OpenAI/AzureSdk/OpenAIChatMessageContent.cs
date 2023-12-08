@@ -3,6 +3,7 @@
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 using System.Collections.Generic;
+using Azure.AI.OpenAI;
 using ChatCompletion;
 
 

@@ -16,6 +16,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ChatCompletion;
 using Extensions.Logging;
+using Extensions.Logging.Abstractions;
 using Http;
 using Services;
 using Text;

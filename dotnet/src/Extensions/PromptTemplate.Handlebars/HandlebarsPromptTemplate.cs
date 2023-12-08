@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Extensions.Logging;
+using Extensions.Logging.Abstractions;
+using HandlebarsDotNet;
 
 
 internal sealed class HandlebarsPromptTemplate : IPromptTemplate

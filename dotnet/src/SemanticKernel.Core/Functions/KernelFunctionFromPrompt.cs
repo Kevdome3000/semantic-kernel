@@ -6,11 +6,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using ChatCompletion;
 using Events;
 using Extensions.Logging;
+using Extensions.Logging.Abstractions;
 using Services;
 using TextGeneration;
 
