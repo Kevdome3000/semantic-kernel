@@ -187,7 +187,7 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
         var content = contents.SingleOrDefault();
         Assert.NotNull(content);
 
-        Assert.Equal("This is test completion response", content);
+        Assert.Equal("This is test completion response", content.Text);
     }
 
 

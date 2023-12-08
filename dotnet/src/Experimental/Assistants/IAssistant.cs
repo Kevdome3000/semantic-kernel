@@ -64,7 +64,7 @@ public interface IAssistant
     /// <summary>
     /// Expose the assistant as a plugin.
     /// </summary>
-    public IKernelPlugin AsPlugin();
+    public KernelPlugin AsPlugin();
 
 
     /// <summary>

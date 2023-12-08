@@ -6,8 +6,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Extensions.Logging;
-using Extensions.Logging.Abstractions;
-using HandlebarsDotNet;
 
 
 internal sealed class HandlebarsPromptTemplate : IPromptTemplate
@@ -32,7 +30,7 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
     {
         var handlebars = HandlebarsDotNet.Handlebars.Create();
 
-        foreach (IKernelPlugin plugin in kernel.Plugins)
+        foreach (KernelPlugin plugin in kernel.Plugins)
         {
             foreach (KernelFunction function in plugin)
             {

@@ -6,7 +6,6 @@ using System;
 using System.IO;
 using System.Net.Http;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -37,14 +36,14 @@ public static class OpenAIPluginKernelExtensions
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
-    public static async Task<IKernelPlugin> ImportPluginFromOpenAIAsync(
+    public static async Task<KernelPlugin> ImportPluginFromOpenAIAsync(
         this Kernel kernel,
         string pluginName,
         string filePath,
         OpenAIFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
-        IKernelPlugin plugin = await kernel.CreatePluginFromOpenAIAsync(pluginName, filePath, executionParameters, cancellationToken).ConfigureAwait(false);
+        KernelPlugin plugin = await kernel.CreatePluginFromOpenAIAsync(pluginName, filePath, executionParameters, cancellationToken).ConfigureAwait(false);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -59,14 +58,14 @@ public static class OpenAIPluginKernelExtensions
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
-    public static async Task<IKernelPlugin> ImportPluginFromOpenAIAsync(
+    public static async Task<KernelPlugin> ImportPluginFromOpenAIAsync(
         this Kernel kernel,
         string pluginName,
         Uri uri,
         OpenAIFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
-        IKernelPlugin plugin = await kernel.CreatePluginFromOpenAIAsync(pluginName, uri, executionParameters, cancellationToken).ConfigureAwait(false);
+        KernelPlugin plugin = await kernel.CreatePluginFromOpenAIAsync(pluginName, uri, executionParameters, cancellationToken).ConfigureAwait(false);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -81,14 +80,14 @@ public static class OpenAIPluginKernelExtensions
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
-    public static async Task<IKernelPlugin> ImportPluginFromOpenAIAsync(
+    public static async Task<KernelPlugin> ImportPluginFromOpenAIAsync(
         this Kernel kernel,
         string pluginName,
         Stream stream,
         OpenAIFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
-        IKernelPlugin plugin = await kernel.CreatePluginFromOpenAIAsync(pluginName, stream, executionParameters, cancellationToken).ConfigureAwait(false);
+        KernelPlugin plugin = await kernel.CreatePluginFromOpenAIAsync(pluginName, stream, executionParameters, cancellationToken).ConfigureAwait(false);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -103,7 +102,7 @@ public static class OpenAIPluginKernelExtensions
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
-    public static async Task<IKernelPlugin> CreatePluginFromOpenAIAsync(
+    public static async Task<KernelPlugin> CreatePluginFromOpenAIAsync(
         this Kernel kernel,
         string pluginName,
         string filePath,
@@ -136,7 +135,7 @@ public static class OpenAIPluginKernelExtensions
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
-    public static async Task<IKernelPlugin> CreatePluginFromOpenAIAsync(
+    public static async Task<KernelPlugin> CreatePluginFromOpenAIAsync(
         this Kernel kernel,
         string pluginName,
         Uri uri,
@@ -176,7 +175,7 @@ public static class OpenAIPluginKernelExtensions
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
-    public static async Task<IKernelPlugin> CreatePluginFromOpenAIAsync(
+    public static async Task<KernelPlugin> CreatePluginFromOpenAIAsync(
         this Kernel kernel,
         string pluginName,
         Stream stream,
@@ -199,7 +198,7 @@ public static class OpenAIPluginKernelExtensions
 
     #region private
 
-    private static async Task<IKernelPlugin> CreateAsync(
+    private static async Task<KernelPlugin> CreateAsync(
         Kernel kernel,
         string openAIManifest,
         string pluginName,

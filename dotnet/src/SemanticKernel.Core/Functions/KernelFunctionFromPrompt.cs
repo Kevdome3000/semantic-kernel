@@ -6,12 +6,12 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using ChatCompletion;
 using Events;
 using Extensions.Logging;
-using Extensions.Logging.Abstractions;
+using Services;
 using TextGeneration;
 
 
@@ -126,16 +126,27 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     {
         this.AddDefaultValues(arguments);
 
-        (var textGeneration, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+        (var aiService, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 
         if (renderedEventArgs?.Cancel is true)
         {
             throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.PromptRendered)} event handler requested cancellation before function invocation.");
         }
 
-        var textContent = await textGeneration.GetTextContentWithDefaultParserAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
+        if (aiService is IChatCompletionService chatCompletion)
+        {
+            var chatContent = await chatCompletion.GetChatMessageContentAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
+            return new FunctionResult(this, chatContent, kernel.Culture, chatContent.Metadata);
+        }
 
-        return new FunctionResult(this, textContent.Text, kernel.Culture, textContent.Metadata);
+        if (aiService is ITextGenerationService textGeneration)
+        {
+            var textContent = await textGeneration.GetTextContentWithDefaultParserAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
+            return new FunctionResult(this, textContent, kernel.Culture, textContent.Metadata);
+        }
+
+        // This should never happen as the AI service is selected by the service selector
+        throw new NotSupportedException($"The AI service {aiService.GetType()} is not supported. Supported services are {typeof(IChatCompletionService)} and {typeof(ITextGenerationService)}");
     }
 
 
@@ -146,14 +157,30 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     {
         this.AddDefaultValues(arguments);
 
-        (var textGeneration, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+        (var aiService, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 
         if (renderedEventArgs?.Cancel ?? false)
         {
             yield break;
         }
 
-        await foreach (var content in textGeneration.GetStreamingTextContentsWithDefaultParserAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken))
+        IAsyncEnumerable<StreamingContentBase>? asyncReference = null;
+
+        if (aiService is IChatCompletionService chatCompletion)
+        {
+            asyncReference = chatCompletion.GetStreamingChatMessageContentsAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken);
+        }
+        else if (aiService is ITextGenerationService textGeneration)
+        {
+            asyncReference = textGeneration.GetStreamingTextContentsWithDefaultParserAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken);
+        }
+        else
+        {
+            // This should never happen as the AI service is selected by the service selector
+            throw new NotSupportedException($"The AI service {aiService.GetType()} is not supported. Supported services are {typeof(IChatCompletionService)} and {typeof(ITextGenerationService)}");
+        }
+
+        await foreach (var content in asyncReference)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -163,10 +190,10 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
                     => (TResult)(object)content.ToString(),
 
                 _ when content is TResult contentAsT
-                    => (TResult)contentAsT,
+                    => contentAsT,
 
                 _ when content.InnerContent is TResult innerContentAsT
-                    => (TResult)innerContentAsT,
+                    => innerContentAsT,
 
                 _ when typeof(TResult) == typeof(byte[])
                     => (TResult)(object)content.ToByteArray(),
@@ -225,11 +252,27 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     }
 
 
-    private async Task<(ITextGenerationService, string, PromptRenderedEventArgs?)> RenderPromptAsync(Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
+    private async Task<(IAIService, string, PromptRenderedEventArgs?)> RenderPromptAsync(Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
     {
         var serviceSelector = kernel.ServiceSelector;
-        (var textGeneration, var defaultExecutionSettings) = serviceSelector.SelectAIService<ITextGenerationService>(kernel, this, arguments);
-        Verify.NotNull(textGeneration);
+        IAIService? aiService;
+        PromptExecutionSettings? defaultExecutionSettings;
+
+        //TODO: Revisit if SelectAIService implementation should return null when no service is found
+
+#pragma warning disable CA1031 // Do not catch general exception types
+        try
+        {
+            (aiService, defaultExecutionSettings) = serviceSelector.SelectAIService<IChatCompletionService>(kernel, this, arguments);
+        }
+        catch
+        {
+            // Fallback to text generation service, if the selector don't finds it, will throw.
+            (aiService, defaultExecutionSettings) = serviceSelector.SelectAIService<ITextGenerationService>(kernel, this, arguments);
+        }
+#pragma warning restore CA1031 // Do not catch general exception types
+
+        Verify.NotNull(aiService);
 
         arguments.ExecutionSettings ??= defaultExecutionSettings;
 
@@ -239,7 +282,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         var renderedEventArgs = kernel.OnPromptRendered(this, arguments, renderedPrompt);
 
-        return (textGeneration, renderedPrompt, renderedEventArgs);
+        return (aiService, renderedPrompt, renderedEventArgs);
     }
 
 
