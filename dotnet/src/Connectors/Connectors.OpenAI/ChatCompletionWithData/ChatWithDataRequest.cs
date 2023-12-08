@@ -53,7 +53,7 @@ internal sealed class ChatWithDataSource
     public string Type { get; set; } = "AzureCognitiveSearch";
 
     [JsonPropertyName("parameters")]
-    public ChatWithDataSourceParameters Parameters { get; set; } = new ChatWithDataSourceParameters();
+    public ChatWithDataSourceParameters Parameters { get; set; } = new();
 }
 
 

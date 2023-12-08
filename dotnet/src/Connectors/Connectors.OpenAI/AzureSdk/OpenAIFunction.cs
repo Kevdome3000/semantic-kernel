@@ -115,7 +115,7 @@ public class OpenAIFunction
     /// <summary>
     /// The return parameter of the function.
     /// </summary>
-    public OpenAIFunctionReturnParameter ReturnParameter { get; set; } = new OpenAIFunctionReturnParameter();
+    public OpenAIFunctionReturnParameter ReturnParameter { get; set; } = new();
 
 
     /// <summary>
