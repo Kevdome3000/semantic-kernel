@@ -23,7 +23,7 @@ using TemplateEngine.Blocks;
 ///     - Functions do not receive the context variables, unless specified using a special variable
 ///     - Functions can be invoked in order and in parallel so the context variables must be immutable when invoked within the template
 /// </summary>
-public sealed class KernelPromptTemplate : IPromptTemplate
+internal sealed class KernelPromptTemplate : IPromptTemplate
 {
     /// <summary>
     /// Constructor for PromptTemplate.
