@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -45,7 +44,7 @@ public sealed class KernelFunctionFromMethodTests1
         }
 
         // Act
-        var function = KernelFunctionFactory.CreateFromMethod(Method(Test), loggerFactory: this._logger.Object);
+        var function = KernelFunctionFactory.CreateFromMethod(Test, loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         await function.InvokeAsync(this._kernel);
@@ -66,7 +65,7 @@ public sealed class KernelFunctionFromMethodTests1
         }
 
         // Act
-        var function = KernelFunctionFactory.CreateFromMethod(Method(Test), loggerFactory: this._logger.Object);
+        var function = KernelFunctionFactory.CreateFromMethod(Test, loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         FunctionResult result = await function.InvokeAsync(this._kernel);
@@ -89,7 +88,7 @@ public sealed class KernelFunctionFromMethodTests1
         }
 
         // Act
-        var function = KernelFunctionFactory.CreateFromMethod(Method(Test), loggerFactory: this._logger.Object);
+        var function = KernelFunctionFactory.CreateFromMethod(Test, loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         FunctionResult result = await function.InvokeAsync(this._kernel);
@@ -113,7 +112,7 @@ public sealed class KernelFunctionFromMethodTests1
         }
 
         // Act
-        var function = KernelFunctionFactory.CreateFromMethod(Method(Test), loggerFactory: this._logger.Object);
+        var function = KernelFunctionFactory.CreateFromMethod(Test, loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         FunctionResult result = await function.InvokeAsync(this._kernel);
@@ -135,7 +134,7 @@ public sealed class KernelFunctionFromMethodTests1
         }
 
         // Act
-        var function = KernelFunctionFactory.CreateFromMethod(Method(Test), loggerFactory: this._logger.Object);
+        var function = KernelFunctionFactory.CreateFromMethod(Test, loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         var result = await function.InvokeAsync(this._kernel);
@@ -161,7 +160,7 @@ public sealed class KernelFunctionFromMethodTests1
         arguments["someVar"] = s_expected;
 
         // Act
-        var function = KernelFunctionFactory.CreateFromMethod(Method(Test), loggerFactory: this._logger.Object);
+        var function = KernelFunctionFactory.CreateFromMethod(Test, loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         var result = await function.InvokeAsync(this._kernel, arguments);
@@ -191,7 +190,7 @@ public sealed class KernelFunctionFromMethodTests1
 
         // Act
         Func<string, string?> method = Test;
-        var function = KernelFunctionFactory.CreateFromMethod(Method(method), method.Target, loggerFactory: this._logger.Object);
+        var function = KernelFunctionFactory.CreateFromMethod(method, loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         var result = await function.InvokeAsync(this._kernel, arguments);
@@ -222,7 +221,7 @@ public sealed class KernelFunctionFromMethodTests1
 
         // Act
         Func<string, Task> method = TestAsync;
-        var function = KernelFunctionFactory.CreateFromMethod(Method(method), method.Target, loggerFactory: this._logger.Object);
+        var function = KernelFunctionFactory.CreateFromMethod(method, loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         var result = await function.InvokeAsync(this._kernel, arguments);
@@ -251,7 +250,7 @@ public sealed class KernelFunctionFromMethodTests1
 
         // Act
         Action<string> method = Test;
-        var function = KernelFunctionFactory.CreateFromMethod(Method(method), method.Target, loggerFactory: this._logger.Object);
+        var function = KernelFunctionFactory.CreateFromMethod(method, loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         var result = await function.InvokeAsync(this._kernel, arguments);
@@ -280,7 +279,7 @@ public sealed class KernelFunctionFromMethodTests1
 
         // Act
         Func<string, string> method = Test;
-        var function = KernelFunctionFactory.CreateFromMethod(Method(method), method.Target, loggerFactory: this._logger.Object);
+        var function = KernelFunctionFactory.CreateFromMethod(method, loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         var result = await function.InvokeAsync(this._kernel, arguments);
@@ -308,7 +307,7 @@ public sealed class KernelFunctionFromMethodTests1
 
         // Act
         Func<string, Task<string>> method = Test;
-        var function = KernelFunctionFactory.CreateFromMethod(Method(method), method.Target, loggerFactory: this._logger.Object);
+        var function = KernelFunctionFactory.CreateFromMethod(method, loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         var result = await function.InvokeAsync(this._kernel, arguments);
@@ -336,7 +335,7 @@ public sealed class KernelFunctionFromMethodTests1
 
         // Act
         Action<Kernel> method = Test;
-        var function = KernelFunctionFactory.CreateFromMethod(Method(method), method.Target);
+        var function = KernelFunctionFactory.CreateFromMethod(method);
         Assert.NotNull(function);
 
         var result = await function.InvokeAsync(this._kernel, arguments);
@@ -362,7 +361,7 @@ public sealed class KernelFunctionFromMethodTests1
         var arguments = new KernelArguments(s_expected);
 
         // Act
-        var function = KernelFunctionFactory.CreateFromMethod(Method(Test), loggerFactory: this._logger.Object);
+        var function = KernelFunctionFactory.CreateFromMethod(Test, loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         var result = await function.InvokeAsync(this._kernel, arguments);
@@ -387,7 +386,7 @@ public sealed class KernelFunctionFromMethodTests1
         var arguments = new KernelArguments(s_expected);
 
         // Act
-        var function = KernelFunctionFactory.CreateFromMethod(Method(Test), loggerFactory: this._logger.Object);
+        var function = KernelFunctionFactory.CreateFromMethod(Test, loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         var result = await function.InvokeAsync(this._kernel, arguments);
@@ -414,7 +413,7 @@ public sealed class KernelFunctionFromMethodTests1
         var arguments = new KernelArguments("test");
 
         // Act
-        var function = KernelFunctionFactory.CreateFromMethod(Method(Test), loggerFactory: this._logger.Object);
+        var function = KernelFunctionFactory.CreateFromMethod(Test, loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         FunctionResult result = await function.InvokeAsync(this._kernel, arguments);
@@ -439,7 +438,7 @@ public sealed class KernelFunctionFromMethodTests1
         var arguments = new KernelArguments(string.Empty);
 
         // Act
-        var function = KernelFunctionFactory.CreateFromMethod(Method(TestAsync), loggerFactory: this._logger.Object);
+        var function = KernelFunctionFactory.CreateFromMethod(TestAsync, loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         var result = await function.InvokeAsync(this._kernel, arguments);
@@ -464,7 +463,7 @@ public sealed class KernelFunctionFromMethodTests1
         var arguments = new KernelArguments(string.Empty);
 
         // Act
-        var function = KernelFunctionFactory.CreateFromMethod(Method(TestAsync), loggerFactory: this._logger.Object);
+        var function = KernelFunctionFactory.CreateFromMethod(TestAsync, loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         var result = await function.InvokeAsync(this._kernel, arguments);
@@ -491,7 +490,7 @@ public sealed class KernelFunctionFromMethodTests1
         var arguments = new KernelArguments();
 
         // Act
-        var function = KernelFunctionFactory.CreateFromMethod(Method(TestAsync), loggerFactory: this._logger.Object);
+        var function = KernelFunctionFactory.CreateFromMethod(TestAsync, loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         var result = await function.InvokeAsync(this._kernel, arguments);
@@ -518,7 +517,7 @@ public sealed class KernelFunctionFromMethodTests1
         var arguments = new KernelArguments("x y z");
 
         // Act
-        var function = KernelFunctionFactory.CreateFromMethod(Method(TestAsync), loggerFactory: this._logger.Object);
+        var function = KernelFunctionFactory.CreateFromMethod(TestAsync, loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         var result = await function.InvokeAsync(this._kernel, arguments);
@@ -543,7 +542,7 @@ public sealed class KernelFunctionFromMethodTests1
         var arguments = new KernelArguments();
 
         // Act
-        var function = KernelFunctionFactory.CreateFromMethod(Method(TestAsync), loggerFactory: this._logger.Object);
+        var function = KernelFunctionFactory.CreateFromMethod(TestAsync, loggerFactory: this._logger.Object);
         Assert.NotNull(function);
 
         var result = await function.InvokeAsync(this._kernel, arguments);
@@ -563,7 +562,7 @@ public sealed class KernelFunctionFromMethodTests1
         var arguments = new KernelArguments("input value");
 
         // Act
-        var function = KernelFunctionFactory.CreateFromMethod(Method(Test));
+        var function = KernelFunctionFactory.CreateFromMethod(Test);
         Assert.NotNull(function);
 
         FunctionResult result = await function.InvokeAsync(this._kernel, arguments);
@@ -582,7 +581,7 @@ public sealed class KernelFunctionFromMethodTests1
         var arguments = new KernelArguments("input value");
 
         // Act
-        var function = KernelFunctionFactory.CreateFromMethod(Method(Test));
+        var function = KernelFunctionFactory.CreateFromMethod(Test);
         Assert.NotNull(function);
 
         FunctionResult result = await function.InvokeAsync(this._kernel, arguments);
@@ -601,7 +600,7 @@ public sealed class KernelFunctionFromMethodTests1
         var arguments = new KernelArguments("42") { ["orother"] = 8 };
 
         // Act
-        var function = KernelFunctionFactory.CreateFromMethod(Method(Test));
+        var function = KernelFunctionFactory.CreateFromMethod(Test);
         Assert.NotNull(function);
 
         FunctionResult result = await function.InvokeAsync(this._kernel, arguments);
@@ -620,7 +619,7 @@ public sealed class KernelFunctionFromMethodTests1
         var arguments = new KernelArguments("input value") { ["other"] = "other value" };
 
         // Act
-        var function = KernelFunctionFactory.CreateFromMethod(Method(Test));
+        var function = KernelFunctionFactory.CreateFromMethod(Test);
         Assert.NotNull(function);
 
         FunctionResult result = await function.InvokeAsync(this._kernel, arguments);
@@ -639,7 +638,7 @@ public sealed class KernelFunctionFromMethodTests1
         var arguments = new KernelArguments("input value") { ["other"] = "other value" };
 
         // Act
-        var function = KernelFunctionFactory.CreateFromMethod(Method(Test));
+        var function = KernelFunctionFactory.CreateFromMethod(Test);
         Assert.NotNull(function);
 
         FunctionResult result = await function.InvokeAsync(this._kernel, arguments);
@@ -658,7 +657,7 @@ public sealed class KernelFunctionFromMethodTests1
         var arguments = new KernelArguments("input value");
 
         // Act
-        var function = KernelFunctionFactory.CreateFromMethod(Method(Test));
+        var function = KernelFunctionFactory.CreateFromMethod(Test);
         Assert.NotNull(function);
 
         FunctionResult result = await function.InvokeAsync(this._kernel, arguments);
@@ -675,7 +674,7 @@ public sealed class KernelFunctionFromMethodTests1
         FunctionResult Test() => new(s_nopFunction, "fake-result", CultureInfo.InvariantCulture);
 
         // Act
-        var function = KernelFunctionFactory.CreateFromMethod(Method(Test));
+        var function = KernelFunctionFactory.CreateFromMethod(Test);
         Assert.NotNull(function);
 
         FunctionResult result = await function.InvokeAsync(this._kernel);
@@ -698,7 +697,7 @@ public sealed class KernelFunctionFromMethodTests1
         }
 
         // Act
-        var function = KernelFunctionFactory.CreateFromMethod(Method(Test));
+        var function = KernelFunctionFactory.CreateFromMethod(Test);
         Assert.NotNull(function);
 
         FunctionResult result = await function.InvokeAsync(this._kernel);
@@ -721,7 +720,7 @@ public sealed class KernelFunctionFromMethodTests1
         }
 
         // Act
-        var function = KernelFunctionFactory.CreateFromMethod(Method(Test));
+        var function = KernelFunctionFactory.CreateFromMethod(Test);
         Assert.NotNull(function);
 
         FunctionResult result = await function.InvokeAsync(this._kernel);
@@ -748,7 +747,7 @@ public sealed class KernelFunctionFromMethodTests1
         arguments["f"] = DayOfWeek.Monday;
 
         // Act
-        var function = KernelFunctionFactory.CreateFromMethod(Method(Test));
+        var function = KernelFunctionFactory.CreateFromMethod(Test);
         Assert.NotNull(function);
 
         FunctionResult result = await function.InvokeAsync(this._kernel, arguments);
@@ -768,7 +767,7 @@ public sealed class KernelFunctionFromMethodTests1
         arguments["mct"] = "42";
 
         // Act
-        var function = KernelFunctionFactory.CreateFromMethod(Method(Test));
+        var function = KernelFunctionFactory.CreateFromMethod(Test);
         Assert.NotNull(function);
 
         FunctionResult result = await function.InvokeAsync(this._kernel, arguments);
@@ -926,7 +925,7 @@ public sealed class KernelFunctionFromMethodTests1
         }
 
         // Act
-        var function = KernelFunctionFactory.CreateFromMethod(Method(Test));
+        var function = KernelFunctionFactory.CreateFromMethod(Test);
 
         await function.InvokeAsync(this._kernel, arguments: new() { { "a", 10 } }); // Passing value for the 'a' parameter only.
     }
@@ -975,7 +974,7 @@ public sealed class KernelFunctionFromMethodTests1
         arguments["g"] = "7e08cc00-1d71-4558-81ed-69929499dxyz";
 
         // Act
-        var function = KernelFunctionFactory.CreateFromMethod(Method(Test));
+        var function = KernelFunctionFactory.CreateFromMethod(Test);
         Assert.NotNull(function);
 
         var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => function.InvokeAsync(this._kernel, arguments));
@@ -1010,7 +1009,7 @@ public sealed class KernelFunctionFromMethodTests1
         static string Test(Guid id, string name, int old) => $"{id} {name} {old}";
 
         // Act
-        var function = KernelFunctionFactory.CreateFromMethod(Method(Test));
+        var function = KernelFunctionFactory.CreateFromMethod(Test);
 
         // Assert
         Assert.Contains("Test", function.Name, StringComparison.Ordinal);
@@ -1030,10 +1029,10 @@ public sealed class KernelFunctionFromMethodTests1
         static string TestString(string str) => str;
         static bool TestBool(bool flag) => flag;
 
-        var function1 = KernelFunctionFactory.CreateFromMethod(Method(TestInt));
-        var function2 = KernelFunctionFactory.CreateFromMethod(Method(TestDouble));
-        var function3 = KernelFunctionFactory.CreateFromMethod(Method(TestString));
-        var function4 = KernelFunctionFactory.CreateFromMethod(Method(TestBool));
+        var function1 = KernelFunctionFactory.CreateFromMethod(TestInt);
+        var function2 = KernelFunctionFactory.CreateFromMethod(TestDouble);
+        var function3 = KernelFunctionFactory.CreateFromMethod(TestString);
+        var function4 = KernelFunctionFactory.CreateFromMethod(TestBool);
 
         // Act
         FunctionResult result1 = await function1.InvokeAsync(this._kernel, new("42"));
@@ -1065,7 +1064,7 @@ public sealed class KernelFunctionFromMethodTests1
         var arguments = new KernelArguments();
         arguments["instance"] = "42";
 
-        var function = KernelFunctionFactory.CreateFromMethod(Method(TestCustomType));
+        var function = KernelFunctionFactory.CreateFromMethod(TestCustomType);
 
         // Act
         FunctionResult result = await function.InvokeAsync(this._kernel, arguments);
@@ -1096,7 +1095,7 @@ public sealed class KernelFunctionFromMethodTests1
             yield return 3;
         }
 
-        var function = KernelFunctionFactory.CreateFromMethod(Method(TestAsyncEnumerableTypeAsync));
+        var function = KernelFunctionFactory.CreateFromMethod(TestAsyncEnumerableTypeAsync);
 
         // Act
         FunctionResult result = await function.InvokeAsync(this._kernel, new KernelArguments());
@@ -1132,11 +1131,5 @@ public sealed class KernelFunctionFromMethodTests1
 
         // Assert
         Assert.Same(expected, actual);
-    }
-
-
-    private static MethodInfo Method(Delegate method)
-    {
-        return method.Method;
     }
 }

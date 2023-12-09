@@ -134,7 +134,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         CancellationToken cancellationToken);
 
 
-    private static readonly object[] s_cancellationTokenNoneArray = { CancellationToken.None };
+    private static readonly object[] s_cancellationTokenNoneArray = new object[] { CancellationToken.None };
     private readonly ImplementationFunc _function;
     private readonly ILogger _logger;
 
@@ -234,7 +234,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             Name = functionName!,
             Description = method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? "",
             Parameters = stringParameterViews,
-            ReturnParameter = new KernelReturnParameterMetadata
+            ReturnParameter = new KernelReturnParameterMetadata()
             {
                 Description = method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
                 ParameterType = method.ReturnType,
@@ -288,37 +288,37 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         if (type == typeof(KernelFunction))
         {
             TrackUniqueParameterType(ref hasFuncParam, method, $"At most one {nameof(KernelFunction)} parameter is permitted.");
-            return (static (func, _, _, _) => func, null);
+            return (static (KernelFunction func, Kernel _, KernelArguments _, CancellationToken _) => func, null);
         }
 
         if (type == typeof(Kernel))
         {
             TrackUniqueParameterType(ref hasKernelParam, method, $"At most one {nameof(Kernel)} parameter is permitted.");
-            return (static (_, kernel, _, _) => kernel, null);
+            return (static (KernelFunction _, Kernel kernel, KernelArguments _, CancellationToken _) => kernel, null);
         }
 
         if (type == typeof(KernelArguments))
         {
             TrackUniqueParameterType(ref hasFunctionArgumentsParam, method, $"At most one {nameof(KernelArguments)} parameter is permitted.");
-            return (static (_, _, arguments, _) => arguments, null);
+            return (static (KernelFunction _, Kernel _, KernelArguments arguments, CancellationToken _) => arguments, null);
         }
 
         if (type == typeof(ILogger) || type == typeof(ILoggerFactory))
         {
             TrackUniqueParameterType(ref hasLoggerParam, method, $"At most one {nameof(ILogger)}/{nameof(ILoggerFactory)} parameter is permitted.");
-            return type == typeof(ILogger) ? ((_, kernel, _, _) => kernel.LoggerFactory.CreateLogger(method?.DeclaringType ?? typeof(KernelFunctionFromPrompt)), null) : ((_, kernel, _, _) => kernel.LoggerFactory, null);
+            return type == typeof(ILogger) ? ((KernelFunction _, Kernel kernel, KernelArguments _, CancellationToken _) => kernel.LoggerFactory.CreateLogger(method?.DeclaringType ?? typeof(KernelFunctionFromPrompt)), null) : ((KernelFunction _, Kernel kernel, KernelArguments _, CancellationToken _) => kernel.LoggerFactory, null);
         }
 
         if (type == typeof(CultureInfo) || type == typeof(IFormatProvider))
         {
             TrackUniqueParameterType(ref hasCultureParam, method, $"At most one {nameof(CultureInfo)}/{nameof(IFormatProvider)} parameter is permitted.");
-            return (static (_, kernel, _, _) => kernel.Culture, null);
+            return (static (KernelFunction _, Kernel kernel, KernelArguments _, CancellationToken _) => kernel.Culture, null);
         }
 
         if (type == typeof(CancellationToken))
         {
             TrackUniqueParameterType(ref hasCancellationTokenParam, method, $"At most one {nameof(CancellationToken)} parameter is permitted.");
-            return (static (_, _, _, cancellationToken) => cancellationToken, null);
+            return (static (KernelFunction _, Kernel _, KernelArguments _, CancellationToken cancellationToken) => cancellationToken, null);
         }
 
         // Handle the other types. These can each show up multiple times in the method signature.

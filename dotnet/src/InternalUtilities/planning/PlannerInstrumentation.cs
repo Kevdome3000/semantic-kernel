@@ -122,7 +122,7 @@ internal static partial class PlannerInstrumentation
     }
 
 
-    #region CreatePlanLogging helpers
+    #region CreatePlan Logging helpers
 
     [LoggerMessage(
         EventId = 0,

@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
@@ -231,7 +230,7 @@ public sealed class KernelPromptTemplateTests
             return $"F({input})";
         }
 
-        var func = KernelFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
+        var func = KernelFunctionFactory.CreateFromMethod(MyFunctionAsync, "function");
 
         this._kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("plugin", "description", new[] { func }));
 
@@ -258,7 +257,7 @@ public sealed class KernelPromptTemplateTests
             return $"F({input})";
         }
 
-        var func = KernelFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
+        var func = KernelFunctionFactory.CreateFromMethod(MyFunctionAsync, "function");
 
         this._kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("plugin", "description", new[] { func }));
 
@@ -289,7 +288,7 @@ public sealed class KernelPromptTemplateTests
             return $"[{dateStr}] {input} ({age}): \"{slogan}\"";
         }
 
-        var func = KernelFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
+        var func = KernelFunctionFactory.CreateFromMethod(MyFunctionAsync, "function");
 
         this._kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("plugin", "description", new[] { func }));
 
@@ -339,7 +338,7 @@ public sealed class KernelPromptTemplateTests
             return $"[{dateStr}] {input} ({age}): \"{slogan}\"";
         }
 
-        KernelFunction func = KernelFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
+        KernelFunction func = KernelFunctionFactory.CreateFromMethod(MyFunctionAsync, "function");
 
         this._kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("plugin", "description", new[] { func }));
 
@@ -383,9 +382,9 @@ public sealed class KernelPromptTemplateTests
 
         var functions = new List<KernelFunction>()
         {
-            KernelFunctionFactory.CreateFromMethod(Method(MyFunction1Async), this, "func1"),
-            KernelFunctionFactory.CreateFromMethod(Method(MyFunction2Async), this, "func2"),
-            KernelFunctionFactory.CreateFromMethod(Method(MyFunction3Async), this, "func3")
+            KernelFunctionFactory.CreateFromMethod(MyFunction1Async, "func1"),
+            KernelFunctionFactory.CreateFromMethod(MyFunction2Async, "func2"),
+            KernelFunctionFactory.CreateFromMethod(MyFunction3Async, "func3")
         };
 
         this._kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("plugin", "description", functions));
@@ -409,7 +408,7 @@ public sealed class KernelPromptTemplateTests
             return Task.FromResult(input);
         }
 
-        KernelFunction func = KernelFunctionFactory.CreateFromMethod(Method(MyFunctionAsync), this, "function");
+        KernelFunction func = KernelFunctionFactory.CreateFromMethod(MyFunctionAsync, "function");
 
         this._kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("plugin", "description", new[] { func }));
 
@@ -467,11 +466,5 @@ public sealed class KernelPromptTemplateTests
 
         // Assert
         Assert.Equal("int:42, double:36,6, string:test, Guid:7ac656b1-c917-41c8-9ff5-e8f0eb51fbac, DateTime:05/12/2023 17:52, enum:Monday", result);
-    }
-
-
-    private static MethodInfo Method(Delegate method)
-    {
-        return method.Method;
     }
 }

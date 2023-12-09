@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Plugins.OpenApi.OpenApi;
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -13,14 +11,15 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Readers;
-using Model;
-using Text;
+using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
+using Microsoft.SemanticKernel.Text;
 
+namespace Microsoft.SemanticKernel.Plugins.OpenApi.OpenApi;
 
 /// <summary>
 /// Parser for OpenAPI documents.
@@ -35,7 +34,6 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     {
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(OpenApiDocumentParser)) : NullLogger.Instance;
     }
-
 
     /// <inheritdoc/>
     public async Task<IList<RestApiOperation>> ParseAsync(
@@ -54,7 +52,6 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 
         return ExtractRestApiOperations(result.OpenApiDocument, operationsToExclude);
     }
-
 
     #region private
 
@@ -85,7 +82,6 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     private readonly OpenApiStreamReader _openApiReader = new();
     private readonly ILogger _logger;
 
-
     /// <summary>
     /// Downgrades the version of an OpenAPI document to the latest supported one - 3.0.1.
     /// This class relies on Microsoft.OpenAPI.NET library to work with OpenAPI documents.
@@ -99,7 +95,6 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     private async Task<JsonObject> DowngradeDocumentVersionToSupportedOneAsync(Stream stream, CancellationToken cancellationToken)
     {
         var jsonObject = await ConvertContentToJsonAsync(stream, cancellationToken).ConfigureAwait(false) ?? throw new KernelException("Parsing of OpenAPI document failed.");
-
         if (!jsonObject.TryGetPropertyValue(OpenApiVersionPropertyName, out var propertyNode))
         {
             // The document is either malformed or has 2.x version that specifies document version in the 'swagger' property rather than in the 'openapi' one.
@@ -126,7 +121,6 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
         return jsonObject;
     }
 
-
     /// <summary>
     /// Converts YAML content to JSON content.
     /// The method uses SharpYaml library that comes as a not-direct dependency of Microsoft.OpenAPI.NET library.
@@ -145,7 +139,6 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 
         return await JsonSerializer.DeserializeAsync<JsonObject>(memoryStream, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
-
 
     /// <summary>
     /// Parses an OpenAPI document and extracts REST API operations.
@@ -168,7 +161,6 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 
         return result;
     }
-
 
     /// <summary>
     /// Creates REST API operation.
@@ -200,7 +192,6 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
                 new HttpMethod(method),
                 string.IsNullOrEmpty(operationItem.Description) ? operationItem.Summary : operationItem.Description,
                 CreateRestApiOperationParameters(operationItem.OperationId, operationItem.Parameters),
-                CreateRestApiOperationHeaders(operationItem.Parameters)!,
                 CreateRestApiOperationPayload(operationItem.OperationId, operationItem.RequestBody),
                 CreateRestApiOperationExpectedResponses(operationItem.Responses).ToDictionary(item => item.Item1, item => item.Item2)
             );
@@ -210,7 +201,6 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 
         return operations;
     }
-
 
     /// <summary>
     /// Creates REST API operation parameters.
@@ -253,18 +243,6 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
         return result;
     }
 
-
-    /// <summary>
-    /// Creates REST API operation headers.
-    /// </summary>
-    /// <param name="parameters">The OpenAPI parameters</param>
-    /// <returns>The headers.</returns>
-    private static Dictionary<string, string> CreateRestApiOperationHeaders(IList<OpenApiParameter> parameters)
-    {
-        return parameters.Where(p => p.In == ParameterLocation.Header).ToDictionary(p => p.Name, p => string.Empty);
-    }
-
-
     /// <summary>
     /// Creates REST API operation payload.
     /// </summary>
@@ -286,13 +264,11 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
         return new RestApiOperationPayload(mediaType, payloadProperties, requestBody.Description, mediaTypeMetadata?.Schema?.ToJsonSchema());
     }
 
-
     private static IEnumerable<(string, RestApiOperationExpectedResponse)> CreateRestApiOperationExpectedResponses(OpenApiResponses responses)
     {
         foreach (var response in responses)
         {
             var mediaType = s_supportedMediaTypes.FirstOrDefault(smt => response.Value.Content.ContainsKey(smt));
-
             if (mediaType is not null)
             {
                 var matchingSchema = response.Value.Content[mediaType].Schema;
@@ -303,7 +279,6 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
         }
     }
 
-
     /// <summary>
     /// Returns REST API operation payload properties.
     /// </summary>
@@ -312,10 +287,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     /// <param name="requiredProperties">List of required properties.</param>
     /// <param name="level">Current level in OpenAPI schema.</param>
     /// <returns>The REST API operation payload properties.</returns>
-    private static List<RestApiOperationPayloadProperty> GetPayloadProperties(
-        string operationId,
-        OpenApiSchema? schema,
-        ISet<string> requiredProperties,
+    private static List<RestApiOperationPayloadProperty> GetPayloadProperties(string operationId, OpenApiSchema? schema, ISet<string> requiredProperties,
         int level = 0)
     {
         if (schema == null)
@@ -350,7 +322,6 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
         return result;
     }
 
-
     /// <summary>
     /// Returns parameter value.
     /// </summary>
@@ -381,7 +352,6 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
         };
     }
 
-
     /// <summary>
     /// Asserts the successful reading of OpenAPI document.
     /// </summary>
@@ -406,6 +376,4 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     }
 
     #endregion
-
-
 }
