@@ -78,7 +78,7 @@ public sealed class Kernel
 
     /// <summary>Creates a builder for constructing <see cref="Kernel"/> instances.</summary>
     /// <returns>A new <see cref="IKernelBuilder"/> instance.</returns>
-    public static IKernelBuilder CreateBuilder() => Kernel.CreateBuilder();
+    public static IKernelBuilder CreateBuilder() => new KernelBuilder();
 
 
     /// <summary>
