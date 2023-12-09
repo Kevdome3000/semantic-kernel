@@ -36,7 +36,7 @@ Log levels used in SK:
 Enable logging for Kernel instance:
 
 ```csharp
-var kernel = new KernelBuilder().WithLoggerFactory(loggerFactory);
+var kernel = Kernel.CreateBuilder().WithLoggerFactory(loggerFactory);
 ```
 
 All kernel functions and planners will be instrumented. It includes _logs_, _metering_ and _tracing_.

@@ -31,6 +31,6 @@ public static class KernelServiceCollectionExtensions
 
         // Create and return a builder that can be used for adding services and plugins
         // to the IServiceCollection.
-        return new KernelBuilder(services);
+        return Kernel.CreateBuilder();
     }
 }

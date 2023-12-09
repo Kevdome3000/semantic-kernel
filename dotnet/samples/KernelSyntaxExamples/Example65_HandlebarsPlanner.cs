@@ -30,10 +30,10 @@ public static class Example65_HandlebarsPlanner
         bool shouldPrintPrompt = true;
 
         // Using primitive types as inputs and outputs
-        await PlanNotPossibleSampleAsync();
-        await RunDictionaryWithBasicTypesSampleAsync();
-        await RunPoetrySampleAsync();
-        await RunBookSampleAsync();
+        await PlanNotPossibleSampleAsync(shouldPrintPrompt);
+        await RunDictionaryWithBasicTypesSampleAsync(shouldPrintPrompt);
+        await RunPoetrySampleAsync(shouldPrintPrompt);
+        await RunBookSampleAsync(shouldPrintPrompt);
 
         // Using Complex Types as inputs and outputs
         await RunLocalDictionaryWithComplexTypesSampleAsync(shouldPrintPrompt);

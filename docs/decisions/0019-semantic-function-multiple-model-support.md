@@ -46,7 +46,7 @@ In the example below the semantic function is executed with "AzureText" using `m
 
 ```csharp
 // Configure a Kernel with multiple LLM's
-IKernel kernel = new KernelBuilder()
+IKernel kernel = Kernel.CreateBuilder()
     .WithLoggerFactory(ConsoleLogger.LoggerFactory)
     .WithAzureTextCompletionService(deploymentName: aoai.DeploymentName,
         endpoint: aoai.Endpoint, serviceId: "AzureText", apiKey: aoai.ApiKey)
@@ -103,7 +103,7 @@ In the example below the semantic function is executed with whatever AI Service 
 
 ```csharp
 // Configure a Kernel with multiple LLM's
-IKernel kernel = new KernelBuilder()
+IKernel kernel = Kernel.CreateBuilder()
     .WithLoggerFactory(ConsoleLogger.LoggerFactory)
     .WithAzureTextCompletionService(deploymentName: aoai.DeploymentName,
         endpoint: aoai.Endpoint, serviceId: "AzureText", apiKey: aoai.ApiKey)

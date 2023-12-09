@@ -30,7 +30,7 @@ The concrete instance of an `IAIService` can have different attributes depending
 Consider the following code snippet:
 
 ```csharp
-IKernel kernel = new KernelBuilder()
+IKernel kernel = Kernel.CreateBuilder()
     .WithLoggerFactory(ConsoleLogger.LoggerFactory)
     .WithAzureChatCompletionService(
         deploymentName: chatDeploymentName,

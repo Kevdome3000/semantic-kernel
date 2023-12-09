@@ -24,7 +24,7 @@ Copy and paste the following code into your project, with your Azure OpenAI key 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-var builder = new KernelBuilder();
+var builder = Kernel.CreateBuilder();
 
 builder.WithAzureOpenAIChatCompletionService(
          "gpt-35-turbo",                      // Azure OpenAI Deployment Name
