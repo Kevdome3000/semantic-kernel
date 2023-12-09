@@ -61,7 +61,7 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextG
 
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object?> Attributes => this.Attributes;
+    public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
 
 
     /// <inheritdoc/>
