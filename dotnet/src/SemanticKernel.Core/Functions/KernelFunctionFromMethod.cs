@@ -20,7 +20,6 @@ using System.Threading.Tasks;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
 using Text;
-using TextGeneration;
 
 
 /// <summary>
@@ -83,7 +82,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         KernelArguments arguments,
         CancellationToken cancellationToken)
     {
-        return this._function(null, kernel, this, arguments, cancellationToken);
+        return this._function(kernel, this, arguments, cancellationToken);
     }
 
 
@@ -129,14 +128,13 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
     /// <summary>Delegate used to invoke the underlying delegate.</summary>
     private delegate ValueTask<FunctionResult> ImplementationFunc(
-        ITextGenerationService? textGeneration,
         Kernel kernel,
         KernelFunction function,
         KernelArguments arguments,
         CancellationToken cancellationToken);
 
 
-    private static readonly object[] s_cancellationTokenNoneArray = new object[] { CancellationToken.None };
+    private static readonly object[] s_cancellationTokenNoneArray = { CancellationToken.None };
     private readonly ImplementationFunc _function;
     private readonly ILogger _logger;
 
@@ -190,14 +188,14 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         var parameters = method.GetParameters();
 
         // Get marshaling funcs for parameters and build up the parameter metadata.
-        var parameterFuncs = new Func<Kernel, KernelArguments, CancellationToken, object?>[parameters.Length];
-        bool sawFirstParameter = false, hasKernelParam = false, hasFunctionArgumentsParam = false, hasCancellationTokenParam = false, hasLoggerParam = false, hasCultureParam = false;
+        var parameterFuncs = new Func<KernelFunction, Kernel, KernelArguments, CancellationToken, object?>[parameters.Length];
+        bool sawFirstParameter = false, hasFuncParam = false, hasKernelParam = false, hasFunctionArgumentsParam = false, hasCancellationTokenParam = false, hasLoggerParam = false, hasCultureParam = false;
 
         for (int i = 0; i < parameters.Length; i++)
         {
             (parameterFuncs[i], KernelParameterMetadata? parameterView) = GetParameterMarshalerDelegate(
                 method, parameters[i],
-                ref sawFirstParameter, ref hasKernelParam, ref hasFunctionArgumentsParam, ref hasCancellationTokenParam, ref hasLoggerParam, ref hasCultureParam);
+                ref sawFirstParameter, ref hasFuncParam, ref hasKernelParam, ref hasFunctionArgumentsParam, ref hasCancellationTokenParam, ref hasLoggerParam, ref hasCultureParam);
 
             if (parameterView is not null)
             {
@@ -212,14 +210,14 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         Func<Kernel, KernelFunction, object?, ValueTask<FunctionResult>> returnFunc = GetReturnValueMarshalerDelegate(method);
 
         // Create the func
-        ValueTask<FunctionResult> Function(ITextGenerationService? text, Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
+        ValueTask<FunctionResult> Function(Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
         {
             // Create the arguments.
             object?[] args = parameterFuncs.Length != 0 ? new object?[parameterFuncs.Length] : Array.Empty<object?>();
 
             for (int i = 0; i < args.Length; i++)
             {
-                args[i] = parameterFuncs[i](kernel, arguments, cancellationToken);
+                args[i] = parameterFuncs[i](function, kernel, arguments, cancellationToken);
             }
 
             // Invoke the method.
@@ -236,7 +234,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             Name = functionName!,
             Description = method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? "",
             Parameters = stringParameterViews,
-            ReturnParameter = new KernelReturnParameterMetadata()
+            ReturnParameter = new KernelReturnParameterMetadata
             {
                 Description = method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
                 ParameterType = method.ReturnType,
@@ -272,10 +270,11 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     /// <summary>
     /// Gets a delegate for handling the marshaling of a parameter.
     /// </summary>
-    private static (Func<Kernel, KernelArguments, CancellationToken, object?>, KernelParameterMetadata?) GetParameterMarshalerDelegate(
+    private static (Func<KernelFunction, Kernel, KernelArguments, CancellationToken, object?>, KernelParameterMetadata?) GetParameterMarshalerDelegate(
         MethodInfo method,
         ParameterInfo parameter,
         ref bool sawFirstParameter,
+        ref bool hasFuncParam,
         ref bool hasKernelParam,
         ref bool hasFunctionArgumentsParam,
         ref bool hasCancellationTokenParam,
@@ -286,34 +285,40 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
         // Handle special types. These can each show up at most once in the method signature.
 
+        if (type == typeof(KernelFunction))
+        {
+            TrackUniqueParameterType(ref hasFuncParam, method, $"At most one {nameof(KernelFunction)} parameter is permitted.");
+            return (static (func, _, _, _) => func, null);
+        }
+
         if (type == typeof(Kernel))
         {
             TrackUniqueParameterType(ref hasKernelParam, method, $"At most one {nameof(Kernel)} parameter is permitted.");
-            return (static (Kernel kernel, KernelArguments _, CancellationToken _) => kernel, null);
+            return (static (_, kernel, _, _) => kernel, null);
         }
 
         if (type == typeof(KernelArguments))
         {
             TrackUniqueParameterType(ref hasFunctionArgumentsParam, method, $"At most one {nameof(KernelArguments)} parameter is permitted.");
-            return (static (Kernel _, KernelArguments arguments, CancellationToken _) => arguments, null);
+            return (static (_, _, arguments, _) => arguments, null);
         }
 
         if (type == typeof(ILogger) || type == typeof(ILoggerFactory))
         {
             TrackUniqueParameterType(ref hasLoggerParam, method, $"At most one {nameof(ILogger)}/{nameof(ILoggerFactory)} parameter is permitted.");
-            return type == typeof(ILogger) ? ((Kernel kernel, KernelArguments _, CancellationToken _) => kernel.LoggerFactory.CreateLogger(method?.DeclaringType ?? typeof(KernelFunctionFromPrompt)), null) : ((Kernel kernel, KernelArguments _, CancellationToken _) => kernel.LoggerFactory, null);
+            return type == typeof(ILogger) ? ((_, kernel, _, _) => kernel.LoggerFactory.CreateLogger(method?.DeclaringType ?? typeof(KernelFunctionFromPrompt)), null) : ((_, kernel, _, _) => kernel.LoggerFactory, null);
         }
 
         if (type == typeof(CultureInfo) || type == typeof(IFormatProvider))
         {
             TrackUniqueParameterType(ref hasCultureParam, method, $"At most one {nameof(CultureInfo)}/{nameof(IFormatProvider)} parameter is permitted.");
-            return (static (Kernel kernel, KernelArguments _, CancellationToken _) => kernel.Culture, null);
+            return (static (_, kernel, _, _) => kernel.Culture, null);
         }
 
         if (type == typeof(CancellationToken))
         {
             TrackUniqueParameterType(ref hasCancellationTokenParam, method, $"At most one {nameof(CancellationToken)} parameter is permitted.");
-            return (static (Kernel _, KernelArguments _, CancellationToken cancellationToken) => cancellationToken, null);
+            return (static (_, _, _, cancellationToken) => cancellationToken, null);
         }
 
         // Handle the other types. These can each show up multiple times in the method signature.
@@ -327,7 +332,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
         var parser = GetParser(type);
 
-        object? parameterFunc(Kernel kernel, KernelArguments arguments, CancellationToken _)
+        object? parameterFunc(KernelFunction _, Kernel kernel, KernelArguments arguments, CancellationToken __)
         {
             // 1. Use the value of the variable if it exists.
             if (arguments.TryGetValue(name, out object? value))
