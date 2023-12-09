@@ -85,7 +85,7 @@ public static class Example54_AzureChatCompletionWithData
 
         var completionWithDataConfig = GetCompletionWithDataConfig();
 
-        Kernel kernel = new KernelBuilder()
+        Kernel kernel = Kernel.CreateBuilder()
             .AddAzureOpenAIChatCompletion(config: completionWithDataConfig)
             .Build();
 

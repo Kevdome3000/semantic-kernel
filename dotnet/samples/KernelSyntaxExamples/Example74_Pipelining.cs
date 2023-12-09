@@ -13,6 +13,7 @@ using Microsoft.SemanticKernel;
 #pragma warning disable RCS1110 // Declare type inside namespace.
 #pragma warning disable CA5394
 
+
 public static class Example74_Pipelining
 {
     /// <summary>
@@ -32,7 +33,7 @@ public static class Example74_Pipelining
         });
         KernelFunction pipeline = KernelFunctionCombinators.Pipe(new[] { parseInt32, multiplyByN, truncate, humanize }, "pipeline");
 
-        KernelBuilder builder = new();
+        IKernelBuilder builder = Kernel.CreateBuilder();
         builder.AddOpenAIChatCompletion(
             TestConfiguration.OpenAI.ChatModelId,
             TestConfiguration.OpenAI.ApiKey);
@@ -52,6 +53,7 @@ public static class Example74_Pipelining
     }
 }
 
+
 public static class KernelFunctionCombinators
 {
     /// <summary>
@@ -63,8 +65,12 @@ public static class KernelFunctionCombinators
     /// <param name="cancellationToken">The cancellation token to monitor for a cancellation request.</param>
     /// <returns></returns>
     public static Task<FunctionResult> InvokePipelineAsync(
-        IEnumerable<KernelFunction> functions, Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken) =>
+        IEnumerable<KernelFunction> functions,
+        Kernel kernel,
+        KernelArguments arguments,
+        CancellationToken cancellationToken) =>
         Pipe(functions).InvokeAsync(kernel, arguments, cancellationToken);
+
 
     /// <summary>
     /// Creates a function whose invocation will invoke each of the supplied functions in sequence.
@@ -89,6 +95,7 @@ public static class KernelFunctionCombinators
         return KernelFunctionFactory.CreateFromMethod(async (Kernel kernel, KernelArguments arguments) =>
         {
             FunctionResult? result = null;
+
             for (int i = 0; i < arr.Length; i++)
             {
                 result = await arr[i].InvokeAsync(kernel, arguments).ConfigureAwait(false);

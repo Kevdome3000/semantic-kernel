@@ -33,7 +33,7 @@ public sealed class PromptTests : IDisposable
             .AddUserSecrets<OpenAICompletionTests>()
             .Build();
 
-        this._kernelBuilder = new KernelBuilder();
+        this._kernelBuilder = Kernel.CreateBuilder();
         this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
     }
 
@@ -67,7 +67,7 @@ public sealed class PromptTests : IDisposable
 
     #region private methods
 
-    private readonly KernelBuilder _kernelBuilder;
+    private readonly IKernelBuilder _kernelBuilder;
     private readonly IConfigurationRoot _configuration;
     private readonly XunitLogger<Kernel> _logger;
     private readonly RedirectOutput _testOutputHelper;
@@ -96,7 +96,7 @@ public sealed class PromptTests : IDisposable
     }
 
 
-    private void ConfigureAzureOpenAI(KernelBuilder kernelBuilder)
+    private void ConfigureAzureOpenAI(IKernelBuilder kernelBuilder)
     {
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
 
