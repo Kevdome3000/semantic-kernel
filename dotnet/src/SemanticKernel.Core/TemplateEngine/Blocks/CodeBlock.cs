@@ -42,6 +42,12 @@ internal sealed class CodeBlock : Block, ICodeRendering
     }
 
 
+    /// <summary>
+    /// Gets the list of blocks.
+    /// </summary>
+    public List<Block> Blocks => this._tokens;
+
+
     /// <inheritdoc/>
     public override bool IsValid(out string errorMsg)
     {
