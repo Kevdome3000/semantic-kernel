@@ -4,7 +4,6 @@ namespace SemanticKernel.UnitTests.Events;
 
 using System.Globalization;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Events;
 using Xunit;
 
 

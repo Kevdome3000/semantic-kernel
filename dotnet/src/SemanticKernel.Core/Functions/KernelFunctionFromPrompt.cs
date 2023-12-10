@@ -11,7 +11,6 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using ChatCompletion;
-using Events;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
 using Services;
@@ -278,7 +277,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         IAIService? aiService;
 
         // Try to use IChatCompletionService.
-        if (serviceSelector.TrySelectAIService<IChatCompletionService>(
+        if (serviceSelector.TrySelectAIService(
                 kernel, this, arguments,
                 out IChatCompletionService? chatService, out PromptExecutionSettings? defaultExecutionSettings))
         {

@@ -7,7 +7,6 @@ namespace SemanticKernel.UnitTests.Functions;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Events;
 using Xunit;
 
 
