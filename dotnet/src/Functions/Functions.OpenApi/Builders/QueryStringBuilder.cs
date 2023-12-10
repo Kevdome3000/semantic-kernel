@@ -1,13 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Plugins.OpenApi.Builders;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Model;
-using Serialization;
+using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
+using Microsoft.SemanticKernel.Plugins.OpenApi.Serialization;
 
+namespace Microsoft.SemanticKernel.Plugins.OpenApi.Builders;
 
 /// <summary>
 /// Represents a query string builder for REST API operations.
@@ -23,7 +22,6 @@ internal static class QueryStringBuilder
         { RestApiOperationParameterStyle.SpaceDelimited, SpaceDelimitedStyleParameterSerializer.Serialize },
         { RestApiOperationParameterStyle.PipeDelimited, PipeDelimitedStyleParameterSerializer.Serialize }
     };
-
 
     ///<inheritdoc/>
     public static string BuildQueryString(this RestApiOperation operation, IDictionary<string, string> arguments)

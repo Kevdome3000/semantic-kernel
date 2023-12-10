@@ -1,20 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Plugins.OpenApi.Builders.Serialization;
-
 using System;
 using System.Text.Json.Nodes;
-using System.Web;
-using Model;
+using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 
+namespace Microsoft.SemanticKernel.Plugins.OpenApi.Serialization;
 
 /// <summary>
-/// Serializes REST API operation parameter of the 'Form' style.
+/// Serializes REST API operation parameter of the 'Simple' style.
 /// </summary>
-internal static class FormStyleParameterSerializer
+internal static class SimpleStyleParameterSerializer
 {
     /// <summary>
-    /// Serializes a REST API operation `Form` style parameter.
+    /// Serializes a REST API operation `Simple` style parameter.
     /// </summary>
     /// <param name="parameter">The REST API operation parameter to serialize.</param>
     /// <param name="argument">The parameter argument.</param>
@@ -25,21 +23,20 @@ internal static class FormStyleParameterSerializer
 
         Verify.NotNull(parameter);
 
-        if (parameter.Style != RestApiOperationParameterStyle.Form)
+        if (parameter.Style != RestApiOperationParameterStyle.Simple)
         {
             throw new ArgumentException($"Unexpected Rest API operation parameter style - `{parameter.Style}`", nameof(parameter));
         }
 
-        // Handling parameters of array type.
+        // Serializing parameters of array type.
         if (parameter.Type == ArrayType)
         {
             return SerializeArrayParameter(parameter, argument);
         }
 
-        // Handling parameters of primitive - integer, string, etc type.
-        return $"{parameter.Name}={HttpUtility.UrlEncode(argument)}";
+        // Serializing parameters of primitive - integer, string, etc type.
+        return argument;
     }
-
 
     /// <summary>
     /// Serializes an array-type parameter.
@@ -51,14 +48,9 @@ internal static class FormStyleParameterSerializer
     {
         if (JsonNode.Parse(argument) is not JsonArray array)
         {
-            throw new KernelException($"Can't deserialize parameter name `{parameter.Name}` argument `{argument}` to JSON array");
+            throw new KernelException($"Can't deserialize parameter name '{parameter.Name}' argument '{argument}' to JSON array.");
         }
 
-        if (parameter.Expand)
-        {
-            return ArrayParameterValueSerializer.SerializeArrayAsSeparateParameters(parameter.Name, array, delimiter: "&"); //id=1&id=2&id=3
-        }
-
-        return $"{parameter.Name}={ArrayParameterValueSerializer.SerializeArrayAsDelimitedValues(array, delimiter: ",")}"; //id=1,2,3
+        return ArrayParameterValueSerializer.SerializeArrayAsDelimitedValues(array, delimiter: ",", encode: false); //1,2,3
     }
 }

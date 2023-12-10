@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Plugins.OpenApi.Builders.Serialization;
-
 using System;
 using System.Text.Json.Nodes;
-using Model;
+using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 
+namespace Microsoft.SemanticKernel.Plugins.OpenApi.Serialization;
 
 /// <summary>
 /// Serializes REST API operation parameter of the 'PipeDelimited' style.
@@ -36,7 +35,6 @@ internal static class PipeDelimitedStyleParameterSerializer
 
         return SerializeArrayParameter(parameter, argument);
     }
-
 
     /// <summary>
     /// Serializes an array-type parameter.
