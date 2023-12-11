@@ -1,12 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+<<<<<<< HEAD
+
 namespace Microsoft.SemanticKernel.ChatCompletion;
 
+====== =
+>>>>>>> upstream/main
 using System;
 using System.Collections;
 using System.Collections.Generic;
+<<<<<<< HEAD
+#pragma warning disable CA1033 // Interface methods should be callable by child types
+    ====== =
+
+namespace Microsoft.SemanticKernel.ChatCompletion;
 
 #pragma warning disable CA1033 // Interface methods should be callable by child types
+>>>>>>> upstream / main
 
 
 /// <summary>
@@ -21,7 +31,10 @@ public class ChatMessageContentItemCollection : IList<ContentBase>, IReadOnlyLis
     {
         this._items = new();
     }
+    <<<<<<< HEAD
 
+    ====== =
+    >>>>>>> upstream/main
 
     /// <summary>
     /// Gets or sets the content item at the specified index in the collection.
@@ -45,6 +58,11 @@ public class ChatMessageContentItemCollection : IList<ContentBase>, IReadOnlyLis
     /// </summary>
     public int Count => this._items.Count;
 
+        <<<<<<< HEAD
+
+    ====== =
+    >>>>>>> upstream/main
+
 
     /// <summary>
     /// Adds a content item to the collection.
@@ -56,12 +74,20 @@ public class ChatMessageContentItemCollection : IList<ContentBase>, IReadOnlyLis
         Verify.NotNull(item);
         this._items.Add(item);
     }
+    <<<<<<< HEAD
+
+    ====== =
+    >>>>>>> upstream/main
 
 
     /// <summary>
     /// Removes all content items from the collection.
     /// </summary>
     public void Clear() => this._items.Clear();
+        <<<<<<< HEAD
+
+    ====== =
+    >>>>>>> upstream/main
 
 
     /// <summary>
@@ -75,6 +101,10 @@ public class ChatMessageContentItemCollection : IList<ContentBase>, IReadOnlyLis
         Verify.NotNull(item);
         return this._items.Contains(item);
     }
+    <<<<<<< HEAD
+
+    ====== =
+    >>>>>>> upstream/main
 
 
     /// <summary>
@@ -86,6 +116,10 @@ public class ChatMessageContentItemCollection : IList<ContentBase>, IReadOnlyLis
     /// <exception cref="ArgumentException">The number of content items in the collection is greater than the available space from <paramref name="arrayIndex"/> to the end of <paramref name="array"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="arrayIndex"/> is less than 0.</exception>
     public void CopyTo(ContentBase[] array, int arrayIndex) => this._items.CopyTo(array, arrayIndex);
+        <<<<<<< HEAD
+
+    ====== =
+    >>>>>>> upstream/main
 
 
     /// <summary>
@@ -99,6 +133,10 @@ public class ChatMessageContentItemCollection : IList<ContentBase>, IReadOnlyLis
         Verify.NotNull(item);
         return this._items.IndexOf(item);
     }
+    <<<<<<< HEAD
+
+    ====== =
+    >>>>>>> upstream/main
 
 
     /// <summary>
@@ -112,6 +150,10 @@ public class ChatMessageContentItemCollection : IList<ContentBase>, IReadOnlyLis
         Verify.NotNull(item);
         this._items.Insert(index, item);
     }
+    <<<<<<< HEAD
+
+    ====== =
+    >>>>>>> upstream/main
 
 
     /// <summary>
@@ -125,6 +167,10 @@ public class ChatMessageContentItemCollection : IList<ContentBase>, IReadOnlyLis
         Verify.NotNull(item);
         return this._items.Remove(item);
     }
+    <<<<<<< HEAD
+
+    ====== =
+    >>>>>>> upstream/main
 
 
     /// <summary>
@@ -132,20 +178,31 @@ public class ChatMessageContentItemCollection : IList<ContentBase>, IReadOnlyLis
     /// </summary>
     /// <param name="index">The index of the content item to remove.</param>
     public void RemoveAt(int index) => this._items.RemoveAt(index);
+        <<<<<<< HEAD
 
-
+    ====== =
+    >>>>>>> upstream/main
     bool ICollection<ContentBase>.IsReadOnly => false;
 
     IEnumerator IEnumerable.GetEnumerator() => this._items.GetEnumerator();
 
+
     IEnumerator<ContentBase> IEnumerable<ContentBase>.GetEnumerator() => this._items.GetEnumerator();
+        <<<<<<< HEAD
+
+    ====== =
+    >>>>>>> upstream/main
 
 
     #region private
 
     private readonly List<ContentBase> _items;
 
-    #endregion
+        #endregion
 
 
+        <<<<<<< HEAD
+
+    ====== =
+    >>>>>>> upstream/main
 }

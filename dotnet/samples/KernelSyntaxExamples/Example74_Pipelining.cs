@@ -6,7 +6,6 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 
@@ -102,8 +101,28 @@ public static class KernelFunctionCombinators
     /// <param name="cancellationToken">The cancellation token to monitor for a cancellation request.</param>
     /// <returns></returns>
     public static Task<FunctionResult> InvokePipelineAsync(
-        IEnumerable<(KernelFunction Function, string OutputVariable)> functions, Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken) =>
+        IEnumerable<(KernelFunction Function, string OutputVariable)> functions,
+        Kernel kernel,
+        KernelArguments arguments,
+        CancellationToken cancellationToken) =>
         Pipe(functions).InvokeAsync(kernel, arguments, cancellationToken);
+
+
+    /// <summary>
+    /// Invokes a pipeline of functions, running each in order and passing the output from one as the named argument to the next.
+    /// </summary>
+    /// <param name="functions">The sequence of functions to invoke, along with the name of the argument to assign to the result of the function's invocation.</param>
+    /// <param name="kernel">The kernel to use for the operations.</param>
+    /// <param name="arguments">The arguments.</param>
+    /// <param name="cancellationToken">The cancellation token to monitor for a cancellation request.</param>
+    /// <returns></returns>
+    public static Task<FunctionResult> InvokePipelineAsync(
+        IEnumerable<(KernelFunction Function, string OutputVariable)> functions,
+        Kernel kernel,
+        KernelArguments arguments,
+        CancellationToken cancellationToken) =>
+        Pipe(functions).InvokeAsync(kernel, arguments, cancellationToken);
+
 
     /// <summary>
     /// Creates a function whose invocation will invoke each of the supplied functions in sequence.
@@ -126,12 +145,15 @@ public static class KernelFunctionCombinators
         Array.ForEach(funcs, f => ArgumentNullException.ThrowIfNull(f));
 
         var funcsAndVars = new (KernelFunction Function, string OutputVariable)[funcs.Length];
+
         for (int i = 0; i < funcs.Length; i++)
         {
             string p = "";
+
             if (i < funcs.Length - 1)
             {
                 var parameters = funcs[i + 1].Metadata.Parameters;
+
                 if (parameters.Count > 0)
                 {
                     p = parameters[0].Name;
@@ -143,6 +165,7 @@ public static class KernelFunctionCombinators
 
         return Pipe(funcsAndVars, functionName, description);
     }
+
 
     /// <summary>
     /// Creates a function whose invocation will invoke each of the supplied functions in sequence.
@@ -175,6 +198,7 @@ public static class KernelFunctionCombinators
             for (int i = 0; i < arr.Length; i++)
             {
                 result = await arr[i].Function.InvokeAsync(kernel, arguments).ConfigureAwait(false);
+
                 if (i < arr.Length - 1)
                 {
                     arguments[arr[i].OutputVariable] = result.GetValue<object>();

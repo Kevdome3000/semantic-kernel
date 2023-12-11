@@ -227,12 +227,21 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var parameters = new List<RestApiOperationParameter>
         {
             new(
-                name: "fake-header",
-                type: "string",
-                isRequired: true,
-                expand: false,
-                location: RestApiOperationParameterLocation.Header,
-                style: RestApiOperationParameterStyle.Simple)
+            <<<<<<< HEAD
+            name: "fake-header",
+            type: "string",
+            isRequired: true,
+            expand: false,
+            location: RestApiOperationParameterLocation.Header,
+            style: RestApiOperationParameterStyle.Simple)
+            ====== =
+            name: "fake-header",
+            type: "string",
+            isRequired: true,
+            expand: false,
+            location: RestApiOperationParameterLocation.Header,
+            style: RestApiOperationParameterStyle.Simple)
+            >>>>>>> upstream/main
         };
 
         var operation = new RestApiOperation(

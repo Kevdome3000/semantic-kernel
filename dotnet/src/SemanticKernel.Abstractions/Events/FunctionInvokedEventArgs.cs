@@ -2,7 +2,14 @@
 
 namespace Microsoft.SemanticKernel;
 
+<<<<<<< HEAD
+    ====== =
+
+namespace Microsoft.SemanticKernel;
+
 using System;
+
+>>>>>>> upstream / main
 
 
 /// <summary>

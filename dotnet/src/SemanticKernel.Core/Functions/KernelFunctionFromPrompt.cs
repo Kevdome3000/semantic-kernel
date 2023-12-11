@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel;
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,12 +8,13 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using ChatCompletion;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
-using Services;
-using TextGeneration;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Services;
+using Microsoft.SemanticKernel.TextGeneration;
 
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// A Semantic Kernel "Semantic" prompt function.
@@ -24,7 +23,6 @@ using TextGeneration;
 internal sealed class KernelFunctionFromPrompt : KernelFunction
 {
     // TODO: Revise these Create method XML comments
-
 
     /// <summary>
     /// Creates a string-to-string prompt function, with no direct support for input context.
@@ -68,7 +66,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             loggerFactory: loggerFactory);
     }
 
-
     /// <summary>
     /// Creates a string-to-string prompt function, with no direct support for input context.
     /// The function can be referenced in templates and will receive the context, but when invoked programmatically you
@@ -90,7 +87,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             promptConfig: promptConfig,
             loggerFactory: loggerFactory);
     }
-
 
     /// <summary>
     /// Allow to define a prompt function passing in the definition in natural language, i.e. the prompt template.
@@ -119,7 +115,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             loggerFactory: loggerFactory);
     }
 
-
     /// <inheritdoc/>j
     protected override async ValueTask<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
@@ -129,7 +124,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         this.AddDefaultValues(arguments);
 
         (var aiService, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
-
         if (renderedEventArgs?.Cancel is true)
         {
             throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.PromptRendered)} event handler requested cancellation before function invocation.");
@@ -153,7 +147,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         throw new NotSupportedException($"The AI service {aiService.GetType()} is not supported. Supported services are {typeof(IChatCompletionService)} and {typeof(ITextGenerationService)}");
     }
 
-
     protected override async IAsyncEnumerable<TResult> InvokeStreamingCoreAsync<TResult>(
         Kernel kernel,
         KernelArguments arguments,
@@ -162,14 +155,12 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         this.AddDefaultValues(arguments);
 
         (var aiService, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
-
         if (renderedEventArgs?.Cancel ?? false)
         {
             yield break;
         }
 
         IAsyncEnumerable<StreamingContentBase>? asyncReference = null;
-
         if (aiService is IChatCompletionService chatCompletion)
         {
             asyncReference = chatCompletion.GetStreamingChatMessageContentsAsync(renderedPrompt, arguments.ExecutionSettings, kernel, cancellationToken);
@@ -209,29 +200,26 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         // There is no post cancellation check to override the result as the stream data was already sent.
     }
 
-
     /// <summary>
     /// JSON serialized string representation of the function.
     /// </summary>
     public override string ToString() => JsonSerializer.Serialize(this);
 
-
     private KernelFunctionFromPrompt(
         IPromptTemplate template,
         PromptTemplateConfig promptConfig,
         ILoggerFactory? loggerFactory = null) : base(
-        promptConfig.Name,
-        promptConfig.Description,
-        promptConfig.GetKernelParametersMetadata(),
-        promptConfig.GetKernelReturnParameterMetadata(),
-        promptConfig.ExecutionSettings)
+            promptConfig.Name,
+            promptConfig.Description,
+            promptConfig.GetKernelParametersMetadata(),
+            promptConfig.GetKernelReturnParameterMetadata(),
+            promptConfig.ExecutionSettings)
     {
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(KernelFunctionFactory)) : NullLogger.Instance;
 
         this._promptTemplate = template;
         this._promptConfig = promptConfig;
     }
-
 
     #region private
 
@@ -257,7 +245,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         unit: "{token}",
         description: "Measures the completion token usage");
 
-
     /// <summary>Add default values to the arguments if an argument is not defined</summary>
     private void AddDefaultValues(KernelArguments arguments)
     {
@@ -270,16 +257,15 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         }
     }
 
-
     private async Task<(IAIService, string, PromptRenderedEventArgs?)> RenderPromptAsync(Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
     {
         var serviceSelector = kernel.ServiceSelector;
         IAIService? aiService;
 
         // Try to use IChatCompletionService.
-        if (serviceSelector.TrySelectAIService(
-                kernel, this, arguments,
-                out IChatCompletionService? chatService, out PromptExecutionSettings? defaultExecutionSettings))
+        if (serviceSelector.TrySelectAIService<IChatCompletionService>(
+            kernel, this, arguments,
+            out IChatCompletionService? chatService, out PromptExecutionSettings? defaultExecutionSettings))
         {
             aiService = chatService;
         }
@@ -316,10 +302,8 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         return (aiService, renderedPrompt, renderedEventArgs);
     }
 
-
     /// <summary>Create a random, valid function name.</summary>
     private static string RandomFunctionName() => $"func{Guid.NewGuid():N}";
-
 
     /// <summary>
     /// Captures usage details, including token information.
@@ -353,7 +337,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         }
 
         var jsonObject = default(JsonElement);
-
         try
         {
             jsonObject = JsonSerializer.SerializeToElement(usageObject);
@@ -373,8 +356,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
                 "Prompt tokens: {PromptTokens}. Completion tokens: {CompletionTokens}.",
                 promptTokens, completionTokens);
 
-            TagList tags = new()
-            {
+            TagList tags = new() {
                 { MeasurementFunctionTagName, this.Name },
                 { MeasurementModelTagName, modelId }
             };
@@ -389,6 +371,4 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     }
 
     #endregion
-
-
 }

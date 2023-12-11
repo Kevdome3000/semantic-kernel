@@ -4,26 +4,29 @@
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics.Metrics;
-using System.Linq;
-using System.Net.Http;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
-using Azure;
-using Azure.AI.OpenAI;
-using Azure.Core.Pipeline;
+<<<<<<< HEAD
 using ChatCompletion;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
 using Http;
 using TextGeneration;
 using TextToImage;
+    =======
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.TextGeneration;
+using Microsoft.SemanticKernel.TextToImage;
+#pragma warning disable CA2208 // Instantiate argument exceptions correctly
+
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+
+using System.Linq;
+using System.Net.Http;
+using System.Threading;
+
+>>>>>>> upstream / main
 
 // TODO: forward ETW logging to ILogger, see https://learn.microsoft.com/en-us/dotnet/azure/sdk/logging
 
@@ -684,6 +687,10 @@ internal abstract class ClientCore
 
         throw new NotImplementedException($"Role {chatRole} is not implemented");
     }
+    <<<<<<< HEAD
+
+    ====== =
+    >>>>>>> upstream/main
 
 
     private static ChatMessageContentItem GetChatMessageContentItem(ContentBase item)
@@ -695,6 +702,10 @@ internal abstract class ClientCore
             _ => throw new NotSupportedException($"Unsupported content type of chat message item: {item.GetType()}.")
         };
     }
+    <<<<<<< HEAD
+
+    ====== =
+    >>>>>>> upstream/main
 
 
     private static ChatRequestUserMessage GetChatRequestUserMessage(ChatMessageContent message, string? functionName)
@@ -707,6 +718,10 @@ internal abstract class ClientCore
 
         return new ChatRequestUserMessage(message.Content) { Name = functionName };
     }
+    <<<<<<< HEAD
+
+    ====== =
+    >>>>>>> upstream/main
 
 
     private static ChatRequestMessage GetRequestMessage(ChatMessageContent message)

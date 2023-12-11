@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.ChatCompletion;
-
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel.ChatCompletion;
 
 /// <summary>
 /// Represents chat message content return from a <see cref="IChatCompletionService" /> service.
@@ -33,7 +32,6 @@ public class ChatMessageContent : ContentBase
     [JsonIgnore]
     public Encoding Encoding { get; set; }
 
-
     /// <summary>
     /// Creates a new instance of the <see cref="ChatMessageContent"/> class
     /// </summary>
@@ -58,7 +56,6 @@ public class ChatMessageContent : ContentBase
         this.Encoding = encoding ?? Encoding.UTF8;
     }
 
-
     /// <summary>
     /// Creates a new instance of the <see cref="ChatMessageContent"/> class
     /// </summary>
@@ -81,7 +78,6 @@ public class ChatMessageContent : ContentBase
         this.Encoding = encoding ?? Encoding.UTF8;
         this.Items = items;
     }
-
 
     /// <inheritdoc/>
     public override string ToString()

@@ -1,10 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+<<<<<<< HEAD
+
 namespace Microsoft.SemanticKernel.TextToImage;
 
+====== =
+>>>>>>> upstream/main
 using System;
 using System.Collections.Generic;
 using System.Text;
+<<<<<<< HEAD
+    ====== =
+
+namespace Microsoft.SemanticKernel.TextToImage;
+
+>>>>>>> upstream / main
 
 
 /// <summary>
@@ -16,6 +26,11 @@ public sealed class ImageContent : ContentBase
     /// The URI of image.
     /// </summary>
     public Uri? Uri { get; set; }
+
+    <<<<<<< HEAD
+
+    ====== =
+    >>>>>>> upstream/main
 
 
     /// <summary>
@@ -36,6 +51,10 @@ public sealed class ImageContent : ContentBase
     {
         this.Uri = uri;
     }
+    <<<<<<< HEAD
+
+    ====== =
+    >>>>>>> upstream/main
 
 
     /// <inheritdoc/>

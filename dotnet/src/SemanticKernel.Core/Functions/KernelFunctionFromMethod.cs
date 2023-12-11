@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel;
-
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -17,10 +15,11 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
-using Text;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Text;
 
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Provides factory methods for creating <see cref="KernelFunction"/> instances backed by a .NET method.
@@ -50,7 +49,6 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(method);
-
         if (!method.IsStatic && target is null)
         {
             throw new ArgumentNullException(nameof(target), "Target must not be null for an instance method.");
@@ -75,7 +73,6 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         return result;
     }
 
-
     /// <inheritdoc/>
     protected override ValueTask<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
@@ -85,7 +82,6 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         return this._function(kernel, this, arguments, cancellationToken);
     }
 
-
     /// <inheritdoc/>
     protected override async IAsyncEnumerable<TResult> InvokeStreamingCoreAsync<TResult>(
         Kernel kernel,
@@ -93,11 +89,9 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var functionResult = await this.InvokeCoreAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
-
         if (functionResult.Value is TResult)
         {
             yield return (TResult)functionResult.Value;
-
             yield break;
         }
 
@@ -117,12 +111,10 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         // We don't invoke the hook here as the InvokeCoreAsync will do that for us
     }
 
-
     /// <summary>
     /// JSON serialized string representation of the function.
     /// </summary>
     public override string ToString() => JsonSerializer.Serialize(this, JsonOptionsCache.WriteIndented);
-
 
     #region private
 
@@ -133,13 +125,11 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         KernelArguments arguments,
         CancellationToken cancellationToken);
 
-
     private static readonly object[] s_cancellationTokenNoneArray = new object[] { CancellationToken.None };
     private readonly ImplementationFunc _function;
     private readonly ILogger _logger;
 
     private record struct MethodDetails(string Name, string Description, ImplementationFunc Function, List<KernelParameterMetadata> Parameters, KernelReturnParameterMetadata ReturnParameter);
-
 
     private KernelFunctionFromMethod(
         ImplementationFunc implementationFunc,
@@ -156,7 +146,6 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         this._function = implementationFunc;
     }
 
-
     private static MethodDetails GetMethodDetails(string? functionName, MethodInfo method, object? target, ILogger logger)
     {
         ThrowForInvalidSignatureIf(method.IsGenericMethodDefinition, method, "Generic methods are not supported");
@@ -168,7 +157,6 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             // We don't apply any heuristics to the value supplied by SKName so that it can always be used
             // as a definitive override.
             functionName = method.GetCustomAttribute<KernelFunctionAttribute>(inherit: true)?.Name?.Trim();
-
             if (string.IsNullOrEmpty(functionName))
             {
                 functionName = SanitizeMetadataName(method.Name!);
@@ -190,13 +178,11 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         // Get marshaling funcs for parameters and build up the parameter metadata.
         var parameterFuncs = new Func<KernelFunction, Kernel, KernelArguments, CancellationToken, object?>[parameters.Length];
         bool sawFirstParameter = false, hasFuncParam = false, hasKernelParam = false, hasFunctionArgumentsParam = false, hasCancellationTokenParam = false, hasLoggerParam = false, hasCultureParam = false;
-
         for (int i = 0; i < parameters.Length; i++)
         {
             (parameterFuncs[i], KernelParameterMetadata? parameterView) = GetParameterMarshalerDelegate(
                 method, parameters[i],
                 ref sawFirstParameter, ref hasFuncParam, ref hasKernelParam, ref hasFunctionArgumentsParam, ref hasCancellationTokenParam, ref hasLoggerParam, ref hasCultureParam);
-
             if (parameterView is not null)
             {
                 stringParameterViews.Add(parameterView);
@@ -214,7 +200,6 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         {
             // Create the arguments.
             object?[] args = parameterFuncs.Length != 0 ? new object?[parameterFuncs.Length] : Array.Empty<object?>();
-
             for (int i = 0; i < args.Length; i++)
             {
                 args[i] = parameterFuncs[i](function, kernel, arguments, cancellationToken);
@@ -242,7 +227,6 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         };
     }
 
-
     /// <summary>Gets whether a method has a known async return type.</summary>
     private static bool IsAsyncMethod(MethodInfo method)
     {
@@ -256,7 +240,6 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         if (t.IsGenericType)
         {
             t = t.GetGenericTypeDefinition();
-
             if (t == typeof(Task<>) || t == typeof(ValueTask<>) || t == typeof(IAsyncEnumerable<>))
             {
                 return true;
@@ -266,20 +249,12 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         return false;
     }
 
-
     /// <summary>
     /// Gets a delegate for handling the marshaling of a parameter.
     /// </summary>
     private static (Func<KernelFunction, Kernel, KernelArguments, CancellationToken, object?>, KernelParameterMetadata?) GetParameterMarshalerDelegate(
-        MethodInfo method,
-        ParameterInfo parameter,
-        ref bool sawFirstParameter,
-        ref bool hasFuncParam,
-        ref bool hasKernelParam,
-        ref bool hasFunctionArgumentsParam,
-        ref bool hasCancellationTokenParam,
-        ref bool hasLoggerParam,
-        ref bool hasCultureParam)
+        MethodInfo method, ParameterInfo parameter,
+        ref bool sawFirstParameter, ref bool hasFuncParam, ref bool hasKernelParam, ref bool hasFunctionArgumentsParam, ref bool hasCancellationTokenParam, ref bool hasLoggerParam, ref bool hasCultureParam)
     {
         Type type = parameter.ParameterType;
 
@@ -306,7 +281,9 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         if (type == typeof(ILogger) || type == typeof(ILoggerFactory))
         {
             TrackUniqueParameterType(ref hasLoggerParam, method, $"At most one {nameof(ILogger)}/{nameof(ILoggerFactory)} parameter is permitted.");
-            return type == typeof(ILogger) ? ((KernelFunction _, Kernel kernel, KernelArguments _, CancellationToken _) => kernel.LoggerFactory.CreateLogger(method?.DeclaringType ?? typeof(KernelFunctionFromPrompt)), null) : ((KernelFunction _, Kernel kernel, KernelArguments _, CancellationToken _) => kernel.LoggerFactory, null);
+            return type == typeof(ILogger) ?
+                ((KernelFunction _, Kernel kernel, KernelArguments _, CancellationToken _) => kernel.LoggerFactory.CreateLogger(method?.DeclaringType ?? typeof(KernelFunctionFromPrompt)), null) :
+                ((KernelFunction _, Kernel kernel, KernelArguments _, CancellationToken _) => kernel.LoggerFactory, null);
         }
 
         if (type == typeof(CultureInfo) || type == typeof(IFormatProvider))
@@ -387,7 +364,6 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
         return (parameterFunc, parameterView);
     }
-
 
     /// <summary>
     /// Gets a delegate for handling the result value of a method, converting it into the <see cref="Task{FunctionResult}"/> to return from the invocation.
@@ -555,12 +531,10 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             throw new KernelException("Function returned null unexpectedly.");
     }
 
-
     /// <summary>Invokes the MethodInfo with the specified target object and arguments.</summary>
     private static object? Invoke(MethodInfo method, object? target, object?[]? arguments)
     {
         object? result = null;
-
         try
         {
             const BindingFlags BindingFlagsDoNotWrapExceptions = (BindingFlags)0x02000000; // BindingFlags.DoNotWrapExceptions on .NET Core 2.1+, ignored before then
@@ -577,12 +551,10 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         return result;
     }
 
-
     /// <summary>Gets an exception that can be thrown indicating an invalid signature.</summary>
     [DoesNotReturn]
     private static Exception GetExceptionForInvalidSignature(MethodInfo method, string reason) =>
         throw new KernelException($"Function '{method.Name}' is not supported by the kernel. {reason}");
-
 
     /// <summary>Throws an exception indicating an invalid KernelFunctionFactory signature if the specified condition is not met.</summary>
     private static void ThrowForInvalidSignatureIf([DoesNotReturnIf(true)] bool condition, MethodInfo method, string reason)
@@ -593,14 +565,12 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         }
     }
 
-
     /// <summary>Tracks whether a particular kind of parameter has been seen, throwing an exception if it has, and marking it as seen if it hasn't</summary>
     private static void TrackUniqueParameterType(ref bool hasParameterType, MethodInfo method, string failureMessage)
     {
         ThrowForInvalidSignatureIf(hasParameterType, method, failureMessage);
         hasParameterType = true;
     }
-
 
     /// <summary>
     /// Gets a converter for type to ty conversion. For example, string to int, string to Guid, double to int, CustomType to string, etc.
@@ -618,7 +588,6 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             // For nullables, parse as the inner type.  We then just need to be careful to treat null as null,
             // as the underlying parser might not be expecting null.
             bool wasNullable = !targetType.IsValueType;
-
             if (!wasNullable && targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(Nullable<>))
             {
                 wasNullable = true;
@@ -654,13 +623,13 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
                         // EnumConverter cannot convert integer, so we verify manually
                         if (targetType.IsEnum &&
                             (input is int ||
-                             input is uint ||
-                             input is long ||
-                             input is ulong ||
-                             input is short ||
-                             input is ushort ||
-                             input is byte ||
-                             input is sbyte))
+                            input is uint ||
+                            input is long ||
+                            input is ulong ||
+                            input is short ||
+                            input is ushort ||
+                            input is byte ||
+                            input is sbyte))
                         {
                             return Enum.ToObject(targetType, input);
                         }
@@ -685,17 +654,14 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             return null;
         });
 
-
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay => string.IsNullOrWhiteSpace(this.Description) ? this.Name : $"{this.Name} ({this.Description})";
-
 
     /// <summary>
     /// Remove characters from method name that are valid in metadata but invalid for SK.
     /// </summary>
     private static string SanitizeMetadataName(string methodName) =>
         s_invalidNameCharsRegex.Replace(methodName, "_");
-
 
     /// <summary>Regex that flags any character other than ASCII digits or letters or the underscore.</summary>
     private static readonly Regex s_invalidNameCharsRegex = new("[^0-9A-Za-z_]");
@@ -704,6 +670,4 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     private static readonly ConcurrentDictionary<Type, Func<object?, CultureInfo, object?>?> s_parsers = new();
 
     #endregion
-
-
 }

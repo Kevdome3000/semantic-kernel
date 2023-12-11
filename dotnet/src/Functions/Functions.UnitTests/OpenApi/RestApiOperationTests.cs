@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Functions.UnitTests.OpenApi;
-
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -9,6 +7,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 using Xunit;
 
+namespace SemanticKernel.Functions.UnitTests.OpenApi;
 
 public class RestApiOperationTests
 {
@@ -34,7 +33,6 @@ public class RestApiOperationTests
         Assert.Equal("https://fake-random-test-host/", url.OriginalString);
     }
 
-
     [Fact]
     public void ItShouldUseHostUrlOverrideIfProvided()
     {
@@ -58,7 +56,6 @@ public class RestApiOperationTests
         // Assert
         Assert.Equal(fakeHostUrlOverride, url.OriginalString.TrimEnd('/'));
     }
-
 
     [Fact]
     public void ItShouldReplacePathParametersByValuesFromArguments()
@@ -84,7 +81,6 @@ public class RestApiOperationTests
         // Assert
         Assert.Equal("https://fake-random-test-host/fake-path-value/other_fake_path_section", url.OriginalString);
     }
-
 
     [Fact]
     public void ItShouldReplacePathParametersByDefaultValues()
@@ -114,7 +110,6 @@ public class RestApiOperationTests
         // Assert
         Assert.Equal("https://fake-random-test-host/fake-default-path/other_fake_path_section", url.OriginalString);
     }
-
 
     [Fact]
     public void ShouldBuildResourceUrlWithoutQueryString()
@@ -156,7 +151,6 @@ public class RestApiOperationTests
         // Assert
         Assert.Equal($"{fakeHostUrlOverride}/fake-path-value/", url.OriginalString);
     }
-
 
     [Fact]
     public void ItShouldRenderHeaderValuesFromArguments()
@@ -202,7 +196,6 @@ public class RestApiOperationTests
         Assert.Equal("fake_header_two_value", headerTwo);
     }
 
-
     [Fact]
     public void ShouldThrowExceptionIfNoValueProvidedForRequiredHeader()
     {
@@ -210,7 +203,7 @@ public class RestApiOperationTests
         var metadata = new List<RestApiOperationParameter>
         {
             new(name: "fake_header_one", type: "string", isRequired: true, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple),
-            new(name: "fake_header_two", type: "string", isRequired: false, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple)
+            new(name: "fake_header_two", type : "string", isRequired : false, expand : false, location : RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple)
         };
 
         var sut = new RestApiOperation("fake_id", new Uri("http://fake_url"), "fake_path", HttpMethod.Get, "fake_description", metadata);
@@ -222,15 +215,14 @@ public class RestApiOperationTests
         Assert.Throws<KernelException>(Act);
     }
 
-
     [Fact]
     public void ItShouldSkipOptionalHeaderHavingNoValue()
     {
         // Arrange
         var metadata = new List<RestApiOperationParameter>
         {
-            new(name: "fake_header_one", type: "string", isRequired: true, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple),
-            new(name: "fake_header_two", type: "string", isRequired: false, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple)
+            new(name: "fake_header_one", type : "string", isRequired : true, expand : false, location : RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple),
+            new(name: "fake_header_two", type : "string", isRequired : false, expand : false, location : RestApiOperationParameterLocation.Header, style : RestApiOperationParameterStyle.Simple)
         };
 
         var arguments = new Dictionary<string, string>
@@ -250,15 +242,14 @@ public class RestApiOperationTests
         Assert.Equal("fake_header_one_value", headerOne);
     }
 
-
     [Fact]
     public void ItShouldCreateHeaderWithCommaSeparatedValues()
     {
         // Arrange
         var metadata = new List<RestApiOperationParameter>
         {
-            new(name: "h1", type: "array", isRequired: false, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple, arrayItemType: "string"),
-            new(name: "h2", type: "array", isRequired: false, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple, arrayItemType: "integer")
+            new( name: "h1", type: "array", isRequired: false, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple, arrayItemType: "string"),
+            new( name: "h2", type: "array", isRequired: false, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple, arrayItemType: "integer")
         };
 
         var arguments = new Dictionary<string, string>
@@ -280,15 +271,14 @@ public class RestApiOperationTests
         Assert.Equal("1,2,3", headers["h2"]);
     }
 
-
     [Fact]
     public void ItShouldCreateHeaderWithPrimitiveValue()
     {
         // Arrange
         var metadata = new List<RestApiOperationParameter>
         {
-            new(name: "h1", type: "string", isRequired: false, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple),
-            new(name: "h2", type: "boolean", isRequired: false, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple)
+            new( name: "h1", type: "string", isRequired: false, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple),
+            new( name: "h2", type: "boolean", isRequired: false, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple)
         };
 
         var arguments = new Dictionary<string, string>
@@ -309,7 +299,6 @@ public class RestApiOperationTests
         Assert.Equal("v1", headers["h1"]);
         Assert.Equal("true", headers["h2"]);
     }
-
 
     [Fact]
     public void ItShouldMixAndMatchHeadersOfDifferentValueTypes()

@@ -1,18 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel;
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
-using TemplateEngine;
-using TemplateEngine.Blocks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.TemplateEngine;
+using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Given a prompt, that might contain references to variables and functions:
@@ -43,19 +42,15 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
         AddMissingInputVariables(this._blocks, promptConfig);
     }
 
-
     /// <inheritdoc/>
     public Task<string> RenderAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
     {
         return this.RenderAsync(this._blocks, kernel, arguments, cancellationToken);
     }
 
-
     #region private
-
     private readonly ILogger _logger;
     private readonly List<Block> _blocks;
-
 
     /// <summary>
     /// Given a prompt template string, extract all the blocks (text, variables, function calls)
@@ -83,7 +78,6 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
         return blocks;
     }
 
-
     /// <summary>
     /// Given a list of blocks render each block and compose the final result.
     /// </summary>
@@ -95,7 +89,6 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
     private async Task<string> RenderAsync(List<Block> blocks, Kernel kernel, KernelArguments? arguments, CancellationToken cancellationToken = default)
     {
         var result = new StringBuilder();
-
         foreach (var block in blocks)
         {
             switch (block)
@@ -117,7 +110,6 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
         return result.ToString();
     }
 
-
     /// <summary>
     /// Augments <paramref name="config"/>'s <see cref="PromptTemplateConfig.InputVariables"/> with any variables
     /// not already contained there but that are referenced in the prompt template.
@@ -127,7 +119,6 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
         // Add all of the existing input variables to our known set. We'll avoid adding any
         // dynamically discovered input variables with the same name.
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
         foreach (InputVariable iv in config.InputVariables)
         {
             seen.Add(iv.Name);
@@ -171,8 +162,5 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
             }
         }
     }
-
     #endregion
-
-
 }

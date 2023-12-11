@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Functions.UnitTests.OpenApi.Builders.Serialization;
-
 using System;
 using System.Text.Json.Nodes;
 using Microsoft.SemanticKernel.Plugins.OpenApi.Serialization;
 using Xunit;
 
+namespace SemanticKernel.Functions.UnitTests.OpenApi.Builders.Serialization;
 
 public class ArrayParameterSerializerTests
 {
@@ -25,7 +24,6 @@ public class ArrayParameterSerializerTests
         Assert.Equal("id=1&id=2&id=3", result);
     }
 
-
     [Fact]
     public void ItShouldAllowDuplicatesWhenCreatingParameterPerArrayItem()
     {
@@ -40,7 +38,6 @@ public class ArrayParameterSerializerTests
 
         Assert.Equal("id=1&id=2&id=2&id=3", result);
     }
-
 
     [Fact]
     public void ItShouldAllowParameterDelimiterAsValueWhenCreatingParameterPerArrayItem()
@@ -57,7 +54,6 @@ public class ArrayParameterSerializerTests
         Assert.Equal("id=a&id=b%26&id=c", result);
     }
 
-
     [Fact]
     public void ItShouldCreateParameterWithDelimitedValuePerArrayItem()
     {
@@ -73,7 +69,6 @@ public class ArrayParameterSerializerTests
         Assert.Equal("1%202%203", result);
     }
 
-
     [Fact]
     public void ItShouldAllowDuplicatesWhenCreatingParameterWithDelimitedValuePerArrayItem()
     {
@@ -88,7 +83,6 @@ public class ArrayParameterSerializerTests
 
         Assert.Equal("1%202%202%203", result);
     }
-
 
     [Theory]
     [InlineData(":", "%3a")]
@@ -109,7 +103,6 @@ public class ArrayParameterSerializerTests
         Assert.EndsWith(encodedEquivalent, result, StringComparison.Ordinal);
     }
 
-
     [Theory]
     [InlineData(":", "%3a")]
     [InlineData("/", "%2f")]
@@ -128,7 +121,6 @@ public class ArrayParameterSerializerTests
 
         Assert.EndsWith(encodedEquivalent, result, StringComparison.Ordinal);
     }
-
 
     [Theory]
     [InlineData(":", ":")]

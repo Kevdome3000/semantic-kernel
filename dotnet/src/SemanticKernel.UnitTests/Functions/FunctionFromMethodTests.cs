@@ -1,14 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-// ReSharper disable StringLiteralTypo
-
-namespace SemanticKernel.UnitTests.Functions;
-
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Xunit;
 
+// ReSharper disable StringLiteralTypo
+
+namespace SemanticKernel.UnitTests.Functions;
 
 public class FunctionFromMethodTests
 {
@@ -22,7 +21,6 @@ public class FunctionFromMethodTests
 
         var chunkCount = 0;
         StreamingContentBase? lastChunk = null;
-
         // Act
         await foreach (var chunk in sut.InvokeStreamingAsync<StreamingContentBase>(kernel))
         {
@@ -39,7 +37,6 @@ public class FunctionFromMethodTests
         var methodContent = lastChunk as StreamingMethodContent;
         Assert.Equal(nativeContent, methodContent!.Content);
     }
-
 
     [Fact]
     public async Task InvokeStreamingAsyncOnlySupportsInvokingEventAsync()
@@ -72,7 +69,6 @@ public class FunctionFromMethodTests
         Assert.False(invokedCalled);
     }
 
-
     [Fact]
     public async Task InvokeStreamingAsyncInvokingCancelingShouldThrowAsync()
     {
@@ -99,7 +95,6 @@ public class FunctionFromMethodTests
         Assert.Same(kernel, e.Kernel);
         Assert.Empty(e.Arguments);
     }
-
 
     [Fact]
     public async Task InvokeStreamingAsyncUsingInvokedEventHasNoEffectAsync()

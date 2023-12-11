@@ -1,11 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-
-
-// ReSharper disable StringLiteralTypo
-
-namespace SemanticKernel.UnitTests.Functions;
-
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -19,6 +13,9 @@ using Microsoft.SemanticKernel.TextGeneration;
 using Moq;
 using Xunit;
 
+// ReSharper disable StringLiteralTypo
+
+namespace SemanticKernel.UnitTests.Functions;
 
 public class KernelFunctionFromPromptTests
 {
