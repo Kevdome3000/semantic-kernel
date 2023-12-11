@@ -13,7 +13,7 @@ using Microsoft.SemanticKernel.TextGeneration;
 using Xunit;
 
 
-public class OrderedAIServiceConfigurationProviderTests
+public class OrderedAIServiceSelectorTests
 {
     [Fact]
     public void ItThrowsAnSKExceptionForNoServices()
