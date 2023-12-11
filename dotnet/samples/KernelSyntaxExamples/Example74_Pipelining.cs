@@ -109,22 +109,6 @@ public static class KernelFunctionCombinators
 
 
     /// <summary>
-    /// Invokes a pipeline of functions, running each in order and passing the output from one as the named argument to the next.
-    /// </summary>
-    /// <param name="functions">The sequence of functions to invoke, along with the name of the argument to assign to the result of the function's invocation.</param>
-    /// <param name="kernel">The kernel to use for the operations.</param>
-    /// <param name="arguments">The arguments.</param>
-    /// <param name="cancellationToken">The cancellation token to monitor for a cancellation request.</param>
-    /// <returns></returns>
-    public static Task<FunctionResult> InvokePipelineAsync(
-        IEnumerable<(KernelFunction Function, string OutputVariable)> functions,
-        Kernel kernel,
-        KernelArguments arguments,
-        CancellationToken cancellationToken) =>
-        Pipe(functions).InvokeAsync(kernel, arguments, cancellationToken);
-
-
-    /// <summary>
     /// Creates a function whose invocation will invoke each of the supplied functions in sequence.
     /// </summary>
     /// <param name="functions">The pipeline of functions to invoke.</param>
