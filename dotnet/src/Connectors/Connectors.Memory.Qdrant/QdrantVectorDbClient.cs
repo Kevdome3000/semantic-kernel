@@ -8,11 +8,9 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Extensions.Logging;
-using Extensions.Logging.Abstractions;
 using Http.ApiSchema;
 using SemanticKernel.Http;
 
@@ -202,7 +200,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
             throw;
         }
 
-        var result = JsonSerializer.Deserialize<QdrantResponse>(responseContent);
+        var result = JsonSerializer.Deserialize<DeleteVectorsResponse>(responseContent);
 
         if (result?.Status == "ok")
         {
@@ -245,7 +243,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
             throw;
         }
 
-        var result = JsonSerializer.Deserialize<QdrantResponse>(responseContent);
+        var result = JsonSerializer.Deserialize<DeleteVectorsResponse>(responseContent);
 
         if (result?.Status == "ok")
         {
