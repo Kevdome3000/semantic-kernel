@@ -61,7 +61,7 @@ public static class Example18_DallE
 
         var reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
         chatHistory.Add(reply);
-        image = await dallE.GenerateImageAsync(reply.Content, 256, 256);
+        image = await dallE.GenerateImageAsync(reply.Content!, 256, 256);
         Console.WriteLine("Bot: " + image);
         Console.WriteLine("Img description: " + reply);
 
@@ -71,7 +71,7 @@ public static class Example18_DallE
 
         reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
         chatHistory.Add(reply);
-        image = await dallE.GenerateImageAsync(reply.Content, 256, 256);
+        image = await dallE.GenerateImageAsync(reply.Content!, 256, 256);
         Console.WriteLine("Bot: " + image);
         Console.WriteLine("Img description: " + reply);
 
@@ -129,7 +129,7 @@ public static class Example18_DallE
 
         var reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
         chatHistory.Add(reply);
-        image = await dallE.GenerateImageAsync(reply.Content, 256, 256);
+        image = await dallE.GenerateImageAsync(reply.Content!, 256, 256);
         Console.WriteLine("Bot: " + image);
         Console.WriteLine("Img description: " + reply);
 
@@ -139,7 +139,7 @@ public static class Example18_DallE
 
         reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
         chatHistory.Add(reply);
-        image = await dallE.GenerateImageAsync(reply.Content, 256, 256);
+        image = await dallE.GenerateImageAsync(reply.Content!, 256, 256);
         Console.WriteLine("Bot: " + image);
         Console.WriteLine("Img description: " + reply);
 

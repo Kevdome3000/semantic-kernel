@@ -23,6 +23,7 @@ using Extensions.Logging;
 using Extensions.Logging.Abstractions;
 using Http;
 using TextGeneration;
+using TextToImage;
 
 // TODO: forward ETW logging to ILogger, see https://learn.microsoft.com/en-us/dotnet/azure/sdk/logging
 
@@ -34,12 +35,7 @@ internal abstract class ClientCore
 {
     private const int MaxResultsPerPrompt = 128;
 
-
-    internal ClientCore(ILogger? logger = null)
-    {
-        this.Logger = logger ?? NullLogger.Instance;
-    }
-
+    internal ClientCore(ILogger? logger = null) => Logger = logger ?? NullLogger.Instance;
 
     /// <summary>
     /// Model Id or Deployment Name
@@ -71,27 +67,27 @@ internal abstract class ClientCore
     /// </summary>
     private static readonly Counter<int> s_promptTokensCounter =
         s_meter.CreateCounter<int>(
-            name: "semantic_kernel.connectors.openai.tokens.prompt",
-            unit: "{token}",
-            description: "Number of prompt tokens used");
+            "semantic_kernel.connectors.openai.tokens.prompt",
+            "{token}",
+            "Number of prompt tokens used");
 
     /// <summary>
     /// Instance of <see cref="Counter{T}"/> to keep track of the number of completion tokens used.
     /// </summary>
     private static readonly Counter<int> s_completionTokensCounter =
         s_meter.CreateCounter<int>(
-            name: "semantic_kernel.connectors.openai.tokens.completion",
-            unit: "{token}",
-            description: "Number of completion tokens used");
+            "semantic_kernel.connectors.openai.tokens.completion",
+            "{token}",
+            "Number of completion tokens used");
 
     /// <summary>
     /// Instance of <see cref="Counter{T}"/> to keep track of the total number of tokens used.
     /// </summary>
     private static readonly Counter<int> s_totalTokensCounter =
         s_meter.CreateCounter<int>(
-            name: "semantic_kernel.connectors.openai.tokens.total",
-            unit: "{token}",
-            description: "Number of tokens used");
+            "semantic_kernel.connectors.openai.tokens.total",
+            "{token}",
+            "Number of tokens used");
 
 
     /// <summary>
@@ -112,18 +108,18 @@ internal abstract class ClientCore
 
         ValidateMaxTokens(textExecutionSettings.MaxTokens);
 
-        var options = CreateCompletionsOptions(text, textExecutionSettings, this.DeploymentOrModelName);
+        CompletionsOptions options = CreateCompletionsOptions(text, textExecutionSettings, DeploymentOrModelName);
 
-        var responseData = (await RunRequestAsync(() => this.Client.GetCompletionsAsync(options, cancellationToken)).ConfigureAwait(false)).Value;
+        Completions? responseData = (await RunRequestAsync(() => Client.GetCompletionsAsync(options, cancellationToken)).ConfigureAwait(false)).Value;
 
         if (responseData.Choices.Count == 0)
         {
             throw new KernelException("Text completions not found");
         }
 
-        this.CaptureUsageDetails(responseData.Usage);
-        var metadata = GetResponseMetadata(responseData);
-        return responseData.Choices.Select(choice => new TextContent(choice.Text, this.DeploymentOrModelName, choice, Encoding.UTF8, new Dictionary<string, object?>(metadata))).ToList();
+        CaptureUsageDetails(responseData.Usage);
+        Dictionary<string, object?> metadata = GetResponseMetadata(responseData);
+        return responseData.Choices.Select(choice => new TextContent(choice.Text, DeploymentOrModelName, choice, Encoding.UTF8, new Dictionary<string, object?>(metadata))).ToList();
     }
 
 
@@ -137,9 +133,9 @@ internal abstract class ClientCore
 
         ValidateMaxTokens(textExecutionSettings.MaxTokens);
 
-        var options = CreateCompletionsOptions(prompt, textExecutionSettings, this.DeploymentOrModelName);
+        CompletionsOptions options = CreateCompletionsOptions(prompt, textExecutionSettings, DeploymentOrModelName);
 
-        StreamingResponse<Completions>? response = await RunRequestAsync(() => this.Client.GetCompletionsStreamingAsync(options, cancellationToken)).ConfigureAwait(false);
+        StreamingResponse<Completions>? response = await RunRequestAsync(() => Client.GetCompletionsStreamingAsync(options, cancellationToken)).ConfigureAwait(false);
 
         Dictionary<string, object?>? metadata = null;
 
@@ -149,44 +145,35 @@ internal abstract class ClientCore
 
             foreach (Choice choice in completions.Choices)
             {
-                yield return new OpenAIStreamingTextContent(choice.Text, choice.Index, this.DeploymentOrModelName, choice, new(metadata));
+                yield return new OpenAIStreamingTextContent(choice.Text, choice.Index, DeploymentOrModelName, choice, new Dictionary<string, object?>(metadata));
             }
         }
     }
 
 
-    private static Dictionary<string, object?> GetResponseMetadata(Completions completions)
+    private static Dictionary<string, object?> GetResponseMetadata(Completions completions) => new(4)
     {
-        return new Dictionary<string, object?>(4)
-        {
-            { nameof(completions.Id), completions.Id },
-            { nameof(completions.Created), completions.Created },
-            { nameof(completions.PromptFilterResults), completions.PromptFilterResults },
-            { nameof(completions.Usage), completions.Usage },
-        };
-    }
+        { nameof(completions.Id), completions.Id },
+        { nameof(completions.Created), completions.Created },
+        { nameof(completions.PromptFilterResults), completions.PromptFilterResults },
+        { nameof(completions.Usage), completions.Usage }
+    };
 
 
-    private static Dictionary<string, object?> GetResponseMetadata(ChatCompletions completions)
+    private static Dictionary<string, object?> GetResponseMetadata(ChatCompletions completions) => new(4)
     {
-        return new Dictionary<string, object?>(4)
-        {
-            { nameof(completions.Id), completions.Id },
-            { nameof(completions.Created), completions.Created },
-            { nameof(completions.PromptFilterResults), completions.PromptFilterResults },
-            { nameof(completions.Usage), completions.Usage },
-        };
-    }
+        { nameof(completions.Id), completions.Id },
+        { nameof(completions.Created), completions.Created },
+        { nameof(completions.PromptFilterResults), completions.PromptFilterResults },
+        { nameof(completions.Usage), completions.Usage }
+    };
 
 
-    private static Dictionary<string, object?> GetResponseMetadata(StreamingChatCompletionsUpdate completions)
+    private static Dictionary<string, object?> GetResponseMetadata(StreamingChatCompletionsUpdate completions) => new(2)
     {
-        return new Dictionary<string, object?>(2)
-        {
-            { nameof(completions.Id), completions.Id },
-            { nameof(completions.Created), completions.Created },
-        };
-    }
+        { nameof(completions.Id), completions.Id },
+        { nameof(completions.Created), completions.Created }
+    };
 
 
     /// <summary>
@@ -201,13 +188,13 @@ internal abstract class ClientCore
         Kernel? kernel,
         CancellationToken cancellationToken)
     {
-        var result = new List<ReadOnlyMemory<float>>(data.Count);
+        List<ReadOnlyMemory<float>> result = new List<ReadOnlyMemory<float>>(data.Count);
 
         foreach (string text in data)
         {
-            var options = new EmbeddingsOptions(this.DeploymentOrModelName, new[] { text });
+            EmbeddingsOptions options = new EmbeddingsOptions(DeploymentOrModelName, new[] { text });
 
-            Response<Azure.AI.OpenAI.Embeddings> response = await RunRequestAsync(() => this.Client.GetEmbeddingsAsync(options, cancellationToken)).ConfigureAwait(false);
+            Response<Azure.AI.OpenAI.Embeddings> response = await RunRequestAsync(() => Client.GetEmbeddingsAsync(options, cancellationToken)).ConfigureAwait(false);
 
             if (response.Value.Data.Count == 0)
             {
@@ -244,32 +231,32 @@ internal abstract class ClientCore
         ValidateAutoInvoke(autoInvoke, chatExecutionSettings.ResultsPerPrompt);
 
         // Create the Azure SDK ChatCompletionOptions instance from all available information.
-        var chatOptions = CreateChatCompletionsOptions(chatExecutionSettings, chat, kernel, this.DeploymentOrModelName);
+        ChatCompletionsOptions chatOptions = CreateChatCompletionsOptions(chatExecutionSettings, chat, kernel, DeploymentOrModelName);
 
         while (true)
         {
             // Make the request.
-            var responseData = (await RunRequestAsync(() => this.Client.GetChatCompletionsAsync(chatOptions, cancellationToken)).ConfigureAwait(false)).Value;
-            this.CaptureUsageDetails(responseData.Usage);
+            ChatCompletions? responseData = (await RunRequestAsync(() => Client.GetChatCompletionsAsync(chatOptions, cancellationToken)).ConfigureAwait(false)).Value;
+            CaptureUsageDetails(responseData.Usage);
 
             if (responseData.Choices.Count == 0)
             {
                 throw new KernelException("Chat completions not found");
             }
 
-            var metadata = GetResponseMetadata(responseData);
+            Dictionary<string, object?> metadata = GetResponseMetadata(responseData);
 
             // If we don't want to attempt to invoke any functions, just return the result.
             // Or if we are auto-invoking but we somehow end up with other than 1 choice even though only 1 was requested, similarly bail.
             if (!autoInvoke || responseData.Choices.Count != 1)
             {
-                return responseData.Choices.Select(chatChoice => new OpenAIChatMessageContent(chatChoice.Message, this.DeploymentOrModelName, new(metadata))).ToList();
+                return responseData.Choices.Select(chatChoice => new OpenAIChatMessageContent(chatChoice.Message, DeploymentOrModelName, new Dictionary<string, object?>(metadata))).ToList();
             }
 
             // Get our single result and extract the function call information. If this isn't a function call, or if it is
             // but we're unable to find the function or extract the relevant information, just return the single result.
             ChatChoice resultChoice = responseData.Choices[0];
-            OpenAIChatMessageContent result = new(resultChoice.Message, this.DeploymentOrModelName, metadata);
+            OpenAIChatMessageContent result = new(resultChoice.Message, DeploymentOrModelName, metadata);
             OpenAIFunctionResponse? functionCallResponse = null;
 
             try
@@ -278,14 +265,14 @@ internal abstract class ClientCore
             }
             catch (JsonException e) when (resultChoice.Message.FunctionCall is not null)
             {
-                if (this.Logger.IsEnabled(LogLevel.Error))
+                if (Logger.IsEnabled(LogLevel.Error))
                 {
-                    this.Logger.LogError(e, "Failed to parse function call response for '{FunctionName}'", resultChoice.Message.FunctionCall.Name);
+                    Logger.LogError(e, "Failed to parse function call response for '{FunctionName}'", resultChoice.Message.FunctionCall.Name);
                 }
 
-                if (this.Logger.IsEnabled(LogLevel.Trace))
+                if (Logger.IsEnabled(LogLevel.Trace))
                 {
-                    this.Logger.LogTrace("Invalid function call arguments: '{FunctionArguments}'", resultChoice.Message.FunctionCall.Arguments);
+                    Logger.LogTrace("Invalid function call arguments: '{FunctionArguments}'", resultChoice.Message.FunctionCall.Arguments);
                 }
             }
 
@@ -296,10 +283,10 @@ internal abstract class ClientCore
             }
 
             // Otherwise, invoke the function.
-            var functionResult = (await function.InvokeAsync(kernel, functionArgs, cancellationToken: cancellationToken).ConfigureAwait(false))
+            object functionResult = (await function.InvokeAsync(kernel, functionArgs, cancellationToken).ConfigureAwait(false))
                 .GetValue<object>() ?? string.Empty;
 
-            var serializedFunctionResult = JsonSerializer.Serialize(functionResult);
+            string serializedFunctionResult = JsonSerializer.Serialize(functionResult);
 
             // Then add the relevant messages both to the chat options and to the chat history.
             // The messages are added to the chat history, even though it's not strictly required, so that the additional
@@ -348,12 +335,12 @@ internal abstract class ClientCore
         bool autoInvoke = chatExecutionSettings.FunctionCallBehavior?.AutoInvoke == true && kernel is not null;
         ValidateAutoInvoke(autoInvoke, chatExecutionSettings.ResultsPerPrompt);
 
-        var chatOptions = CreateChatCompletionsOptions(chatExecutionSettings, chat, kernel, this.DeploymentOrModelName);
+        ChatCompletionsOptions chatOptions = CreateChatCompletionsOptions(chatExecutionSettings, chat, kernel, DeploymentOrModelName);
 
         while (true)
         {
             // Make the request.
-            var response = await RunRequestAsync(() => this.Client.GetChatCompletionsStreamingAsync(chatOptions, cancellationToken)).ConfigureAwait(false);
+            StreamingResponse<StreamingChatCompletionsUpdate>? response = await RunRequestAsync(() => Client.GetChatCompletionsStreamingAsync(chatOptions, cancellationToken)).ConfigureAwait(false);
 
             // Stream any response 
             Dictionary<string, object?>? metadata = null;
@@ -376,12 +363,12 @@ internal abstract class ClientCore
 
                     if (update.FunctionArgumentsUpdate is string funcArgs)
                     {
-                        (functionArgumentsBuilder ??= new()).Append(funcArgs);
+                        (functionArgumentsBuilder ??= new StringBuilder()).Append(funcArgs);
                     }
 
                     if (update.ContentUpdate is string content)
                     {
-                        (contentBuilder ??= new()).Append(content);
+                        (contentBuilder ??= new StringBuilder()).Append(content);
                     }
 
                     if (functionName is not null)
@@ -391,7 +378,7 @@ internal abstract class ClientCore
                     }
                 }
 
-                yield return new OpenAIStreamingChatMessageContent(update, update.ChoiceIndex ?? 0, this.DeploymentOrModelName, new(metadata));
+                yield return new OpenAIStreamingChatMessageContent(update, update.ChoiceIndex ?? 0, DeploymentOrModelName, new Dictionary<string, object?>(metadata));
             }
 
             // If we don't have a function call to invoke, we're done.
@@ -413,14 +400,14 @@ internal abstract class ClientCore
             }
             catch (JsonException e)
             {
-                if (this.Logger.IsEnabled(LogLevel.Error))
+                if (Logger.IsEnabled(LogLevel.Error))
                 {
-                    this.Logger.LogError(e, "Failed to parse function call response for '{FunctionName}'", functionCall.Name);
+                    Logger.LogError(e, "Failed to parse function call response for '{FunctionName}'", functionCall.Name);
                 }
 
-                if (this.Logger.IsEnabled(LogLevel.Trace))
+                if (Logger.IsEnabled(LogLevel.Trace))
                 {
-                    this.Logger.LogTrace("Invalid function call arguments: '{FunctionArguments}'", functionCall.Arguments);
+                    Logger.LogTrace("Invalid function call arguments: '{FunctionArguments}'", functionCall.Arguments);
                 }
             }
 
@@ -431,10 +418,10 @@ internal abstract class ClientCore
             }
 
             // Otherwise, invoke the function.
-            var functionResult = (await function.InvokeAsync(kernel, functionArgs, cancellationToken: cancellationToken).ConfigureAwait(false))
+            object functionResult = (await function.InvokeAsync(kernel, functionArgs, cancellationToken).ConfigureAwait(false))
                 .GetValue<object>() ?? string.Empty;
 
-            var serializedFunctionResult = JsonSerializer.Serialize(functionResult);
+            string serializedFunctionResult = JsonSerializer.Serialize(functionResult);
 
             // Then add the relevant messages both to the chat options and to the chat history.
             // The messages are added to the chat history, even though it's not strictly required, so that the additional
@@ -479,7 +466,7 @@ internal abstract class ClientCore
         OpenAIPromptExecutionSettings chatSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
         ChatHistory chat = CreateNewChat(prompt, chatSettings);
 
-        await foreach (var chatUpdate in this.GetStreamingChatMessageContentsAsync(chat, executionSettings, kernel, cancellationToken))
+        await foreach (OpenAIStreamingChatMessageContent chatUpdate in GetStreamingChatMessageContentsAsync(chat, executionSettings, kernel, cancellationToken))
         {
             yield return new StreamingTextContent(chatUpdate.Content, chatUpdate.ChoiceIndex, chatUpdate.ModelId, chatUpdate, Encoding.UTF8, chatUpdate.Metadata);
         }
@@ -495,7 +482,7 @@ internal abstract class ClientCore
         OpenAIPromptExecutionSettings chatSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
 
         ChatHistory chat = CreateNewChat(text, chatSettings);
-        return (await this.GetChatMessageContentsAsync(chat, chatSettings, kernel, cancellationToken).ConfigureAwait(false))
+        return (await GetChatMessageContentsAsync(chat, chatSettings, kernel, cancellationToken).ConfigureAwait(false))
             .Select(chat => new TextContent(chat.Content, chat.ModelId, chat.Content, Encoding.UTF8, chat.Metadata))
             .ToList();
     }
@@ -505,7 +492,7 @@ internal abstract class ClientCore
     {
         if (!string.IsNullOrEmpty(value))
         {
-            this.Attributes.Add(key, value!);
+            Attributes.Add(key, value!);
         }
     }
 
@@ -523,7 +510,7 @@ internal abstract class ClientCore
         if (httpClient is not null)
         {
             options.Transport = new HttpClientTransport(httpClient);
-            options.RetryPolicy = new RetryPolicy(maxRetries: 0); // Disable Azure SDK retry policy if and only if a custom HttpClient is provided.
+            options.RetryPolicy = new RetryPolicy(0); // Disable Azure SDK retry policy if and only if a custom HttpClient is provided.
         }
 
         return options;
@@ -539,7 +526,7 @@ internal abstract class ClientCore
     internal static OpenAIChatHistory CreateNewChat(string? text = null, OpenAIPromptExecutionSettings? executionSettings = null)
     {
         // If settings is not provided, create a new chat with the text as the system prompt
-        var chat = new OpenAIChatHistory(executionSettings?.ChatSystemPrompt ?? text);
+        OpenAIChatHistory chat = new OpenAIChatHistory(executionSettings?.ChatSystemPrompt ?? text);
 
         if (executionSettings is not null)
         {
@@ -558,7 +545,7 @@ internal abstract class ClientCore
             throw new ArgumentOutOfRangeException($"{nameof(executionSettings)}.{nameof(executionSettings.ResultsPerPrompt)}", executionSettings.ResultsPerPrompt, $"The value must be in range between 1 and {MaxResultsPerPrompt}, inclusive.");
         }
 
-        var options = new CompletionsOptions
+        CompletionsOptions options = new CompletionsOptions
         {
             Prompts = { text.Replace("\r\n", "\n") }, // normalize line endings
             MaxTokens = executionSettings.MaxTokens,
@@ -574,14 +561,14 @@ internal abstract class ClientCore
             DeploymentName = deploymentOrModelName
         };
 
-        foreach (var keyValue in executionSettings.TokenSelectionBiases)
+        foreach (KeyValuePair<int, int> keyValue in executionSettings.TokenSelectionBiases)
         {
             options.TokenSelectionBiases.Add(keyValue.Key, keyValue.Value);
         }
 
         if (executionSettings.StopSequences is { Count: > 0 })
         {
-            foreach (var s in executionSettings.StopSequences)
+            foreach (string? s in executionSettings.StopSequences)
             {
                 options.StopSequences.Add(s);
             }
@@ -608,7 +595,7 @@ internal abstract class ClientCore
             throw new ArgumentOutOfRangeException($"{nameof(executionSettings)}.{nameof(executionSettings.ResultsPerPrompt)}", executionSettings.ResultsPerPrompt, $"The value must be in range between 1 and {MaxResultsPerPrompt}, inclusive.");
         }
 
-        var options = new ChatCompletionsOptions
+        ChatCompletionsOptions options = new ChatCompletionsOptions
         {
             MaxTokens = executionSettings.MaxTokens,
             Temperature = (float?)executionSettings.Temperature,
@@ -616,7 +603,7 @@ internal abstract class ClientCore
             FrequencyPenalty = (float?)executionSettings.FrequencyPenalty,
             PresencePenalty = (float?)executionSettings.PresencePenalty,
             ChoiceCount = executionSettings.ResultsPerPrompt,
-            DeploymentName = deploymentOrModelName,
+            DeploymentName = deploymentOrModelName
         };
 
         switch (executionSettings.FunctionCallBehavior)
@@ -648,20 +635,20 @@ internal abstract class ClientCore
                 break;
         }
 
-        foreach (var keyValue in executionSettings.TokenSelectionBiases)
+        foreach (KeyValuePair<int, int> keyValue in executionSettings.TokenSelectionBiases)
         {
             options.TokenSelectionBiases.Add(keyValue.Key, keyValue.Value);
         }
 
         if (executionSettings.StopSequences is { Count: > 0 })
         {
-            foreach (var s in executionSettings.StopSequences)
+            foreach (string? s in executionSettings.StopSequences)
             {
                 options.StopSequences.Add(s);
             }
         }
 
-        foreach (var message in chatHistory)
+        foreach (ChatMessageContent? message in chatHistory)
         {
             options.Messages.Add(GetRequestMessage(message));
         }
@@ -699,10 +686,33 @@ internal abstract class ClientCore
     }
 
 
+    private static ChatMessageContentItem GetChatMessageContentItem(ContentBase item)
+    {
+        return item switch
+        {
+            TextContent textContent => new ChatMessageTextContentItem(textContent.Text),
+            ImageContent imageContent => new ChatMessageImageContentItem(imageContent.Uri),
+            _ => throw new NotSupportedException($"Unsupported content type of chat message item: {item.GetType()}.")
+        };
+    }
+
+
+    private static ChatRequestUserMessage GetChatRequestUserMessage(ChatMessageContent message, string? functionName)
+    {
+        if (message.Items is { Count: > 0 })
+        {
+            var contentItems = message.Items.Select(GetChatMessageContentItem);
+            return new ChatRequestUserMessage(contentItems) { Name = functionName };
+        }
+
+        return new ChatRequestUserMessage(message.Content) { Name = functionName };
+    }
+
+
     private static ChatRequestMessage GetRequestMessage(ChatMessageContent message)
     {
         ChatRequestMessage? requestMessage;
-        var openAIMessage = message as OpenAIChatMessageContent;
+        OpenAIChatMessageContent? openAIMessage = message as OpenAIChatMessageContent;
 
         if (message.Role == AuthorRole.System)
         {
@@ -710,14 +720,14 @@ internal abstract class ClientCore
         }
         else if (message.Role == AuthorRole.User)
         {
-            var functionName = openAIMessage?.Name;
+            string? functionName = openAIMessage?.Name;
 
             if (functionName is null && message.Metadata?.TryGetValue(OpenAIChatMessageContent.FunctionNameProperty, out object? functionNameFromMetadata) is true)
             {
                 functionName = functionNameFromMetadata?.ToString();
             }
 
-            requestMessage = new ChatRequestUserMessage(message.Content) { Name = functionName };
+            requestMessage = GetChatRequestUserMessage(message, functionName);
         }
         else if (message.Role == AuthorRole.Assistant)
         {
@@ -729,7 +739,7 @@ internal abstract class ClientCore
         }
         else if (string.Equals(message.Role.Label, "function", StringComparison.OrdinalIgnoreCase))
         {
-            var functionName = openAIMessage?.Name;
+            string? functionName = openAIMessage?.Name;
 
             if (functionName is null && message.Metadata?.TryGetValue(OpenAIChatMessageContent.FunctionNameProperty, out object? functionNameFromMetadata) is true)
             {
@@ -832,9 +842,9 @@ internal abstract class ClientCore
     /// <param name="usage">Instance of <see cref="CompletionsUsage"/> with usage details.</param>
     private void CaptureUsageDetails(CompletionsUsage usage)
     {
-        if (this.Logger.IsEnabled(LogLevel.Information))
+        if (Logger.IsEnabled(LogLevel.Information))
         {
-            this.Logger.LogInformation(
+            Logger.LogInformation(
                 "Prompt tokens: {PromptTokens}. Completion tokens: {CompletionTokens}. Total tokens: {TotalTokens}.",
                 usage.PromptTokens, usage.CompletionTokens, usage.TotalTokens);
         }
