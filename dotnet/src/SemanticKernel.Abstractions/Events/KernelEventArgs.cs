@@ -2,15 +2,8 @@
 
 namespace Microsoft.SemanticKernel;
 
-<<<<<<< HEAD
-    ====== =
-
-namespace Microsoft.SemanticKernel;
-
 using System;
 using System.Collections.Generic;
-
->>>>>>> upstream / main
 
 
 /// <summary>Provides an <see cref="EventArgs"/> for operations related to <see cref="Kernel"/>-based operations.</summary>

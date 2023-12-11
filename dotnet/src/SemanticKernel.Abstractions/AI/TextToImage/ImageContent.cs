@@ -1,20 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-<<<<<<< HEAD
-
 namespace Microsoft.SemanticKernel.TextToImage;
 
-====== =
->>>>>>> upstream/main
 using System;
 using System.Collections.Generic;
 using System.Text;
-<<<<<<< HEAD
-    ====== =
-
-namespace Microsoft.SemanticKernel.TextToImage;
-
->>>>>>> upstream / main
 
 
 /// <summary>
@@ -26,11 +16,6 @@ public sealed class ImageContent : ContentBase
     /// The URI of image.
     /// </summary>
     public Uri? Uri { get; set; }
-
-    <<<<<<< HEAD
-
-    ====== =
-    >>>>>>> upstream/main
 
 
     /// <summary>
@@ -47,19 +32,9 @@ public sealed class ImageContent : ContentBase
         object? innerContent = null,
         Encoding? encoding = null,
         IDictionary<string, object?>? metadata = null)
-        : base(innerContent, modelId, metadata)
-    {
-        this.Uri = uri;
-    }
-    <<<<<<< HEAD
-
-    ====== =
-    >>>>>>> upstream/main
+        : base(innerContent, modelId, metadata) => Uri = uri;
 
 
     /// <inheritdoc/>
-    public override string ToString()
-    {
-        return this.Uri?.ToString() ?? string.Empty;
-    }
+    public override string ToString() => Uri?.ToString() ?? string.Empty;
 }

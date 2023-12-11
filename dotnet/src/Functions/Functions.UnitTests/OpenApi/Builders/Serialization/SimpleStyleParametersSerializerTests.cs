@@ -34,10 +34,6 @@ public class SimpleStyleParametersSerializerTests
 
         Assert.Equal("1,2,3", result);
     }
-    <<<<<<< HEAD
-
-    ====== =
-    >>>>>>> upstream/main
 
 
     [Fact]
@@ -54,10 +50,6 @@ public class SimpleStyleParametersSerializerTests
 
         Assert.Equal("28", result);
     }
-    <<<<<<< HEAD
-
-    ====== =
-    >>>>>>> upstream/main
 
 
     [Theory]
@@ -78,10 +70,6 @@ public class SimpleStyleParametersSerializerTests
 
         Assert.EndsWith(expectedSymbol, result, StringComparison.Ordinal);
     }
-    <<<<<<< HEAD
-
-    ====== =
-    >>>>>>> upstream/main
 
 
     [Theory]

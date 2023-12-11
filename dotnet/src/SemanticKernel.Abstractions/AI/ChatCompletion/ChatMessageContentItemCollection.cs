@@ -1,22 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-<<<<<<< HEAD
-
 namespace Microsoft.SemanticKernel.ChatCompletion;
 
-====== =
->>>>>>> upstream/main
 using System;
 using System.Collections;
 using System.Collections.Generic;
-<<<<<<< HEAD
-#pragma warning disable CA1033 // Interface methods should be callable by child types
-    ====== =
-
-namespace Microsoft.SemanticKernel.ChatCompletion;
 
 #pragma warning disable CA1033 // Interface methods should be callable by child types
->>>>>>> upstream / main
 
 
 /// <summary>
@@ -27,14 +17,8 @@ public class ChatMessageContentItemCollection : IList<ContentBase>, IReadOnlyLis
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatMessageContentItemCollection"/> class.
     /// </summary>
-    public ChatMessageContentItemCollection()
-    {
-        this._items = new();
-    }
-    <<<<<<< HEAD
+    public ChatMessageContentItemCollection() => _items = new List<ContentBase>();
 
-    ====== =
-    >>>>>>> upstream/main
 
     /// <summary>
     /// Gets or sets the content item at the specified index in the collection.
@@ -45,23 +29,18 @@ public class ChatMessageContentItemCollection : IList<ContentBase>, IReadOnlyLis
     /// <exception cref="ArgumentOutOfRangeException">The <paramref name="index"/> was not valid for this collection.</exception>
     public ContentBase this[int index]
     {
-        get => this._items[index];
+        get => _items[index];
         set
         {
             Verify.NotNull(value);
-            this._items[index] = value;
+            _items[index] = value;
         }
     }
 
     /// <summary>
     /// Gets the number of content items in the collection.
     /// </summary>
-    public int Count => this._items.Count;
-
-        <<<<<<< HEAD
-
-    ====== =
-    >>>>>>> upstream/main
+    public int Count => _items.Count;
 
 
     /// <summary>
@@ -72,22 +51,14 @@ public class ChatMessageContentItemCollection : IList<ContentBase>, IReadOnlyLis
     public void Add(ContentBase item)
     {
         Verify.NotNull(item);
-        this._items.Add(item);
+        _items.Add(item);
     }
-    <<<<<<< HEAD
-
-    ====== =
-    >>>>>>> upstream/main
 
 
     /// <summary>
     /// Removes all content items from the collection.
     /// </summary>
-    public void Clear() => this._items.Clear();
-        <<<<<<< HEAD
-
-    ====== =
-    >>>>>>> upstream/main
+    public void Clear() => _items.Clear();
 
 
     /// <summary>
@@ -99,12 +70,8 @@ public class ChatMessageContentItemCollection : IList<ContentBase>, IReadOnlyLis
     public bool Contains(ContentBase item)
     {
         Verify.NotNull(item);
-        return this._items.Contains(item);
+        return _items.Contains(item);
     }
-    <<<<<<< HEAD
-
-    ====== =
-    >>>>>>> upstream/main
 
 
     /// <summary>
@@ -115,11 +82,7 @@ public class ChatMessageContentItemCollection : IList<ContentBase>, IReadOnlyLis
     /// <exception cref="ArgumentNullException"><paramref name="array"/> is null.</exception>
     /// <exception cref="ArgumentException">The number of content items in the collection is greater than the available space from <paramref name="arrayIndex"/> to the end of <paramref name="array"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="arrayIndex"/> is less than 0.</exception>
-    public void CopyTo(ContentBase[] array, int arrayIndex) => this._items.CopyTo(array, arrayIndex);
-        <<<<<<< HEAD
-
-    ====== =
-    >>>>>>> upstream/main
+    public void CopyTo(ContentBase[] array, int arrayIndex) => _items.CopyTo(array, arrayIndex);
 
 
     /// <summary>
@@ -131,12 +94,8 @@ public class ChatMessageContentItemCollection : IList<ContentBase>, IReadOnlyLis
     public int IndexOf(ContentBase item)
     {
         Verify.NotNull(item);
-        return this._items.IndexOf(item);
+        return _items.IndexOf(item);
     }
-    <<<<<<< HEAD
-
-    ====== =
-    >>>>>>> upstream/main
 
 
     /// <summary>
@@ -148,12 +107,8 @@ public class ChatMessageContentItemCollection : IList<ContentBase>, IReadOnlyLis
     public void Insert(int index, ContentBase item)
     {
         Verify.NotNull(item);
-        this._items.Insert(index, item);
+        _items.Insert(index, item);
     }
-    <<<<<<< HEAD
-
-    ====== =
-    >>>>>>> upstream/main
 
 
     /// <summary>
@@ -165,44 +120,29 @@ public class ChatMessageContentItemCollection : IList<ContentBase>, IReadOnlyLis
     public bool Remove(ContentBase item)
     {
         Verify.NotNull(item);
-        return this._items.Remove(item);
+        return _items.Remove(item);
     }
-    <<<<<<< HEAD
-
-    ====== =
-    >>>>>>> upstream/main
 
 
     /// <summary>
     /// Removes the content item at the specified index from the collection.
     /// </summary>
     /// <param name="index">The index of the content item to remove.</param>
-    public void RemoveAt(int index) => this._items.RemoveAt(index);
-        <<<<<<< HEAD
+    public void RemoveAt(int index) => _items.RemoveAt(index);
 
-    ====== =
-    >>>>>>> upstream/main
+
     bool ICollection<ContentBase>.IsReadOnly => false;
 
-    IEnumerator IEnumerable.GetEnumerator() => this._items.GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => _items.GetEnumerator();
 
-
-    IEnumerator<ContentBase> IEnumerable<ContentBase>.GetEnumerator() => this._items.GetEnumerator();
-        <<<<<<< HEAD
-
-    ====== =
-    >>>>>>> upstream/main
+    IEnumerator<ContentBase> IEnumerable<ContentBase>.GetEnumerator() => _items.GetEnumerator();
 
 
     #region private
 
     private readonly List<ContentBase> _items;
 
-        #endregion
+    #endregion
 
 
-        <<<<<<< HEAD
-
-    ====== =
-    >>>>>>> upstream/main
 }

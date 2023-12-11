@@ -5,9 +5,6 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 using System;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
-using Azure;
-using Azure.AI.OpenAI;
-using Azure.Core;
 using Extensions.Logging;
 using Services;
 
