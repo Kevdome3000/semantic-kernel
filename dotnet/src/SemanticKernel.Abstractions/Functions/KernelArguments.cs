@@ -25,7 +25,7 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
     /// <summary>
     /// The main input parameter name.
     /// </summary>
-    public const string InputParameterName = "input";
+    internal const string InputParameterName = "input";
 
 
     /// <summary>

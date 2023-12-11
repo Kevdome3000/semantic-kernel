@@ -98,7 +98,7 @@ her a beggar. My father came to her aid and two years later they married.
         Console.WriteLine("======== Extract Entities ========");
         Console.WriteLine(extractionResult);
 
-        variables[KernelArguments.InputParameterName] = extractionResult;
+        variables["input"] = extractionResult;
         variables["reference_context"] = GroundingText;
 
         var groundingResult = (await kernel.InvokeAsync(reference_check, variables)).ToString();
@@ -106,7 +106,7 @@ her a beggar. My father came to her aid and two years later they married.
         Console.WriteLine("\n======== Reference Check ========");
         Console.WriteLine(groundingResult);
 
-        variables[KernelArguments.InputParameterName] = summaryText;
+        variables["input"] = summaryText;
         variables["ungrounded_entities"] = groundingResult;
         var excisionResult = await kernel.InvokeAsync(entity_excision, variables);
 
