@@ -17,7 +17,7 @@ internal sealed class ListIndexesRequest
 
     public HttpRequestMessage Build()
     {
-        HttpRequestMessage? request = HttpRequest.CreateGetRequest("/databases");
+        HttpRequestMessage request = HttpRequest.CreateGetRequest("/databases");
 
         request.Headers.Add("accept", "application/json; charset=utf-8");
 

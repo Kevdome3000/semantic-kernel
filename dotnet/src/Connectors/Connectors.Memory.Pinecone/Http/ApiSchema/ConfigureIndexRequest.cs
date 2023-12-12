@@ -51,7 +51,7 @@ internal sealed class ConfigureIndexRequest
 
     public HttpRequestMessage Build()
     {
-        HttpRequestMessage? request = HttpRequest.CreatePatchRequest(
+        HttpRequestMessage request = HttpRequest.CreatePatchRequest(
             $"/databases/{this.IndexName}", this);
 
         request.Headers.Add("accept", "text/plain");

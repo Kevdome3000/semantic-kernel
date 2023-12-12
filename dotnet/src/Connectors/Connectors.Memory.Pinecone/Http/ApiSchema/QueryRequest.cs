@@ -99,7 +99,7 @@ internal sealed class QueryRequest
             this.Filter = PineconeUtils.ConvertFilterToPineconeFilter(this.Filter);
         }
 
-        HttpRequestMessage? request = HttpRequest.CreatePostRequest(
+        HttpRequestMessage request = HttpRequest.CreatePostRequest(
             "/query",
             this);
 

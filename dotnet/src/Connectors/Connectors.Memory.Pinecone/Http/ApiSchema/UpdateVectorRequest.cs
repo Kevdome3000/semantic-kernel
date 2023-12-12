@@ -94,7 +94,7 @@ internal sealed class UpdateVectorRequest
 
     public HttpRequestMessage Build()
     {
-        HttpRequestMessage? request = HttpRequest.CreatePostRequest(
+        HttpRequestMessage request = HttpRequest.CreatePostRequest(
             "/vectors/update", this);
 
         request.Headers.Add("accept", "application/json");

@@ -22,7 +22,7 @@ internal sealed class DescribeIndexRequest
 
     public HttpRequestMessage Build()
     {
-        HttpRequestMessage? request = HttpRequest.CreateGetRequest(
+        HttpRequestMessage request = HttpRequest.CreateGetRequest(
             $"/databases/{this.IndexName}");
 
         request.Headers.Add("accept", "application/json");
