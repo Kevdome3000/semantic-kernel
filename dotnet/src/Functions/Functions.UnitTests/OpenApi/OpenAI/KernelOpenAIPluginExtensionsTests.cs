@@ -12,7 +12,7 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Plugins.OpenApi.OpenAI;
+using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Moq;
 using TestPlugins;
 using Xunit;

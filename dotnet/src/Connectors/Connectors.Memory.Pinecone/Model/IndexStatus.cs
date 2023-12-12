@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
+
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 
 /// <summary>
 /// Status of the index.
@@ -24,6 +25,7 @@ public class IndexStatus
         this.State = state;
         this.Ready = ready;
     }
+
 
     /// <summary>
     /// Gets or Sets State

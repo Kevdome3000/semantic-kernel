@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Memory.Chroma.Http.ApiSchema.Internal;
+
 using System.Net.Http;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Chroma.Http.ApiSchema.Internal;
 
 internal sealed class CreateCollectionRequest
 {
@@ -13,15 +14,18 @@ internal sealed class CreateCollectionRequest
     [JsonPropertyName("get_or_create")]
     public bool GetOrCreate => true;
 
+
     public static CreateCollectionRequest Create(string collectionName)
     {
         return new CreateCollectionRequest(collectionName);
     }
 
+
     public HttpRequestMessage Build()
     {
         return HttpRequest.CreatePostRequest("collections", this);
     }
+
 
     #region private ================================================================================
 
@@ -31,4 +35,6 @@ internal sealed class CreateCollectionRequest
     }
 
     #endregion
+
+
 }

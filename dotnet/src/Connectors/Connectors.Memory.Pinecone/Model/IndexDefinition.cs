@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
+
 using System.Net.Http;
 using System.Text;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 
 /// <summary>
 /// Used to create a new index.
@@ -71,6 +72,7 @@ public class IndexDefinition
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? SourceCollection { get; set; }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="IndexDefinition" /> class.
     /// </summary>
@@ -79,6 +81,7 @@ public class IndexDefinition
     {
         return new IndexDefinition(name);
     }
+
 
     /// <summary>
     /// Sets dimension for <see cref="IndexDefinition"/> instance.
@@ -90,6 +93,7 @@ public class IndexDefinition
         return this;
     }
 
+
     /// <summary>
     /// Sets metric for <see cref="IndexDefinition"/> instance.
     /// </summary>
@@ -99,6 +103,7 @@ public class IndexDefinition
         this.Metric = metric;
         return this;
     }
+
 
     /// <summary>
     /// Sets pods for <see cref="IndexDefinition"/> instance.
@@ -110,6 +115,7 @@ public class IndexDefinition
         return this;
     }
 
+
     /// <summary>
     /// Sets number of replicas for <see cref="IndexDefinition"/> instance.
     /// </summary>
@@ -119,6 +125,7 @@ public class IndexDefinition
         this.Replicas = replicas;
         return this;
     }
+
 
     /// <summary>
     /// Sets pod type for <see cref="IndexDefinition"/> instance.
@@ -130,6 +137,7 @@ public class IndexDefinition
         return this;
     }
 
+
     /// <summary>
     /// Sets metadata index configuration for <see cref="IndexDefinition"/> instance.
     /// </summary>
@@ -140,6 +148,7 @@ public class IndexDefinition
         return this;
     }
 
+
     /// <summary>
     /// Sets source collection for <see cref="IndexDefinition"/> instance.
     /// </summary>
@@ -149,6 +158,7 @@ public class IndexDefinition
         this.SourceCollection = sourceCollection;
         return this;
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HttpRequestMessage" /> class with request body of <see cref="IndexDefinition"/>.
@@ -161,6 +171,7 @@ public class IndexDefinition
 
         return request;
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="IndexDefinition" /> class with default settings.
@@ -178,6 +189,7 @@ public class IndexDefinition
             .WithPodType(PineconeUtils.DefaultPodType)
             .WithMetadataIndex(MetadataIndexConfig.Default);
     }
+
 
     /// <inheritdoc />
     public override string ToString()
@@ -204,6 +216,7 @@ public class IndexDefinition
 
         return builder.ToString();
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="IndexDefinition" /> class.

@@ -1,16 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.TextGeneration;
+namespace Microsoft.SemanticKernel;
 
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
+using TextGeneration;
 
 
 /// <summary>
 /// Abstraction of text content chunks when using streaming from <see cref="ITextGenerationService"/> interface.
 /// </summary>
-public class StreamingTextContent : StreamingContentBase
+public class StreamingTextContent : StreamingKernelContent
 {
     /// <summary>
     /// Text associated to the update

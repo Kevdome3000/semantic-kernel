@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Memory.Milvus;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -8,11 +10,10 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Memory;
-using Milvus.Client;
+using Extensions.Logging;
+using global::Milvus.Client;
+using SemanticKernel.Memory;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Milvus;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore" /> for the Milvus vector database.
@@ -57,6 +58,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
     /// </summary>
     public MilvusClient Client { get; }
 
+
     #region Constructors
 
     /// <summary>
@@ -83,6 +85,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
     {
         this._ownsMilvusClient = true;
     }
+
 
     /// <summary>
     /// Creates a new <see cref="MilvusMemoryStore" />, connecting to the given hostname on the default Milvus port of 19530.
@@ -113,6 +116,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         this._ownsMilvusClient = true;
     }
 
+
     /// <summary>
     /// Creates a new <see cref="MilvusMemoryStore" />, connecting to the given hostname on the default Milvus port of 19530.
     /// For more advanced configuration opens, construct a <see cref="MilvusClient" /> instance and pass it to
@@ -140,6 +144,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         this._ownsMilvusClient = true;
     }
 
+
     /// <summary>
     /// Initializes a new instance of <see cref="MilvusMemoryStore" /> over the given <see cref="MilvusClient" />.
     /// </summary>
@@ -153,6 +158,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         : this(client, ownsMilvusClient: false, vectorSize, metricType)
     {
     }
+
 
     private MilvusMemoryStore(
         MilvusClient client,
@@ -168,10 +174,12 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
 
     #endregion Constructors
 
+
     /// <inheritdoc />
     public async Task CreateCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
         var exists = await this.Client.HasCollectionAsync(collectionName, cancellationToken: cancellationToken).ConfigureAwait(false);
+
         if (!exists)
         {
             CollectionSchema schema = new()
@@ -194,6 +202,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         }
     }
 
+
     /// <inheritdoc />
     public async IAsyncEnumerable<string> GetCollectionsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -203,13 +212,16 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         }
     }
 
+
     /// <inheritdoc />
     public Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancellationToken = default)
         => this.Client.HasCollectionAsync(collectionName, cancellationToken: cancellationToken);
 
+
     /// <inheritdoc />
     public Task DeleteCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
         => this.Client.GetCollection(collectionName).DropAsync(cancellationToken);
+
 
     /// <inheritdoc />
     public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default)
@@ -238,6 +250,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
 
         return result.Ids.StringIds![0];
     }
+
 
     /// <inheritdoc />
     public async IAsyncEnumerable<string> UpsertBatchAsync(
@@ -307,6 +320,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         }
     }
 
+
     /// <inheritdoc />
     public async Task<MemoryRecord?> GetAsync(
         string collectionName,
@@ -321,6 +335,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
 
         return null;
     }
+
 
     /// <inheritdoc />
     public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(
@@ -354,10 +369,12 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         }
     }
 
+
     /// <inheritdoc />
     public Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default)
         => this.Client.GetCollection(collectionName)
             .DeleteAsync($@"{IdFieldName} in [""{key}""]", cancellationToken: cancellationToken);
+
 
     /// <inheritdoc />
     public Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default)
@@ -367,6 +384,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         idString.Append(IdFieldName).Append(" in [");
 
         bool first = true;
+
         foreach (string id in keys)
         {
             if (first)
@@ -388,6 +406,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
             .DeleteAsync(idString.ToString(), cancellationToken: cancellationToken);
     }
 
+
     /// <inheritdoc />
     public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(
         string collectionName,
@@ -403,6 +422,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
 
         return null;
     }
+
 
     /// <inheritdoc />
     public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(
@@ -427,6 +447,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         // using the IDs returned from the Search above, populating a map from the IDs to the embedding.
         // TODO: There's some support for fetching vectors from Search in Milvus 2.3, check that out.
         Dictionary<string, ReadOnlyMemory<float>>? embeddingMap = null;
+
         if (withEmbeddings)
         {
             StringBuilder filter = new();
@@ -454,6 +475,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
             IReadOnlyList<ReadOnlyMemory<float>> embeddingData = (fieldData[0] as FloatVectorFieldData ?? fieldData[1] as FloatVectorFieldData)!.Data;
 
             embeddingMap = new Dictionary<string, ReadOnlyMemory<float>>(ids.Count);
+
             for (int rowNum = 0; rowNum < ids.Count; rowNum++)
             {
                 embeddingMap[idData[rowNum]] = embeddingData[rowNum];
@@ -471,6 +493,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
             }
         }
     }
+
 
     private MemoryRecord ReadMemoryRecord(IReadOnlyList<FieldData> data, int rowNum, ReadOnlyMemory<float>? externalEmbedding = null)
     {
@@ -540,6 +563,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
             timestamp);
     }
 
+
     /// <summary>
     /// Implements the dispose pattern.
     /// </summary>
@@ -550,6 +574,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
             this.Client.Dispose();
         }
     }
+
 
     /// <inheritdoc />
     public void Dispose()

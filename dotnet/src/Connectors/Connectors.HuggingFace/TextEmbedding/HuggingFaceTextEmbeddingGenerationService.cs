@@ -18,7 +18,7 @@ using Services;
 /// HuggingFace embedding generation service.
 /// </summary>
 #pragma warning disable CA1001 // Types that own disposable fields should be disposable. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
-public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneration
+public sealed class HuggingFaceTextEmbeddingGenerationService : ITextEmbeddingGenerationService
 #pragma warning restore CA1001 // Types that own disposable fields should be disposable. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
 {
     private readonly string _model;
@@ -28,12 +28,12 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
 
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HuggingFaceTextEmbeddingGeneration"/> class.
+    /// Initializes a new instance of the <see cref="HuggingFaceTextEmbeddingGenerationService"/> class.
     /// Using default <see cref="HttpClientHandler"/> implementation.
     /// </summary>
     /// <param name="endpoint">Endpoint for service API call.</param>
     /// <param name="model">Model to use for service API call.</param>
-    public HuggingFaceTextEmbeddingGeneration(Uri endpoint, string model)
+    public HuggingFaceTextEmbeddingGenerationService(Uri endpoint, string model)
     {
         Verify.NotNull(endpoint);
         Verify.NotNullOrWhiteSpace(model);
@@ -47,11 +47,11 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
 
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HuggingFaceTextEmbeddingGeneration"/> class.
+    /// Initializes a new instance of the <see cref="HuggingFaceTextEmbeddingGenerationService"/> class.
     /// </summary>
     /// <param name="model">Model to use for service API call.</param>
     /// <param name="endpoint">Endpoint for service API call.</param>
-    public HuggingFaceTextEmbeddingGeneration(string model, string endpoint)
+    public HuggingFaceTextEmbeddingGenerationService(string model, string endpoint)
     {
         Verify.NotNullOrWhiteSpace(model);
         Verify.NotNullOrWhiteSpace(endpoint);
@@ -65,12 +65,12 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
 
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HuggingFaceTextEmbeddingGeneration"/> class.
+    /// Initializes a new instance of the <see cref="HuggingFaceTextEmbeddingGenerationService"/> class.
     /// </summary>
     /// <param name="model">Model to use for service API call.</param>
     /// <param name="httpClient">The HttpClient used for making HTTP requests.</param>
     /// <param name="endpoint">Endpoint for service API call. If not specified, the base address of the HTTP client is used.</param>
-    public HuggingFaceTextEmbeddingGeneration(string model, HttpClient httpClient, string? endpoint = null)
+    public HuggingFaceTextEmbeddingGenerationService(string model, HttpClient httpClient, string? endpoint = null)
     {
         Verify.NotNullOrWhiteSpace(model);
         Verify.NotNull(httpClient);

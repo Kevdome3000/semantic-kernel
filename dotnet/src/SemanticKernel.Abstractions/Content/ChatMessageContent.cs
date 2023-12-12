@@ -1,15 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel;
+
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
+using ChatCompletion;
 
-namespace Microsoft.SemanticKernel.ChatCompletion;
 
 /// <summary>
 /// Represents chat message content return from a <see cref="IChatCompletionService" /> service.
 /// </summary>
-public class ChatMessageContent : ContentBase
+public class ChatMessageContent : KernelContent
 {
     /// <summary>
     /// Role of the author of the message
@@ -31,6 +33,7 @@ public class ChatMessageContent : ContentBase
     /// </summary>
     [JsonIgnore]
     public Encoding Encoding { get; set; }
+
 
     /// <summary>
     /// Creates a new instance of the <see cref="ChatMessageContent"/> class
@@ -56,6 +59,7 @@ public class ChatMessageContent : ContentBase
         this.Encoding = encoding ?? Encoding.UTF8;
     }
 
+
     /// <summary>
     /// Creates a new instance of the <see cref="ChatMessageContent"/> class
     /// </summary>
@@ -78,6 +82,7 @@ public class ChatMessageContent : ContentBase
         this.Encoding = encoding ?? Encoding.UTF8;
         this.Items = items;
     }
+
 
     /// <inheritdoc/>
     public override string ToString()

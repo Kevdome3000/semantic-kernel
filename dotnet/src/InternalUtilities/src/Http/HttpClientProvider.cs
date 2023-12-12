@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable CA2215 // Dispose methods should call base class dispose
+
+namespace Microsoft.SemanticKernel.Http;
+
 using System;
 using System.Net.Http;
-using Microsoft.Extensions.DependencyInjection;
-
-#pragma warning disable CA2215 // Dispose methods should call base class dispose
+using Extensions.DependencyInjection;
 
 
 /// <summary>

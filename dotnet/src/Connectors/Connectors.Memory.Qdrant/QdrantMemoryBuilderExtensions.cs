@@ -4,6 +4,7 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 
 using System.Net.Http;
 using Plugins.Memory;
+using SemanticKernel.Http;
 
 
 /// <summary>

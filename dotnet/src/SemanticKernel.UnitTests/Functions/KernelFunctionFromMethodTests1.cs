@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.UnitTests.Functions;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -11,10 +13,10 @@ using Microsoft.SemanticKernel;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Functions;
 
 public sealed class KernelFunctionFromMethodTests1
 {
+    private const string InputParameterName = "input";
     private static readonly KernelFunction s_nopFunction = KernelFunctionFactory.CreateFromMethod(() => { });
 
     private readonly Kernel _kernel;
@@ -23,6 +25,7 @@ public sealed class KernelFunctionFromMethodTests1
     private static string s_expected = string.Empty;
     private static string s_actual = string.Empty;
 
+
     public KernelFunctionFromMethodTests1()
     {
         this._kernel = new Kernel();
@@ -30,6 +33,7 @@ public sealed class KernelFunctionFromMethodTests1
 
         s_expected = Guid.NewGuid().ToString("D");
     }
+
 
     [Fact]
     public async Task ItSupportsStaticVoidVoidAsync()
@@ -49,6 +53,7 @@ public sealed class KernelFunctionFromMethodTests1
         // Assert
         Assert.Equal(s_expected, s_actual);
     }
+
 
     [Fact]
     public async Task ItSupportsStaticVoidStringAsync()
@@ -72,6 +77,7 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Equal(s_expected, result.ToString());
     }
 
+
     [Fact]
     public async Task ItSupportsStaticVoidTaskStringAsync()
     {
@@ -93,6 +99,7 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Equal(s_expected, result.GetValue<string>());
         Assert.Equal(s_expected, result.ToString());
     }
+
 
     [Fact]
     public async Task ItSupportsStaticVoidValueTaskStringAsync()
@@ -117,6 +124,7 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Equal(s_expected, result.ToString());
     }
 
+
     [Fact]
     public async Task ItSupportsStaticVoidAsync()
     {
@@ -137,6 +145,7 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Null(result.GetValue<object?>());
         Assert.Empty(result.ToString());
     }
+
 
     [Fact]
     public async Task ItSupportsStaticAsync()
@@ -162,6 +171,7 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Equal("abc", result.GetValue<string>());
         Assert.Equal("abc", result.ToString());
     }
+
 
     [Fact]
     public async Task ItSupportsInstanceStringStringNullableAsync()
@@ -193,6 +203,7 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Equal("abc", result.ToString());
     }
 
+
     [Fact]
     public async Task ItSupportsInstanceStringTaskAsync()
     {
@@ -223,6 +234,7 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Empty(result.ToString());
     }
 
+
     [Fact]
     public async Task ItSupportsInstanceStringVoidAsync()
     {
@@ -235,7 +247,7 @@ public sealed class KernelFunctionFromMethodTests1
             s_actual = s_expected + input;
         }
 
-        var arguments = new KernelArguments(".blah");
+        var arguments = new KernelArguments() { [InputParameterName] = ".blah" };
 
         // Act
         Action<string> method = Test;
@@ -251,6 +263,7 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Empty(result.ToString());
     }
 
+
     [Fact]
     public async Task ItSupportsInstanceStringStringAsync()
     {
@@ -263,7 +276,7 @@ public sealed class KernelFunctionFromMethodTests1
             return input;
         }
 
-        var arguments = new KernelArguments("foo-bar");
+        var arguments = new KernelArguments() { [InputParameterName] = "foo-bar" };
 
         // Act
         Func<string, string> method = Test;
@@ -278,6 +291,7 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Equal("foo-bar", result.ToString());
     }
 
+
     [Fact]
     public async Task ItSupportsInstanceStringTaskStringAsync()
     {
@@ -290,7 +304,7 @@ public sealed class KernelFunctionFromMethodTests1
             return Task.FromResult("hello there");
         }
 
-        var arguments = new KernelArguments(string.Empty);
+        var arguments = new KernelArguments() { [InputParameterName] = string.Empty };
 
         // Act
         Func<string, Task<string>> method = Test;
@@ -303,6 +317,7 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Equal(1, invocationCount);
         Assert.Equal("hello there", result.GetValue<string>());
     }
+
 
     [Fact]
     public async Task ItSupportsInstanceKernelVoidAsync()
@@ -333,6 +348,7 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Empty(result.ToString());
     }
 
+
     [Fact]
     public async Task ItSupportsStaticStringStringAsync()
     {
@@ -343,7 +359,7 @@ public sealed class KernelFunctionFromMethodTests1
             return "new data";
         }
 
-        var arguments = new KernelArguments(s_expected);
+        var arguments = new KernelArguments() { [InputParameterName] = s_expected };
 
         // Act
         var function = KernelFunctionFactory.CreateFromMethod(Test, loggerFactory: this._logger.Object);
@@ -356,6 +372,7 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Equal("new data", result.GetValue<string>());
         Assert.Equal("new data", result.ToString());
     }
+
 
     [Fact]
     public async Task ItSupportsStaticStringTaskStringAsync()
@@ -367,7 +384,7 @@ public sealed class KernelFunctionFromMethodTests1
             return Task.FromResult("new data");
         }
 
-        var arguments = new KernelArguments(s_expected);
+        var arguments = new KernelArguments() { [InputParameterName] = s_expected };
 
         // Act
         var function = KernelFunctionFactory.CreateFromMethod(Test, loggerFactory: this._logger.Object);
@@ -380,6 +397,7 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Equal("new data", result.GetValue<string>());
         Assert.Equal("new data", result.ToString());
     }
+
 
     [Fact]
     public async Task ItSupportsStaticValueTaskAsync()
@@ -393,7 +411,7 @@ public sealed class KernelFunctionFromMethodTests1
             return new ValueTask();
         }
 
-        var arguments = new KernelArguments("test");
+        var arguments = new KernelArguments() { [InputParameterName] = "test" };
 
         // Act
         var function = KernelFunctionFactory.CreateFromMethod(Test, loggerFactory: this._logger.Object);
@@ -407,6 +425,7 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Empty(result.ToString());
     }
 
+
     [Fact]
     public async Task ItSupportsStaticStringTaskAsync()
     {
@@ -417,7 +436,7 @@ public sealed class KernelFunctionFromMethodTests1
             return Task.CompletedTask;
         }
 
-        var arguments = new KernelArguments(string.Empty);
+        var arguments = new KernelArguments() { [InputParameterName] = string.Empty };
 
         // Act
         var function = KernelFunctionFactory.CreateFromMethod(TestAsync, loggerFactory: this._logger.Object);
@@ -430,6 +449,7 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Null(result.GetValue<object?>());
         Assert.Empty(result.ToString());
     }
+
 
     [Fact]
     public async Task ItSupportsStaticStringValueTaskAsync()
@@ -441,7 +461,7 @@ public sealed class KernelFunctionFromMethodTests1
             return default;
         }
 
-        var arguments = new KernelArguments(string.Empty);
+        var arguments = new KernelArguments() { [InputParameterName] = string.Empty };
 
         // Act
         var function = KernelFunctionFactory.CreateFromMethod(TestAsync, loggerFactory: this._logger.Object);
@@ -454,6 +474,7 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Null(result.GetValue<object?>());
         Assert.Empty(result.ToString());
     }
+
 
     [Fact]
     public async Task ItSupportsStaticTaskAsync()
@@ -481,6 +502,7 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Empty(result.ToString());
     }
 
+
     [Fact]
     public async Task ItSupportsStaticStringAsync()
     {
@@ -493,7 +515,7 @@ public sealed class KernelFunctionFromMethodTests1
             return Task.CompletedTask;
         }
 
-        var arguments = new KernelArguments("x y z");
+        var arguments = new KernelArguments() { [InputParameterName] = "x y z" };
 
         // Act
         var function = KernelFunctionFactory.CreateFromMethod(TestAsync, loggerFactory: this._logger.Object);
@@ -506,6 +528,7 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Null(result.GetValue<object?>());
         Assert.Empty(result.ToString());
     }
+
 
     [Fact]
     public async Task ItSupportsStaticVoidTaskAsync()
@@ -531,12 +554,13 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Empty(result.ToString());
     }
 
+
     [Fact]
     public async Task ItSupportsUsingNamedInputValueAsync()
     {
         static string Test(string input) => "Result: " + input;
 
-        var arguments = new KernelArguments("input value");
+        var arguments = new KernelArguments() { [InputParameterName] = "input value" };
 
         // Act
         var function = KernelFunctionFactory.CreateFromMethod(Test);
@@ -549,48 +573,17 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Equal("Result: input value", result.ToString());
     }
 
-    [Fact]
-    public async Task ItSupportsUsingNonNamedInputValueAsync()
-    {
-        static string Test(string other) => "Result: " + other;
-
-        var arguments = new KernelArguments("input value");
-
-        // Act
-        var function = KernelFunctionFactory.CreateFromMethod(Test);
-        Assert.NotNull(function);
-
-        FunctionResult result = await function.InvokeAsync(this._kernel, arguments);
-
-        // Assert
-        Assert.Equal("Result: input value", result.GetValue<string>());
-        Assert.Equal("Result: input value", result.ToString());
-    }
-
-    [Fact]
-    public async Task ItSupportsUsingNonNamedInputValueEvenWhenThereAreMultipleParametersAsync()
-    {
-        static string Test(int something, long orother) => "Result: " + (something + orother);
-
-        var arguments = new KernelArguments("42") { ["orother"] = 8 };
-
-        // Act
-        var function = KernelFunctionFactory.CreateFromMethod(Test);
-        Assert.NotNull(function);
-
-        FunctionResult result = await function.InvokeAsync(this._kernel, arguments);
-
-        // Assert
-        Assert.Equal("Result: 50", result.GetValue<string>());
-        Assert.Equal("Result: 50", result.ToString());
-    }
 
     [Fact]
     public async Task ItSupportsPreferringNamedValueOverInputAsync()
     {
         static string Test(string other) => "Result: " + other;
 
-        var arguments = new KernelArguments("input value") { ["other"] = "other value" };
+        var arguments = new KernelArguments()
+        {
+            [InputParameterName] = "input value",
+            ["other"] = "other value"
+        };
 
         // Act
         var function = KernelFunctionFactory.CreateFromMethod(Test);
@@ -603,12 +596,17 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Equal("Result: other value", result.ToString());
     }
 
+
     [Fact]
     public async Task ItSupportsOverridingNameWithAttributeAsync()
     {
         static string Test([Description("description")] string input) => "Result: " + input;
 
-        var arguments = new KernelArguments("input value") { ["other"] = "other value" };
+        var arguments = new KernelArguments()
+        {
+            [InputParameterName] = "input value",
+            ["other"] = "other value"
+        };
 
         // Act
         var function = KernelFunctionFactory.CreateFromMethod(Test);
@@ -621,12 +619,13 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Equal("Result: input value", result.ToString());
     }
 
+
     [Fact]
     public async Task ItSupportNullDefaultValuesOverInputAsync()
     {
         static string Test(string? input = null, string? other = null) => "Result: " + (other is null);
 
-        var arguments = new KernelArguments("input value");
+        var arguments = new KernelArguments() { [InputParameterName] = "input value" };
 
         // Act
         var function = KernelFunctionFactory.CreateFromMethod(Test);
@@ -638,6 +637,7 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Equal("Result: True", result.GetValue<string>());
         Assert.Equal("Result: True", result.ToString());
     }
+
 
     [Fact]
     public async Task ItSupportFunctionResultAsync()
@@ -655,6 +655,7 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Equal("fake-result", result.GetValue<string>());
         Assert.Equal("fake-result", result.ToString());
     }
+
 
     [Fact]
     public async Task ItSupportFunctionResultTaskAsync()
@@ -678,6 +679,7 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Equal("fake-result", result.ToString());
     }
 
+
     [Fact]
     public async Task ItSupportFunctionResultValueTaskAsync()
     {
@@ -699,6 +701,7 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Equal("fake-result", result.GetValue<string>());
         Assert.Equal("fake-result", result.ToString());
     }
+
 
     [Fact]
     public async Task ItSupportsConvertingFromManyTypesAsync()
@@ -725,6 +728,7 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Equal("1 -2 1234 7e08cc00-1d71-4558-81ed-69929499dea1 Thu, 25 May 2023 20:17:30 GMT Monday", result.ToString());
     }
 
+
     [Fact]
     public async Task ItSupportsConvertingFromTypeConverterAttributedTypesAsync()
     {
@@ -743,6 +747,7 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Equal(84, result.GetValue<int>());
         Assert.Equal("84", result.ToString());
     }
+
 
     [Theory]
     [InlineData((int)0, DayOfWeek.Sunday)]
@@ -767,27 +772,32 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Equal(expected, actual);
     }
 
+
     [TypeConverter(typeof(MyCustomTypeConverter))]
     private sealed class MyCustomType
     {
         public int Value { get; set; }
     }
 
+
 #pragma warning disable CA1812 // Instantiated by reflection
     private sealed class MyCustomTypeConverter : TypeConverter
     {
         public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType) =>
             sourceType == typeof(string);
+
+
         public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value) =>
             new MyCustomType { Value = int.Parse((string)value, culture) };
     }
 #pragma warning restore CA1812
 
+
     [Fact]
     public async Task ItSupportsConvertingArgumentsFromStringToManyTypesAsync()
     {
         // Arrange
-        var arguments = new KernelArguments("1");
+        var arguments = new KernelArguments() { [InputParameterName] = "1" };
 
         async Task AssertResult(Delegate d, object? expected, string? expectedString)
         {
@@ -816,9 +826,10 @@ public sealed class KernelFunctionFromMethodTests1
         await AssertResult((TimeSpan input) => TimeSpan.FromTicks(input.Ticks * 2), TimeSpan.FromDays(2), "2.00:00:00");
         await AssertResult((TimeSpan? input) => (int?)null, null, "");
 
-        arguments[KernelArguments.InputParameterName] = "http://example.com/semantic";
+        arguments[InputParameterName] = "http://example.com/semantic";
         await AssertResult((Uri input) => new Uri(input, "kernel"), new Uri("http://example.com/kernel"), "http://example.com/kernel");
     }
+
 
     [Fact]
     public async Task ItSupportsArgumentsAsIsWithoutConvertingTheirTypeAsync()
@@ -868,33 +879,35 @@ public sealed class KernelFunctionFromMethodTests1
         await AssertParameterType<object>(new object());
     }
 
+
     [Fact]
     public async Task ItSupportsArgumentsImplicitConversionAsync()
     {
         //Arrange
         var arguments = new KernelArguments()
         {
-            ["l"] = (int)1,                 //Passed to parameter of type long
-            ["i"] = (byte)1,                //Passed to parameter of type int
-            ["d"] = (float)1.0,             //Passed to parameter of type double
-            ["f"] = (uint)1.0,              //Passed to parameter of type float
-            ["g"] = new Guid("35626209-b0ab-458c-bfc4-43e6c7bd13dc"),   //Passed to parameter of type string
-            ["dof"] = DayOfWeek.Thursday    //Passed to parameter of type int
+            ["l"] = (int)1, //Passed to parameter of type long
+            ["i"] = (byte)1, //Passed to parameter of type int
+            ["d"] = (float)1.0, //Passed to parameter of type double
+            ["f"] = (uint)1.0, //Passed to parameter of type float
+            ["g"] = new Guid("35626209-b0ab-458c-bfc4-43e6c7bd13dc"), //Passed to parameter of type string
+            ["dof"] = DayOfWeek.Thursday //Passed to parameter of type int
         };
 
         var function = KernelFunctionFactory.CreateFromMethod((long l, int i, double d, float f, string g, int dof) =>
-        {
-            Assert.Equal(1, l);
-            Assert.Equal(1, i);
-            Assert.Equal(1.0, d);
-            Assert.Equal("35626209-b0ab-458c-bfc4-43e6c7bd13dc", g);
-            Assert.Equal(4, dof);
-        },
-        functionName: "Test");
+            {
+                Assert.Equal(1, l);
+                Assert.Equal(1, i);
+                Assert.Equal(1.0, d);
+                Assert.Equal("35626209-b0ab-458c-bfc4-43e6c7bd13dc", g);
+                Assert.Equal(4, dof);
+            },
+            functionName: "Test");
 
         // Act & Assert
         await function.InvokeAsync(this._kernel, arguments);
     }
+
 
     [Fact]
     public async Task ItSupportsParametersWithDefaultValuesAsync()
@@ -914,6 +927,7 @@ public sealed class KernelFunctionFromMethodTests1
 
         await function.InvokeAsync(this._kernel, arguments: new() { { "a", 10 } }); // Passing value for the 'a' parameter only.
     }
+
 
     [Fact]
     public async Task ItShouldMarshalArgumentsOfValueTypeAsync()
@@ -940,6 +954,7 @@ public sealed class KernelFunctionFromMethodTests1
         await sut.InvokeAsync(this._kernel, new() { ["val"] = null });
         Assert.Null(actual);
     }
+
 
     [Fact]
     public async Task ItShouldMarshalArgumentsOfReferenceTypeAsync()
@@ -969,6 +984,7 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Null(actual);
     }
 
+
     [Fact]
     public async Task ItUsesContextCultureForParsingFormattingAsync()
     {
@@ -980,27 +996,28 @@ public sealed class KernelFunctionFromMethodTests1
         // Act/Assert
 
         this._kernel.Culture = new CultureInfo("fr-FR");
-        arguments[KernelArguments.InputParameterName] = "12,34"; // tries first to parse with the specified culture
+        arguments[InputParameterName] = "12,34"; // tries first to parse with the specified culture
         result = await func.InvokeAsync(this._kernel, arguments);
         Assert.Equal(24.68, result.GetValue<double>());
         Assert.Equal("24,68", result.ToString());
 
         this._kernel.Culture = new CultureInfo("fr-FR");
-        arguments[KernelArguments.InputParameterName] = "12.34"; // falls back to invariant culture
+        arguments[InputParameterName] = "12.34"; // falls back to invariant culture
         result = await func.InvokeAsync(this._kernel, arguments);
         Assert.Equal(24.68, result.GetValue<double>());
         Assert.Equal("24,68", result.ToString());
 
         this._kernel.Culture = new CultureInfo("en-US");
-        arguments[KernelArguments.InputParameterName] = "12.34"; // works with current culture
+        arguments[InputParameterName] = "12.34"; // works with current culture
         result = await func.InvokeAsync(this._kernel, arguments);
         Assert.Equal(24.68, result.GetValue<double>());
         Assert.Equal("24.68", result.ToString());
 
         this._kernel.Culture = new CultureInfo("en-US");
-        arguments[KernelArguments.InputParameterName] = "12,34"; // not parsable with current or invariant culture
+        arguments[InputParameterName] = "12,34"; // not parsable with current or invariant culture
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => func.InvokeAsync(this._kernel, arguments));
     }
+
 
     [Fact]
     public async Task ItThrowsWhenItFailsToConvertAnArgumentAsync()
@@ -1020,6 +1037,7 @@ public sealed class KernelFunctionFromMethodTests1
         AssertExtensions.AssertIsArgumentOutOfRange(ex, "g", (string?)arguments["g"]!);
     }
 
+
     [Fact]
     public void ItExposesMetadataFromDelegate()
     {
@@ -1036,6 +1054,7 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Equal("name", function.Metadata.Parameters[1].Name);
         Assert.Equal("old", function.Metadata.Parameters[2].Name);
     }
+
 
     [Fact]
     public void ItExposesMetadataFromMethodInfo()
@@ -1054,6 +1073,7 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Equal("old", function.Metadata.Parameters[2].Name);
     }
 
+
     [Fact]
     public async Task ItCanReturnBasicTypesAsync()
     {
@@ -1069,10 +1089,10 @@ public sealed class KernelFunctionFromMethodTests1
         var function4 = KernelFunctionFactory.CreateFromMethod(TestBool);
 
         // Act
-        FunctionResult result1 = await function1.InvokeAsync(this._kernel, new("42"));
-        FunctionResult result2 = await function2.InvokeAsync(this._kernel, new("3.14"));
-        FunctionResult result3 = await function3.InvokeAsync(this._kernel, new("test-string"));
-        FunctionResult result4 = await function4.InvokeAsync(this._kernel, new("true"));
+        FunctionResult result1 = await function1.InvokeAsync(this._kernel, new() { ["number"] = "42" });
+        FunctionResult result2 = await function2.InvokeAsync(this._kernel, new() { ["number"] = "3.14" });
+        FunctionResult result3 = await function3.InvokeAsync(this._kernel, new() { ["str"] = "test-string" });
+        FunctionResult result4 = await function4.InvokeAsync(this._kernel, new() { ["flag"] = "true" });
 
         // Assert
         Assert.Equal(42, result1.GetValue<int>());
@@ -1087,6 +1107,7 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.True(result4.GetValue<bool>());
         Assert.Equal("True", result4.ToString());
     }
+
 
     [Fact]
     public async Task ItCanReturnComplexTypeAsync()
@@ -1109,6 +1130,7 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Equal(42, result.GetValue<MyCustomType>()?.Value);
         Assert.Equal(42, actualInstance.Value);
     }
+
 
     [Fact]
     public async Task ItCanReturnAsyncEnumerableTypeAsync()
@@ -1148,6 +1170,7 @@ public sealed class KernelFunctionFromMethodTests1
 
         Assert.True(assertResult.SequenceEqual(new List<int> { 1, 2, 3 }));
     }
+
 
     [Fact]
     public async Task ItPropagatesOriginalExceptionTypeAsync()

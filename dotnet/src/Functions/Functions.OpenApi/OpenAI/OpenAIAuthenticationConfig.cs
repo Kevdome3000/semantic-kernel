@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Plugins.OpenApi.OpenAI;
-
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
 /// Represents the authentication section for an OpenAI plugin.
@@ -22,7 +21,7 @@ public class OpenAIAuthenticationConfig
     /// The type of authorization.
     /// </summary>
     [JsonPropertyName("authorization_type")]
-    public OpenAIAuthorizationType? AuthorizationType { get; set; }
+    public OpenAIAuthorizationType AuthorizationType { get; set; }
 
     /// <summary>
     /// The client URL.
@@ -55,7 +54,6 @@ public class OpenAIAuthenticationConfig
     public Dictionary<string, string>? VerificationTokens { get; set; }
 }
 
-
 /// <summary>
 /// Represents the type of authentication for an OpenAI plugin.
 /// </summary>
@@ -81,7 +79,6 @@ public enum OpenAIAuthenticationType
     /// </summary>
     OAuth
 }
-
 
 /// <summary>
 /// Represents the type of authorization for an OpenAI plugin.

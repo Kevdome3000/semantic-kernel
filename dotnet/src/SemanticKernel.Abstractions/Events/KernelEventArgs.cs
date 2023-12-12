@@ -4,9 +4,11 @@ namespace Microsoft.SemanticKernel;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 
 /// <summary>Provides an <see cref="EventArgs"/> for operations related to <see cref="Kernel"/>-based operations.</summary>
+[Experimental("SKEXP0004")]
 public abstract class KernelEventArgs : EventArgs
 {
     /// <summary>

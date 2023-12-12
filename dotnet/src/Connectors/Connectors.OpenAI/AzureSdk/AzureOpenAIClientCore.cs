@@ -18,9 +18,9 @@ using Services;
 internal sealed class AzureOpenAIClientCore : ClientCore
 {
     /// <summary>
-    /// Key used to store the deployment name in the <see cref="IAIService.Attributes"/> dictionary.
+    /// Gets the key used to store the deployment name in the <see cref="IAIService.Attributes"/> dictionary.
     /// </summary>
-    public const string DeploymentNameKey = "DeploymentName";
+    public static string DeploymentNameKey => "DeploymentName";
 
     /// <summary>
     /// OpenAI / Azure OpenAI Client

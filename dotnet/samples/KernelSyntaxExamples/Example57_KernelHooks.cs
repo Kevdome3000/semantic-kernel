@@ -7,11 +7,13 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using RepoUtils;
 
+
 // ReSharper disable once InconsistentNaming
 public static class Example57_KernelHooks
 {
     private static string? s_openAIModelId;
     private static string? s_openAIApiKey;
+
 
     public static async Task RunAsync()
     {
@@ -36,6 +38,7 @@ public static class Example57_KernelHooks
 
         await AfterInvokeCancellationAsync();
     }
+
 
     /// <summary>
     /// Demonstrate using kernel invocation-hooks to monitor usage:
@@ -88,9 +91,10 @@ public static class Example57_KernelHooks
 
         // Invoke prompt to trigger execution hooks.
         const string Input = "I missed the F1 final race";
-        var result = await kernel.InvokeAsync(excuseFunction, new(Input));
+        var result = await kernel.InvokeAsync(excuseFunction, new() { ["input"] = Input });
         Console.WriteLine($"Function Result: {result}");
     }
+
 
     /// <summary>
     /// Demonstrate using kernel-hooks to around prompt rendering:
@@ -136,9 +140,10 @@ public static class Example57_KernelHooks
 
         // Invoke prompt to trigger prompt rendering hooks.
         const string Input = "I missed the F1 final race";
-        var result = await kernel.InvokeAsync(excuseFunction, new(Input));
+        var result = await kernel.InvokeAsync(excuseFunction, new() { ["input"] = Input });
         Console.WriteLine($"Function Result: {result.GetValue<string>()}");
     }
+
 
     /// <summary>
     /// Demonstrate using kernel invocation-hooks to post process result:
@@ -151,8 +156,8 @@ public static class Example57_KernelHooks
         // Create kernel instance
         Kernel kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(
-               modelId: s_openAIModelId!,
-               apiKey: s_openAIApiKey!)
+                modelId: s_openAIModelId!,
+                apiKey: s_openAIApiKey!)
             .Build();
 
         // Initialize function
@@ -182,6 +187,7 @@ public static class Example57_KernelHooks
         Console.WriteLine($"Function Result: {result.GetValue<string>()}");
     }
 
+
     /// <summary>
     /// Demonstrate using kernel invocation-hooks to cancel prior to execution:
     /// <see cref="Kernel.FunctionInvoking"/>
@@ -194,8 +200,8 @@ public static class Example57_KernelHooks
         // Create kernel instance
         Kernel kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(
-               modelId: s_openAIModelId!,
-               apiKey: s_openAIApiKey!)
+                modelId: s_openAIModelId!,
+                apiKey: s_openAIApiKey!)
             .Build();
 
         // Initialize prompt
@@ -225,6 +231,7 @@ public static class Example57_KernelHooks
         Console.WriteLine($"Function Invocation Times: {functionInvokedCount}");
     }
 
+
     /// <summary>
     /// Demonstrate using kernel invocation-hooks to cancel post after execution:
     /// <see cref="Kernel.FunctionInvoking"/>
@@ -237,8 +244,8 @@ public static class Example57_KernelHooks
         // Create kernel instance
         Kernel kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(
-               modelId: s_openAIModelId!,
-               apiKey: s_openAIApiKey!)
+                modelId: s_openAIModelId!,
+                apiKey: s_openAIApiKey!)
             .Build();
 
         // Initialize prompts

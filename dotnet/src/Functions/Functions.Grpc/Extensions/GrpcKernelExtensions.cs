@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Extensions.DependencyInjection;
 using Extensions.Logging;
+using Http;
 using Model;
 using Protobuf;
 

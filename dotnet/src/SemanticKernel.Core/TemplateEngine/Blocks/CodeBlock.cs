@@ -1,20 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-
-namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
+using Extensions.Logging;
 
 #pragma warning disable CA2254 // error strings are used also internally, not just for logging
 #pragma warning disable CA1031 // IsCriticalException is an internal utility and should not be used by extensions
+
 
 // ReSharper disable TemplateIsNotCompileTimeConstantProblem
 internal sealed class CodeBlock : Block, ICodeRendering
 {
     internal override BlockTypes Type => BlockTypes.Code;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CodeBlock"/> class.
@@ -25,6 +27,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
         : this(new CodeTokenizer(loggerFactory).Tokenize(content), content?.Trim(), loggerFactory)
     {
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CodeBlock"/> class.
@@ -38,10 +41,12 @@ internal sealed class CodeBlock : Block, ICodeRendering
         this._tokens = tokens;
     }
 
+
     /// <summary>
     /// Gets the list of blocks.
     /// </summary>
     public List<Block> Blocks => this._tokens;
+
 
     /// <inheritdoc/>
     public override bool IsValid(out string errorMsg)
@@ -74,6 +79,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
         return true;
     }
 
+
     /// <inheritdoc/>
     public ValueTask<object?> RenderCodeAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
     {
@@ -95,10 +101,12 @@ internal sealed class CodeBlock : Block, ICodeRendering
         };
     }
 
+
     #region private ================================================================================
 
     private bool _validated;
     private readonly List<Block> _tokens;
+
 
     private async ValueTask<object?> RenderFunctionCallAsync(FunctionIdBlock fBlock, Kernel kernel, KernelArguments? arguments)
     {
@@ -109,6 +117,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
             //Cloning the original arguments to avoid side effects - arguments added to the original arguments collection as a result of rendering template variables.
             arguments = this.EnrichFunctionArguments(kernel, fBlock, arguments is null ? new KernelArguments() : new KernelArguments(arguments));
         }
+
         try
         {
             var result = await kernel.InvokeAsync(fBlock.PluginName, fBlock.FunctionName, arguments).ConfigureAwait(false);
@@ -122,9 +131,11 @@ internal sealed class CodeBlock : Block, ICodeRendering
         }
     }
 
+
     private bool IsValidFunctionCall(out string errorMsg)
     {
         errorMsg = "";
+
         if (this._tokens[0].Type != BlockTypes.FunctionId)
         {
             errorMsg = $"Unexpected second token found: {this._tokens[1].Content}";
@@ -151,6 +162,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
 
         return true;
     }
+
 
     /// <summary>
     /// Adds function arguments. If the first argument is not a named argument, it is added to the arguments collection as the 'input' argument.
@@ -200,10 +212,8 @@ internal sealed class CodeBlock : Block, ICodeRendering
 
         for (int i = namedArgsStartIndex; i < this._tokens.Count; i++)
         {
-            var arg = this._tokens[i] as NamedArgBlock;
-
             // When casting fails because the block isn't a NamedArg, arg is null
-            if (arg == null)
+            if (this._tokens[i] is not NamedArgBlock arg)
             {
                 var errorMsg = "Functions support up to one positional argument";
                 this.Logger.LogError(errorMsg);
@@ -227,7 +237,10 @@ internal sealed class CodeBlock : Block, ICodeRendering
 
         return arguments;
     }
+
     #endregion
+
+
 }
 // ReSharper restore TemplateIsNotCompileTimeConstantProblem
 #pragma warning restore CA2254

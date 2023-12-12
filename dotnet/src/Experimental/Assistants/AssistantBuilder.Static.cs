@@ -5,7 +5,6 @@ namespace Microsoft.SemanticKernel.Experimental.Assistants;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Extensions;
 using Internal;
 
 

@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Memory.Chroma.Http.ApiSchema;
+
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Chroma.Http.ApiSchema;
 
 /// <summary>
 /// Chroma query result model. Contains result sets after search operation.

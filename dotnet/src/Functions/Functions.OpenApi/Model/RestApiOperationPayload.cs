@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Plugins.OpenApi.Model;
-
 using System.Collections.Generic;
 
+namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
 /// The REST API operation payload.
@@ -29,7 +28,6 @@ public class RestApiOperationPayload
     /// The schema of the parameter.
     /// </summary>
     public KernelJsonSchema? Schema { get; }
-
 
     /// <summary>
     /// Creates an instance of a <see cref="RestApiOperationPayload"/> class.

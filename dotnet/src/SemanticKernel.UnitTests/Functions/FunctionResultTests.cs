@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.TextGeneration;
 using Xunit;
 
 
@@ -122,7 +121,7 @@ public class FunctionResultTests
 
 
     [Fact]
-    public void GetValueWhenValueIsContentBaseGenericStringShouldReturnContentBaseToString()
+    public void GetValueWhenValueIsKernelContentGenericStringShouldReturnContentBaseToString()
     {
         // Arrange
         string expectedValue = Guid.NewGuid().ToString();
@@ -134,7 +133,7 @@ public class FunctionResultTests
 
 
     [Fact]
-    public void GetValueWhenValueIsContentBaseGenericTypeMatchShouldReturn()
+    public void GetValueWhenValueIsKernelContentGenericTypeMatchShouldReturn()
     {
         // Arrange
         string expectedValue = Guid.NewGuid().ToString();
@@ -144,6 +143,6 @@ public class FunctionResultTests
         // Act and Assert
 
         Assert.Equal(valueType, target.GetValue<TextContent>());
-        Assert.Equal(valueType, target.GetValue<ContentBase>());
+        Assert.Equal(valueType, target.GetValue<KernelContent>());
     }
 }

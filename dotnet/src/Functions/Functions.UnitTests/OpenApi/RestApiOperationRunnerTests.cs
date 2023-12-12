@@ -17,8 +17,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
-using Microsoft.SemanticKernel.Plugins.OpenApi.Authentication;
-using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 using Moq;
 using TestResponses;
 using Xunit;
@@ -227,21 +225,12 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var parameters = new List<RestApiOperationParameter>
         {
             new(
-            <<<<<<< HEAD
-            name: "fake-header",
-            type: "string",
-            isRequired: true,
-            expand: false,
-            location: RestApiOperationParameterLocation.Header,
-            style: RestApiOperationParameterStyle.Simple)
-            ====== =
-            name: "fake-header",
-            type: "string",
-            isRequired: true,
-            expand: false,
-            location: RestApiOperationParameterLocation.Header,
-            style: RestApiOperationParameterStyle.Simple)
-            >>>>>>> upstream/main
+                name: "fake-header",
+                type: "string",
+                isRequired: true,
+                expand: false,
+                location: RestApiOperationParameterLocation.Header,
+                style: RestApiOperationParameterStyle.Simple)
         };
 
         var operation = new RestApiOperation(

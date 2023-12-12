@@ -2,7 +2,6 @@
 
 namespace SemanticKernel.Connectors.UnitTests.OpenAI;
 
-using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
@@ -29,8 +28,8 @@ public class OpenAIPromptExecutionSettingsTests
         Assert.Equal(0, executionSettings.FrequencyPenalty);
         Assert.Equal(0, executionSettings.PresencePenalty);
         Assert.Equal(1, executionSettings.ResultsPerPrompt);
-        Assert.Equal(Array.Empty<string>(), executionSettings.StopSequences);
-        Assert.Equal(new Dictionary<int, int>(), executionSettings.TokenSelectionBiases);
+        Assert.Null(executionSettings.StopSequences);
+        Assert.Null(executionSettings.TokenSelectionBiases);
         Assert.Null(executionSettings.ServiceId);
         Assert.Equal(128, executionSettings.MaxTokens);
     }
@@ -99,7 +98,8 @@ public class OpenAIPromptExecutionSettingsTests
                 { "chat_system_prompt", "chat system prompt" },
                 { "max_tokens", 128 },
                 { "service_id", "service" },
-                { "token_selection_biases", new Dictionary<int, int>() { { 1, 2 }, { 3, 4 } } }
+                { "token_selection_biases", new Dictionary<int, int>() { { 1, 2 }, { 3, 4 } } },
+                { "seed", 123456 },
             }
         };
 
@@ -108,6 +108,7 @@ public class OpenAIPromptExecutionSettingsTests
 
         // Assert
         AssertExecutionSettings(executionSettings);
+        Assert.Equal(executionSettings.Seed, 123456);
     }
 
 

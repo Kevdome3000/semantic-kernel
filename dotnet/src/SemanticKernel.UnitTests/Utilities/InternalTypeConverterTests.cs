@@ -5,6 +5,7 @@ namespace SemanticKernel.UnitTests.Utilities;
 using System;
 using System.ComponentModel;
 using System.Globalization;
+using Microsoft.SemanticKernel;
 using Xunit;
 
 

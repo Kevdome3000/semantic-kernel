@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.TextToImage;
+namespace Microsoft.SemanticKernel;
 
 using System;
 using System.Collections.Generic;
@@ -10,7 +10,7 @@ using System.Text;
 /// <summary>
 /// Represents image content.
 /// </summary>
-public sealed class ImageContent : ContentBase
+public sealed class ImageContent : KernelContent
 {
     /// <summary>
     /// The URI of image.
@@ -32,9 +32,15 @@ public sealed class ImageContent : ContentBase
         object? innerContent = null,
         Encoding? encoding = null,
         IDictionary<string, object?>? metadata = null)
-        : base(innerContent, modelId, metadata) => Uri = uri;
+        : base(innerContent, modelId, metadata)
+    {
+        this.Uri = uri;
+    }
 
 
     /// <inheritdoc/>
-    public override string ToString() => Uri?.ToString() ?? string.Empty;
+    public override string ToString()
+    {
+        return this.Uri?.ToString() ?? string.Empty;
+    }
 }

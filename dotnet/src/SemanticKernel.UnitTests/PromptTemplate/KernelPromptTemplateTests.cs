@@ -10,11 +10,13 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Xunit;
+using Xunit.Abstractions;
 using XunitHelpers;
 
 
 public sealed class KernelPromptTemplateTests
 {
+    private const string InputParameterName = "input";
     private const string DateFormat = "M/d/yyyy";
     private readonly KernelPromptTemplateFactory _factory;
     private readonly KernelArguments _arguments;
@@ -26,82 +28,8 @@ public sealed class KernelPromptTemplateTests
     {
         this._logger = testOutputHelper;
         this._factory = new KernelPromptTemplateFactory(TestConsoleLogger.LoggerFactory);
-        this._arguments = new KernelArguments(Guid.NewGuid().ToString("X"));
+        this._arguments = new KernelArguments() { [InputParameterName] = Guid.NewGuid().ToString("X") };
         this._kernel = new Kernel();
-    }
-
-
-    [Fact]
-    public void ItAddsMissingVariables()
-    {
-        // Arrange
-        var template = "This {{$x11}} {{$a}}{{$missing}} test template {{p.bar $b}} and {{p.foo c='literal \"c\"' d = $d}} and {{p.baz ename=$e}}";
-        var promptTemplateConfig = new PromptTemplateConfig(template);
-
-        // Act
-        var target = (KernelPromptTemplate)this._factory.Create(promptTemplateConfig);
-
-        // Assert
-        Assert.Equal(6, promptTemplateConfig.InputVariables.Count);
-        Assert.Equal("x11", promptTemplateConfig.InputVariables[0].Name);
-        Assert.Equal("a", promptTemplateConfig.InputVariables[1].Name);
-        Assert.Equal("missing", promptTemplateConfig.InputVariables[2].Name);
-        Assert.Equal("b", promptTemplateConfig.InputVariables[3].Name);
-        Assert.Equal("d", promptTemplateConfig.InputVariables[4].Name);
-        Assert.Equal("e", promptTemplateConfig.InputVariables[5].Name);
-    }
-
-
-    [Fact]
-    public void ItAllowsSameVariableInMultiplePositions()
-    {
-        // Arrange
-        var template = "This {{$a}} {{$a}} and {{p.bar $a}} and {{p.baz a=$a}}";
-        var promptTemplateConfig = new PromptTemplateConfig(template);
-
-        // Act
-        var target = (KernelPromptTemplate)this._factory.Create(promptTemplateConfig);
-
-        // Assert
-        Assert.Single(promptTemplateConfig.InputVariables);
-        Assert.Equal("a", promptTemplateConfig.InputVariables[0].Name);
-    }
-
-
-    [Fact]
-    public void ItAllowsSameVariableInMultiplePositionsCaseInsensitive()
-    {
-        // Arrange
-        var template = "{{$a}} {{$A}} and {{p.bar $a}} and {{p.baz A=$a}}";
-        var promptTemplateConfig = new PromptTemplateConfig(template);
-
-        // Act
-        var target = (KernelPromptTemplate)this._factory.Create(promptTemplateConfig);
-
-        // Assert
-        Assert.Single(promptTemplateConfig.InputVariables);
-        Assert.Equal("a", promptTemplateConfig.InputVariables[0].Name);
-    }
-
-
-    [Fact]
-    public void ItDoesNotDuplicateExistingParameters()
-    {
-        // Arrange
-        var template = "This {{$A}} and {{p.bar $B}} and {{p.baz C=$C}}";
-        var promptTemplateConfig = new PromptTemplateConfig(template);
-        promptTemplateConfig.InputVariables.Add(new InputVariable { Name = "a" });
-        promptTemplateConfig.InputVariables.Add(new InputVariable { Name = "b" });
-        promptTemplateConfig.InputVariables.Add(new InputVariable { Name = "c" });
-
-        // Act
-        var target = (KernelPromptTemplate)this._factory.Create(promptTemplateConfig);
-
-        // Assert
-        Assert.Equal(3, promptTemplateConfig.InputVariables.Count);
-        Assert.Equal("a", promptTemplateConfig.InputVariables[0].Name);
-        Assert.Equal("b", promptTemplateConfig.InputVariables[1].Name);
-        Assert.Equal("c", promptTemplateConfig.InputVariables[2].Name);
     }
 
 
@@ -381,7 +309,7 @@ public sealed class KernelPromptTemplateTests
 
         this._kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("plugin", "description", new[] { func }));
 
-        this._arguments[KernelArguments.InputParameterName] = "INPUT-BAR";
+        this._arguments[InputParameterName] = "INPUT-BAR";
 
         var template = "foo-{{plugin.function}}-baz";
         var target = (KernelPromptTemplate)this._factory.Create(new PromptTemplateConfig(template));
@@ -439,7 +367,7 @@ public sealed class KernelPromptTemplateTests
 
         this._kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("plugin", "description", new[] { func }));
 
-        this._arguments[KernelArguments.InputParameterName] = "Mario";
+        this._arguments[InputParameterName] = "Mario";
         this._arguments["someDate"] = "2023-08-25T00:00:00";
 
         var template = "foo-{{plugin.function input=$input age='42' slogan='Let\\'s-a go!' date=$someDate}}-baz";
@@ -457,7 +385,7 @@ public sealed class KernelPromptTemplateTests
     public void ItHandlesSyntaxErrors()
     {
         // Arrange
-        this._arguments[KernelArguments.InputParameterName] = "Mario";
+        this._arguments[InputParameterName] = "Mario";
         this._arguments["someDate"] = "2023-08-25T00:00:00";
         var template = "foo-{{function input=$input age=42 slogan='Let\\'s-a go!' date=$someDate}}-baz";
 
@@ -488,7 +416,7 @@ public sealed class KernelPromptTemplateTests
 
         this._kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("plugin", "description", new[] { func }));
 
-        this._arguments[KernelArguments.InputParameterName] = "Mario";
+        this._arguments[InputParameterName] = "Mario";
         this._arguments["someDate"] = "2023-08-25T00:00:00";
 
         var template = "foo-{{plugin.function $input age='42' slogan='Let\\'s-a go!' date=$someDate}}-baz";
@@ -508,7 +436,7 @@ public sealed class KernelPromptTemplateTests
         // Arrange
         var template = "{{func1}} {{func2}} {{func3 $myVar}}";
         var target = (KernelPromptTemplate)this._factory.Create(new PromptTemplateConfig(template));
-        this._arguments[KernelArguments.InputParameterName] = "A";
+        this._arguments[InputParameterName] = "A";
         this._arguments["myVar"] = "C";
 
         string MyFunction1Async(string input)

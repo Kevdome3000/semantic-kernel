@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.ChatCompletion;
+namespace Microsoft.SemanticKernel;
 
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
+using ChatCompletion;
 
 
 /// <summary>
@@ -13,7 +14,7 @@ using System.Text.Json.Serialization;
 /// <remarks>
 /// Represents a chat message content chunk that was streamed from the remote model.
 /// </remarks>
-public class StreamingChatMessageContent : StreamingContentBase
+public class StreamingChatMessageContent : StreamingKernelContent
 {
     /// <summary>
     /// Text associated to the message payload

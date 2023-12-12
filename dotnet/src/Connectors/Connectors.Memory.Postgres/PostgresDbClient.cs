@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Memory.Postgres;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +12,6 @@ using Npgsql;
 using NpgsqlTypes;
 using Pgvector;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Postgres;
 
 /// <summary>
 /// An implementation of a client for Postgres. This class is used to managing postgres database operations.
@@ -31,6 +32,7 @@ public class PostgresDbClient : IPostgresDbClient
         this._vectorSize = vectorSize;
     }
 
+
     /// <inheritdoc />
     public async Task<bool> DoesTableExistsAsync(string tableName, CancellationToken cancellationToken = default)
     {
@@ -48,6 +50,7 @@ public class PostgresDbClient : IPostgresDbClient
             cmd.Parameters.AddWithValue("@schema", this._schema);
 
             using NpgsqlDataReader dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+
             if (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
             {
                 return dataReader.GetString(dataReader.GetOrdinal("table_name")) == tableName;
@@ -56,6 +59,7 @@ public class PostgresDbClient : IPostgresDbClient
             return false;
         }
     }
+
 
     /// <inheritdoc />
     public async Task CreateTableAsync(string tableName, CancellationToken cancellationToken = default)
@@ -76,6 +80,7 @@ public class PostgresDbClient : IPostgresDbClient
         }
     }
 
+
     /// <inheritdoc />
     public async IAsyncEnumerable<string> GetTablesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -92,12 +97,14 @@ public class PostgresDbClient : IPostgresDbClient
             cmd.Parameters.AddWithValue("@schema", this._schema);
 
             using NpgsqlDataReader dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+
             while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
             {
                 yield return dataReader.GetString(dataReader.GetOrdinal("table_name"));
             }
         }
     }
+
 
     /// <inheritdoc />
     public async Task DeleteTableAsync(string tableName, CancellationToken cancellationToken = default)
@@ -113,9 +120,15 @@ public class PostgresDbClient : IPostgresDbClient
         }
     }
 
+
     /// <inheritdoc />
-    public async Task UpsertAsync(string tableName, string key,
-        string? metadata, Vector? embedding, DateTime? timestamp, CancellationToken cancellationToken = default)
+    public async Task UpsertAsync(
+        string tableName,
+        string key,
+        string? metadata,
+        Vector? embedding,
+        DateTime? timestamp,
+        CancellationToken cancellationToken = default)
     {
         NpgsqlConnection connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
 
@@ -136,12 +149,18 @@ public class PostgresDbClient : IPostgresDbClient
         }
     }
 
+
     /// <inheritdoc />
     public async IAsyncEnumerable<(PostgresMemoryEntry, double)> GetNearestMatchesAsync(
-        string tableName, Vector embedding, int limit, double minRelevanceScore = 0, bool withEmbeddings = false,
+        string tableName,
+        Vector embedding,
+        int limit,
+        double minRelevanceScore = 0,
+        bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         string queryColumns = "key, metadata, timestamp";
+
         if (withEmbeddings)
         {
             queryColumns = "*";
@@ -173,11 +192,16 @@ public class PostgresDbClient : IPostgresDbClient
         }
     }
 
+
     /// <inheritdoc />
-    public async Task<PostgresMemoryEntry?> ReadAsync(string tableName, string key,
-        bool withEmbeddings = false, CancellationToken cancellationToken = default)
+    public async Task<PostgresMemoryEntry?> ReadAsync(
+        string tableName,
+        string key,
+        bool withEmbeddings = false,
+        CancellationToken cancellationToken = default)
     {
         string queryColumns = "key, metadata, timestamp";
+
         if (withEmbeddings)
         {
             queryColumns = "*";
@@ -192,6 +216,7 @@ public class PostgresDbClient : IPostgresDbClient
             cmd.Parameters.AddWithValue("@key", key);
 
             using NpgsqlDataReader dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+
             if (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
             {
                 return await this.ReadEntryAsync(dataReader, withEmbeddings, cancellationToken).ConfigureAwait(false);
@@ -201,17 +226,23 @@ public class PostgresDbClient : IPostgresDbClient
         }
     }
 
+
     /// <inheritdoc />
-    public async IAsyncEnumerable<PostgresMemoryEntry> ReadBatchAsync(string tableName, IEnumerable<string> keys, bool withEmbeddings = false,
+    public async IAsyncEnumerable<PostgresMemoryEntry> ReadBatchAsync(
+        string tableName,
+        IEnumerable<string> keys,
+        bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         string[] keysArray = keys.ToArray();
+
         if (keysArray.Length == 0)
         {
             yield break;
         }
 
         string queryColumns = "key, metadata, timestamp";
+
         if (withEmbeddings)
         {
             queryColumns = "*";
@@ -226,12 +257,14 @@ public class PostgresDbClient : IPostgresDbClient
             cmd.Parameters.AddWithValue("@keys", NpgsqlDbType.Array | NpgsqlDbType.Text, keysArray);
 
             using NpgsqlDataReader dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+
             while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
             {
                 yield return await this.ReadEntryAsync(dataReader, withEmbeddings, cancellationToken).ConfigureAwait(false);
             }
         }
     }
+
 
     /// <inheritdoc />
     public async Task DeleteAsync(string tableName, string key, CancellationToken cancellationToken = default)
@@ -248,10 +281,12 @@ public class PostgresDbClient : IPostgresDbClient
         }
     }
 
+
     /// <inheritdoc />
     public async Task DeleteBatchAsync(string tableName, IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
         string[] keysArray = keys.ToArray();
+
         if (keysArray.Length == 0)
         {
             return;
@@ -269,11 +304,13 @@ public class PostgresDbClient : IPostgresDbClient
         }
     }
 
+
     #region private ================================================================================
 
     private readonly NpgsqlDataSource _dataSource;
     private readonly int _vectorSize;
     private readonly string _schema;
+
 
     /// <summary>
     /// Read a entry.
@@ -291,6 +328,7 @@ public class PostgresDbClient : IPostgresDbClient
         return new PostgresMemoryEntry() { Key = key, MetadataString = metadata, Embedding = embedding, Timestamp = timestamp };
     }
 
+
     /// <summary>
     /// Get full table name with schema from table name.
     /// </summary>
@@ -300,5 +338,8 @@ public class PostgresDbClient : IPostgresDbClient
     {
         return $"{this._schema}.\"{tableName}\"";
     }
+
     #endregion
+
+
 }

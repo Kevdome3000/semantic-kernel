@@ -1,13 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Plugins.OpenApi;
-
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using Authentication;
-using Http;
+using Microsoft.SemanticKernel.Http;
 
+namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
 /// OpenAPI function execution parameters.
@@ -60,7 +58,6 @@ public class OpenApiFunctionExecutionParameters
     /// Optional list of HTTP operations to skip when importing the OpenAPI document.
     /// </summary>
     public IList<string> OperationsToExclude { get; set; }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenApiFunctionExecutionParameters"/> class.

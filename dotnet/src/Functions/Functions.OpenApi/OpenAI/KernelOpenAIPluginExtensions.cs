@@ -1,17 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Plugins.OpenApi.OpenAI;
-
 using System;
 using System.IO;
 using System.Net.Http;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using Extensions.DependencyInjection;
-using Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Http;
+
+namespace Microsoft.SemanticKernel.Plugins.OpenApi;
+
+using System.Text.Json.Nodes;
 
 
 /// <summary>
@@ -26,7 +28,6 @@ public static class OpenAIPluginKernelExtensions
         };
 
     // TODO: Review XML comments
-
 
     /// <summary>
     /// Creates a plugin for an OpenAI plugin exposed through OpenAI's ChatGPT format and imports it into the <paramref name="kernel"/>'s plugin collection.
@@ -49,7 +50,6 @@ public static class OpenAIPluginKernelExtensions
         return plugin;
     }
 
-
     /// <summary>
     /// Creates a plugin for an OpenAI plugin exposed through OpenAI's ChatGPT format and imports it into the <paramref name="kernel"/>'s plugin collection.
     /// </summary>
@@ -71,7 +71,6 @@ public static class OpenAIPluginKernelExtensions
         return plugin;
     }
 
-
     /// <summary>
     /// Creates a plugin for an OpenAI plugin exposed through OpenAI's ChatGPT format and imports it into the <paramref name="kernel"/>'s plugin collection.
     /// </summary>
@@ -92,7 +91,6 @@ public static class OpenAIPluginKernelExtensions
         kernel.Plugins.Add(plugin);
         return plugin;
     }
-
 
     /// <summary>
     /// Creates a plugin for an OpenAI plugin exposed through OpenAI's ChatGPT format.
@@ -125,7 +123,6 @@ public static class OpenAIPluginKernelExtensions
             executionParameters,
             cancellationToken: cancellationToken).ConfigureAwait(false);
     }
-
 
     /// <summary>
     /// Creates a plugin for an OpenAI plugin exposed through OpenAI's ChatGPT format.
@@ -166,7 +163,6 @@ public static class OpenAIPluginKernelExtensions
             cancellationToken).ConfigureAwait(false);
     }
 
-
     /// <summary>
     /// Creates a plugin for an OpenAI plugin exposed through OpenAI's ChatGPT format.
     /// </summary>
@@ -196,7 +192,6 @@ public static class OpenAIPluginKernelExtensions
             cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
-
     #region private
 
     private static async Task<KernelPlugin> CreateAsync(
@@ -208,7 +203,6 @@ public static class OpenAIPluginKernelExtensions
     {
         JsonNode pluginJson;
         OpenAIAuthenticationConfig openAIAuthConfig;
-
         try
         {
             pluginJson = JsonNode.Parse(openAIManifest)!;
@@ -235,18 +229,15 @@ public static class OpenAIPluginKernelExtensions
             cancellationToken).ConfigureAwait(false);
     }
 
-
     private static Uri ParseOpenAIManifestForOpenApiSpecUrl(JsonNode pluginJson)
     {
         string? apiType = pluginJson?["api"]?["type"]?.ToString();
-
         if (string.IsNullOrWhiteSpace(apiType) || apiType != "openapi")
         {
             throw new KernelException($"Unexpected API type '{apiType}' found in Open AI manifest.");
         }
 
         string? apiUrl = pluginJson?["api"]?["url"]?.ToString();
-
         if (string.IsNullOrWhiteSpace(apiUrl))
         {
             throw new KernelException("No Open API spec URL found in Open AI manifest.");
@@ -263,6 +254,4 @@ public static class OpenAIPluginKernelExtensions
     }
 
     #endregion
-
-
 }

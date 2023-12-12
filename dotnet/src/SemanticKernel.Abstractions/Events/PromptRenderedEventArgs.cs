@@ -2,9 +2,13 @@
 
 namespace Microsoft.SemanticKernel;
 
+using System.Diagnostics.CodeAnalysis;
+
+
 /// <summary>
 /// Provides a <see cref="CancelKernelEventArgs"/> used in events raised just after a prompt has been rendered.
 /// </summary>
+[Experimental("SKEXP0004")]
 public sealed class PromptRenderedEventArgs : CancelKernelEventArgs
 {
     private string _renderedPrompt;

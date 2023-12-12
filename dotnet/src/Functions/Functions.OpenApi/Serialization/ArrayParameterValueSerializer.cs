@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Text.Json.Nodes;
 using System.Web;
 
-namespace Microsoft.SemanticKernel.Plugins.OpenApi.Serialization;
+namespace Microsoft.SemanticKernel.Plugins.OpenApi;
+
+using System.Text.Json.Nodes;
+
 
 /// <summary>
 /// This class provides methods for serializing values of array parameters.

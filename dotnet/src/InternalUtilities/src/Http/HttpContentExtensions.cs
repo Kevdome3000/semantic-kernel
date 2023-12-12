@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Http;
+
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Http;
 
 
 /// <summary>

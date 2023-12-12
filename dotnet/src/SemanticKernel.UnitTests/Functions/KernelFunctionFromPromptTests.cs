@@ -1,5 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+
+
+// ReSharper disable StringLiteralTypo
+
+namespace SemanticKernel.UnitTests.Functions;
+
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -13,9 +19,6 @@ using Microsoft.SemanticKernel.TextGeneration;
 using Moq;
 using Xunit;
 
-// ReSharper disable StringLiteralTypo
-
-namespace SemanticKernel.UnitTests.Functions;
 
 public class KernelFunctionFromPromptTests
 {
@@ -268,7 +271,7 @@ public class KernelFunctionFromPromptTests
 
         Assert.Equal("something", result.GetValue<string>());
         Assert.Equal("something", result.GetValue<TextContent>()!.Text);
-        Assert.Equal("something", result.GetValue<ContentBase>()!.ToString());
+        Assert.Equal("something", result.GetValue<KernelContent>()!.ToString());
     }
 
 
@@ -290,7 +293,7 @@ public class KernelFunctionFromPromptTests
         Assert.Equal("something", result.GetValue<string>());
         Assert.Equal("something", result.GetValue<ChatMessageContent>()!.Content);
         Assert.Equal(AuthorRole.User, result.GetValue<ChatMessageContent>()!.Role);
-        Assert.Equal("something", result.GetValue<ContentBase>()!.ToString());
+        Assert.Equal("something", result.GetValue<KernelContent>()!.ToString());
     }
 
 
@@ -309,7 +312,7 @@ public class KernelFunctionFromPromptTests
         Assert.Equal("Something", result.GetValue<string>());
         Assert.Equal("Something", result.GetValue<ChatMessageContent>()!.Content);
         Assert.Equal(AuthorRole.Assistant, result.GetValue<ChatMessageContent>()!.Role);
-        Assert.Equal("Something", result.GetValue<ContentBase>()!.ToString());
+        Assert.Equal("Something", result.GetValue<KernelContent>()!.ToString());
     }
 
 
@@ -327,7 +330,7 @@ public class KernelFunctionFromPromptTests
 
         KernelFunction function = KernelFunctionFactory.CreateFromPrompt("Anything");
 
-        await foreach (var chunk in kernel.InvokeStreamingAsync<StreamingContentBase>(function))
+        await foreach (var chunk in kernel.InvokeStreamingAsync<StreamingKernelContent>(function))
         {
             Assert.Equal(expectedContent, chunk);
         }
@@ -353,7 +356,7 @@ public class KernelFunctionFromPromptTests
 
         KernelFunction function = KernelFunctionFactory.CreateFromPrompt("Anything");
 
-        await foreach (var chunk in kernel.InvokeStreamingAsync<StreamingContentBase>(function))
+        await foreach (var chunk in kernel.InvokeStreamingAsync<StreamingKernelContent>(function))
         {
             Assert.Equal(expectedContent, chunk);
             Assert.Equal("Something", chunk.ToString());
@@ -378,7 +381,7 @@ public class KernelFunctionFromPromptTests
 
         KernelFunction function = KernelFunctionFactory.CreateFromPrompt("Anything");
 
-        await foreach (var chunk in kernel.InvokeStreamingAsync<StreamingContentBase>(function))
+        await foreach (var chunk in kernel.InvokeStreamingAsync<StreamingKernelContent>(function))
         {
             Assert.Equal("Something", chunk.ToString());
         }
@@ -546,6 +549,34 @@ public class KernelFunctionFromPromptTests
         mockTextCompletion2.Verify(m => m.GetTextContentsAsync("Prompt1", It.Is<OpenAIPromptExecutionSettings>(settings => settings.MaxTokens == 2000), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
         Assert.Equal("Result1", result2.GetValue<string>());
         mockTextCompletion1.Verify(m => m.GetTextContentsAsync("Prompt2", It.Is<OpenAIPromptExecutionSettings>(settings => settings.MaxTokens == 1000), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+
+    [Fact]
+    public async Task InvokeAsyncWithPromptRenderedHooksExecutesModifiedPromptAsync()
+    {
+        // Arrange
+        var mockTextContent = new TextContent("Result");
+        var mockTextCompletion = new Mock<ITextGenerationService>();
+        mockTextCompletion.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<TextContent> { mockTextContent });
+
+        void MyRenderedHandler(object? sender, PromptRenderedEventArgs e)
+        {
+            e.RenderedPrompt += " USE SHORT, CLEAR, COMPLETE SENTENCES.";
+        }
+
+        KernelBuilder builder = new();
+        builder.Services.AddKeyedSingleton<ITextGenerationService>("service", mockTextCompletion.Object);
+        Kernel kernel = builder.Build();
+        kernel.PromptRendered += MyRenderedHandler;
+
+        KernelFunction function = KernelFunctionFactory.CreateFromPrompt("Prompt");
+
+        // Act
+        var result1 = await kernel.InvokeAsync(function);
+
+        // Assert
+        mockTextCompletion.Verify(m => m.GetTextContentsAsync("Prompt USE SHORT, CLEAR, COMPLETE SENTENCES.", It.IsAny<OpenAIPromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
     }
 
 

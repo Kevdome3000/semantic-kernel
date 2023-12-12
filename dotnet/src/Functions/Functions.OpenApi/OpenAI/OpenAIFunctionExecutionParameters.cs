@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Plugins.OpenApi.OpenAI;
-
 using System;
 using System.Net.Http;
-using Http;
+using Microsoft.SemanticKernel.Http;
 
+namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
 /// OpenAI function execution parameters
@@ -16,7 +15,6 @@ public class OpenAIFunctionExecutionParameters : OpenApiFunctionExecutionParamet
     /// Callback for adding Open AI authentication data to HTTP requests.
     /// </summary>
     public new OpenAIAuthenticateRequestAsyncCallback? AuthCallback { get; set; }
-
 
     /// <inheritdoc/>
     public OpenAIFunctionExecutionParameters(

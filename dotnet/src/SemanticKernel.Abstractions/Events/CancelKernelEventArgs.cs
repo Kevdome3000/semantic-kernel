@@ -4,12 +4,14 @@ namespace Microsoft.SemanticKernel;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 
 /// <summary>
 /// Provides an <see cref="EventArgs"/> for cancelable operations related
 /// to <see cref="Kernel"/>-based operations.
 /// </summary>
+[Experimental("SKEXP0003")]
 public abstract class CancelKernelEventArgs : KernelEventArgs
 {
     /// <summary>

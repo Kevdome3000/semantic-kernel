@@ -9,7 +9,7 @@ using System.Text.Json.Serialization;
 /// <summary>
 /// Base class for all AI non-streaming results
 /// </summary>
-public abstract class ContentBase
+public abstract class KernelContent
 {
     /// <summary>
     /// The inner content representation. Use this to bypass the current abstraction.
@@ -32,12 +32,12 @@ public abstract class ContentBase
 
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ContentBase"/> class.
+    /// Initializes a new instance of the <see cref="KernelContent"/> class.
     /// </summary>
     /// <param name="innerContent">The inner content representation</param>
     /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="metadata">Metadata associated with the content</param>
-    protected ContentBase(object? innerContent, string? modelId = null, IDictionary<string, object?>? metadata = null)
+    protected KernelContent(object? innerContent, string? modelId = null, IDictionary<string, object?>? metadata = null)
     {
         this.ModelId = modelId;
         this.InnerContent = innerContent;

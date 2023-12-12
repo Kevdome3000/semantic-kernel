@@ -16,7 +16,7 @@ using Services;
 /// <typeparam name="TValue">The type from which embeddings will be generated.</typeparam>
 /// <typeparam name="TEmbedding">The numeric type of the embedding data.</typeparam>
 [Experimental("SKEXP0001")]
-public interface IEmbeddingGeneration<TValue, TEmbedding> : IAIService
+public interface IEmbeddingGenerationService<TValue, TEmbedding> : IAIService
     where TEmbedding : unmanaged
 {
     /// <summary>

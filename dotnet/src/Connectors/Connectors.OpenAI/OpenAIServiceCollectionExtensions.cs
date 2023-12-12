@@ -16,6 +16,7 @@ using Connectors.OpenAI;
 using Embeddings;
 using Extensions.DependencyInjection;
 using Extensions.Logging;
+using Http;
 using TextGeneration;
 using TextToImage;
 
@@ -56,7 +57,7 @@ public static class OpenAIServiceCollectionExtensions
 
         builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
         {
-            var client = CreateAzureOpenAIClient(deploymentName, endpoint, new AzureKeyCredential(apiKey), httpClient ?? serviceProvider.GetService<HttpClient>());
+            var client = CreateAzureOpenAIClient(endpoint, new AzureKeyCredential(apiKey), httpClient ?? serviceProvider.GetService<HttpClient>());
             return new AzureOpenAITextGenerationService(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
         });
 
@@ -89,7 +90,7 @@ public static class OpenAIServiceCollectionExtensions
 
         return services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
         {
-            var client = CreateAzureOpenAIClient(deploymentName, endpoint, new AzureKeyCredential(apiKey), serviceProvider.GetService<HttpClient>());
+            var client = CreateAzureOpenAIClient(endpoint, new AzureKeyCredential(apiKey), serviceProvider.GetService<HttpClient>());
             return new AzureOpenAITextGenerationService(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
         });
     }
@@ -122,7 +123,7 @@ public static class OpenAIServiceCollectionExtensions
 
         builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
         {
-            var client = CreateAzureOpenAIClient(deploymentName, endpoint, credentials, httpClient ?? serviceProvider.GetService<HttpClient>());
+            var client = CreateAzureOpenAIClient(endpoint, credentials, httpClient ?? serviceProvider.GetService<HttpClient>());
             return new AzureOpenAITextGenerationService(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
         });
 
@@ -155,7 +156,7 @@ public static class OpenAIServiceCollectionExtensions
 
         return services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
         {
-            var client = CreateAzureOpenAIClient(deploymentName, endpoint, credentials, serviceProvider.GetService<HttpClient>());
+            var client = CreateAzureOpenAIClient(endpoint, credentials, serviceProvider.GetService<HttpClient>());
             return new AzureOpenAITextGenerationService(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
         });
     }
@@ -369,8 +370,8 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        builder.Services.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
-            new AzureOpenAITextEmbeddingGeneration(
+        builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
+            new AzureOpenAITextEmbeddingGenerationService(
                 deploymentName,
                 endpoint,
                 apiKey,
@@ -406,8 +407,8 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        return services.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
-            new AzureOpenAITextEmbeddingGeneration(
+        return services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
+            new AzureOpenAITextEmbeddingGenerationService(
                 deploymentName,
                 endpoint,
                 apiKey,
@@ -443,8 +444,8 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNull(credential);
 
-        builder.Services.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
-            new AzureOpenAITextEmbeddingGeneration(
+        builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
+            new AzureOpenAITextEmbeddingGenerationService(
                 deploymentName,
                 endpoint,
                 credential,
@@ -480,8 +481,8 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNull(credential);
 
-        return services.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
-            new AzureOpenAITextEmbeddingGeneration(
+        return services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
+            new AzureOpenAITextEmbeddingGenerationService(
                 deploymentName,
                 endpoint,
                 credential,
@@ -512,8 +513,8 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(deploymentName);
         Verify.NotNull(openAIClient);
 
-        builder.Services.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
-            new AzureOpenAITextEmbeddingGeneration(
+        builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
+            new AzureOpenAITextEmbeddingGenerationService(
                 deploymentName,
                 openAIClient,
                 modelId,
@@ -544,8 +545,8 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(deploymentName);
         Verify.NotNull(openAIClient);
 
-        return services.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
-            new AzureOpenAITextEmbeddingGeneration(
+        return services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
+            new AzureOpenAITextEmbeddingGenerationService(
                 deploymentName,
                 openAIClient,
                 modelId,
@@ -576,8 +577,8 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        builder.Services.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
-            new OpenAITextEmbeddingGeneration(
+        builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
+            new OpenAITextEmbeddingGenerationService(
                 modelId,
                 apiKey,
                 orgId,
@@ -609,8 +610,8 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        return services.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
-            new OpenAITextEmbeddingGeneration(
+        return services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
+            new OpenAITextEmbeddingGenerationService(
                 modelId,
                 apiKey,
                 orgId,
@@ -638,8 +639,8 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
-        builder.Services.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
-            new OpenAITextEmbeddingGeneration(
+        builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
+            new OpenAITextEmbeddingGenerationService(
                 modelId,
                 openAIClient,
                 serviceProvider.GetService<ILoggerFactory>()));
@@ -667,8 +668,8 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
-        return services.AddKeyedSingleton<ITextEmbeddingGeneration>(serviceId, (serviceProvider, _) =>
-            new OpenAITextEmbeddingGeneration(
+        return services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
+            new OpenAITextEmbeddingGenerationService(
                 modelId,
                 openAIClient,
                 serviceProvider.GetService<ILoggerFactory>()));
@@ -707,7 +708,6 @@ public static class OpenAIServiceCollectionExtensions
         Func<IServiceProvider, object?, AzureOpenAIChatCompletionService> factory = (serviceProvider, _) =>
         {
             OpenAIClient client = CreateAzureOpenAIClient(
-                deploymentName,
                 endpoint,
                 new AzureKeyCredential(apiKey),
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider));
@@ -748,7 +748,6 @@ public static class OpenAIServiceCollectionExtensions
         Func<IServiceProvider, object?, AzureOpenAIChatCompletionService> factory = (serviceProvider, _) =>
         {
             OpenAIClient client = CreateAzureOpenAIClient(
-                deploymentName,
                 endpoint,
                 new AzureKeyCredential(apiKey),
                 HttpClientProvider.GetHttpClient(serviceProvider));
@@ -791,7 +790,6 @@ public static class OpenAIServiceCollectionExtensions
         Func<IServiceProvider, object?, AzureOpenAIChatCompletionService> factory = (serviceProvider, _) =>
         {
             OpenAIClient client = CreateAzureOpenAIClient(
-                deploymentName,
                 endpoint,
                 credentials,
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider));
@@ -832,7 +830,6 @@ public static class OpenAIServiceCollectionExtensions
         Func<IServiceProvider, object?, AzureOpenAIChatCompletionService> factory = (serviceProvider, _) =>
         {
             OpenAIClient client = CreateAzureOpenAIClient(
-                deploymentName,
                 endpoint,
                 credentials,
                 HttpClientProvider.GetHttpClient(serviceProvider));
@@ -1231,10 +1228,10 @@ public static class OpenAIServiceCollectionExtensions
     #endregion
 
 
-    private static OpenAIClient CreateAzureOpenAIClient(string deploymentName, string endpoint, AzureKeyCredential credentials, HttpClient? httpClient) =>
+    private static OpenAIClient CreateAzureOpenAIClient(string endpoint, AzureKeyCredential credentials, HttpClient? httpClient) =>
         new(new Uri(endpoint), credentials, ClientCore.GetOpenAIClientOptions(httpClient));
 
 
-    private static OpenAIClient CreateAzureOpenAIClient(string deploymentName, string endpoint, TokenCredential credentials, HttpClient? httpClient) =>
+    private static OpenAIClient CreateAzureOpenAIClient(string endpoint, TokenCredential credentials, HttpClient? httpClient) =>
         new(new Uri(endpoint), credentials, ClientCore.GetOpenAIClientOptions(httpClient));
 }

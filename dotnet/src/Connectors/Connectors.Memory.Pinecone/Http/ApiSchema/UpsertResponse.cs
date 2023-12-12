@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Text.Json.Serialization;
-
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 
+using System.Text.Json.Serialization;
+
 #pragma warning disable CA1812 // remove class never instantiated (used by System.Text.Json)
+
 
 /// <summary>
 /// UpsertResponse
@@ -20,6 +21,7 @@ internal sealed class UpsertResponse
     {
         this.UpsertedCount = upsertedCount;
     }
+
 
     /// <summary>
     /// Gets or Sets UpsertedCount

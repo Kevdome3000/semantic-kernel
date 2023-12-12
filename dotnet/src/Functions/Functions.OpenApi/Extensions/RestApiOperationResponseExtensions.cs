@@ -1,10 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Plugins.OpenApi.Model;
-
 using System.Text.Json;
 using Json.Schema;
 
+namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
 /// Class for extensions methods for the <see cref="RestApiOperationResponse"/> class.
@@ -42,7 +41,6 @@ public static class RestApiOperationResponseExtensions
         };
     }
 
-
     private static bool ValidateJson(RestApiOperationResponse response)
     {
         try
@@ -58,13 +56,11 @@ public static class RestApiOperationResponseExtensions
         }
     }
 
-
     private static bool ValidateXml(RestApiOperationResponse response)
     {
         // todo -- implement
         return true;
     }
-
 
     private static bool ValidateTextHtml(RestApiOperationResponse response)
     {

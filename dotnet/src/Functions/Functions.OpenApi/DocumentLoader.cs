@@ -1,17 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Plugins.OpenApi;
-
 using System;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
-using Authentication;
-using Extensions.Logging;
-using Http;
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Http;
 
+namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 internal static class DocumentLoader
 {
@@ -37,7 +35,6 @@ internal static class DocumentLoader
         return await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
     }
 
-
     internal static async Task<string> LoadDocumentFromFilePathAsync(
         string filePath,
         ILogger logger,
@@ -57,7 +54,6 @@ internal static class DocumentLoader
             return await sr.ReadToEndAsync().ConfigureAwait(false); // must await here to avoid stream reader being disposed before the string is read
         }
     }
-
 
     internal static async Task<string> LoadDocumentFromStreamAsync(Stream stream)
     {

@@ -1,21 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-<<<<<<< HEAD
-
 namespace SemanticKernel.Functions.UnitTests.OpenApi.Builders.Serialization;
 
-====== =
->>>>>>> upstream/main
 using System;
-using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
-using Microsoft.SemanticKernel.Plugins.OpenApi.Serialization;
+using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Xunit;
-<<<<<<< HEAD
-    ====== =
-
-namespace SemanticKernel.Functions.UnitTests.OpenApi.Builders.Serialization;
-
->>>>>>> upstream / main
 
 
 public class SimpleStyleParametersSerializerTests

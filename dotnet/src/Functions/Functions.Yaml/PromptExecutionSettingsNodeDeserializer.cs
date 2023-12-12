@@ -38,7 +38,7 @@ internal sealed class PromptExecutionSettingsNodeDeserializer : INodeDeserialize
                     break;
 
                 default:
-                    modelSettings.ExtensionData.Add(kv.Key, kv.Value);
+                    (modelSettings.ExtensionData ??= new()).Add(kv.Key, kv.Value);
                     break;
             }
         }

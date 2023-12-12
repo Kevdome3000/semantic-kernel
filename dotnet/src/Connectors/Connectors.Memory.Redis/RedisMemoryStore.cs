@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using static NRedisStack.Search.Schema.VectorField;
-
 namespace Microsoft.SemanticKernel.Connectors.Memory.Redis;
 
 using System;
@@ -38,7 +36,7 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
     public RedisMemoryStore(
         IDatabase database,
         int vectorSize = DefaultVectorSize,
-        VectorAlgo vectorIndexAlgorithm = DefaultIndexAlgorithm,
+        Schema.VectorField.VectorAlgo vectorIndexAlgorithm = DefaultIndexAlgorithm,
         VectorDistanceMetric vectorDistanceMetric = DefaultDistanceMetric,
         int queryDialect = DefaultQueryDialect)
     {
@@ -68,7 +66,7 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
     public RedisMemoryStore(
         string connectionString,
         int vectorSize = DefaultVectorSize,
-        VectorAlgo vectorIndexAlgorithm = DefaultIndexAlgorithm,
+        Schema.VectorField.VectorAlgo vectorIndexAlgorithm = DefaultIndexAlgorithm,
         VectorDistanceMetric vectorDistanceMetric = DefaultDistanceMetric,
         int queryDialect = DefaultQueryDialect)
     {
@@ -299,7 +297,7 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
     /// Vector similarity index algorithm. Supported algorithms are {FLAT, HNSW}. The default value is "HNSW".
     /// <see href="https://redis.io/docs/interact/search-and-query/search/vectors/#create-a-vector-field"/>
     /// </summary>
-    private const VectorAlgo DefaultIndexAlgorithm = VectorAlgo.HNSW;
+    private const Schema.VectorField.VectorAlgo DefaultIndexAlgorithm = Schema.VectorField.VectorAlgo.HNSW;
 
     /// <summary>
     /// Vector type. Available values are {FLOAT32, FLOAT64}.

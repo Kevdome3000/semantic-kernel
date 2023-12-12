@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Text.Json.Nodes;
-using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 
-namespace Microsoft.SemanticKernel.Plugins.OpenApi.Serialization;
+namespace Microsoft.SemanticKernel.Plugins.OpenApi;
+
+using System.Text.Json.Nodes;
+
 
 /// <summary>
 /// Serializes REST API operation parameter of the 'Simple' style.

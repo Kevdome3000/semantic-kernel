@@ -9,6 +9,6 @@ using System.Diagnostics.CodeAnalysis;
 /// Represents a generator of text embeddings of type <c>float</c>.
 /// </summary>
 [Experimental("SKEXP0001")]
-public interface ITextEmbeddingGeneration : IEmbeddingGeneration<string, float>
+public interface ITextEmbeddingGenerationService : IEmbeddingGenerationService<string, float>
 {
 }

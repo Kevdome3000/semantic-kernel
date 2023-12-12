@@ -2,9 +2,13 @@
 
 namespace Microsoft.SemanticKernel;
 
+using System.Diagnostics.CodeAnalysis;
+
+
 /// <summary>
 /// Provides a <see cref="KernelEventArgs"/> used in events raised just before a prompt is rendered.
 /// </summary>
+[Experimental("SKEXP0004")]
 public sealed class PromptRenderingEventArgs : KernelEventArgs
 {
     /// <summary>

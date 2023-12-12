@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
+
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 
 /// <summary>
 /// Index entity.
@@ -20,6 +21,7 @@ public sealed class PineconeIndex
         this.Configuration = configuration;
         this.Status = status;
     }
+
 
     /// <summary>
     /// How the index is configured.

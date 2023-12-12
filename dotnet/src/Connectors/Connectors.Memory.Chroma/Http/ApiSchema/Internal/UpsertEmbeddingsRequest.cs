@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Memory.Chroma.Http.ApiSchema.Internal;
+
 using System;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Chroma.Http.ApiSchema.Internal;
 
 internal sealed class UpsertEmbeddingsRequest
 {
@@ -20,15 +21,18 @@ internal sealed class UpsertEmbeddingsRequest
     [JsonPropertyName("metadatas")]
     public object[]? Metadatas { get; set; }
 
+
     public static UpsertEmbeddingsRequest Create(string collectionId, string[] ids, ReadOnlyMemory<float>[] embeddings, object[]? metadatas = null)
     {
         return new UpsertEmbeddingsRequest(collectionId, ids, embeddings, metadatas);
     }
 
+
     public HttpRequestMessage Build()
     {
         return HttpRequest.CreatePostRequest($"collections/{this.CollectionId}/upsert", this);
     }
+
 
     #region private ================================================================================
 
@@ -41,4 +45,6 @@ internal sealed class UpsertEmbeddingsRequest
     }
 
     #endregion
+
+
 }

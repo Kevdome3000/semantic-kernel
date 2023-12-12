@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Plugins.OpenApi;
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -9,13 +7,13 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
-using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using Authentication;
-using Builders;
-using Http;
-using Model;
+using Microsoft.SemanticKernel.Http;
+
+namespace Microsoft.SemanticKernel.Plugins.OpenApi;
+
+using System.Text.Json.Nodes;
 
 
 /// <summary>
@@ -41,8 +39,8 @@ internal sealed class RestApiOperationRunner
     {
         { "image", async (content) => await content.ReadAsByteArrayAndTranslateExceptionAsync().ConfigureAwait(false) },
         { "text", async (content) => await content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false) },
-        { "application/json", async (content) => await content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false) },
-        { "application/xml", async (content) => await content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false) }
+        { "application/json", async (content) => await content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false)},
+        { "application/xml", async (content) => await content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false)}
     };
 
     /// <summary>
@@ -71,7 +69,6 @@ internal sealed class RestApiOperationRunner
     /// full name (parameter name prefixed with the parent property name).
     /// </summary>
     private readonly bool _enablePayloadNamespacing;
-
 
     /// <summary>
     /// Creates an instance of the <see cref="RestApiOperationRunner"/> class.
@@ -113,7 +110,6 @@ internal sealed class RestApiOperationRunner
         };
     }
 
-
     /// <summary>
     /// Executes the specified <paramref name="operation"/> asynchronously, using the provided <paramref name="arguments"/>.
     /// </summary>
@@ -139,7 +135,6 @@ internal sealed class RestApiOperationRunner
         return this.SendAsync(url, operation.Method, headers, payload, operation.Responses.ToDictionary(item => item.Key, item => item.Value.Schema), cancellationToken);
     }
 
-
     /// <summary>
     /// Casts argument values of type object to string.
     /// </summary>
@@ -159,7 +154,6 @@ internal sealed class RestApiOperationRunner
             throw new KernelException($"Non-string OpenApi operation arguments are not supported in Release Candidate 1. This feature will be available soon, but for now, please ensure that all arguments are strings. Operation '{operation.Id}' argument '{item.Key}' is of type '{item.Value?.GetType()}'.");
         });
     }
-
 
     #region private
 
@@ -211,7 +205,6 @@ internal sealed class RestApiOperationRunner
         return response;
     }
 
-
     /// <summary>
     /// Serializes the response content of an HTTP request.
     /// </summary>
@@ -228,7 +221,6 @@ internal sealed class RestApiOperationRunner
         {
             // Split the media type into a primary-type and a sub-type
             var mediaTypeParts = mediaType.Split('/');
-
             if (mediaTypeParts.Length != 2)
             {
                 throw new KernelException($"The string `{mediaType}` is not a valid media type.");
@@ -248,7 +240,6 @@ internal sealed class RestApiOperationRunner
 
         return new RestApiOperationResponse(serializedContent, contentType!.ToString());
     }
-
 
     /// <summary>
     /// Builds operation payload.
@@ -282,7 +273,6 @@ internal sealed class RestApiOperationRunner
         return payloadFactory.Invoke(operation.Payload, arguments);
     }
 
-
     /// <summary>
     /// Builds "application/json" payload.
     /// </summary>
@@ -312,7 +302,6 @@ internal sealed class RestApiOperationRunner
 
         return new StringContent(content, Encoding.UTF8, MediaTypeApplicationJson);
     }
-
 
     /// <summary>
     /// Builds a JSON object from a list of RestAPI operation payload properties.
@@ -351,7 +340,6 @@ internal sealed class RestApiOperationRunner
         return result;
     }
 
-
     /// <summary>
     /// Gets the expected schema for the specified status code.
     /// </summary>
@@ -361,7 +349,6 @@ internal sealed class RestApiOperationRunner
     private static KernelJsonSchema? GetExpectedSchema(IDictionary<string, KernelJsonSchema?>? expectedSchemas, HttpStatusCode statusCode)
     {
         KernelJsonSchema? matchingResponse = null;
-
         if (expectedSchemas is not null)
         {
             var statusCodeKey = $"{(int)statusCode}";
@@ -378,7 +365,6 @@ internal sealed class RestApiOperationRunner
 
         return matchingResponse;
     }
-
 
     /// <summary>
     /// Converts the JSON property value to the REST API type specified in metadata.
@@ -397,7 +383,6 @@ internal sealed class RestApiOperationRunner
             _ => throw new KernelException($"Unexpected OpenAPI data type - {propertyMetadata.Type}"),
         };
 
-
     /// <summary>
     /// Builds "text/plain" payload.
     /// </summary>
@@ -414,7 +399,6 @@ internal sealed class RestApiOperationRunner
         return new StringContent(propertyValue, Encoding.UTF8, MediaTypeTextPlain);
     }
 
-
     /// <summary>
     /// Retrieves the argument name for a payload property.
     /// </summary>
@@ -430,7 +414,6 @@ internal sealed class RestApiOperationRunner
 
         return string.IsNullOrEmpty(propertyNamespace) ? propertyName : $"{propertyNamespace}.{propertyName}";
     }
-
 
     /// <summary>
     /// Builds operation Url.
@@ -452,6 +435,4 @@ internal sealed class RestApiOperationRunner
     }
 
     #endregion
-
-
 }

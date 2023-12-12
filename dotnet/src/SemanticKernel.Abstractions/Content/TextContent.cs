@@ -1,16 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.TextGeneration;
+namespace Microsoft.SemanticKernel;
 
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
+using TextGeneration;
 
 
 /// <summary>
 /// Represents text content return from a <see cref="ITextGenerationService" /> service.
 /// </summary>
-public sealed class TextContent : ContentBase
+public sealed class TextContent : KernelContent
 {
     /// <summary>
     /// The text content.

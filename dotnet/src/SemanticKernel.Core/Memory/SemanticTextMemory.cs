@@ -19,7 +19,7 @@ using Embeddings;
 [Experimental("SKEXP0003")]
 public sealed class SemanticTextMemory : ISemanticTextMemory
 {
-    private readonly ITextEmbeddingGeneration _embeddingGenerator;
+    private readonly ITextEmbeddingGenerationService _embeddingGenerator;
     private readonly IMemoryStore _storage;
 
 
@@ -30,7 +30,7 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
     /// <param name="embeddingGenerator">The text embedding generator to use for generating embeddings.</param>
     public SemanticTextMemory(
         IMemoryStore storage,
-        ITextEmbeddingGeneration embeddingGenerator)
+        ITextEmbeddingGenerationService embeddingGenerator)
     {
         this._embeddingGenerator = embeddingGenerator;
         this._storage = storage;

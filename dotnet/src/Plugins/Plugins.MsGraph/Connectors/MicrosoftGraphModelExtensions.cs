@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors;
+
 using System;
 using System.Linq;
-using Microsoft.Graph;
-using Microsoft.Graph.Extensions;
-using Microsoft.SemanticKernel.Plugins.MsGraph.Models;
+using Graph;
+using Graph.Extensions;
+using Models;
 
-namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors;
 
 /// <summary>
 /// Extensions for converting between Microsoft Graph models and plugin models.
@@ -31,6 +32,7 @@ internal static class MicrosoftGraphModelExtensions
             Subject = graphMessage.Subject
         };
 
+
     /// <summary>
     /// Convert a Microsoft Graph email address to an email address.
     /// </summary>
@@ -40,6 +42,7 @@ internal static class MicrosoftGraphModelExtensions
             Address = graphEmailAddress.Address,
             Name = graphEmailAddress.Name
         };
+
 
     /// <summary>
     /// Convert a calendar event to a Microsoft Graph event.
@@ -58,6 +61,7 @@ internal static class MicrosoftGraphModelExtensions
             Location = new Location { DisplayName = calendarEvent.Location },
             Attendees = calendarEvent.Attendees?.Select(a => new Attendee { EmailAddress = new Microsoft.Graph.EmailAddress { Address = a } })
         };
+
 
     /// <summary>
     /// Convert a Microsoft Graph event to a calendar event.

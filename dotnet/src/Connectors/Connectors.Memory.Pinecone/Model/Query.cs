@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
+
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Text;
+using Text;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 
 /// <summary>
 /// Query parameters for use in a query request.
@@ -43,6 +44,7 @@ public sealed class Query
     /// </summary>
     public SparseVectorData? SparseVector { get; set; }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="Query" /> class.
     /// </summary>
@@ -55,6 +57,7 @@ public sealed class Query
         };
     }
 
+
     /// <summary>
     /// Sets vector for <see cref="Query"/> instance.
     /// </summary>
@@ -64,6 +67,7 @@ public sealed class Query
         this.Vector = vector;
         return this;
     }
+
 
     /// <summary>
     /// Sets index namespace for <see cref="Query"/> instance.
@@ -75,6 +79,7 @@ public sealed class Query
         return this;
     }
 
+
     /// <summary>
     /// Sets filter for <see cref="Query"/> instance.
     /// </summary>
@@ -84,6 +89,7 @@ public sealed class Query
         this.Filter = filter;
         return this;
     }
+
 
     /// <summary>
     /// Sets sparse vector data for <see cref="Query"/> instance.
@@ -95,6 +101,7 @@ public sealed class Query
         return this;
     }
 
+
     /// <summary>
     /// Sets unique vector id for <see cref="Query"/> instance.
     /// </summary>
@@ -104,6 +111,7 @@ public sealed class Query
         this.Id = id;
         return this;
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Query" /> class.

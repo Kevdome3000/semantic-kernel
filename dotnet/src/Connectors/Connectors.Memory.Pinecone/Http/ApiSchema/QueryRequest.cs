@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
+
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
+using Model;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 
 /// <summary>
 /// QueryRequest
@@ -63,6 +64,7 @@ internal sealed class QueryRequest
     [JsonPropertyName("includeMetadata")]
     public bool IncludeMetadata { get; set; }
 
+
     public static QueryRequest QueryIndex(Query query)
     {
         return new QueryRequest(query.Vector)
@@ -75,17 +77,20 @@ internal sealed class QueryRequest
         };
     }
 
+
     public QueryRequest WithMetadata(bool includeMetadata)
     {
         this.IncludeMetadata = includeMetadata;
         return this;
     }
 
+
     public QueryRequest WithEmbeddings(bool includeValues)
     {
         this.IncludeValues = includeValues;
         return this;
     }
+
 
     public HttpRequestMessage Build()
     {
@@ -102,6 +107,7 @@ internal sealed class QueryRequest
 
         return request;
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="QueryRequest" /> class.

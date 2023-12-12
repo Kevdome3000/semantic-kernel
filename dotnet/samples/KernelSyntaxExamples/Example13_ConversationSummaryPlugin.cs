@@ -134,7 +134,7 @@ Jane: Goodbye!
         KernelPlugin conversationSummaryPlugin = kernel.ImportPluginFromType<ConversationSummaryPlugin>();
 
         FunctionResult summary = await kernel.InvokeAsync(
-            conversationSummaryPlugin["SummarizeConversation"], new(ChatTranscript));
+            conversationSummaryPlugin["SummarizeConversation"], new() { ["input"] = ChatTranscript });
 
         Console.WriteLine("Generated Summary:");
         Console.WriteLine(summary.GetValue<string>());
@@ -149,7 +149,7 @@ Jane: Goodbye!
         KernelPlugin conversationSummary = kernel.ImportPluginFromType<ConversationSummaryPlugin>();
 
         FunctionResult summary = await kernel.InvokeAsync(
-            conversationSummary["GetConversationActionItems"], new(ChatTranscript));
+            conversationSummary["GetConversationActionItems"], new() { ["input"] = ChatTranscript });
 
         Console.WriteLine("Generated Action Items:");
         Console.WriteLine(summary.GetValue<string>());
@@ -164,7 +164,7 @@ Jane: Goodbye!
         KernelPlugin conversationSummary = kernel.ImportPluginFromType<ConversationSummaryPlugin>();
 
         FunctionResult summary = await kernel.InvokeAsync(
-            conversationSummary["GetConversationTopics"], new(ChatTranscript));
+            conversationSummary["GetConversationTopics"], new() { ["input"] = ChatTranscript });
 
         Console.WriteLine("Generated Topics:");
         Console.WriteLine(summary.GetValue<string>());
@@ -175,10 +175,10 @@ Jane: Goodbye!
     {
         Kernel kernel = Kernel.CreateBuilder()
             .AddAzureOpenAIChatCompletion(
-                TestConfiguration.AzureOpenAI.ChatDeploymentName,
-                TestConfiguration.AzureOpenAI.ChatModelId,
-                TestConfiguration.AzureOpenAI.Endpoint,
-                TestConfiguration.AzureOpenAI.ApiKey)
+                deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                endpoint: TestConfiguration.AzureOpenAI.Endpoint,
+                apiKey: TestConfiguration.AzureOpenAI.ApiKey,
+                modelId: TestConfiguration.AzureOpenAI.ChatModelId)
             .Build();
 
         return kernel;
