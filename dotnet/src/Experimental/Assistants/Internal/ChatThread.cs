@@ -71,9 +71,21 @@ internal sealed class ChatThread : IChatThread
 
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<IChatMessage>> InvokeAsync(IAssistant assistant, CancellationToken cancellationToken)
+    public IAsyncEnumerable<IChatMessage> InvokeAsync(IAssistant assistant, CancellationToken cancellationToken)
+    {
+        return this.InvokeAsync(assistant, string.Empty, cancellationToken);
+    }
+
+
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<IChatMessage> InvokeAsync(IAssistant assistant, string userMessage, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         this.ThrowIfDeleted();
+
+        if (!string.IsNullOrWhiteSpace(userMessage))
+        {
+            yield return await this.AddUserMessageAsync(userMessage, cancellationToken).ConfigureAwait(false);
+        }
 
         var tools = assistant.Plugins.SelectMany(p => p.Select(f => f.ToToolModel(p.Name)));
         var runModel = await this._restContext.CreateRunAsync(this.Id, assistant.Id, assistant.Instructions, tools, cancellationToken).ConfigureAwait(false);
@@ -81,9 +93,12 @@ internal sealed class ChatThread : IChatThread
         var run = new ChatRun(runModel, assistant.Kernel, this._restContext);
         var results = await run.GetResultAsync(cancellationToken).ConfigureAwait(false);
 
-        var messages = await this.GetMessagesAsync(results, cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
+        var messages = await this._restContext.GetMessagesAsync(this.Id, results, cancellationToken).ConfigureAwait(false);
 
-        return messages;
+        foreach (var message in messages)
+        {
+            yield return new ChatMessage(message);
+        }
     }
 
 
@@ -100,21 +115,6 @@ internal sealed class ChatThread : IChatThread
 
         await this._restContext.DeleteThreadModelAsync(this.Id, cancellationToken).ConfigureAwait(false);
         this._isDeleted = true;
-    }
-
-
-    private async IAsyncEnumerable<IChatMessage> GetMessagesAsync(
-        IList<string> messageIds,
-        [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        this.ThrowIfDeleted();
-
-        var messages = await this._restContext.GetMessagesAsync(this.Id, messageIds, cancellationToken).ConfigureAwait(false);
-
-        foreach (var message in messages)
-        {
-            yield return new ChatMessage(message);
-        }
     }
 
 

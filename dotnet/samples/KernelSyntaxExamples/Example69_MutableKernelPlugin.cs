@@ -11,7 +11,7 @@ using Microsoft.SemanticKernel;
  * This example shows how to create a mutable <see cref="KernelPlugin"/>.
  */
 // ReSharper disable once InconsistentNaming
-public static class Example73_MutableKernelPlugin
+public static class Example69_MutableKernelPlugin
 {
     /// <summary>
     /// Show how to create a mutable <see cref="KernelPlugin"/>.

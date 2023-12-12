@@ -16,7 +16,7 @@ using Models;
 /// </summary>
 internal static partial class OpenAIRestExtensions
 {
-    internal const string BaseAssistantUrl = $"{BaseUrl}assistants";
+    internal const string BaseAssistantUrl = $"{BaseUrl}/assistants";
 
 
     /// <summary>
