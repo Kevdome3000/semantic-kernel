@@ -11,7 +11,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Connectors.Memory.Postgres;
 using Microsoft.SemanticKernel.Memory;
 using Npgsql;
-using Pgvector.Npgsql;
 using Xunit;
 
 

@@ -15,7 +15,6 @@ using Microsoft.SemanticKernel;
 using RepoUtils;
 
 
-// ReSharper disable once InconsistentNaming
 public static class Example52_ApimAuth
 {
     public static async Task RunAsync()

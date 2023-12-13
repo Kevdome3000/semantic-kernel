@@ -6,7 +6,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Web;
 
 
-// ReSharper disable once InconsistentNaming
 public static class Example11_WebSearchQueries
 {
     public static async Task RunAsync()

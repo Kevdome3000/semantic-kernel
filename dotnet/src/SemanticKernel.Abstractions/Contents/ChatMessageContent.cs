@@ -47,7 +47,7 @@ public class ChatMessageContent : KernelContent
     [JsonConstructor]
     public ChatMessageContent(
         AuthorRole role,
-        string content,
+        string? content,
         string? modelId = null,
         object? innerContent = null,
         Encoding? encoding = null,

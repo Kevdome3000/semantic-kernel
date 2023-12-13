@@ -101,14 +101,14 @@ public static class AIServiceExtensions
 
         if (function.ExecutionSettings is not null)
         {
-            string serviceIds = string.Join("|", function.ExecutionSettings.Select(model => model.ServiceId));
+            string serviceIds = string.Join("|", function.ExecutionSettings.Values.Select(model => model.ServiceId));
 
             if (!string.IsNullOrEmpty(serviceIds))
             {
                 message.Append($" Expected serviceIds: {serviceIds}.");
             }
 
-            string modelIds = string.Join("|", function.ExecutionSettings.Select(model => model.ModelId));
+            string modelIds = string.Join("|", function.ExecutionSettings.Values.Select(model => model.ModelId));
 
             if (!string.IsNullOrEmpty(modelIds))
             {

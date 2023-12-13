@@ -4,8 +4,6 @@
 // The easier way to instantiate the Semantic Kernel is to use KernelBuilder.
 // You can access the builder using Kernel.CreateBuilder().
 
-#pragma warning disable CA1852
-
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,7 +12,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Core;
 
 
-// ReSharper disable once InconsistentNaming
 public static class Example42_KernelBuilder
 {
     public static Task RunAsync()
@@ -23,7 +20,6 @@ public static class Example42_KernelBuilder
         string azureOpenAIEndpoint = TestConfiguration.AzureOpenAI.Endpoint;
         string azureOpenAIChatDeploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName;
         string azureOpenAIChatModelId = TestConfiguration.AzureOpenAI.ChatModelId;
-        string azureOpenAIEmbeddingDeployment = TestConfiguration.AzureOpenAIEmbeddings.DeploymentName;
 
         // KernelBuilder provides a simple way to configure a Kernel. This constructs a kernel
         // with logging and an Azure OpenAI chat completion service configured.

@@ -456,12 +456,11 @@ public sealed class OpenAICompletionTests : IDisposable
         var azurePromptModel = PromptTemplateConfig.FromJson(
             @"{
                 ""name"": ""FishMarket2"",
-                ""execution_settings"": [
-                    {
-                        ""max_tokens"": 256,
-                        ""service_id"": ""azure-text-davinci-003""
+                ""execution_settings"": {
+                    ""azure-text-davinci-003"": {
+                        ""max_tokens"": 256
                     }
-                ]
+                }
             }");
         azurePromptModel.Template = prompt;
 

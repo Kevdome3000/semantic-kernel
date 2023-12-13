@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.UnitTests.TemplateEngine.Blocks;
+namespace SemanticKernel.UnitTests.TemplateEngine;
 
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.TemplateEngine.Blocks;
+using Microsoft.SemanticKernel.TemplateEngine;
 using Xunit;
 
 

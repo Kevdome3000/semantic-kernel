@@ -8,7 +8,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.TemplateEngine.Blocks;
+using Microsoft.SemanticKernel.TemplateEngine;
 using Xunit;
 using Xunit.Abstractions;
 using XunitHelpers;

@@ -7,10 +7,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 
-/**
- * The following example shows how to use Semantic Kernel with OpenAI ChatGPT API
- */
-// ReSharper disable once InconsistentNaming
+// The following example shows how to use Semantic Kernel with OpenAI ChatGPT API
 public static class Example17_ChatGPT
 {
     public static async Task RunAsync()

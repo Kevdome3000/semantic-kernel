@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Plugins.Memory;
 
+
 /* The files contains two examples about SK Semantic Memory.
  *
  * 1. Memory using Azure AI Search.
@@ -16,9 +17,6 @@ using Microsoft.SemanticKernel.Plugins.Memory;
  * Semantic Memory allows to store your data like traditional DBs,
  * adding the ability to query it using natural language.
  */
-
-
-// ReSharper disable once InconsistentNaming
 public static class Example14_SemanticMemory
 {
     private const string MemoryCollectionName = "SKGitHub";
@@ -109,7 +107,7 @@ public static class Example14_SemanticMemory
     {
         Console.WriteLine("\nQuery: " + query + "\n");
 
-        var memoryResults = memory.SearchAsync(MemoryCollectionName, query, 2, 0.5);
+        var memoryResults = memory.SearchAsync(MemoryCollectionName, query, limit: 2, minRelevanceScore: 0.5);
 
         int i = 0;
 
@@ -143,7 +141,7 @@ public static class Example14_SemanticMemory
         foreach (var entry in githubFiles)
         {
             await memory.SaveReferenceAsync(
-                MemoryCollectionName,
+                collection: MemoryCollectionName,
                 externalSourceName: "GitHub",
                 externalId: entry.Key,
                 description: entry.Value,
@@ -156,17 +154,20 @@ public static class Example14_SemanticMemory
     }
 
 
-    private static Dictionary<string, string> SampleData() => new()
+    private static Dictionary<string, string> SampleData()
     {
-        ["https://github.com/microsoft/semantic-kernel/blob/main/README.md"]
-            = "README: Installation, getting started, and how to contribute",
-        ["https://github.com/microsoft/semantic-kernel/blob/main/dotnet/notebooks/02-running-prompts-from-file.ipynb"]
-            = "Jupyter notebook describing how to pass prompts from a file to a semantic plugin or function",
-        ["https://github.com/microsoft/semantic-kernel/blob/main/dotnet/notebooks//00-getting-started.ipynb"]
-            = "Jupyter notebook describing how to get started with the Semantic Kernel",
-        ["https://github.com/microsoft/semantic-kernel/tree/main/samples/plugins/ChatPlugin/ChatGPT"]
-            = "Sample demonstrating how to create a chat plugin interfacing with ChatGPT",
-        ["https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel/Memory/VolatileMemoryStore.cs"]
-            = "C# class that defines a volatile embedding store"
-    };
+        return new Dictionary<string, string>
+        {
+            ["https://github.com/microsoft/semantic-kernel/blob/main/README.md"]
+                = "README: Installation, getting started, and how to contribute",
+            ["https://github.com/microsoft/semantic-kernel/blob/main/dotnet/notebooks/02-running-prompts-from-file.ipynb"]
+                = "Jupyter notebook describing how to pass prompts from a file to a semantic plugin or function",
+            ["https://github.com/microsoft/semantic-kernel/blob/main/dotnet/notebooks//00-getting-started.ipynb"]
+                = "Jupyter notebook describing how to get started with the Semantic Kernel",
+            ["https://github.com/microsoft/semantic-kernel/tree/main/samples/plugins/ChatPlugin/ChatGPT"]
+                = "Sample demonstrating how to create a chat plugin interfacing with ChatGPT",
+            ["https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel/Memory/VolatileMemoryStore.cs"]
+                = "C# class that defines a volatile embedding store",
+        };
+    }
 }

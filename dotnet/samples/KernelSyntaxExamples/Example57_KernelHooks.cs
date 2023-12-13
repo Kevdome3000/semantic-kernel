@@ -8,7 +8,6 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 using RepoUtils;
 
 
-// ReSharper disable once InconsistentNaming
 public static class Example57_KernelHooks
 {
     private static string? s_openAIModelId;

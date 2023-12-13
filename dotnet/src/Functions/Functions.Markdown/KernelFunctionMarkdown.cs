@@ -2,6 +2,7 @@
 
 namespace Microsoft.SemanticKernel;
 
+using System.Collections.Generic;
 using System.Text.Json;
 using Extensions.Logging;
 using Markdig;
@@ -55,11 +56,14 @@ public static class KernelFunctionMarkdown
 
                     case "sk.execution_settings":
                         var modelSettings = codeBlock.Lines.ToString();
-                        var executionSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(modelSettings);
+                        var settingsDictionary = JsonSerializer.Deserialize<Dictionary<string, PromptExecutionSettings>>(modelSettings);
 
-                        if (executionSettings is not null)
+                        if (settingsDictionary is not null)
                         {
-                            promptFunctionModel.ExecutionSettings.Add(executionSettings);
+                            foreach (var keyValue in settingsDictionary)
+                            {
+                                promptFunctionModel.ExecutionSettings.Add(keyValue.Key, keyValue.Value);
+                            }
                         }
                         break;
                 }

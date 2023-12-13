@@ -25,7 +25,7 @@ public class RestApiOperationTests
             new List<RestApiOperationParameter>()
         );
 
-        var arguments = new Dictionary<string, string>();
+        var arguments = new Dictionary<string, object?>();
 
         // Act
         var url = sut.BuildOperationUrl(arguments);
@@ -50,7 +50,7 @@ public class RestApiOperationTests
 
         var fakeHostUrlOverride = "https://fake-random-test-host-override";
 
-        var arguments = new Dictionary<string, string>();
+        var arguments = new Dictionary<string, object?>();
 
         // Act
         var url = sut.BuildOperationUrl(arguments, serverUrlOverride: new Uri(fakeHostUrlOverride));
@@ -64,55 +64,44 @@ public class RestApiOperationTests
     public void ItShouldReplacePathParametersByValuesFromArguments()
     {
         // Arrange
+        var parameters = new List<RestApiOperationParameter>
+        {
+            new(
+                name: "p1",
+                type: "string",
+                isRequired: true,
+                expand: false,
+                location: RestApiOperationParameterLocation.Path,
+                style: RestApiOperationParameterStyle.Simple),
+            new(
+                name: "p2",
+                type: "number",
+                isRequired: true,
+                expand: false,
+                location: RestApiOperationParameterLocation.Path,
+                style: RestApiOperationParameterStyle.Simple)
+        };
+
         var sut = new RestApiOperation(
             "fake_id",
             new Uri("https://fake-random-test-host"),
-            "/{fake-path-parameter}/other_fake_path_section",
+            "/{p1}/{p2}/other_fake_path_section",
             HttpMethod.Get,
             "fake_description",
-            new List<RestApiOperationParameter>()
+            parameters
         );
 
-        var arguments = new Dictionary<string, string>
+        var arguments = new Dictionary<string, object?>
         {
-            { "fake-path-parameter", "fake-path-value" }
+            { "p1", "v1" },
+            { "p2", 34 }
         };
 
         // Act
         var url = sut.BuildOperationUrl(arguments);
 
         // Assert
-        Assert.Equal("https://fake-random-test-host/fake-path-value/other_fake_path_section", url.OriginalString);
-    }
-
-
-    [Fact]
-    public void ItShouldReplacePathParametersByDefaultValues()
-    {
-        // Arrange
-        var parameterMetadata = new RestApiOperationParameter(
-            name: "fake-path-parameter",
-            type: "fake_type",
-            isRequired: true,
-            expand: false,
-            location: RestApiOperationParameterLocation.Path,
-            defaultValue: "fake-default-path");
-
-        var sut = new RestApiOperation(
-            "fake_id",
-            new Uri("https://fake-random-test-host"),
-            "/{fake-path-parameter}/other_fake_path_section",
-            HttpMethod.Get,
-            "fake_description",
-            new List<RestApiOperationParameter> { parameterMetadata });
-
-        var arguments = new Dictionary<string, string>();
-
-        // Act
-        var url = sut.BuildOperationUrl(arguments);
-
-        // Assert
-        Assert.Equal("https://fake-random-test-host/fake-default-path/other_fake_path_section", url.OriginalString);
+        Assert.Equal("https://fake-random-test-host/v1/34/other_fake_path_section", url.OriginalString);
     }
 
 
@@ -120,20 +109,22 @@ public class RestApiOperationTests
     public void ShouldBuildResourceUrlWithoutQueryString()
     {
         // Arrange
-        var firstParameterMetadata = new RestApiOperationParameter(
-            name: "p1",
-            type: "fake_type",
-            isRequired: false,
-            expand: false,
-            location: RestApiOperationParameterLocation.Query,
-            defaultValue: "dv1");
-
-        var secondParameterMetadata = new RestApiOperationParameter(
-            name: "p2",
-            type: "fake_type",
-            isRequired: false,
-            expand: false,
-            location: RestApiOperationParameterLocation.Query);
+        var parameters = new List<RestApiOperationParameter>
+        {
+            new(
+                name: "p1",
+                type: "string",
+                isRequired: false,
+                expand: false,
+                location: RestApiOperationParameterLocation.Query,
+                defaultValue: "dv1"),
+            new(
+                name: "fake-path",
+                type: "string",
+                isRequired: false,
+                expand: false,
+                location: RestApiOperationParameterLocation.Path)
+        };
 
         var sut = new RestApiOperation(
             "fake_id",
@@ -141,11 +132,11 @@ public class RestApiOperationTests
             "{fake-path}/",
             HttpMethod.Get,
             "fake_description",
-            new List<RestApiOperationParameter> { firstParameterMetadata, secondParameterMetadata });
+            parameters);
 
         var fakeHostUrlOverride = "https://fake-random-test-host-override";
 
-        var arguments = new Dictionary<string, string>
+        var arguments = new Dictionary<string, object?>
         {
             { "fake-path", "fake-path-value" },
         };
@@ -181,7 +172,7 @@ public class RestApiOperationTests
                 style: RestApiOperationParameterStyle.Simple)
         };
 
-        var arguments = new Dictionary<string, string>
+        var arguments = new Dictionary<string, object?>
         {
             { "fake_header_one", "fake_header_one_value" },
             { "fake_header_two", "fake_header_two_value" }
@@ -216,7 +207,7 @@ public class RestApiOperationTests
         var sut = new RestApiOperation("fake_id", new Uri("http://fake_url"), "fake_path", HttpMethod.Get, "fake_description", metadata);
 
         // Act
-        void Act() => sut.RenderHeaders(new Dictionary<string, string>());
+        void Act() => sut.RenderHeaders(new Dictionary<string, object?>());
 
         // Assert
         Assert.Throws<KernelException>(Act);
@@ -233,7 +224,7 @@ public class RestApiOperationTests
             new(name: "fake_header_two", type: "string", isRequired: false, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple)
         };
 
-        var arguments = new Dictionary<string, string>
+        var arguments = new Dictionary<string, object?>
         {
             ["fake_header_one"] = "fake_header_one_value"
         };
@@ -261,7 +252,7 @@ public class RestApiOperationTests
             new(name: "h2", type: "array", isRequired: false, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple, arrayItemType: "integer")
         };
 
-        var arguments = new Dictionary<string, string>
+        var arguments = new Dictionary<string, object?>
         {
             ["h1"] = "[\"a\",\"b\",\"c\"]",
             ["h2"] = "[1,2,3]"
@@ -291,10 +282,10 @@ public class RestApiOperationTests
             new(name: "h2", type: "boolean", isRequired: false, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple)
         };
 
-        var arguments = new Dictionary<string, string>
+        var arguments = new Dictionary<string, object?>
         {
             ["h1"] = "v1",
-            ["h2"] = "true"
+            ["h2"] = true
         };
 
         var sut = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata);
@@ -321,9 +312,9 @@ public class RestApiOperationTests
             new(name: "h2", type: "boolean", isRequired: true, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple),
         };
 
-        var arguments = new Dictionary<string, string>
+        var arguments = new Dictionary<string, object?>
         {
-            ["h1"] = "[\"a\",\"b\"]",
+            ["h1"] = new List<string> { "a", "b" },
             ["h2"] = "false"
         };
 

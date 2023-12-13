@@ -9,7 +9,6 @@ using Plugins;
 using Resources;
 
 
-// ReSharper disable once InconsistentNaming
 /// <summary>
 /// Showcase Open AI Assistant integration with semantic kernel:
 /// https://platform.openai.com/docs/api-reference/assistants

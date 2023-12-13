@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable CA1812 // Uninstantiated internal types
-
 namespace Plugins;
 
 using System.ComponentModel;

@@ -6,10 +6,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 
-/**
- * This example shows how to use GPT Vision model with different content types (text and image).
- */
-// ReSharper disable once InconsistentNaming
+// This example shows how to use GPT Vision model with different content types (text and image).
 public static class Example68_GPTVision
 {
     public static async Task RunAsync()

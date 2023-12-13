@@ -11,12 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Memory;
 
-#pragma warning disable CA2201 // System.Exception is not sufficiently specific - this is a sample
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-#pragma warning disable CA1851 // Possible multiple enumerations of 'IEnumerable' collection
 
-
-// ReSharper disable once InconsistentNaming
 /// <summary>
 /// This sample provides a custom implementation of <see cref="IMemoryStore"/> that is read only.
 ///     In this sample, the data is stored in a JSON string and deserialized into an
@@ -41,7 +36,7 @@ public static class Example25_ReadOnlyMemoryStore
         }
 
         Console.WriteLine("Getting most similar vector to {0}", string.Join(", ", MemoryMarshal.ToEnumerable(embedding)));
-        var result = await store.GetNearestMatchAsync("collection", embedding);
+        var result = await store.GetNearestMatchAsync("collection", embedding, 0.0);
 
         if (result.HasValue)
         {
@@ -52,7 +47,7 @@ public static class Example25_ReadOnlyMemoryStore
 
     private sealed class ReadOnlyMemoryStore : IMemoryStore
     {
-        private readonly MemoryRecord[]? _memoryRecords;
+        private readonly MemoryRecord[]? _memoryRecords = null;
         private readonly int _vectorSize = 3;
 
 
@@ -60,35 +55,46 @@ public static class Example25_ReadOnlyMemoryStore
         {
             s_jsonVectorEntries = s_jsonVectorEntries.Replace("\n", string.Empty, StringComparison.Ordinal);
             s_jsonVectorEntries = s_jsonVectorEntries.Replace(" ", string.Empty, StringComparison.Ordinal);
-            _memoryRecords = JsonSerializer.Deserialize<MemoryRecord[]>(valueString);
+            this._memoryRecords = JsonSerializer.Deserialize<MemoryRecord[]>(valueString);
 
-            if (_memoryRecords == null)
+            if (this._memoryRecords == null)
             {
                 throw new Exception("Unable to deserialize memory records");
             }
         }
 
 
-        public Task CreateCollectionAsync(string collectionName, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        public Task CreateCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
+        {
+            throw new System.NotImplementedException();
+        }
 
-        public Task DeleteCollectionAsync(string collectionName, CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
-        public Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        public Task DeleteCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
+        {
+            throw new System.NotImplementedException();
+        }
+
+
+        public Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancellationToken = default)
+        {
+            throw new System.NotImplementedException();
+        }
 
 
         public Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancellationToken = default)
         {
             // Note: with this simple implementation, the MemoryRecord will always contain the embedding.
-            return Task.FromResult(_memoryRecords?.FirstOrDefault(x => x.Key == key));
+            return Task.FromResult(this._memoryRecords?.FirstOrDefault(x => x.Key == key));
         }
 
 
         public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = false, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             // Note: with this simple implementation, the MemoryRecord will always contain the embedding.
-            if (_memoryRecords is not null)
+            if (this._memoryRecords is not null)
             {
-                foreach (var memoryRecord in _memoryRecords)
+                foreach (var memoryRecord in this._memoryRecords)
                 {
                     if (keys.Contains(memoryRecord.Key))
                     {
@@ -99,7 +105,10 @@ public static class Example25_ReadOnlyMemoryStore
         }
 
 
-        public IAsyncEnumerable<string> GetCollectionsAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        public IAsyncEnumerable<string> GetCollectionsAsync(CancellationToken cancellationToken = default)
+        {
+            throw new System.NotImplementedException();
+        }
 
 
         public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(
@@ -110,13 +119,13 @@ public static class Example25_ReadOnlyMemoryStore
             CancellationToken cancellationToken = default)
         {
             // Note: with this simple implementation, the MemoryRecord will always contain the embedding.
-            await foreach (var item in GetNearestMatchesAsync(
-                               collectionName,
-                               embedding,
-                               1,
-                               minRelevanceScore,
-                               withEmbedding,
-                               cancellationToken).ConfigureAwait(false))
+            await foreach (var item in this.GetNearestMatchesAsync(
+                               collectionName: collectionName,
+                               embedding: embedding,
+                               limit: 1,
+                               minRelevanceScore: minRelevanceScore,
+                               withEmbeddings: withEmbedding,
+                               cancellationToken: cancellationToken).ConfigureAwait(false))
             {
                 return item;
             }
@@ -134,25 +143,25 @@ public static class Example25_ReadOnlyMemoryStore
             [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             // Note: with this simple implementation, the MemoryRecord will always contain the embedding.
-            if (_memoryRecords == null || _memoryRecords.Length == 0)
+            if (this._memoryRecords == null || this._memoryRecords.Length == 0)
             {
                 yield break;
             }
 
-            if (embedding.Length != _vectorSize)
+            if (embedding.Length != this._vectorSize)
             {
-                throw new Exception($"Embedding vector size {embedding.Length} does not match expected size of {_vectorSize}");
+                throw new Exception($"Embedding vector size {embedding.Length} does not match expected size of {this._vectorSize}");
             }
 
             List<(MemoryRecord Record, double Score)> embeddings = new();
 
-            foreach (var item in _memoryRecords)
+            foreach (var item in this._memoryRecords)
             {
                 double similarity = TensorPrimitives.CosineSimilarity(embedding.Span, item.Embedding.Span);
 
                 if (similarity >= minRelevanceScore)
                 {
-                    embeddings.Add(new ValueTuple<MemoryRecord, double>(item, similarity));
+                    embeddings.Add(new(item, similarity));
                 }
             }
 
@@ -163,13 +172,28 @@ public static class Example25_ReadOnlyMemoryStore
         }
 
 
-        public Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        public Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default)
+        {
+            throw new System.NotImplementedException();
+        }
 
-        public Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
-        public Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        public Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default)
+        {
+            throw new System.NotImplementedException();
+        }
 
-        public IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> records, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default)
+        {
+            throw new System.NotImplementedException();
+        }
+
+
+        public IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> records, CancellationToken cancellationToken = default)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 
 

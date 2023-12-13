@@ -3,6 +3,7 @@
 namespace SemanticKernel.Functions.UnitTests.OpenApi.Builders.Serialization;
 
 using System;
+using System.Text.Json.Nodes;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Xunit;
 
@@ -12,11 +13,11 @@ public class PipeDelimitedStyleParametersSerializerTests
     [Fact]
     public void ItShouldThrowExceptionForUnsupportedParameterStyle()
     {
-        //Arrange
+        // Arrange
         var parameter = new RestApiOperationParameter(name: "p1", type: "string", isRequired: false, expand: false, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.Form);
 
-        //Act & Assert
-        Assert.Throws<ArgumentException>(() => PipeDelimitedStyleParameterSerializer.Serialize(parameter, "fake-argument"));
+        // Act & Assert
+        Assert.Throws<NotSupportedException>(() => PipeDelimitedStyleParameterSerializer.Serialize(parameter, "fake-argument"));
     }
 
 
@@ -28,11 +29,11 @@ public class PipeDelimitedStyleParametersSerializerTests
     [InlineData("object")]
     public void ItShouldThrowExceptionIfParameterTypeIsNotArray(string parameterType)
     {
-        //Arrange
+        // Arrange
         var parameter = new RestApiOperationParameter(name: "p1", type: parameterType, isRequired: false, expand: false, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.PipeDelimited);
 
-        //Act & Assert
-        Assert.Throws<ArgumentException>(() => PipeDelimitedStyleParameterSerializer.Serialize(parameter, "fake-argument"));
+        // Act & Assert
+        Assert.Throws<NotSupportedException>(() => PipeDelimitedStyleParameterSerializer.Serialize(parameter, "fake-argument"));
     }
 
 
@@ -50,7 +51,7 @@ public class PipeDelimitedStyleParametersSerializerTests
             arrayItemType: "integer");
 
         // Act
-        var result = PipeDelimitedStyleParameterSerializer.Serialize(parameter, "[1,2,3]");
+        var result = PipeDelimitedStyleParameterSerializer.Serialize(parameter, new JsonArray(1, 2, 3));
 
         // Assert
         Assert.NotNull(result);
@@ -73,7 +74,7 @@ public class PipeDelimitedStyleParametersSerializerTests
             arrayItemType: "integer");
 
         // Act
-        var result = PipeDelimitedStyleParameterSerializer.Serialize(parameter, "[1,2,3]");
+        var result = PipeDelimitedStyleParameterSerializer.Serialize(parameter, new JsonArray("1", "2", "3"));
 
         // Assert
         Assert.NotNull(result);
@@ -93,7 +94,7 @@ public class PipeDelimitedStyleParametersSerializerTests
         var parameter = new RestApiOperationParameter(name: "id", type: "array", isRequired: false, expand: false, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.PipeDelimited);
 
         // Act
-        var result = PipeDelimitedStyleParameterSerializer.Serialize(parameter, $"[\"{specialSymbol}\"]");
+        var result = PipeDelimitedStyleParameterSerializer.Serialize(parameter, new JsonArray(specialSymbol));
 
         // Assert
         Assert.NotNull(result);
@@ -113,7 +114,7 @@ public class PipeDelimitedStyleParametersSerializerTests
         var parameter = new RestApiOperationParameter(name: "id", type: "array", isRequired: false, expand: true, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.PipeDelimited);
 
         // Act
-        var result = PipeDelimitedStyleParameterSerializer.Serialize(parameter, $"[\"{specialSymbol}\"]");
+        var result = PipeDelimitedStyleParameterSerializer.Serialize(parameter, new JsonArray(specialSymbol));
 
         // Assert
         Assert.NotNull(result);
