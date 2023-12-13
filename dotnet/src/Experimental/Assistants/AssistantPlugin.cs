@@ -2,7 +2,6 @@
 
 namespace Microsoft.SemanticKernel.Experimental.Assistants;
 
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Internal;
