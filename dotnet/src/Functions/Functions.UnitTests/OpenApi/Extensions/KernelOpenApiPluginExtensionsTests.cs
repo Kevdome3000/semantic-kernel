@@ -5,6 +5,7 @@ namespace SemanticKernel.Functions.UnitTests.OpenApi;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
