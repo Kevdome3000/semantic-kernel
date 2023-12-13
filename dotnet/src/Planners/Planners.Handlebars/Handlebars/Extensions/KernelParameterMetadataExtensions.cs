@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 
 internal static class KernelParameterMetadataExtensions
@@ -40,22 +39,20 @@ internal static class KernelParameterMetadataExtensions
     {
         var parameterTypes = new HashSet<HandlebarsParameterTypeMetadata>();
 
-        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Task<>))
+        if (type.TryGetGenericResultType(out var taskResultType))
         {
-            // Async return type - need to extract the actual return type
-            var actualReturnType = type.GenericTypeArguments[0]; // Actual Return Type
-            var returnTypeProperties = actualReturnType.GetProperties();
+            var resultTypeProperties = taskResultType.GetProperties();
 
-            if (!IsPrimitiveOrStringType(actualReturnType) && returnTypeProperties.Length is not 0)
+            if (!IsPrimitiveOrStringType(taskResultType) && resultTypeProperties.Length is not 0)
             {
                 parameterTypes.Add(new HandlebarsParameterTypeMetadata()
                 {
-                    Name = actualReturnType.Name,
+                    Name = taskResultType.Name,
                     IsComplex = true,
-                    Properties = returnTypeProperties.Select(p => new KernelParameterMetadata(p.Name) { ParameterType = p.PropertyType }).ToList()
+                    Properties = resultTypeProperties.Select(p => new KernelParameterMetadata(p.Name) { ParameterType = p.PropertyType }).ToList()
                 });
 
-                parameterTypes.AddNestedComplexTypes(returnTypeProperties);
+                parameterTypes.AddNestedComplexTypes(resultTypeProperties);
             }
         }
         else if (type.IsClass && type != typeof(string))

@@ -83,7 +83,7 @@ public sealed class Program
         Console.WriteLine("Original plan:");
         Console.WriteLine(plan.ToString());
 
-        var result = await plan.InvokeAsync(kernel, new KernelArguments(), CancellationToken.None);
+        var result = await plan.InvokeAsync(kernel, new KernelArguments(), CancellationToken.None).ConfigureAwait(false);
 
         Console.WriteLine("Result:");
         Console.WriteLine(result);
@@ -112,7 +112,7 @@ public sealed class Program
 
     private static HandlebarsPlanner CreatePlanner(int maxTokens = 1024)
     {
-        var plannerConfig = new HandlebarsPlannerConfig { MaxTokens = maxTokens };
+        var plannerConfig = new HandlebarsPlannerOptions { MaxTokens = maxTokens };
         return new HandlebarsPlanner(plannerConfig);
     }
 

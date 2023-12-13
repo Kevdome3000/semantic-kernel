@@ -2,7 +2,6 @@
 
 namespace SemanticKernel.UnitTests.PromptTemplate;
 
-using System.Linq;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -65,8 +64,8 @@ public class PromptTemplateConfigTests
   ""schema"": 1,
   ""description"": """",
   ""execution_settings"": 
-  [
-    {
+  {
+    ""service1"": {
       ""model_id"": ""gpt-4"",
       ""max_tokens"": 200,
       ""temperature"": 0.2,
@@ -79,7 +78,7 @@ public class PromptTemplateConfigTests
         ""AI""
       ]
     },
-    {
+    ""service2"": {
       ""model_id"": ""gpt-3.5_turbo"",
       ""max_tokens"": 256,
       ""temperature"": 0.3,
@@ -92,7 +91,7 @@ public class PromptTemplateConfigTests
         ""AI""
       ]
     }
-  ]
+  }
 }";
 
         // Act
@@ -114,8 +113,8 @@ public class PromptTemplateConfigTests
   ""schema"": 1,
   ""description"": """",
   ""execution_settings"": 
-  [
-    {
+  {
+    ""default"": {
       ""model_id"": ""gpt-4"",
       ""max_tokens"": 200,
       ""temperature"": 0.2,
@@ -128,7 +127,7 @@ public class PromptTemplateConfigTests
         ""AI""
       ]
     }
-  ]
+  }
 }";
 
         // Act
@@ -136,8 +135,8 @@ public class PromptTemplateConfigTests
 
         // Assert
         Assert.NotNull(promptTemplateConfig);
-        Assert.NotNull(promptTemplateConfig.ExecutionSettings?.FirstOrDefault<PromptExecutionSettings>());
-        Assert.Equal("gpt-4", promptTemplateConfig?.ExecutionSettings.FirstOrDefault<PromptExecutionSettings>()?.ModelId);
+        Assert.NotNull(promptTemplateConfig.DefaultExecutionSettings);
+        Assert.Equal("gpt-4", promptTemplateConfig.DefaultExecutionSettings?.ModelId);
     }
 
 

@@ -11,7 +11,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Npgsql;
 using Pgvector;
-using Pgvector.Npgsql;
 using SemanticKernel.Memory;
 
 

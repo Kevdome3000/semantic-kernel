@@ -17,6 +17,11 @@ using TextGeneration;
 public class PromptExecutionSettings
 {
     /// <summary>
+    /// Default service identifier.
+    /// </summary>
+    public const string DefaultServiceId = "default";
+
+    /// <summary>
     /// Service identifier.
     /// This identifies a service and is set when the AI service is registered.
     /// </summary>
@@ -31,8 +36,11 @@ public class PromptExecutionSettings
     public string? ModelId { get; set; }
 
     /// <summary>
-    /// Extra properties
+    /// Extra properties that may be included in the serialized execution settings.
     /// </summary>
+    /// <remarks>
+    /// Avoid using this property if possible. Instead, use one of the classes that extends <see cref="PromptExecutionSettings"/>.
+    /// </remarks>
     [JsonExtensionData]
     public Dictionary<string, object>? ExtensionData { get; set; }
 }

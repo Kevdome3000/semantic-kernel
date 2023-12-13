@@ -3,6 +3,7 @@
 namespace SemanticKernel.Functions.UnitTests.OpenApi.Builders.Serialization;
 
 using System;
+using System.Text.Json.Nodes;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Xunit;
 
@@ -16,7 +17,23 @@ public class SimpleStyleParametersSerializerTests
         var parameter = new RestApiOperationParameter(name: "id", type: "array", isRequired: true, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple, arrayItemType: "integer");
 
         // Act
-        var result = SimpleStyleParameterSerializer.Serialize(parameter, "[1,2,3]");
+        var result = SimpleStyleParameterSerializer.Serialize(parameter, new JsonArray(1, 2, 3));
+
+        // Assert
+        Assert.NotNull(result);
+
+        Assert.Equal("1,2,3", result);
+    }
+
+
+    [Fact]
+    public void ItShouldCreateParameterWithCommaSeparatedValuePerArrayStringItem()
+    {
+        // Arrange
+        var parameter = new RestApiOperationParameter(name: "id", type: "array", isRequired: true, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple, arrayItemType: "integer");
+
+        // Act
+        var result = SimpleStyleParameterSerializer.Serialize(parameter, new JsonArray("1", "2", "3"));
 
         // Assert
         Assert.NotNull(result);
@@ -72,7 +89,7 @@ public class SimpleStyleParametersSerializerTests
         var parameter = new RestApiOperationParameter(name: "id", type: "array", isRequired: true, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple);
 
         // Act
-        var result = SimpleStyleParameterSerializer.Serialize(parameter, $"[\"{specialSymbol}\"]");
+        var result = SimpleStyleParameterSerializer.Serialize(parameter, new JsonArray(specialSymbol));
 
         // Assert
         Assert.NotNull(result);

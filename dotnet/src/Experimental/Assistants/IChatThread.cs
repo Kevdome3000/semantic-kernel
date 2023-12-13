@@ -31,6 +31,7 @@ public interface IChatThread
     /// Advance the thread with the specified assistant.
     /// </summary>
     /// <param name="assistant">An assistant instance.</param>
+    /// <param name="userMessage">The user message</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>The resulting assistant message(s)</returns>
     IAsyncEnumerable<IChatMessage> InvokeAsync(IAssistant assistant, CancellationToken cancellationToken = default);

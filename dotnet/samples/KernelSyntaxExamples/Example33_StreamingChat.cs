@@ -7,10 +7,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 
-/**
- * The following example shows how to use Semantic Kernel with streaming Chat Completion
- */
-// ReSharper disable once InconsistentNaming
+// The following example shows how to use Semantic Kernel with streaming Chat Completion
 public static class Example33_StreamingChat
 {
     public static async Task RunAsync()

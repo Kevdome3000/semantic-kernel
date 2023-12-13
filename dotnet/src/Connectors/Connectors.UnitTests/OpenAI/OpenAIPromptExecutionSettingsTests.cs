@@ -23,8 +23,8 @@ public class OpenAIPromptExecutionSettingsTests
 
         // Assert
         Assert.NotNull(executionSettings);
-        Assert.Equal(0, executionSettings.Temperature);
-        Assert.Equal(0, executionSettings.TopP);
+        Assert.Equal(1, executionSettings.Temperature);
+        Assert.Equal(1, executionSettings.TopP);
         Assert.Equal(0, executionSettings.FrequencyPenalty);
         Assert.Equal(0, executionSettings.PresencePenalty);
         Assert.Equal(1, executionSettings.ResultsPerPrompt);
@@ -97,7 +97,6 @@ public class OpenAIPromptExecutionSettingsTests
                 { "stop_sequences", new[] { "foo", "bar" } },
                 { "chat_system_prompt", "chat system prompt" },
                 { "max_tokens", 128 },
-                { "service_id", "service" },
                 { "token_selection_biases", new Dictionary<int, int>() { { 1, 2 }, { 3, 4 } } },
                 { "seed", 123456 },
             }
@@ -129,7 +128,6 @@ public class OpenAIPromptExecutionSettingsTests
                 { "stop_sequences", new[] { "foo", "bar" } },
                 { "chat_system_prompt", "chat system prompt" },
                 { "max_tokens", "128" },
-                { "service_id", "service" },
                 { "token_selection_biases", new Dictionary<string, string>() { { "1", "2" }, { "3", "4" } } }
             }
         };
@@ -155,7 +153,6 @@ public class OpenAIPromptExecutionSettingsTests
   ""stop_sequences"": [ ""foo"", ""bar"" ],
   ""chat_system_prompt"": ""chat system prompt"",
   ""token_selection_biases"": { ""1"": 2, ""3"": 4 },
-  ""service_id"": ""service"",
   ""max_tokens"": 128
 }";
         var actualSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(json);
@@ -179,7 +176,6 @@ public class OpenAIPromptExecutionSettingsTests
         Assert.Equal(new string[] { "foo", "bar" }, executionSettings.StopSequences);
         Assert.Equal("chat system prompt", executionSettings.ChatSystemPrompt);
         Assert.Equal(new Dictionary<int, int>() { { 1, 2 }, { 3, 4 } }, executionSettings.TokenSelectionBiases);
-        Assert.Equal("service", executionSettings.ServiceId);
         Assert.Equal(128, executionSettings.MaxTokens);
     }
 }

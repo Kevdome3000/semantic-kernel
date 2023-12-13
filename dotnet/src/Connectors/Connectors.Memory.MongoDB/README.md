@@ -7,24 +7,22 @@ implement Semantic Memory.
 
 1. Create [Atlas cluster](https://www.mongodb.com/docs/atlas/getting-started/)
 
-2. Create a collection
+2. Create a [collection](https://www.mongodb.com/docs/atlas/atlas-ui/collections/)
 
-3. Create [Vector Search Index](https://www.mongodb.com/docs/atlas/atlas-search/field-types/knn-vector/) for the
-   collection.
-   The index has to be defined on a field called ```embedding```. For example:
+3. Create [Vector Search Index](https://www.mongodb.com/docs/atlas/atlas-vector-search/vector-search-overview/) for the
+   collection. The index has to be defined on a field called `embedding`. For example:
 
 ```
 {
-  "mappings": {
-    "dynamic": true,
-    "fields": {
-      "embedding": {
-        "dimension": 1024,
-        "similarity": "cosine",
-        "type": "knnVector"
-      }
+  "type": "vectorSearch",
+  "fields": [
+    {
+      "numDimensions": <number-of-dimensions>,
+      "path": "embedding",
+      "similarity": "euclidean | cosine | dotProduct",
+      "type": "vector"
     }
-  }
+  ]
 }
 ```
 
@@ -42,10 +40,12 @@ Kernel kernel = Kernel.Builder
     .Build();
 ```
 
+> Guide to find the connection string: https://www.mongodb.com/docs/manual/reference/connection-string/
+
 ## Important Notes
 
 ### Vector search indexes
 
-In this version, vector search index management is outside of ```MongoDBMemoryStore``` scope.
+In this version, vector search index management is outside of `MongoDBMemoryStore` scope.
 Creation and maintenance of the indexes have to be done by the user. Please note that deleting a collection
-(```memoryStore.DeleteCollectionAsync```) will delete the index as well.
+(`memoryStore.DeleteCollectionAsync`) will delete the index as well.

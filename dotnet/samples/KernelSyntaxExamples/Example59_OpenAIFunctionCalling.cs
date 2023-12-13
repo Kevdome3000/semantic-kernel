@@ -14,9 +14,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 
-/**
- * This example shows how to use OpenAI's tool calling capability via the chat completions interface.
- */
+// This example shows how to use OpenAI's tool calling capability via the chat completions interface.
 public static class Example59_OpenAIFunctionCalling
 {
     public static async Task RunAsync()

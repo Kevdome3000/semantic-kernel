@@ -31,7 +31,7 @@ public class MultipleModelTests
 
         var promptConfig = new PromptTemplateConfig();
         promptConfig.Template = "template";
-        promptConfig.ExecutionSettings.Add(new PromptExecutionSettings() { ServiceId = "service1" });
+        promptConfig.AddExecutionSettings(new PromptExecutionSettings() { ServiceId = "service1" });
         var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
         // Act
@@ -57,7 +57,7 @@ public class MultipleModelTests
 
         var promptConfig = new PromptTemplateConfig();
         promptConfig.Template = "template";
-        promptConfig.ExecutionSettings.Add(new PromptExecutionSettings() { ServiceId = "service3" });
+        promptConfig.AddExecutionSettings(new PromptExecutionSettings() { ServiceId = "service3" });
         var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
         // Act
@@ -94,7 +94,7 @@ public class MultipleModelTests
 
         foreach (var serviceId in serviceIds)
         {
-            promptConfig.ExecutionSettings.Add(new PromptExecutionSettings() { ServiceId = serviceId });
+            promptConfig.AddExecutionSettings(new PromptExecutionSettings() { ServiceId = serviceId });
         }
         var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
@@ -130,9 +130,8 @@ public class MultipleModelTests
         var json = @"{
   ""template"": ""template"",
   ""description"": ""Semantic function"",
-  ""execution_settings"": [
-    {
-      ""service_id"": ""service2"",
+  ""execution_settings"": {
+    ""service2"": {
       ""max_tokens"": 100,
       ""temperature"": 0.2,
       ""top_p"": 0.0,
@@ -142,8 +141,7 @@ public class MultipleModelTests
         ""\n""
       ]
     },
-    {
-      ""service_id"": ""service3"",
+    ""service3"": {
       ""max_tokens"": 100,
       ""temperature"": 0.4,
       ""top_p"": 0.0,
@@ -153,7 +151,7 @@ public class MultipleModelTests
         ""\n""
       ]
     }
-  ]
+  }
 }";
 
         var promptConfig = PromptTemplateConfig.FromJson(json);
@@ -163,8 +161,8 @@ public class MultipleModelTests
         await kernel.InvokeAsync(func);
 
         // Assert
-        mockTextGeneration1.Verify(a => a.GetTextContentsAsync("template", It.Is<PromptExecutionSettings>(settings => settings.ServiceId == "service1"), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Never());
-        mockTextGeneration2.Verify(a => a.GetTextContentsAsync("template", It.Is<PromptExecutionSettings>(settings => settings.ServiceId == "service2"), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
-        mockTextGeneration3.Verify(a => a.GetTextContentsAsync("template", It.Is<PromptExecutionSettings>(settings => settings.ServiceId == "service3"), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Never());
+        mockTextGeneration1.Verify(a => a.GetTextContentsAsync("template", It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Never());
+        mockTextGeneration2.Verify(a => a.GetTextContentsAsync("template", It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
+        mockTextGeneration3.Verify(a => a.GetTextContentsAsync("template", It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Never());
     }
 }

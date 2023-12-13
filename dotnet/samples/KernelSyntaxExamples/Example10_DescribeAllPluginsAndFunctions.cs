@@ -10,7 +10,6 @@ using Plugins;
 using RepoUtils;
 
 
-// ReSharper disable once InconsistentNaming
 public static class Example10_DescribeAllPluginsAndFunctions
 {
     /// <summary>
@@ -84,7 +83,6 @@ public static class Example10_DescribeAllPluginsAndFunctions
 }
 
 
-#pragma warning disable CS1587 // XML comment is not placed on a valid language element
 /** Sample output:
 
 *****************************************
@@ -182,4 +180,3 @@ Plugin: SummarizePlugin
         default: ''
 
 */
-#pragma warning restore CS1587 // XML comment is not placed on a valid language element

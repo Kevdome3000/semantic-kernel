@@ -105,7 +105,14 @@ public static class KernelExtensions
     {
         Verify.NotNull(kernel);
 
-        return KernelFunctionFactory.CreateFromPrompt(promptTemplate, executionSettings, functionName, description, templateFormat, promptTemplateFactory, kernel.LoggerFactory);
+        return KernelFunctionFactory.CreateFromPrompt(
+            promptTemplate,
+            executionSettings,
+            functionName,
+            description,
+            templateFormat,
+            promptTemplateFactory,
+            kernel.LoggerFactory);
     }
 
 
@@ -555,11 +562,11 @@ public static class KernelExtensions
         Verify.NotNull(kernel);
         Verify.NotNullOrWhiteSpace(promptTemplate);
 
-        KernelFunction function = KernelFunctionFactory.CreateFromPrompt(
+        KernelFunction function = KernelFunctionFromPrompt.Create(
             promptTemplate,
-            arguments?.ExecutionSettings,
             templateFormat: templateFormat,
-            promptTemplateFactory: promptTemplateFactory);
+            promptTemplateFactory: promptTemplateFactory,
+            loggerFactory: kernel.LoggerFactory);
 
         return kernel.InvokeAsync(function, arguments);
     }
@@ -597,11 +604,11 @@ public static class KernelExtensions
         Verify.NotNull(kernel);
         Verify.NotNullOrWhiteSpace(promptTemplate);
 
-        KernelFunction function = KernelFunctionFactory.CreateFromPrompt(
+        KernelFunction function = KernelFunctionFromPrompt.Create(
             promptTemplate,
-            arguments?.ExecutionSettings,
             templateFormat: templateFormat,
-            promptTemplateFactory: promptTemplateFactory);
+            promptTemplateFactory: promptTemplateFactory,
+            loggerFactory: kernel.LoggerFactory);
 
         return function.InvokeStreamingAsync<StreamingKernelContent>(kernel, arguments, cancellationToken);
     }

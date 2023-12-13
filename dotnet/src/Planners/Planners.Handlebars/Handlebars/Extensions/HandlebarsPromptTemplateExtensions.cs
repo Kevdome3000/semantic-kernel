@@ -1,0 +1,35 @@
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using static Microsoft.SemanticKernel.PromptTemplates.Handlebars.HandlebarsPromptTemplateOptions;
+
+namespace Microsoft.SemanticKernel.Planning.Handlebars;
+
+using HandlebarsDotNet;
+using PromptTemplates.Handlebars;
+
+
+/// <summary>
+/// Provides extension methods for rendering Handlebars templates in the context of a Semantic Kernel.
+/// </summary>
+internal sealed class HandlebarsPromptTemplateExtensions
+{
+    public static void RegisterCustomCreatePlanHelpers(
+        RegisterHelperCallback registerHelper,
+        HandlebarsPromptTemplateOptions options,
+        KernelArguments executionContext
+    )
+    {
+        registerHelper("getSchemaTypeName", (Context context, Arguments arguments) =>
+        {
+            KernelParameterMetadata parameter = (KernelParameterMetadata)arguments[0];
+            return parameter.GetSchemaTypeName();
+        });
+
+        registerHelper("getSchemaReturnTypeName", (Context context, Arguments arguments) =>
+        {
+            KernelReturnParameterMetadata parameter = (KernelReturnParameterMetadata)arguments[0];
+            var functionName = arguments[1].ToString();
+            return parameter.ToSKParameterMetadata(functionName).GetSchemaTypeName();
+        });
+    }
+}

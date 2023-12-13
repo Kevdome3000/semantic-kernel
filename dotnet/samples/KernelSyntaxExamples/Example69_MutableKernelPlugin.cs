@@ -7,10 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 
 
-/**
- * This example shows how to create a mutable <see cref="KernelPlugin"/>.
- */
-// ReSharper disable once InconsistentNaming
+// This example shows how to create a mutable <see cref="KernelPlugin"/>.
 public static class Example69_MutableKernelPlugin
 {
     /// <summary>

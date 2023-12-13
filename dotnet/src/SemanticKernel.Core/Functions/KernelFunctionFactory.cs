@@ -88,7 +88,7 @@ public static class KernelFunctionFactory
         string? templateFormat = null,
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null) =>
-        KernelFunctionFromPrompt.Create(promptTemplate, executionSettings, functionName, description, templateFormat, promptTemplateFactory, loggerFactory);
+        KernelFunctionFromPrompt.Create(promptTemplate, executionSettings?.ToDictionary(), functionName, description, templateFormat, promptTemplateFactory, loggerFactory);
 
 
     /// <summary>
@@ -119,4 +119,16 @@ public static class KernelFunctionFactory
     #endregion
 
 
+    /// <summary>
+    /// Converts the execution settings to a dictionary.
+    /// </summary>
+    private static Dictionary<string, PromptExecutionSettings>? ToDictionary(this PromptExecutionSettings settings)
+    {
+        return settings is null
+            ? null
+            : new Dictionary<string, PromptExecutionSettings>
+            {
+                { PromptExecutionSettings.DefaultServiceId, settings },
+            };
+    }
 }

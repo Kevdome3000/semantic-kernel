@@ -5,7 +5,6 @@ namespace Microsoft.SemanticKernel.TemplateEngine;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
-using Blocks;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
 

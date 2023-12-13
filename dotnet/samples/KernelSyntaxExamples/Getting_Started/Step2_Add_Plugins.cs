@@ -2,14 +2,11 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
-// ReSharper disable once InconsistentNaming
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 
-/**
-* This example shows how to load a <see cref="KernelPlugin"/> instances.
-*/
+// This example shows how to load a <see cref="KernelPlugin"/> instances.
 public static class Step2_Add_Plugins
 {
     /// <summary>

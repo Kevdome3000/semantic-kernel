@@ -10,10 +10,8 @@ using Microsoft.ML.Tokenizers;
 using Microsoft.SemanticKernel.Text;
 using Resources;
 using SharpToken;
-using static Microsoft.SemanticKernel.Text.TextChunker;
 
 
-// ReSharper disable once InconsistentNaming
 public static class Example55_TextChunker
 {
     private const string Text = @"The city of Venice, located in the northeastern part of Italy,
@@ -113,7 +111,7 @@ known as coral polyps.";
     /// Custom token counter implementation using SharpToken.
     /// Note: SharpToken is used for demonstration purposes only, it's possible to use any available or custom tokenization logic.
     /// </summary>
-    private static TokenCounter SharpTokenTokenCounter => (string input) =>
+    private static TextChunker.TokenCounter SharpTokenTokenCounter => (string input) =>
     {
         // Initialize encoding by encoding name
         var encoding = GptEncoding.GetEncoding("cl100k_base");
@@ -129,7 +127,7 @@ known as coral polyps.";
     /// <summary>
     /// MicrosoftML token counter implementation.
     /// </summary>
-    private static TokenCounter MicrosoftMLTokenCounter => (string input) =>
+    private static TextChunker.TokenCounter MicrosoftMLTokenCounter => (string input) =>
     {
         Tokenizer tokenizer = new(new Bpe());
         var tokens = tokenizer.Encode(input).Tokens;
@@ -140,7 +138,7 @@ known as coral polyps.";
     /// <summary>
     /// MicrosoftML token counter implementation using Roberta and local vocab
     /// </summary>
-    private static TokenCounter MicrosoftMLRobertaTokenCounter => (string input) =>
+    private static TextChunker.TokenCounter MicrosoftMLRobertaTokenCounter => (string input) =>
     {
         var encoder = EmbeddedResource.ReadStream("EnglishRoberta.encoder.json");
         var vocab = EmbeddedResource.ReadStream("EnglishRoberta.vocab.bpe");
@@ -163,12 +161,10 @@ known as coral polyps.";
     /// <summary>
     /// DeepDev token counter implementation.
     /// </summary>
-    private static TokenCounter DeepDevTokenCounter => (string input) =>
+    private static TextChunker.TokenCounter DeepDevTokenCounter => (string input) =>
     {
-#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
         // Initialize encoding by encoding name
         var tokenizer = TokenizerBuilder.CreateByEncoderNameAsync("cl100k_base").GetAwaiter().GetResult();
-#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
 
         // Initialize encoding by model name
         // var tokenizer = TokenizerBuilder.CreateByModelNameAsync("gpt-4").GetAwaiter().GetResult();
@@ -177,7 +173,7 @@ known as coral polyps.";
         return tokens.Count;
     };
 
-    private static readonly Func<TokenCounterType, TokenCounter> s_tokenCounterFactory = (TokenCounterType counterType) =>
+    private static readonly Func<TokenCounterType, TextChunker.TokenCounter> s_tokenCounterFactory = (TokenCounterType counterType) =>
         counterType switch
         {
             TokenCounterType.SharpToken => (string input) => SharpTokenTokenCounter(input),

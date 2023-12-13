@@ -7,10 +7,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.TextToImage;
 
 
-/**
- * The following example shows how to use Semantic Kernel with OpenAI Dall-E 2 to create images
- */
-// ReSharper disable once InconsistentNaming
+// The following example shows how to use Semantic Kernel with OpenAI Dall-E 2 to create images
 public static class Example18_DallE
 {
     public static async Task RunAsync()

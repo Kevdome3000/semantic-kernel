@@ -8,16 +8,15 @@ using Microsoft.SemanticKernel.Plugins.Core;
 using Plugins;
 
 
-// ReSharper disable once InconsistentNaming
 public static class Example66_FunctionCallingStepwisePlanner
 {
     public static async Task RunAsync()
     {
-        string[] questions =
+        string[] questions = new string[]
         {
             "What is the current hour number, plus 5?",
             "What is 387 minus 22? Email the solution to John and Mary.",
-            "Write a limerick, translate it to Spanish, and send it to Jane"
+            "Write a limerick, translate it to Spanish, and send it to Jane",
         };
 
         var kernel = InitializeKernel();
@@ -25,7 +24,7 @@ public static class Example66_FunctionCallingStepwisePlanner
         var config = new FunctionCallingStepwisePlannerConfig
         {
             MaxIterations = 15,
-            MaxTokens = 4000
+            MaxTokens = 4000,
         };
         var planner = new FunctionCallingStepwisePlanner(config);
 
@@ -35,7 +34,7 @@ public static class Example66_FunctionCallingStepwisePlanner
             Console.WriteLine($"Q: {question}\nA: {result.FinalAnswer}");
 
             // You can uncomment the line below to see the planner's process for completing the request.
-            // Console.WriteLine($"Chat history:\n{result.ChatHistory?.AsJson()}");
+            // Console.WriteLine($"Chat history:\n{System.Text.Json.JsonSerializer.Serialize(result.ChatHistory)}");
         }
     }
 

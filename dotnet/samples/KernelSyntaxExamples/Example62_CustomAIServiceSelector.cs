@@ -9,7 +9,6 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Services;
 
 
-// ReSharper disable once InconsistentNaming
 public static class Example62_CustomAIServiceSelector
 {
     /// <summary>
