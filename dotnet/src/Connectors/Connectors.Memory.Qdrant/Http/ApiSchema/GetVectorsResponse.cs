@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
-
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+
+namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes: Used for Json Deserialization
 internal sealed class GetVectorsResponse : QdrantResponse
@@ -22,7 +22,6 @@ internal sealed class GetVectorsResponse : QdrantResponse
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public ReadOnlyMemory<float>? Vector { get; set; }
 
-
         [JsonConstructor]
         public Record(string id, Dictionary<string, object>? payload, ReadOnlyMemory<float>? vector)
         {
@@ -31,7 +30,6 @@ internal sealed class GetVectorsResponse : QdrantResponse
             this.Vector = vector;
         }
     }
-
 
     /// <summary>
     /// Array of vectors and their associated metadata

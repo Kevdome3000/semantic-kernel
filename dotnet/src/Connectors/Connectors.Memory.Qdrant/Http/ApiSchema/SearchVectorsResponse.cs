@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
-
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using Text;
+using Microsoft.SemanticKernel.Text;
+
+namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes: Used for Json Deserialization
 internal sealed class SearchVectorsResponse : QdrantResponse
@@ -29,7 +29,6 @@ internal sealed class SearchVectorsResponse : QdrantResponse
         [JsonConverter(typeof(ReadOnlyMemoryConverter))]
         public ReadOnlyMemory<float> Vector { get; }
 
-
         [JsonConstructor]
         public ScoredPoint(string id, double? score, Dictionary<string, object> payload, ReadOnlyMemory<float> vector)
         {
@@ -40,17 +39,14 @@ internal sealed class SearchVectorsResponse : QdrantResponse
         }
     }
 
-
     [JsonPropertyName("result")]
     public IEnumerable<ScoredPoint> Results { get; set; }
-
 
     [JsonConstructor]
     public SearchVectorsResponse(IEnumerable<ScoredPoint> results)
     {
         this.Results = results;
     }
-
 
     #region private ================================================================================
 
@@ -60,7 +56,5 @@ internal sealed class SearchVectorsResponse : QdrantResponse
     }
 
     #endregion
-
-
 }
 #pragma warning restore CA1812 // Avoid uninstantiated internal classes

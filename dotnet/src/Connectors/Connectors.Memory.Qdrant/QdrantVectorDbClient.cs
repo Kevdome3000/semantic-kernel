@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,11 +9,11 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
-using Http.ApiSchema;
-using SemanticKernel.Http;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Http;
 
+namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 /// <summary>
 /// An implementation of a client for the Qdrant Vector Database. This class is used to
@@ -42,7 +40,6 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(QdrantVectorDbClient)) : NullLogger.Instance;
     }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="QdrantVectorDbClient"/> class.
     /// </summary>
@@ -67,12 +64,8 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(QdrantVectorDbClient)) : NullLogger.Instance;
     }
 
-
     /// <inheritdoc/>
-    public async IAsyncEnumerable<QdrantVectorRecord> GetVectorsByIdAsync(
-        string collectionName,
-        IEnumerable<string> pointIds,
-        bool withVectors = false,
+    public async IAsyncEnumerable<QdrantVectorRecord> GetVectorsByIdAsync(string collectionName, IEnumerable<string> pointIds, bool withVectors = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         this._logger.LogDebug("Searching vectors by point ID");
@@ -122,7 +115,6 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         }
 #pragma warning restore CS8604
     }
-
 
     /// <inheritdoc/>
     public async Task<QdrantVectorRecord?> GetVectorByPayloadIdAsync(string collectionName, string metadataId, bool withVector = false, CancellationToken cancellationToken = default)
@@ -177,7 +169,6 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         return record;
     }
 
-
     /// <inheritdoc/>
     public async Task DeleteVectorsByIdAsync(string collectionName, IEnumerable<string> pointIds, CancellationToken cancellationToken = default)
     {
@@ -203,7 +194,6 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         }
 
         var result = JsonSerializer.Deserialize<DeleteVectorsResponse>(responseContent);
-
         if (result?.Status == "ok")
         {
             this._logger.LogDebug("Vector being deleted");
@@ -213,7 +203,6 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
             this._logger.LogWarning("Vector delete failed");
         }
     }
-
 
     /// <inheritdoc/>
     public async Task DeleteVectorByPayloadIdAsync(string collectionName, string metadataId, CancellationToken cancellationToken = default)
@@ -246,7 +235,6 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         }
 
         var result = JsonSerializer.Deserialize<DeleteVectorsResponse>(responseContent);
-
         if (result?.Status == "ok")
         {
             this._logger.LogDebug("Vector being deleted");
@@ -256,7 +244,6 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
             this._logger.LogWarning("Vector delete failed");
         }
     }
-
 
     /// <inheritdoc/>
     public async Task UpsertVectorsAsync(string collectionName, IEnumerable<QdrantVectorRecord> vectorData, CancellationToken cancellationToken = default)
@@ -282,7 +269,6 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         }
 
         var result = JsonSerializer.Deserialize<UpsertVectorResponse>(responseContent);
-
         if (result?.Status == "ok")
         {
             this._logger.LogDebug("Vectors upserted");
@@ -292,7 +278,6 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
             this._logger.LogWarning("Vector upserts failed");
         }
     }
-
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<(QdrantVectorRecord, double)> FindNearestInCollectionAsync(
@@ -358,13 +343,11 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
 
         // Qdrant search results are currently sorted by id, alphabetically, sort list in place
         result.Sort((a, b) => b.Item2.CompareTo(a.Item2));
-
         foreach (var kv in result)
         {
             yield return kv;
         }
     }
-
 
     /// <inheritdoc/>
     public async Task CreateCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
@@ -397,7 +380,6 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         }
     }
 
-
     /// <inheritdoc/>
     public async Task DeleteCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
@@ -419,7 +401,6 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
             throw;
         }
     }
-
 
     /// <inheritdoc/>
     public async Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancellationToken = default)
@@ -445,7 +426,6 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
             throw;
         }
     }
-
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<string> ListCollectionsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -474,7 +454,6 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         }
     }
 
-
     #region private ================================================================================
 
     private readonly ILogger _logger;
@@ -482,18 +461,15 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
     private readonly int _vectorSize;
     private readonly Uri? _endpointOverride;
 
-
     private static Uri SanitizeEndpoint(string endpoint, int? port = null)
     {
         Verify.ValidateUrl(endpoint);
 
         UriBuilder builder = new(endpoint);
-
         if (port.HasValue) { builder.Port = port.Value; }
 
         return builder.Uri;
     }
-
 
     private async Task<(HttpResponseMessage response, string responseContent)> ExecuteHttpRequestAsync(
         HttpRequestMessage request,
@@ -513,6 +489,4 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
     }
 
     #endregion
-
-
 }

@@ -1,10 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
-
 using System.Net.Http;
 using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 internal sealed class GetCollectionsRequest
 {
@@ -14,18 +13,15 @@ internal sealed class GetCollectionsRequest
     [JsonIgnore]
     public string Collection { get; set; }
 
-
     public static GetCollectionsRequest Create(string collectionName)
     {
         return new GetCollectionsRequest(collectionName);
     }
 
-
     public HttpRequestMessage Build()
     {
         return HttpRequest.CreateGetRequest($"collections/{this.Collection}");
     }
-
 
     #region private ================================================================================
 
@@ -35,6 +31,4 @@ internal sealed class GetCollectionsRequest
     }
 
     #endregion
-
-
 }

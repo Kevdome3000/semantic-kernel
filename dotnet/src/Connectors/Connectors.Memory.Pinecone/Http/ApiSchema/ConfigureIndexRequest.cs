@@ -1,11 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
-
 using System.Net.Http;
 using System.Text.Json.Serialization;
-using Model;
 
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// This operation specifies the pod type and number of replicas for an index.
@@ -28,12 +26,10 @@ internal sealed class ConfigureIndexRequest
     [JsonPropertyName("replicas")]
     public int Replicas { get; set; }
 
-
     public static ConfigureIndexRequest Create(string indexName)
     {
         return new ConfigureIndexRequest(indexName);
     }
-
 
     public ConfigureIndexRequest WithPodType(PodType podType)
     {
@@ -41,24 +37,21 @@ internal sealed class ConfigureIndexRequest
         return this;
     }
 
-
     public ConfigureIndexRequest NumberOfReplicas(int replicas)
     {
         this.Replicas = replicas;
         return this;
     }
 
-
     public HttpRequestMessage Build()
     {
-        HttpRequestMessage request = HttpRequest.CreatePatchRequest(
+        HttpRequestMessage? request = HttpRequest.CreatePatchRequest(
             $"/databases/{this.IndexName}", this);
 
         request.Headers.Add("accept", "text/plain");
 
         return request;
     }
-
 
     #region private ================================================================================
 
@@ -72,6 +65,4 @@ internal sealed class ConfigureIndexRequest
     }
 
     #endregion
-
-
 }

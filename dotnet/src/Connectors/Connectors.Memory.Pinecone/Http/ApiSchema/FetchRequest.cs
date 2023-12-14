@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
-
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// FetchRequest
@@ -27,19 +26,16 @@ internal sealed class FetchRequest
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Namespace { get; set; }
 
-
     public static FetchRequest FetchVectors(IEnumerable<string> ids)
     {
         return new FetchRequest(ids);
     }
-
 
     public FetchRequest FromNamespace(string indexNamespace)
     {
         this.Namespace = indexNamespace;
         return this;
     }
-
 
     public HttpRequestMessage Build()
     {
@@ -60,7 +56,6 @@ internal sealed class FetchRequest
         return request;
     }
 
-
     #region private ================================================================================
 
     /// <summary>
@@ -72,6 +67,4 @@ internal sealed class FetchRequest
     }
 
     #endregion
-
-
 }

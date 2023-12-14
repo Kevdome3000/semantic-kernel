@@ -1,13 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
-
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// DeleteRequest
@@ -42,12 +41,10 @@ internal sealed class DeleteRequest
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public Dictionary<string, object>? Filter { get; set; }
 
-
     public static DeleteRequest GetDeleteAllVectorsRequest()
     {
         return new DeleteRequest(true);
     }
-
 
     public static DeleteRequest ClearNamespace(string indexNamespace)
     {
@@ -57,12 +54,10 @@ internal sealed class DeleteRequest
         };
     }
 
-
     public static DeleteRequest DeleteVectors(IEnumerable<string>? ids)
     {
         return new DeleteRequest(ids);
     }
-
 
     public DeleteRequest FilterBy(Dictionary<string, object>? filter)
     {
@@ -70,20 +65,17 @@ internal sealed class DeleteRequest
         return this;
     }
 
-
     public DeleteRequest FromNamespace(string? indexNamespace)
     {
         this.Namespace = indexNamespace;
         return this;
     }
 
-
     public DeleteRequest Clear(bool deleteAll)
     {
         this.DeleteAll = deleteAll;
         return this;
     }
-
 
     public HttpRequestMessage Build()
     {
@@ -92,7 +84,7 @@ internal sealed class DeleteRequest
             this.Filter = PineconeUtils.ConvertFilterToPineconeFilter(this.Filter);
         }
 
-        HttpRequestMessage request = HttpRequest.CreatePostRequest(
+        HttpRequestMessage? request = HttpRequest.CreatePostRequest(
             "/vectors/delete",
             this);
 
@@ -100,7 +92,6 @@ internal sealed class DeleteRequest
 
         return request;
     }
-
 
     /// <inheritdoc />
     public override string ToString()
@@ -139,14 +130,12 @@ internal sealed class DeleteRequest
         return sb.ToString();
     }
 
-
     #region private ================================================================================
 
     private DeleteRequest(IEnumerable<string>? ids)
     {
         this.Ids = ids ?? new List<string>();
     }
-
 
     private DeleteRequest(bool clear)
     {
@@ -155,6 +144,4 @@ internal sealed class DeleteRequest
     }
 
     #endregion
-
-
 }

@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Chroma.Http.ApiSchema.Internal;
-
 using System;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel.Connectors.Chroma;
 
 internal sealed class QueryEmbeddingsRequest
 {
@@ -21,18 +20,15 @@ internal sealed class QueryEmbeddingsRequest
     [JsonPropertyName("include")]
     public string[]? Include { get; set; }
 
-
     public static QueryEmbeddingsRequest Create(string collectionId, ReadOnlyMemory<float>[] queryEmbeddings, int nResults, string[]? include = null)
     {
         return new QueryEmbeddingsRequest(collectionId, queryEmbeddings, nResults, include);
     }
 
-
     public HttpRequestMessage Build()
     {
         return HttpRequest.CreatePostRequest($"collections/{this.CollectionId}/query", this);
     }
-
 
     #region private ================================================================================
 
@@ -45,6 +41,4 @@ internal sealed class QueryEmbeddingsRequest
     }
 
     #endregion
-
-
 }

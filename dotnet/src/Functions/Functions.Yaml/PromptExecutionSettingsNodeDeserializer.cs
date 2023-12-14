@@ -29,10 +29,6 @@ internal sealed class PromptExecutionSettingsNodeDeserializer : INodeDeserialize
         {
             switch (kv.Key)
             {
-                case "service_id":
-                    modelSettings.ServiceId = (string)kv.Value;
-                    break;
-
                 case "model_id":
                     modelSettings.ModelId = (string)kv.Value;
                     break;

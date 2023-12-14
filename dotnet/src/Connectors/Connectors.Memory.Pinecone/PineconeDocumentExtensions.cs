@@ -1,13 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.Json;
-using SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Memory;
 
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// Extensions for <see cref="PineconeDocument"/> class.
@@ -54,7 +53,6 @@ public static class PineconeDocumentExtensions
             .WithMetadata(metadata);
     }
 
-
     /// <summary>
     /// Maps <see cref="PineconeDocument"/> instance to <see cref="MemoryRecord"/>.
     /// </summary>
@@ -62,7 +60,6 @@ public static class PineconeDocumentExtensions
     /// <returns>Instance of <see cref="MemoryRecord"/>.</returns>
     public static MemoryRecord ToMemoryRecord(this PineconeDocument pineconeDocument) =>
         ToMemoryRecord(pineconeDocument, transferVectorOwnership: false);
-
 
     /// <summary>
     /// Maps <see cref="PineconeDocument"/> instance to <see cref="MemoryRecord"/>.

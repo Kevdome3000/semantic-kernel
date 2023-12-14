@@ -1,19 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
-using Model;
-using SemanticKernel.Http;
-using SemanticKernel.Memory;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.Memory;
 
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> for Pinecone Vector database.
@@ -40,7 +38,6 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(PineconeMemoryStore)) : NullLogger.Instance;
     }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="PineconeMemoryStore"/> class.
     /// </summary>
@@ -56,7 +53,6 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(PineconeMemoryStore)) : NullLogger.Instance;
     }
 
-
     /// <inheritdoc/>
     /// <param name="collectionName"> in the case of Pinecone, collectionName is synonymous with indexName </param>
     /// <param name="cancellationToken"></param>
@@ -69,11 +65,10 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         if (!await this.DoesCollectionExistAsync(collectionName, cancellationToken).ConfigureAwait(false))
         {
             throw new KernelException("Index creation is not supported within memory store. " +
-                                      $"It should be created manually or using {nameof(IPineconeClient.CreateIndexAsync)}. " +
-                                      $"Ensure index state is {IndexState.Ready}.");
+                $"It should be created manually or using {nameof(IPineconeClient.CreateIndexAsync)}. " +
+                $"Ensure index state is {IndexState.Ready}.");
         }
     }
-
 
     /// <inheritdoc />
     /// <returns> a list of index names </returns>
@@ -85,7 +80,6 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         }
     }
 
-
     /// <inheritdoc/>
     /// <param name="collectionName"> in the case of Pinecone, collectionName is synonymous with indexName </param>
     /// <param name="cancellationToken"></param>
@@ -93,7 +87,6 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     {
         return await this._pineconeClient.DoesIndexExistAsync(collectionName, cancellationToken).ConfigureAwait(false);
     }
-
 
     /// <inheritdoc/>
     /// <param name="collectionName"> in the case of Pinecone, collectionName is synonymous with indexName </param>
@@ -106,7 +99,6 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         }
     }
 
-
     /// <inheritdoc/>
     /// <param name="collectionName"> in the case of Pinecone, collectionName is synonymous with indexName </param>
     /// <param name="record"></param>
@@ -115,7 +107,6 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     {
         return await this.UpsertToNamespaceAsync(collectionName, string.Empty, record, cancellationToken).ConfigureAwait(false);
     }
-
 
     /// <inheritdoc />
     public async Task<string> UpsertToNamespaceAsync(string indexName, string indexNamespace, MemoryRecord record, CancellationToken cancellationToken = default)
@@ -143,7 +134,6 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         return vectorData.Id;
     }
 
-
     /// <inheritdoc/>
     /// <param name="collectionName"> in the case of Pinecone, collectionName is synonymous with indexName </param>
     /// <param name="records"></param>
@@ -158,7 +148,6 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             yield return id;
         }
     }
-
 
     /// <inheritdoc />
     public async IAsyncEnumerable<string> UpsertBatchToNamespaceAsync(
@@ -192,7 +181,6 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 
                 case OperationType.Skip:
                     yield return document.Id;
-
                     break;
             }
         }
@@ -230,7 +218,6 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         }
     }
 
-
     /// <inheritdoc/>
     /// <param name="collectionName"> in the case of Pinecone, collectionName is synonymous with indexName </param>
     /// <param name="key"></param>
@@ -244,7 +231,6 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     {
         return await this.GetFromNamespaceAsync(collectionName, string.Empty, key, withEmbedding, cancellationToken).ConfigureAwait(false);
     }
-
 
     /// <inheritdoc />
     public async Task<MemoryRecord?> GetFromNamespaceAsync(
@@ -275,7 +261,6 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         return null;
     }
 
-
     /// <inheritdoc/>
     /// <param name="collectionName"> in the case of Pinecone, collectionName is synonymous with indexName </param>
     /// <param name="keys"></param>
@@ -292,7 +277,6 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             yield return record;
         }
     }
-
 
     /// <inheritdoc />
     public async IAsyncEnumerable<MemoryRecord> GetBatchFromNamespaceAsync(
@@ -313,7 +297,6 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         }
     }
 
-
     /// <summary>
     /// Get a MemoryRecord from the Pinecone Vector database by pointId.
     /// </summary>
@@ -325,8 +308,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns></returns>
     /// <exception cref="KernelException"></exception>
-    public async IAsyncEnumerable<MemoryRecord?> GetWithDocumentIdAsync(
-        string indexName,
+    public async IAsyncEnumerable<MemoryRecord?> GetWithDocumentIdAsync(string indexName,
         string documentId,
         int limit = 3,
         string indexNamespace = "",
@@ -339,7 +321,6 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         }
     }
 
-
     /// <summary>
     /// Get a MemoryRecord from the Pinecone Vector database by a group of documentIds.
     /// </summary>
@@ -350,8 +331,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <param name="withEmbeddings">If true, the embeddings will be returned in the memory records.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns></returns>
-    public async IAsyncEnumerable<MemoryRecord?> GetWithDocumentIdBatchAsync(
-        string indexName,
+    public async IAsyncEnumerable<MemoryRecord?> GetWithDocumentIdBatchAsync(string indexName,
         IEnumerable<string> documentIds,
         int limit = 3,
         string indexNamespace = "",
@@ -369,10 +349,8 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         }
     }
 
-
     /// <inheritdoc />
-    public async IAsyncEnumerable<MemoryRecord?> GetBatchWithFilterAsync(
-        string indexName,
+    public async IAsyncEnumerable<MemoryRecord?> GetBatchWithFilterAsync(string indexName,
         Dictionary<string, object> filter,
         int limit = 10,
         string indexNamespace = "",
@@ -406,7 +384,6 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         }
     }
 
-
     /// <inheritdoc />
     /// <param name="collectionName"> in the case of Pinecone, collectionName is synonymous with indexName </param>
     /// <param name="key"></param>
@@ -415,7 +392,6 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     {
         await this.RemoveFromNamespaceAsync(collectionName, string.Empty, key, cancellationToken).ConfigureAwait(false);
     }
-
 
     /// <inheritdoc />
     public async Task RemoveFromNamespaceAsync(string indexName, string indexNamespace, string key, CancellationToken cancellationToken = default)
@@ -436,7 +412,6 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         }
     }
 
-
     /// <inheritdoc />
     /// <param name="collectionName"> in the case of Pinecone, collectionName is synonymous with indexName </param>
     /// <param name="keys"></param>
@@ -446,13 +421,11 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         await this.RemoveBatchFromNamespaceAsync(collectionName, string.Empty, keys, cancellationToken).ConfigureAwait(false);
     }
 
-
     /// <inheritdoc />
     public async Task RemoveBatchFromNamespaceAsync(string indexName, string indexNamespace, IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
         await Task.WhenAll(keys.Select(async k => await this.RemoveFromNamespaceAsync(indexName, indexNamespace, k, cancellationToken).ConfigureAwait(false))).ConfigureAwait(false);
     }
-
 
     /// <inheritdoc />
     public async Task RemoveWithFilterAsync(
@@ -476,7 +449,6 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             throw;
         }
     }
-
 
     /// <summary>
     /// Remove a MemoryRecord from the Pinecone Vector database by pointId.
@@ -502,7 +474,6 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             throw;
         }
     }
-
 
     /// <summary>
     /// Remove a MemoryRecord from the Pinecone Vector database by a group of pointIds.
@@ -534,7 +505,6 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         }
     }
 
-
     /// <inheritdoc/>
     /// <param name="collectionName"> in the case of Pinecone, collectionName is synonymous with indexName </param>
     /// <param name="embedding"> The embedding to search for </param>
@@ -559,7 +529,6 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             withEmbeddings,
             cancellationToken);
     }
-
 
     /// <inheritdoc />
     public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesFromNamespaceAsync(
@@ -588,7 +557,6 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         }
     }
 
-
     /// <inheritdoc/>
     /// <param name="collectionName"> in the case of Pinecone, collectionName is synonymous with indexName </param>
     /// <param name="embedding"> The embedding to search for </param>
@@ -610,7 +578,6 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             withEmbedding,
             cancellationToken).ConfigureAwait(false);
     }
-
 
     /// <inheritdoc />
     public async Task<(MemoryRecord, double)?> GetNearestMatchFromNamespaceAsync(
@@ -634,7 +601,6 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 
         return (record.Item1, record.Item2);
     }
-
 
     /// <inheritdoc />
     public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesWithFilterAsync(
@@ -664,13 +630,11 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         }
     }
 
-
     /// <inheritdoc />
     public async Task ClearNamespaceAsync(string indexName, string indexNamespace, CancellationToken cancellationToken = default)
     {
         await this._pineconeClient.DeleteAsync(indexName, default, indexNamespace, null, true, cancellationToken).ConfigureAwait(false);
     }
-
 
     /// <inheritdoc />
     public async IAsyncEnumerable<string?> ListNamespacesAsync(string indexName, [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -688,12 +652,10 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         }
     }
 
-
     #region private ================================================================================
 
     private readonly IPineconeClient _pineconeClient;
     private readonly ILogger _logger;
-
 
     private async Task<(PineconeDocument, OperationType)> EvaluateAndUpdateMemoryRecordAsync(
         string indexName,
@@ -728,6 +690,4 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     }
 
     #endregion
-
-
 }

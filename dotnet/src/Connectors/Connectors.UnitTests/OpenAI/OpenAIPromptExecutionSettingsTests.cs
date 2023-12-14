@@ -30,7 +30,6 @@ public class OpenAIPromptExecutionSettingsTests
         Assert.Equal(1, executionSettings.ResultsPerPrompt);
         Assert.Null(executionSettings.StopSequences);
         Assert.Null(executionSettings.TokenSelectionBiases);
-        Assert.Null(executionSettings.ServiceId);
         Assert.Equal(128, executionSettings.MaxTokens);
     }
 
@@ -49,7 +48,6 @@ public class OpenAIPromptExecutionSettingsTests
             StopSequences = new string[] { "foo", "bar" },
             ChatSystemPrompt = "chat system prompt",
             MaxTokens = 128,
-            ServiceId = "service",
             TokenSelectionBiases = new Dictionary<int, int>() { { 1, 2 }, { 3, 4 } },
         };
 
@@ -68,7 +66,10 @@ public class OpenAIPromptExecutionSettingsTests
         // Arrange
         PromptExecutionSettings actualSettings = new()
         {
-            ServiceId = "service",
+            ExtensionData = new() {
+                { "max_tokens", 1000 },
+                { "temperature", 0 }
+            }
         };
 
         // Act
@@ -76,7 +77,8 @@ public class OpenAIPromptExecutionSettingsTests
 
         // Assert
         Assert.NotNull(executionSettings);
-        Assert.Equal(actualSettings.ServiceId, executionSettings.ServiceId);
+        Assert.Equal(1000, executionSettings.MaxTokens);
+        Assert.Equal(0, executionSettings.Temperature);
     }
 
 
@@ -86,7 +88,6 @@ public class OpenAIPromptExecutionSettingsTests
         // Arrange
         PromptExecutionSettings actualSettings = new()
         {
-            ServiceId = "service",
             ExtensionData = new Dictionary<string, object>()
             {
                 { "temperature", 0.7 },
@@ -117,7 +118,6 @@ public class OpenAIPromptExecutionSettingsTests
         // Arrange
         PromptExecutionSettings actualSettings = new()
         {
-            ServiceId = "service",
             ExtensionData = new Dictionary<string, object>()
             {
                 { "temperature", "0.7" },

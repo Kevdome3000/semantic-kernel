@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
-
 using System.Net.Http;
 
+namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 internal sealed class DeleteCollectionRequest
 {
@@ -12,11 +11,9 @@ internal sealed class DeleteCollectionRequest
         return new DeleteCollectionRequest(collectionName);
     }
 
-
     public void Validate()
     {
     }
-
 
     public HttpRequestMessage Build()
     {
@@ -24,11 +21,9 @@ internal sealed class DeleteCollectionRequest
         return HttpRequest.CreateDeleteRequest($"collections/{this._collectionName}?timeout=30");
     }
 
-
     #region private ================================================================================
 
     private readonly string _collectionName;
-
 
     private DeleteCollectionRequest(string collectionName)
     {
@@ -36,6 +31,4 @@ internal sealed class DeleteCollectionRequest
     }
 
     #endregion
-
-
 }

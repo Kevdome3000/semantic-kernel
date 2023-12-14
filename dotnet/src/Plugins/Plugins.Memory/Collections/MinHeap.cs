@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Plugins.Memory.Collections;
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
+namespace Microsoft.SemanticKernel.Memory;
 
 /// <summary>
 /// Implements the classic 'heap' data structure. By default, the item with the lowest value is at the top of the heap.
@@ -20,7 +19,6 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 
     private T[] _items;
     private int _count;
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MinHeap{T}"/> class.
@@ -41,7 +39,6 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
         this._items[0] = minValue;
     }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="MinHeap{T}"/> class.
     /// </summary>
@@ -52,7 +49,6 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     {
         this.Add(items);
     }
-
 
     /// <summary>
     /// Gets the current number of items in the collection.
@@ -91,7 +87,6 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     /// </summary>
     public bool IsEmpty => (this._count == 0);
 
-
     /// <summary>
     /// Sets collection item count to zero.
     /// </summary>
@@ -99,7 +94,6 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     {
         this._count = 0;
     }
-
 
     /// <summary>
     /// Sets collection item count to zero and removes all items in collection.
@@ -109,7 +103,6 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
         Array.Clear(this._items, 1, this._count);
         this._count = 0;
     }
-
 
     /// <summary>
     /// Removes all items in collection and returns them.
@@ -121,7 +114,6 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
         this._count = 0;
         return buf;
     }
-
 
     /// <summary>
     /// Adds new item to collection.
@@ -139,7 +131,6 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
         this.UpHeap(this._count);
     }
 
-
     /// <summary>
     /// Adds new items to collection.
     /// </summary>
@@ -152,7 +143,6 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
         }
     }
 
-
     /// <summary>
     /// Adds new items starting from specified index.
     /// </summary>
@@ -163,14 +153,12 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
         Verify.NotNull(items);
 
         int newItemCount = items.Count;
-
         if (startAt >= newItemCount)
         {
             Verify.ThrowArgumentOutOfRangeException(nameof(startAt), startAt, $"{nameof(startAt)} value must be less than {nameof(items)}.{nameof(items.Count)}.");
         }
 
         this.EnsureCapacity(this._count + (newItemCount - startAt));
-
         for (int i = startAt; i < newItemCount; ++i)
         {
             //
@@ -182,7 +170,6 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
             this.UpHeap(this._count);
         }
     }
-
 
     /// <summary>
     /// Removes first item in collection and returns it.
@@ -200,7 +187,6 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
         return item;
     }
 
-
     /// <summary>
     /// Removes all items in collection and returns them.
     /// </summary>
@@ -211,7 +197,6 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
             yield return this.RemoveTop();
         }
     }
-
 
     /// <summary>
     /// Resizes collection to specified capacity.
@@ -226,13 +211,11 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 
         // 0th item is always a sentinel
         capacity++;
-
         if (capacity > this._items.Length)
         {
             Array.Resize(ref this._items, capacity);
         }
     }
-
 
     /// <summary>
     /// Doubles collection capacity.
@@ -244,7 +227,6 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
             Array.Resize(ref this._items, (this._count * 2) + 1);
         }
     }
-
 
     private void UpHeap(int startAt)
     {
@@ -264,7 +246,6 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
         items[i] = item;
     }
 
-
     private void DownHeap(int startAt)
     {
         int i = startAt;
@@ -276,7 +257,6 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
         while (i <= maxParent)
         {
             int child = i + i;
-
             //
             // Exchange the item with the smaller of its two children - if one is smaller, i.e.
             //
@@ -301,7 +281,6 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
         items[i] = item;
     }
 
-
     /// <summary>
     /// Returns an enumerator that iterates through the collection.
     /// </summary>
@@ -314,12 +293,10 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
         }
     }
 
-
     System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
     {
         return this.GetEnumerator();
     }
-
 
     /// <summary>
     /// Heap Sort in-place.
@@ -344,7 +321,6 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
         this._count = count;
     }
 
-
     /// <summary>
     /// Restores heap order
     /// </summary>
@@ -353,7 +329,6 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
         this.Clear();
         this.Add(this._items, 1);
     }
-
 
     internal void Sort(IComparer<T> comparer)
     {

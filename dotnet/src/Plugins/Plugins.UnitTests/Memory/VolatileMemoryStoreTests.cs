@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Plugins.UnitTests.Memory;
-
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -9,23 +7,20 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Plugins.Memory;
 using Xunit;
 
+namespace SemanticKernel.UnitTests.Memory;
 
 public class VolatileMemoryStoreTests
 {
     private readonly VolatileMemoryStore _db;
-
 
     public VolatileMemoryStoreTests()
     {
         this._db = new VolatileMemoryStore();
     }
 
-
     private int _collectionNum = 0;
-
 
     private IEnumerable<MemoryRecord> CreateBatchRecords(int numRecords)
     {
@@ -33,7 +28,6 @@ public class VolatileMemoryStoreTests
         Assert.True(numRecords > 0, "Number of records must be greater than 0");
 
         IEnumerable<MemoryRecord> records = new List<MemoryRecord>(numRecords);
-
         for (int i = 0; i < numRecords / 2; i++)
         {
             var testRecord = MemoryRecord.LocalRecord(
@@ -57,14 +51,12 @@ public class VolatileMemoryStoreTests
         return records;
     }
 
-
     [Fact]
     public void InitializeDbConnectionSucceeds()
     {
         // Assert
         Assert.NotNull(this._db);
     }
-
 
     [Fact]
     public async Task ItCanCreateAndGetCollectionAsync()
@@ -82,7 +74,6 @@ public class VolatileMemoryStoreTests
         Assert.True(await collections.ContainsAsync(collection));
     }
 
-
     [Fact]
     public async Task ItHandlesExceptionsWhenCreatingCollectionAsync()
     {
@@ -92,7 +83,6 @@ public class VolatileMemoryStoreTests
         // Assert
         await Assert.ThrowsAsync<ArgumentNullException>(async () => await this._db.CreateCollectionAsync(collection!));
     }
-
 
     [Fact]
     public async Task ItCannotInsertIntoNonExistentCollectionAsync()
@@ -111,7 +101,6 @@ public class VolatileMemoryStoreTests
         // Assert
         await Assert.ThrowsAsync<KernelException>(async () => await this._db.UpsertAsync(collection, testRecord));
     }
-
 
     [Fact]
     public async Task GetAsyncReturnsEmptyEmbeddingUnlessSpecifiedAsync()
@@ -142,7 +131,6 @@ public class VolatileMemoryStoreTests
         Assert.Equal(testRecord, actualWithEmbedding);
     }
 
-
     [Fact]
     public async Task ItCanUpsertAndRetrieveARecordWithNoTimestampAsync()
     {
@@ -167,7 +155,6 @@ public class VolatileMemoryStoreTests
         Assert.Equal(testRecord, actual);
     }
 
-
     [Fact]
     public async Task ItCanUpsertAndRetrieveARecordWithTimestampAsync()
     {
@@ -191,7 +178,6 @@ public class VolatileMemoryStoreTests
         Assert.NotNull(actual);
         Assert.Equal(testRecord, actual);
     }
-
 
     [Fact]
     public async Task UpsertReplacesExistingRecordWithSameIdAsync()
@@ -224,7 +210,6 @@ public class VolatileMemoryStoreTests
         Assert.Equal(testRecord2, actual);
     }
 
-
     [Fact]
     public async Task ExistingRecordCanBeRemovedAsync()
     {
@@ -247,7 +232,6 @@ public class VolatileMemoryStoreTests
         Assert.Null(actual);
     }
 
-
     [Fact]
     public async Task RemovingNonExistingRecordDoesNothingAsync()
     {
@@ -262,7 +246,6 @@ public class VolatileMemoryStoreTests
         // Assert
         Assert.Null(actual);
     }
-
 
     [Fact]
     public async Task ItCanListAllDatabaseCollectionsAsync()
@@ -290,7 +273,6 @@ public class VolatileMemoryStoreTests
             $"Collections does not contain the newly-created collection {testCollections[2]}");
     }
 #pragma warning restore CA1851 // Possible multiple enumerations of 'IEnumerable' collection
-
 
     [Fact]
     public async Task GetNearestMatchesReturnsAllResultsWithNoMinScoreAsync()
@@ -347,14 +329,12 @@ public class VolatileMemoryStoreTests
 
         // Assert
         Assert.Equal(topN, topNResults.Length);
-
         for (int j = 0; j < topN - 1; j++)
         {
             int compare = topNResults[j].Item2.CompareTo(topNResults[j + 1].Item2);
             Assert.True(compare >= 0);
         }
     }
-
 
     [Fact]
     public async Task GetNearestMatchAsyncReturnsEmptyEmbeddingUnlessSpecifiedAsync()
@@ -416,7 +396,6 @@ public class VolatileMemoryStoreTests
         Assert.False(topNResultWithEmbedding.Value.Item1.Embedding.IsEmpty);
     }
 
-
     [Fact]
     public async Task GetNearestMatchAsyncReturnsExpectedAsync()
     {
@@ -475,7 +454,6 @@ public class VolatileMemoryStoreTests
         Assert.True(topNResult.Value.Item2 >= threshold);
     }
 
-
     [Fact]
     public async Task GetNearestMatchesDifferentiatesIdenticalVectorsByKeyAsync()
     {
@@ -511,7 +489,6 @@ public class VolatileMemoryStoreTests
         }
     }
 
-
     [Fact]
     public async Task ItCanBatchUpsertRecordsAsync()
     {
@@ -531,7 +508,6 @@ public class VolatileMemoryStoreTests
         Assert.Equal(numRecords, keys.ToEnumerable().Count());
         Assert.Equal(numRecords, resultRecords.ToEnumerable().Count());
     }
-
 
     [Fact]
     public async Task ItCanBatchGetRecordsAsync()
@@ -553,7 +529,6 @@ public class VolatileMemoryStoreTests
         Assert.Equal(numRecords, results.ToEnumerable().Count());
     }
 
-
     [Fact]
     public async Task ItCanBatchRemoveRecordsAsync()
     {
@@ -565,7 +540,6 @@ public class VolatileMemoryStoreTests
         IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
 
         List<string> keys = new();
-
         await foreach (var key in this._db.UpsertBatchAsync(collection, records))
         {
             keys.Add(key);
@@ -580,7 +554,6 @@ public class VolatileMemoryStoreTests
             Assert.Null(result);
         }
     }
-
 
     [Fact]
     public async Task CollectionsCanBeDeletedAsync()
@@ -604,7 +577,6 @@ public class VolatileMemoryStoreTests
         this._collectionNum = 0;
     }
 #pragma warning restore CA1851 // Possible multiple enumerations of 'IEnumerable' collection
-
 
     [Fact]
     public async Task ItThrowsWhenDeletingNonExistentCollectionAsync()

@@ -31,7 +31,7 @@ public class MultipleModelTests
 
         var promptConfig = new PromptTemplateConfig();
         promptConfig.Template = "template";
-        promptConfig.AddExecutionSettings(new PromptExecutionSettings() { ServiceId = "service1" });
+        promptConfig.AddExecutionSettings(new PromptExecutionSettings(), "service1");
         var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
         // Act
@@ -57,7 +57,7 @@ public class MultipleModelTests
 
         var promptConfig = new PromptTemplateConfig();
         promptConfig.Template = "template";
-        promptConfig.AddExecutionSettings(new PromptExecutionSettings() { ServiceId = "service3" });
+        promptConfig.AddExecutionSettings(new PromptExecutionSettings(), "service3");
         var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
         // Act
@@ -94,7 +94,7 @@ public class MultipleModelTests
 
         foreach (var serviceId in serviceIds)
         {
-            promptConfig.AddExecutionSettings(new PromptExecutionSettings() { ServiceId = serviceId });
+            promptConfig.AddExecutionSettings(new PromptExecutionSettings(), serviceId);
         }
         var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
@@ -102,9 +102,9 @@ public class MultipleModelTests
         await kernel.InvokeAsync(func);
 
         // Assert
-        mockTextGeneration1.Verify(a => a.GetTextContentsAsync("template", It.Is<PromptExecutionSettings>(settings => settings.ServiceId == "service1"), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Exactly(callCount[0]));
-        mockTextGeneration2.Verify(a => a.GetTextContentsAsync("template", It.Is<PromptExecutionSettings>(settings => settings.ServiceId == "service2"), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Exactly(callCount[1]));
-        mockTextGeneration3.Verify(a => a.GetTextContentsAsync("template", It.Is<PromptExecutionSettings>(settings => settings.ServiceId == "service3"), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Exactly(callCount[2]));
+        mockTextGeneration1.Verify(a => a.GetTextContentsAsync("template", It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Exactly(callCount[0]));
+        mockTextGeneration2.Verify(a => a.GetTextContentsAsync("template", It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Exactly(callCount[1]));
+        mockTextGeneration3.Verify(a => a.GetTextContentsAsync("template", It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Exactly(callCount[2]));
     }
 
 

@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
-
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Memory;
 
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// Configuration for the behavior of Pinecone's internal metadata index. By default, all metadata is indexed; when metadata_config is present, only specified metadata fields are indexed.
@@ -20,7 +19,6 @@ public class MetadataIndexConfig
     {
         this.Indexed = indexed;
     }
-
 
     /// <summary>
     /// The list of metadata fields to index. If not specified, all metadata fields are indexed.

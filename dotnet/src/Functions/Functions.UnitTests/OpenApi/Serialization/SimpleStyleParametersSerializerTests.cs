@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Functions.UnitTests.OpenApi.Builders.Serialization;
-
 using System;
 using System.Text.Json.Nodes;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Xunit;
 
+namespace SemanticKernel.Functions.UnitTests.OpenApi.Serialization;
 
 public class SimpleStyleParametersSerializerTests
 {
@@ -25,7 +24,6 @@ public class SimpleStyleParametersSerializerTests
         Assert.Equal("1,2,3", result);
     }
 
-
     [Fact]
     public void ItShouldCreateParameterWithCommaSeparatedValuePerArrayStringItem()
     {
@@ -41,7 +39,6 @@ public class SimpleStyleParametersSerializerTests
         Assert.Equal("1,2,3", result);
     }
 
-
     [Fact]
     public void ItShouldCreateParameterForPrimitiveValue()
     {
@@ -56,7 +53,6 @@ public class SimpleStyleParametersSerializerTests
 
         Assert.Equal("28", result);
     }
-
 
     [Theory]
     [InlineData(":", ":")]
@@ -76,7 +72,6 @@ public class SimpleStyleParametersSerializerTests
 
         Assert.EndsWith(expectedSymbol, result, StringComparison.Ordinal);
     }
-
 
     [Theory]
     [InlineData(":", ":")]

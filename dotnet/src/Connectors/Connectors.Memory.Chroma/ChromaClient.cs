@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Chroma;
-
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -10,12 +8,11 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
-using Http.ApiSchema;
-using Http.ApiSchema.Internal;
-using SemanticKernel.Http;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Http;
 
+namespace Microsoft.SemanticKernel.Connectors.Chroma;
 
 /// <summary>
 /// An implementation of a client for the Chroma Vector DB. This class is used to
@@ -39,7 +36,6 @@ public class ChromaClient : IChromaClient
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(ChromaClient)) : NullLogger.Instance;
     }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="ChromaClient"/> class.
     /// </summary>
@@ -59,7 +55,6 @@ public class ChromaClient : IChromaClient
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(ChromaClient)) : NullLogger.Instance;
     }
 
-
     /// <inheritdoc />
     public async Task CreateCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
@@ -69,7 +64,6 @@ public class ChromaClient : IChromaClient
 
         await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
     }
-
 
     /// <inheritdoc />
     public async Task<ChromaCollectionModel?> GetCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
@@ -85,7 +79,6 @@ public class ChromaClient : IChromaClient
         return collection;
     }
 
-
     /// <inheritdoc />
     public async Task DeleteCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
@@ -95,7 +88,6 @@ public class ChromaClient : IChromaClient
 
         await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
     }
-
 
     /// <inheritdoc />
     public async IAsyncEnumerable<string> ListCollectionsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -114,7 +106,6 @@ public class ChromaClient : IChromaClient
         }
     }
 
-
     /// <inheritdoc />
     public async Task UpsertEmbeddingsAsync(string collectionId, string[] ids, ReadOnlyMemory<float>[] embeddings, object[]? metadatas = null, CancellationToken cancellationToken = default)
     {
@@ -124,7 +115,6 @@ public class ChromaClient : IChromaClient
 
         await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
     }
-
 
     /// <inheritdoc />
     public async Task<ChromaEmbeddingsModel> GetEmbeddingsAsync(string collectionId, string[] ids, string[]? include = null, CancellationToken cancellationToken = default)
@@ -140,7 +130,6 @@ public class ChromaClient : IChromaClient
         return embeddings ?? new ChromaEmbeddingsModel();
     }
 
-
     /// <inheritdoc />
     public async Task DeleteEmbeddingsAsync(string collectionId, string[] ids, CancellationToken cancellationToken = default)
     {
@@ -150,7 +139,6 @@ public class ChromaClient : IChromaClient
 
         await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
     }
-
 
     /// <inheritdoc />
     public async Task<ChromaQueryResultModel> QueryEmbeddingsAsync(string collectionId, ReadOnlyMemory<float>[] queryEmbeddings, int nResults, string[]? include = null, CancellationToken cancellationToken = default)
@@ -166,7 +154,6 @@ public class ChromaClient : IChromaClient
         return queryResult ?? new ChromaQueryResultModel();
     }
 
-
     #region private ================================================================================
 
     private const string ApiRoute = "api/v1/";
@@ -174,7 +161,6 @@ public class ChromaClient : IChromaClient
     private readonly ILogger _logger;
     private readonly HttpClient _httpClient;
     private readonly string? _endpoint = null;
-
 
     private async Task<(HttpResponseMessage response, string responseContent)> ExecuteHttpRequestAsync(
         HttpRequestMessage request,
@@ -206,7 +192,6 @@ public class ChromaClient : IChromaClient
         return (response, responseContent);
     }
 
-
     private string SanitizeEndpoint(string endpoint)
     {
         StringBuilder builder = new(endpoint);
@@ -222,6 +207,4 @@ public class ChromaClient : IChromaClient
     }
 
     #endregion
-
-
 }

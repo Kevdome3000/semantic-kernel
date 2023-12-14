@@ -1,10 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.MongoDB;
+using Microsoft.SemanticKernel.Memory;
+using MongoDB.Bson.Serialization.Attributes;
 
-using global::MongoDB.Bson.Serialization.Attributes;
-using SemanticKernel.Memory;
-
+namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 
 /// <summary>
 /// A MongoDB record metadata.
@@ -53,7 +52,6 @@ public struct MongoDBMemoryRecordMetadata
     [BsonIgnoreIfDefault]
     public string AdditionalMetadata { get; set; }
 
-
     /// <summary>
     /// Initializes a new instance of <see cref="MongoDBMemoryRecordMetadata"/> structure.
     /// </summary>
@@ -66,7 +64,6 @@ public struct MongoDBMemoryRecordMetadata
         this.Text = memoryRecordMetadata.Text;
         this.AdditionalMetadata = memoryRecordMetadata.AdditionalMetadata;
     }
-
 
     /// <summary>
     /// Returns mapped <see cref="MemoryRecordMetadata"/>.

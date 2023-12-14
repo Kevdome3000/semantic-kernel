@@ -1,25 +1,23 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Connectors.UnitTests.Memory.Pinecone;
-
 using System;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
+using Microsoft.SemanticKernel.Connectors.Pinecone;
 using Microsoft.SemanticKernel.Embeddings;
-using Microsoft.SemanticKernel.Plugins.Memory;
+using Microsoft.SemanticKernel.Memory;
 using Moq;
 using Xunit;
 
+namespace SemanticKernel.Connectors.UnitTests.Pinecone;
 
 public sealed class PineconeMemoryBuilderExtensionsTests : IDisposable
 {
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
-
 
     public PineconeMemoryBuilderExtensionsTests()
     {
@@ -27,7 +25,6 @@ public sealed class PineconeMemoryBuilderExtensionsTests : IDisposable
 
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
     }
-
 
     [Fact]
     public async Task PineconeMemoryStoreShouldBeProperlyInitializedAsync()
@@ -53,7 +50,6 @@ public sealed class PineconeMemoryBuilderExtensionsTests : IDisposable
         Assert.True(headerExists);
         Assert.Contains(headerValues!, (value) => value == "fake-api-key");
     }
-
 
     public void Dispose()
     {

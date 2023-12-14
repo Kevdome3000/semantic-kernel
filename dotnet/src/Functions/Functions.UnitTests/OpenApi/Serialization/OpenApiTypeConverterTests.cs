@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Functions.UnitTests.OpenApi.Builders.Serialization;
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -9,6 +7,7 @@ using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Microsoft.VisualBasic;
 using Xunit;
 
+namespace SemanticKernel.Functions.UnitTests.OpenApi.Serialization;
 
 public class OpenApiTypeConverterTests
 {
@@ -24,7 +23,6 @@ public class OpenApiTypeConverterTests
         // Assert
         Assert.Equal("\"test\"", result.ToString());
     }
-
 
     [Fact]
     public void ItShouldConvertNumber()
@@ -50,7 +48,6 @@ public class OpenApiTypeConverterTests
         Assert.Equal("10.5", OpenApiTypeConverter.Convert("id", "number", "10.5").ToString());
     }
 
-
     [Fact]
     public void ItShouldConvertInteger()
     {
@@ -70,7 +67,6 @@ public class OpenApiTypeConverterTests
         Assert.Equal("10", OpenApiTypeConverter.Convert("id", "integer", "10").ToString());
     }
 
-
     [Fact]
     public void ItShouldConvertBoolean()
     {
@@ -84,17 +80,15 @@ public class OpenApiTypeConverterTests
         Assert.Equal("false", OpenApiTypeConverter.Convert("id", "boolean", "false").ToString());
     }
 
-
     [Fact]
     public void ItShouldConvertDateTime()
     {
         // Arrange
-        var dateTime = DateTime.ParseExact("06.12.2023 11:53:36+02:00", "dd.MM.yyyy HH:mm:sszzz", CultureInfo.InvariantCulture);
+        var dateTime = DateTime.ParseExact("06.12.2023 11:53:36+02:00", "dd.MM.yyyy HH:mm:sszzz", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal);
 
         // Act & Assert
-        Assert.Equal("\"2023-12-06T09:53:36+00:00\"", OpenApiTypeConverter.Convert("id", "string", dateTime).ToString());
+        Assert.Equal("\"2023-12-06T09:53:36Z\"", OpenApiTypeConverter.Convert("id", "string", dateTime).ToString());
     }
-
 
     [Fact]
     public void ItShouldConvertDateTimeOffset()
@@ -105,7 +99,6 @@ public class OpenApiTypeConverterTests
         // Act & Assert
         Assert.Equal("\"2023-12-06T11:53:36+02:00\"", OpenApiTypeConverter.Convert("id", "string", offset).ToString());
     }
-
 
     [Fact]
     public void ItShouldConvertCollections()

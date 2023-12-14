@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
-
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 internal sealed class GetVectorsRequest
 {
@@ -44,12 +43,10 @@ internal sealed class GetVectorsRequest
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public bool? WithVector { get; set; }
 
-
     public static GetVectorsRequest Create(string collectionName)
     {
         return new GetVectorsRequest(collectionName);
     }
-
 
     public GetVectorsRequest WithPointId(string pointId)
     {
@@ -57,13 +54,11 @@ internal sealed class GetVectorsRequest
         return this;
     }
 
-
     public GetVectorsRequest WithPointIDs(IEnumerable<string> pointIds)
     {
         this.PointIds = pointIds;
         return this;
     }
-
 
     public GetVectorsRequest WithPayloads(bool withPayloads)
     {
@@ -71,13 +66,11 @@ internal sealed class GetVectorsRequest
         return this;
     }
 
-
     public GetVectorsRequest WithVectors(bool withEmbeddings)
     {
         this.WithVector = withEmbeddings;
         return this;
     }
-
 
     public HttpRequestMessage Build()
     {
@@ -85,7 +78,6 @@ internal sealed class GetVectorsRequest
             $"collections/{this.Collection}/points",
             payload: this);
     }
-
 
     #region private ================================================================================
 
@@ -95,6 +87,4 @@ internal sealed class GetVectorsRequest
     }
 
     #endregion
-
-
 }

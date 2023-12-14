@@ -1,17 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.IntegrationTests.Connectors.Memory.Chroma;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.Memory.Chroma;
+using Microsoft.SemanticKernel.Connectors.Chroma;
 using Microsoft.SemanticKernel.Memory;
 using Xunit;
 
+namespace SemanticKernel.IntegrationTests.Connectors.Chroma;
 
 /// <summary>
 /// Integration tests for <see cref="ChromaMemoryStore"/> class.
@@ -24,7 +23,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 
     private const string BaseAddress = "http://localhost:8000";
 
-
     public ChromaMemoryStoreTests()
     {
         this._httpClient = new();
@@ -32,7 +30,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 
         this._chromaMemoryStore = new(this._httpClient);
     }
-
 
     [Fact(Skip = SkipReason)]
     public async Task ItCanCreateCollectionsAsync()
@@ -55,7 +52,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         Assert.Contains(collectionName3, collections);
     }
 
-
     [Fact(Skip = SkipReason)]
     public async Task ItCanHandleDuplicateNameDuringCollectionCreationAsync()
     {
@@ -72,7 +68,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 
         Assert.Single(filteredCollections);
     }
-
 
     [Theory(Skip = SkipReason)]
     [InlineData(true)]
@@ -94,7 +89,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         Assert.Equal(createCollection, doesCollectionExist);
     }
 
-
     [Fact(Skip = SkipReason)]
     public async Task ItCanDeleteExistingCollectionAsync()
     {
@@ -114,7 +108,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         Assert.DoesNotContain(collectionName, collectionsAfterDeletion);
     }
 
-
     [Fact(Skip = SkipReason)]
     public async Task ItThrowsExceptionOnNonExistentCollectionDeletionAsync()
     {
@@ -132,7 +125,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
             StringComparison.InvariantCulture);
     }
 
-
     [Fact(Skip = SkipReason)]
     public async Task ItReturnsNullOnNonExistentRecordRetrievalAsync()
     {
@@ -148,7 +140,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         // Assert
         Assert.Null(record);
     }
-
 
     [Fact(Skip = SkipReason)]
     public async Task ItCanUpsertMemoryRecordAsync()
@@ -171,7 +162,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 
         this.AssertMemoryRecordEqual(expectedRecord, actualRecord);
     }
-
 
     [Fact(Skip = SkipReason)]
     public async Task ItCanUpsertMemoryRecordBatchAsync()
@@ -204,7 +194,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         this.AssertMemoryRecordEqual(expectedRecord3, actualRecords[2]);
     }
 
-
     [Fact(Skip = SkipReason)]
     public async Task ItCanRemoveMemoryRecordAsync()
     {
@@ -225,7 +214,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         var recordAfterDeletion = await this._chromaMemoryStore.GetAsync(collectionName, expectedRecord.Key);
         Assert.Null(recordAfterDeletion);
     }
-
 
     [Fact(Skip = SkipReason)]
     public async Task ItCanRemoveMemoryRecordBatchAsync()
@@ -255,7 +243,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         var recordsAfterDeletion = await this._chromaMemoryStore.GetBatchAsync(collectionName, keys).ToListAsync();
         Assert.Empty(recordsAfterDeletion);
     }
-
 
     [Fact(Skip = SkipReason)]
     public async Task ItCanGetNearestMatchAsync()
@@ -287,7 +274,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 
         this.AssertMemoryRecordEqual(expectedRecord3, actualRecord);
     }
-
 
     [Fact(Skip = SkipReason)]
     public async Task ItCanGetNearestMatchesAsync()
@@ -327,7 +313,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         this.AssertMemoryRecordEqual(expectedRecord1, actualRecord3);
     }
 
-
     [Fact(Skip = SkipReason)]
     public async Task ItReturnsNoMatchesFromEmptyCollectionAsync()
     {
@@ -343,7 +328,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         // Assert
         Assert.Null(nearestMatch?.Item1);
     }
-
 
     [Fact(Skip = SkipReason)]
     public async Task ItCanUpsertSameMemoryRecordMultipleTimesAsync()
@@ -366,7 +350,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 
         this.AssertMemoryRecordEqual(expectedRecord, actualRecord);
     }
-
 
     [Fact(Skip = SkipReason)]
     public async Task ItCanUpsertDifferentMemoryRecordsWithSameKeyMultipleTimesAsync()
@@ -395,7 +378,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         this.AssertMemoryRecordEqual(expectedRecord2, actualRecord2);
     }
 
-
     [Theory(Skip = SkipReason)]
     [InlineData(true)]
     [InlineData(false)]
@@ -418,19 +400,16 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         Assert.Equal(expectedRecord.Metadata.IsReference, actualRecord.Metadata.IsReference);
     }
 
-
     public void Dispose()
     {
         this.Dispose(true);
         GC.SuppressFinalize(this);
     }
 
-
     #region private ================================================================================
 
     private readonly HttpClient _httpClient;
     private readonly ChromaMemoryStore _chromaMemoryStore;
-
 
     private void Dispose(bool disposing)
     {
@@ -439,7 +418,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
             this._httpClient.Dispose();
         }
     }
-
 
     private void AssertMemoryRecordEqual(MemoryRecord expectedRecord, MemoryRecord actualRecord)
     {
@@ -453,12 +431,10 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         Assert.Equal(expectedRecord.Metadata.ExternalSourceName, actualRecord.Metadata.ExternalSourceName);
     }
 
-
     private string GetRandomCollectionName()
     {
         return "sk-test-" + Guid.NewGuid();
     }
-
 
     private MemoryRecord GetRandomMemoryRecord(string? key = null, ReadOnlyMemory<float>? embedding = null)
     {
@@ -474,7 +450,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
             key: recordKey);
     }
 
-
     private MemoryRecord GetRandomMemoryRecord(MemoryRecordMetadata metadata, ReadOnlyMemory<float>? embedding = null)
     {
         var recordEmbedding = embedding ?? new[] { 1f, 3f, 5f };
@@ -484,7 +459,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
             embedding: recordEmbedding,
             key: metadata.Id);
     }
-
 
     private MemoryRecordMetadata GetRandomMemoryRecordMetadata(bool isReference = false, string? key = null)
     {
@@ -500,6 +474,4 @@ public sealed class ChromaMemoryStoreTests : IDisposable
     }
 
     #endregion
-
-
 }

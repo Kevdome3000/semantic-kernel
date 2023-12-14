@@ -1,17 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Connectors.UnitTests.Memory.DuckDB;
-
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.Memory.DuckDB;
+using Microsoft.SemanticKernel.Connectors.DuckDB;
 using Microsoft.SemanticKernel.Memory;
 using Xunit;
 
+namespace SemanticKernel.Connectors.UnitTests.DuckDB;
 
 /// <summary>
 /// Unit tests of <see cref="DuckDBMemoryStore"/>.
@@ -21,12 +20,10 @@ public class DuckDBMemoryStoreTests
 {
     private int _collectionNum = 0;
 
-
     private string GetTestCollectionName([CallerMemberName] string testName = "")
     {
         return testName + this._collectionNum++;
     }
-
 
     private IEnumerable<MemoryRecord> CreateBatchRecords(int numRecords)
     {
@@ -34,7 +31,6 @@ public class DuckDBMemoryStoreTests
         Assert.True(numRecords > 0, "Number of records must be greater than 0");
 
         IEnumerable<MemoryRecord> records = new List<MemoryRecord>(numRecords);
-
         for (int i = 0; i < numRecords / 2; i++)
         {
             var testRecord = MemoryRecord.LocalRecord(
@@ -58,7 +54,6 @@ public class DuckDBMemoryStoreTests
         return records;
     }
 
-
     [Fact]
     public async Task InitializeDbConnectionSucceedsAsync()
     {
@@ -66,7 +61,6 @@ public class DuckDBMemoryStoreTests
         // Assert
         Assert.NotNull(db);
     }
-
 
     [Fact]
     public async Task ItCanCreateAndGetCollectionAsync()
@@ -84,7 +78,6 @@ public class DuckDBMemoryStoreTests
         Assert.True(await collections.ContainsAsync(collection));
     }
 
-
     [Fact]
     public async Task ItCanCheckIfCollectionExistsAsync()
     {
@@ -99,7 +92,6 @@ public class DuckDBMemoryStoreTests
         Assert.True(await db.DoesCollectionExistAsync("my_collection+++"));
         Assert.False(await db.DoesCollectionExistAsync("my_collection---"));
     }
-
 
     [Fact]
     public async Task CreatingDuplicateCollectionDoesNothingAsync()
@@ -117,7 +109,6 @@ public class DuckDBMemoryStoreTests
         var collections2 = db.GetCollectionsAsync();
         Assert.Equal(await collections.CountAsync(), await collections.CountAsync());
     }
-
 
     [Fact]
     public async Task CollectionsCanBeDeletedAsync()
@@ -140,7 +131,6 @@ public class DuckDBMemoryStoreTests
         var collections2 = db.GetCollectionsAsync();
         Assert.True(await collections2.CountAsync() == 0);
     }
-
 
     [Fact]
     public async Task ItCanInsertIntoNonExistentCollectionAsync()
@@ -170,7 +160,6 @@ public class DuckDBMemoryStoreTests
         Assert.Equal(testRecord.Metadata.Id, actual.Metadata.Id);
     }
 
-
     [Fact]
     public async Task GetAsyncReturnsEmptyEmbeddingUnlessSpecifiedAsync()
     {
@@ -197,7 +186,6 @@ public class DuckDBMemoryStoreTests
         Assert.True(actualDefault.Embedding.IsEmpty);
         Assert.Equal(actualWithEmbedding.Embedding.ToArray(), testRecord.Embedding.ToArray());
     }
-
 
     [Fact]
     public async Task ItCanUpsertAndRetrieveARecordWithNoTimestampAsync()
@@ -229,7 +217,6 @@ public class DuckDBMemoryStoreTests
         Assert.Equal(testRecord.Metadata.Id, actual.Metadata.Id);
     }
 
-
     [Fact]
     public async Task ItCanUpsertAndRetrieveARecordWithTimestampAsync()
     {
@@ -259,7 +246,6 @@ public class DuckDBMemoryStoreTests
         Assert.Equal(testRecord.Metadata.ExternalSourceName, actual.Metadata.ExternalSourceName);
         Assert.Equal(testRecord.Metadata.Id, actual.Metadata.Id);
     }
-
 
     [Fact]
     public async Task UpsertReplacesExistingRecordWithSameIdAsync()
@@ -295,7 +281,6 @@ public class DuckDBMemoryStoreTests
         Assert.Equal(testRecord2.Metadata.Description, actual.Metadata.Description);
     }
 
-
     [Fact]
     public async Task ExistingRecordCanBeRemovedAsync()
     {
@@ -318,7 +303,6 @@ public class DuckDBMemoryStoreTests
         Assert.Null(actual);
     }
 
-
     [Fact]
     public async Task RemovingNonExistingRecordDoesNothingAsync()
     {
@@ -334,7 +318,6 @@ public class DuckDBMemoryStoreTests
         // Assert
         Assert.Null(actual);
     }
-
 
     [Fact]
     public async Task ItCanListAllDatabaseCollectionsAsync()
@@ -366,7 +349,6 @@ public class DuckDBMemoryStoreTests
         Assert.True(collections.Contains(testCollections[2]),
             $"Collections does not contain the newly-created collection {testCollections[2]}");
     }
-
 
     [Fact]
     public async Task GetNearestMatchesReturnsAllResultsWithNoMinScoreAsync()
@@ -424,14 +406,12 @@ public class DuckDBMemoryStoreTests
 
         // Assert
         Assert.Equal(topN, topNResults.Length);
-
         for (int j = 0; j < topN - 1; j++)
         {
             int compare = topNResults[j].Item2.CompareTo(topNResults[j + 1].Item2);
             Assert.True(compare >= 0);
         }
     }
-
 
     [Fact]
     public async Task GetNearestMatchAsyncReturnsEmptyEmbeddingUnlessSpecifiedAsync()
@@ -494,7 +474,6 @@ public class DuckDBMemoryStoreTests
         Assert.False(topNResultWithEmbedding.Value.Item1.Embedding.IsEmpty);
     }
 
-
     [Fact]
     public async Task GetNearestMatchAsyncReturnsExpectedAsync()
     {
@@ -554,7 +533,6 @@ public class DuckDBMemoryStoreTests
         Assert.True(topNResult.Value.Item2 >= threshold);
     }
 
-
     [Fact]
     public async Task GetNearestMatchesDifferentiatesIdenticalVectorsByKeyAsync()
     {
@@ -591,7 +569,6 @@ public class DuckDBMemoryStoreTests
         }
     }
 
-
     [Fact]
     public async Task ItCanBatchUpsertRecordsAsync()
     {
@@ -613,7 +590,6 @@ public class DuckDBMemoryStoreTests
         Assert.Equal(numRecords, resultRecords.ToEnumerable().Count());
     }
 
-
     [Fact]
     public async Task ItCanBatchGetRecordsAsync()
     {
@@ -634,7 +610,6 @@ public class DuckDBMemoryStoreTests
         Assert.NotNull(results);
         Assert.Equal(numRecords, results.ToEnumerable().Count());
     }
-
 
     [Fact]
     public async Task ItCanBatchRemoveRecordsAsync()
@@ -663,7 +638,6 @@ public class DuckDBMemoryStoreTests
             Assert.Null(result);
         }
     }
-
 
     [Fact]
     public async Task DeletingNonExistentCollectionDoesNothingAsync()

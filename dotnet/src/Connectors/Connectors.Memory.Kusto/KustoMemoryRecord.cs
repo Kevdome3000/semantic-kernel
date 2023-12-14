@@ -1,13 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Kusto;
-
 using System;
 using System.Text.Json.Serialization;
-using global::Kusto.Cloud.Platform.Utils;
-using SemanticKernel.Memory;
-using Text;
+using Kusto.Cloud.Platform.Utils;
+using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Text;
 
+namespace Microsoft.SemanticKernel.Connectors.Kusto;
 
 /// <summary>
 /// Kusto memory record entity.
@@ -35,15 +34,11 @@ public sealed class KustoMemoryRecord
     /// </summary>
     public DateTimeOffset? Timestamp { get; set; }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="KustoMemoryRecord"/> class.
     /// </summary>
     /// <param name="record">Instance of <see cref="MemoryRecord"/>.</param>
-    public KustoMemoryRecord(MemoryRecord record) : this(record.Key, record.Metadata, record.Embedding, record.Timestamp)
-    {
-    }
-
+    public KustoMemoryRecord(MemoryRecord record) : this(record.Key, record.Metadata, record.Embedding, record.Timestamp) { }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KustoMemoryRecord"/> class.
@@ -60,7 +55,6 @@ public sealed class KustoMemoryRecord
         this.Timestamp = timestamp;
     }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="KustoMemoryRecord"/> class.
     /// </summary>
@@ -76,7 +70,6 @@ public sealed class KustoMemoryRecord
         this.Timestamp = KustoSerializer.DeserializeDateTimeOffset(timestamp);
     }
 
-
     /// <summary>
     /// Returns instance of mapped <see cref="MemoryRecord"/>.
     /// </summary>
@@ -84,7 +77,6 @@ public sealed class KustoMemoryRecord
     {
         return new MemoryRecord(this.Metadata, this.Embedding, this.Key, this.Timestamp);
     }
-
 
     /// <summary>
     /// Writes properties of <see cref="KustoMemoryRecord"/> instance to stream using <see cref="CsvWriter"/>.

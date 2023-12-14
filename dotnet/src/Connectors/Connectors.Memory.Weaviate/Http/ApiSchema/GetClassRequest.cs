@@ -1,10 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Weaviate.Http.ApiSchema;
-
 using System.Net.Http;
 using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 internal sealed class GetClassRequest
 {
@@ -13,7 +12,6 @@ internal sealed class GetClassRequest
         this.Class = @class;
     }
 
-
     /// <summary>
     ///     Name of the Weaviate class
     /// </summary>
@@ -21,12 +19,10 @@ internal sealed class GetClassRequest
     // ReSharper disable once MemberCanBePrivate.Global
     public string Class { get; set; }
 
-
     public static GetClassRequest Create(string @class)
     {
         return new(@class);
     }
-
 
     public HttpRequestMessage Build()
     {

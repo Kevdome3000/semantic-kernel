@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Connectors.UnitTests.Memory.Weaviate;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,18 +8,18 @@ using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.Memory.Weaviate;
+using Microsoft.SemanticKernel.Connectors.Weaviate;
 using Microsoft.SemanticKernel.Embeddings;
-using Microsoft.SemanticKernel.Plugins.Memory;
+using Microsoft.SemanticKernel.Memory;
 using Moq;
 using Xunit;
 
+namespace SemanticKernel.Connectors.UnitTests.Weaviate;
 
 public sealed class WeaviateMemoryBuilderExtensionsTests : IDisposable
 {
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
-
 
     public WeaviateMemoryBuilderExtensionsTests()
     {
@@ -29,7 +27,6 @@ public sealed class WeaviateMemoryBuilderExtensionsTests : IDisposable
 
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
     }
-
 
     [Theory]
     [InlineData(null, "https://fake-random-test-weaviate-host/v1/objects/fake-key")]
@@ -41,8 +38,7 @@ public sealed class WeaviateMemoryBuilderExtensionsTests : IDisposable
 
         var getResponse = new
         {
-            Properties = new Dictionary<string, string>
-            {
+            Properties = new Dictionary<string, string> {
                 { "sk_id", "fake_id" },
                 { "sk_description", "fake_description" },
                 { "sk_text", "fake_text" },
@@ -69,7 +65,6 @@ public sealed class WeaviateMemoryBuilderExtensionsTests : IDisposable
         Assert.True(headerExists);
         Assert.Contains(headerValues!, (value) => value == "fake-api-key");
     }
-
 
     public void Dispose()
     {

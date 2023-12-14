@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Connectors.UnitTests.Memory.Chroma;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,13 +8,13 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.Memory.Chroma;
-using Microsoft.SemanticKernel.Connectors.Memory.Chroma.Http.ApiSchema;
+using Microsoft.SemanticKernel.Connectors.Chroma;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 using Moq;
 using Xunit;
 
+namespace SemanticKernel.Connectors.UnitTests.Chroma;
 
 /// <summary>
 /// Unit tests for <see cref="ChromaMemoryStore"/> class.
@@ -30,7 +28,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
     private readonly HttpClient _httpClient;
     private readonly Mock<IChromaClient> _chromaClientMock;
 
-
     public ChromaMemoryStoreTests()
     {
         this._messageHandlerStub = new HttpMessageHandlerStub();
@@ -41,7 +38,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
             .Setup(client => client.GetCollectionAsync(CollectionName, CancellationToken.None))
             .ReturnsAsync(new ChromaCollectionModel { Id = CollectionId, Name = CollectionName });
     }
-
 
     [Fact]
     public async Task ItUsesProvidedEndpointFromConstructorAsync()
@@ -56,7 +52,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         // Assert
         Assert.StartsWith(Endpoint, this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
     }
-
 
     [Fact]
     public async Task ItUsesBaseAddressFromHttpClientAsync()
@@ -76,7 +71,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         Assert.StartsWith(BaseAddress, this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
     }
 
-
     [Fact]
     public async Task ItCanCreateCollectionAsync()
     {
@@ -90,7 +84,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         this._chromaClientMock.Verify(client => client.CreateCollectionAsync(CollectionName, CancellationToken.None), Times.Once());
     }
 
-
     [Fact]
     public async Task ItCanDeleteCollectionAsync()
     {
@@ -103,7 +96,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         // Assert
         this._chromaClientMock.Verify(client => client.DeleteCollectionAsync(CollectionName, CancellationToken.None), Times.Once());
     }
-
 
     [Fact]
     public async Task ItThrowsExceptionOnNonExistentCollectionDeletionAsync()
@@ -127,7 +119,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         Assert.Equal(ExpectedExceptionMessage, exception.Message);
     }
 
-
     [Fact]
     public async Task ItReturnsTrueWhenCollectionExistsAsync()
     {
@@ -140,7 +131,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         // Assert
         Assert.True(doesCollectionExist);
     }
-
 
     [Fact]
     public async Task ItReturnsFalseWhenCollectionDoesNotExistAsync()
@@ -161,7 +151,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         // Assert
         Assert.False(doesCollectionExist);
     }
-
 
     [Fact]
     public async Task ItCanGetMemoryRecordFromCollectionAsync()
@@ -184,7 +173,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         this.AssertMemoryRecordEqual(expectedMemoryRecord, actualMemoryRecord);
     }
 
-
     [Fact]
     public async Task ItReturnsNullWhenMemoryRecordDoesNotExistAsync()
     {
@@ -203,7 +191,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         // Assert
         Assert.Null(actualMemoryRecord);
     }
-
 
     [Fact]
     public async Task ItThrowsExceptionOnGettingMemoryRecordFromNonExistingCollectionAsync()
@@ -226,7 +213,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         Assert.IsType<KernelException>(exception);
         Assert.Equal(CollectionDoesNotExistErrorMessage, exception.Message);
     }
-
 
     [Fact]
     public async Task ItCanGetMemoryRecordBatchFromCollectionAsync()
@@ -259,7 +245,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         }
     }
 
-
     [Fact]
     public async Task ItCanReturnCollectionsAsync()
     {
@@ -284,13 +269,11 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         }
     }
 
-
     public void Dispose()
     {
         this._httpClient.Dispose();
         this._messageHandlerStub.Dispose();
     }
-
 
     #region private ================================================================================
 
@@ -306,12 +289,10 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         Assert.Equal(expectedRecord.Metadata.ExternalSourceName, actualRecord.Metadata.ExternalSourceName);
     }
 
-
     private HttpClient GetHttpClientStub()
     {
         return new HttpClient(this._messageHandlerStub, false);
     }
-
 
     private MemoryRecord GetRandomMemoryRecord(ReadOnlyMemory<float>? embedding = null)
     {
@@ -327,13 +308,11 @@ public sealed class ChromaMemoryStoreTests : IDisposable
             key: id);
     }
 
-
     private Dictionary<string, object> GetEmbeddingMetadataFromMemoryRecord(MemoryRecord memoryRecord)
     {
         var serialized = JsonSerializer.Serialize(memoryRecord.Metadata);
         return JsonSerializer.Deserialize<Dictionary<string, object>>(serialized)!;
     }
-
 
     private ChromaEmbeddingsModel GetEmbeddingsModelFromMemoryRecords(MemoryRecord[] memoryRecords)
     {
@@ -346,13 +325,10 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         return embeddingsModel;
     }
 
-
     private ChromaEmbeddingsModel GetEmbeddingsModelFromMemoryRecord(MemoryRecord memoryRecord)
     {
         return this.GetEmbeddingsModelFromMemoryRecords(new[] { memoryRecord });
     }
 
     #endregion
-
-
 }

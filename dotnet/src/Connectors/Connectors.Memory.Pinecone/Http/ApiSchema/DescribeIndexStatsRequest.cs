@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
-
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// DescribeIndexStatsRequest
@@ -20,19 +19,16 @@ internal sealed class DescribeIndexStatsRequest
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public Dictionary<string, object>? Filter { get; set; }
 
-
     public static DescribeIndexStatsRequest GetIndexStats()
     {
         return new DescribeIndexStatsRequest();
     }
-
 
     public DescribeIndexStatsRequest WithFilter(Dictionary<string, object>? filter)
     {
         this.Filter = filter;
         return this;
     }
-
 
     public HttpRequestMessage Build()
     {
@@ -45,7 +41,6 @@ internal sealed class DescribeIndexStatsRequest
         return request;
     }
 
-
     #region private ================================================================================
 
     private DescribeIndexStatsRequest()
@@ -53,6 +48,4 @@ internal sealed class DescribeIndexStatsRequest
     }
 
     #endregion
-
-
 }

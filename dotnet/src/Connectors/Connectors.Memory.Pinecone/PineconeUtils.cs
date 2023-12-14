@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,9 +8,8 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Http.ApiSchema;
-using Model;
 
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// Utils for Pinecone connector.
@@ -57,7 +54,6 @@ public static class PineconeUtils
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
         Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
     };
-
 
     /// <summary>
     ///  Utility method to ensure that the metadata size is not too large.
@@ -125,7 +121,6 @@ public static class PineconeUtils
         }
     }
 
-
     /// <summary>
     ///  Utility method to split a stream of documents into batches of a given size.
     /// </summary>
@@ -166,7 +161,6 @@ public static class PineconeUtils
         yield return UpsertRequest.UpsertVectors(currentBatch);
     }
 
-
     private static int GetMetadataSize(Dictionary<string, object> metadata)
     {
         using MemoryStream stream = new();
@@ -176,7 +170,6 @@ public static class PineconeUtils
 
         return (int)stream.Length;
     }
-
 
     /// <summary>
     ///  Utility method to convert a dictionary of filters to the format expected by Pinecone.
@@ -206,7 +199,6 @@ public static class PineconeUtils
         return pineconeFilter;
     }
 
-
     /// <summary>
     /// Maps <see cref="IndexMetric"/> to its string representation.
     /// </summary>
@@ -222,7 +214,6 @@ public static class PineconeUtils
             _ => string.Empty
         };
     }
-
 
     /// <summary>
     /// Maps <see cref="PodType"/> to its string representation.
@@ -250,7 +241,6 @@ public static class PineconeUtils
         };
     }
 
-
     /// <summary>
     /// Class for Pinecone filtering logic.
     /// </summary>
@@ -266,7 +256,6 @@ public static class PineconeUtils
         /// </summary>
         public object Value { get; }
 
-
         /// <summary>
         /// Initializes a new instance of the <see cref="PineconeOperator"/> class.
         /// </summary>
@@ -277,7 +266,6 @@ public static class PineconeUtils
             this.Operator = op;
             this.Value = value;
         }
-
 
         /// <summary>
         /// Converts instance of <see cref="PineconeOperator"/> to <see cref="Dictionary{TKey, TValue}"/>.

@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Functions.UnitTests.OpenApi.Builders.Serialization;
-
 using System;
 using System.Text.Json.Nodes;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Xunit;
 
+namespace SemanticKernel.Functions.UnitTests.OpenApi.Serialization;
 
 public class SpaceDelimitedStyleParametersSerializerTests
 {
@@ -19,7 +18,6 @@ public class SpaceDelimitedStyleParametersSerializerTests
         // Act & Assert
         Assert.Throws<NotSupportedException>(() => SpaceDelimitedStyleParameterSerializer.Serialize(parameter, "fake-argument"));
     }
-
 
     [Theory]
     [InlineData("integer")]
@@ -36,19 +34,18 @@ public class SpaceDelimitedStyleParametersSerializerTests
         Assert.Throws<NotSupportedException>(() => SpaceDelimitedStyleParameterSerializer.Serialize(parameter, "fake-argument"));
     }
 
-
     [Fact]
     public void ItShouldCreateAmpersandSeparatedParameterPerArrayItem()
     {
         // Arrange
         var parameter = new RestApiOperationParameter(
-            name: "id",
-            type: "array",
-            isRequired: true,
-            expand: true, //Specifies to generate a separate parameter for each array item.
-            location: RestApiOperationParameterLocation.Query,
-            style: RestApiOperationParameterStyle.SpaceDelimited,
-            arrayItemType: "integer");
+                name: "id",
+                type: "array",
+                isRequired: true,
+                expand: true, //Specifies to generate a separate parameter for each array item.
+                location: RestApiOperationParameterLocation.Query,
+                style: RestApiOperationParameterStyle.SpaceDelimited,
+                arrayItemType: "integer");
 
         // Act
         var result = SpaceDelimitedStyleParameterSerializer.Serialize(parameter, new JsonArray("1", "2", "3"));
@@ -59,19 +56,18 @@ public class SpaceDelimitedStyleParametersSerializerTests
         Assert.Equal("id=1&id=2&id=3", result);
     }
 
-
     [Fact]
     public void ItShouldCreateParameterWithSpaceSeparatedValuePerArrayItem()
     {
         // Arrange
         var parameter = new RestApiOperationParameter(
-            name: "id",
-            type: "array",
-            isRequired: true,
-            expand: false, //Specify generating a parameter with space-separated values for each array item.
-            location: RestApiOperationParameterLocation.Query,
-            style: RestApiOperationParameterStyle.SpaceDelimited,
-            arrayItemType: "integer");
+                name: "id",
+                type: "array",
+                isRequired: true,
+                expand: false, //Specify generating a parameter with space-separated values for each array item.
+                location: RestApiOperationParameterLocation.Query,
+                style: RestApiOperationParameterStyle.SpaceDelimited,
+                arrayItemType: "integer");
 
         // Act
         var result = SpaceDelimitedStyleParameterSerializer.Serialize(parameter, new JsonArray(1, 2, 3));
@@ -81,7 +77,6 @@ public class SpaceDelimitedStyleParametersSerializerTests
 
         Assert.Equal("id=1%202%203", result);
     }
-
 
     [Theory]
     [InlineData(":", "%3a")]
@@ -101,7 +96,6 @@ public class SpaceDelimitedStyleParametersSerializerTests
 
         Assert.EndsWith(encodedEquivalent, result, StringComparison.Ordinal);
     }
-
 
     [Theory]
     [InlineData(":", "%3a")]

@@ -24,7 +24,7 @@ public class RestApiOperationExtensionsTests
         var operation = CreateTestOperation(method, payload);
 
         //Act
-        var parameters = operation.GetParameters();
+        var parameters = operation.GetParameters(addPayloadParamsFromMetadata: false);
 
         //Assert
         Assert.NotNull(parameters);
@@ -84,7 +84,7 @@ public class RestApiOperationExtensionsTests
         var operation = CreateTestOperation(method, payload);
 
         //Act
-        var parameters = operation.GetParameters();
+        var parameters = operation.GetParameters(addPayloadParamsFromMetadata: false);
 
         //Assert
         Assert.NotNull(parameters);

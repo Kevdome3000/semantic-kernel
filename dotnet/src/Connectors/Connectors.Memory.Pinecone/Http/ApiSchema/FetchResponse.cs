@@ -1,13 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
-
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 
-#pragma warning disable CA1812 // remove class never instantiated (used by System.Text.Json)
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
+#pragma warning disable CA1812 // remove class never instantiated (used by System.Text.Json)
 
 /// <summary>
 /// FetchResponse
@@ -27,19 +26,16 @@ internal sealed class FetchResponse
         this.Namespace = nameSpace;
     }
 
-
     /// <summary>
     /// Gets or Sets Vectors
     /// </summary>
     [JsonPropertyName("vectors")]
     public Dictionary<string, PineconeDocument> Vectors { get; set; }
 
-
     public IEnumerable<PineconeDocument> WithoutEmbeddings()
     {
         return this.Vectors.Values.Select(v => PineconeDocument.Create(v.Id).WithMetadata(v.Metadata));
     }
-
 
     /// <summary>
     /// An index namespace name

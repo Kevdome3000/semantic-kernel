@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Kusto;
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,13 +7,14 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using global::Kusto.Cloud.Platform.Utils;
-using global::Kusto.Data;
-using global::Kusto.Data.Common;
-using global::Kusto.Data.Net.Client;
-using Http;
-using SemanticKernel.Memory;
+using Kusto.Cloud.Platform.Utils;
+using Kusto.Data;
+using Kusto.Data.Common;
+using Kusto.Data.Net.Client;
+using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.Memory;
 
+namespace Microsoft.SemanticKernel.Connectors.Kusto;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> backed by a Kusto database.
@@ -42,7 +41,6 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         this._disposer = new Disposer(nameof(KustoMemoryStore), nameof(KustoMemoryStore));
     }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="KustoMemoryStore"/> class.
     /// </summary>
@@ -56,7 +54,6 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         this._disposer.Add(this._adminClient);
     }
 
-
     /// <inheritdoc/>
     public async Task CreateCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
@@ -68,7 +65,6 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
             ).ConfigureAwait(false);
     }
 
-
     /// <inheritdoc/>
     public async Task DeleteCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
@@ -79,7 +75,6 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
                 GetClientRequestProperties()
             ).ConfigureAwait(false);
     }
-
 
     /// <inheritdoc/>
     public async Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancellationToken = default)
@@ -95,14 +90,12 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         return result.Count() == 1;
     }
 
-
     /// <inheritdoc/>
     public async Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancellationToken = default)
     {
         var result = this.GetBatchAsync(collectionName, new[] { key }, withEmbedding, cancellationToken);
         return await result.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
     }
-
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(
@@ -113,12 +106,12 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
     {
         var inClauseValue = string.Join(",", keys.Select(k => $"'{k}'"));
         var query = $"{this.GetBaseQuery(collectionName)} " +
-                    $"| where Key in ({inClauseValue}) " +
-                    "| project " +
-                    $"{s_keyColumn.Name}, " +
-                    $"{s_metadataColumn.Name}=tostring({s_metadataColumn.Name}), " +
-                    $"{s_timestampColumn.Name}, " +
-                    $"{s_embeddingColumn.Name}=tostring({s_embeddingColumn.Name})";
+            $"| where Key in ({inClauseValue}) " +
+            "| project " +
+            $"{s_keyColumn.Name}, " +
+            $"{s_metadataColumn.Name}=tostring({s_metadataColumn.Name}), " +
+            $"{s_timestampColumn.Name}, " +
+            $"{s_embeddingColumn.Name}=tostring({s_embeddingColumn.Name})";
 
         if (!withEmbeddings)
         {
@@ -147,7 +140,6 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         }
     }
 
-
     /// <inheritdoc/>
     public async IAsyncEnumerable<string> GetCollectionsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -164,7 +156,6 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         }
     }
 
-
     /// <inheritdoc/>
     public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(
         string collectionName,
@@ -176,7 +167,6 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         var result = this.GetNearestMatchesAsync(collectionName, embedding, 1, minRelevanceScore, withEmbedding, cancellationToken);
         return await result.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
     }
-
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(
@@ -201,11 +191,11 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         // reorder to make it easier to ignore the embedding (key, metadata, timestamp, similarity, embedding)
         // Using tostring to make it easier to parse the result. There are probably better ways we should explore.
         similarityQuery += "| project " +
-                           $"{s_keyColumn.Name}, " +
-                           $"{s_metadataColumn.Name}=tostring({s_metadataColumn.Name}), " +
-                           $"{s_timestampColumn.Name}, " +
-                           "similarity, " +
-                           $"{s_embeddingColumn.Name}=tostring({s_embeddingColumn.Name})";
+            $"{s_keyColumn.Name}, " +
+            $"{s_metadataColumn.Name}=tostring({s_metadataColumn.Name}), " +
+            $"{s_timestampColumn.Name}, " +
+            "similarity, " +
+            $"{s_embeddingColumn.Name}=tostring({s_embeddingColumn.Name})";
 
         if (!withEmbeddings)
         {
@@ -234,11 +224,9 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         }
     }
 
-
     /// <inheritdoc/>
     public Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default)
         => this.RemoveBatchAsync(collectionName, new[] { key }, cancellationToken);
-
 
     /// <inheritdoc/>
     public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default)
@@ -255,14 +243,12 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         }
     }
 
-
     /// <inheritdoc/>
     public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default)
     {
         var result = this.UpsertBatchAsync(collectionName, new[] { record }, cancellationToken);
         return await result.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false) ?? string.Empty;
     }
-
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<string> UpsertBatchAsync(
@@ -311,7 +297,6 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         }
     }
 
-
     /// <summary>
     /// Disposes the <see cref="KustoMemoryStore"/> instance.
     /// </summary>
@@ -320,7 +305,6 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         this.Dispose(true);
         GC.SuppressFinalize(this);
     }
-
 
     /// <summary>
     /// Disposes the resources used by the <see cref="KustoMemoryStore"/> instance.
@@ -334,7 +318,6 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         }
     }
 
-
     #region private ================================================================================
 
     private readonly Disposer _disposer;
@@ -342,12 +325,10 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
 
     private readonly string _database;
 
-
     private static ClientRequestProperties GetClientRequestProperties() => new()
     {
         Application = HttpHeaderValues.UserAgent,
     };
-
 
     private bool _searchInitialized;
 
@@ -367,7 +348,6 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         s_timestampColumn
     };
 
-
     /// <summary>
     /// Converts collection name to Kusto table name.
     /// </summary>
@@ -379,7 +359,6 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
     private static string GetTableName(string collectionName, bool normalized = true)
         => normalized ? CslSyntaxGenerator.NormalizeTableName(collectionName) : collectionName;
 
-
     /// <summary>
     /// Converts Kusto table name to collection name.
     /// </summary>
@@ -389,7 +368,6 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
     /// <param name="tableName">Kusto table name.</param>
     private static string GetCollectionName(string tableName)
         => tableName.Replace("['", "").Replace("']", "");
-
 
     /// <summary>
     /// Returns base Kusto query.
@@ -403,7 +381,6 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
     /// <param name="collection">Collection name.</param>
     private string GetBaseQuery(string collection)
         => $"{GetTableName(collection)} | summarize arg_max(ingestion_time(), *) by {s_keyColumn.Name} ";
-
 
     /// <summary>
     /// Initializes vector cosine similarity function for given database.
@@ -439,6 +416,4 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
     }
 
     #endregion private ================================================================================
-
-
 }

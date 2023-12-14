@@ -1,23 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
-
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 internal sealed class DeleteVectorsRequest
 {
     [JsonPropertyName("points")]
     public List<string> Ids { get; set; }
 
-
     public static DeleteVectorsRequest DeleteFrom(string collectionName)
     {
         return new DeleteVectorsRequest(collectionName);
     }
-
 
     public DeleteVectorsRequest DeleteVector(string qdrantPointId)
     {
@@ -26,14 +23,12 @@ internal sealed class DeleteVectorsRequest
         return this;
     }
 
-
     public DeleteVectorsRequest DeleteRange(IEnumerable<string> qdrantPointIds)
     {
         Verify.NotNull(qdrantPointIds, "The point ID collection is NULL");
         this.Ids.AddRange(qdrantPointIds);
         return this;
     }
-
 
     public HttpRequestMessage Build()
     {
@@ -45,11 +40,9 @@ internal sealed class DeleteVectorsRequest
             payload: this);
     }
 
-
     #region private ================================================================================
 
     private readonly string _collectionName;
-
 
     private DeleteVectorsRequest(string collectionName)
     {
@@ -58,6 +51,4 @@ internal sealed class DeleteVectorsRequest
     }
 
     #endregion
-
-
 }

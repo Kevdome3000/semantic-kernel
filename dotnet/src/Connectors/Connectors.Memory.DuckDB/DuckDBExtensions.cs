@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.DuckDB;
-
 using System.Data.Common;
 
+namespace Microsoft.SemanticKernel.Connectors.DuckDB;
 
 internal static class DuckDBExtensions
 {
