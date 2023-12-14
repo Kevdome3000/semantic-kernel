@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.UnitTests.Memory;
+
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -8,7 +10,6 @@ using Microsoft.SemanticKernel.Memory;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Memory;
 
 /// <summary>
 /// Unit tests for <see cref="MemoryBuilder"/> class.
@@ -28,6 +29,7 @@ public sealed class MemoryBuilderTests
         Assert.Equal("IMemoryStore dependency was not provided. Use WithMemoryStore method.", exception.Message);
     }
 
+
     [Fact]
     public void ItThrowsExceptionWhenEmbeddingGenerationIsNotProvided()
     {
@@ -41,6 +43,7 @@ public sealed class MemoryBuilderTests
         // Assert
         Assert.Equal("ITextEmbeddingGenerationService dependency was not provided. Use WithTextEmbeddingGeneration method.", exception.Message);
     }
+
 
     [Fact]
     public void ItInitializesMemoryWhenRequiredDependenciesAreProvided()
@@ -56,6 +59,7 @@ public sealed class MemoryBuilderTests
         // Assert
         Assert.NotNull(memory);
     }
+
 
     [Fact]
     public void ItUsesProvidedLoggerFactory()
@@ -83,6 +87,7 @@ public sealed class MemoryBuilderTests
             })
             .Build();
     }
+
 
     [Fact]
     public void ItUsesProvidedHttpClientFactory()

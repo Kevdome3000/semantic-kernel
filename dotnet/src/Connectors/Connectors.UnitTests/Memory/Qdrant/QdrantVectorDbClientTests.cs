@@ -1,17 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Connectors.UnitTests.Qdrant;
+
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.Qdrant;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Qdrant;
 
 public sealed class QdrantVectorDbClientTests : IDisposable
 {
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
+
 
     public QdrantVectorDbClientTests()
     {
@@ -19,6 +21,7 @@ public sealed class QdrantVectorDbClientTests : IDisposable
 
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
     }
+
 
     [Fact]
     public async Task BaseAddressOfHttpClientShouldBeUsedIfNotOverrideProvidedAsync()
@@ -35,6 +38,7 @@ public sealed class QdrantVectorDbClientTests : IDisposable
         Assert.Equal("https://fake-random-test-host:123/fake-path/collections/fake-collection", this._messageHandlerStub.RequestUri?.AbsoluteUri);
     }
 
+
     [Fact]
     public async Task EndpointOverrideShouldBeUsedIfProvidedAsync()
     {
@@ -49,6 +53,7 @@ public sealed class QdrantVectorDbClientTests : IDisposable
         //Assert
         Assert.Equal("https://fake-random-test-host-override:123/collections/fake-collection", this._messageHandlerStub.RequestUri?.AbsoluteUri);
     }
+
 
     public void Dispose()
     {

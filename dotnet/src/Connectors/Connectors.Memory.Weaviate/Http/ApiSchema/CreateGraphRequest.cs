@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Weaviate;
+
 using System;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 // ReSharper disable once ClassCannotBeInstantiated
 internal sealed class CreateGraphRequest
@@ -16,6 +17,7 @@ internal sealed class CreateGraphRequest
     public int Limit { get; set; }
     public bool WithVector { get; set; }
     public double Distance { get; set; }
+
 
     public HttpRequestMessage Build()
     {

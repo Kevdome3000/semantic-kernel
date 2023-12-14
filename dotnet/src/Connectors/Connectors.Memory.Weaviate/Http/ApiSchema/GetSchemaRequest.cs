@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Weaviate;
+
 using System.Net.Http;
 
-namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 internal sealed class GetSchemaRequest
 {
@@ -10,6 +11,7 @@ internal sealed class GetSchemaRequest
     {
         return new();
     }
+
 
     public HttpRequestMessage Build()
     {

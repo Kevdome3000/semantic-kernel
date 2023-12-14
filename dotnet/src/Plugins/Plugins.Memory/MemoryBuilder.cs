@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Memory;
+
 using System;
 using System.Net.Http;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Embeddings;
+using Embeddings;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
 
-namespace Microsoft.SemanticKernel.Memory;
 
 /// <summary>
 /// A builder for Memory plugin.
@@ -18,6 +19,7 @@ public sealed class MemoryBuilder
     private HttpClient? _httpClient;
     private ILoggerFactory _loggerFactory = NullLoggerFactory.Instance;
 
+
     /// <summary>
     /// Build a new instance of <see cref="ISemanticTextMemory"/> using the settings passed so far.
     /// </summary>
@@ -25,13 +27,14 @@ public sealed class MemoryBuilder
     public ISemanticTextMemory Build()
     {
         var memoryStore = this._memoryStoreFactory?.Invoke() ??
-            throw new KernelException($"{nameof(IMemoryStore)} dependency was not provided. Use {nameof(WithMemoryStore)} method.");
+                          throw new KernelException($"{nameof(IMemoryStore)} dependency was not provided. Use {nameof(WithMemoryStore)} method.");
 
         var embeddingGeneration = this._embeddingGenerationFactory?.Invoke() ??
-            throw new KernelException($"{nameof(ITextEmbeddingGenerationService)} dependency was not provided. Use {nameof(WithTextEmbeddingGeneration)} method.");
+                                  throw new KernelException($"{nameof(ITextEmbeddingGenerationService)} dependency was not provided. Use {nameof(WithTextEmbeddingGeneration)} method.");
 
         return new SemanticTextMemory(memoryStore, embeddingGeneration);
     }
+
 
     /// <summary>
     /// Add a logger factory.
@@ -45,6 +48,7 @@ public sealed class MemoryBuilder
         return this;
     }
 
+
     /// <summary>
     /// Add an HttpClient.
     /// </summary>
@@ -56,6 +60,7 @@ public sealed class MemoryBuilder
         this._httpClient = httpClient;
         return this;
     }
+
 
     /// <summary>
     /// Add memory store.
@@ -69,6 +74,7 @@ public sealed class MemoryBuilder
         return this;
     }
 
+
     /// <summary>
     /// Add memory store factory.
     /// </summary>
@@ -80,6 +86,7 @@ public sealed class MemoryBuilder
         this._memoryStoreFactory = () => factory(this._loggerFactory);
         return this;
     }
+
 
     /// <summary>
     /// Add memory store factory.
@@ -93,6 +100,7 @@ public sealed class MemoryBuilder
         return this;
     }
 
+
     /// <summary>
     /// Add text embedding generation.
     /// </summary>
@@ -104,6 +112,7 @@ public sealed class MemoryBuilder
         this._embeddingGenerationFactory = () => textEmbeddingGeneration;
         return this;
     }
+
 
     /// <summary>
     /// Add text embedding generation.

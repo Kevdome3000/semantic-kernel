@@ -6,6 +6,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using Resources;
 
+
 // This example shows how to create a prompt <see cref="KernelFunction"/> from a YAML resource.
 public static class Step3_Yaml_Prompt
 {
@@ -27,10 +28,10 @@ public static class Step3_Yaml_Prompt
 
         // Invoke the prompt function and display the result
         Console.WriteLine(await kernel.InvokeAsync(function, arguments: new()
-            {
-                { "topic", "Dog" },
-                { "length", "3" },
-            }));
+        {
+            { "topic", "Dog" },
+            { "length", "3" },
+        }));
 
         // Load prompt from resource
         var generateStoryHandlebarsYaml = EmbeddedResource.Read("GenerateStoryHandlebars.yaml");
@@ -38,9 +39,9 @@ public static class Step3_Yaml_Prompt
 
         // Invoke the prompt function and display the result
         Console.WriteLine(await kernel.InvokeAsync(function, arguments: new()
-            {
-                { "topic", "Cat" },
-                { "length", "3" },
-            }));
+        {
+            { "topic", "Cat" },
+            { "length", "3" },
+        }));
     }
 }

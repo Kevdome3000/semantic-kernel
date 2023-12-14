@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Qdrant;
+
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 internal sealed class UpsertVectorRequest
 {
@@ -14,6 +15,7 @@ internal sealed class UpsertVectorRequest
         return new UpsertVectorRequest(collectionName);
     }
 
+
     public UpsertVectorRequest UpsertVector(QdrantVectorRecord vectorRecord)
     {
         this.Batch.Ids.Add(vectorRecord.PointId);
@@ -21,6 +23,7 @@ internal sealed class UpsertVectorRequest
         this.Batch.Payloads.Add(vectorRecord.Payload);
         return this;
     }
+
 
     public UpsertVectorRequest UpsertRange(IEnumerable<QdrantVectorRecord> vectorRecords)
     {
@@ -32,6 +35,7 @@ internal sealed class UpsertVectorRequest
         return this;
     }
 
+
     public HttpRequestMessage Build()
     {
         return HttpRequest.CreatePutRequest(
@@ -39,11 +43,13 @@ internal sealed class UpsertVectorRequest
             payload: this);
     }
 
+
     [JsonIgnore]
     public string Collection { get; set; }
 
     [JsonPropertyName("batch")]
     public BatchRequest Batch { get; set; }
+
 
     internal sealed class BatchRequest
     {
@@ -56,6 +62,7 @@ internal sealed class UpsertVectorRequest
         [JsonPropertyName("payloads")]
         public IList<Dictionary<string, object>> Payloads { get; set; }
 
+
         internal BatchRequest()
         {
             this.Ids = new List<string>();
@@ -63,6 +70,7 @@ internal sealed class UpsertVectorRequest
             this.Payloads = new List<Dictionary<string, object>>();
         }
     }
+
 
     #region private ================================================================================
 
@@ -73,4 +81,6 @@ internal sealed class UpsertVectorRequest
     }
 
     #endregion
+
+
 }

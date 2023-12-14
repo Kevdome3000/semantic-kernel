@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
+
 using System.Net;
 using Azure;
-using Microsoft.SemanticKernel.Http;
+using Http;
 
-namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
 /// <summary>
 /// Provides extension methods for the <see cref="RequestFailedException"/> class.

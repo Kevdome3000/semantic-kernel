@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Weaviate;
+
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 internal class WeaviateObject
 {

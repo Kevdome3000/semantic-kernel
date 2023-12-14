@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// Interface for a Pinecone client
@@ -29,6 +30,7 @@ public interface IPineconeClient
         CancellationToken cancellationToken = default
     );
 
+
     /// <summary>
     /// Gets the most relevant vectors to a list of queries
     /// </summary>
@@ -44,6 +46,7 @@ public interface IPineconeClient
         bool includeValues = false,
         bool includeMetadata = true,
         CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Find the nearest vectors in a collection using vector similarity search.
@@ -68,6 +71,7 @@ public interface IPineconeClient
         Dictionary<string, object>? filter = default,
         CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Upserts a list of documents
     /// </summary>
@@ -80,6 +84,7 @@ public interface IPineconeClient
         IEnumerable<PineconeDocument> vectors,
         string indexNamespace = "",
         CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Delete
@@ -102,6 +107,7 @@ public interface IPineconeClient
         bool deleteAll = false,
         CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Updates a vector
     /// </summary>
@@ -119,6 +125,7 @@ public interface IPineconeClient
         string indexNamespace = "",
         CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Describe Index Stats
     /// </summary>
@@ -134,6 +141,7 @@ public interface IPineconeClient
         Dictionary<string, object>? filter = default,
         CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// List indexes
     /// </summary>
@@ -143,6 +151,7 @@ public interface IPineconeClient
     /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
     /// <returns> A list of index names</returns>
     IAsyncEnumerable<string?> ListIndexesAsync(CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Delete Index
@@ -155,12 +164,14 @@ public interface IPineconeClient
     /// <returns>Task of void</returns>
     Task DeleteIndexAsync(string indexName, CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Check if a vector collection exists.
     /// </summary>
     /// <param name="indexName">The name assigned to a collection of vectors.</param>
     /// <param name="cancellationToken">Cancellation Token.</param>
     Task<bool> DoesIndexExistAsync(string indexName, CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Describe index
@@ -173,6 +184,7 @@ public interface IPineconeClient
     /// <returns>Task of Index</returns>
     Task<PineconeIndex?> DescribeIndexAsync(string indexName, CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Create index
     /// </summary>
@@ -183,6 +195,7 @@ public interface IPineconeClient
     /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
     /// <returns>Task of void</returns>
     Task CreateIndexAsync(IndexDefinition indexDefinition, CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Configure index

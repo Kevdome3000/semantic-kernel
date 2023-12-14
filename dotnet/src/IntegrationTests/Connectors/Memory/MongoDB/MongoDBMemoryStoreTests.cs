@@ -1,14 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.IntegrationTests.Connectors.MongoDB;
+
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.MongoDB;
 using Microsoft.SemanticKernel.Memory;
-using MongoDB.Driver;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Connectors.MongoDB;
 
 /// <summary>
 /// Integration tests of <see cref="MongoDBMemoryStore"/>.
@@ -20,10 +20,12 @@ public class MongoDBMemoryStoreTests : IClassFixture<MongoDBMemoryStoreTestsFixt
 
     private readonly MongoDBMemoryStoreTestsFixture _fixture;
 
+
     public MongoDBMemoryStoreTests(MongoDBMemoryStoreTestsFixture fixture)
     {
         this._fixture = fixture;
     }
+
 
     [Fact(Skip = SkipReason)]
     public async Task ItCanCreateAndGetCollectionAsync()
@@ -40,6 +42,7 @@ public class MongoDBMemoryStoreTests : IClassFixture<MongoDBMemoryStoreTestsFixt
         Assert.True(await collectionNames.ContainsAsync(collectionName));
     }
 
+
     [Fact(Skip = SkipReason)]
     public async Task ItCanCheckIfCollectionExistsAsync()
     {
@@ -54,6 +57,7 @@ public class MongoDBMemoryStoreTests : IClassFixture<MongoDBMemoryStoreTestsFixt
         Assert.True(await memoryStore.DoesCollectionExistAsync(collectionName));
         Assert.False(await memoryStore.DoesCollectionExistAsync($"{collectionName}_1"));
     }
+
 
     [Fact(Skip = SkipReason)]
     public async Task ItCanDeleteCollectionsAsync()
@@ -72,6 +76,7 @@ public class MongoDBMemoryStoreTests : IClassFixture<MongoDBMemoryStoreTestsFixt
         Assert.False(await memoryStore.DoesCollectionExistAsync(collectionName));
     }
 
+
     [Fact(Skip = SkipReason)]
     public async Task ItCanTryDeleteNonExistingCollectionAsync()
     {
@@ -85,6 +90,7 @@ public class MongoDBMemoryStoreTests : IClassFixture<MongoDBMemoryStoreTestsFixt
         // Assert
         Assert.False(await memoryStore.DoesCollectionExistAsync(collectionName));
     }
+
 
     [Fact(Skip = SkipReason)]
     public async Task ItCanBatchGetAsync()
@@ -110,6 +116,7 @@ public class MongoDBMemoryStoreTests : IClassFixture<MongoDBMemoryStoreTestsFixt
         AssertMemoryRecordEqual(testRecord, actualWithEmbedding);
     }
 
+
     [Fact(Skip = SkipReason)]
     public async Task ItCanGetEmptyEmbeddingAsync()
     {
@@ -134,6 +141,7 @@ public class MongoDBMemoryStoreTests : IClassFixture<MongoDBMemoryStoreTestsFixt
         AssertMemoryRecordEqual(testRecord, actualWithEmbedding);
     }
 
+
     [Theory(Skip = SkipReason)]
     [InlineData(true)]
     [InlineData(false)]
@@ -157,11 +165,13 @@ public class MongoDBMemoryStoreTests : IClassFixture<MongoDBMemoryStoreTestsFixt
         Assert.Equal(Count, actualRecords.Count);
 
         var actualRecordsOrdered = actualRecords.OrderBy(r => r.Key).ToArray();
+
         for (int i = 0; i < Count; i++)
         {
             AssertMemoryRecordEqual(records[i], actualRecordsOrdered[i], assertEmbeddingEqual: withEmbeddings);
         }
     }
+
 
     [Fact(Skip = SkipReason)]
     public async Task ItCanUpsertDifferentMemoryRecordsWithSameKeyAsync()
@@ -197,6 +207,7 @@ public class MongoDBMemoryStoreTests : IClassFixture<MongoDBMemoryStoreTestsFixt
         AssertMemoryRecordEqual(testRecord2, actual2);
     }
 
+
     [Fact(Skip = SkipReason)]
     public async Task ItCanRemoveRecordAsync()
     {
@@ -217,6 +228,7 @@ public class MongoDBMemoryStoreTests : IClassFixture<MongoDBMemoryStoreTestsFixt
         Assert.Null(actual);
     }
 
+
     [Fact(Skip = SkipReason)]
     public async Task ItCanTryRemovingNonExistingRecordAsync()
     {
@@ -233,6 +245,7 @@ public class MongoDBMemoryStoreTests : IClassFixture<MongoDBMemoryStoreTestsFixt
         // Assert
         Assert.Null(actual);
     }
+
 
     [Fact(Skip = SkipReason)]
     public async Task ItCanBatchRemoveRecordsAsync()
@@ -252,6 +265,7 @@ public class MongoDBMemoryStoreTests : IClassFixture<MongoDBMemoryStoreTestsFixt
         Assert.Empty(actual);
     }
 
+
     [Fact(Skip = SkipReason)]
     public async Task ItCanTryBatchRemovingNonExistingRecordsAsync()
     {
@@ -268,6 +282,7 @@ public class MongoDBMemoryStoreTests : IClassFixture<MongoDBMemoryStoreTestsFixt
         var actual = await memoryStore.GetBatchAsync(collectionName, ids).ToListAsync();
         Assert.Empty(actual);
     }
+
 
     [Fact(Skip = SkipReason)]
     public async Task ItCanTryBatchRemovingMixedExistingAndNonExistingRecordsAsync()
@@ -287,12 +302,14 @@ public class MongoDBMemoryStoreTests : IClassFixture<MongoDBMemoryStoreTestsFixt
         Assert.Empty(actual);
     }
 
+
     [Fact(Skip = SkipReason)]
     public async Task ItCanListAllDatabaseCollectionsAsync()
     {
         // Arrange
         var memoryStore = this._fixture.ListCollectionsMemoryStore;
         var testCollections = new[] { "collection1", "collection2", "collection3" };
+
         foreach (var collection in testCollections)
         {
             await memoryStore.CreateCollectionAsync(collection);
@@ -311,6 +328,7 @@ public class MongoDBMemoryStoreTests : IClassFixture<MongoDBMemoryStoreTestsFixt
         Assert.NotNull(actualCollections);
         Assert.True(testCollections.SequenceEqual(actualCollections));
     }
+
 
     [Theory(Skip = SkipReason)]
     [InlineData(true)]
@@ -335,6 +353,7 @@ public class MongoDBMemoryStoreTests : IClassFixture<MongoDBMemoryStoreTestsFixt
         AssertMemoryRecordEqual(nearestMatchExpected, actual, assertEmbeddingEqual: withEmbedding);
     }
 
+
     [Theory(Skip = SkipReason)]
     [InlineData(1, false)]
     [InlineData(1, true)]
@@ -350,10 +369,10 @@ public class MongoDBMemoryStoreTests : IClassFixture<MongoDBMemoryStoreTestsFixt
 
         // Act
         var nearestMatchesActual = await memoryStore.GetNearestMatchesAsync(
-            collectionName,
-            searchEmbedding,
-            limit,
-            withEmbeddings: withEmbeddings)
+                collectionName,
+                searchEmbedding,
+                limit,
+                withEmbeddings: withEmbeddings)
             .ToListAsync();
 
         // Assert
@@ -365,6 +384,7 @@ public class MongoDBMemoryStoreTests : IClassFixture<MongoDBMemoryStoreTestsFixt
             AssertMemoryRecordEqual(nearestMatchesExpected[i], nearestMatchesActual[i].Item1, withEmbeddings);
         }
     }
+
 
     [Theory(Skip = SkipReason)]
     [InlineData(0.999, 1, false)]
@@ -381,11 +401,11 @@ public class MongoDBMemoryStoreTests : IClassFixture<MongoDBMemoryStoreTestsFixt
 
         // Act
         var nearestMatchesActual = await memoryStore.GetNearestMatchesAsync(
-            collectionName,
-            searchEmbedding,
-            100,
-            minScore,
-            withEmbeddings: withEmbeddings)
+                collectionName,
+                searchEmbedding,
+                100,
+                minScore,
+                withEmbeddings: withEmbeddings)
             .ToListAsync();
 
         // Assert
@@ -398,10 +418,12 @@ public class MongoDBMemoryStoreTests : IClassFixture<MongoDBMemoryStoreTestsFixt
         }
     }
 
+
     #region private ================================================================================
 
     private static void AssertMemoryRecordEqualWithoutEmbedding(MemoryRecord expectedRecord, MemoryRecord actualRecord) =>
         AssertMemoryRecordEqual(expectedRecord, actualRecord, false);
+
 
     private static void AssertMemoryRecordEqual(MemoryRecord expectedRecord, MemoryRecord actualRecord, bool assertEmbeddingEqual = true)
     {
@@ -424,7 +446,10 @@ public class MongoDBMemoryStoreTests : IClassFixture<MongoDBMemoryStoreTestsFixt
         }
     }
 
+
     private static string GetRandomName() => $"test_{Guid.NewGuid():N}";
 
     #endregion
+
+
 }

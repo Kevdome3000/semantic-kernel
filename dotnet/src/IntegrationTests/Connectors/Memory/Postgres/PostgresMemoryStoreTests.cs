@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.IntegrationTests.Connectors.Postgres;
+
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -11,7 +13,6 @@ using Microsoft.SemanticKernel.Memory;
 using Npgsql;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Connectors.Postgres;
 
 /// <summary>
 /// Integration tests of <see cref="PostgresMemoryStore"/>.
@@ -20,6 +21,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
 {
     // If null, all tests will be enabled
     private const string? SkipReason = "Required postgres with pgvector extension";
+
 
     public async Task InitializeAsync()
     {
@@ -52,12 +54,14 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         await this.CreateDatabaseAsync();
     }
 
+
     public async Task DisposeAsync()
     {
         await this._dataSource.DisposeAsync();
 
         await this.DropDatabaseAsync();
     }
+
 
     [Fact(Skip = SkipReason)]
     public void InitializeDbConnectionSucceeds()
@@ -66,6 +70,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         // Assert
         Assert.NotNull(memoryStore);
     }
+
 
     [Fact(Skip = SkipReason)]
     public async Task ItCanCreateAndGetCollectionAsync()
@@ -83,6 +88,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         Assert.True(await collections.ContainsAsync(collection));
     }
 
+
     [Fact(Skip = SkipReason)]
     public async Task ItCanCheckIfCollectionExistsAsync()
     {
@@ -97,6 +103,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         Assert.True(await memoryStore.DoesCollectionExistAsync("my_collection"));
         Assert.False(await memoryStore.DoesCollectionExistAsync("my_collection2"));
     }
+
 
     [Fact(Skip = SkipReason)]
     public async Task CollectionsCanBeDeletedAsync()
@@ -113,6 +120,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         // Assert
         Assert.False(await memoryStore.DoesCollectionExistAsync(collection));
     }
+
 
     [Fact(Skip = SkipReason)]
     public async Task GetAsyncReturnsEmptyEmbeddingUnlessSpecifiedAsync()
@@ -140,6 +148,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         Assert.True(actualDefault.Embedding.IsEmpty);
         Assert.False(actualWithEmbedding.Embedding.IsEmpty);
     }
+
 
     [Fact(Skip = SkipReason)]
     public async Task ItCanUpsertAndRetrieveARecordWithNoTimestampAsync()
@@ -171,6 +180,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         Assert.Equal(testRecord.Metadata.Id, actual.Metadata.Id);
     }
 
+
     [Fact(Skip = SkipReason)]
     public async Task ItCanUpsertAndRetrieveARecordWithTimestampAsync()
     {
@@ -201,6 +211,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         Assert.Equal(testRecord.Metadata.Id, actual.Metadata.Id);
         Assert.Equal(testRecord.Timestamp, actual.Timestamp);
     }
+
 
     [Fact(Skip = SkipReason)]
     public async Task UpsertReplacesExistingRecordWithSameIdAsync()
@@ -236,6 +247,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         Assert.Equal(testRecord2.Metadata.Description, actual.Metadata.Description);
     }
 
+
     [Fact(Skip = SkipReason)]
     public async Task ExistingRecordCanBeRemovedAsync()
     {
@@ -260,6 +272,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         Assert.Null(actual);
     }
 
+
     [Fact(Skip = SkipReason)]
     public async Task RemovingNonExistingRecordDoesNothingAsync()
     {
@@ -275,6 +288,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         // Assert
         Assert.Null(actual);
     }
+
 
     [Fact(Skip = SkipReason)]
     public async Task ItCanListAllDatabaseCollectionsAsync()
@@ -305,6 +319,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         Assert.True(collections.Contains(testCollections[2]),
             $"Collections does not contain the newly-created collection {testCollections[2]}");
     }
+
 
     [Fact(Skip = SkipReason)]
     public async Task GetNearestMatchesReturnsAllResultsWithNoMinScoreAsync()
@@ -361,12 +376,14 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
 
         // Assert
         Assert.Equal(topN, topNResults.Length);
+
         for (int j = 0; j < topN - 1; j++)
         {
             int compare = topNResults[j].Item2.CompareTo(topNResults[j + 1].Item2);
             Assert.True(compare >= 0);
         }
     }
+
 
     [Fact(Skip = SkipReason)]
     public async Task GetNearestMatchAsyncReturnsEmptyEmbeddingUnlessSpecifiedAsync()
@@ -428,6 +445,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         Assert.False(topNResultWithEmbedding.Value.Item1.Embedding.IsEmpty);
     }
 
+
     [Fact(Skip = SkipReason)]
     public async Task GetNearestMatchAsyncReturnsExpectedAsync()
     {
@@ -486,6 +504,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         Assert.True(topNResult.Value.Item2 >= threshold);
     }
 
+
     [Fact(Skip = SkipReason)]
     public async Task GetNearestMatchesDifferentiatesIdenticalVectorsByKeyAsync()
     {
@@ -521,6 +540,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         }
     }
 
+
     [Fact(Skip = SkipReason)]
     public async Task ItCanBatchUpsertRecordsAsync()
     {
@@ -541,6 +561,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         Assert.Equal(numRecords, resultRecords.ToEnumerable().Count());
     }
 
+
     [Fact(Skip = SkipReason)]
     public async Task ItCanBatchGetRecordsAsync()
     {
@@ -560,6 +581,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         Assert.NotNull(results);
         Assert.Equal(numRecords, results.ToEnumerable().Count());
     }
+
 
     [Fact(Skip = SkipReason)]
     public async Task ItCanBatchRemoveRecordsAsync()
@@ -588,6 +610,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         }
     }
 
+
     [Fact(Skip = SkipReason)]
     public async Task DeletingNonExistentCollectionDoesNothingAsync()
     {
@@ -598,6 +621,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         // Act
         await memoryStore.DeleteCollectionAsync(collection);
     }
+
 
     [Fact(Skip = SkipReason)]
     public async Task ItCanBatchGetRecordsAndSkipIfKeysDoNotExistAsync()
@@ -622,16 +646,19 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         Assert.Equal(numRecords, resultRecords.ToEnumerable().Count());
     }
 
+
     #region private ================================================================================
 
     private string _connectionString = null!;
     private string _databaseName = null!;
     private NpgsqlDataSource _dataSource = null!;
 
+
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "The database name is generated randomly, it does not support parameterized passing.")]
     private async Task CreateDatabaseAsync()
     {
         using NpgsqlDataSource dataSource = NpgsqlDataSource.Create(this._connectionString);
+
         await using (NpgsqlConnection conn = await dataSource.OpenConnectionAsync())
         {
             await using (NpgsqlCommand command = new($"CREATE DATABASE \"{this._databaseName}\"", conn))
@@ -650,10 +677,12 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         }
     }
 
+
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "The database name is generated randomly, it does not support parameterized passing.")]
     private async Task DropDatabaseAsync()
     {
         using NpgsqlDataSource dataSource = NpgsqlDataSource.Create(this._connectionString);
+
         await using (NpgsqlConnection conn = await dataSource.OpenConnectionAsync())
         {
             await using (NpgsqlCommand command = new($"DROP DATABASE IF EXISTS \"{this._databaseName}\"", conn))
@@ -663,10 +692,12 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         }
     }
 
+
     private PostgresMemoryStore CreateMemoryStore()
     {
         return new PostgresMemoryStore(this._dataSource!, vectorSize: 3, schema: "public");
     }
+
 
     private IEnumerable<MemoryRecord> CreateBatchRecords(int numRecords)
     {
@@ -674,6 +705,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         Assert.True(numRecords > 0, "Number of records must be greater than 0");
 
         IEnumerable<MemoryRecord> records = new List<MemoryRecord>(numRecords);
+
         for (int i = 0; i < numRecords / 2; i++)
         {
             var testRecord = MemoryRecord.LocalRecord(
@@ -698,4 +730,6 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
     }
 
     #endregion
+
+
 }

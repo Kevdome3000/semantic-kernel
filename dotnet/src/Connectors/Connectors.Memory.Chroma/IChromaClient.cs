@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Chroma;
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Connectors.Chroma;
 
 /// <summary>
 /// Interface for client to make requests to Chroma API.
@@ -19,6 +20,7 @@ public interface IChromaClient
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     Task CreateCollectionAsync(string collectionName, CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Returns collection model instance by name.
     /// </summary>
@@ -27,6 +29,7 @@ public interface IChromaClient
     /// <returns>Instance of <see cref="ChromaCollectionModel"/> model.</returns>
     Task<ChromaCollectionModel?> GetCollectionAsync(string collectionName, CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Removes collection by name.
     /// </summary>
@@ -34,12 +37,14 @@ public interface IChromaClient
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     Task DeleteCollectionAsync(string collectionName, CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Returns all collection names.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An asynchronous list of collection names.</returns>
     IAsyncEnumerable<string> ListCollectionsAsync(CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Upserts embedding to specified collection.
@@ -51,6 +56,7 @@ public interface IChromaClient
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     Task UpsertEmbeddingsAsync(string collectionId, string[] ids, ReadOnlyMemory<float>[] embeddings, object[]? metadatas = null, CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Returns embeddings from specified collection.
     /// </summary>
@@ -61,6 +67,7 @@ public interface IChromaClient
     /// <returns>Instance of <see cref="ChromaEmbeddingsModel"/> model.</returns>
     Task<ChromaEmbeddingsModel> GetEmbeddingsAsync(string collectionId, string[] ids, string[]? include = null, CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Removes embeddings from specified collection.
     /// </summary>
@@ -68,6 +75,7 @@ public interface IChromaClient
     /// <param name="ids">Array of embedding identifiers.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     Task DeleteEmbeddingsAsync(string collectionId, string[] ids, CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Searches nearest embeddings by distance in specified collection.

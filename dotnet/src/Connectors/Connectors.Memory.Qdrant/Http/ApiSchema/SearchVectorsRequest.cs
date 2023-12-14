@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Qdrant;
+
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 internal sealed class SearchVectorsRequest
 {
@@ -30,15 +31,18 @@ internal sealed class SearchVectorsRequest
     [JsonPropertyName("score_threshold")]
     public double ScoreThreshold { get; set; } = -1;
 
+
     public static SearchVectorsRequest Create(string collectionName)
     {
         return new SearchVectorsRequest(collectionName);
     }
 
+
     public static SearchVectorsRequest Create(string collectionName, int vectorSize)
     {
         return new SearchVectorsRequest(collectionName).SimilarTo(new float[vectorSize]);
     }
+
 
     public SearchVectorsRequest SimilarTo(ReadOnlyMemory<float> vector)
     {
@@ -46,12 +50,14 @@ internal sealed class SearchVectorsRequest
         return this;
     }
 
+
     public SearchVectorsRequest HavingExternalId(string id)
     {
         Verify.NotNull(id, "External ID is NULL");
         this.Filters.ValueMustMatch("id", id);
         return this;
     }
+
 
     public SearchVectorsRequest HavingTags(IEnumerable<string>? tags)
     {
@@ -68,11 +74,13 @@ internal sealed class SearchVectorsRequest
         return this;
     }
 
+
     public SearchVectorsRequest WithScoreThreshold(double threshold)
     {
         this.ScoreThreshold = threshold;
         return this;
     }
+
 
     public SearchVectorsRequest IncludePayLoad()
     {
@@ -80,11 +88,13 @@ internal sealed class SearchVectorsRequest
         return this;
     }
 
+
     public SearchVectorsRequest IncludeVectorData(bool withVector)
     {
         this.WithVector = withVector;
         return this;
     }
+
 
     public SearchVectorsRequest FromPosition(int offset)
     {
@@ -92,16 +102,19 @@ internal sealed class SearchVectorsRequest
         return this;
     }
 
+
     public SearchVectorsRequest Take(int count)
     {
         this.Limit = count;
         return this;
     }
 
+
     public SearchVectorsRequest TakeFirst()
     {
         return this.FromPosition(0).Take(1);
     }
+
 
     public HttpRequestMessage Build()
     {
@@ -115,6 +128,7 @@ internal sealed class SearchVectorsRequest
             payload: this);
     }
 
+
     internal sealed class Filter
     {
         internal sealed class Match
@@ -122,11 +136,13 @@ internal sealed class SearchVectorsRequest
             [JsonPropertyName("value")]
             public object Value { get; set; }
 
+
             public Match()
             {
                 this.Value = string.Empty;
             }
         }
+
 
         internal sealed class Must
         {
@@ -136,17 +152,20 @@ internal sealed class SearchVectorsRequest
             [JsonPropertyName("match")]
             public Match Match { get; set; }
 
+
             public Must()
             {
                 this.Match = new();
                 this.Key = string.Empty;
             }
 
+
             public Must(string key, object value) : this()
             {
                 this.Key = key;
                 this.Match.Value = value;
             }
+
 
             public void Validate()
             {
@@ -155,13 +174,16 @@ internal sealed class SearchVectorsRequest
             }
         }
 
+
         [JsonPropertyName("must")]
         public List<Must> Conditions { get; set; }
+
 
         internal Filter()
         {
             this.Conditions = new();
         }
+
 
         internal Filter ValueMustMatch(string key, object value)
         {
@@ -169,9 +191,11 @@ internal sealed class SearchVectorsRequest
             return this;
         }
 
+
         public void Validate()
         {
             Verify.NotNull(this.Conditions, "Filter conditions are NULL");
+
             foreach (var x in this.Conditions)
             {
                 x.Validate();
@@ -179,9 +203,11 @@ internal sealed class SearchVectorsRequest
         }
     }
 
+
     #region private ================================================================================
 
     private readonly string _collectionName;
+
 
     private SearchVectorsRequest(string collectionName)
     {
@@ -195,4 +221,6 @@ internal sealed class SearchVectorsRequest
     }
 
     #endregion
+
+
 }

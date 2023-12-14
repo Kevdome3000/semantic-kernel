@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Memory;
+
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Microsoft.SemanticKernel.Memory;
 
 /// <summary>
 /// A collector for Top N matches. Keeps only the best N matches by Score.
@@ -15,6 +16,7 @@ internal sealed class TopNCollection<T> : IEnumerable<ScoredValue<T>>
     private readonly MinHeap<ScoredValue<T>> _heap;
     private bool _sorted = false;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="TopNCollection{T}"/> class.
     /// </summary>
@@ -24,6 +26,7 @@ internal sealed class TopNCollection<T> : IEnumerable<ScoredValue<T>>
         this.MaxItems = maxItems;
         this._heap = new MinHeap<ScoredValue<T>>(ScoredValue<T>.Min(), maxItems);
     }
+
 
     /// <summary>
     /// Gets the maximum number of items allowed in the collection.
@@ -36,7 +39,9 @@ internal sealed class TopNCollection<T> : IEnumerable<ScoredValue<T>>
     public int Count => this._heap.Count;
 
     internal ScoredValue<T> this[int i] => this._heap[i];
+
     internal ScoredValue<T> Top => this._heap.Top;
+
 
     /// <summary>
     /// Resets the collection, allowing it to be reused.
@@ -45,6 +50,7 @@ internal sealed class TopNCollection<T> : IEnumerable<ScoredValue<T>>
     {
         this._heap.Clear();
     }
+
 
     /// <summary>
     /// Adds a single scored value to the collection.
@@ -73,6 +79,7 @@ internal sealed class TopNCollection<T> : IEnumerable<ScoredValue<T>>
         this._heap.Add(value);
     }
 
+
     /// <summary>
     /// Adds a value with a specified score to the collection.
     /// </summary>
@@ -82,6 +89,7 @@ internal sealed class TopNCollection<T> : IEnumerable<ScoredValue<T>>
     {
         this.Add(new ScoredValue<T>(value, score));
     }
+
 
     /// <summary>
     /// Sorts the collection in descending order by score.
@@ -95,6 +103,7 @@ internal sealed class TopNCollection<T> : IEnumerable<ScoredValue<T>>
         }
     }
 
+
     /// <summary>
     /// Returns a list containing the scored values in the collection.
     /// </summary>
@@ -102,6 +111,7 @@ internal sealed class TopNCollection<T> : IEnumerable<ScoredValue<T>>
     public IList<ScoredValue<T>> ToList()
     {
         var list = new List<ScoredValue<T>>(this.Count);
+
         for (int i = 0, count = this.Count; i < count; ++i)
         {
             list.Add(this[i]);
@@ -109,6 +119,7 @@ internal sealed class TopNCollection<T> : IEnumerable<ScoredValue<T>>
 
         return list;
     }
+
 
     /// <summary>
     /// Returns an enumerator that iterates through the collection.
@@ -118,6 +129,7 @@ internal sealed class TopNCollection<T> : IEnumerable<ScoredValue<T>>
     {
         return this._heap.GetEnumerator();
     }
+
 
     IEnumerator IEnumerable.GetEnumerator()
     {

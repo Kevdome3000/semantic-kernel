@@ -1,5 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable CA2208 // Instantiate argument exceptions correctly
+
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -14,14 +18,11 @@ using System.Threading.Tasks;
 using Azure;
 using Azure.AI.OpenAI;
 using Azure.Core.Pipeline;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Http;
+using ChatCompletion;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
+using Http;
 
-#pragma warning disable CA2208 // Instantiate argument exceptions correctly
-
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
 /// Base class for AI clients that provides common functionality for interacting with OpenAI services.
@@ -30,10 +31,12 @@ internal abstract class ClientCore
 {
     private const int MaxResultsPerPrompt = 128;
 
+
     internal ClientCore(ILogger? logger = null)
     {
         this.Logger = logger ?? NullLogger.Instance;
     }
+
 
     /// <summary>
     /// Model Id or Deployment Name
@@ -87,6 +90,7 @@ internal abstract class ClientCore
             unit: "{token}",
             description: "Number of tokens used");
 
+
     /// <summary>
     /// Creates completions for the prompt and settings.
     /// </summary>
@@ -108,6 +112,7 @@ internal abstract class ClientCore
         var options = CreateCompletionsOptions(text, textExecutionSettings, this.DeploymentOrModelName);
 
         var responseData = (await RunRequestAsync(() => this.Client.GetCompletionsAsync(options, cancellationToken)).ConfigureAwait(false)).Value;
+
         if (responseData.Choices.Count == 0)
         {
             throw new KernelException("Text completions not found");
@@ -117,6 +122,7 @@ internal abstract class ClientCore
         IReadOnlyDictionary<string, object?> metadata = GetResponseMetadata(responseData);
         return responseData.Choices.Select(choice => new TextContent(choice.Text, this.DeploymentOrModelName, choice, Encoding.UTF8, metadata)).ToList();
     }
+
 
     internal async IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(
         string prompt,
@@ -133,15 +139,18 @@ internal abstract class ClientCore
         StreamingResponse<Completions>? response = await RunRequestAsync(() => this.Client.GetCompletionsStreamingAsync(options, cancellationToken)).ConfigureAwait(false);
 
         IReadOnlyDictionary<string, object?>? metadata = null;
+
         await foreach (Completions completions in response)
         {
             metadata ??= GetResponseMetadata(completions);
+
             foreach (Choice choice in completions.Choices)
             {
                 yield return new OpenAIStreamingTextContent(choice.Text, choice.Index, this.DeploymentOrModelName, choice, metadata);
             }
         }
     }
+
 
     private static Dictionary<string, object?> GetResponseMetadata(Completions completions)
     {
@@ -153,6 +162,7 @@ internal abstract class ClientCore
             { nameof(completions.Usage), completions.Usage },
         };
     }
+
 
     private static Dictionary<string, object?> GetResponseMetadata(ChatCompletions completions)
     {
@@ -166,6 +176,7 @@ internal abstract class ClientCore
         };
     }
 
+
     private static Dictionary<string, object?> GetResponseMetadata(StreamingChatCompletionsUpdate completions)
     {
         return new Dictionary<string, object?>(3)
@@ -175,6 +186,7 @@ internal abstract class ClientCore
             { nameof(completions.SystemFingerprint), completions.SystemFingerprint },
         };
     }
+
 
     /// <summary>
     /// Generates an embedding from the given <paramref name="data"/>.
@@ -189,11 +201,13 @@ internal abstract class ClientCore
         CancellationToken cancellationToken)
     {
         var result = new List<ReadOnlyMemory<float>>(data.Count);
+
         foreach (string text in data)
         {
             var options = new EmbeddingsOptions(this.DeploymentOrModelName, new[] { text });
 
             Response<Azure.AI.OpenAI.Embeddings> response = await RunRequestAsync(() => this.Client.GetEmbeddingsAsync(options, cancellationToken)).ConfigureAwait(false);
+
             if (response.Value.Data.Count == 0)
             {
                 throw new KernelException("Text embedding not found");
@@ -204,6 +218,7 @@ internal abstract class ClientCore
 
         return result;
     }
+
 
     /// <summary>
     /// Generate a new chat message
@@ -230,11 +245,12 @@ internal abstract class ClientCore
         // Create the Azure SDK ChatCompletionOptions instance from all available information.
         var chatOptions = CreateChatCompletionsOptions(chatExecutionSettings, chat, kernel, this.DeploymentOrModelName);
 
-        for (int iteration = 1; ; iteration++)
+        for (int iteration = 1;; iteration++)
         {
             // Make the request.
             var responseData = (await RunRequestAsync(() => this.Client.GetChatCompletionsAsync(chatOptions, cancellationToken)).ConfigureAwait(false)).Value;
             this.CaptureUsageDetails(responseData.Usage);
+
             if (responseData.Choices.Count == 0)
             {
                 throw new KernelException("Chat completions not found");
@@ -255,12 +271,14 @@ internal abstract class ClientCore
             // but we're unable to find the function or extract the relevant information, just return the single result.
             ChatChoice resultChoice = responseData.Choices[0];
             OpenAIChatMessageContent result = new(resultChoice.Message, this.DeploymentOrModelName, metadata);
+
             if (resultChoice.FinishReason != CompletionsFinishReason.ToolCalls)
             {
                 return new[] { result };
             }
 
             IReadOnlyList<OpenAIFunctionToolCall>? functionToolCalls = null;
+
             try
             {
                 functionToolCalls = result.GetOpenAIFunctionToolCalls();
@@ -271,6 +289,7 @@ internal abstract class ClientCore
                 {
                     this.Logger.LogError(e, "Failed to parse function call response for '{FunctionName}'", resultChoice.Message.FunctionCall.Name);
                 }
+
                 if (this.Logger.IsEnabled(LogLevel.Trace))
                 {
                     this.Logger.LogTrace("Invalid function call arguments: '{FunctionArguments}'", resultChoice.Message.FunctionCall.Arguments);
@@ -293,6 +312,7 @@ internal abstract class ClientCore
             }
 
             List<(OpenAIFunctionToolCall FTC, KernelFunction Function, KernelArguments? Arguments)>? functionCalls = null;
+
             for (int i = 0; i < functionToolCalls.Count; i++)
             {
                 if (kernel!.Plugins.TryGetFunctionAndArguments(functionToolCalls[i], out KernelFunction? function, out KernelArguments? functionArgs))
@@ -331,6 +351,7 @@ internal abstract class ClientCore
             {
                 chatOptions.Tools.Clear();
                 chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
+
                 if (this.Logger.IsEnabled(LogLevel.Debug))
                 {
                     this.Logger.LogDebug("Maximum use ({MaximumUse}) reached; removing the tool.", chatExecutionSettings.ToolCallBehavior!.MaximumUseAttempts);
@@ -340,6 +361,7 @@ internal abstract class ClientCore
             if (iteration >= chatExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts)
             {
                 autoInvoke = false;
+
                 if (this.Logger.IsEnabled(LogLevel.Debug))
                 {
                     this.Logger.LogDebug("Maximum auto-invoke ({MaximumAutoInvoke}) reached.", chatExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts);
@@ -347,6 +369,7 @@ internal abstract class ClientCore
             }
         }
     }
+
 
     internal async IAsyncEnumerable<OpenAIStreamingChatMessageContent> GetStreamingChatMessageContentsAsync(
         ChatHistory chat,
@@ -366,7 +389,8 @@ internal abstract class ClientCore
         var chatOptions = CreateChatCompletionsOptions(chatExecutionSettings, chat, kernel, this.DeploymentOrModelName);
 
         StringBuilder? contentBuilder = null;
-        for (int iteration = 1; ; iteration++)
+
+        for (int iteration = 1;; iteration++)
         {
             // Make the request.
             var response = await RunRequestAsync(() => this.Client.GetChatCompletionsStreamingAsync(chatOptions, cancellationToken)).ConfigureAwait(false);
@@ -377,6 +401,7 @@ internal abstract class ClientCore
             IReadOnlyDictionary<string, object?>? metadata = null;
             ChatRole? streamedRole = default;
             CompletionsFinishReason finishReason = default;
+
             await foreach (StreamingChatCompletionsUpdate update in response.ConfigureAwait(false))
             {
                 metadata ??= GetResponseMetadata(update);
@@ -428,9 +453,11 @@ internal abstract class ClientCore
             }
 
             List<(ChatCompletionsFunctionToolCall CCFTC, OpenAIFunctionToolCall FTC, KernelFunction Function, KernelArguments? Arguments)>? functionCalls = null;
+
             for (int i = 0; i < functionCallResponses.Count; i++)
             {
                 var ftc = new OpenAIFunctionToolCall(functionCallResponses[i]);
+
                 if (kernel!.Plugins.TryGetFunctionAndArguments(ftc, out KernelFunction? function, out KernelArguments? functionArgs))
                 {
                     (functionCalls ??= new()).Add((functionCallResponses[i], ftc, function, functionArgs));
@@ -455,6 +482,7 @@ internal abstract class ClientCore
 
             // Now, invoke each function, and add the resulting tool call messages to the chat options.
             string content = contentBuilder?.ToString() ?? string.Empty;
+
             foreach (var fc in functionCalls)
             {
                 // Add the original assistant message to the chatOptions; this is required for the service
@@ -475,6 +503,7 @@ internal abstract class ClientCore
             {
                 chatOptions.Tools.Clear();
                 chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
+
                 if (this.Logger.IsEnabled(LogLevel.Debug))
                 {
                     this.Logger.LogDebug("Maximum use ({MaximumUse}) reached; removing the tool.", chatExecutionSettings.ToolCallBehavior!.MaximumUseAttempts);
@@ -484,6 +513,7 @@ internal abstract class ClientCore
             if (iteration >= chatExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts)
             {
                 autoInvoke = false;
+
                 if (this.Logger.IsEnabled(LogLevel.Debug))
                 {
                     this.Logger.LogDebug("Maximum auto-invoke ({MaximumAutoInvoke}) reached.", chatExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts);
@@ -491,6 +521,7 @@ internal abstract class ClientCore
             }
         }
     }
+
 
     /// <summary>Gets or updates a <see cref="KernelArguments"/> to reflect the specified <paramref name="settings"/>.</summary>
     /// <param name="args">The existing arguments.</param>
@@ -504,7 +535,8 @@ internal abstract class ClientCore
     {
         if (args is not null && settings is not null)
         {
-            args.ExecutionSettings = new Dictionary<string, PromptExecutionSettings>{
+            args.ExecutionSettings = new Dictionary<string, PromptExecutionSettings>
+            {
                 { PromptExecutionSettings.DefaultServiceId, settings },
             };
         }
@@ -515,6 +547,7 @@ internal abstract class ClientCore
 
         return args;
     }
+
 
     internal async IAsyncEnumerable<StreamingTextContent> GetChatAsTextStreamingContentsAsync(
         string prompt,
@@ -531,6 +564,7 @@ internal abstract class ClientCore
         }
     }
 
+
     internal async Task<IReadOnlyList<TextContent>> GetChatAsTextContentsAsync(
         string text,
         PromptExecutionSettings? executionSettings,
@@ -545,6 +579,7 @@ internal abstract class ClientCore
             .ToList();
     }
 
+
     internal void AddAttribute(string key, string? value)
     {
         if (!string.IsNullOrEmpty(value))
@@ -552,6 +587,7 @@ internal abstract class ClientCore
             this.Attributes.Add(key, value);
         }
     }
+
 
     /// <summary>Gets options to use for an OpenAIClient</summary>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
@@ -571,6 +607,7 @@ internal abstract class ClientCore
 
         return options;
     }
+
 
     /// <summary>
     /// Create a new empty chat instance
@@ -598,6 +635,7 @@ internal abstract class ClientCore
 
         return chat;
     }
+
 
     private static CompletionsOptions CreateCompletionsOptions(string text, OpenAIPromptExecutionSettings executionSettings, string deploymentOrModelName)
     {
@@ -641,6 +679,7 @@ internal abstract class ClientCore
         return options;
     }
 
+
     private static ChatCompletionsOptions CreateChatCompletionsOptions(
         OpenAIPromptExecutionSettings executionSettings,
         ChatHistory chatHistory,
@@ -665,6 +704,7 @@ internal abstract class ClientCore
         };
 
         executionSettings.ToolCallBehavior?.ConfigureOptions(kernel, options);
+
         if (executionSettings.TokenSelectionBiases is not null)
         {
             foreach (var keyValue in executionSettings.TokenSelectionBiases)
@@ -689,6 +729,7 @@ internal abstract class ClientCore
         return options;
     }
 
+
     private static ChatRequestMessage GetRequestMessage(ChatRole chatRole, string contents, ChatCompletionsToolCall? tool)
     {
         if (chatRole == ChatRole.User)
@@ -704,6 +745,7 @@ internal abstract class ClientCore
         if (chatRole == ChatRole.Assistant)
         {
             var msg = new ChatRequestAssistantMessage(contents);
+
             if (tool is not null)
             {
                 msg.ToolCalls.Add(tool);
@@ -713,6 +755,7 @@ internal abstract class ClientCore
 
         throw new NotImplementedException($"Role {chatRole} is not implemented");
     }
+
 
     private static ChatRequestMessage GetRequestMessage(ChatMessageContent message)
     {
@@ -748,9 +791,7 @@ internal abstract class ClientCore
 
             IEnumerable<ChatCompletionsToolCall>? tools =
                 (message as OpenAIChatMessageContent)?.ToolCalls ??
-                (message.Metadata?.TryGetValue(OpenAIChatMessageContent.ToolCallsProperty, out object? toolCallsObject) is true ?
-                    toolCallsObject as IEnumerable<ChatCompletionsToolCall> :
-                    null);
+                (message.Metadata?.TryGetValue(OpenAIChatMessageContent.ToolCallsProperty, out object? toolCallsObject) is true ? toolCallsObject as IEnumerable<ChatCompletionsToolCall> : null);
 
             if (tools is not null)
             {
@@ -766,6 +807,7 @@ internal abstract class ClientCore
         throw new NotSupportedException($"Role {message.Role} is not supported.");
     }
 
+
     private static ChatRequestMessage GetRequestMessage(ChatResponseMessage message)
     {
         if (message.Role == ChatRole.System)
@@ -776,6 +818,7 @@ internal abstract class ClientCore
         if (message.Role == ChatRole.Assistant)
         {
             var msg = new ChatRequestAssistantMessage(message.Content);
+
             if (message.ToolCalls is { Count: > 0 } tools)
             {
                 foreach (ChatCompletionsToolCall tool in tools)
@@ -795,6 +838,7 @@ internal abstract class ClientCore
         throw new NotSupportedException($"Role {message.Role} is not supported.");
     }
 
+
     private static void ValidateMaxTokens(int? maxTokens)
     {
         if (maxTokens.HasValue && maxTokens < 1)
@@ -802,6 +846,7 @@ internal abstract class ClientCore
             throw new ArgumentException($"MaxTokens {maxTokens} is not valid, the value must be greater than zero");
         }
     }
+
 
     private static void ValidateAutoInvoke(bool autoInvoke, int resultsPerPrompt)
     {
@@ -812,6 +857,7 @@ internal abstract class ClientCore
             throw new ArgumentException($"Auto-invocation of tool calls may only be used with a {nameof(OpenAIPromptExecutionSettings.ResultsPerPrompt)} of 1.");
         }
     }
+
 
     private static async Task<T> RunRequestAsync<T>(Func<Task<T>> request)
     {
@@ -824,6 +870,7 @@ internal abstract class ClientCore
             throw e.ToHttpOperationException();
         }
     }
+
 
     /// <summary>
     /// Captures usage details, including token information.

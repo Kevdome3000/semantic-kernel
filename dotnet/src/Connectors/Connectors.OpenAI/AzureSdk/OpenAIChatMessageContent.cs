@@ -87,6 +87,7 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
         return Array.Empty<OpenAIFunctionToolCall>();
     }
 
+
     private static IReadOnlyDictionary<string, object?>? CreateMetadataDictionary(
         IReadOnlyList<ChatCompletionsToolCall> toolCalls,
         IReadOnlyDictionary<string, object?>? original)
@@ -95,6 +96,7 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
         if (toolCalls.Count > 0)
         {
             Dictionary<string, object?> newDictionary;
+
             if (original is null)
             {
                 // There's no existing metadata to clone; just allocate a new dictionary.
@@ -109,6 +111,7 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
             {
                 // There's metadata to clone but we have to do so one item at a time.
                 newDictionary = new Dictionary<string, object?>(original.Count + 1);
+
                 foreach (var kvp in original)
                 {
                     newDictionary[kvp.Key] = kvp.Value;

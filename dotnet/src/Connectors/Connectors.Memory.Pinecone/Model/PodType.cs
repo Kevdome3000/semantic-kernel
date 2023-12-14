@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
+
 using System;
 using System.Linq;
 using System.Reflection;
@@ -7,7 +9,6 @@ using System.Runtime.Serialization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// Pod type of the index, see https://docs.pinecone.io/docs/indexes#pods-pod-types-and-pod-sizes.
@@ -99,6 +100,7 @@ public enum PodType
     Starter = 13
 }
 
+
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes
 internal sealed class PodTypeJsonConverter : JsonConverter<PodType>
 #pragma warning restore CA1812
@@ -120,6 +122,7 @@ internal sealed class PodTypeJsonConverter : JsonConverter<PodType>
 
         throw new JsonException($"Unable to parse '{stringValue}' as a PodType enum.");
     }
+
 
     public override void Write(Utf8JsonWriter writer, PodType value, JsonSerializerOptions options)
     {

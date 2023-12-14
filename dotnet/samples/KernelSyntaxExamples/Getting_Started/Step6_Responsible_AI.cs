@@ -4,6 +4,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 
+
 // This example shows how to use rendering event hooks to ensure that prompts are rendered in a responsible manner.
 public static class Step6_Responsible_AI
 {

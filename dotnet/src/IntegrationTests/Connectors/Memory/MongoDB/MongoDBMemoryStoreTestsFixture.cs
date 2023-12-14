@@ -1,14 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.IntegrationTests.Connectors.MongoDB;
+
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using global::MongoDB.Driver;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Connectors.MongoDB;
-using MongoDB.Driver;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Connectors.MongoDB;
 
 public class MongoDBMemoryStoreTestsFixture : IAsyncLifetime
 {
@@ -23,6 +24,7 @@ public class MongoDBMemoryStoreTestsFixture : IAsyncLifetime
     public MongoDBMemoryStore MemoryStore { get; }
     public MongoDBMemoryStore ListCollectionsMemoryStore { get; }
     public MongoDBMemoryStore VectorSearchMemoryStore { get; }
+
 
     public MongoDBMemoryStoreTestsFixture()
     {
@@ -51,10 +53,12 @@ public class MongoDBMemoryStoreTestsFixture : IAsyncLifetime
         this.ListCollectionsMemoryStore = new MongoDBMemoryStore(this._mongoClient, this.ListCollectionsDatabaseTestName);
     }
 
+
     public async Task InitializeAsync()
     {
         await this.VectorSearchMemoryStore.UpsertBatchAsync(this.VectorSearchCollectionName, DataHelper.VectorSearchTestRecords).ToListAsync();
     }
+
 
     public async Task DisposeAsync()
     {
@@ -64,6 +68,7 @@ public class MongoDBMemoryStoreTestsFixture : IAsyncLifetime
         this.MemoryStore.Dispose();
         this.VectorSearchMemoryStore.Dispose();
     }
+
 
     #region private ================================================================================
 
@@ -79,9 +84,11 @@ public class MongoDBMemoryStoreTestsFixture : IAsyncLifetime
         }
     }
 
+
     private static string GetSetting(IConfigurationRoot configuration, string settingName)
     {
         var settingValue = configuration[$"MongoDB:{settingName}"];
+
         if (string.IsNullOrWhiteSpace(settingValue))
         {
             throw new ArgumentNullException($"{settingValue} string is not configured");
@@ -90,7 +97,10 @@ public class MongoDBMemoryStoreTestsFixture : IAsyncLifetime
         return settingValue;
     }
 
+
     private static string GetRandomName() => $"test_{Guid.NewGuid():N}";
 
     #endregion
+
+
 }

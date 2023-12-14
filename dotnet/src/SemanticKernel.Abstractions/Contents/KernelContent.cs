@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel;
+
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Base class for all AI non-streaming results
@@ -28,6 +29,7 @@ public abstract class KernelContent
     /// The metadata associated with the content.
     /// </summary>
     public IReadOnlyDictionary<string, object?>? Metadata { get; }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelContent"/> class.

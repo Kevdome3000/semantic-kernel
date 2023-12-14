@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
+
 using System.Net.Http;
 
-namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// ListIndexesRequest
@@ -14,6 +15,7 @@ internal sealed class ListIndexesRequest
     {
         return new ListIndexesRequest();
     }
+
 
     public HttpRequestMessage Build()
     {

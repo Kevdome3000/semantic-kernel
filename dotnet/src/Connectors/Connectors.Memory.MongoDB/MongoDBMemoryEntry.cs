@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using Microsoft.SemanticKernel.Memory;
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
-
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
+
+using System;
+using global::MongoDB.Bson;
+using global::MongoDB.Bson.Serialization.Attributes;
+using Memory;
+
 
 /// <summary>
 /// A MongoDB memory entry.
@@ -47,6 +48,7 @@ public sealed class MongoDBMemoryEntry
     [BsonIgnoreIfDefault]
     public double Score { get; set; }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="MongoDBMemoryEntry"/> class.
     /// </summary>
@@ -59,11 +61,13 @@ public sealed class MongoDBMemoryEntry
         this.Timestamp = memoryRecord.Timestamp?.UtcDateTime;
     }
 
+
     /// <summary>
     /// Returns mapped <see cref="MemoryRecord"/>.
     /// </summary>
     public MemoryRecord ToMemoryRecord() =>
         new(this.Metadata.ToMemoryRecordMetadata(), this.Embedding, this.Id, this.Timestamp?.ToLocalTime());
+
 
     /// <summary>
     /// Returns a pair of mapped <see cref="MemoryRecord"/> and score.

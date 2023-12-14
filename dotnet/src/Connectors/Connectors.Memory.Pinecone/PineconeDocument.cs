@@ -1,13 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Text;
+using Text;
 
-namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// Pinecone Document entity.
@@ -81,6 +82,7 @@ public class PineconeDocument
     [JsonIgnore]
     public string? CreatedAt => this.Metadata?.TryGetValue("created_at", out var createdAt) == true ? createdAt.ToString() : null;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="PineconeDocument" /> class.
     /// </summary>
@@ -104,6 +106,7 @@ public class PineconeDocument
         this.Score = score;
     }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="PineconeDocument" /> class.
     /// </summary>
@@ -113,6 +116,7 @@ public class PineconeDocument
     {
         return new PineconeDocument(values, id);
     }
+
 
     /// <summary>
     /// Sets sparse vector data for <see cref="PineconeDocument" /> class.
@@ -124,6 +128,7 @@ public class PineconeDocument
         return this;
     }
 
+
     /// <summary>
     /// Sets metadata for <see cref="PineconeDocument" /> class.
     /// </summary>
@@ -133,6 +138,7 @@ public class PineconeDocument
         this.Metadata = metadata;
         return this;
     }
+
 
     /// <summary>
     /// Serializes the metadata to JSON.
@@ -154,6 +160,7 @@ public class PineconeDocument
 
         return JsonSerializer.Serialize(distinctMetadata, JsonOptionsCache.Default);
     }
+
 
     internal UpdateVectorRequest ToUpdateRequest()
     {

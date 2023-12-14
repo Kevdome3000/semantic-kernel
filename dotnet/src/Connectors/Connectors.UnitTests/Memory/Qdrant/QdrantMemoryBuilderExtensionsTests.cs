@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Connectors.UnitTests.Qdrant;
+
 using System;
 using System.Net.Http;
 using System.Net.Mime;
@@ -11,12 +13,12 @@ using Microsoft.SemanticKernel.Memory;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Qdrant;
 
 public sealed class QdrantMemoryBuilderExtensionsTests : IDisposable
 {
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
+
 
     public QdrantMemoryBuilderExtensionsTests()
     {
@@ -24,6 +26,7 @@ public sealed class QdrantMemoryBuilderExtensionsTests : IDisposable
 
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
     }
+
 
     [Fact]
     public async Task QdrantMemoryStoreShouldBeProperlyInitializedAsync()
@@ -45,6 +48,7 @@ public sealed class QdrantMemoryBuilderExtensionsTests : IDisposable
         // Assert
         Assert.Equal("https://fake-random-qdrant-host/collections", this._messageHandlerStub?.RequestUri?.AbsoluteUri);
     }
+
 
     public void Dispose()
     {

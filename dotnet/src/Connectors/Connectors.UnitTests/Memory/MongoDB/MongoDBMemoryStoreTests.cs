@@ -1,18 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Connectors.UnitTests.MongoDB;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using global::MongoDB.Driver;
+using global::MongoDB.Driver.Core.Clusters;
 using Microsoft.SemanticKernel.Connectors.MongoDB;
 using Microsoft.SemanticKernel.Memory;
-using MongoDB.Driver;
-using MongoDB.Driver.Core.Clusters;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.MongoDB;
 
 /// <summary>
 /// Unit tests for <see cref="MongoDBMemoryStore"/> class.
@@ -26,6 +27,7 @@ public class MongoDBMemoryStoreTests
     private readonly Mock<ICluster> _mongoClusterMock;
     private readonly Mock<IMongoCollection<MongoDBMemoryEntry>> _mongoCollectionMock;
     private readonly Mock<IMongoDatabase> _mongoDatabaseMock;
+
 
     public MongoDBMemoryStoreTests()
     {
@@ -45,6 +47,7 @@ public class MongoDBMemoryStoreTests
             .Returns(this._mongoCollectionMock.Object);
     }
 
+
     [Fact]
     public async Task ItCanCreateCollectionAsync()
     {
@@ -57,6 +60,7 @@ public class MongoDBMemoryStoreTests
         // Assert
         this._mongoDatabaseMock.Verify(d => d.CreateCollectionAsync(CollectionName, default, default), Times.Once());
     }
+
 
     [Theory]
     [InlineData(true)]
@@ -78,6 +82,7 @@ public class MongoDBMemoryStoreTests
         this._mongoDatabaseMock.Verify(client => client.ListCollectionNamesAsync(default, default), Times.Once());
     }
 
+
     [Fact]
     public async Task ItCanDeleteCollectionAsync()
     {
@@ -91,6 +96,7 @@ public class MongoDBMemoryStoreTests
         this._mongoDatabaseMock.Verify(client => client.DropCollectionAsync(CollectionName, default), Times.Once());
     }
 
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
@@ -100,9 +106,7 @@ public class MongoDBMemoryStoreTests
         using var memoryStore = new MongoDBMemoryStore(this._mongoClientMock.Object, DatabaseName);
         var memoryRecord = CreateRecord("id");
 
-        using var cursorMock = entryExists ?
-            new AsyncCursorMock<MongoDBMemoryEntry>(new MongoDBMemoryEntry(memoryRecord)) :
-            new AsyncCursorMock<MongoDBMemoryEntry>();
+        using var cursorMock = entryExists ? new AsyncCursorMock<MongoDBMemoryEntry>(new MongoDBMemoryEntry(memoryRecord)) : new AsyncCursorMock<MongoDBMemoryEntry>();
 
         this._mongoCollectionMock
             .Setup(c => c.FindAsync(
@@ -125,6 +129,7 @@ public class MongoDBMemoryStoreTests
             Assert.Null(actualMemoryRecord);
         }
     }
+
 
     [Fact]
     public async Task ItCanGetBatchAsync()
@@ -154,6 +159,7 @@ public class MongoDBMemoryStoreTests
         }
     }
 
+
     [Fact]
     public async Task ItCanGetCollectionsAsync()
     {
@@ -172,6 +178,7 @@ public class MongoDBMemoryStoreTests
         // Assert
         Assert.True(collections.SequenceEqual(actualCollections));
     }
+
 
     [Fact]
     public async Task ItCanGetNearestMatchAsync()
@@ -193,6 +200,7 @@ public class MongoDBMemoryStoreTests
         AssertMemoryRecordEqual(memoryRecord, match.Value.Item1);
         this._mongoCollectionMock.Verify(a => a.AggregateAsync(It.Is<PipelineDefinition<MongoDBMemoryEntry, MongoDBMemoryEntry>>(p => VerifyPipeline(p, ExpectedStage)), It.IsAny<AggregateOptions>(), default), Times.Once());
     }
+
 
     [Fact]
     public async Task ItCanGetNearestMatchesAsync()
@@ -221,6 +229,7 @@ public class MongoDBMemoryStoreTests
         this._mongoCollectionMock.Verify(a => a.AggregateAsync(It.Is<PipelineDefinition<MongoDBMemoryEntry, MongoDBMemoryEntry>>(p => VerifyPipeline(p, ExpectedStage)), It.IsAny<AggregateOptions>(), default), Times.Once());
     }
 
+
     [Fact]
     public async Task ItCanRemoveAsync()
     {
@@ -235,6 +244,7 @@ public class MongoDBMemoryStoreTests
         this._mongoCollectionMock.Verify(c => c.DeleteOneAsync(It.IsAny<FilterDefinition<MongoDBMemoryEntry>>(), default), Times.Once());
     }
 
+
     [Fact]
     public async Task ItCanRemoveBatchAsync()
     {
@@ -248,6 +258,7 @@ public class MongoDBMemoryStoreTests
         // Assert
         this._mongoCollectionMock.Verify(c => c.DeleteManyAsync(It.IsAny<FilterDefinition<MongoDBMemoryEntry>>(), default), Times.Once());
     }
+
 
     [Fact]
     public async Task ItCanUpsertAsync()
@@ -275,6 +286,7 @@ public class MongoDBMemoryStoreTests
             It.IsAny<ReplaceOptions>(),
             default));
     }
+
 
     [Fact]
     public async Task ItCanUpsertBatchAsync()
@@ -310,6 +322,7 @@ public class MongoDBMemoryStoreTests
         }
     }
 
+
     [Fact]
     public void ItDisposesClusterOnDispose()
     {
@@ -323,6 +336,7 @@ public class MongoDBMemoryStoreTests
         this._mongoClusterMock.Verify(c => c.Dispose(), Times.Once());
     }
 
+
     #region private ================================================================================
 
     private sealed class AsyncCursorMock<T> : IAsyncCursor<T>
@@ -331,14 +345,17 @@ public class MongoDBMemoryStoreTests
 
         public IEnumerable<T>? Current { get; private set; }
 
+
         public AsyncCursorMock(params T[] items)
         {
             this._items = items ?? Array.Empty<T>();
         }
 
+
         public void Dispose()
         {
         }
+
 
         public bool MoveNext(CancellationToken cancellationToken = default)
         {
@@ -348,9 +365,11 @@ public class MongoDBMemoryStoreTests
             return this.Current.Any();
         }
 
+
         public Task<bool> MoveNextAsync(CancellationToken cancellationToken = default) =>
             Task.FromResult(this.MoveNext(cancellationToken));
     }
+
 
     private static MemoryRecord CreateRecord(string id) =>
         MemoryRecord.LocalRecord(
@@ -360,6 +379,7 @@ public class MongoDBMemoryStoreTests
             key: id,
             embedding: new[] { 1.1f, 2.2f, 3.3f });
 
+
     private static (MemoryRecord[], string[]) CreateRecords(int count)
     {
         var keys = Enumerable.Range(0, count).Select(i => $"{i}").ToArray();
@@ -367,6 +387,7 @@ public class MongoDBMemoryStoreTests
 
         return (memoryRecords, keys);
     }
+
 
     private static void AssertMemoryRecordEqual(MemoryRecord expectedRecord, MemoryRecord actualRecord, bool assertEmbeddingEqual = true)
     {
@@ -388,6 +409,7 @@ public class MongoDBMemoryStoreTests
         }
     }
 
+
     private static bool VerifyPipeline(PipelineDefinition<MongoDBMemoryEntry, MongoDBMemoryEntry> pipeline, string expectedStage)
     {
         if (pipeline.Stages.Count() != 2)
@@ -400,4 +422,6 @@ public class MongoDBMemoryStoreTests
     }
 
     #endregion
+
+
 }

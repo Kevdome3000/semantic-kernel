@@ -337,12 +337,14 @@ public class RestApiOperationTests
         Assert.Equal("false", headers["h2"]);
     }
 
+
     [Fact]
     public void ItCreatesNewKernelsOnEachBuild()
     {
         IKernelBuilder builder = Kernel.CreateBuilder();
         Assert.NotSame(builder.Build(), builder.Build());
     }
+
 
     [Fact]
     public void ItHasIdempotentServicesAndPlugins()
@@ -363,12 +365,14 @@ public class RestApiOperationTests
         }
     }
 
+
     [Fact]
     public void ItDefaultsDataToAnEmptyDictionary()
     {
         Kernel kernel = Kernel.CreateBuilder().Build();
         Assert.Empty(kernel.Data);
     }
+
 
     [Fact]
     public void ItDefaultsServiceSelectorToSingleton()
@@ -395,14 +399,20 @@ public class RestApiOperationTests
         Assert.Same(selector, kernel.GetRequiredService<IAIServiceSelector>());
     }
 
+
     private sealed class NopServiceSelector : IAIServiceSelector
     {
 #pragma warning disable CS8769 // Nullability of reference types in type of parameter doesn't match implemented member (possibly because of nullability attributes).
         bool IAIServiceSelector.TrySelectAIService<T>(
 #pragma warning restore CS8769
-            Kernel kernel, KernelFunction function, KernelArguments arguments, out T? service, out PromptExecutionSettings? serviceSettings) where T : class =>
+            Kernel kernel,
+            KernelFunction function,
+            KernelArguments arguments,
+            out T? service,
+            out PromptExecutionSettings? serviceSettings) where T : class =>
             throw new NotImplementedException();
     }
+
 
     [Fact]
     public void ItPropagatesPluginsToBuiltKernel()
@@ -419,12 +429,14 @@ public class RestApiOperationTests
         Assert.Contains(plugin2, kernel.Plugins);
     }
 
+
     [Fact]
     public void ItSuppliesServicesCollectionToPluginsBuilder()
     {
         IKernelBuilder builder = Kernel.CreateBuilder();
         Assert.Same(builder.Services, builder.Plugins.Services);
     }
+
 
     [Fact]
     public void ItBuildsServicesIntoKernel()
@@ -448,6 +460,7 @@ public class RestApiOperationTests
         Assert.Equal(3, kernel.GetAllServices<IFormatProvider>().Count());
     }
 
+
     [Fact]
     public void ItSupportsMultipleEqualNamedServices()
     {
@@ -464,6 +477,7 @@ public class RestApiOperationTests
 
         Assert.Equal(8, kernel.GetAllServices<IChatCompletionService>().Count());
     }
+
 
     [Fact]
     public void ItIsntNeededInDIContexts()
@@ -497,6 +511,7 @@ public class RestApiOperationTests
 
         //** WORKAROUND
         Dictionary<Type, HashSet<object?>> mapping = new();
+
         foreach (var descriptor in serviceCollection)
         {
             if (!mapping.TryGetValue(descriptor.ServiceType, out HashSet<object?>? keys))
@@ -511,6 +526,7 @@ public class RestApiOperationTests
         k = serviceCollection.BuildServiceProvider().GetService<Kernel>()!;
         Assert.Equal(4, k.GetAllServices<IChatCompletionService>().Count()); // now this is 4 as expected
     }
+
 
     [Fact]
     public void ItFindsAllPluginsToPopulatePluginsCollection()
@@ -527,6 +543,7 @@ public class RestApiOperationTests
 
         Assert.Equal(3, kernel.Plugins.Count);
     }
+
 
     [Fact]
     public void ItFindsPluginCollectionToUse()
@@ -546,6 +563,7 @@ public class RestApiOperationTests
 
         Assert.NotSame(kernel1.Plugins, kernel2.Plugins);
     }
+
 
     [Fact]
     public void ItAddsTheRightTypesInAddKernel()

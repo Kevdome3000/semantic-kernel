@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Qdrant;
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 /// <summary>
 /// Interface for a Qdrant vector database client.
@@ -20,8 +21,12 @@ public interface IQdrantVectorDbClient
     /// <param name="withVectors">Whether to include the vector data in the returned results.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An asynchronous list of Qdrant vectors records associated with the given IDs</returns>
-    public IAsyncEnumerable<QdrantVectorRecord> GetVectorsByIdAsync(string collectionName, IEnumerable<string> pointIds, bool withVectors = false,
+    public IAsyncEnumerable<QdrantVectorRecord> GetVectorsByIdAsync(
+        string collectionName,
+        IEnumerable<string> pointIds,
+        bool withVectors = false,
         CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Get a specific vector by a unique identifier in the metadata (Qdrant payload).
@@ -33,6 +38,7 @@ public interface IQdrantVectorDbClient
     /// <returns>The Qdrant vector record associated with the given ID if found, null if not.</returns>
     public Task<QdrantVectorRecord?> GetVectorByPayloadIdAsync(string collectionName, string metadataId, bool withVector = false, CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Delete vectors by their unique Qdrant IDs.
     /// </summary>
@@ -40,6 +46,7 @@ public interface IQdrantVectorDbClient
     /// <param name="pointIds">The unique IDs used to index Qdrant vector entries.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     public Task DeleteVectorsByIdAsync(string collectionName, IEnumerable<string> pointIds, CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Delete a vector by its unique identifier in the metadata (Qdrant payload).
@@ -49,6 +56,7 @@ public interface IQdrantVectorDbClient
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     public Task DeleteVectorByPayloadIdAsync(string collectionName, string metadataId, CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Upsert a group of vectors into a collection.
     /// </summary>
@@ -56,6 +64,7 @@ public interface IQdrantVectorDbClient
     /// <param name="vectorData">The Qdrant vector records to upsert.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     public Task UpsertVectorsAsync(string collectionName, IEnumerable<QdrantVectorRecord> vectorData, CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Find the nearest vectors in a collection using vector similarity search.
@@ -76,12 +85,14 @@ public interface IQdrantVectorDbClient
         IEnumerable<string>? requiredTags = null,
         CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Create a Qdrant vector collection.
     /// </summary>
     /// <param name="collectionName">The name assigned to a collection of vectors.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     public Task CreateCollectionAsync(string collectionName, CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Delete a Qdrant vector collection.
@@ -90,12 +101,14 @@ public interface IQdrantVectorDbClient
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     public Task DeleteCollectionAsync(string collectionName, CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Check if a vector collection exists.
     /// </summary>
     /// <param name="collectionName">The name assigned to a collection of vectors.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     public Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// List all vector collections.

@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Qdrant;
+
 using System.Net.Http;
 
-namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 internal static class HttpHandlers
 {

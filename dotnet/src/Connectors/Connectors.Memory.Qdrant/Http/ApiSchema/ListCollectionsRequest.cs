@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Qdrant;
+
 using System.Net.Http;
 
-namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 internal sealed class ListCollectionsRequest
 {
@@ -10,6 +11,7 @@ internal sealed class ListCollectionsRequest
     {
         return new ListCollectionsRequest();
     }
+
 
     public HttpRequestMessage Build()
     {

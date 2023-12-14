@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Net.Http;
-using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.Memory;
-
 namespace Microsoft.SemanticKernel.Connectors.Chroma;
+
+using System.Net.Http;
+using Http;
+using Memory;
+
 
 /// <summary>
 /// Provides extension methods for the <see cref="MemoryBuilder"/> class to configure Chroma memory connector.
@@ -29,6 +30,7 @@ public static class ChromaMemoryBuilderExtensions
 
         return builder;
     }
+
 
     /// <summary>
     /// Registers Chroma memory connector.

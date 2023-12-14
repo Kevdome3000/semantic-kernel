@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
+
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// UpsertRequest
@@ -24,6 +25,7 @@ internal sealed class UpsertRequest
     [JsonPropertyName("namespace")]
     public string? Namespace { get; set; }
 
+
     public static UpsertRequest UpsertVectors(IEnumerable<PineconeDocument> vectorRecords)
     {
         UpsertRequest request = new();
@@ -33,11 +35,13 @@ internal sealed class UpsertRequest
         return request;
     }
 
+
     public UpsertRequest ToNamespace(string? indexNamespace)
     {
         this.Namespace = indexNamespace;
         return this;
     }
+
 
     public HttpRequestMessage Build()
     {
@@ -47,6 +51,7 @@ internal sealed class UpsertRequest
 
         return request;
     }
+
 
     #region private ================================================================================
 
@@ -60,4 +65,6 @@ internal sealed class UpsertRequest
     }
 
     #endregion
+
+
 }

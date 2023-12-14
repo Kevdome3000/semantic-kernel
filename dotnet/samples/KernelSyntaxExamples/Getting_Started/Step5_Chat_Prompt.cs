@@ -4,6 +4,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 
+
 public static class Step5_Chat_Prompt
 {
     /// <summary>

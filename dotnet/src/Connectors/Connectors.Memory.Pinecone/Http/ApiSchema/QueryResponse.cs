@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
+
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Pinecone;
-
 #pragma warning disable CA1812 // remove class never instantiated (used by System.Text.Json)
+
 
 /// <summary>
 /// QueryResponse
@@ -23,6 +24,7 @@ internal sealed class QueryResponse
         this.Matches = matches;
         this.Namespace = nameSpace;
     }
+
 
     /// <summary>
     /// Gets or Sets Matches

@@ -66,7 +66,8 @@ public class OpenAIPromptExecutionSettingsTests
         // Arrange
         PromptExecutionSettings actualSettings = new()
         {
-            ExtensionData = new() {
+            ExtensionData = new()
+            {
                 { "max_tokens", 1000 },
                 { "temperature", 0 }
             }

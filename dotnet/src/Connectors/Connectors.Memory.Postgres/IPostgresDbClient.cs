@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Postgres;
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Pgvector;
 
-namespace Microsoft.SemanticKernel.Connectors.Postgres;
 
 /// <summary>
 /// Interface for client managing postgres database operations.
@@ -21,6 +22,7 @@ public interface IPostgresDbClient
     /// <returns></returns>
     Task<bool> DoesTableExistsAsync(string tableName, CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Create a table.
     /// </summary>
@@ -29,12 +31,14 @@ public interface IPostgresDbClient
     /// <returns></returns>
     Task CreateTableAsync(string tableName, CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Get all tables.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A group of tables.</returns>
     IAsyncEnumerable<string> GetTablesAsync(CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Delete a table.
@@ -43,6 +47,7 @@ public interface IPostgresDbClient
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns></returns>
     Task DeleteTableAsync(string tableName, CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Upsert entry into a table.
@@ -56,6 +61,7 @@ public interface IPostgresDbClient
     /// <returns></returns>
     Task UpsertAsync(string tableName, string key, string? metadata, Vector? embedding, DateTime? timestamp, CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Gets the nearest matches to the <see cref="Vector"/>.
     /// </summary>
@@ -68,6 +74,7 @@ public interface IPostgresDbClient
     /// <returns>An asynchronous stream of <see cref="PostgresMemoryEntry"/> objects that the nearest matches to the <see cref="Vector"/>.</returns>
     IAsyncEnumerable<(PostgresMemoryEntry, double)> GetNearestMatchesAsync(string tableName, Vector embedding, int limit, double minRelevanceScore = 0, bool withEmbeddings = false, CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Read a entry by its key.
     /// </summary>
@@ -77,6 +84,7 @@ public interface IPostgresDbClient
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns></returns>
     Task<PostgresMemoryEntry?> ReadAsync(string tableName, string key, bool withEmbeddings = false, CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Read multiple entries by their keys.
@@ -88,6 +96,7 @@ public interface IPostgresDbClient
     /// <returns>An asynchronous stream of <see cref="PostgresMemoryEntry"/> objects that match the given keys.</returns>
     IAsyncEnumerable<PostgresMemoryEntry> ReadBatchAsync(string tableName, IEnumerable<string> keys, bool withEmbeddings = false, CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Delete a entry by its key.
     /// </summary>
@@ -96,6 +105,7 @@ public interface IPostgresDbClient
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns></returns>
     Task DeleteAsync(string tableName, string key, CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Delete multiple entries by their key.

@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
+
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// The Update operation updates vector in a namespace.
@@ -45,10 +46,12 @@ internal sealed class UpdateVectorRequest
     [JsonPropertyName("namespace")]
     public string? Namespace { get; set; }
 
+
     public static UpdateVectorRequest UpdateVector(string id)
     {
         return new UpdateVectorRequest(id);
     }
+
 
     public static UpdateVectorRequest FromPineconeDocument(PineconeDocument document)
     {
@@ -59,11 +62,13 @@ internal sealed class UpdateVectorRequest
         };
     }
 
+
     public UpdateVectorRequest InNamespace(string? indexNamespace)
     {
         this.Namespace = indexNamespace;
         return this;
     }
+
 
     public UpdateVectorRequest SetMetadata(Dictionary<string, object>? setMetadata)
     {
@@ -71,17 +76,20 @@ internal sealed class UpdateVectorRequest
         return this;
     }
 
+
     public UpdateVectorRequest UpdateSparseValues(SparseVectorData? sparseValues)
     {
         this.SparseValues = sparseValues;
         return this;
     }
 
+
     public UpdateVectorRequest UpdateValues(ReadOnlyMemory<float> values)
     {
         this.Values = values;
         return this;
     }
+
 
     public HttpRequestMessage Build()
     {
@@ -92,6 +100,7 @@ internal sealed class UpdateVectorRequest
 
         return request;
     }
+
 
     #region private ================================================================================
 
@@ -106,4 +115,6 @@ internal sealed class UpdateVectorRequest
     }
 
     #endregion
+
+
 }

@@ -1,13 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Sqlite;
+
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Data.Sqlite;
+using Data.Sqlite;
 
-namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 
 internal struct DatabaseEntry
 {
@@ -20,11 +21,16 @@ internal struct DatabaseEntry
     public string? Timestamp { get; set; }
 }
 
+
 internal sealed class Database
 {
     private const string TableName = "SKMemoryTable";
 
-    public Database() { }
+
+    public Database()
+    {
+    }
+
 
     public Task CreateTableAsync(SqliteConnection conn, CancellationToken cancellationToken = default)
     {
@@ -39,6 +45,7 @@ internal sealed class Database
                 PRIMARY KEY(collection, key))";
         return cmd.ExecuteNonQueryAsync(cancellationToken);
     }
+
 
     public async Task CreateCollectionAsync(SqliteConnection conn, string collectionName, CancellationToken cancellationToken = default)
     {
@@ -56,8 +63,15 @@ internal sealed class Database
         await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task UpdateAsync(SqliteConnection conn,
-        string collection, string key, string? metadata, string? embedding, string? timestamp, CancellationToken cancellationToken = default)
+
+    public async Task UpdateAsync(
+        SqliteConnection conn,
+        string collection,
+        string key,
+        string? metadata,
+        string? embedding,
+        string? timestamp,
+        CancellationToken cancellationToken = default)
     {
         using SqliteCommand cmd = conn.CreateCommand();
         cmd.CommandText = $@"
@@ -73,8 +87,15 @@ internal sealed class Database
         await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task InsertOrIgnoreAsync(SqliteConnection conn,
-        string collection, string key, string? metadata, string? embedding, string? timestamp, CancellationToken cancellationToken = default)
+
+    public async Task InsertOrIgnoreAsync(
+        SqliteConnection conn,
+        string collection,
+        string key,
+        string? metadata,
+        string? embedding,
+        string? timestamp,
+        CancellationToken cancellationToken = default)
     {
         using SqliteCommand cmd = conn.CreateCommand();
         cmd.CommandText = $@"
@@ -88,7 +109,9 @@ internal sealed class Database
         await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<bool> DoesCollectionExistsAsync(SqliteConnection conn,
+
+    public async Task<bool> DoesCollectionExistsAsync(
+        SqliteConnection conn,
         string collectionName,
         CancellationToken cancellationToken = default)
     {
@@ -96,7 +119,9 @@ internal sealed class Database
         return collections.Contains(collectionName);
     }
 
-    public async IAsyncEnumerable<string> GetCollectionsAsync(SqliteConnection conn,
+
+    public async IAsyncEnumerable<string> GetCollectionsAsync(
+        SqliteConnection conn,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         using SqliteCommand cmd = conn.CreateCommand();
@@ -105,13 +130,16 @@ internal sealed class Database
             FROM {TableName}";
 
         using var dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+
         while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
             yield return dataReader.GetString("collection");
         }
     }
 
-    public async IAsyncEnumerable<DatabaseEntry> ReadAllAsync(SqliteConnection conn,
+
+    public async IAsyncEnumerable<DatabaseEntry> ReadAllAsync(
+        SqliteConnection conn,
         string collectionName,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -122,6 +150,7 @@ internal sealed class Database
         cmd.Parameters.AddWithValue("@collection", collectionName);
 
         using var dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+
         while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
             string key = dataReader.GetString("key");
@@ -132,7 +161,9 @@ internal sealed class Database
         }
     }
 
-    public async Task<DatabaseEntry?> ReadAsync(SqliteConnection conn,
+
+    public async Task<DatabaseEntry?> ReadAsync(
+        SqliteConnection conn,
         string collectionName,
         string key,
         CancellationToken cancellationToken = default)
@@ -146,6 +177,7 @@ internal sealed class Database
         cmd.Parameters.AddWithValue("@key", key);
 
         using var dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+
         if (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
             string metadata = dataReader.GetString(dataReader.GetOrdinal("metadata"));
@@ -163,6 +195,7 @@ internal sealed class Database
         return null;
     }
 
+
     public Task DeleteCollectionAsync(SqliteConnection conn, string collectionName, CancellationToken cancellationToken = default)
     {
         using SqliteCommand cmd = conn.CreateCommand();
@@ -172,6 +205,7 @@ internal sealed class Database
         cmd.Parameters.AddWithValue("@collection", collectionName);
         return cmd.ExecuteNonQueryAsync(cancellationToken);
     }
+
 
     public Task DeleteAsync(SqliteConnection conn, string collectionName, string key, CancellationToken cancellationToken = default)
     {
@@ -184,6 +218,7 @@ internal sealed class Database
         cmd.Parameters.AddWithValue("@key", key);
         return cmd.ExecuteNonQueryAsync(cancellationToken);
     }
+
 
     public Task DeleteEmptyAsync(SqliteConnection conn, string collectionName, CancellationToken cancellationToken = default)
     {

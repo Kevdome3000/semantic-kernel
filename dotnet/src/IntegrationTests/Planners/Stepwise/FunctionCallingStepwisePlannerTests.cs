@@ -1,23 +1,26 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.IntegrationTests.Planners.Stepwise;
+
 using System;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Fakes;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
-using SemanticKernel.IntegrationTests.Fakes;
-using SemanticKernel.IntegrationTests.TestSettings;
+using TestSettings;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.Planners.Stepwise;
+
 public sealed class FunctionCallingStepwisePlannerTests : IDisposable
 {
     private readonly string _bingApiKey;
+
 
     public FunctionCallingStepwisePlannerTests(ITestOutputHelper output)
     {
@@ -35,6 +38,7 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         Assert.NotNull(bingApiKeyCandidate);
         this._bingApiKey = bingApiKeyCandidate;
     }
+
 
     [Theory]
     [InlineData("What is the tallest mountain on Earth? How tall is it?", new string[] { "WebSearch_Search" })]
@@ -66,11 +70,13 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         Assert.NotEmpty(planResult.FinalAnswer);
 
         string serializedChatHistory = JsonSerializer.Serialize(planResult.ChatHistory);
+
         foreach (string expectedFunction in expectedFunctions)
         {
             Assert.Contains(expectedFunction, serializedChatHistory, StringComparison.InvariantCultureIgnoreCase);
         }
     }
+
 
     private Kernel InitializeKernel()
     {
@@ -88,8 +94,10 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         return kernel;
     }
 
+
     private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
+
 
     public void Dispose()
     {
@@ -97,10 +105,12 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
+
     ~FunctionCallingStepwisePlannerTests()
     {
         this.Dispose(false);
     }
+
 
     private void Dispose(bool disposing)
     {

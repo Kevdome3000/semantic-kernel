@@ -1,20 +1,23 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Weaviate;
+
 using System.Collections.Generic;
 using System.Net.Http;
-using Microsoft.SemanticKernel.Memory;
+using Memory;
 
-namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 internal sealed class BatchRequest
 {
     private readonly string _class;
+
 
     private BatchRequest(string @class)
     {
         this._class = @class;
         this.Objects = new();
     }
+
 
     // ReSharper disable once UnusedMember.Global
     public string[] Fields { get; } = { "ALL" };
@@ -23,10 +26,12 @@ internal sealed class BatchRequest
     // ReSharper disable once CollectionNeverQueried.Global
     public List<WeaviateObject> Objects { get; set; }
 
+
     public static BatchRequest Create(string @class)
     {
         return new(@class);
     }
+
 
     public void Add(MemoryRecord record)
     {
@@ -50,10 +55,12 @@ internal sealed class BatchRequest
         this.Objects.Add(weaviateObject);
     }
 
+
     private static string ToWeaviateFriendlyId(string id)
     {
         return $"{id.Trim().Replace(' ', '-').Replace('/', '_').Replace('\\', '_').Replace('?', '_').Replace('#', '_')}";
     }
+
 
     public HttpRequestMessage Build()
     {

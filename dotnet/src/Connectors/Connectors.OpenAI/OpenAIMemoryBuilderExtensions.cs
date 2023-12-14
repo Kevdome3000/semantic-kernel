@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Azure.Core;
-using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.Memory;
+using Http;
+using Memory;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
 /// Provides extension methods for the <see cref="MemoryBuilder"/> class to configure OpenAI and AzureOpenAI connectors.
@@ -43,6 +44,7 @@ public static class OpenAIMemoryBuilderExtensions
                 loggerFactory));
     }
 
+
     /// <summary>
     /// Adds an Azure OpenAI text embeddings service.
     /// See https://learn.microsoft.com/azure/cognitive-services/openai for service details.
@@ -72,6 +74,7 @@ public static class OpenAIMemoryBuilderExtensions
                 HttpClientProvider.GetHttpClient(httpClient),
                 loggerFactory));
     }
+
 
     /// <summary>
     /// Adds the OpenAI text embeddings service.

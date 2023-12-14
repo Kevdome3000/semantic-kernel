@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Connectors.UnitTests.Qdrant;
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -15,7 +17,6 @@ using Moq;
 using Moq.Protected;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Qdrant;
 
 /// <summary>
 /// Tests for <see cref="QdrantMemoryStore"/> Search operations.
@@ -27,6 +28,7 @@ public class QdrantMemoryStoreTests3
     private readonly string _description = "description";
     private readonly ReadOnlyMemory<float> _embedding = new float[] { 1, 1, 1 };
     private readonly Mock<ILoggerFactory> _mockLoggerFactory = new();
+
 
     [Fact]
     public async Task GetNearestMatchesAsyncCallsDoNotReturnVectorsUnlessSpecifiedAsync()
@@ -107,6 +109,7 @@ public class QdrantMemoryStoreTests3
             Times.Once());
     }
 
+
     [Fact]
     public async Task ItReturnsEmptyTupleIfNearestMatchNotFoundAsync()
     {
@@ -145,6 +148,7 @@ public class QdrantMemoryStoreTests3
         Assert.Null(similarityResult.Value.Item1);
         Assert.Equal(0.0, similarityResult.Value.Item2);
     }
+
 
     [Fact]
     public async Task ItWillReturnTheNearestMatchAsATupleAsync()
@@ -201,6 +205,7 @@ public class QdrantMemoryStoreTests3
         Assert.Equal(0.5, similarityResult.Value.Item2);
     }
 
+
     [Fact]
     public async Task ItReturnsEmptyListIfNearestMatchesNotFoundAsync()
     {
@@ -230,6 +235,7 @@ public class QdrantMemoryStoreTests3
         Assert.Empty(similarityResults);
     }
 
+
     [Fact]
     public async Task ScoredVectorSupportsIntegerIdsAsync()
     {
@@ -240,14 +246,14 @@ public class QdrantMemoryStoreTests3
 
         var scoredPointJsonWithIntegerId =
             "{" +
-                "\"result\": " +
-                "   [{" +
-                        "\"id\": " + expectedId + "," +
-                        "\"version\": 0," +
-                        "\"score\": null," +
-                        "\"payload\": {}," +
-                        "\"vector\": null " +
-                    "}]" +
+            "\"result\": " +
+            "   [{" +
+            "\"id\": " + expectedId + "," +
+            "\"version\": 0," +
+            "\"score\": null," +
+            "\"payload\": {}," +
+            "\"vector\": null " +
+            "}]" +
             "}";
 
         using (var httpResponseMessage = new HttpResponseMessage { StatusCode = HttpStatusCode.OK, Content = new StringContent(scoredPointJsonWithIntegerId) })

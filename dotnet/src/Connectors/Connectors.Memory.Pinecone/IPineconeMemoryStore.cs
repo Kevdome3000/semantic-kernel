@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Memory;
+using Memory;
 
-namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// Interface for Pinecone memory store that extends the memory store interface
@@ -30,6 +31,7 @@ public interface IPineconeMemoryStore : IMemoryStore
         MemoryRecord record,
         CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Upserts a group of memory records into the data store in the given namespace.
     ///     If the record already exists, it will be updated.
@@ -45,6 +47,7 @@ public interface IPineconeMemoryStore : IMemoryStore
         string indexNamespace,
         IEnumerable<MemoryRecord> records,
         CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Gets a memory record from the data store in the given namespace.
@@ -62,6 +65,7 @@ public interface IPineconeMemoryStore : IMemoryStore
         bool withEmbedding = false,
         CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Gets a batch of memory records from the data store in the given namespace.
     /// </summary>
@@ -77,6 +81,7 @@ public interface IPineconeMemoryStore : IMemoryStore
         IEnumerable<string> keys,
         bool withEmbeddings = false,
         CancellationToken cancellationToken = default);
+
 
     /// <summary>
     ///  Gets the memory records associated with the given document id.
@@ -96,6 +101,7 @@ public interface IPineconeMemoryStore : IMemoryStore
         bool withEmbedding = false,
         CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Gets the memory records associated with the given document ids.
     /// </summary>
@@ -113,6 +119,7 @@ public interface IPineconeMemoryStore : IMemoryStore
         string indexNamespace = "",
         bool withEmbeddings = false,
         CancellationToken cancellationToken = default);
+
 
     /// <summary>
     ///  Gets a memory record from the data store that matches the filter.
@@ -132,6 +139,7 @@ public interface IPineconeMemoryStore : IMemoryStore
         bool withEmbeddings = false,
         CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Removes a memory record from the data store in the given namespace.
     /// </summary>
@@ -145,6 +153,7 @@ public interface IPineconeMemoryStore : IMemoryStore
         string key,
         CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Removes a batch of memory records from the data store in the given namespace.
     /// </summary>
@@ -157,6 +166,7 @@ public interface IPineconeMemoryStore : IMemoryStore
         string indexNamespace,
         IEnumerable<string> keys,
         CancellationToken cancellationToken = default);
+
 
     /// <summary>
     ///  Removes memory records from the data store associated with the document id.
@@ -172,6 +182,7 @@ public interface IPineconeMemoryStore : IMemoryStore
         string indexNamespace = "",
         CancellationToken cancellationToken = default);
 
+
     /// <summary>
     ///  Removes memory records from the data store that match the document ids.
     /// </summary>
@@ -185,6 +196,7 @@ public interface IPineconeMemoryStore : IMemoryStore
         IEnumerable<string> documentIds,
         string indexNamespace = "",
         CancellationToken cancellationToken = default);
+
 
     /// <summary>
     ///  Removes memory records from the data store that match the filter.
@@ -201,6 +213,7 @@ public interface IPineconeMemoryStore : IMemoryStore
         Dictionary<string, object> filter,
         string indexNamespace = "",
         CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Gets the nearest filtered matches to an embedding of type <see cref="float"/>
@@ -230,6 +243,7 @@ public interface IPineconeMemoryStore : IMemoryStore
         bool withEmbeddings = false,
         CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Gets the nearest matches to an embedding of type <see cref="float"/> from the given namespace.
     /// </summary>
@@ -250,6 +264,7 @@ public interface IPineconeMemoryStore : IMemoryStore
         bool withEmbeddings = false,
         CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Gets the nearest match to an embedding of type <see cref="float"/> from the given namespace.
     /// </summary>
@@ -268,6 +283,7 @@ public interface IPineconeMemoryStore : IMemoryStore
         bool withEmbedding = false,
         CancellationToken cancellationToken = default);
 
+
     /// <summary>
     ///  Clears all vectors in the given namespace.
     /// </summary>
@@ -275,6 +291,7 @@ public interface IPineconeMemoryStore : IMemoryStore
     /// <param name="indexNamespace"> The namespace to clear.</param>
     /// <param name="cancellationToken"></param>
     Task ClearNamespaceAsync(string indexName, string indexNamespace, CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// List Namespaces

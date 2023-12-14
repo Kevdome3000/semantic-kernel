@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Functions.UnitTests.OpenApi.Serialization;
+
 using System;
 using System.Text.Json.Nodes;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Xunit;
 
-namespace SemanticKernel.Functions.UnitTests.OpenApi.Serialization;
 
 public class PipeDelimitedStyleParametersSerializerTests
 {
@@ -18,6 +19,7 @@ public class PipeDelimitedStyleParametersSerializerTests
         // Act & Assert
         Assert.Throws<NotSupportedException>(() => PipeDelimitedStyleParameterSerializer.Serialize(parameter, "fake-argument"));
     }
+
 
     [Theory]
     [InlineData("integer")]
@@ -34,18 +36,19 @@ public class PipeDelimitedStyleParametersSerializerTests
         Assert.Throws<NotSupportedException>(() => PipeDelimitedStyleParameterSerializer.Serialize(parameter, "fake-argument"));
     }
 
+
     [Fact]
     public void ItShouldCreateAmpersandSeparatedParameterPerArrayItem()
     {
         // Arrange
         var parameter = new RestApiOperationParameter(
-                name: "id",
-                type: "array",
-                isRequired: true,
-                expand: true, //Specifies to generate a separate parameter for each array item.
-                location: RestApiOperationParameterLocation.Query,
-                style: RestApiOperationParameterStyle.PipeDelimited,
-                arrayItemType: "integer");
+            name: "id",
+            type: "array",
+            isRequired: true,
+            expand: true, //Specifies to generate a separate parameter for each array item.
+            location: RestApiOperationParameterLocation.Query,
+            style: RestApiOperationParameterStyle.PipeDelimited,
+            arrayItemType: "integer");
 
         // Act
         var result = PipeDelimitedStyleParameterSerializer.Serialize(parameter, new JsonArray(1, 2, 3));
@@ -56,18 +59,19 @@ public class PipeDelimitedStyleParametersSerializerTests
         Assert.Equal("id=1&id=2&id=3", result);
     }
 
+
     [Fact]
     public void ItShouldCreateParameterWithPipeSeparatedValuePerArrayItem()
     {
         // Arrange
         var parameter = new RestApiOperationParameter(
-                name: "id",
-                type: "array",
-                isRequired: true,
-                expand: false, //Specify generating a parameter with pipe-separated values for each array item.
-                location: RestApiOperationParameterLocation.Query,
-                style: RestApiOperationParameterStyle.PipeDelimited,
-                arrayItemType: "integer");
+            name: "id",
+            type: "array",
+            isRequired: true,
+            expand: false, //Specify generating a parameter with pipe-separated values for each array item.
+            location: RestApiOperationParameterLocation.Query,
+            style: RestApiOperationParameterStyle.PipeDelimited,
+            arrayItemType: "integer");
 
         // Act
         var result = PipeDelimitedStyleParameterSerializer.Serialize(parameter, new JsonArray("1", "2", "3"));
@@ -77,6 +81,7 @@ public class PipeDelimitedStyleParametersSerializerTests
 
         Assert.Equal("id=1|2|3", result);
     }
+
 
     [Theory]
     [InlineData(":", "%3a")]
@@ -96,6 +101,7 @@ public class PipeDelimitedStyleParametersSerializerTests
 
         Assert.EndsWith(encodedEquivalent, result, StringComparison.Ordinal);
     }
+
 
     [Theory]
     [InlineData(":", "%3a")]

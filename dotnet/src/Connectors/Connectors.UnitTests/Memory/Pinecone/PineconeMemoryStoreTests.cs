@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Connectors.UnitTests.Pinecone;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +14,6 @@ using Microsoft.SemanticKernel.Memory;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Pinecone;
 
 public class PineconeMemoryStoreTests
 {
@@ -37,11 +38,13 @@ public class PineconeMemoryStoreTests
 
     private readonly PineconeMemoryStore _pineconeMemoryStore;
 
+
     public PineconeMemoryStoreTests()
     {
         this._mockPineconeClient = new Mock<IPineconeClient>();
         this._pineconeMemoryStore = new PineconeMemoryStore(this._mockPineconeClient.Object, this._mockLoggerFactory.Object);
     }
+
 
     [Fact]
     public void ConnectionCanBeInitialized()
@@ -52,6 +55,7 @@ public class PineconeMemoryStoreTests
         // Assert
         Assert.NotNull(memoryStore);
     }
+
 
     [Fact]
     public async Task ItThrowsExceptionOnIndexCreationAsync()
@@ -70,6 +74,7 @@ public class PineconeMemoryStoreTests
 
         Assert.NotNull(exception);
     }
+
 
     [Fact]
     public async Task ItWillNotOverwriteExistingIndexAsync()
@@ -92,6 +97,7 @@ public class PineconeMemoryStoreTests
             .Verify<Task>(x => x.CreateIndexAsync(IndexDefinition.Default("test"), It.IsAny<CancellationToken>()), Times.Never());
     }
 
+
     [Fact]
     public async Task ItListsIndexesAsync()
     {
@@ -109,6 +115,7 @@ public class PineconeMemoryStoreTests
         Assert.Equal("test1", collections[0]);
         Assert.Equal("test2", collections[1]);
     }
+
 
     [Fact]
     public async Task ItDeletesIndexAsync()
@@ -128,6 +135,7 @@ public class PineconeMemoryStoreTests
         this._mockPineconeClient
             .Verify<Task>(x => x.DeleteIndexAsync("test", It.IsAny<CancellationToken>()), Times.Once());
     }
+
 
     [Fact]
     public async Task UpsertAsyncInsertsNewDocumentAsync()
@@ -155,6 +163,7 @@ public class PineconeMemoryStoreTests
         // Assert
         this._mockPineconeClient.Verify<Task<int>>(x => x.UpsertAsync(It.IsAny<string>(), It.IsAny<IEnumerable<PineconeDocument>>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
     }
+
 
     [Fact]
     public async Task UpsertBatchAsyncProcessesMultipleDocumentsAsync()
@@ -199,6 +208,7 @@ public class PineconeMemoryStoreTests
         Assert.Equal(memoryRecord3.Metadata.Id, upsertBatch[2]);
     }
 
+
     [Fact]
     public async Task TestRemoveAsync()
     {
@@ -216,6 +226,7 @@ public class PineconeMemoryStoreTests
         // Assert
         this._mockPineconeClient.Verify(x => x.DeleteAsync(collectionName, new[] { key }, "", null, false, CancellationToken.None), Times.Once);
     }
+
 
     [Fact]
     public async Task TestGetNearestMatchesAsync()

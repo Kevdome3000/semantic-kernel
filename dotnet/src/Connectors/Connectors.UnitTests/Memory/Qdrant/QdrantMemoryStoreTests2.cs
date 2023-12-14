@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Connectors.UnitTests.Qdrant;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +13,6 @@ using Microsoft.SemanticKernel.Memory;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Qdrant;
 
 /// <summary>
 /// Tests for <see cref="QdrantMemoryStore"/> Get and Remove operations.
@@ -31,6 +32,7 @@ public class QdrantMemoryStoreTests2
     private readonly ReadOnlyMemory<float> _embedding2 = new float[] { 2, 2, 2 };
     private readonly ReadOnlyMemory<float> _embedding3 = new float[] { 3, 3, 3 };
     private readonly Mock<ILoggerFactory> _mockLogger = new();
+
 
     [Fact]
     public async Task GetAsyncCallsDoNotRequestVectorsUnlessSpecifiedAsync()
@@ -96,6 +98,7 @@ public class QdrantMemoryStoreTests2
             Times.Once());
     }
 
+
     [Fact]
     public async Task GetAsyncSearchesByMetadataIdReturnsNullIfNotFoundAsync()
     {
@@ -115,6 +118,7 @@ public class QdrantMemoryStoreTests2
             Times.Once());
         Assert.Null(getResult);
     }
+
 
     [Fact]
     public async Task GetAsyncSearchesByMetadataIdReturnsMemoryRecordIfFoundAsync()
@@ -154,6 +158,7 @@ public class QdrantMemoryStoreTests2
         Assert.Equal(memoryRecord.Metadata.IsReference, getResult.Metadata.IsReference);
         Assert.True(memoryRecord.Embedding.Span.SequenceEqual(getResult.Embedding.Span));
     }
+
 
     [Fact]
     public async Task GetBatchAsyncSearchesByMetadataIdReturnsAllResultsIfAllFoundAsync()
@@ -230,6 +235,7 @@ public class QdrantMemoryStoreTests2
         Assert.Equal(key3, getBatchResult[2].Key);
     }
 
+
     [Fact]
     public async Task GetBatchAsyncSearchesByMetadataIdReturnsOnlyNonNullResultsAsync()
     {
@@ -292,6 +298,7 @@ public class QdrantMemoryStoreTests2
         Assert.Equal(key2, getBatchResult[1].Key);
     }
 
+
     [Fact]
     public async Task GetBatchAsyncSearchesByMetadataIdReturnsEmptyListIfNoneFoundAsync()
     {
@@ -326,6 +333,7 @@ public class QdrantMemoryStoreTests2
         Assert.Empty(getBatchResult);
     }
 
+
     [Fact]
     public async Task GetByQdrantPointIdReturnsNullIfNotFoundAsync()
     {
@@ -349,6 +357,7 @@ public class QdrantMemoryStoreTests2
             Times.Once());
         Assert.Null(getResult);
     }
+
 
     [Fact]
     public async Task GetByQdrantPointIdReturnsMemoryRecordIfFoundAsync()
@@ -391,6 +400,7 @@ public class QdrantMemoryStoreTests2
         Assert.Equal(memoryRecord.Metadata.IsReference, getResult.Metadata.IsReference);
         Assert.True(memoryRecord.Embedding.Span.SequenceEqual(getResult.Embedding.Span));
     }
+
 
     [Fact]
     public async Task GetBatchByQdrantPointIdsReturnsAllResultsIfFoundAsync()
@@ -455,6 +465,7 @@ public class QdrantMemoryStoreTests2
         Assert.Equal(key3, getBatchResult[2].Key);
     }
 
+
     [Fact]
     public async Task GetBatchByQdrantPointIdsReturnsEmptyEnumerableIfNonFoundAsync()
     {
@@ -481,6 +492,7 @@ public class QdrantMemoryStoreTests2
         Assert.Empty(getBatchResult);
     }
 
+
     [Fact]
     public async Task ItCanRemoveAVectorUsingMetadataIdAsync()
     {
@@ -500,6 +512,7 @@ public class QdrantMemoryStoreTests2
         mockQdrantClient.Verify<Task>(x =>
             x.DeleteVectorByPayloadIdAsync(It.IsAny<string>(), this._id, It.IsAny<CancellationToken>()), Times.Once());
     }
+
 
     [Fact]
     public async Task ItCanRemoveBatchVectorsUsingMetadataIdAsync()
@@ -527,6 +540,7 @@ public class QdrantMemoryStoreTests2
             x.DeleteVectorByPayloadIdAsync(It.IsAny<string>(), this._id3, It.IsAny<CancellationToken>()), Times.Once());
     }
 
+
     [Fact]
     public async Task ItCanRemoveAVectorUsingDatabaseKeyAsync()
     {
@@ -547,6 +561,7 @@ public class QdrantMemoryStoreTests2
         mockQdrantClient.Verify<Task>(x =>
             x.DeleteVectorsByIdAsync(It.IsAny<string>(), new[] { key }, It.IsAny<CancellationToken>()), Times.Once());
     }
+
 
     [Fact]
     public async Task ItCanRemoveBatchVectorsUsingDatabaseKeyAsync()

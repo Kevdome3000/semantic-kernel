@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -10,11 +12,10 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Http;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
+using Http;
 
-namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// A client for the Pinecone API
@@ -37,6 +38,7 @@ public sealed class PineconeClient : IPineconeClient
         this._httpClient = HttpClientProvider.GetHttpClient(httpClient);
         this._indexHostMapping = new ConcurrentDictionary<string, string>();
     }
+
 
     /// <inheritdoc />
     public async IAsyncEnumerable<PineconeDocument?> FetchVectorsAsync(
@@ -91,6 +93,7 @@ public sealed class PineconeClient : IPineconeClient
         }
     }
 
+
     /// <inheritdoc />
     public async IAsyncEnumerable<PineconeDocument?> QueryAsync(
         string indexName,
@@ -139,6 +142,7 @@ public sealed class PineconeClient : IPineconeClient
             yield return match;
         }
     }
+
 
     /// <inheritdoc />
     public async IAsyncEnumerable<(PineconeDocument, double)> GetMostRelevantAsync(
@@ -194,6 +198,7 @@ public sealed class PineconeClient : IPineconeClient
         }
     }
 
+
     /// <inheritdoc />
     public async Task<int> UpsertAsync(
         string indexName,
@@ -245,6 +250,7 @@ public sealed class PineconeClient : IPineconeClient
         return totalUpserted;
     }
 
+
     /// <inheritdoc />
     public async Task DeleteAsync(
         string indexName,
@@ -286,6 +292,7 @@ public sealed class PineconeClient : IPineconeClient
         }
     }
 
+
     /// <inheritdoc />
     public async Task UpdateAsync(string indexName, PineconeDocument document, string indexNamespace = "", CancellationToken cancellationToken = default)
     {
@@ -308,6 +315,7 @@ public sealed class PineconeClient : IPineconeClient
             throw;
         }
     }
+
 
     /// <inheritdoc />
     public async Task<IndexStats?> DescribeIndexStatsAsync(
@@ -349,6 +357,7 @@ public sealed class PineconeClient : IPineconeClient
         return result;
     }
 
+
     /// <inheritdoc />
     public async IAsyncEnumerable<string?> ListIndexesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -368,6 +377,7 @@ public sealed class PineconeClient : IPineconeClient
             yield return index;
         }
     }
+
 
     /// <inheritdoc />
     public async Task CreateIndexAsync(IndexDefinition indexDefinition, CancellationToken cancellationToken = default)
@@ -399,6 +409,7 @@ public sealed class PineconeClient : IPineconeClient
         }
     }
 
+
     /// <inheritdoc />
     public async Task DeleteIndexAsync(string indexName, CancellationToken cancellationToken = default)
     {
@@ -424,6 +435,7 @@ public sealed class PineconeClient : IPineconeClient
         this._logger.LogDebug("Index: {0} has been successfully deleted.", indexName);
     }
 
+
     /// <inheritdoc />
     public async Task<bool> DoesIndexExistAsync(string indexName, CancellationToken cancellationToken = default)
     {
@@ -440,6 +452,7 @@ public sealed class PineconeClient : IPineconeClient
 
         return index != null && index.Status.State == IndexState.Ready;
     }
+
 
     /// <inheritdoc />
     public async Task<PineconeIndex?> DescribeIndexAsync(string indexName, CancellationToken cancellationToken = default)
@@ -475,6 +488,7 @@ public sealed class PineconeClient : IPineconeClient
         return indexDescription;
     }
 
+
     /// <inheritdoc />
     public async Task ConfigureIndexAsync(string indexName, int replicas = 1, PodType podType = PodType.P1X1, CancellationToken cancellationToken = default)
     {
@@ -509,6 +523,7 @@ public sealed class PineconeClient : IPineconeClient
         this._logger.LogDebug("Collection created. {0}", indexName);
     }
 
+
     #region private ================================================================================
 
     private readonly string _pineconeEnvironment;
@@ -520,6 +535,7 @@ public sealed class PineconeClient : IPineconeClient
     private readonly ConcurrentDictionary<string, string> _indexHostMapping;
     private const int MaxBatchSize = 100;
 
+
     private async Task<string> GetVectorOperationsApiBasePathAsync(string indexName)
     {
         string indexHost = await this.GetIndexHostAsync(indexName).ConfigureAwait(false);
@@ -527,10 +543,12 @@ public sealed class PineconeClient : IPineconeClient
         return $"https://{indexHost}";
     }
 
+
     private string GetIndexOperationsApiBasePath()
     {
         return $"https://controller.{this._pineconeEnvironment}.pinecone.io";
     }
+
 
     private async Task<(HttpResponseMessage response, string responseContent)> ExecuteHttpRequestAsync(
         string baseURL,
@@ -546,6 +564,7 @@ public sealed class PineconeClient : IPineconeClient
 
         return (response, responseContent);
     }
+
 
     private async Task<string> GetIndexHostAsync(string indexName, CancellationToken cancellationToken = default)
     {
@@ -576,4 +595,6 @@ public sealed class PineconeClient : IPineconeClient
     }
 
     #endregion
+
+
 }

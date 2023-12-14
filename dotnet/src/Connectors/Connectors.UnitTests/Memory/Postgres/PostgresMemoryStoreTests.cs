@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Connectors.UnitTests.Postgres;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +12,6 @@ using Microsoft.SemanticKernel.Memory;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Postgres;
 
 /// <summary>
 /// Unit tests for <see cref="PostgresMemoryStore"/> class.
@@ -21,6 +22,7 @@ public class PostgresMemoryStoreTests
 
     private readonly Mock<IPostgresDbClient> _postgresDbClientMock;
 
+
     public PostgresMemoryStoreTests()
     {
         this._postgresDbClientMock = new Mock<IPostgresDbClient>();
@@ -28,6 +30,7 @@ public class PostgresMemoryStoreTests
             .Setup(client => client.DoesTableExistsAsync(CollectionName, CancellationToken.None))
             .ReturnsAsync(true);
     }
+
 
     [Fact]
     public async Task ItCanCreateCollectionAsync()
@@ -42,6 +45,7 @@ public class PostgresMemoryStoreTests
         this._postgresDbClientMock.Verify(client => client.CreateTableAsync(CollectionName, CancellationToken.None), Times.Once());
     }
 
+
     [Fact]
     public async Task ItCanDeleteCollectionAsync()
     {
@@ -55,6 +59,7 @@ public class PostgresMemoryStoreTests
         this._postgresDbClientMock.Verify(client => client.DeleteTableAsync(CollectionName, CancellationToken.None), Times.Once());
     }
 
+
     [Fact]
     public async Task ItReturnsTrueWhenCollectionExistsAsync()
     {
@@ -67,6 +72,7 @@ public class PostgresMemoryStoreTests
         // Assert
         Assert.True(doesCollectionExist);
     }
+
 
     [Fact]
     public async Task ItReturnsFalseWhenCollectionDoesNotExistAsync()
@@ -87,6 +93,7 @@ public class PostgresMemoryStoreTests
         Assert.False(doesCollectionExist);
     }
 
+
     [Fact]
     public async Task ItCanUpsertAsync()
     {
@@ -103,6 +110,7 @@ public class PostgresMemoryStoreTests
         this._postgresDbClientMock.Verify(client => client.UpsertAsync(CollectionName, postgresMemoryEntry.Key, postgresMemoryEntry.MetadataString, It.Is<Pgvector.Vector>(x => x.ToArray().SequenceEqual(postgresMemoryEntry.Embedding!.ToArray())), postgresMemoryEntry.Timestamp, CancellationToken.None), Times.Once());
         Assert.Equal(expectedMemoryRecord.Key, actualMemoryRecordKey);
     }
+
 
     [Fact]
     public async Task ItCanUpsertBatchAsyncAsync()
@@ -133,6 +141,7 @@ public class PostgresMemoryStoreTests
         }
     }
 
+
     [Fact]
     public async Task ItCanGetMemoryRecordFromCollectionAsync()
     {
@@ -154,6 +163,7 @@ public class PostgresMemoryStoreTests
         this.AssertMemoryRecordEqual(expectedMemoryRecord, actualMemoryRecord);
     }
 
+
     [Fact]
     public async Task ItReturnsNullWhenMemoryRecordDoesNotExistAsync()
     {
@@ -172,6 +182,7 @@ public class PostgresMemoryStoreTests
         // Assert
         Assert.Null(actualMemoryRecord);
     }
+
 
     [Fact]
     public async Task ItCanGetMemoryRecordBatchFromCollectionAsync()
@@ -196,8 +207,8 @@ public class PostgresMemoryStoreTests
         memoryRecordKeys.Add("non-existent-record-key-3");
 
         this._postgresDbClientMock
-                .Setup(client => client.ReadBatchAsync(CollectionName, memoryRecordKeys, true, CancellationToken.None))
-                .Returns(expectedMemoryRecords.Select(memoryRecord => this.GetPostgresMemoryEntryFromMemoryRecord(memoryRecord)).ToAsyncEnumerable());
+            .Setup(client => client.ReadBatchAsync(CollectionName, memoryRecordKeys, true, CancellationToken.None))
+            .Returns(expectedMemoryRecords.Select(memoryRecord => this.GetPostgresMemoryEntryFromMemoryRecord(memoryRecord)).ToAsyncEnumerable());
 
         using var store = new PostgresMemoryStore(this._postgresDbClientMock.Object);
 
@@ -213,6 +224,7 @@ public class PostgresMemoryStoreTests
             this.AssertMemoryRecordEqual(expectedMemoryRecords[i], actualMemoryRecords[i]);
         }
     }
+
 
     [Fact]
     public async Task ItCanReturnCollectionsAsync()
@@ -238,6 +250,7 @@ public class PostgresMemoryStoreTests
         }
     }
 
+
     [Fact]
     public async Task ItCanRemoveAsync()
     {
@@ -251,6 +264,7 @@ public class PostgresMemoryStoreTests
         // Assert
         this._postgresDbClientMock.Verify(client => client.DeleteAsync(CollectionName, MemoryRecordKey, CancellationToken.None), Times.Once());
     }
+
 
     [Fact]
     public async Task ItCanRemoveBatchAsync()
@@ -266,6 +280,7 @@ public class PostgresMemoryStoreTests
         this._postgresDbClientMock.Verify(client => client.DeleteBatchAsync(CollectionName, memoryRecordKeys, CancellationToken.None), Times.Once());
     }
 
+
     #region private ================================================================================
 
     private void AssertMemoryRecordEqual(MemoryRecord expectedRecord, MemoryRecord actualRecord)
@@ -279,6 +294,7 @@ public class PostgresMemoryStoreTests
         Assert.Equal(expectedRecord.Metadata.IsReference, actualRecord.Metadata.IsReference);
         Assert.Equal(expectedRecord.Metadata.ExternalSourceName, actualRecord.Metadata.ExternalSourceName);
     }
+
 
     private MemoryRecord GetRandomMemoryRecord(ReadOnlyMemory<float>? embedding = null)
     {
@@ -295,6 +311,7 @@ public class PostgresMemoryStoreTests
             timestamp: DateTimeOffset.Now);
     }
 
+
     private PostgresMemoryEntry GetPostgresMemoryEntryFromMemoryRecord(MemoryRecord memoryRecord)
     {
         return new PostgresMemoryEntry()
@@ -307,4 +324,6 @@ public class PostgresMemoryStoreTests
     }
 
     #endregion
+
+
 }

@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Connectors.UnitTests.Pinecone;
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,7 +11,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Pinecone;
 
 public class PineconeUtilsTests
 {
@@ -35,6 +36,7 @@ public class PineconeUtilsTests
         Assert.All(result, item => Assert.True(Encoding.UTF8.GetByteCount(item.Metadata?["text"].ToString() ?? string.Empty) <= PineconeUtils.MaxMetadataSize));
     }
 
+
     [Fact]
     public async Task EnsureValidMetadataAsyncShouldNotSplitMetadataWhenNotExceedsMaxSizeAsync()
     {
@@ -56,6 +58,7 @@ public class PineconeUtilsTests
         Assert.Equal(document.Id, result[0].Id);
         Assert.Equal(document.Metadata["text"], result[0].Metadata?["text"]);
     }
+
 
     [Fact]
     public void ConvertFilterToPineconeFilterShouldConvertFilterCorrectly()

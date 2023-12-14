@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Postgres;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,11 +9,10 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Memory;
+using Memory;
 using Npgsql;
 using Pgvector;
 
-namespace Microsoft.SemanticKernel.Connectors.Postgres;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> backed by a Postgres database with pgvector extension.
@@ -23,6 +24,7 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 public class PostgresMemoryStore : IMemoryStore, IDisposable
 {
     internal const string DefaultSchema = "public";
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgresMemoryStore"/> class.
@@ -38,6 +40,7 @@ public class PostgresMemoryStore : IMemoryStore, IDisposable
         this._postgresDbClient = new PostgresDbClient(this._dataSource, schema, vectorSize);
     }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgresMemoryStore"/> class.
     /// </summary>
@@ -49,6 +52,7 @@ public class PostgresMemoryStore : IMemoryStore, IDisposable
     {
     }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgresMemoryStore"/> class.
     /// </summary>
@@ -58,6 +62,7 @@ public class PostgresMemoryStore : IMemoryStore, IDisposable
         this._postgresDbClient = postgresDbClient;
     }
 
+
     /// <inheritdoc/>
     public async Task CreateCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
@@ -66,6 +71,7 @@ public class PostgresMemoryStore : IMemoryStore, IDisposable
         await this._postgresDbClient.CreateTableAsync(collectionName, cancellationToken).ConfigureAwait(false);
     }
 
+
     /// <inheritdoc/>
     public async Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancellationToken = default)
     {
@@ -73,6 +79,7 @@ public class PostgresMemoryStore : IMemoryStore, IDisposable
 
         return await this._postgresDbClient.DoesTableExistsAsync(collectionName, cancellationToken).ConfigureAwait(false);
     }
+
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<string> GetCollectionsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -83,6 +90,7 @@ public class PostgresMemoryStore : IMemoryStore, IDisposable
         }
     }
 
+
     /// <inheritdoc/>
     public async Task DeleteCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
@@ -90,6 +98,7 @@ public class PostgresMemoryStore : IMemoryStore, IDisposable
 
         await this._postgresDbClient.DeleteTableAsync(collectionName, cancellationToken).ConfigureAwait(false);
     }
+
 
     /// <inheritdoc/>
     public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default)
@@ -99,8 +108,11 @@ public class PostgresMemoryStore : IMemoryStore, IDisposable
         return await this.InternalUpsertAsync(collectionName, record, cancellationToken).ConfigureAwait(false);
     }
 
+
     /// <inheritdoc/>
-    public async IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> records,
+    public async IAsyncEnumerable<string> UpsertBatchAsync(
+        string collectionName,
+        IEnumerable<MemoryRecord> records,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(collectionName);
@@ -110,6 +122,7 @@ public class PostgresMemoryStore : IMemoryStore, IDisposable
             yield return await this.InternalUpsertAsync(collectionName, record, cancellationToken).ConfigureAwait(false);
         }
     }
+
 
     /// <inheritdoc/>
     public async Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancellationToken = default)
@@ -123,8 +136,12 @@ public class PostgresMemoryStore : IMemoryStore, IDisposable
         return this.GetMemoryRecordFromEntry(entry.Value);
     }
 
+
     /// <inheritdoc/>
-    public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = false,
+    public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(
+        string collectionName,
+        IEnumerable<string> keys,
+        bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(collectionName);
@@ -135,6 +152,7 @@ public class PostgresMemoryStore : IMemoryStore, IDisposable
         }
     }
 
+
     /// <inheritdoc/>
     public async Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default)
     {
@@ -143,6 +161,7 @@ public class PostgresMemoryStore : IMemoryStore, IDisposable
         await this._postgresDbClient.DeleteAsync(collectionName, key, cancellationToken).ConfigureAwait(false);
     }
 
+
     /// <inheritdoc/>
     public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
@@ -150,6 +169,7 @@ public class PostgresMemoryStore : IMemoryStore, IDisposable
 
         await this._postgresDbClient.DeleteBatchAsync(collectionName, keys, cancellationToken).ConfigureAwait(false);
     }
+
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(
@@ -181,8 +201,13 @@ public class PostgresMemoryStore : IMemoryStore, IDisposable
         }
     }
 
+
     /// <inheritdoc/>
-    public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, ReadOnlyMemory<float> embedding, double minRelevanceScore = 0, bool withEmbedding = false,
+    public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(
+        string collectionName,
+        ReadOnlyMemory<float> embedding,
+        double minRelevanceScore = 0,
+        bool withEmbedding = false,
         CancellationToken cancellationToken = default)
     {
         return await this.GetNearestMatchesAsync(
@@ -194,12 +219,14 @@ public class PostgresMemoryStore : IMemoryStore, IDisposable
             cancellationToken: cancellationToken).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
     }
 
+
     /// <inheritdoc/>
     public void Dispose()
     {
         this.Dispose(true);
         GC.SuppressFinalize(this);
     }
+
 
     /// <summary>
     /// Disposes the managed resources.
@@ -214,10 +241,12 @@ public class PostgresMemoryStore : IMemoryStore, IDisposable
         }
     }
 
+
     #region private ================================================================================
 
     private readonly IPostgresDbClient _postgresDbClient;
     private readonly NpgsqlDataSource? _dataSource;
+
 
     private async Task<string> InternalUpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken)
     {
@@ -234,6 +263,7 @@ public class PostgresMemoryStore : IMemoryStore, IDisposable
         return record.Key;
     }
 
+
     private MemoryRecord GetMemoryRecordFromEntry(PostgresMemoryEntry entry)
     {
         return MemoryRecord.FromJsonMetadata(
@@ -243,11 +273,14 @@ public class PostgresMemoryStore : IMemoryStore, IDisposable
             timestamp: entry.Timestamp?.ToLocalTime());
     }
 
+
     private static float[] GetOrCreateArray(ReadOnlyMemory<float> memory) =>
         MemoryMarshal.TryGetArray(memory, out ArraySegment<float> array) &&
-        array.Count == array.Array!.Length ?
-            array.Array :
-            memory.ToArray();
+        array.Count == array.Array!.Length
+            ? array.Array
+            : memory.ToArray();
 
     #endregion
+
+
 }

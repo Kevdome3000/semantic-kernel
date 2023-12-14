@@ -603,6 +603,7 @@ public class KernelFunctionFromPromptTests
         mockTextCompletion2.Verify(m => m.GetTextContentsAsync("Prompt2 Result1", It.Is<OpenAIPromptExecutionSettings>(settings => settings.MaxTokens == 2000), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
     }
 
+
     [Fact]
     public async Task InvokeAsyncWithPromptRenderedHooksExecutesModifiedPromptAsync()
     {

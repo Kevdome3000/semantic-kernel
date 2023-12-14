@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Connectors.UnitTests.Weaviate;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +13,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.Weaviate;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Weaviate;
 
 /// <summary>
 /// Unit tests for <see cref="WeaviateMemoryStore"/> class.
@@ -21,13 +22,15 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
 
+
     public WeaviateMemoryStoreTests()
     {
         this._messageHandlerStub = new HttpMessageHandlerStub();
 
         var getResponse = new
         {
-            Properties = new Dictionary<string, string> {
+            Properties = new Dictionary<string, string>
+            {
                 { "sk_id", "fake_id" },
                 { "sk_description", "fake_description" },
                 { "sk_text", "fake_text" },
@@ -39,6 +42,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
 
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
     }
+
 
     [Fact]
     public async Task NoAuthorizationHeaderShouldBeAddedIfApiKeyIsNotProvidedAsync()
@@ -52,6 +56,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
         //Assert
         Assert.False(this._messageHandlerStub.RequestHeaders?.Contains("Authorization"));
     }
+
 
     [Fact]
     public async Task AuthorizationHeaderShouldBeAddedIfApiKeyIsProvidedAsync()
@@ -71,6 +76,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
         Assert.Equal("fake-api-key", value);
     }
 
+
     [Fact]
     public async Task ProvidedEndpointShouldBeUsedAsync()
     {
@@ -83,6 +89,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
         //Assert
         Assert.StartsWith("https://fake-random-test-host/fake-path", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
     }
+
 
     [Fact]
     public async Task HttpClientBaseAddressShouldBeUsedAsync()
@@ -98,6 +105,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
         //Assert
         Assert.StartsWith("https://fake-random-test-host/fake-path", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
     }
+
 
     public void Dispose()
     {

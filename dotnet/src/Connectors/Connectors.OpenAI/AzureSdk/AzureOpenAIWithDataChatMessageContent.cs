@@ -41,9 +41,11 @@ public sealed class AzureOpenAIWithDataChatMessageContent : ChatMessageContent
         ((Dictionary<string, object?>)this.Metadata!).Add(nameof(this.ToolContent), this.ToolContent);
     }
 
+
     private static Dictionary<string, object?> CreateMetadataDictionary(IReadOnlyDictionary<string, object?>? metadata)
     {
         Dictionary<string, object?> newDictionary;
+
         if (metadata is null)
         {
             // There's no existing metadata to clone; just allocate a new dictionary.
@@ -58,6 +60,7 @@ public sealed class AzureOpenAIWithDataChatMessageContent : ChatMessageContent
         {
             // There's metadata to clone but we have to do so one item at a time.
             newDictionary = new Dictionary<string, object?>(metadata.Count + 1);
+
             foreach (var kvp in metadata)
             {
                 newDictionary[kvp.Key] = kvp.Value;

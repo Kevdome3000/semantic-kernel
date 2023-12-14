@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Qdrant;
+
 using System;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 internal sealed class CreateCollectionRequest
 {
@@ -20,10 +21,12 @@ internal sealed class CreateCollectionRequest
     [JsonPropertyName("vectors")]
     public VectorSettings Settings { get; set; }
 
+
     public static CreateCollectionRequest Create(string collectionName, int vectorSize, QdrantDistanceType distanceType)
     {
         return new CreateCollectionRequest(collectionName, vectorSize, distanceType);
     }
+
 
     public HttpRequestMessage Build()
     {
@@ -31,6 +34,7 @@ internal sealed class CreateCollectionRequest
             $"collections/{this.CollectionName}?wait=true",
             payload: this);
     }
+
 
     internal sealed class VectorSettings
     {
@@ -46,11 +50,13 @@ internal sealed class CreateCollectionRequest
         [JsonIgnore]
         private QdrantDistanceType DistanceType { get; set; }
 
+
         public VectorSettings(int vectorSize, QdrantDistanceType distanceType)
         {
             this.Size = vectorSize;
             this.DistanceType = distanceType;
         }
+
 
         private static string DistanceTypeToString(QdrantDistanceType x)
         {
@@ -65,6 +71,7 @@ internal sealed class CreateCollectionRequest
         }
     }
 
+
     #region private ================================================================================
 
     private CreateCollectionRequest(string collectionName, int vectorSize, QdrantDistanceType distanceType)
@@ -74,4 +81,6 @@ internal sealed class CreateCollectionRequest
     }
 
     #endregion
+
+
 }

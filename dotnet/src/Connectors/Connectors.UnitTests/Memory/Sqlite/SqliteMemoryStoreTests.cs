@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Connectors.UnitTests.Sqlite;
+
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -10,7 +12,6 @@ using Microsoft.SemanticKernel.Connectors.Sqlite;
 using Microsoft.SemanticKernel.Memory;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Sqlite;
 
 /// <summary>
 /// Unit tests of <see cref="SqliteMemoryStore"/>.
@@ -20,6 +21,7 @@ public class SqliteMemoryStoreTests : IDisposable
 {
     private const string DatabaseFile = "SqliteMemoryStoreTests.db";
     private bool _disposedValue = false;
+
 
     public SqliteMemoryStoreTests()
     {
@@ -31,12 +33,14 @@ public class SqliteMemoryStoreTests : IDisposable
         using (var stream = File.Create(DatabaseFile)) { }
     }
 
+
     public void Dispose()
     {
         // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
         this.Dispose(disposing: true);
         GC.SuppressFinalize(this);
     }
+
 
     protected virtual void Dispose(bool disposing)
     {
@@ -51,7 +55,9 @@ public class SqliteMemoryStoreTests : IDisposable
         }
     }
 
+
     private int _collectionNum = 0;
+
 
     private IEnumerable<MemoryRecord> CreateBatchRecords(int numRecords)
     {
@@ -59,6 +65,7 @@ public class SqliteMemoryStoreTests : IDisposable
         Assert.True(numRecords > 0, "Number of records must be greater than 0");
 
         IEnumerable<MemoryRecord> records = new List<MemoryRecord>(numRecords);
+
         for (int i = 0; i < numRecords / 2; i++)
         {
             var testRecord = MemoryRecord.LocalRecord(
@@ -82,6 +89,7 @@ public class SqliteMemoryStoreTests : IDisposable
         return records;
     }
 
+
     [Fact]
     public async Task InitializeDbConnectionSucceedsAsync()
     {
@@ -89,6 +97,7 @@ public class SqliteMemoryStoreTests : IDisposable
         // Assert
         Assert.NotNull(db);
     }
+
 
     [Fact]
     public async Task ItCanCreateAndGetCollectionAsync()
@@ -107,6 +116,7 @@ public class SqliteMemoryStoreTests : IDisposable
         Assert.True(await collections.ContainsAsync(collection));
     }
 
+
     [Fact]
     public async Task ItCanCheckIfCollectionExistsAsync()
     {
@@ -122,6 +132,7 @@ public class SqliteMemoryStoreTests : IDisposable
         Assert.True(await db.DoesCollectionExistAsync("my_collection"));
         Assert.False(await db.DoesCollectionExistAsync("my_collection2"));
     }
+
 
     [Fact]
     public async Task CreatingDuplicateCollectionDoesNothingAsync()
@@ -140,6 +151,7 @@ public class SqliteMemoryStoreTests : IDisposable
         var collections2 = db.GetCollectionsAsync();
         Assert.Equal(await collections.CountAsync(), await collections.CountAsync());
     }
+
 
     [Fact]
     public async Task CollectionsCanBeDeletedAsync()
@@ -162,6 +174,7 @@ public class SqliteMemoryStoreTests : IDisposable
         var collections2 = db.GetCollectionsAsync();
         Assert.True(await collections2.CountAsync() == 0);
     }
+
 
     [Fact]
     public async Task ItCanInsertIntoNonExistentCollectionAsync()
@@ -191,6 +204,7 @@ public class SqliteMemoryStoreTests : IDisposable
         Assert.Equal(testRecord.Metadata.Id, actual.Metadata.Id);
     }
 
+
     [Fact]
     public async Task GetAsyncReturnsEmptyEmbeddingUnlessSpecifiedAsync()
     {
@@ -218,6 +232,7 @@ public class SqliteMemoryStoreTests : IDisposable
         Assert.True(actualDefault.Embedding.IsEmpty);
         Assert.False(actualWithEmbedding.Embedding.IsEmpty);
     }
+
 
     [Fact]
     public async Task ItCanUpsertAndRetrieveARecordWithNoTimestampAsync()
@@ -250,6 +265,7 @@ public class SqliteMemoryStoreTests : IDisposable
         Assert.Equal(testRecord.Metadata.Id, actual.Metadata.Id);
     }
 
+
     [Fact]
     public async Task ItCanUpsertAndRetrieveARecordWithTimestampAsync()
     {
@@ -280,6 +296,7 @@ public class SqliteMemoryStoreTests : IDisposable
         Assert.Equal(testRecord.Metadata.ExternalSourceName, actual.Metadata.ExternalSourceName);
         Assert.Equal(testRecord.Metadata.Id, actual.Metadata.Id);
     }
+
 
     [Fact]
     public async Task UpsertReplacesExistingRecordWithSameIdAsync()
@@ -316,6 +333,7 @@ public class SqliteMemoryStoreTests : IDisposable
         Assert.Equal(testRecord2.Metadata.Description, actual.Metadata.Description);
     }
 
+
     [Fact]
     public async Task ExistingRecordCanBeRemovedAsync()
     {
@@ -339,6 +357,7 @@ public class SqliteMemoryStoreTests : IDisposable
         Assert.Null(actual);
     }
 
+
     [Fact]
     public async Task RemovingNonExistingRecordDoesNothingAsync()
     {
@@ -355,6 +374,7 @@ public class SqliteMemoryStoreTests : IDisposable
         // Assert
         Assert.Null(actual);
     }
+
 
     [Fact]
     public async Task ItCanListAllDatabaseCollectionsAsync()
@@ -386,6 +406,7 @@ public class SqliteMemoryStoreTests : IDisposable
         Assert.True(collections.Contains(testCollections[2]),
             $"Collections does not contain the newly-created collection {testCollections[2]}");
     }
+
 
     [Fact]
     public async Task GetNearestMatchesReturnsAllResultsWithNoMinScoreAsync()
@@ -443,12 +464,14 @@ public class SqliteMemoryStoreTests : IDisposable
 
         // Assert
         Assert.Equal(topN, topNResults.Length);
+
         for (int j = 0; j < topN - 1; j++)
         {
             int compare = topNResults[j].Item2.CompareTo(topNResults[j + 1].Item2);
             Assert.True(compare >= 0);
         }
     }
+
 
     [Fact]
     public async Task GetNearestMatchAsyncReturnsEmptyEmbeddingUnlessSpecifiedAsync()
@@ -511,6 +534,7 @@ public class SqliteMemoryStoreTests : IDisposable
         Assert.False(topNResultWithEmbedding.Value.Item1.Embedding.IsEmpty);
     }
 
+
     [Fact]
     public async Task GetNearestMatchAsyncReturnsExpectedAsync()
     {
@@ -570,6 +594,7 @@ public class SqliteMemoryStoreTests : IDisposable
         Assert.True(topNResult.Value.Item2 >= threshold);
     }
 
+
     [Fact]
     public async Task GetNearestMatchesDifferentiatesIdenticalVectorsByKeyAsync()
     {
@@ -606,6 +631,7 @@ public class SqliteMemoryStoreTests : IDisposable
         }
     }
 
+
     [Fact]
     public async Task ItCanBatchUpsertRecordsAsync()
     {
@@ -627,6 +653,7 @@ public class SqliteMemoryStoreTests : IDisposable
         Assert.Equal(numRecords, resultRecords.ToEnumerable().Count());
     }
 
+
     [Fact]
     public async Task ItCanBatchGetRecordsAsync()
     {
@@ -647,6 +674,7 @@ public class SqliteMemoryStoreTests : IDisposable
         Assert.NotNull(results);
         Assert.Equal(numRecords, results.ToEnumerable().Count());
     }
+
 
     [Fact]
     public async Task ItCanBatchRemoveRecordsAsync()
@@ -675,6 +703,7 @@ public class SqliteMemoryStoreTests : IDisposable
             Assert.Null(result);
         }
     }
+
 
     [Fact]
     public async Task DeletingNonExistentCollectionDoesNothingAsync()

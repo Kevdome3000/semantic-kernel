@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
+
 using System.Net.Http;
 
-namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// Get information about an index.
@@ -15,10 +16,12 @@ internal sealed class DescribeIndexRequest
     /// </summary>
     public string IndexName { get; }
 
+
     public static DescribeIndexRequest Create(string indexName)
     {
         return new DescribeIndexRequest(indexName);
     }
+
 
     public HttpRequestMessage Build()
     {
@@ -30,6 +33,7 @@ internal sealed class DescribeIndexRequest
         return request;
     }
 
+
     #region private ================================================================================
 
     private DescribeIndexRequest(string indexName)
@@ -38,4 +42,6 @@ internal sealed class DescribeIndexRequest
     }
 
     #endregion
+
+
 }

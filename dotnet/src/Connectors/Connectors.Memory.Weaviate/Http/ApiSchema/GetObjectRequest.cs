@@ -1,13 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Weaviate;
+
 using System.Net.Http;
 
-namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 internal sealed class GetObjectRequest
 {
     public string? Id { get; set; }
     public string[]? Additional { get; set; }
+
 
     public HttpRequestMessage Build()
     {

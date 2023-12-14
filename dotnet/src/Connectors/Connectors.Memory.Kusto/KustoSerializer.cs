@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Kusto;
+
 using System;
 using System.Globalization;
 using System.Text.Json;
-using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Text;
+using Memory;
+using Text;
 
-namespace Microsoft.SemanticKernel.Connectors.Kusto;
 
 /// <summary>
 /// Contains serialization/deserialization logic for memory record properties in Kusto.
@@ -22,16 +23,16 @@ public static class KustoSerializer
         return JsonSerializer.Serialize(embedding, JsonOptionsCache.Default);
     }
 
+
     /// <summary>
     /// Returns deserialized instance of an embedding from serialized embedding.
     /// </summary>
     /// <param name="embedding">Serialized embedding.</param>
     public static ReadOnlyMemory<float> DeserializeEmbedding(string? embedding)
     {
-        return string.IsNullOrEmpty(embedding) ?
-            default :
-            JsonSerializer.Deserialize<ReadOnlyMemory<float>>(embedding!, JsonOptionsCache.Default);
+        return string.IsNullOrEmpty(embedding) ? default : JsonSerializer.Deserialize<ReadOnlyMemory<float>>(embedding!, JsonOptionsCache.Default);
     }
+
 
     /// <summary>
     /// Returns serialized string from <see cref="MemoryRecordMetadata"/> instance.
@@ -47,6 +48,7 @@ public static class KustoSerializer
         return JsonSerializer.Serialize(metadata);
     }
 
+
     /// <summary>
     /// Returns deserialized instance of <see cref="MemoryRecordMetadata"/> from serialized metadata.
     /// </summary>
@@ -55,6 +57,7 @@ public static class KustoSerializer
     {
         return JsonSerializer.Deserialize<MemoryRecordMetadata>(metadata)!;
     }
+
 
     /// <summary>
     /// Returns serialized string from <see cref="DateTimeOffset"/> instance.
@@ -69,6 +72,7 @@ public static class KustoSerializer
 
         return dateTimeOffset.Value.DateTime.ToString(TimestampFormat, CultureInfo.InvariantCulture);
     }
+
 
     /// <summary>
     /// Returns deserialized instance of <see cref="DateTimeOffset"/> from serialized timestamp.
@@ -89,9 +93,12 @@ public static class KustoSerializer
         throw new InvalidCastException("Timestamp format cannot be parsed");
     }
 
+
     #region private ================================================================================
 
     private const string TimestampFormat = "yyyy-MM-ddTHH:mm:ssZ";
 
     #endregion
+
+
 }

@@ -1,13 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Text;
+using Text;
 
-namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Prompt template configuration.
@@ -88,12 +89,14 @@ public sealed class PromptTemplateConfig
     /// </summary>
     public PromptExecutionSettings? DefaultExecutionSettings => this._executionSettings is not null && this._executionSettings.TryGetValue(PromptExecutionSettings.DefaultServiceId, out PromptExecutionSettings? settings) ? settings : null;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptTemplateConfig"/> class.
     /// </summary>
     public PromptTemplateConfig()
     {
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptTemplateConfig"/> class.
@@ -102,6 +105,7 @@ public sealed class PromptTemplateConfig
     {
         this.Template = template;
     }
+
 
     /// <summary>
     /// Adds the <see cref="PromptExecutionSettings"/> to the <see cref="ExecutionSettings"/> dictionary.
@@ -116,6 +120,7 @@ public sealed class PromptTemplateConfig
         Verify.NotNull(settings);
 
         var key = serviceId ?? PromptExecutionSettings.DefaultServiceId;
+
         if (this.ExecutionSettings.ContainsKey(key))
         {
             throw new ArgumentException($"Execution settings for service id '{key}' already exists.");
@@ -123,6 +128,7 @@ public sealed class PromptTemplateConfig
 
         this.ExecutionSettings[key] = settings;
     }
+
 
     /// <summary>
     /// Return the input variables metadata.
@@ -143,6 +149,7 @@ public sealed class PromptTemplateConfig
         return Array.Empty<KernelParameterMetadata>();
     }
 
+
     /// <summary>
     /// Return the output variable metadata.
     /// </summary>
@@ -159,6 +166,7 @@ public sealed class PromptTemplateConfig
 
         return null;
     }
+
 
     /// <summary>
     /// Creates a prompt template configuration from JSON.

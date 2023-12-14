@@ -1,5 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using static NRedisStack.Search.Schema.VectorField;
+
+namespace Microsoft.SemanticKernel.Connectors.Redis;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,15 +11,13 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Memory;
+using Memory;
 using NRedisStack;
 using NRedisStack.RedisStackCommands;
 using NRedisStack.Search;
 using NRedisStack.Search.Literals.Enums;
 using StackExchange.Redis;
-using static NRedisStack.Search.Schema.VectorField;
 
-namespace Microsoft.SemanticKernel.Connectors.Redis;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> for Redis.
@@ -54,6 +56,7 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
         this._queryDialect = queryDialect;
     }
 
+
     /// <summary>
     /// Create a new instance of semantic memory using Redis.
     /// </summary>
@@ -84,6 +87,7 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
         this._queryDialect = queryDialect;
     }
 
+
     /// <inheritdoc />
     public async IAsyncEnumerable<string> GetCollectionsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -93,6 +97,7 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
         }
     }
 
+
     /// <inheritdoc />
     public async Task CreateCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
@@ -101,14 +106,16 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
             .AddTextField("key")
             .AddTextField("metadata")
             .AddNumericField("timestamp")
-            .AddVectorField("embedding", this._vectorIndexAlgorithm, new Dictionary<string, object> {
-                    {"TYPE", DefaultVectorType},
-                    {"DIM", this._vectorSize},
-                    {"DISTANCE_METRIC", this._vectorDistanceMetric},
-                });
+            .AddVectorField("embedding", this._vectorIndexAlgorithm, new Dictionary<string, object>
+            {
+                { "TYPE", DefaultVectorType },
+                { "DIM", this._vectorSize },
+                { "DISTANCE_METRIC", this._vectorDistanceMetric },
+            });
 
         await this._ft.CreateAsync(collectionName, ftCreateParams, schema).ConfigureAwait(false);
     }
+
 
     /// <inheritdoc />
     public async Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancellationToken = default)
@@ -124,6 +131,7 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
         }
     }
 
+
     /// <inheritdoc />
     public async Task DeleteCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
@@ -131,19 +139,25 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
         await this._ft.DropIndexAsync(collectionName, dd: true).ConfigureAwait(false);
     }
 
+
     /// <inheritdoc />
     public async Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancellationToken = default)
     {
         return await this.InternalGetAsync(collectionName, key, withEmbedding, cancellationToken).ConfigureAwait(false);
     }
 
+
     /// <inheritdoc/>
-    public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = false,
+    public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(
+        string collectionName,
+        IEnumerable<string> keys,
+        bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         foreach (var key in keys)
         {
             var result = await this.InternalGetAsync(collectionName, key, withEmbeddings, cancellationToken).ConfigureAwait(false);
+
             if (result != null)
             {
                 yield return result;
@@ -151,12 +165,14 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
         }
     }
 
+
     /// <inheritdoc />
     public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default)
     {
         record.Key = record.Metadata.Id;
 
-        await this._database.HashSetAsync(GetRedisKey(collectionName, record.Key), new[] {
+        await this._database.HashSetAsync(GetRedisKey(collectionName, record.Key), new[]
+        {
             new HashEntry("key", record.Key),
             new HashEntry("metadata", record.GetSerializedMetadata()),
             new HashEntry("embedding", this.ConvertEmbeddingToBytes(record.Embedding)),
@@ -165,6 +181,7 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
 
         return record.Key;
     }
+
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -175,17 +192,20 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
         }
     }
 
+
     /// <inheritdoc />
     public async Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default)
     {
         await this._database.KeyDeleteAsync(GetRedisKey(collectionName, key), flags: CommandFlags.None).ConfigureAwait(false);
     }
 
+
     /// <inheritdoc/>
     public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
         await this._database.KeyDeleteAsync(keys.Select(key => GetRedisKey(collectionName, key)).ToArray(), flags: CommandFlags.None).ConfigureAwait(false);
     }
+
 
     /// <inheritdoc />
     public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(
@@ -202,38 +222,42 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
         }
 
         var query = new Query($"*=>[KNN {limit} @embedding $embedding AS vector_score]")
-                    .AddParam("embedding", this.ConvertEmbeddingToBytes(embedding))
-                    .SetSortBy("vector_score")
-                    .ReturnFields("key", "metadata", "embedding", "timestamp", "vector_score")
-                    .Limit(0, limit)
-                    .Dialect(this._queryDialect);
+            .AddParam("embedding", this.ConvertEmbeddingToBytes(embedding))
+            .SetSortBy("vector_score")
+            .ReturnFields("key", "metadata", "embedding", "timestamp", "vector_score")
+            .Limit(0, limit)
+            .Dialect(this._queryDialect);
 
         var results = await this._ft.SearchAsync(collectionName, query).ConfigureAwait(false);
 
         foreach (var document in results.Documents)
         {
             double similarity = this.GetSimilarity(document);
+
             if (similarity < minRelevanceScore)
             {
                 yield break;
             }
 
             ReadOnlyMemory<float> convertedEmbedding = withEmbeddings && document["embedding"].HasValue
-                ?
-                MemoryMarshal.Cast<byte, float>((byte[])document["embedding"]!).ToArray()
-                :
-                ReadOnlyMemory<float>.Empty;
+                ? MemoryMarshal.Cast<byte, float>((byte[])document["embedding"]!).ToArray()
+                : ReadOnlyMemory<float>.Empty;
 
             yield return (MemoryRecord.FromJsonMetadata(
-                    json: document["metadata"]!,
-                    embedding: convertedEmbedding,
-                    key: document["key"],
-                    timestamp: ParseTimestamp((long?)document["timestamp"])), similarity);
+                json: document["metadata"]!,
+                embedding: convertedEmbedding,
+                key: document["key"],
+                timestamp: ParseTimestamp((long?)document["timestamp"])), similarity);
         }
     }
 
+
     /// <inheritdoc/>
-    public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, ReadOnlyMemory<float> embedding, double minRelevanceScore = 0, bool withEmbedding = false,
+    public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(
+        string collectionName,
+        ReadOnlyMemory<float> embedding,
+        double minRelevanceScore = 0,
+        bool withEmbedding = false,
         CancellationToken cancellationToken = default)
     {
         return await this.GetNearestMatchesAsync(
@@ -245,6 +269,7 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
             cancellationToken: cancellationToken).FirstOrDefaultAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
+
     /// <summary>
     /// Disposes the <see cref="RedisMemoryStore"/> instance.
     /// </summary>
@@ -253,6 +278,7 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
         this.Dispose(true);
         GC.SuppressFinalize(this);
     }
+
 
     /// <summary>
     /// Disposes the resources used by the <see cref="RedisMemoryStore"/> instance.
@@ -265,6 +291,7 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
             this._connection?.Dispose();
         }
     }
+
 
     #region private ================================================================================
 
@@ -310,6 +337,7 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
     private readonly string _vectorDistanceMetric;
     private readonly int _queryDialect;
 
+
     private static long ToTimestampLong(DateTimeOffset? timestamp)
     {
         if (timestamp.HasValue)
@@ -318,6 +346,7 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
         }
         return -1;
     }
+
 
     private static DateTimeOffset? ParseTimestamp(long? timestamp)
     {
@@ -329,10 +358,12 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
         return null;
     }
 
+
     private static RedisKey GetRedisKey(string collectionName, string key)
     {
         return new RedisKey($"{collectionName}:{key}");
     }
+
 
     private async Task<MemoryRecord?> InternalGetAsync(string collectionName, string key, bool withEmbedding, CancellationToken cancellationToken)
     {
@@ -357,6 +388,7 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
             timestamp: ParseTimestamp((long?)hashEntries.FirstOrDefault(x => x.Name == "timestamp").Value));
     }
 
+
     private double GetSimilarity(Document document)
     {
         RedisValue vectorScoreValue = document["vector_score"];
@@ -369,10 +401,13 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
         return 1 - vectorScore;
     }
 
+
     private byte[] ConvertEmbeddingToBytes(ReadOnlyMemory<float> embedding)
     {
         return MemoryMarshal.AsBytes(embedding.Span).ToArray();
     }
 
     #endregion
+
+
 }

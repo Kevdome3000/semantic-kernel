@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.IntegrationTests.Milvus;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +10,6 @@ using Microsoft.SemanticKernel.Connectors.Milvus;
 using Microsoft.SemanticKernel.Memory;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Milvus;
 
 public class MilvusMemoryStoreTests : IAsyncLifetime
 {
@@ -21,6 +22,7 @@ public class MilvusMemoryStoreTests : IAsyncLifetime
     private const string CollectionName = "test";
     private MilvusMemoryStore Store { get; set; } = new(MilvusHost, vectorSize: 5, port: MilvusPort);
 
+
     [Fact(Skip = SkipReason)]
     public async Task CreateCollectionAsync()
     {
@@ -30,6 +32,7 @@ public class MilvusMemoryStoreTests : IAsyncLifetime
         Assert.True(await this.Store.DoesCollectionExistAsync(CollectionName));
     }
 
+
     [Fact(Skip = SkipReason)]
     public async Task DropCollectionAsync()
     {
@@ -37,6 +40,7 @@ public class MilvusMemoryStoreTests : IAsyncLifetime
         await this.Store.DeleteCollectionAsync(CollectionName);
         Assert.False(await this.Store.DoesCollectionExistAsync(CollectionName));
     }
+
 
     [Fact(Skip = SkipReason)]
     public async Task GetCollectionsAsync()
@@ -48,6 +52,7 @@ public class MilvusMemoryStoreTests : IAsyncLifetime
         Assert.Contains("collection1", collections);
         Assert.Contains("collection2", collections);
     }
+
 
     [Fact(Skip = SkipReason)]
     public async Task UpsertAsync()
@@ -68,6 +73,7 @@ public class MilvusMemoryStoreTests : IAsyncLifetime
 
         Assert.Equal("Some id", id);
     }
+
 
     [Theory(Skip = SkipReason)]
     [InlineData(true)]
@@ -94,6 +100,7 @@ public class MilvusMemoryStoreTests : IAsyncLifetime
             record.Embedding.ToArray());
     }
 
+
     [Fact(Skip = SkipReason)]
     public async Task UpsertBatchAsync()
     {
@@ -104,6 +111,7 @@ public class MilvusMemoryStoreTests : IAsyncLifetime
             id => Assert.Equal("Some id", id),
             id => Assert.Equal("Some other id", id));
     }
+
 
     [Theory(Skip = SkipReason)]
     [InlineData(true)]
@@ -148,6 +156,7 @@ public class MilvusMemoryStoreTests : IAsyncLifetime
             });
     }
 
+
     [Fact(Skip = SkipReason)]
     public async Task RemoveAsync()
     {
@@ -158,6 +167,7 @@ public class MilvusMemoryStoreTests : IAsyncLifetime
         await this.Store.RemoveAsync(CollectionName, "Some id");
         Assert.Null(await this.Store.GetAsync(CollectionName, "Some id"));
     }
+
 
     [Fact(Skip = SkipReason)]
     public async Task RemoveBatchAsync()
@@ -171,6 +181,7 @@ public class MilvusMemoryStoreTests : IAsyncLifetime
         Assert.Null(await this.Store.GetAsync(CollectionName, "Some id"));
         Assert.Null(await this.Store.GetAsync(CollectionName, "Some other id"));
     }
+
 
     [Theory(Skip = SkipReason)]
     [InlineData(true)]
@@ -221,6 +232,7 @@ public class MilvusMemoryStoreTests : IAsyncLifetime
             });
     }
 
+
     [Fact(Skip = SkipReason)]
     public async Task GetNearestMatchesWithMinRelevanceScoreAsync()
     {
@@ -237,6 +249,7 @@ public class MilvusMemoryStoreTests : IAsyncLifetime
 
         Assert.DoesNotContain(firstId, results.Select(r => r.Record.Metadata.Id));
     }
+
 
     [Theory(Skip = SkipReason)]
     [InlineData(true)]
@@ -258,6 +271,7 @@ public class MilvusMemoryStoreTests : IAsyncLifetime
             withEmbeddings ? new[] { 20f, 21f, 22f, 23f, 24f } : Array.Empty<float>(),
             record.Embedding.ToArray());
     }
+
 
     private async Task<List<string>> InsertSampleDataAsync()
     {
@@ -297,8 +311,10 @@ public class MilvusMemoryStoreTests : IAsyncLifetime
         return idList;
     }
 
+
     public async Task InitializeAsync()
         => await this.Store.DeleteCollectionAsync(CollectionName);
+
 
     public Task DisposeAsync()
     {

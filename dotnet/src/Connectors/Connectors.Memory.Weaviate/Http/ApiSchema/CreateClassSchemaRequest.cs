@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Weaviate;
+
 using System.Net.Http;
 
-namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 internal sealed class CreateClassSchemaRequest
 {
@@ -46,6 +47,7 @@ internal sealed class CreateClassSchemaRequest
         };
     }
 
+
     public string Class { get; set; }
 
     public string Description { get; set; }
@@ -55,10 +57,12 @@ internal sealed class CreateClassSchemaRequest
 
     public Property[] Properties { get; set; }
 
+
     public static CreateClassSchemaRequest Create(string @class, string description)
     {
         return new(@class, description);
     }
+
 
     public HttpRequestMessage Build()
     {

@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.Weaviate;
+
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Text;
+using Text;
 
-namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 internal static class HttpRequest
 {
@@ -17,6 +18,7 @@ internal static class HttpRequest
         Converters = { JsonOptionsCache.ReadOnlyMemoryConverter },
     };
 
+
     public static HttpRequestMessage CreateGetRequest(string url, object? payload = null)
     {
         return new(HttpMethod.Get, url)
@@ -24,6 +26,7 @@ internal static class HttpRequest
             Content = GetJsonContent(payload)
         };
     }
+
 
     public static HttpRequestMessage CreatePostRequest(string url, object? payload = null)
     {
@@ -33,10 +36,12 @@ internal static class HttpRequest
         };
     }
 
+
     public static HttpRequestMessage CreateDeleteRequest(string url)
     {
         return new(HttpMethod.Delete, url);
     }
+
 
     private static StringContent? GetJsonContent(object? payload)
     {
