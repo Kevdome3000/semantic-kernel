@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 
 
-public static class Step7_Pipelining
+public static class Step8_Pipelining
 {
     /// <summary>
     /// Provides an example of combining multiple functions into a single function that invokes
