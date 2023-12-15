@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Extensions.Logging;
+using Extensions.Logging.Abstractions;
 using SemanticKernel.Memory;
 
 
@@ -77,7 +78,11 @@ public sealed class TextMemoryPlugin
         Verify.NotNullOrWhiteSpace(collection);
         Verify.NotNullOrWhiteSpace(key);
 
-        loggerFactory?.CreateLogger(typeof(TextMemoryPlugin)).LogDebug("Recalling memory with key '{0}' from collection '{1}'", key, collection);
+        if (loggerFactory?.CreateLogger(typeof(TextMemoryPlugin)) is ILogger logger &&
+            logger.IsEnabled(LogLevel.Debug))
+        {
+            logger.LogDebug("Recalling memory with key '{0}' from collection '{1}'", key, collection);
+        }
 
         var memory = await this._memory.GetAsync(collection, key, cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -111,9 +116,12 @@ public sealed class TextMemoryPlugin
         relevance ??= DefaultRelevance;
         limit ??= DefaultLimit;
 
-        ILogger? logger = loggerFactory?.CreateLogger(typeof(TextMemoryPlugin));
+        ILogger logger = loggerFactory?.CreateLogger(typeof(TextMemoryPlugin)) ?? NullLogger.Instance;
 
-        logger?.LogDebug("Searching memories in collection '{0}', relevance '{1}'", collection, relevance);
+        if (logger.IsEnabled(LogLevel.Debug) is true)
+        {
+            logger.LogDebug("Searching memories in collection '{0}', relevance '{1}'", collection, relevance);
+        }
 
         // Search memory
         List<MemoryQueryResult> memories = await this._memory
@@ -123,11 +131,18 @@ public sealed class TextMemoryPlugin
 
         if (memories.Count == 0)
         {
-            logger?.LogWarning("Memories not found in collection: {0}", collection);
+            if (logger.IsEnabled(LogLevel.Warning) is true)
+            {
+                logger.LogWarning("Memories not found in collection: {0}", collection);
+            }
             return string.Empty;
         }
 
-        logger?.LogTrace("Done looking for memories in collection '{0}')", collection);
+        if (logger.IsEnabled(LogLevel.Trace) is true)
+        {
+            logger.LogTrace("Done looking for memories in collection '{0}')", collection);
+        }
+
         return limit == 1 ? memories[0].Metadata.Text : JsonSerializer.Serialize(memories.Select(x => x.Metadata.Text));
     }
 
@@ -154,7 +169,11 @@ public sealed class TextMemoryPlugin
         Verify.NotNullOrWhiteSpace(collection);
         Verify.NotNullOrWhiteSpace(key);
 
-        loggerFactory?.CreateLogger(typeof(TextMemoryPlugin)).LogDebug("Saving memory to collection '{0}'", collection);
+        if (loggerFactory?.CreateLogger(typeof(TextMemoryPlugin)) is ILogger logger &&
+            logger.IsEnabled(LogLevel.Debug))
+        {
+            logger.LogDebug("Saving memory to collection '{0}'", collection);
+        }
 
         await this._memory.SaveInformationAsync(collection, text: input, id: key, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
@@ -179,7 +198,11 @@ public sealed class TextMemoryPlugin
         Verify.NotNullOrWhiteSpace(collection);
         Verify.NotNullOrWhiteSpace(key);
 
-        loggerFactory?.CreateLogger(typeof(TextMemoryPlugin)).LogDebug("Removing memory from collection '{0}'", collection);
+        if (loggerFactory?.CreateLogger(typeof(TextMemoryPlugin)) is ILogger logger &&
+            logger.IsEnabled(LogLevel.Debug))
+        {
+            logger.LogDebug("Removing memory from collection '{0}'", collection);
+        }
 
         await this._memory.RemoveAsync(collection, key, cancellationToken: cancellationToken).ConfigureAwait(false);
     }

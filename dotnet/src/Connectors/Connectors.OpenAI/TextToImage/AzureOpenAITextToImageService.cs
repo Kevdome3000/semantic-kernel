@@ -5,13 +5,12 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Extensions.Logging;
-using Http;
+using Extensions.Logging.Abstractions;
 using Services;
 using TextToImage;
 
@@ -86,7 +85,7 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
         maxRetryCount ??= 5;
         apiVersion ??= "2023-06-01-preview";
 
-        this._core = new(httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextToImageService)));
+        this._core = new(httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextToImageService)) ?? NullLogger.Instance);
 
         this._endpoint = !string.IsNullOrEmpty(endpoint) ? endpoint! : httpClient!.BaseAddress!.AbsoluteUri;
         this._apiKey = apiKey;

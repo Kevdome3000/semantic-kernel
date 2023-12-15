@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using ChatCompletion;
 using Connectors.OpenAI;
 using Extensions.Logging;
+using Extensions.Logging.Abstractions;
 using Json.More;
 using Plugins.OpenApi;
 
@@ -46,7 +47,7 @@ public sealed class FunctionCallingStepwisePlanner
         string question,
         CancellationToken cancellationToken = default)
     {
-        var logger = kernel.LoggerFactory.CreateLogger(this.GetType());
+        var logger = kernel.LoggerFactory.CreateLogger(this.GetType()) ?? NullLogger.Instance;
 
         return PlannerInstrumentation.InvokePlanAsync(
             static (FunctionCallingStepwisePlanner plan, Kernel kernel, string question, CancellationToken cancellationToken)
@@ -66,7 +67,7 @@ public sealed class FunctionCallingStepwisePlanner
         Verify.NotNull(kernel);
         IChatCompletionService chatCompletion = kernel.GetRequiredService<IChatCompletionService>();
         ILoggerFactory loggerFactory = kernel.LoggerFactory;
-        ILogger logger = loggerFactory.CreateLogger(this.GetType());
+        ILogger logger = loggerFactory.CreateLogger(this.GetType()) ?? NullLogger.Instance;
         var promptTemplateFactory = new KernelPromptTemplateFactory(loggerFactory);
         var stepExecutionSettings = this.Config.ExecutionSettings ?? new OpenAIPromptExecutionSettings();
 

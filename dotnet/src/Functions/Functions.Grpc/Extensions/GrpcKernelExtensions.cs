@@ -5,13 +5,13 @@ namespace Microsoft.SemanticKernel.Plugins.Grpc;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Extensions.DependencyInjection;
 using Extensions.Logging;
+using Extensions.Logging.Abstractions;
 using Http;
 using Model;
 using Protobuf;
@@ -105,7 +105,11 @@ public static class GrpcKernelExtensions
             throw new FileNotFoundException($"No .proto document for the specified path - {filePath} is found.");
         }
 
-        kernel.LoggerFactory.CreateLogger(typeof(GrpcKernelExtensions)).LogTrace("Registering gRPC functions from {0} .proto document", filePath);
+        if (kernel.LoggerFactory.CreateLogger(typeof(GrpcKernelExtensions)) is ILogger logger &&
+            logger.IsEnabled(LogLevel.Trace))
+        {
+            logger.LogTrace("Registering gRPC functions from {0} .proto document", filePath);
+        }
 
         using var stream = File.OpenRead(filePath);
 
@@ -130,7 +134,11 @@ public static class GrpcKernelExtensions
             throw new FileNotFoundException($"No .proto document for the specified path - {filePath} is found.");
         }
 
-        kernel.LoggerFactory.CreateLogger(typeof(GrpcKernelExtensions)).LogTrace("Registering gRPC functions from {0} .proto document", filePath);
+        if (kernel.LoggerFactory.CreateLogger(typeof(GrpcKernelExtensions)) is ILogger logger &&
+            logger.IsEnabled(LogLevel.Trace))
+        {
+            logger.LogTrace("Registering gRPC functions from {0} .proto document", filePath);
+        }
 
         using var stream = File.OpenRead(filePath);
 
@@ -166,7 +174,7 @@ public static class GrpcKernelExtensions
 
         var runner = new GrpcOperationRunner(client);
 
-        ILogger logger = loggerFactory.CreateLogger(typeof(GrpcKernelExtensions));
+        ILogger logger = loggerFactory.CreateLogger(typeof(GrpcKernelExtensions)) ?? NullLogger.Instance;
 
         foreach (var operation in operations)
         {
@@ -209,9 +217,9 @@ public static class GrpcKernelExtensions
             {
                 return await runner.RunAsync(operation, arguments, cancellationToken).ConfigureAwait(false);
             }
-            catch (Exception ex) when (!ex.IsCriticalException())
+            catch (Exception ex) when (!ex.IsCriticalException() && loggerFactory.CreateLogger(typeof(GrpcKernelExtensions)) is ILogger logger && logger.IsEnabled(LogLevel.Warning))
             {
-                loggerFactory.CreateLogger(typeof(GrpcKernelExtensions)).LogWarning(ex, "Something went wrong while rendering the gRPC function. Function: {0}. Error: {1}", operation.Name, ex.Message);
+                logger.LogWarning(ex, "Something went wrong while rendering the gRPC function. Function: {0}. Error: {1}", operation.Name, ex.Message);
                 throw;
             }
         }

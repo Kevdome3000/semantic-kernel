@@ -20,7 +20,7 @@ using Memory;
 /// </summary>
 internal static class ReadOnlyPluginCollectionPlannerExtensions
 {
-    internal const string PlannerMemoryCollectionName = "Planning.SKFunctionsManual";
+    internal const string PlannerMemoryCollectionName = "Planning.KernelFunctionsManual";
 
 
     /// <summary>

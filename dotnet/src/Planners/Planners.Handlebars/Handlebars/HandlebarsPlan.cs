@@ -4,6 +4,8 @@ namespace Microsoft.SemanticKernel.Planning.Handlebars;
 
 using System.Threading;
 using System.Threading.Tasks;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
 using HandlebarsDotNet;
 using PromptTemplates.Handlebars;
 
@@ -63,7 +65,7 @@ public sealed class HandlebarsPlan
         KernelArguments arguments,
         CancellationToken cancellationToken = default)
     {
-        var logger = kernel.LoggerFactory.CreateLogger(nameof(HandlebarsPlan));
+        var logger = kernel.LoggerFactory.CreateLogger(typeof(HandlebarsPlan)) ?? NullLogger.Instance;
 
         return PlannerInstrumentation.InvokePlanAsync(
             static (HandlebarsPlan plan, Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
