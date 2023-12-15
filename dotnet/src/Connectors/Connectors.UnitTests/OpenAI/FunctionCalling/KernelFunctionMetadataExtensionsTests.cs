@@ -22,7 +22,11 @@ public sealed class KernelFunctionMetadataExtensionsTests
         {
             PluginName = "bar",
             Description = "baz",
-            ReturnParameter = new KernelReturnParameterMetadata { Description = "retDesc", Schema = KernelJsonSchema.Parse("\"schema\"") },
+            ReturnParameter = new KernelReturnParameterMetadata
+            {
+                Description = "retDesc",
+                Schema = KernelJsonSchema.Parse("{\"type\": \"object\" }"),
+            }
         };
 
         // Act
@@ -36,7 +40,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
 
         Assert.NotNull(result.ReturnParameter);
         Assert.Equal("retDesc", result.ReturnParameter.Description);
-        Assert.Equivalent(KernelJsonSchema.Parse("\"schema\""), result.ReturnParameter.Schema);
+        Assert.Equivalent(KernelJsonSchema.Parse("{\"type\": \"object\" }"), result.ReturnParameter.Schema);
         Assert.Null(result.ReturnParameter.ParameterType);
     }
 
@@ -49,7 +53,11 @@ public sealed class KernelFunctionMetadataExtensionsTests
         {
             PluginName = string.Empty,
             Description = "baz",
-            ReturnParameter = new KernelReturnParameterMetadata { Description = "retDesc", Schema = KernelJsonSchema.Parse("\"schema\"") },
+            ReturnParameter = new KernelReturnParameterMetadata
+            {
+                Description = "retDesc",
+                Schema = KernelJsonSchema.Parse("{\"type\": \"object\" }"),
+            }
         };
 
         // Act
@@ -63,7 +71,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
 
         Assert.NotNull(result.ReturnParameter);
         Assert.Equal("retDesc", result.ReturnParameter.Description);
-        Assert.Equivalent(KernelJsonSchema.Parse("\"schema\""), result.ReturnParameter.Schema);
+        Assert.Equivalent(KernelJsonSchema.Parse("{\"type\": \"object\" }"), result.ReturnParameter.Schema);
         Assert.Null(result.ReturnParameter.ParameterType);
     }
 
@@ -88,7 +96,11 @@ public sealed class KernelFunctionMetadataExtensionsTests
             PluginName = "bar",
             Description = "baz",
             Parameters = new[] { param1 },
-            ReturnParameter = new KernelReturnParameterMetadata { Description = "retDesc", Schema = KernelJsonSchema.Parse("\"schema\"") },
+            ReturnParameter = new KernelReturnParameterMetadata
+            {
+                Description = "retDesc",
+                Schema = KernelJsonSchema.Parse("{\"type\": \"object\" }"),
+            }
         };
 
         // Act
@@ -104,7 +116,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
 
         Assert.NotNull(result.ReturnParameter);
         Assert.Equal("retDesc", result.ReturnParameter.Description);
-        Assert.Equivalent(KernelJsonSchema.Parse("\"schema\""), result.ReturnParameter.Schema);
+        Assert.Equivalent(KernelJsonSchema.Parse("{\"type\": \"object\" }"), result.ReturnParameter.Schema);
         Assert.Null(result.ReturnParameter.ParameterType);
     }
 
@@ -113,17 +125,18 @@ public sealed class KernelFunctionMetadataExtensionsTests
     public void ItCanConvertToOpenAIFunctionWithParameterNoType()
     {
         // Arrange
-        var param1 = new KernelParameterMetadata("param1")
-        {
-            Description = "This is param1"
-        };
+        var param1 = new KernelParameterMetadata("param1") { Description = "This is param1" };
 
         var sut = new KernelFunctionMetadata("foo")
         {
             PluginName = "bar",
             Description = "baz",
             Parameters = new[] { param1 },
-            ReturnParameter = new KernelReturnParameterMetadata { Description = "retDesc", Schema = KernelJsonSchema.Parse("\"schema\"") },
+            ReturnParameter = new KernelReturnParameterMetadata
+            {
+                Description = "retDesc",
+                Schema = KernelJsonSchema.Parse("{\"type\": \"object\" }"),
+            }
         };
 
         // Act
@@ -137,7 +150,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
 
         Assert.NotNull(result.ReturnParameter);
         Assert.Equal("retDesc", result.ReturnParameter.Description);
-        Assert.Equivalent(KernelJsonSchema.Parse("\"schema\""), result.ReturnParameter.Schema);
+        Assert.Equivalent(KernelJsonSchema.Parse("{\"type\": \"object\" }"), result.ReturnParameter.Schema);
         Assert.Null(result.ReturnParameter.ParameterType);
     }
 

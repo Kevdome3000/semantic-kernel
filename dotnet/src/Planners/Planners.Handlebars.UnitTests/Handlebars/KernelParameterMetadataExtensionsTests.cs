@@ -211,7 +211,6 @@ public class KernelParameterMetadataExtensionsTests
 
             // Assert
             Assert.Equal(pair.Value, result.ParameterType);
-            Assert.Null(result.Schema);
         }
     }
 

@@ -55,7 +55,7 @@ public class KernelFunctionMetadataTests
         {
             Description = "ReturnParameterA",
             ParameterType = typeof(string),
-            Schema = KernelJsonSchema.Parse("\"schema\""),
+            Schema = KernelJsonSchema.Parse("{\"type\": \"object\" }"),
         };
 
         // Act
@@ -66,7 +66,7 @@ public class KernelFunctionMetadataTests
 
         Assert.Equal("ReturnParameterA", funcViewA.ReturnParameter.Description);
         Assert.Equal(typeof(string), funcViewA.ReturnParameter.ParameterType);
-        Assert.Equivalent(KernelJsonSchema.Parse("\"schema\""), funcViewA.ReturnParameter.Schema);
+        Assert.Equivalent(KernelJsonSchema.Parse("{\"type\": \"object\" }"), funcViewA.ReturnParameter.Schema);
     }
 
 

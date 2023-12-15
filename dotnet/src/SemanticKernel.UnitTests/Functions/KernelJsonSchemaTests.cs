@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel;
 using Xunit;
 
 
-public class KernelParameterJsonSchemaTests
+public class KernelJsonSchemaTests
 {
     [Fact]
     public void ItParsesJsonSchemaSuccessfully()
@@ -67,7 +67,7 @@ public class KernelParameterJsonSchemaTests
 
 
     [Fact]
-    public void ItThrowsOnInvalidJsonSchema()
+    public void ItThrowsOnInvalidJson()
     {
         const string InvalidJsonSchema = @"
 {
@@ -89,5 +89,16 @@ public class KernelParameterJsonSchemaTests
         Assert.Throws<JsonException>(() => KernelJsonSchema.Parse(InvalidJsonSchema));
         Assert.Throws<JsonException>(() => KernelJsonSchema.Parse((ReadOnlySpan<char>)InvalidJsonSchema));
         Assert.Throws<JsonException>(() => KernelJsonSchema.Parse(Encoding.UTF8.GetBytes(InvalidJsonSchema)));
+    }
+
+
+    [Theory]
+    [InlineData("invalid")]
+    [InlineData("{ \"type\":\"invalid\" }")]
+    public void ItThrowsOnInvalidJsonSchema(string invalidSchema)
+    {
+        Assert.Throws<JsonException>(() => KernelJsonSchema.Parse(invalidSchema));
+        Assert.Throws<JsonException>(() => KernelJsonSchema.Parse((ReadOnlySpan<char>)invalidSchema));
+        Assert.Throws<JsonException>(() => KernelJsonSchema.Parse(Encoding.UTF8.GetBytes(invalidSchema)));
     }
 }

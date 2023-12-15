@@ -203,8 +203,14 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         // Check for param names conflict
         Verify.ParametersUniqueness(argParameterViews);
 
-        // Get marshaling func for the return value.
-        Func<Kernel, KernelFunction, object?, ValueTask<FunctionResult>> returnFunc = GetReturnValueMarshalerDelegate(method);
+        // Get the return type and a marshaling func for the return value.
+        (Type returnType, Func<Kernel, KernelFunction, object?, ValueTask<FunctionResult>> returnFunc) = GetReturnValueMarshalerDelegate(method);
+
+        if (Nullable.GetUnderlyingType(returnType) is Type underlying)
+        {
+            // Unwrap the U from a Nullable<U> since everything is going through object, at which point Nullable<U> and a boxed U are indistinguishable.
+            returnType = underlying;
+        }
 
         // Create the func
         ValueTask<FunctionResult> Function(Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
@@ -233,8 +239,8 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             Parameters = argParameterViews,
             ReturnParameter = new KernelReturnParameterMetadata()
             {
+                ParameterType = returnType,
                 Description = method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
-                ParameterType = method.ReturnType,
             }
         };
     }
@@ -393,7 +399,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             Description = parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
             DefaultValue = parameter.DefaultValue?.ToString(),
             IsRequired = !parameter.IsOptional,
-            ParameterType = type
+            ParameterType = type,
         };
 
         return (parameterFunc, parameterView);
@@ -403,7 +409,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     /// <summary>
     /// Gets a delegate for handling the result value of a method, converting it into the <see cref="Task{FunctionResult}"/> to return from the invocation.
     /// </summary>
-    private static Func<Kernel, KernelFunction, object?, ValueTask<FunctionResult>> GetReturnValueMarshalerDelegate(MethodInfo method)
+    private static (Type ReturnType, Func<Kernel, KernelFunction, object?, ValueTask<FunctionResult>> Marshaler) GetReturnValueMarshalerDelegate(MethodInfo method)
     {
         // Handle each known return type for the method
         Type returnType = method.ReturnType;
@@ -412,92 +418,101 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
         if (returnType == typeof(void))
         {
-            return static (_, function, _) =>
-                new ValueTask<FunctionResult>(new FunctionResult(function));
+            return (typeof(void), (static (_, function, _) =>
+                new ValueTask<FunctionResult>(new FunctionResult(function))));
         }
 
         if (returnType == typeof(Task))
         {
-            return async static (_, function, result) =>
-            {
-                await ((Task)ThrowIfNullResult(result)).ConfigureAwait(false);
-                return new FunctionResult(function);
-            };
+            return (typeof(void), async static (_, function, result) =>
+                    {
+                        await ((Task)ThrowIfNullResult(result)).ConfigureAwait(false);
+                        return new FunctionResult(function);
+                    }
+                );
         }
 
         if (returnType == typeof(ValueTask))
         {
-            return async static (_, function, result) =>
-            {
-                await ((ValueTask)ThrowIfNullResult(result)).ConfigureAwait(false);
-                return new FunctionResult(function);
-            };
+            return (typeof(void), async static (_, function, result) =>
+                    {
+                        await ((ValueTask)ThrowIfNullResult(result)).ConfigureAwait(false);
+                        return new FunctionResult(function);
+                    }
+                );
         }
 
         // string (which is special as no marshaling is required), either synchronous (string) or asynchronous (Task<string> / ValueTask<string>)
 
         if (returnType == typeof(string))
         {
-            return static (kernel, function, result) =>
-            {
-                var resultString = (string?)result;
-                return new ValueTask<FunctionResult>(new FunctionResult(function, resultString, kernel.Culture));
-            };
+            return (typeof(string), static (kernel, function, result) =>
+                    {
+                        var resultString = (string?)result;
+                        return new ValueTask<FunctionResult>(new FunctionResult(function, resultString, kernel.Culture));
+                    }
+                );
         }
 
         if (returnType == typeof(Task<string>))
         {
-            return async static (kernel, function, result) =>
-            {
-                var resultString = await ((Task<string>)ThrowIfNullResult(result)).ConfigureAwait(false);
-                return new FunctionResult(function, resultString, kernel.Culture);
-            };
+            return (typeof(string), async static (kernel, function, result) =>
+                    {
+                        var resultString = await ((Task<string>)ThrowIfNullResult(result)).ConfigureAwait(false);
+                        return new FunctionResult(function, resultString, kernel.Culture);
+                    }
+                );
         }
 
         if (returnType == typeof(ValueTask<string>))
         {
-            return async static (kernel, function, result) =>
-            {
-                var resultString = await ((ValueTask<string>)ThrowIfNullResult(result)).ConfigureAwait(false);
-                return new FunctionResult(function, resultString, kernel.Culture);
-            };
+            return (typeof(string), async static (kernel, function, result) =>
+                    {
+                        var resultString = await ((ValueTask<string>)ThrowIfNullResult(result)).ConfigureAwait(false);
+                        return new FunctionResult(function, resultString, kernel.Culture);
+                    }
+                );
         }
 
         if (returnType == typeof(FunctionResult))
         {
-            return static (_, function, result) =>
-            {
-                var functionResult = (FunctionResult?)result;
-                return new ValueTask<FunctionResult>(functionResult ?? new FunctionResult(function));
-            };
+            return (typeof(object), static (_, function, result) =>
+                    {
+                        var functionResult = (FunctionResult?)result;
+                        return new ValueTask<FunctionResult>(functionResult ?? new FunctionResult(function));
+                    }
+                );
         }
 
         if (returnType == typeof(Task<FunctionResult>))
         {
-            return async static (_, _, result) =>
-            {
-                var functionResult = await ((Task<FunctionResult>)ThrowIfNullResult(result)).ConfigureAwait(false);
-                return functionResult;
-            };
+            return (typeof(object), async static (_, _, result) =>
+                    {
+                        var functionResult = await ((Task<FunctionResult>)ThrowIfNullResult(result)).ConfigureAwait(false);
+                        return functionResult;
+                    }
+                );
         }
 
         if (returnType == typeof(ValueTask<FunctionResult>))
         {
-            return async static (_, _, result) =>
-            {
-                var functionResult = await ((ValueTask<FunctionResult>)ThrowIfNullResult(result)).ConfigureAwait(false);
-                return functionResult;
-            };
+            return (typeof(object), async static (_, _, result) =>
+                    {
+                        var functionResult = await ((ValueTask<FunctionResult>)ThrowIfNullResult(result)).ConfigureAwait(false);
+                        return functionResult;
+                    }
+                );
         }
 
         // All other synchronous return types T.
 
         if (!returnType.IsGenericType || returnType.GetGenericTypeDefinition() == typeof(Nullable<>))
         {
-            return (kernel, function, result) =>
-            {
-                return new ValueTask<FunctionResult>(new FunctionResult(function, result, kernel.Culture));
-            };
+            return (returnType, (kernel, function, result) =>
+                    {
+                        return new ValueTask<FunctionResult>(new FunctionResult(function, result, kernel.Culture));
+                    }
+                );
         }
 
         // All other asynchronous return types
@@ -507,13 +522,14 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             genericTask == typeof(Task<>) &&
             returnType.GetProperty("Result", BindingFlags.Public | BindingFlags.Instance)?.GetGetMethod() is MethodInfo taskResultGetter)
         {
-            return async (kernel, function, result) =>
-            {
-                await ((Task)ThrowIfNullResult(result)).ConfigureAwait(false);
+            return (taskResultGetter.ReturnType, async (kernel, function, result) =>
+                    {
+                        await ((Task)ThrowIfNullResult(result)).ConfigureAwait(false);
 
-                var taskResult = Invoke(taskResultGetter, result, Array.Empty<object>());
-                return new FunctionResult(function, taskResult, kernel.Culture);
-            };
+                        var taskResult = Invoke(taskResultGetter, result, Array.Empty<object>());
+                        return new FunctionResult(function, taskResult, kernel.Culture);
+                    }
+                );
         }
 
         // ValueTask<T>
@@ -522,14 +538,15 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             returnType.GetMethod("AsTask", BindingFlags.Public | BindingFlags.Instance) is MethodInfo valueTaskAsTask &&
             valueTaskAsTask.ReturnType.GetProperty("Result", BindingFlags.Public | BindingFlags.Instance)?.GetGetMethod() is MethodInfo asTaskResultGetter)
         {
-            return async (kernel, function, result) =>
-            {
-                Task task = (Task)Invoke(valueTaskAsTask, ThrowIfNullResult(result), Array.Empty<object>())!;
-                await task.ConfigureAwait(false);
+            return (asTaskResultGetter.ReturnType, async (kernel, function, result) =>
+                    {
+                        Task task = (Task)Invoke(valueTaskAsTask, ThrowIfNullResult(result), Array.Empty<object>())!;
+                        await task.ConfigureAwait(false);
 
-                var taskResult = Invoke(asTaskResultGetter, task, Array.Empty<object>());
-                return new FunctionResult(function, taskResult, kernel.Culture);
-            };
+                        var taskResult = Invoke(asTaskResultGetter, task, Array.Empty<object>());
+                        return new FunctionResult(function, taskResult, kernel.Culture);
+                    }
+                );
         }
 
         // IAsyncEnumerable<T>
@@ -543,17 +560,18 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
             if (getAsyncEnumeratorMethod is not null)
             {
-                return (kernel, function, result) =>
-                {
-                    var asyncEnumerator = Invoke(getAsyncEnumeratorMethod, result, s_cancellationTokenNoneArray);
+                return (returnType, (kernel, function, result) =>
+                        {
+                            var asyncEnumerator = Invoke(getAsyncEnumeratorMethod, result, s_cancellationTokenNoneArray);
 
-                    if (asyncEnumerator is not null)
-                    {
-                        return new ValueTask<FunctionResult>(new FunctionResult(function, asyncEnumerator, kernel.Culture));
-                    }
+                            if (asyncEnumerator is not null)
+                            {
+                                return new ValueTask<FunctionResult>(new FunctionResult(function, asyncEnumerator, kernel.Culture));
+                            }
 
-                    return new ValueTask<FunctionResult>(new FunctionResult(function));
-                };
+                            return new ValueTask<FunctionResult>(new FunctionResult(function));
+                        }
+                    );
             }
         }
 

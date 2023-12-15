@@ -139,9 +139,8 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     {
         this.AddDefaultValues(arguments);
 
-#pragma warning disable SKEXP0004 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         (var aiService, var executionSettings, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
-#pragma warning restore SKEXP0004 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
         if (renderedEventArgs?.Cancel is true)
         {
             throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.PromptRendered)} event handler requested cancellation before function invocation.");
@@ -173,9 +172,8 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     {
         this.AddDefaultValues(arguments);
 
-#pragma warning disable SKEXP0004 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         (var aiService, var executionSettings, var renderedPrompt, var renderedEventArgs) = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
-#pragma warning restore SKEXP0004 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
         if (renderedEventArgs?.Cancel ?? false)
         {
             yield break;
@@ -284,7 +282,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     }
 
 
-#pragma warning disable SKEXP0004 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     private async Task<(IAIService, PromptExecutionSettings?, string, PromptRenderedEventArgs?)> RenderPromptAsync(Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
     {
         var serviceSelector = kernel.ServiceSelector;
@@ -331,7 +328,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         return (aiService, executionSettings, renderedPrompt, renderedEventArgs);
     }
-#pragma warning restore SKEXP0004 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
 
     /// <summary>Create a random, valid function name.</summary>
@@ -353,19 +349,19 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         if (string.IsNullOrWhiteSpace(modelId))
         {
-            logger.LogInformation("No model ID provided to capture usage details");
+            logger.LogInformation("No model ID provided to capture usage details.");
             return;
         }
 
         if (metadata is null)
         {
-            logger.LogInformation("No metadata provided to capture usage details");
+            logger.LogInformation("No metadata provided to capture usage details.");
             return;
         }
 
         if (!metadata.TryGetValue("Usage", out object? usageObject) || usageObject is null)
         {
-            logger.LogInformation("No usage details provided to capture usage details");
+            logger.LogInformation("No usage details provided to capture usage details.");
             return;
         }
 
@@ -377,7 +373,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         }
         catch (Exception ex) when (ex is NotSupportedException)
         {
-            logger.LogWarning(ex, "Error while parsing usage details from model result");
+            logger.LogWarning(ex, "Error while parsing usage details from model result.");
             return;
         }
 
@@ -387,7 +383,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             completionTokensJson.TryGetInt32(out int completionTokens))
         {
             logger.LogInformation(
-                "Prompt tokens: {PromptTokens}. Completion tokens: {CompletionTokens}",
+                "Prompt tokens: {PromptTokens}. Completion tokens: {CompletionTokens}.",
                 promptTokens, completionTokens);
 
             TagList tags = new()
@@ -401,7 +397,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         }
         else
         {
-            logger.LogWarning("Unable to get token details from model result");
+            logger.LogWarning("Unable to get token details from model result.");
         }
     }
 

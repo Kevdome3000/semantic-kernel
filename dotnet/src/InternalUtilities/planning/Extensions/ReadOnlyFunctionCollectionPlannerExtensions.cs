@@ -10,8 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
-using Json.Schema;
-using Json.Schema.Generation;
 using Memory;
 
 
@@ -78,17 +76,8 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
         bool includeOutputSchema = true,
         CancellationToken cancellationToken = default)
     {
-        static KernelJsonSchema? CreateSchema(Type? type, string? description) =>
-            type is null
-                ? null
-                : KernelJsonSchema.Parse(JsonSerializer.Serialize(
-                    new JsonSchemaBuilder()
-                        .FromType(type)
-                        .Description(description ?? string.Empty)
-                        .Build()));
-
         IEnumerable<KernelFunctionMetadata> availableFunctions = await plugins.GetFunctionsAsync(config, semanticQuery, logger, cancellationToken).ConfigureAwait(false);
-        var manuals = availableFunctions.Select(x => x.ToJsonSchemaFunctionView(CreateSchema, includeOutputSchema));
+        var manuals = availableFunctions.Select(x => x.ToJsonSchemaFunctionView(includeOutputSchema));
         return JsonSerializer.Serialize(manuals);
     }
 
