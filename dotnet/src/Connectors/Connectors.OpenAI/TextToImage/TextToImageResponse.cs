@@ -10,8 +10,7 @@ using System.Text.Json.Serialization;
 /// <summary>
 /// Text to image response
 /// </summary>
-[Experimental("SKEXP0012")]
-public class TextToImageResponse
+internal class TextToImageResponse
 {
     /// <summary>
     /// OpenAI Image response

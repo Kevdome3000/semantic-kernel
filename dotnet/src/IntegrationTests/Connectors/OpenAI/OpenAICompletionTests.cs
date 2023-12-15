@@ -15,7 +15,6 @@ using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Microsoft.SemanticKernel.Http;
 using TestSettings;
 using Xunit;
 using Xunit.Abstractions;

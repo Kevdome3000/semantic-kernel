@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Http;
+namespace Microsoft.SemanticKernel;
 
 using System;
 using System.Net;

@@ -2,15 +2,13 @@
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 
 /// <summary>
 /// Text to image request
 /// </summary>
-[Experimental("SKEXP0012")]
-public sealed class TextToImageRequest
+internal sealed class TextToImageRequest
 {
     /// <summary>
     /// Image prompt

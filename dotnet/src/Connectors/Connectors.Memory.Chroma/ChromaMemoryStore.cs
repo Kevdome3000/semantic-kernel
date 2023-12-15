@@ -13,7 +13,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
-using Http;
 using Memory;
 using Text;
 

@@ -3,6 +3,7 @@
 namespace Microsoft.SemanticKernel.Memory;
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Embeddings;
 using Extensions.Logging;
@@ -12,6 +13,7 @@ using Extensions.Logging.Abstractions;
 /// <summary>
 /// A builder for Memory plugin.
 /// </summary>
+[Experimental("SKEXP0003")]
 public sealed class MemoryBuilder
 {
     private Func<IMemoryStore>? _memoryStoreFactory = null;
