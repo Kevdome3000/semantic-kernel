@@ -289,12 +289,11 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     {
         var serviceSelector = kernel.ServiceSelector;
         IAIService? aiService;
-        PromptExecutionSettings? executionSettings = null;
 
         // Try to use IChatCompletionService.
         if (serviceSelector.TrySelectAIService<IChatCompletionService>(
                 kernel, this, arguments,
-                out IChatCompletionService? chatService, out PromptExecutionSettings? defaultExecutionSettings))
+                out IChatCompletionService? chatService, out PromptExecutionSettings? executionSettings))
         {
             aiService = chatService;
         }
@@ -354,19 +353,19 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         if (string.IsNullOrWhiteSpace(modelId))
         {
-            logger.LogInformation("No model ID provided to capture usage details.");
+            logger.LogInformation("No model ID provided to capture usage details");
             return;
         }
 
         if (metadata is null)
         {
-            logger.LogInformation("No metadata provided to capture usage details.");
+            logger.LogInformation("No metadata provided to capture usage details");
             return;
         }
 
         if (!metadata.TryGetValue("Usage", out object? usageObject) || usageObject is null)
         {
-            logger.LogInformation("No usage details provided to capture usage details.");
+            logger.LogInformation("No usage details provided to capture usage details");
             return;
         }
 
@@ -378,7 +377,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         }
         catch (Exception ex) when (ex is NotSupportedException)
         {
-            logger.LogWarning(ex, "Error while parsing usage details from model result.");
+            logger.LogWarning(ex, "Error while parsing usage details from model result");
             return;
         }
 
@@ -388,7 +387,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             completionTokensJson.TryGetInt32(out int completionTokens))
         {
             logger.LogInformation(
-                "Prompt tokens: {PromptTokens}. Completion tokens: {CompletionTokens}.",
+                "Prompt tokens: {PromptTokens}. Completion tokens: {CompletionTokens}",
                 promptTokens, completionTokens);
 
             TagList tags = new()
@@ -402,7 +401,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         }
         else
         {
-            logger.LogWarning("Unable to get token details from model result.");
+            logger.LogWarning("Unable to get token details from model result");
         }
     }
 
