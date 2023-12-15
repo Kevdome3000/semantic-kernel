@@ -20,35 +20,35 @@ using Models;
 internal sealed class Agent : IAgent
 {
     /// <inheritdoc/>
-    public string Id => this._model.Id;
+    public string Id => _model.Id;
 
     /// <inheritdoc/>
     public Kernel Kernel { get; }
 
     /// <inheritdoc/>
-    public KernelPluginCollection Plugins => this.Kernel.Plugins;
+    public KernelPluginCollection Plugins => Kernel.Plugins;
 
     /// <inheritdoc/>
 #pragma warning disable CA1720 // Identifier contains type name - We don't control the schema
 #pragma warning disable CA1716 // Identifiers should not match keywords
-    public string Object => this._model.Object;
+    public string Object => _model.Object;
 #pragma warning restore CA1720 // Identifier contains type name - We don't control the schema
 #pragma warning restore CA1716 // Identifiers should not match keywords
 
     /// <inheritdoc/>
-    public long CreatedAt => this._model.CreatedAt;
+    public long CreatedAt => _model.CreatedAt;
 
     /// <inheritdoc/>
-    public string? Name => this._model.Name;
+    public string? Name => _model.Name;
 
     /// <inheritdoc/>
-    public string? Description => this._model.Description;
+    public string? Description => _model.Description;
 
     /// <inheritdoc/>
-    public string Model => this._model.Model;
+    public string Model => _model.Model;
 
     /// <inheritdoc/>
-    public string Instructions => this._model.Instructions;
+    public string Instructions => _model.Instructions;
 
     private static readonly Regex s_removeInvalidCharsRegex = new("[^0-9A-Za-z-]");
 
@@ -73,7 +73,7 @@ internal sealed class Agent : IAgent
         IEnumerable<KernelPlugin>? plugins = null,
         CancellationToken cancellationToken = default)
     {
-        var resultModel = await restContext.CreateAssistantModelAsync(assistantModel, cancellationToken).ConfigureAwait(false);
+        AssistantModel? resultModel = await restContext.CreateAssistantModelAsync(assistantModel, cancellationToken).ConfigureAwait(false);
 
         return new Agent(resultModel, restContext, plugins);
     }
@@ -87,42 +87,39 @@ internal sealed class Agent : IAgent
         OpenAIRestContext restContext,
         IEnumerable<KernelPlugin>? plugins = null)
     {
-        this._model = assistantModel;
-        this._restContext = restContext;
-
-        IKernelBuilder builder = Kernel.CreateBuilder();
-        ;
-        this.Kernel =
+        _model = assistantModel;
+        _restContext = restContext;
+        Kernel =
             Kernel
                 .CreateBuilder()
-                .AddOpenAIChatCompletion(this._model.Model, this._restContext.ApiKey)
+                .AddOpenAIChatCompletion(_model.Model, _restContext.ApiKey)
                 .Build();
 
         if (plugins is not null)
         {
-            this.Kernel.Plugins.AddRange(plugins);
+            Kernel.Plugins.AddRange(plugins);
         }
     }
 
 
-    public AgentPlugin AsPlugin() => this._agentPlugin ??= this.DefinePlugin();
+    public AgentPlugin AsPlugin() => _agentPlugin ??= DefinePlugin();
 
 
     /// <inheritdoc/>
     public Task<IAgentThread> NewThreadAsync(CancellationToken cancellationToken = default)
     {
-        this.ThrowIfDeleted();
+        ThrowIfDeleted();
 
-        return ChatThread.CreateAsync(this._restContext, cancellationToken);
+        return ChatThread.CreateAsync(_restContext, cancellationToken);
     }
 
 
     /// <inheritdoc/>
     public Task<IAgentThread> GetThreadAsync(string id, CancellationToken cancellationToken = default)
     {
-        this.ThrowIfDeleted();
+        ThrowIfDeleted();
 
-        return ChatThread.GetAsync(this._restContext, id, cancellationToken);
+        return ChatThread.GetAsync(_restContext, id, cancellationToken);
     }
 
 
@@ -134,20 +131,20 @@ internal sealed class Agent : IAgent
             return;
         }
 
-        await this._restContext.DeleteThreadModelAsync(id!, cancellationToken).ConfigureAwait(false);
+        await _restContext.DeleteThreadModelAsync(id!, cancellationToken).ConfigureAwait(false);
     }
 
 
     /// <inheritdoc/>
     public async Task DeleteAsync(CancellationToken cancellationToken = default)
     {
-        if (this._isDeleted)
+        if (_isDeleted)
         {
             return;
         }
 
-        await this._restContext.DeleteAssistantModelAsync(this.Id, cancellationToken).ConfigureAwait(false);
-        this._isDeleted = true;
+        await _restContext.DeleteAssistantModelAsync(Id, cancellationToken).ConfigureAwait(false);
+        _isDeleted = true;
     }
 
 
@@ -162,18 +159,18 @@ internal sealed class Agent : IAgent
         string input,
         CancellationToken cancellationToken = default)
     {
-        var thread = await this.NewThreadAsync(cancellationToken).ConfigureAwait(false);
+        IAgentThread? thread = await NewThreadAsync(cancellationToken).ConfigureAwait(false);
 
         try
         {
             await thread.AddUserMessageAsync(input, cancellationToken).ConfigureAwait(false);
 
-            var messages = await thread.InvokeAsync(this, cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
-            var response =
+            IChatMessage[]? messages = await thread.InvokeAsync(this, cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
+            AgentResponse response =
                 new AgentResponse
                 {
                     ThreadId = thread.Id,
-                    Message = string.Concat(messages.Select(m => m.Content)),
+                    Message = string.Concat(messages.Select(m => m.Content))
                 };
 
             return response;
@@ -187,7 +184,7 @@ internal sealed class Agent : IAgent
 
     private AgentPluginImpl DefinePlugin()
     {
-        var functionAsk = KernelFunctionFactory.CreateFromMethod(this.AskAsync, description: this.Description);
+        KernelFunction functionAsk = KernelFunctionFactory.CreateFromMethod(AskAsync, description: Description);
 
         return new AgentPluginImpl(this, functionAsk);
     }
@@ -195,9 +192,9 @@ internal sealed class Agent : IAgent
 
     private void ThrowIfDeleted()
     {
-        if (this._isDeleted)
+        if (_isDeleted)
         {
-            throw new AgentException($"{nameof(Agent)}: {this.Id} has been deleted.");
+            throw new AgentException($"{nameof(Agent)}: {Id} has been deleted.");
         }
     }
 
@@ -217,14 +214,14 @@ internal sealed class Agent : IAgent
             : base(s_removeInvalidCharsRegex.Replace(agent.Name ?? agent.Id, string.Empty),
                 agent.Description ?? agent.Instructions)
         {
-            this.Agent = agent;
-            this.FunctionAsk = functionAsk;
+            Agent = agent;
+            FunctionAsk = functionAsk;
         }
 
 
         public override IEnumerator<KernelFunction> GetEnumerator()
         {
-            yield return this.FunctionAsk;
+            yield return FunctionAsk;
         }
 
 
@@ -234,7 +231,7 @@ internal sealed class Agent : IAgent
 
             if (s_functionName.Equals(name, StringComparison.OrdinalIgnoreCase))
             {
-                function = this.FunctionAsk;
+                function = FunctionAsk;
             }
 
             return function != null;

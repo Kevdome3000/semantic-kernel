@@ -30,13 +30,13 @@ public abstract class KernelFunction
     private static readonly ActivitySource s_activitySource = new("Microsoft.SemanticKernel");
 
     /// <summary><see cref="Meter"/> for function-related metrics.</summary>
-    private protected static readonly Meter s_meter = new("Microsoft.SemanticKernel");
+    protected private static readonly Meter s_meter = new("Microsoft.SemanticKernel");
 
     /// <summary><see cref="Histogram{T}"/> to record function invocation duration.</summary>
     private static readonly Histogram<double> s_invocationDuration = s_meter.CreateHistogram<double>(
-        name: "semantic_kernel.function.invocation.duration",
-        unit: "s",
-        description: "Measures the duration of a function’s execution");
+        "semantic_kernel.function.invocation.duration",
+        "s",
+        "Measures the duration of a function’s execution");
 
     /// <summary><see cref="Histogram{T}"/> to record function streaming duration.</summary>
     /// <remarks>
@@ -44,9 +44,9 @@ public abstract class KernelFunction
     /// spent in the consuming code between MoveNextAsync calls on the enumerator.
     /// </remarks>
     private static readonly Histogram<double> s_streamingDuration = s_meter.CreateHistogram<double>(
-        name: "semantic_kernel.function.streaming.duration",
-        unit: "s",
-        description: "Measures the duration of a function’s streaming execution");
+        "semantic_kernel.function.streaming.duration",
+        "s",
+        "Measures the duration of a function’s streaming execution");
 
     /// <summary>
     /// Gets the name of the function.
@@ -56,7 +56,7 @@ public abstract class KernelFunction
     /// should be invoked when, or as part of lookups in a plugin's function collection. Function names are generally
     /// handled in an ordinal case-insensitive manner.
     /// </remarks>
-    public string Name => this.Metadata.Name;
+    public string Name => Metadata.Name;
 
     /// <summary>
     /// Gets a description of the function.
@@ -65,7 +65,7 @@ public abstract class KernelFunction
     /// The description may be supplied to a model in order to elaborate on the function's purpose,
     /// in case it may be beneficial for the model to recommend invoking the function.
     /// </remarks>
-    public string Description => this.Metadata.Description;
+    public string Description => Metadata.Description;
 
     /// <summary>
     /// Gets the metadata describing the function.
@@ -95,13 +95,13 @@ public abstract class KernelFunction
         Verify.NotNull(name);
         Verify.ParametersUniqueness(parameters);
 
-        this.Metadata = new KernelFunctionMetadata(name)
+        Metadata = new KernelFunctionMetadata(name)
         {
             Description = description,
             Parameters = parameters,
-            ReturnParameter = returnParameter ?? KernelReturnParameterMetadata.Empty,
+            ReturnParameter = returnParameter ?? KernelReturnParameterMetadata.Empty
         };
-        this.ExecutionSettings = executionSettings;
+        ExecutionSettings = executionSettings;
     }
 
 
@@ -121,14 +121,14 @@ public abstract class KernelFunction
     {
         Verify.NotNull(kernel);
 
-        using var activity = s_activitySource.StartActivity(this.Name);
-        ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name) ?? NullLogger.Instance;
+        using Activity? activity = s_activitySource.StartActivity(Name);
+        ILogger logger = kernel.LoggerFactory.CreateLogger(Name) ?? NullLogger.Instance;
 
         // Ensure arguments are initialized.
         arguments ??= new KernelArguments();
-        logger.LogFunctionInvokingWithArguments(this.Name, arguments);
+        logger.LogFunctionInvokingWithArguments(Name, arguments);
 
-        TagList tags = new() { { MeasurementFunctionTagName, this.Name } };
+        TagList tags = new() { { MeasurementFunctionTagName, Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
         FunctionResult? functionResult = null;
 
@@ -144,10 +144,10 @@ public abstract class KernelFunction
             }
 
             // Invoke the function.
-            functionResult = await this.InvokeCoreAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+            functionResult = await InvokeCoreAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 
             // Invoke the post-invocation event handler. If it requests cancellation, throw.
-            var invokedEventArgs = kernel.OnFunctionInvoked(this, arguments, functionResult);
+            FunctionInvokedEventArgs? invokedEventArgs = kernel.OnFunctionInvoked(this, arguments, functionResult);
 
             if (invokedEventArgs is not null)
             {
@@ -195,7 +195,7 @@ public abstract class KernelFunction
         KernelArguments? arguments = null,
         CancellationToken cancellationToken = default)
     {
-        FunctionResult result = await this.InvokeAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+        FunctionResult result = await InvokeAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
         return result.GetValue<TResult>();
     }
 
@@ -215,7 +215,7 @@ public abstract class KernelFunction
         Kernel kernel,
         KernelArguments? arguments = null,
         CancellationToken cancellationToken = default) =>
-        this.InvokeStreamingAsync<StreamingKernelContent>(kernel, arguments, cancellationToken);
+        InvokeStreamingAsync<StreamingKernelContent>(kernel, arguments, cancellationToken);
 
 
     /// <summary>
@@ -238,13 +238,13 @@ public abstract class KernelFunction
     {
         Verify.NotNull(kernel);
 
-        using var activity = s_activitySource.StartActivity(this.Name);
-        ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name) ?? NullLogger.Instance;
+        using Activity? activity = s_activitySource.StartActivity(Name);
+        ILogger logger = kernel.LoggerFactory.CreateLogger(Name) ?? NullLogger.Instance;
 
         arguments ??= new KernelArguments();
-        logger.LogFunctionStreamingInvokingWithArguments(this.Name, arguments);
+        logger.LogFunctionStreamingInvokingWithArguments(Name, arguments);
 
-        TagList tags = new() { { MeasurementFunctionTagName, this.Name } };
+        TagList tags = new() { { MeasurementFunctionTagName, Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
 
         try
@@ -257,7 +257,7 @@ public abstract class KernelFunction
                 cancellationToken.ThrowIfCancellationRequested();
 
                 // Invoke pre-invocation event handler. If it requests cancellation, throw.
-                var invokingEventArgs = kernel.OnFunctionInvoking(this, arguments);
+                FunctionInvokingEventArgs? invokingEventArgs = kernel.OnFunctionInvoking(this, arguments);
 
                 if (invokingEventArgs is not null && invokingEventArgs.Cancel)
                 {
@@ -265,7 +265,7 @@ public abstract class KernelFunction
                 }
 
                 // Invoke the function and get its streaming enumerator.
-                enumerator = this.InvokeStreamingCoreAsync<TResult>(kernel, arguments, cancellationToken).GetAsyncEnumerator(cancellationToken);
+                enumerator = InvokeStreamingCoreAsync<TResult>(kernel, arguments, cancellationToken).GetAsyncEnumerator(cancellationToken);
 
                 // yielding within a try/catch isn't currently supported, so we break out of the try block
                 // in order to then wrap the actual MoveNextAsync in its own try/catch and allow the yielding
@@ -273,7 +273,7 @@ public abstract class KernelFunction
             }
             catch (Exception ex)
             {
-                HandleException(ex, logger, activity, this, kernel, arguments, result: null, ref tags);
+                HandleException(ex, logger, activity, this, kernel, arguments, null, ref tags);
                 throw;
             }
 
@@ -292,7 +292,7 @@ public abstract class KernelFunction
                     }
                     catch (Exception ex)
                     {
-                        HandleException(ex, logger, activity, this, kernel, arguments, result: null, ref tags);
+                        HandleException(ex, logger, activity, this, kernel, arguments, null, ref tags);
                         throw;
                     }
 

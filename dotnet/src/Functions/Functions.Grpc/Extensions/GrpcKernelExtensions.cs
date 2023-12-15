@@ -5,6 +5,7 @@ namespace Microsoft.SemanticKernel.Plugins.Grpc;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Nodes;
 using System.Threading;
