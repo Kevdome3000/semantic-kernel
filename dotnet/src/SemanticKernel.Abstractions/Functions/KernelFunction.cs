@@ -126,7 +126,8 @@ public abstract class KernelFunction
 
         // Ensure arguments are initialized.
         arguments ??= new KernelArguments();
-        logger.LogFunctionInvokingWithArguments(Name, arguments);
+        logger.LogFunctionInvoking(Name);
+        logger.LogFunctionArguments(arguments);
 
         TagList tags = new() { { MeasurementFunctionTagName, Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
@@ -160,7 +161,8 @@ public abstract class KernelFunction
                 throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.FunctionInvoked)} event handler requested cancellation after function invocation.");
             }
 
-            logger.LogFunctionInvokedSuccess(functionResult.Value);
+            logger.LogFunctionInvokedSuccess(this.Name);
+            logger.LogFunctionResultValue(functionResult.Value);
 
             return functionResult;
         }
@@ -242,7 +244,8 @@ public abstract class KernelFunction
         ILogger logger = kernel.LoggerFactory.CreateLogger(Name) ?? NullLogger.Instance;
 
         arguments ??= new KernelArguments();
-        logger.LogFunctionStreamingInvokingWithArguments(Name, arguments);
+        logger.LogFunctionStreamingInvoking(Name);
+        logger.LogFunctionArguments(arguments);
 
         TagList tags = new() { { MeasurementFunctionTagName, Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();

@@ -1,14 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using RepoUtils;
-// ReSharper disable once InconsistentNaming
-// ReSharper disable once InconsistentNaming
 
+// ReSharper disable once InconsistentNaming
+// ReSharper disable once InconsistentNaming
 
 // This example shows how to using Dependency Injection with the Semantic Kernel
 public static class Step4_Dependency_Injection
@@ -64,6 +65,7 @@ public static class Step4_Dependency_Injection
 
 
         [KernelFunction]
+        [Description("Retrieves the current time in UTC.")]
         public string GetCurrentUtcTime()
         {
             var utcNow = DateTime.UtcNow.ToString("R");

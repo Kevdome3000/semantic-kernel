@@ -1,17 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
+
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using SemanticKernel.IntegrationTests.Planners.Stepwise;
-using SemanticKernel.IntegrationTests.TestSettings;
+using Planners.Stepwise;
+using TestSettings;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
 public sealed class OpenAIToolsTests : IDisposable
 {
@@ -28,6 +30,7 @@ public sealed class OpenAIToolsTests : IDisposable
             .Build();
     }
 
+
     [Fact]
     public async Task CanAutoInvokeKernelFunctionsAsync()
     {
@@ -36,10 +39,12 @@ public sealed class OpenAIToolsTests : IDisposable
         kernel.ImportPluginFromType<TimeInformation>();
 
         var invokedFunctions = new List<string>();
+
         void MyInvokingHandler(object? sender, FunctionInvokingEventArgs e)
         {
             invokedFunctions.Add(e.Function.Name);
         }
+
         kernel.FunctionInvoking += MyInvokingHandler;
 
         // Act
@@ -51,24 +56,26 @@ public sealed class OpenAIToolsTests : IDisposable
         Assert.Contains("GetCurrentUtcTime", invokedFunctions);
     }
 
+
     private Kernel InitializeKernel()
     {
-        AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("Planners:AzureOpenAI").Get<AzureOpenAIConfiguration>();
-        Assert.NotNull(azureOpenAIConfiguration);
+        OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("Planners:OpenAI").Get<OpenAIConfiguration>();
+        Assert.NotNull(openAIConfiguration);
 
         IKernelBuilder builder = Kernel.CreateBuilder()
-            .AddAzureOpenAIChatCompletion(
-                deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
-                endpoint: azureOpenAIConfiguration.Endpoint,
-                apiKey: azureOpenAIConfiguration.ApiKey);
+            .AddOpenAIChatCompletion(
+                modelId: openAIConfiguration.ModelId,
+                apiKey: openAIConfiguration.ApiKey);
 
         var kernel = builder.Build();
 
         return kernel;
     }
 
+
     private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
+
 
     public void Dispose()
     {
@@ -76,10 +83,12 @@ public sealed class OpenAIToolsTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
+
     ~OpenAIToolsTests()
     {
         this.Dispose(false);
     }
+
 
     private void Dispose(bool disposing)
     {
@@ -89,12 +98,14 @@ public sealed class OpenAIToolsTests : IDisposable
         }
     }
 
+
     /// <summary>
     /// A plugin that returns the current time.
     /// </summary>
     public class TimeInformation
     {
         [KernelFunction]
+        [Description("Retrieves the current time in UTC.")]
         public string GetCurrentUtcTime() => DateTime.UtcNow.ToString("R");
     }
 }
