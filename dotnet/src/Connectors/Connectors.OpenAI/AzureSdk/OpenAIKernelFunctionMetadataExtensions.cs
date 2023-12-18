@@ -24,9 +24,10 @@ public static class OpenAIKernelFunctionMetadataExtensions
         for (int i = 0; i < openAIParams.Length; i++)
         {
             var param = metadataParams[i];
+
             openAIParams[i] = new OpenAIFunctionParameter(
                 param.Name,
-                string.IsNullOrEmpty(param.DefaultValue) ? param.Description : $"{param.Description} (default value: {param.DefaultValue})",
+                GetDescription(param),
                 param.IsRequired,
                 param.ParameterType,
                 param.Schema);
@@ -41,5 +42,17 @@ public static class OpenAIKernelFunctionMetadataExtensions
                 metadata.ReturnParameter.Description,
                 metadata.ReturnParameter.ParameterType,
                 metadata.ReturnParameter.Schema));
+
+        static string GetDescription(KernelParameterMetadata param)
+        {
+            if (InternalTyp
+               C
+nverter.ConvertToString(param.DefaultValue) is string stringValue && !string.IsNullOrEmpty(stringValue))
+            {
+                return $"{param.Description} (default value: {stringValue})";
+            }
+
+            return param.Description;
+        }
     }
 }

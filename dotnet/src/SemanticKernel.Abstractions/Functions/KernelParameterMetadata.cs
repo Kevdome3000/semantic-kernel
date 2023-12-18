@@ -21,7 +21,7 @@ public sealed class KernelParameterMetadata
     private string _description = string.Empty;
 
     /// <summary>The default value of the parameter.</summary>
-    private string? _defaultValue;
+    private object? _defaultValue;
 
     /// <summary>The .NET type of the parameter.</summary>
     private Type? _parameterType;
@@ -81,7 +81,7 @@ public sealed class KernelParameterMetadata
     }
 
     /// <summary>Gets the default value of the parameter.</summary>
-    public string? DefaultValue
+    public object? DefaultValue
     {
         get => this._defaultValue;
         init
@@ -123,7 +123,7 @@ public sealed class KernelParameterMetadata
     /// <param name="parameterType">The parameter type. If null, no schema can be inferred.</param>
     /// <param name="defaultValue">The parameter's default value, if any.</param>
     /// <param name="description">The parameter description. If null, it won't be included in the schema.</param>
-    internal static InitializedSchema InferSchema(Type? parameterType, string? defaultValue, string? description)
+    internal static InitializedSchema InferSchema(Type? parameterType, object? defaultValue, string? description)
     {
         KernelJsonSchema? schema = null;
 
@@ -144,10 +144,10 @@ public sealed class KernelParameterMetadata
             {
                 try
                 {
-                    if (!string.IsNullOrWhiteSpace(defaultValue))
+                    if (InternalTypeConverter.ConvertToString(defaultValue) is string stringDefault && !string.IsNullOrWhiteSpace(stringDefault))
                     {
                         bool needsSpace = !string.IsNullOrWhiteSpace(description);
-                        description += $"{(needsSpace ? " " : "")}(default value: {defaultValue})";
+                        description += $"{(needsSpace ? " " : "")}(default value: {stringDefault})";
                     }
 
                     var builder = new JsonSchemaBuilder().FromType(parameterType);

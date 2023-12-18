@@ -130,6 +130,15 @@ public class MultipleModelTests
         var json = @"{
   ""template"": ""template"",
   ""description"": ""Semantic function"",
+""input_variables"":
+    [
+        {
+            ""name"": ""input variable name"",
+            ""description"": ""input variable description"",
+            ""default"": ""default value"",
+            ""is_required"": true
+        }
+    ],
   ""execution_settings"": {
     ""service2"": {
       ""max_tokens"": 100,
@@ -162,7 +171,9 @@ public class MultipleModelTests
 
         // Assert
         mockTextGeneration1.Verify(a => a.GetTextContentsAsync("template", It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Never());
-        mockTextGeneration2.Verify(a => a.GetTextContentsAsync("template", It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
+        mockTextGeneration2.Verify(a => a.GetTextContentsAsync("template", It.IsAny<PromptExecutionSettings>(), It.IsAny < Ker
+        e>()
+, It.IsAny<CancellationToken>()), Times.Once());
         mockTextGeneration3.Verify(a => a.GetTextContentsAsync("template", It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Never());
     }
 }
