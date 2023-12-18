@@ -57,6 +57,41 @@ public sealed class OpenAIToolsTests : IDisposable
     }
 
 
+    [Fact]
+    public async Task CanAutoInvokeKernelFunctionsStreamingAsync()
+    {
+        // Arrange
+        Kernel kernel = this.InitializeKernel();
+        kernel.ImportPluginFromType<TimeInformation>();
+
+        var invokedFunctions = new List<string>();
+
+        void MyInvokingHandler(object? sender, FunctionInvokingEventArgs e)
+        {
+            invokedFunctions.Add($"{e.Function.Name}({string.Join(", ", e.Arguments)})");
+        }
+
+        kernel.FunctionInvoking += MyInvokingHandler;
+
+        // Act
+        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        string result = "";
+
+        await foreach (string c in kernel.InvokePromptStreamingAsync<string>(
+                           $"How much older is John than Jim? Compute that value and pass it to the {nameof(TimeInformation)}.{nameof(TimeInformation.InterpretValue)} function, then respond only with its result.",
+                           new(settings)))
+        {
+            result += c;
+        }
+
+        // Assert
+        Assert.Equal("6", result);
+        Assert.Contains("GetAge([personName, John])", invokedFunctions);
+        Assert.Contains("GetAge([personName, Jim])", invokedFunctions);
+        Assert.Contains("InterpretValue([value, 3])", invokedFunctions);
+    }
+
+
     private Kernel InitializeKernel()
     {
         OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("Planners:OpenAI").Get<OpenAIConfiguration>();
@@ -78,25 +113,7 @@ public sealed class OpenAIToolsTests : IDisposable
 
 
     public void Dispose()
-    {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-
-    ~OpenAIToolsTests()
-    {
-        this.Dispose(false);
-    }
-
-
-    private void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            this._testOutputHelper.Dispose();
-        }
-    }
+        => this._testOutputHelper.Dispose();
 
 
     /// <summary>
@@ -107,5 +124,27 @@ public sealed class OpenAIToolsTests : IDisposable
         [KernelFunction]
         [Description("Retrieves the current time in UTC.")]
         public string GetCurrentUtcTime() => DateTime.UtcNow.ToString("R");
+
+
+        [KernelFunction]
+        [Description("Gets the age of the specified person.")]
+        public int GetAge(string personName)
+        {
+            if ("John".Equals(personName, StringComparison.OrdinalIgnoreCase))
+            {
+                return 33;
+            }
+
+            if ("Jim".Equals(personName, StringComparison.OrdinalIgnoreCase))
+            {
+                return 30;
+            }
+
+            return -1;
+        }
+
+
+        [KernelFunction]
+        public int InterpretValue(int value) => value * 2;
     }
 }
