@@ -8,7 +8,7 @@ using System.Collections.Generic;
 /// <summary>
 /// Class that contains information about node in prompt.
 /// </summary>
-internal class PromptNode
+internal sealed class PromptNode
 {
     private Dictionary<string, string>? _attributes;
     private List<PromptNode>? _childNodes;

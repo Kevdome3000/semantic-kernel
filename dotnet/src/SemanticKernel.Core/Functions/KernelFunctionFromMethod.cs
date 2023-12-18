@@ -636,14 +636,6 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     }
 
 
-    /// <summary>Tracks whether a particular kind of parameter has been seen, throwing an exception if it has, and marking it as seen if it hasn't</summary>
-    private static void TrackUniqueParameterType(ref bool hasParameterType, MethodInfo method, string failureMessage)
-    {
-        ThrowForInvalidSignatureIf(hasParameterType, method, failureMessage);
-        hasParameterType = true;
-    }
-
-
     /// <summary>
     /// Gets a converter for type to ty conversion. For example, string to int, string to Guid, double to int, CustomType to string, etc.
     /// </summary>
@@ -681,7 +673,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
                     object? Convert(CultureInfo culture)
                     {
-                        if (converter.CanConvertFrom(input?.GetType()))
+                        if (input?.GetType() is Type type && converter.CanConvertFrom(type))
                         {
                             // This line performs string to type conversion 
                             return converter.ConvertFrom(context: null, culture, input);
