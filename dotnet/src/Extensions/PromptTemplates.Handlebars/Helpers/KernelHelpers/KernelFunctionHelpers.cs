@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
-using Connectors.OpenAI;
 using HandlebarsDotNet;
 using HandlebarsDotNet.Compiler;
 
@@ -202,7 +201,7 @@ internal static class KernelFunctionHelpers
 
 
     /// <summary>
-    /// Parse the <see cref="FunctionResult"/> into an object, extracting the appropriate value if the return type is <see cref="OpenAIChatMessageContent"/>.
+    /// Parse the <see cref="FunctionResult"/> into an object, extracting the appropriate value if the return type is <see cref="ChatMessageContent"/>.
     /// </summary>
     /// <param name="result">Function result.</param>
     /// <returns>Deserialized object</returns>
@@ -210,9 +209,9 @@ internal static class KernelFunctionHelpers
     {
         var resultAsObject = result.GetValue<object?>();
 
-        if (result.ValueType is not null && resultAsObject is not null && result.ValueType == typeof(OpenAIChatMessageContent))
+        if (resultAsObject is ChatMessageContent chatMessageContent)
         {
-            resultAsObject = ((OpenAIChatMessageContent)resultAsObject).Content;
+            resultAsObject = chatMessageContent.Content;
         }
 
         return resultAsObject;
