@@ -510,7 +510,6 @@ internal abstract class ClientCore
 
             // Add the original assistant message to the chatOptions; this is required for the service
             // to understand the tool call responses.
-
             chatOptions.Messages.Add(GetRequestMessage(streamedRole ?? default, content, toolCalls));
             chat.Add(new OpenAIChatMessageContent(streamedRole ?? default, content, this.DeploymentOrModelName, toolCalls, metadata));
 
@@ -891,14 +890,14 @@ internal abstract class ClientCore
 
             IEnumerable<ChatCompletionsToolCall>? tools = (message as OpenAIChatMessageContent)?.ToolCalls;
 
-            if (tools is null && message.Metadata?.TryGetValue(OpenAIChatMessageContent.ToolCallsProperty, out object? toolCallsObject) is true)
+            if (tools is null && message.Metadata?.TryGetValue(OpenAIChatMessageContent.FunctionToolCallsProperty, out object? toolCallsObject) is true)
             {
-                tools = toolCallsObject as IEnumerable<ChatCompletionsToolCall>;
+                tools = toolCallsObject as IEnumerable<ChatCompletionsFunctionToolCall>;
 
                 if (tools is null && toolCallsObject is JsonElement { ValueKind: JsonValueKind.Array } array)
                 {
                     int length = array.GetArrayLength();
-                    var ftcs = new List<ChatCompletionsFunctionToolCall>(length);
+                    var ftcs = new List<ChatCompletionsToolCall>(length);
 
                     for (int i = 0; i < length; i++)
                     {

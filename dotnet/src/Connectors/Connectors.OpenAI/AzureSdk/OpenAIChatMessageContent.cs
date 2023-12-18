@@ -4,6 +4,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Azure.AI.OpenAI;
 using ChatCompletion;
 
@@ -19,9 +20,9 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
     public static string ToolIdProperty => $"{nameof(ChatCompletionsToolCall)}.{nameof(ChatCompletionsToolCall.Id)}";
 
     /// <summary>
-    /// Gets the metadata key for the <see cref="ChatCompletionsToolCall.Id"/> name property.
+    /// Gets the metadata key for the list of <see cref="ChatCompletionsFunctionToolCall"/>.
     /// </summary>
-    public static string ToolCallsProperty => $"{nameof(ChatResponseMessage)}.{nameof(ChatResponseMessage.ToolCalls)}";
+    internal static string FunctionToolCallsProperty => $"{nameof(ChatResponseMessage)}.FunctionToolCalls";
 
 
     /// <summary>
@@ -119,7 +120,7 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
             }
 
             // Add the additional entry.
-            newDictionary.Add(ToolCallsProperty, toolCalls);
+            newDictionary.Add(FunctionToolCallsProperty, toolCalls.OfType<ChatCompletionsFunctionToolCall>().ToList());
 
             return newDictionary;
         }
