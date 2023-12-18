@@ -32,6 +32,8 @@ public sealed class CalendarPlugin
 
     private static readonly char[] s_separator = { ',', ';' };
 
+    private static readonly char[] s_separator = { ',', ';' };
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CalendarPlugin"/> class.
