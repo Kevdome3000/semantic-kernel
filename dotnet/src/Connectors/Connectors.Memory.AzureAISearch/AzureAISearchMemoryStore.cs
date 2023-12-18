@@ -192,16 +192,18 @@ public class AzureAISearchMemoryStore : IMemoryStore
 
         var client = this.GetSearchClient(normalizedIndexName);
 
-        RawVectorQuery vectorQuery = new()
+        VectorizedQuery vectorQuery = new(MemoryMarshal.TryGetArray(embedding, out var array) && array.Count == embedding.Length ? array.Array! : embedding.ToArray())
         {
             KNearestNeighborsCount = limit,
             Fields = { AzureAISearchMemoryRecord.EmbeddingField },
-            Vector = MemoryMarshal.TryGetArray(embedding, out var array) && array.Count == embedding.Length ? array.Array! : embedding.ToArray(),
         };
 
         SearchOptions options = new()
         {
-            VectorQueries = { vectorQuery }
+            VectorSearch = new()
+            {
+                Queries = { vectorQuery }
+            },
         };
 
         Response<SearchResults<AzureAISearchMemoryRecord>>? searchResult = null;
@@ -303,12 +305,7 @@ public class AzureAISearchMemoryStore : IMemoryStore
             Fields = new List<SearchField>
             {
                 new SimpleField(AzureAISearchMemoryRecord.IdField, SearchFieldDataType.String) { IsKey = true },
-                new(AzureAISearchMemoryRecord.EmbeddingField, SearchFieldDataType.Collection(SearchFieldDataType.Single))
-                {
-                    IsSearchable = true,
-                    VectorSearchDimensions = embeddingSize,
-                    VectorSearchProfile = ProfileName
-                },
+                new VectorSearchField(AzureAISearchMemoryRecord.EmbeddingField, embeddingSize, ProfileName),
                 new(AzureAISearchMemoryRecord.TextField, SearchFieldDataType.String) { IsFilterable = true, IsFacetable = true },
                 new SimpleField(AzureAISearchMemoryRecord.DescriptionField, SearchFieldDataType.String) { IsFilterable = true, IsFacetable = true },
                 new SimpleField(AzureAISearchMemoryRecord.AdditionalMetadataField, SearchFieldDataType.String) { IsFilterable = true, IsFacetable = true },
@@ -319,7 +316,7 @@ public class AzureAISearchMemoryStore : IMemoryStore
             {
                 Algorithms =
                 {
-                    new HnswVectorSearchAlgorithmConfiguration(AlgorithmName)
+                    new HnswAlgorithmConfiguration(AlgorithmName)
                     {
                         Parameters = new HnswParameters { Metric = VectorSearchAlgorithmMetric.Cosine }
                     }

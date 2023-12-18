@@ -103,7 +103,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.NotNull(messageContent);
         Assert.True(messageContent.Length != 0);
 
-        var deserializedPayload = JsonNode.Parse(new MemoryStream(messageContent));
+        var deserializedPayload = await JsonNode.ParseAsync(new MemoryStream(messageContent));
         Assert.NotNull(deserializedPayload);
 
         var valueProperty = deserializedPayload["value"]?.ToString();
@@ -336,7 +336,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.NotNull(messageContent);
         Assert.True(messageContent.Length != 0);
 
-        var deserializedPayload = JsonNode.Parse(new MemoryStream(messageContent));
+        var deserializedPayload = await JsonNode.ParseAsync(new MemoryStream(messageContent));
         Assert.NotNull(deserializedPayload);
 
         var name = deserializedPayload["name"]?.ToString();
@@ -399,7 +399,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var messageContent = this._httpMessageHandlerStub.RequestContent;
         Assert.NotNull(messageContent);
 
-        var deserializedPayload = JsonNode.Parse(new MemoryStream(messageContent));
+        var deserializedPayload = await JsonNode.ParseAsync(new MemoryStream(messageContent));
         Assert.NotNull(deserializedPayload);
 
         var name = deserializedPayload["name"]?.GetValue<JsonElement>();
@@ -493,7 +493,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.NotNull(messageContent);
         Assert.True(messageContent.Length != 0);
 
-        var deserializedPayload = JsonNode.Parse(new MemoryStream(messageContent));
+        var deserializedPayload = await JsonNode.ParseAsync(new MemoryStream(messageContent));
         Assert.NotNull(deserializedPayload);
 
         //Sender props
@@ -703,7 +703,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.NotNull(messageContent);
         Assert.True(messageContent.Length != 0);
 
-        var deserializedPayload = JsonNode.Parse(new MemoryStream(messageContent));
+        var deserializedPayload = await JsonNode.ParseAsync(new MemoryStream(messageContent));
         Assert.NotNull(deserializedPayload);
 
         var senderUpn = deserializedPayload["upn"]?.ToString();
@@ -734,8 +734,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             payload
         );
 
-        var arguments = new KernelArguments();
-        arguments.Add("upn", "fake-sender-upn");
+        var arguments = new KernelArguments { ["upn"] = "fake-sender-upn" };
 
         var sut = new RestApiOperationRunner(
             this._httpClient,
@@ -751,7 +750,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.NotNull(messageContent);
         Assert.True(messageContent.Length != 0);
 
-        var deserializedPayload = JsonNode.Parse(new MemoryStream(messageContent));
+        var deserializedPayload = await JsonNode.ParseAsync(new MemoryStream(messageContent));
         Assert.NotNull(deserializedPayload);
 
         var senderUpn = deserializedPayload["upn"]?.ToString();

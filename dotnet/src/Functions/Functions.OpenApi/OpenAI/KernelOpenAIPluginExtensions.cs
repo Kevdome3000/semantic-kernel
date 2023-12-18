@@ -22,7 +22,7 @@ using System.Text.Json.Nodes;
 /// </summary>
 public static class OpenAIPluginKernelExtensions
 {
-    private static readonly JsonSerializerOptions s_jsonOptionsOpenAIManifest =
+    private static readonly JsonSerializerOptions s_jsonOptionsCache =
         new()
         {
             Converters = { new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower) },
@@ -207,7 +207,7 @@ public static class OpenAIPluginKernelExtensions
         try
         {
             pluginJson = JsonNode.Parse(openAIManifest)!;
-            openAIAuthConfig = pluginJson["auth"].Deserialize<OpenAIAuthenticationConfig>(s_jsonOptionsOpenAIManifest)!;
+            openAIAuthConfig = pluginJson["auth"].Deserialize<OpenAIAuthenticationConfig>(s_jsonOptionsCache)!;
         }
         catch (JsonException ex)
         {

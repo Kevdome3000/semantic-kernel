@@ -30,6 +30,8 @@ public sealed class CalendarPlugin
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     };
 
+    private static readonly char[] s_separator = { ',', ';' };
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CalendarPlugin"/> class.
@@ -74,7 +76,7 @@ public sealed class CalendarPlugin
             End = end,
             Location = location,
             Content = content,
-            Attendees = attendees is not null ? attendees.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries) : Enumerable.Empty<string>(),
+            Attendees = attendees is not null ? attendees.Split(s_separator, StringSplitOptions.RemoveEmptyEntries) : Enumerable.Empty<string>(),
         };
 
         // Sensitive data, logging as trace, disabled by default
