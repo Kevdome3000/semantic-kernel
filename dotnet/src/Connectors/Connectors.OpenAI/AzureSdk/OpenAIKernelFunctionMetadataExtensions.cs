@@ -45,9 +45,7 @@ public static class OpenAIKernelFunctionMetadataExtensions
 
         static string GetDescription(KernelParameterMetadata param)
         {
-            if (InternalTyp
-               C
-nverter.ConvertToString(param.DefaultValue) is string stringValue && !string.IsNullOrEmpty(stringValue))
+            if (InternalTypeConverter.ConvertToString(param.DefaultValue) is string stringValue && !string.IsNullOrEmpty(stringValue))
             {
                 return $"{param.Description} (default value: {stringValue})";
             }
