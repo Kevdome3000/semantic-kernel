@@ -601,13 +601,16 @@ public static class KernelExtensions
 
 
     /// <summary>
-    /// Invokes a prompt specified via a prompt template and return the results of type <typeparamref name="T"/>.
+    /// Invokes a prompt specified via a prompt template and returns the results of type <typeparamref name="T"/>.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="promptTemplate">Plain language definition of the prompt, using SK prompt template language</param>
+    /// <param name="promptTemplate">Prompt template for the function.</param>
     /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
-    /// <param name="templateFormat">Optional format of the template. Must be provided if a prompt template factory is provided</param>
-    /// <param name="promptTemplateFactory">The template factory to use to interpret <paramref name="promptTemplate"/>.</param>
+    /// <param name="templateFormat">The template format of <paramref name="promptTemplate"/>. This must be provided if <paramref name="promptTemplateFactory"/> is not null.</param>
+    /// <param name="promptTemplateFactory">
+    /// The <see cref="IPromptTemplateFactory"/> to use when interpreting the <paramref name="promptTemplate"/> into a <see cref="IPromptTemplate"/>.
+    /// If null, a default factory will be used.
+    /// </param>
     /// <returns>The <typeparamref name="T"/> of the function result value.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="kernel"/> is null.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="promptTemplate"/> is null.</exception>

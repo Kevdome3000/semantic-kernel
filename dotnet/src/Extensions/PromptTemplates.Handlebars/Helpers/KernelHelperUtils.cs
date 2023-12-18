@@ -3,10 +3,8 @@
 namespace Microsoft.SemanticKernel.PromptTemplates.Handlebars.Helpers;
 
 using System;
-using HandlebarsDotNet;
-
-
-ing System.Text.Json.Nodes;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using HandlebarsDotNet;
 
 
@@ -71,6 +69,7 @@ internal static class KernelHelpersUtils
                double.TryParse(input, out _) ||
                decimal.TryParse(input, out _);
     }
+
 
     /// <summary>
     /// Tries to convert a <see cref="JsonNode"/> object to a specific type.

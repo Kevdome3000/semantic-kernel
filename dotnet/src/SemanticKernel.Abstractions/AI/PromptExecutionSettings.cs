@@ -9,7 +9,10 @@ using TextGeneration;
 
 
 /// <summary>
-/// Provides execution settings for an AI /// Implementors of <see cref="ITextGenerationService"/> or <see cref="IChatCompletionService"/> can extend thisatCompletionService"/> can extend this
+/// Provides execution settings for an AI request.
+/// </summary>
+/// <remarks>
+/// Implementors of <see cref="ITextGenerationService"/> or <see cref="IChatCompletionService"/> can extend this
 /// if the service they are calling supports additional properties. For an example, please reference
 /// the Microsoft.SemanticKernel.Connectors.OpenAI.OpenAIPromptExecutionSettings implementation.
 /// </remarks>

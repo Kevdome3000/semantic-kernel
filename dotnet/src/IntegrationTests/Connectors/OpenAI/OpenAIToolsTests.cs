@@ -111,9 +111,7 @@ public sealed class OpenAIToolsTests : IDisposable
     private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
 
-
-    public void Dispose()
-        => this._testOutputHelper.Dispose();
+    public void Dispose() => this._testOutputHelper.Dispose();
 
 
     /// <summary>
