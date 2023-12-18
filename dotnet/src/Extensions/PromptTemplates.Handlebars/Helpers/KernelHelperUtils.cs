@@ -6,6 +6,10 @@ using System;
 using HandlebarsDotNet;
 
 
+ing System.Text.Json.Nodes;
+using HandlebarsDotNet;
+
+
 /// <summary>
 /// Extension class to register additional helpers as Kernel System helpers.
 /// </summary>
@@ -66,5 +70,19 @@ internal static class KernelHelpersUtils
                ulong.TryParse(input, out _) ||
                double.TryParse(input, out _) ||
                decimal.TryParse(input, out _);
+    }
+
+    /// <summary>
+    /// Tries to convert a <see cref="JsonNode"/> object to a specific type.
+    /// </summary>
+    public static object? DeserializeJsonNode(JsonNode? jsonContent)
+    {
+        return jsonContent?.GetValueKind() switch
+        {
+            JsonValueKind.Array => jsonContent.AsArray(),
+            JsonValueKind.Object => jsonContent.AsObject(),
+            JsonValueKind.String => jsonContent.GetValue<string>(),
+            _ => jsonContent
+        };
     }
 }

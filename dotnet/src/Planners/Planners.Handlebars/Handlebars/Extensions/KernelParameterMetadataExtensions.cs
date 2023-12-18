@@ -117,7 +117,13 @@ internal static class KernelParameterMetadataExtensions
     public static KernelParameterMetadata ParseJsonSchema(this KernelParameterMetadata parameter)
     {
         var schema = parameter.Schema!;
-        var type = schema.RootElement.GetProperty("type").GetString() ?? "object";
+
+        var type = "object";
+
+        if (schema.RootElement.TryGetProperty("type", out var typeNode))
+        {
+            type = typeNode.Deserialize<string>()!;
+        }
 
         if (IsPrimitiveOrStringType(type) || type == "null")
         {
