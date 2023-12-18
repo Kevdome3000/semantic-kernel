@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel;
+
 using System;
 using System.ComponentModel;
 using System.Globalization;
 
-namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
 /// Converts a object of <see cref="RestApiOperationResponse"/> type to string type.
@@ -16,6 +17,7 @@ public class RestApiOperationResponseConverter : TypeConverter
     {
         return destinationType == typeof(string) || base.CanConvertTo(context, destinationType);
     }
+
 
     /// <inheritdoc/>
     public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)

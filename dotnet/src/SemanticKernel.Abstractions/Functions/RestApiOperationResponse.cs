@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel;
+
 using System.ComponentModel;
 
-namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
 /// The REST API operation response.
@@ -23,7 +24,8 @@ public sealed class RestApiOperationResponse
     /// <summary>
     /// The expected schema of the response as advertised in the OpenAPI operation.
     /// </summary>
-    public KernelJsonSchema? ExpectedSchema { get; internal set; }
+    public KernelJsonSchema? ExpectedSchema { get; set; }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RestApiOperationResponse"/> class.
@@ -37,6 +39,7 @@ public sealed class RestApiOperationResponse
         this.ContentType = contentType;
         this.ExpectedSchema = expectedSchema;
     }
+
 
     /// <inheritdoc/>
     public override string ToString() => this.Content?.ToString() ?? string.Empty;

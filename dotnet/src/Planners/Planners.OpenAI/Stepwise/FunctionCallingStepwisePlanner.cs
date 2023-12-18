@@ -13,7 +13,6 @@ using Connectors.OpenAI;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
 using Json.More;
-using Plugins.OpenApi;
 
 
 /// <summary>
