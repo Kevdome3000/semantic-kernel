@@ -21,10 +21,10 @@ using Extensions.Logging.Abstractions;
 public abstract class KernelFunction
 {
     /// <summary>The measurement tag name for the function name.</summary>
-    protected const string MeasurementFunctionTagName = "semantic_kernel.function.name";
+    private protected const string MeasurementFunctionTagName = "semantic_kernel.function.name";
 
     /// <summary>The measurement tag name for the function error type.</summary>
-    protected const string MeasurementErrorTagName = "error.type";
+    private protected const string MeasurementErrorTagName = "error.type";
 
     /// <summary><see cref="ActivitySource"/> for function-related activities.</summary>
     private static readonly ActivitySource s_activitySource = new("Microsoft.SemanticKernel");
