@@ -4,7 +4,7 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using AI.ChatCompletion;
+using ChatCompletion;
 using Execution;
 
 

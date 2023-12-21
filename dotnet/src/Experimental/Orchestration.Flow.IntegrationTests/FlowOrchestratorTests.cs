@@ -1,24 +1,28 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests;
+
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Plugins.Memory;
+using Microsoft.SemanticKernel.Experimental.Orchestration;
+using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
-using SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests.TestSettings;
+using TestSettings;
 using xRetry;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests;
 
 public sealed class FlowOrchestratorTests : IDisposable
 {
     private readonly string _bingApiKey;
+
 
     public FlowOrchestratorTests(ITestOutputHelper output)
     {
@@ -38,6 +42,7 @@ public sealed class FlowOrchestratorTests : IDisposable
         this._bingApiKey = bingApiKeyCandidate;
     }
 
+
     [RetryFact(maxRetries: 3)]
     public async Task CanExecuteFlowAsync()
     {
@@ -56,7 +61,7 @@ public sealed class FlowOrchestratorTests : IDisposable
         Microsoft.SemanticKernel.Experimental.Orchestration.Flow flow = FlowSerializer.DeserializeFromYaml(@"
 goal: answer question and sent email
 steps:
-  - goal: What is the tallest mountain on Earth? How tall is it divided by 2?
+  - goal: What is the tallest mountain in Asia? How tall is it divided by 2?
     plugins:
       - WebSearchEnginePlugin
     provides:
@@ -83,36 +88,40 @@ steps:
             config: new FlowOrchestratorConfig() { MaxStepIterations = 20 });
 
         // Act
-        var result = await flowOrchestrator.ExecuteFlowAsync(flow, sessionId, "What is the tallest mountain on Earth? How tall is it divided by 2?");
+        var result = await flowOrchestrator.ExecuteFlowAsync(flow, sessionId, "What is the tallest mountain in Asia? How tall is it divided by 2?");
 
         // Assert
         // Loose assertion -- make sure that the plan was executed and pause when it needs interact with user to get more input
-        Assert.Contains("email", result.ToString(), StringComparison.InvariantCultureIgnoreCase);
+        var response = result.GetValue<List<string>>()!.First();
+        Assert.Contains("email", response, StringComparison.InvariantCultureIgnoreCase);
 
         // Act
         result = await flowOrchestrator.ExecuteFlowAsync(flow, sessionId, $"my email is {dummyAddress}");
 
         // Assert
-        var emailPayload = result["email"];
+        var emailPayload = result.Metadata!["email"] as string;
         Assert.Contains(dummyAddress, emailPayload, StringComparison.InvariantCultureIgnoreCase);
         Assert.Contains("Everest", emailPayload, StringComparison.InvariantCultureIgnoreCase);
     }
 
-    private KernelBuilder InitializeKernelBuilder()
+
+    private IKernelBuilder InitializeKernelBuilder()
     {
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
 
         return Kernel.CreateBuilder()
-            .WithAzureOpenAIChatCompletion(
+            .AddAzureOpenAIChatCompletion(
                 deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
                 endpoint: azureOpenAIConfiguration.Endpoint,
                 apiKey: azureOpenAIConfiguration.ApiKey);
     }
 
+
     private readonly ILoggerFactory _logger;
     private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
+
 
     public void Dispose()
     {
@@ -120,10 +129,12 @@ steps:
         GC.SuppressFinalize(this);
     }
 
+
     ~FlowOrchestratorTests()
     {
         this.Dispose(false);
     }
+
 
     private void Dispose(bool disposing)
     {

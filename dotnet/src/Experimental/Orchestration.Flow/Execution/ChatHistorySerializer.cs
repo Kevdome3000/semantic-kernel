@@ -5,7 +5,7 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 using System;
 using System.Linq;
 using System.Text.Json;
-using AI.ChatCompletion;
+using ChatCompletion;
 
 
 internal static class ChatHistorySerializer

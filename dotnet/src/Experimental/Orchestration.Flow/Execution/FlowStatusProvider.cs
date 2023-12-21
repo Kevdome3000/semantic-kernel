@@ -1,16 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Experimental.Orchestration;
+
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
-using Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
-using Microsoft.SemanticKernel.Memory;
+using Abstractions;
+using ChatCompletion;
+using Execution;
+using Memory;
 
-namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 
 /// <summary>
 /// Default flow status provider implemented on top of <see cref="IMemoryStore"/>
@@ -21,6 +22,7 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
 
     private readonly string _collectionName;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="FlowStatusProvider"/> class.
     /// </summary>
@@ -29,6 +31,7 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
         var provider = new FlowStatusProvider(memoryStore, collectionName);
         return await InitializeProviderStoreAsync(provider).ConfigureAwait(false);
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FlowStatusProvider"/> class.
@@ -40,6 +43,7 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
         this._memoryStore = memoryStore;
         this._collectionName = collectionName ?? nameof(FlowStatusProvider);
     }
+
 
     /// <inheritdoc/>
     public async Task<ExecutionState> GetExecutionStateAsync(string sessionId)
@@ -65,6 +69,7 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
         }
     }
 
+
     /// <inheritdoc/>
     public async Task SaveExecutionStateAsync(string sessionId, ExecutionState state)
     {
@@ -73,10 +78,12 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
             .ConfigureAwait(false);
     }
 
+
     private string GetExecutionStateStorageKey(string sessionId)
     {
         return $"FlowStatus_{sessionId}";
     }
+
 
     /// <inheritdoc/>
     public async Task<ChatHistory?> GetChatHistoryAsync(string sessionId, string stepId)
@@ -102,6 +109,7 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
         }
     }
 
+
     /// <inheritdoc/>
     public async Task SaveChatHistoryAsync(string sessionId, string stepId, ChatHistory history)
     {
@@ -110,10 +118,12 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
             .ConfigureAwait(false);
     }
 
+
     private string GetChatHistoryStorageKey(string sessionId, string stepId)
     {
         return $"ChatHistory_{sessionId}_{stepId}";
     }
+
 
     /// <inheritdoc/>
     public async Task<List<ReActStep>> GetReActStepsAsync(string sessionId, string stepId)
@@ -137,6 +147,7 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
         return new List<ReActStep>();
     }
 
+
     /// <inheritdoc/>
     public async Task SaveReActStepsAsync(string sessionId, string stepId, List<ReActStep> steps)
     {
@@ -144,6 +155,7 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
         await this._memoryStore.UpsertAsync(this._collectionName, this.CreateMemoryRecord(this.GetStepsStorageKey(sessionId, stepId), json))
             .ConfigureAwait(false);
     }
+
 
     private static async Task<FlowStatusProvider> InitializeProviderStoreAsync(FlowStatusProvider flowProvider, CancellationToken cancellationToken = default)
     {
@@ -155,10 +167,12 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
         return flowProvider;
     }
 
+
     private string GetStepsStorageKey(string sessionId, string stepId)
     {
         return $"Steps_{sessionId}_{stepId}";
     }
+
 
     private MemoryRecord CreateMemoryRecord(string key, string text)
     {

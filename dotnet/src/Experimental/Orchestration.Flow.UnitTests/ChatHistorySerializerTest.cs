@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.AI.ChatCompletion;
+namespace SemanticKernel.Experimental.Orchestration.Flow.UnitTests;
+
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 using Xunit;
 
-namespace SemanticKernel.Experimental.Orchestration.Flow.UnitTests;
 
 public class ChatHistorySerializerTest
 {
@@ -18,6 +19,7 @@ public class ChatHistorySerializerTest
         Assert.Single(history);
         Assert.Equal(AuthorRole.Assistant.Label, history[0].Role.Label);
     }
+
 
     [Fact]
     public void CanSerializeChatHistory()
