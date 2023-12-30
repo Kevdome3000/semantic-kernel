@@ -259,7 +259,6 @@ public static class StructuredPlannerExtensions
 
         if (functions.Count == 0)
         {
-            Console.WriteLine("No functions found");
             return plan;
         }
 
