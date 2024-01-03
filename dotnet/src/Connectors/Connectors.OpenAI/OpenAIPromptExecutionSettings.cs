@@ -78,18 +78,36 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     public long? Seed { get; set; }
 
     /// <summary>
-    /// The system prompt to use when generating text using a chat model.
-    /// Defaults to "Assistant is a large language model."
+    /// Gets or sets the response format to use for the completion.
     /// </summary>
-    [JsonPropertyName("chat_system_prompt")]
-    public string ChatSystemPrompt
-    {
-        get => this._chatSystemPrompt;
+    [Experimental("SKEXP0013")]
+    [JsonPropertyName("response_format")]
+    public object? ResponseFormat { get; set; }
+
+    /// <summary>
+    /// The system prompt to use when generating text using a chat model
+        .
+        /// Defaults to "Assistant is a large language model."
+        /// </summary>
+        [
+        JsonPropertyName
+        (
+        "chat_system_prompt"
+        )
+        ]
+        public
+        string
+        ChatSystemPrompt
+        {
+        get
+        => this._chatSystemPrompt;
         set
         {
             if (string.IsNullOrWhiteSpace(value))
-            {
-                value = DefaultChatSystemPrompt;
+      
+     {
+           
+    value = DefaultChatSystemPrompt;
             }
             this._chatSystemPrompt = value;
         }
@@ -148,30 +166,93 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// Create a new settings object with the values from another settings object.
     /// </summary>
     /// <param name="executionSettings">Template configuration</param>
-    /// <param name="defaultMaxTokens">Default max tokens</param>
+    /// <param name="defaultMaxTokens">Default max tokens</
+    param
+    >
     /// <returns>An instance of OpenAIPromptExecutionSettings</returns>
-    public static OpenAIPromptExecutionSettings FromExecutionSettings(PromptExecutionSettings? executionSettings, int? defaultMaxTokens = null)
+    public
+    static
+    OpenAIPromptExecutionSettings
+    FromExecutionSettings
+    (
+    PromptExecutionSettings
+    ?
+    executionSettings
+    ,
+    int
+    ?
+    defaultMaxTokens
+    =
+    null
+    )
     {
-        if (executionSettings is null)
+    if
+    (
+    executionSettings
+    is
+    null
+    )
+    {
+    return
+    new
+    OpenAIPromptExecutionSettings
+    (
+    )
+    {
+    MaxTokens
+    =
+    defaultMaxTokens
+    }
+    ;
+    }
+    if
+    (
+    executionSettings
+    is
+    OpenAIPromptExecutionSettings
+    settings
+    )
+    {
+    return
+    settings
+    ;
+    }
+    var
+    json
+    =
+    JsonSerializer
+    .
+    Serialize
+    (
+    executionSettings
+    )
+    ;
+    var
+    openAIExecutionSettings
+    =
+    JsonSerializer
+    .
+    Deserialize
+    <
+    OpenAIPromptExecutionSettings
+    >
+    (
+    json
+    ,
+    JsonOptionsCache
+    .
+    ReadPermissive
+    )
+    ;
+    if
+    (
+    openAIExecutionSettings
+    is
+    not
+    null)
         {
-            return new OpenAIPromptExecutionSettings()
-            {
-                MaxTokens = defaultMaxTokens
-            };
-        }
-
-        if (executionSettings is OpenAIPromptExecutionSettings settings)
-        {
-            return settings;
-        }
-
-        var json = JsonSerializer.Serialize(executionSettings);
-
-        var openAIExecutionSettings = JsonSerializer.Deserialize<OpenAIPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
-
-        if (openAIExecutionSettings is not null)
-        {
-            return openAIExecutionSettings;
+      
+     return openAIExecutionSettings;
         }
 
         throw new ArgumentException($"Invalid execution settings, cannot convert to {nameof(OpenAIPromptExecutionSettings)}", nameof(executionSettings));
@@ -183,17 +264,52 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// </summary>
     /// <param name="executionSettings">Template configuration</param>
     /// <param name="defaultMaxTokens">Default max tokens</param>
-    /// <returns>An instance of OpenAIPromptExecutionSettings</returns>
-    public static OpenAIPromptExecutionSettings FromExecutionSettingsWithData(PromptExecutionSettings? executionSettings, int? defaultMaxTokens = null)
+ /// <returns>An instance of OpenAIPromptExecutionSettings</returns>
+    public
+    static
+    OpenAIPromptExecutionSettings
+    FromExecutionSettingsWithData
+    (
+    PromptExecutionSettings
+    ?
+    executionSettings
+    ,
+    int
+    ?
+    defaultMaxTokens
+    =
+    null
+    )
     {
-        var settings = FromExecutionSettings(executionSettings, defaultMaxTokens);
+    var
+    settings
+    =
+    FromExecutionSettings
+    (
+    executionSettings
+    ,
+    defaultMaxTokens
+    )
+    ;
+    if
+    (
+    settings
+    .
+    StopSequences
+    ?
+    .
+    Count
+    ==
+    0
+    )
+    {
+    // Azure OpenAI WithData API does not allow to send empty array of stop sequences
+    // Gives back "Validation error at #/stop/str: Input should be a valid string\nValidation error at #/stop/list[str]: List should have at least 1 item after validation, not 0"
+            settings.StopSequences = nul
 
-        if (settings.StopSequences?.Count == 0)
-        {
-            // Azure OpenAI WithData API does not allow to send empty array of stop sequences
-            // Gives back "Validation error at #/stop/str: Input should be a valid string\nValidation error at #/stop/list[str]: List should have at least 1 item after validation, not 0"
-            settings.StopSequences = null;
-        }
+
+ 
+      }
 
         return settings;
     }

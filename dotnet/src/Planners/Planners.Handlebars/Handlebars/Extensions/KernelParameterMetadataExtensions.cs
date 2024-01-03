@@ -1,34 +1,26 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Planning.Handlebars;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
+using Microsoft.SemanticKernel.Text;
 
+namespace Microsoft.SemanticKernel.Planning.Handlebars;
 
 internal static class KernelParameterMetadataExtensions
 {
-    private static readonly JsonSerializerOptions s_jsonOptionsCache = new()
-    {
-        WriteIndented = true,
-    };
-
-
     /// <summary>
     /// Checks if type is primitive or string
     /// </summary>
     public static bool IsPrimitiveOrStringType(Type type) => type.IsPrimitive || type == typeof(string);
-
 
     /// <summary>
     /// Checks if stringified type is primitive or string
     /// </summary>
     public static bool IsPrimitiveOrStringType(string type) =>
         type == "string" || type == "number" || type == "integer" || type == "boolean";
-
 
     /// <summary>
     /// Converts non-primitive types to a data class definition and returns a hash set of complex type metadata.
@@ -46,15 +38,12 @@ internal static class KernelParameterMetadataExtensions
         return type.ToHandlebarsParameterTypeMetadata(new HashSet<Type>());
     }
 
-
     private static HashSet<HandlebarsParameterTypeMetadata> ToHandlebarsParameterTypeMetadata(this Type type, HashSet<Type> processedTypes)
     {
         var parameterTypes = new HashSet<HandlebarsParameterTypeMetadata>();
-
         if (type.TryGetGenericResultType(out var taskResultType))
         {
             var resultTypeProperties = taskResultType.GetProperties();
-
             if (!IsPrimitiveOrStringType(taskResultType) && resultTypeProperties.Length is not 0)
             {
                 parameterTypes.Add(new HandlebarsParameterTypeMetadata()
@@ -87,7 +76,6 @@ internal static class KernelParameterMetadataExtensions
         return parameterTypes;
     }
 
-
     private static void AddNestedComplexTypes(this HashSet<HandlebarsParameterTypeMetadata> parameterTypes, PropertyInfo[] properties, HashSet<Type> processedTypes)
     {
         // Add nested complex types
@@ -101,7 +89,6 @@ internal static class KernelParameterMetadataExtensions
         }
     }
 
-
     private static Type GetTypeFromSchema(string schemaType) =>
         schemaType switch
         {
@@ -113,13 +100,11 @@ internal static class KernelParameterMetadataExtensions
             _ => typeof(object) // default to object for "object", "null", or anything unexpected
         };
 
-
     public static KernelParameterMetadata ParseJsonSchema(this KernelParameterMetadata parameter)
     {
         var schema = parameter.Schema!;
 
         var type = "object";
-
         if (schema.RootElement.TryGetProperty("type", out var typeNode))
         {
             type = typeNode.Deserialize<string>()!;
@@ -137,19 +122,16 @@ internal static class KernelParameterMetadataExtensions
         return parameter;
     }
 
-
     public static string ToJsonString(this JsonElement jsonProperties)
     {
-        return JsonSerializer.Serialize(jsonProperties, s_jsonOptionsCache);
+        return JsonSerializer.Serialize(jsonProperties, JsonOptionsCache.WriteIndented);
     }
-
 
     public static string GetSchemaTypeName(this KernelParameterMetadata parameter)
     {
         var schemaType = parameter.Schema?.RootElement.TryGetProperty("type", out var typeElement) is true ? typeElement.ToString() : "object";
         return $"{parameter.Name}-{schemaType}";
     }
-
 
     public static KernelParameterMetadata ToKernelParameterMetadata(this KernelReturnParameterMetadata parameter, string functionName) =>
         new($"{functionName}Returns")
@@ -158,7 +140,6 @@ internal static class KernelParameterMetadataExtensions
             ParameterType = parameter.ParameterType,
             Schema = parameter.Schema
         };
-
 
     public static KernelReturnParameterMetadata ToKernelReturnParameterMetadata(this KernelParameterMetadata parameter) =>
         new()
