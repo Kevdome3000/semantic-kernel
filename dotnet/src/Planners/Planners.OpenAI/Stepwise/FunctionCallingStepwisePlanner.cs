@@ -1,19 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Planning;
-
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using ChatCompletion;
-using Connectors.OpenAI;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
 using Json.More;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 
+namespace Microsoft.SemanticKernel.Planning;
 
 /// <summary>
 /// A planner that uses OpenAI function calling in a stepwise manner to fulfill a user goal or question.
@@ -32,7 +32,6 @@ public sealed class FunctionCallingStepwisePlanner
         this._stepPrompt = this.Config.GetStepPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Stepwise.StepPrompt.txt");
         this.Config.ExcludedPlugins.Add(StepwisePlannerPluginName);
     }
-
 
     /// <summary>
     /// Execute a plan
@@ -53,7 +52,6 @@ public sealed class FunctionCallingStepwisePlanner
                 => plan.ExecuteCoreAsync(kernel, question!, cancellationToken),
             this, kernel, question, logger, cancellationToken);
     }
-
 
     #region private
 
@@ -138,8 +136,9 @@ public sealed class FunctionCallingStepwisePlanner
                         var result = (await clonedKernel.InvokeAsync(pluginFunction, arguments, cancellationToken).ConfigureAwait(false)).GetValue<object>();
                         chatHistoryForSteps.AddMessage(AuthorRole.Tool, ParseObjectAsString(result), metadata: new Dictionary<string, object?>(1) { { OpenAIChatMessageContent.ToolIdProperty, functionResponse.Id } });
                     }
-                    catch (KernelException)
+                    catch (Exception ex) when (!ex.IsCriticalException())
                     {
+                        chatHistoryForSteps.AddMessage(AuthorRole.Tool, ex.Message, metadata: new Dictionary<string, object?>(1) { { OpenAIChatMessageContent.ToolIdProperty, functionResponse.Id } });
                         chatHistoryForSteps.AddUserMessage($"Failed to execute function {functionResponse.FullyQualifiedName}. Try something else!");
                     }
                 }
@@ -159,7 +158,6 @@ public sealed class FunctionCallingStepwisePlanner
         };
     }
 
-
     private async Task<ChatMessageContent> GetCompletionWithFunctionsAsync(
         ChatHistory chatHistory,
         Kernel kernel,
@@ -174,12 +172,10 @@ public sealed class FunctionCallingStepwisePlanner
         return await chatCompletion.GetChatMessageContentAsync(chatHistory, openAIExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
     }
 
-
     private async Task<string> GetFunctionsManualAsync(Kernel kernel, ILogger logger, CancellationToken cancellationToken)
     {
         return await kernel.Plugins.GetJsonSchemaFunctionsManualAsync(this.Config, null, logger, false, cancellationToken).ConfigureAwait(false);
     }
-
 
     // Create and invoke a kernel function to generate the initial plan
     private async Task<string> GeneratePlanAsync(string question, Kernel kernel, ILogger logger, CancellationToken cancellationToken)
@@ -194,7 +190,6 @@ public sealed class FunctionCallingStepwisePlanner
         var generatePlanResult = await kernel.InvokeAsync(generatePlanFunction, generatePlanArgs, cancellationToken).ConfigureAwait(false);
         return generatePlanResult.GetValue<string>() ?? throw new KernelException("Failed get a completion for the plan.");
     }
-
 
     private async Task<ChatHistory> BuildChatHistoryForStepAsync(
         string goal,
@@ -218,7 +213,6 @@ public sealed class FunctionCallingStepwisePlanner
         return chatHistory;
     }
 
-
     private bool TryGetFunctionResponse(ChatMessageContent chatMessage, [NotNullWhen(true)] out IReadOnlyList<OpenAIFunctionToolCall>? functionResponses, out string? errorMessage)
     {
         OpenAIChatMessageContent? openAiChatMessage = chatMessage as OpenAIChatMessageContent;
@@ -226,7 +220,6 @@ public sealed class FunctionCallingStepwisePlanner
 
         functionResponses = null;
         errorMessage = null;
-
         try
         {
             functionResponses = openAiChatMessage.GetOpenAIFunctionToolCalls();
@@ -238,7 +231,6 @@ public sealed class FunctionCallingStepwisePlanner
 
         return functionResponses is { Count: > 0 };
     }
-
 
     private bool TryFindFinalAnswer(OpenAIFunctionToolCall functionResponse, out string finalAnswer, out string? errorMessage)
     {
@@ -259,7 +251,6 @@ public sealed class FunctionCallingStepwisePlanner
         }
         return false;
     }
-
 
     private static string ParseObjectAsString(object? valueObj)
     {
@@ -292,7 +283,6 @@ public sealed class FunctionCallingStepwisePlanner
         return resultStr;
     }
 
-
     private async Task ValidateTokenCountAsync(
         ChatHistory chatHistory,
         Kernel kernel,
@@ -309,13 +299,11 @@ public sealed class FunctionCallingStepwisePlanner
         }
 
         var tokenCount = chatHistory.GetTokenCount(additionalMessage: functionManual);
-
         if (tokenCount >= this.Config.MaxPromptTokens)
         {
             throw new KernelException("ChatHistory is too long to get a completion. Try reducing the available functions.");
         }
     }
-
 
     /// <summary>
     /// The configuration for the StepwisePlanner
@@ -348,7 +336,6 @@ public sealed class FunctionCallingStepwisePlanner
     private const string GoalKey = "goal";
 
     #endregion private
-
 
     /// <summary>
     /// Plugin used by the <see cref="FunctionCallingStepwisePlanner"/> to interact with the caller.

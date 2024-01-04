@@ -1,26 +1,23 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.IntegrationTests.Planners.Stepwise;
-
 using System;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Fakes;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
-using TestSettings;
+using SemanticKernel.IntegrationTests.Fakes;
+using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
 
-
+namespace SemanticKernel.IntegrationTests.Planners.Stepwise;
 public sealed class FunctionCallingStepwisePlannerTests : IDisposable
 {
     private readonly string _bingApiKey;
-
 
     public FunctionCallingStepwisePlannerTests(ITestOutputHelper output)
     {
@@ -38,7 +35,6 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         Assert.NotNull(bingApiKeyCandidate);
         this._bingApiKey = bingApiKeyCandidate;
     }
-
 
     [Theory]
     [InlineData("What is the tallest mountain on Earth? How tall is it?", new string[] { "WebSearch_Search" })]
@@ -70,13 +66,47 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         Assert.NotEmpty(planResult.FinalAnswer);
 
         string serializedChatHistory = JsonSerializer.Serialize(planResult.ChatHistory);
-
         foreach (string expectedFunction in expectedFunctions)
         {
             Assert.Contains(expectedFunction, serializedChatHistory, StringComparison.InvariantCultureIgnoreCase);
         }
     }
 
+    [Fact]
+    public async Task DoesNotThrowWhenPluginFunctionThrowsNonCriticalExceptionAsync()
+    {
+        Kernel kernel = this.InitializeKernel();
+        kernel.ImportPluginFromType<ThrowingEmailPluginFake>("Email");
+
+        var planner = new FunctionCallingStepwisePlanner(
+            new FunctionCallingStepwisePlannerConfig() { MaxIterations = 5 });
+
+        // Act
+        var planResult = await planner.ExecuteAsync(kernel, "Email a poem about cats to test@example.com");
+
+        // Assert - should contain the expected answer & function calls within the maximum iterations
+        Assert.NotNull(planResult);
+        Assert.True(planResult.Iterations > 0);
+        Assert.True(planResult.Iterations <= 5);
+
+        string serializedChatHistory = JsonSerializer.Serialize(planResult.ChatHistory);
+        Assert.Contains("Email_WritePoem", serializedChatHistory, StringComparison.InvariantCultureIgnoreCase);
+        Assert.Contains("Email_SendEmail", serializedChatHistory, StringComparison.InvariantCultureIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ThrowsWhenPluginFunctionThrowsCriticalExceptionAsync()
+    {
+        Kernel kernel = this.InitializeKernel();
+        kernel.ImportPluginFromType<ThrowingEmailPluginFake>("Email");
+
+        var planner = new FunctionCallingStepwisePlanner(
+            new FunctionCallingStepwisePlannerConfig() { MaxIterations = 5 });
+
+        // Act & Assert
+        // Planner should call ThrowingEmailPluginFake.GetEmailAddressAsync, which throws InvalidProgramException
+        await Assert.ThrowsAsync<InvalidProgramException>(async () => await planner.ExecuteAsync(kernel, "What is Kelly's email address?"));
+    }
 
     private Kernel InitializeKernel()
     {
@@ -93,10 +123,8 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         return kernel;
     }
 
-
     private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
-
 
     public void Dispose()
     {
@@ -104,12 +132,10 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
-
     ~FunctionCallingStepwisePlannerTests()
     {
         this.Dispose(false);
     }
-
 
     private void Dispose(bool disposing)
     {

@@ -4,10 +4,6 @@ import asyncio
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
-from semantic_kernel.connectors.ai.complete_request_settings import (
-    CompleteRequestSettings,
-)
 
 """
 Logit bias enables prioritizing certain tokens within a given output.
@@ -18,9 +14,7 @@ Read more about logit bias and how to configure output: https://help.openai.com/
 
 
 def _config_ban_tokens(settings_type, keys):
-    settings = (
-        ChatRequestSettings() if settings_type == "chat" else CompleteRequestSettings()
-    )
+    settings = sk_oai.OpenAIRequestSettings()
 
     # Map each token in the keys list to a bias value from -100 (a potential ban) to 100 (exclusive selection)
     for k in keys:
@@ -30,9 +24,7 @@ def _config_ban_tokens(settings_type, keys):
 
 
 async def chat_request_example(kernel, api_key, org_id):
-    openai_chat_completion = sk_oai.OpenAIChatCompletion(
-        "gpt-3.5-turbo", api_key, org_id
-    )
+    openai_chat_completion = sk_oai.OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id)
     kernel.add_chat_service("chat_service", openai_chat_completion)
 
     # Spaces and capitalization affect the token ids.
@@ -69,12 +61,8 @@ async def chat_request_example(kernel, api_key, org_id):
     # Model will try its best to avoid using any of the above words
     settings = _config_ban_tokens("chat", keys)
 
-    prompt_config = sk.PromptTemplateConfig.from_completion_parameters(
-        max_tokens=2000, temperature=0.7, top_p=0.8
-    )
-    prompt_template = sk.ChatPromptTemplate(
-        "{{$user_input}}", kernel.prompt_template_engine, prompt_config
-    )
+    prompt_config = sk.PromptTemplateConfig.from_completion_parameters(max_tokens=2000, temperature=0.7, top_p=0.8)
+    prompt_template = sk.ChatPromptTemplate("{{$user_input}}", kernel.prompt_template_engine, prompt_config)
 
     # Setup chat with prompt
     prompt_template.add_system_message("You are a basketball expert")
@@ -108,9 +96,7 @@ async def chat_request_example(kernel, api_key, org_id):
 
 
 async def text_complete_request_example(kernel, api_key, org_id):
-    openai_text_completion = sk_oai.OpenAITextCompletion(
-        "text-davinci-002", api_key, org_id
-    )
+    openai_text_completion = sk_oai.OpenAITextCompletion("text-davinci-002", api_key, org_id)
     kernel.add_text_completion_service("text_service", openai_text_completion)
 
     # Spaces and capitalization affect the token ids.
