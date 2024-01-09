@@ -31,9 +31,10 @@ public interface IAgentThread
     /// Advance the thread with the specified agent.
     /// </summary>
     /// <param name="agent">An agent instance.</param>
+    /// <param name="arguments">Optional arguments for parameterized instructions</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>The resulting agent message(s)</returns>
-    IAsyncEnumerable<IChatMessage> InvokeAsync(IAgent agent, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<IChatMessage> InvokeAsync(IAgent agent, KernelArguments? arguments = null, CancellationToken cancellationToken = default);
 
 
     /// <summary>
@@ -41,9 +42,10 @@ public interface IAgentThread
     /// </summary>
     /// <param name="agent">An agent instance.</param>
     /// <param name="userMessage">The user message</param>
+    /// <param name="arguments">Optional arguments for parameterized instructions</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>The resulting agent message(s)</returns>
-    IAsyncEnumerable<IChatMessage> InvokeAsync(IAgent agent, string userMessage, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<IChatMessage> InvokeAsync(IAgent agent, string userMessage, KernelArguments? arguments = null, CancellationToken cancellationToken = default);
 
 
     /// <summary>

@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using Exceptions;
 using Internal;
 using Models;
-using YamlDotNet.Serialization;
 
 
 /// <summary>
@@ -24,6 +23,7 @@ public partial class AgentBuilder
 
     private string? _apiKey;
     private Func<HttpClient>? _httpClientProvider;
+    private PromptTemplateConfig? _config;
 
 
     /// <summary>
@@ -57,6 +57,7 @@ public partial class AgentBuilder
             await Agent.CreateAsync(
                 new OpenAIRestContext(this._apiKey!, this._httpClientProvider),
                 this._model,
+                this._config,
                 this._plugins,
                 cancellationToken).ConfigureAwait(false);
     }
@@ -82,15 +83,21 @@ public partial class AgentBuilder
     /// <returns><see cref="AgentBuilder"/> instance for fluid expression.</returns>
     public AgentBuilder FromTemplate(string template)
     {
-        var deserializer = new DeserializerBuilder().Build();
+        this._config = KernelFunctionYaml.ToPromptTemplateConfig(template);
 
-        var agentKernelModel = deserializer.Deserialize<AgentConfigurationModel>(template);
+        this.WithInstructions(this._config.Template.Trim());
 
-        return
-            this
-                .WithInstructions(agentKernelModel.Instructions.Trim())
-                .WithName(agentKernelModel.Name.Trim())
-                .WithDescription(agentKernelModel.Description.Trim());
+        if (!string.IsNullOrWhiteSpace(this._config.Name))
+        {
+            this.WithName(this._config.Name?.Trim());
+        }
+
+        if (!string.IsNullOrWhiteSpace(this._config.Description))
+        {
+            this.WithDescription(this._config.Description?.Trim());
+        }
+
+        return this;
     }
 
 

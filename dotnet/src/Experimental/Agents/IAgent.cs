@@ -68,6 +68,12 @@ public interface IAgent
 
 
     /// <summary>
+    /// Expose the agent internally as a prompt-template
+    /// </summary>
+    internal IPromptTemplate AsPromptTemplate();
+
+
+    /// <summary>
     /// Creates a new agent chat thread.
     /// </summary>
     /// <param name="cancellationToken">A cancellation token</param>
