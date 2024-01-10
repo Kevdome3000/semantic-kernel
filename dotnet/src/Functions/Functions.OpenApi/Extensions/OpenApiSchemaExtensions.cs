@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Plugins.OpenApi;
-
+using System.Globalization;
 using System.IO;
 using System.Text;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Writers;
 
+namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 internal static class OpenApiSchemaExtensions
 {
@@ -18,7 +18,7 @@ internal static class OpenApiSchemaExtensions
     internal static KernelJsonSchema ToJsonSchema(this OpenApiSchema schema)
     {
         var schemaBuilder = new StringBuilder();
-        var jsonWriter = new OpenApiJsonWriter(new StringWriter(schemaBuilder));
+        var jsonWriter = new OpenApiJsonWriter(new StringWriter(schemaBuilder, CultureInfo.InvariantCulture));
         jsonWriter.Settings.InlineLocalReferences = true;
         schema.SerializeAsV3(jsonWriter);
         return KernelJsonSchema.Parse(schemaBuilder.ToString());
