@@ -20,6 +20,9 @@ using PromptTemplates.Handlebars;
 /// </summary>
 internal sealed class Agent : IAgent
 {
+    public const string ToolCodeInterpreter = "code_interpreter";
+    public const string ToolRetrieval = "retrieval";
+
     /// <inheritdoc/>
     public string Id => this._model.Id;
 
@@ -37,6 +40,9 @@ internal sealed class Agent : IAgent
 #pragma warning restore CA1716 // Identifiers should not match keywords
 
     /// <inheritdoc/>
+    public AgentCapability Capabilities { get; }
+
+    /// <inheritdoc/>
     public long CreatedAt => this._model.CreatedAt;
 
     /// <inheritdoc/>
@@ -51,6 +57,12 @@ internal sealed class Agent : IAgent
     /// <inheritdoc/>
     public string Instructions => this._model.Instructions;
 
+    /// <inheritdoc/>
+    public IEnumerable<ToolModel> Tools => this._tools;
+
+    /// <inheritdoc/>
+    public IEnumerable<string> FileIds => this._fileIds.AsEnumerable();
+
     private static readonly Regex s_removeInvalidCharsRegex = new("[^0-9A-Za-z-]");
 
     private static readonly Dictionary<string, IPromptTemplateFactory> s_templateFactories =
@@ -63,6 +75,8 @@ internal sealed class Agent : IAgent
     private readonly OpenAIRestContext _restContext;
     private readonly AssistantModel _model;
     private readonly IPromptTemplate _promptTemplate;
+    private readonly ToolModel[] _tools;
+    private readonly HashSet<string> _fileIds;
 
     private AgentPlugin? _agentPlugin;
     private bool _isDeleted;
@@ -110,6 +124,7 @@ internal sealed class Agent : IAgent
         this._model = assistantModel;
         this._restContext = restContext;
         this._promptTemplate = this.DefinePromptTemplate(config);
+        this._fileIds = new HashSet<string>(assistantModel.FileIds, StringComparer.OrdinalIgnoreCase);
 
         IKernelBuilder builder = Kernel.CreateBuilder();
 
@@ -123,6 +138,13 @@ internal sealed class Agent : IAgent
         {
             this.Kernel.Plugins.AddRange(plugins);
         }
+
+        this.Capabilities =
+            (this.Kernel.Plugins.Count > 0 ? AgentCapability.Functions : AgentCapability.None) |
+            (this._model.Tools.Any(t => string.Equals(t.Type, ToolRetrieval, StringComparison.OrdinalIgnoreCase)) ? AgentCapability.Retrieval : AgentCapability.None) |
+            (this._model.Tools.Any(t => string.Equals(t.Type, ToolCodeInterpreter, StringComparison.OrdinalIgnoreCase)) ? AgentCapability.CodeInterpreter : AgentCapability.None);
+
+        this._tools = this._model.Tools.Concat(this.Kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolModel(p.Name)))).ToArray();
     }
 
 
@@ -162,6 +184,44 @@ internal sealed class Agent : IAgent
 
 
     /// <inheritdoc/>
+    public async Task AddFileAsync(string fileId, CancellationToken cancellationToken = default)
+    {
+        if (this._isDeleted)
+        {
+            return;
+        }
+
+        if (this._fileIds.Contains(fileId))
+        {
+            return;
+        }
+
+        await this._restContext.AddAssistantFileAsync(this.Id, fileId, cancellationToken).ConfigureAwait(false);
+
+        this._fileIds.Add(fileId);
+    }
+
+
+    /// <inheritdoc/>
+    public async Task RemoveFileAsync(string fileId, CancellationToken cancellationToken = default)
+    {
+        if (this._isDeleted)
+        {
+            return;
+        }
+
+        if (!this._fileIds.Contains(fileId))
+        {
+            return;
+        }
+
+        await this._restContext.RemoveAssistantFileAsync(this.Id, fileId, cancellationToken).ConfigureAwait(false);
+
+        this._fileIds.Remove(fileId);
+    }
+
+
+    /// <inheritdoc/>
     public async Task DeleteAsync(CancellationToken cancellationToken = default)
     {
         if (this._isDeleted)
@@ -191,6 +251,8 @@ internal sealed class Agent : IAgent
 
         try
         {
+            await thread.AddUserMessageAsync(input, cancellationToken).ConfigureAwait(false);
+
             var messages = await thread.InvokeAsync(this, input, arguments, cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
             var response =
                 new AgentResponse
