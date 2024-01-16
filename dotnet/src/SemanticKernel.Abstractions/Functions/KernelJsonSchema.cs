@@ -10,7 +10,7 @@ using Text;
 
 
 /// <summary>Represents JSON Schema for describing types used in <see cref="KernelFunction"/>s.</summary>
-[JsonConverter(typeof(KernelJsonSchema.JsonConverter))]
+[JsonConverter(typeof(JsonConverter))]
 public sealed class KernelJsonSchema
 {
     /// <summary>Converter for serializing/deserializing JsonSchema instances.</summary>

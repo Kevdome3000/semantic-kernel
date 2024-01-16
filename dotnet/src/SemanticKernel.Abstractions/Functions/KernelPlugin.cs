@@ -19,7 +19,7 @@ using System.Linq;
 /// exist in any number of plugins.
 /// </remarks>
 [DebuggerDisplay("Name = {Name}, Functions = {FunctionCount}")]
-[DebuggerTypeProxy(typeof(KernelPlugin.TypeProxy))]
+[DebuggerTypeProxy(typeof(TypeProxy))]
 public abstract class KernelPlugin : IEnumerable<KernelFunction>
 {
     /// <summary>Initializes the new plugin from the provided name, description, and function collection.</summary>

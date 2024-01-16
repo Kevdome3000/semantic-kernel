@@ -227,7 +227,7 @@ internal abstract class ClientCore
         {
             var options = new EmbeddingsOptions(this.DeploymentOrModelName, new[] { text });
 
-            Response<Azure.AI.OpenAI.Embeddings> response = await RunRequestAsync(() => this.Client.GetEmbeddingsAsync(options, cancellationToken)).ConfigureAwait(false);
+            Response<Embeddings> response = await RunRequestAsync(() => this.Client.GetEmbeddingsAsync(options, cancellationToken)).ConfigureAwait(false);
 
             if (response.Value.Data.Count == 0)
             {

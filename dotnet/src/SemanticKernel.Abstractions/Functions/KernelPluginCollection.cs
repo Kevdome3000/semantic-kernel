@@ -19,7 +19,7 @@ using System.Linq;
 /// All name lookups are performed using ordinal case-insensitive comparisons.
 /// </remarks>
 [DebuggerDisplay("Count = {Count}")]
-[DebuggerTypeProxy(typeof(KernelPluginCollection.TypeProxy))]
+[DebuggerTypeProxy(typeof(TypeProxy))]
 public sealed class KernelPluginCollection : ICollection<KernelPlugin>, IReadOnlyKernelPluginCollection
 {
     /// <summary>The underlying dictionary of plugins.</summary>

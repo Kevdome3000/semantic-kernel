@@ -193,7 +193,7 @@ public abstract class ToolCallBehavior
 
             if (openAIFunctions.Length > 0)
             {
-                bool autoInvoke = base.MaximumAutoInvokeAttempts > 0;
+                bool autoInvoke = MaximumAutoInvokeAttempts > 0;
 
                 // If auto-invocation is specified, we need a kernel to be able to invoke the functions.
                 // Lack of a kernel is fatal: we don't want to tell the model we can handle the functions

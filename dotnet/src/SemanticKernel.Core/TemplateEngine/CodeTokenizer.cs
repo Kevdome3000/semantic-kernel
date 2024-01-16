@@ -186,7 +186,7 @@ internal sealed class CodeTokenizer
 
                     // This isn't an expected block at this point but the TemplateTokenizer should throw an error when
                     // a named arg is used without a function call
-                    if (CodeTokenizer.IsValidNamedArg(tokenContent))
+                    if (IsValidNamedArg(tokenContent))
                     {
                         blocks.Add(new NamedArgBlock(tokenContent, this._loggerFactory));
                     }
@@ -286,7 +286,7 @@ internal sealed class CodeTokenizer
 
                 // This isn't an expected block at this point but the TemplateTokenizer should throw an error when
                 // a named arg is used without a function call
-                if (CodeTokenizer.IsValidNamedArg(tokenContent))
+                if (IsValidNamedArg(tokenContent))
                 {
                     blocks.Add(new NamedArgBlock(tokenContent, this._loggerFactory));
                 }

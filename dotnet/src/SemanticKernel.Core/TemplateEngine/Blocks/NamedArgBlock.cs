@@ -36,7 +36,7 @@ internal sealed class NamedArgBlock : Block, ITextRendering
     /// <param name="logger">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <exception cref="KernelException"></exception>
     public NamedArgBlock(string? text, ILoggerFactory? logger = null)
-        : base(NamedArgBlock.TrimWhitespace(text), logger)
+        : base(TrimWhitespace(text), logger)
     {
         if (!TryGetNameAndValue(this.Content, out string argName, out string argValue))
         {
@@ -182,7 +182,7 @@ internal sealed class NamedArgBlock : Block, ITextRendering
             return text;
         }
 
-        string[] trimmedParts = NamedArgBlock.GetTrimmedParts(text);
+        string[] trimmedParts = GetTrimmedParts(text);
         return (trimmedParts?.Length) switch
         {
             1 => trimmedParts[0],
@@ -196,7 +196,7 @@ internal sealed class NamedArgBlock : Block, ITextRendering
     {
         if (text == null)
         {
-            return System.Array.Empty<string>();
+            return Array.Empty<string>();
         }
 
         string[] parts = text.Split(new char[] { Symbols.NamedArgBlockSeparator }, 2);

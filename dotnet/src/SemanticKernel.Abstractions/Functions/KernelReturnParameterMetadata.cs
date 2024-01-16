@@ -4,7 +4,7 @@ namespace Microsoft.SemanticKernel;
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using static SemanticKernel.KernelParameterMetadata;
+using static KernelParameterMetadata;
 
 
 /// <summary>
@@ -21,7 +21,7 @@ public sealed class KernelReturnParameterMetadata
     private Type? _parameterType;
 
     /// <summary>The schema of the return parameter, potentially lazily-initialized.</summary>
-    private KernelParameterMetadata.InitializedSchema? _schema;
+    private InitializedSchema? _schema;
 
 
     /// <summary>Initializes the <see cref="KernelReturnParameterMetadata"/>.</summary>
