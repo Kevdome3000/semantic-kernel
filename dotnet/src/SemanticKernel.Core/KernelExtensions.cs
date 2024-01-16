@@ -676,7 +676,6 @@ public static class KernelExtensions
 
 
     #region InvokePromptAsync
-
     /// <summary>
     /// Invokes a prompt specified via a prompt template.
     /// </summary>
@@ -715,45 +714,6 @@ public static class KernelExtensions
         return kernel.InvokeAsync(function, arguments, cancellationToken);
     }
 
-
-    /// <summary>
-    /// Invokes a prompt specified via a prompt template and returns the results of type <typeparamref name="T"/>.
-    /// </summary>
-    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="promptTemplate">Prompt template for the function.</param>
-    /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
-    /// <param name="templateFormat">The template format of <paramref name="promptTemplate"/>. This must be provided if <paramref name="promptTemplateFactory"/> is not null.</param>
-    /// <param name="promptTemplateFactory">
-    /// The <see cref="IPromptTemplateFactory"/> to use when interpreting the <paramref name="promptTemplate"/> into a <see cref="IPromptTemplate"/>.
-    /// If null, a default factory will be used.
-    /// </param>
-    /// <returns>The <typeparamref name="T"/> of the function result value.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="kernel"/> is null.</exception>
-    /// <exception cref="ArgumentNullException"><paramref name="promptTemplate"/> is null.</exception>
-    /// <exception cref="ArgumentException"><paramref name="promptTemplate"/> is empty or composed entirely of whitespace.</exception>
-    /// <exception cref="KernelFunction">The function failed to invoke successfully.</exception>
-    /// <exception cref="KernelFunctionCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
-    public static Task<T?> InvokePromptAsync<T>(
-        this Kernel kernel,
-        string promptTemplate,
-        KernelArguments? arguments = null,
-        string? templateFormat = null,
-        IPromptTemplateFactory? promptTemplateFactory = null,
-        CancellationToken cancellationToken = default)
-    {
-        Verify.NotNull(kernel);
-        Verify.NotNullOrWhiteSpace(promptTemplate);
-
-        KernelFunction function = KernelFunctionFromPrompt.Create(
-            promptTemplate,
-            templateFormat: templateFormat,
-            promptTemplateFactory: promptTemplateFactory,
-            loggerFactory: kernel.LoggerFactory);
-
-        return kernel.InvokeAsync<T>(function, arguments, cancellationToken);
-    }
-
-
     /// <summary>
     /// Invokes a prompt specified via a prompt template and returns the results of type <typeparamref name="T"/>.
     /// </summary>
@@ -792,7 +752,6 @@ public static class KernelExtensions
         return kernel.InvokeAsync<T>(function, arguments, cancellationToken);
     }
 
-
     /// <summary>
     /// Invokes a prompt specified via a prompt template and returns the results of type <typeparamref name="T"/>.
     /// </summary>
@@ -826,7 +785,6 @@ public static class KernelExtensions
             promptTemplateFactory,
             CancellationToken.None);
     }
-
     #endregion
 
 
