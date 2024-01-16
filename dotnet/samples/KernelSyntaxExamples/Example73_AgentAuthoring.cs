@@ -1,17 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
+namespace Examples;
+
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Experimental.Agents;
+using Xunit;
+using Xunit.Abstractions;
 
 
-// ReSharper disable once InconsistentNaming
 /// <summary>
 /// Showcase hiearchical Open AI Agent interactions using semantic kernel.
 /// </summary>
-public static class Example73_AgentAuthoring
+public class Example73_AgentAuthoring : BaseTest
 {
     /// <summary>
     /// Specific model is required that supports agents and parallel function calling.
@@ -23,29 +25,11 @@ public static class Example73_AgentAuthoring
     private static readonly List<IAgent> s_agents = new();
 
 
-    /// <summary>
-    /// Show how to combine coordinate multiple agents.
-    /// </summary>
-    public static async Task RunAsync()
+    [Fact(Skip = "This test take more than 2 minutes to execute")]
+    public async Task RunAgentAsync()
     {
-        Console.WriteLine("======== Example73_AgentAuthoring ========");
+        WriteLine("======== Example73_AgentAuthoring ========");
 
-        if (TestConfiguration.OpenAI.ApiKey == null)
-        {
-            Console.WriteLine("OpenAI apiKey not found. Skipping example.");
-            return;
-        }
-
-        // Run demo by invoking agent directly
-        await RunAgentAsync();
-
-        // Run demo by invoking agent as a plugin
-        await RunAsPluginAsync();
-    }
-
-
-    private static async Task RunAgentAsync()
-    {
         try
         {
             // Initialize the agent with tools
@@ -54,8 +38,8 @@ public static class Example73_AgentAuthoring
             // "Stream" messages as they become available
             await foreach (IChatMessage message in articleGenerator.InvokeAsync("Thai food is the best in the world"))
             {
-                Console.WriteLine($"[{message.Id}]");
-                Console.WriteLine($"# {message.Role}: {message.Content}");
+                WriteLine($"[{message.Id}]");
+                WriteLine($"# {message.Role}: {message.Content}");
             }
         }
         finally
@@ -65,8 +49,11 @@ public static class Example73_AgentAuthoring
     }
 
 
-    private static async Task RunAsPluginAsync()
+    [Fact(Skip = "This test take more than 2 minutes to execute")]
+    public async Task RunAsPluginAsync()
     {
+        WriteLine("======== Example73_AgentAuthoring ========");
+
         try
         {
             // Initialize the agent with tools
@@ -76,7 +63,7 @@ public static class Example73_AgentAuthoring
             string response = await articleGenerator.AsPlugin().InvokeAsync("Thai food is the best in the world");
 
             // Display final result
-            Console.WriteLine(response);
+            WriteLine(response);
         }
         finally
         {
@@ -120,7 +107,7 @@ public static class Example73_AgentAuthoring
     }
 
 
-    private async static Task<IAgent> CreateResearchGeneratorAsync()
+    private static async Task<IAgent> CreateResearchGeneratorAsync()
     {
         // Initialize agent so that it may be automatically deleted.
         return
@@ -139,5 +126,10 @@ public static class Example73_AgentAuthoring
         s_agents.Add(agent);
 
         return agent;
+    }
+
+
+    public Example73_AgentAuthoring(ITestOutputHelper output) : base(output)
+    {
     }
 }

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
+namespace Examples;
+
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,12 +9,14 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Experimental.Agents;
 using Plugins;
 using Resources;
+using Xunit;
+using Xunit.Abstractions;
 
 
 /// <summary>
 /// Showcase complex Open AI Agent interactions using semantic kernel.
 /// </summary>
-public static class Example71_AgentDelegation
+public class Example71_AgentDelegation : BaseTest
 {
     /// <summary>
     /// Specific model is required that supports agents and function calling.
@@ -28,13 +31,14 @@ public static class Example71_AgentDelegation
     /// <summary>
     /// Show how to combine coordinate multiple agents.
     /// </summary>
-    public static async Task RunAsync()
+    [Fact]
+    public async Task RunAsync()
     {
-        Console.WriteLine("======== Example71_AgentDelegation ========");
+        WriteLine("======== Example71_AgentDelegation ========");
 
         if (TestConfiguration.OpenAI.ApiKey == null)
         {
-            Console.WriteLine("OpenAI apiKey not found. Skipping example.");
+            WriteLine("OpenAI apiKey not found. Skipping example.");
             return;
         }
 
@@ -81,8 +85,8 @@ public static class Example71_AgentDelegation
             {
                 await foreach (var message in response)
                 {
-                    Console.WriteLine($"[{message.Id}]");
-                    Console.WriteLine($"# {message.Role}: {message.Content}");
+                    WriteLine($"[{message.Id}]");
+                    WriteLine($"# {message.Role}: {message.Content}");
                 }
             }
         }
@@ -101,5 +105,10 @@ public static class Example71_AgentDelegation
         s_agents.Add(agent);
 
         return agent;
+    }
+
+
+    public Example71_AgentDelegation(ITestOutputHelper output) : base(output)
+    {
     }
 }

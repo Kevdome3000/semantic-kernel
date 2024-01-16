@@ -1,17 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Experimental.Agents;
+using Xunit;
+using Xunit.Abstractions;
 
 
-// ReSharper disable once InconsistentNaming
 /// <summary>
 /// Showcase complex Open AI Agent collaboration using semantic kernel.
 /// </summary>
-public static class Example72_AgentCollaboration
+public class Example72_AgentCollaboration : BaseTest
 {
     /// <summary>
     /// Specific model is required that supports agents and function calling.
@@ -24,36 +27,13 @@ public static class Example72_AgentCollaboration
 
 
     /// <summary>
-    /// Show how to combine and coordinate multiple agents.
-    /// </summary>
-    public static async Task RunAsync()
-    {
-        Console.WriteLine("======== Example72_AgentCollaboration ========");
-
-        if (TestConfiguration.OpenAI.ApiKey == null)
-        {
-            Console.WriteLine("OpenAI apiKey not found. Skipping example.");
-            return;
-        }
-
-        // NOTE: Either of these examples produce a conversation
-        // whose duration may vary depending on the collaboration dynamics.
-        // It is sometimes possible that agreement is never achieved.
-
-        // Explicit collaboration
-        await RunCollaborationAsync();
-
-        // Coordinate collaboration as plugin agents (equivalent to previous case - shared thread)
-        await RunAsPluginsAsync();
-    }
-
-
-    /// <summary>
     /// Show how two agents are able to collaborate as agents on a single thread.
     /// </summary>
-    private static async Task RunCollaborationAsync()
+    [Fact(Skip = "This test take more than 5 minutes to execute")]
+    public async Task RunCollaborationAsync()
     {
-        Console.WriteLine("======== Run:Collaboration ========");
+        WriteLine("======== Example72_AgentCollaboration ========");
+        WriteLine("======== Run:Collaboration ========");
         IAgentThread? thread = null;
 
         try
@@ -104,9 +84,11 @@ public static class Example72_AgentCollaboration
     /// While this may achieve an equivalent result to <see cref="RunCollaborationAsync"/>,
     /// it is not using shared thread state for agent interaction.
     /// </remarks>
-    private static async Task RunAsPluginsAsync()
+    [Fact(Skip = "This test take more than 2 minutes to execute")]
+    public async Task RunAsPluginsAsync()
     {
-        Console.WriteLine("======== Run:AsPlugins ========");
+        WriteLine("======== Example72_AgentCollaboration ========");
+        WriteLine("======== Run:AsPlugins ========");
 
         try
         {
@@ -129,7 +111,7 @@ public static class Example72_AgentCollaboration
             var response = await coordinator.AsPlugin().InvokeAsync("concept: maps made out of egg cartons.");
 
             // Display final result
-            Console.WriteLine(response);
+            WriteLine(response);
         }
         finally
         {
@@ -139,7 +121,7 @@ public static class Example72_AgentCollaboration
     }
 
 
-    private async static Task<IAgent> CreateCopyWriterAsync(IAgent? agent = null)
+    private static async Task<IAgent> CreateCopyWriterAsync(IAgent? agent = null)
     {
         return
             Track(
@@ -166,7 +148,7 @@ public static class Example72_AgentCollaboration
     }
 
 
-    private static void DisplayMessages(IEnumerable<IChatMessage> messages, IAgent? agent = null)
+    private void DisplayMessages(IEnumerable<IChatMessage> messages, IAgent? agent = null)
     {
         foreach (var message in messages)
         {
@@ -175,17 +157,17 @@ public static class Example72_AgentCollaboration
     }
 
 
-    private static void DisplayMessage(IChatMessage message, IAgent? agent = null)
+    private void DisplayMessage(IChatMessage message, IAgent? agent = null)
     {
-        Console.WriteLine($"[{message.Id}]");
+        WriteLine($"[{message.Id}]");
 
         if (agent != null)
         {
-            Console.WriteLine($"# {message.Role}: ({agent.Name}) {message.Content}");
+            WriteLine($"# {message.Role}: ({agent.Name}) {message.Content}");
         }
         else
         {
-            Console.WriteLine($"# {message.Role}: {message.Content}");
+            WriteLine($"# {message.Role}: {message.Content}");
         }
     }
 
@@ -195,5 +177,10 @@ public static class Example72_AgentCollaboration
         s_agents.Add(agent);
 
         return agent;
+    }
+
+
+    public Example72_AgentCollaboration(ITestOutputHelper output) : base(output)
+    {
     }
 }

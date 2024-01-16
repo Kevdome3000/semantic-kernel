@@ -1,15 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
+namespace Examples;
+
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Grpc;
+using Xunit;
+using Xunit.Abstractions;
 
 
 // This example shows how to use gRPC plugins.
-public static class Example35_GrpcPlugins
+public class Example35_GrpcPlugins : BaseTest
 {
-    public static async Task RunAsync()
+    [Fact(Skip = "Setup crendentials")]
+    public async Task RunAsync()
     {
         Kernel kernel = new();
 
@@ -26,6 +30,11 @@ public static class Example35_GrpcPlugins
         // Run
         var result = await kernel.InvokeAsync(plugin["<operation-name>"], arguments);
 
-        Console.WriteLine("Plugin response: {0}", result.GetValue<string>());
+        WriteLine($"Plugin response: {result.GetValue<string>()}");
+    }
+
+
+    public Example35_GrpcPlugins(ITestOutputHelper output) : base(output)
+    {
     }
 }

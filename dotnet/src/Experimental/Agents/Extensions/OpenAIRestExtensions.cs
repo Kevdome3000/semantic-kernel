@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Exceptions;
+using Http;
 using Internal;
 
 
@@ -27,14 +28,9 @@ internal static partial class OpenAIRestExtensions
         request.Headers.Add(HeaderNameAuthorization, $"Bearer {context.ApiKey}");
         request.Headers.Add(HeaderNameOpenAIAssistant, HeaderOpenAIValueAssistant);
 
-        using var response = await context.GetHttpClient().SendAsync(request, cancellationToken).ConfigureAwait(false);
+        using var response = await context.GetHttpClient().SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
 
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new AgentException($"Unexpected failure: {response.StatusCode} [{url}]");
-        }
-
-        string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        var responseBody = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
 
         // Common case is for failure exception to be raised by REST invocation.
         // Null result is a logical possibility, but unlikely edge case.
@@ -65,14 +61,10 @@ internal static partial class OpenAIRestExtensions
         request.Headers.Add(HeaderNameAuthorization, $"Bearer {context.ApiKey}");
         request.Headers.Add(HeaderNameOpenAIAssistant, HeaderOpenAIValueAssistant);
 
-        using var response = await context.GetHttpClient().SendAsync(request, cancellationToken).ConfigureAwait(false);
+        using var response = await context.GetHttpClient().SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
 
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new AgentException($"Unexpected failure: {response.StatusCode} [{url}]");
-        }
+        var responseBody = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
 
-        string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         return
             JsonSerializer.Deserialize<TResult>(responseBody) ??
             throw new AgentException($"Null result processing: {typeof(TResult).Name}");
@@ -89,11 +81,6 @@ internal static partial class OpenAIRestExtensions
         request.Headers.Add(HeaderNameAuthorization, $"Bearer {context.ApiKey}");
         request.Headers.Add(HeaderNameOpenAIAssistant, HeaderOpenAIValueAssistant);
 
-        using var response = await context.GetHttpClient().SendAsync(request, cancellationToken).ConfigureAwait(false);
-
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new AgentException($"Unexpected failure: {response.StatusCode} [{url}]");
-        }
+        using var response = await context.GetHttpClient().SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
     }
 }

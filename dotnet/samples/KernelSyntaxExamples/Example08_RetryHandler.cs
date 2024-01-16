@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using System;
 using System.Net;
 using System.Threading.Tasks;
@@ -7,12 +9,15 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Xunit;
+using Xunit.Abstractions;
 
 
 // This example shows how to use a retry handler within a Semantic Kernel
-public static class Example08_RetryHandler
+public class Example08_RetryHandler : BaseTest
 {
-    public static async Task RunAsync()
+    [Fact]
+    public async Task RunAsync()
     {
         // Create a Kernel with the HttpClient
         IKernelBuilder builder = Kernel.CreateBuilder();
@@ -49,5 +54,10 @@ public static class Example08_RetryHandler
         {
             logger.LogInformation("Error: {Message}", ex.Message);
         }
+    }
+
+
+    public Example08_RetryHandler(ITestOutputHelper output) : base(output)
+    {
     }
 }

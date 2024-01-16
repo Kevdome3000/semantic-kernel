@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -18,13 +20,12 @@ using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using NCalcPlugins;
+using Xunit;
+using Xunit.Abstractions;
 
 
-/**
- * This example shows how to use FlowOrchestrator to execute a given flow with interaction with client.
- */
-// ReSharper disable once InconsistentNaming
-public static class Example74_FlowOrchestrator
+// This example shows how to use FlowOrchestrator to execute a given flow with interaction with client.
+public class Example74_FlowOrchestrator : BaseTest
 {
     private static readonly Flow s_flow = FlowSerializer.DeserializeFromYaml(@"
 name: FlowOrchestrator_Example_Flow
@@ -58,10 +59,11 @@ provides:
 ");
 
 
-    public static Task RunAsync()
+    [Fact(Skip = "Can take more than 1 minute")]
+    public Task RunAsync()
     {
         // Load assemblies for external plugins
-        Console.WriteLine("Loading {0}", typeof(SimpleCalculatorPlugin).AssemblyQualifiedName);
+        WriteLine($"Loading {typeof(SimpleCalculatorPlugin).AssemblyQualifiedName}");
 
         return RunExampleAsync();
         //return RunInteractiveAsync();
@@ -348,8 +350,12 @@ Do not expose the regex in your response.
             public string? Content { get; set; }
         }
     }
-}
 
+
+    public Example74_FlowOrchestrator(ITestOutputHelper output) : base(output)
+    {
+    }
+}
 
 //*****************************************************
 //Executing RunExampleAsync

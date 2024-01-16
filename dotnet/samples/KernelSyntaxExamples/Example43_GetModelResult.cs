@@ -1,16 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
+namespace Examples;
+
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using RepoUtils;
+using Xunit;
+using Xunit.Abstractions;
 
 
-public static class Example43_GetModelResult
+public class Example43_GetModelResult : BaseTest
 {
-    public static async Task RunAsync()
+    [Fact]
+    public async Task GetTokenUsageMetadataAsync()
     {
-        Console.WriteLine("======== Inline Function Definition + Invocation ========");
+        WriteLine("======== Inline Function Definition + Invocation ========");
 
         // Create kernel
         Kernel kernel = Kernel.CreateBuilder()
@@ -27,8 +31,13 @@ public static class Example43_GetModelResult
         FunctionResult result = await kernel.InvokeAsync(myFunction, new() { ["input"] = "travel" });
 
         // Display results
-        Console.WriteLine(result.GetValue<string>());
-        Console.WriteLine(result.Metadata?["Usage"]?.AsJson());
-        Console.WriteLine();
+        WriteLine(result.GetValue<string>());
+        WriteLine(result.Metadata?["Usage"]?.AsJson());
+        WriteLine();
+    }
+
+
+    public Example43_GetModelResult(ITestOutputHelper output) : base(output)
+    {
     }
 }
