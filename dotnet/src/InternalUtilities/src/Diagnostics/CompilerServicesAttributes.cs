@@ -6,6 +6,8 @@
 
 namespace System.Runtime.CompilerServices;
 
+using Diagnostics.CodeAnalysis;
+
 #if !NETCOREAPP
 [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = false)]
 [ExcludeFromCodeCoverage]
