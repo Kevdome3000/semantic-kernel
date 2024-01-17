@@ -4,11 +4,13 @@
 namespace System.Linq;
 
 using Collections.Generic;
+using Diagnostics.CodeAnalysis;
 using Microsoft.SemanticKernel;
 using Threading;
 using Threading.Tasks;
 
 
+[ExcludeFromCodeCoverage]
 internal static class AsyncEnumerable
 {
     public static IAsyncEnumerable<T> Empty<T>() => EmptyAsyncEnumerable<T>.Instance;

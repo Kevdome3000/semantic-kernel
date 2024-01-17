@@ -99,7 +99,6 @@ public sealed class AzureOpenAITextEmbeddingGenerationService : ITextEmbeddingGe
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        this._core.LogActionDetails();
         return this._core.GetEmbeddingsAsync(data, kernel, cancellationToken);
     }
 }

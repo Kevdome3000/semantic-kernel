@@ -3,12 +3,14 @@
 namespace System;
 
 using Collections.Generic;
+using Diagnostics.CodeAnalysis;
 using Threading.Tasks;
 
 
 /// <summary>
 /// Extensions methods for <see cref="System.Type"/>.
 /// </summary>
+[ExcludeFromCodeCoverage]
 internal static class TypeExtensions
 {
     /// <summary>

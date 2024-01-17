@@ -34,13 +34,13 @@ public static class OpenAIMemoryBuilderExtensions
         string? modelId = null,
         HttpClient? httpClient = null)
     {
-        return builder.WithTextEmbeddingGeneration((loggerFactory, httpClient) =>
+        return builder.WithTextEmbeddingGeneration((loggerFactory, builderHttpClient) =>
             new AzureOpenAITextEmbeddingGenerationService(
                 deploymentName,
                 endpoint,
                 apiKey,
                 modelId,
-                HttpClientProvider.GetHttpClient(httpClient),
+                HttpClientProvider.GetHttpClient(httpClient ?? builderHttpClient),
                 loggerFactory));
     }
 
@@ -65,13 +65,13 @@ public static class OpenAIMemoryBuilderExtensions
         string? modelId = null,
         HttpClient? httpClient = null)
     {
-        return builder.WithTextEmbeddingGeneration((loggerFactory, httpClient) =>
+        return builder.WithTextEmbeddingGeneration((loggerFactory, builderHttpClient) =>
             new AzureOpenAITextEmbeddingGenerationService(
                 deploymentName,
                 endpoint,
                 credential,
                 modelId,
-                HttpClientProvider.GetHttpClient(httpClient),
+                HttpClientProvider.GetHttpClient(httpClient ?? builderHttpClient),
                 loggerFactory));
     }
 
@@ -94,12 +94,12 @@ public static class OpenAIMemoryBuilderExtensions
         string? orgId = null,
         HttpClient? httpClient = null)
     {
-        return builder.WithTextEmbeddingGeneration((loggerFactory, httpClient) =>
+        return builder.WithTextEmbeddingGeneration((loggerFactory, builderHttpClient) =>
             new OpenAITextEmbeddingGenerationService(
                 modelId,
                 apiKey,
                 orgId,
-                HttpClientProvider.GetHttpClient(httpClient),
+                HttpClientProvider.GetHttpClient(httpClient ?? builderHttpClient),
                 loggerFactory));
     }
 }

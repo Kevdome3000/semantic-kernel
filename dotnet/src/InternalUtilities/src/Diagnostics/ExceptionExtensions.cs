@@ -2,12 +2,14 @@
 
 namespace System;
 
+using Diagnostics.CodeAnalysis;
 using Threading;
 
 
 /// <summary>
 /// Exception extension methods.
 /// </summary>
+[ExcludeFromCodeCoverage]
 internal static class ExceptionExtensions
 {
     /// <summary>

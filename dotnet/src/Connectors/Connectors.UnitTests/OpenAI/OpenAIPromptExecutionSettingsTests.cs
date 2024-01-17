@@ -166,6 +166,19 @@ public class OpenAIPromptExecutionSettingsTests
     }
 
 
+    [Theory]
+    [InlineData("", "Assistant is a large language model.")]
+    [InlineData("System prompt", "System prompt")]
+    public void ItUsesCorrectChatSystemPrompt(string chatSystemPrompt, string expectedChatSystemPrompt)
+    {
+        // Arrange & Act
+        var settings = new OpenAIPromptExecutionSettings { ChatSystemPrompt = chatSystemPrompt };
+
+        // Assert
+        Assert.Equal(expectedChatSystemPrompt, settings.ChatSystemPrompt);
+    }
+
+
     private static void AssertExecutionSettings(OpenAIPromptExecutionSettings executionSettings)
     {
         Assert.NotNull(executionSettings);

@@ -3,6 +3,7 @@
 namespace Microsoft.SemanticKernel.Text;
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -13,6 +14,7 @@ using System.Text.Json.Serialization;
 
 
 /// <summary>Provides a converter for <see cref="ReadOnlyMemory{Single}"/>.</summary>
+[ExcludeFromCodeCoverage]
 internal sealed class ReadOnlyMemoryConverter : JsonConverter<ReadOnlyMemory<float>>
 {
     /// <summary>An instance of a converter for float[] that all operations delegate to.</summary>

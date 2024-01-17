@@ -4,12 +4,14 @@ namespace Microsoft.SemanticKernel;
 
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 
 /// <summary>
 /// Factory for creating TypeConverter instances based on a provided type.
 /// </summary>
+[ExcludeFromCodeCoverage]
 internal static class TypeConverterFactory
 {
     /// <summary>

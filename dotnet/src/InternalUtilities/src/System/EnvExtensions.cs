@@ -2,6 +2,10 @@
 
 namespace System;
 
+using Diagnostics.CodeAnalysis;
+
+
+[ExcludeFromCodeCoverage]
 internal static class EnvExtensions
 {
     /// <summary>

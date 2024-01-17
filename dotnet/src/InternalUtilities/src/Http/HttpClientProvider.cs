@@ -5,6 +5,7 @@
 namespace Microsoft.SemanticKernel.Http;
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Extensions.DependencyInjection;
 
@@ -12,6 +13,7 @@ using Extensions.DependencyInjection;
 /// <summary>
 /// Provides functionality for retrieving instances of HttpClient.
 /// </summary>
+[ExcludeFromCodeCoverage]
 internal static class HttpClientProvider
 {
     /// <summary>

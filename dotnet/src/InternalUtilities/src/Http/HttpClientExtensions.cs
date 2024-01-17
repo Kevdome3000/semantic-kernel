@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 
+[ExcludeFromCodeCoverage]
 internal static class HttpClientExtensions
 {
     /// <summary>
