@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Examples;
-
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -12,6 +9,7 @@ using Resources;
 using Xunit;
 using Xunit.Abstractions;
 
+namespace Examples;
 
 /// <summary>
 /// Showcase Open AI Agent integration with semantic kernel:
@@ -24,7 +22,6 @@ public class Example70_Agent : BaseTest
     /// Currently this is limited to Open AI hosted services.
     /// </summary>
     private const string OpenAIFunctionEnabledModel = "gpt-3.5-turbo-1106";
-
 
     /// <summary>
     /// Chat using the "Parrot" agent.
@@ -44,7 +41,6 @@ public class Example70_Agent : BaseTest
             "I came, I saw, I conquered.",
             "Practice makes perfect.");
     }
-
 
     /// <summary>
     /// Chat using the "Tool" agent and a method function.
@@ -68,7 +64,6 @@ public class Example70_Agent : BaseTest
             "Thank you!");
     }
 
-
     /// <summary>
     /// Chat using the "Tool" agent and a prompt function.
     /// Tools/functions: spellChecker prompt function
@@ -80,9 +75,9 @@ public class Example70_Agent : BaseTest
 
         // Create a prompt function.
         var function = KernelFunctionFactory.CreateFromPrompt(
-            "Correct any misspelling or gramatical errors provided in input: {{$input}}",
-            functionName: "spellChecker",
-            description: "Correct the spelling for the user input.");
+             "Correct any misspelling or gramatical errors provided in input: {{$input}}",
+              functionName: "spellChecker",
+              description: "Correct the spelling for the user input.");
 
         var plugin = KernelPluginFactory.CreateFromFunctions("spelling", "Spelling functions", new[] { function });
 
@@ -96,7 +91,6 @@ public class Example70_Agent : BaseTest
             "What is the special soup?",
             "Thank you!");
     }
-
 
     /// <summary>
     /// Invoke agent just like any other <see cref="KernelFunction"/>.
@@ -128,7 +122,6 @@ public class Example70_Agent : BaseTest
         }
     }
 
-
     /// <summary>
     /// Common chat loop used for: RunSimpleChatAsync, RunWithMethodFunctionsAsync, and RunWithPromptFunctionsAsync.
     /// 1. Reads agent definition from"resourcePath" parameter.
@@ -156,19 +149,18 @@ public class Example70_Agent : BaseTest
 
         // Create chat thread.  Note: Thread is not bound to a single agent.
         var thread = await agent.NewThreadAsync();
-
         try
         {
             // Display agent identifier.
-            Console.WriteLine($"[{agent.Id}]");
+            this.WriteLine($"[{agent.Id}]");
 
             // Process each user message and agent response.
             foreach (var response in messages.Select(m => thread.InvokeAsync(agent, m, arguments)))
             {
                 await foreach (var message in response)
                 {
-                    Console.WriteLine($"[{message.Id}]");
-                    Console.WriteLine($"# {message.Role}: {message.Content}");
+                    this.WriteLine($"[{message.Id}]");
+                    this.WriteLine($"# {message.Role}: {message.Content}");
                 }
             }
         }
@@ -180,7 +172,6 @@ public class Example70_Agent : BaseTest
                 agent.DeleteAsync());
         }
     }
-
 
     public Example70_Agent(ITestOutputHelper output) : base(output)
     {
