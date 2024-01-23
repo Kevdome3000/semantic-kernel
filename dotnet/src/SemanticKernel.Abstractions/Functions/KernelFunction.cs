@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable CA1508 // Avoid dead conditional code
-
 namespace Microsoft.SemanticKernel;
 
 using System;
@@ -30,13 +28,13 @@ public abstract class KernelFunction
     private static readonly ActivitySource s_activitySource = new("Microsoft.SemanticKernel");
 
     /// <summary><see cref="Meter"/> for function-related metrics.</summary>
-    protected private static readonly Meter s_meter = new("Microsoft.SemanticKernel");
+    private protected static readonly Meter s_meter = new("Microsoft.SemanticKernel");
 
     /// <summary><see cref="Histogram{T}"/> to record function invocation duration.</summary>
     private static readonly Histogram<double> s_invocationDuration = s_meter.CreateHistogram<double>(
-        "semantic_kernel.function.invocation.duration",
-        "s",
-        "Measures the duration of a function’s execution");
+        name: "semantic_kernel.function.invocation.duration",
+        unit: "s",
+        description: "Measures the duration of a function’s execution");
 
     /// <summary><see cref="Histogram{T}"/> to record function streaming duration.</summary>
     /// <remarks>
@@ -44,9 +42,9 @@ public abstract class KernelFunction
     /// spent in the consuming code between MoveNextAsync calls on the enumerator.
     /// </remarks>
     private static readonly Histogram<double> s_streamingDuration = s_meter.CreateHistogram<double>(
-        "semantic_kernel.function.streaming.duration",
-        "s",
-        "Measures the duration of a function’s streaming execution");
+        name: "semantic_kernel.function.streaming.duration",
+        unit: "s",
+        description: "Measures the duration of a function’s streaming execution");
 
     /// <summary>
     /// Gets the name of the function.
@@ -56,7 +54,7 @@ public abstract class KernelFunction
     /// should be invoked when, or as part of lookups in a plugin's function collection. Function names are generally
     /// handled in an ordinal case-insensitive manner.
     /// </remarks>
-    public string Name => Metadata.Name;
+    public string Name => this.Metadata.Name;
 
     /// <summary>
     /// Gets a description of the function.
@@ -65,7 +63,7 @@ public abstract class KernelFunction
     /// The description may be supplied to a model in order to elaborate on the function's purpose,
     /// in case it may be beneficial for the model to recommend invoking the function.
     /// </remarks>
-    public string Description => Metadata.Description;
+    public string Description => this.Metadata.Description;
 
     /// <summary>
     /// Gets the metadata describing the function.
@@ -90,18 +88,18 @@ public abstract class KernelFunction
     /// The <see cref="PromptExecutionSettings"/> to use with the function. These will apply unless they've been
     /// overridden by settings passed into the invocation of the function.
     /// </param>
-    protected KernelFunction(string name, string description, IReadOnlyList<KernelParameterMetadata> parameters, KernelReturnParameterMetadata? returnParameter = null, Dictionary<string, PromptExecutionSettings>? executionSettings = null)
+    internal KernelFunction(string name, string description, IReadOnlyList<KernelParameterMetadata> parameters, KernelReturnParameterMetadata? returnParameter = null, Dictionary<string, PromptExecutionSettings>? executionSettings = null)
     {
         Verify.NotNull(name);
         Verify.ParametersUniqueness(parameters);
 
-        Metadata = new KernelFunctionMetadata(name)
+        this.Metadata = new KernelFunctionMetadata(name)
         {
             Description = description,
             Parameters = parameters,
-            ReturnParameter = returnParameter ?? KernelReturnParameterMetadata.Empty
+            ReturnParameter = returnParameter ?? KernelReturnParameterMetadata.Empty,
         };
-        ExecutionSettings = executionSettings;
+        this.ExecutionSettings = executionSettings;
     }
 
 
@@ -121,15 +119,15 @@ public abstract class KernelFunction
     {
         Verify.NotNull(kernel);
 
-        using Activity? activity = s_activitySource.StartActivity(Name);
-        ILogger logger = kernel.LoggerFactory.CreateLogger(Name) ?? NullLogger.Instance;
+        using var activity = s_activitySource.StartActivity(this.Name);
+        ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name) ?? NullLogger.Instance;
 
         // Ensure arguments are initialized.
         arguments ??= new KernelArguments();
-        logger.LogFunctionInvoking(Name);
+        logger.LogFunctionInvoking(this.Name);
         logger.LogFunctionArguments(arguments);
 
-        TagList tags = new() { { MeasurementFunctionTagName, Name } };
+        TagList tags = new() { { MeasurementFunctionTagName, this.Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
         FunctionResult? functionResult = null;
 
@@ -139,16 +137,29 @@ public abstract class KernelFunction
             cancellationToken.ThrowIfCancellationRequested();
 
             // Invoke pre-invocation event handler. If it requests cancellation, throw.
-            if (kernel.OnFunctionInvoking(this, arguments)?.Cancel is true)
+            var invokingEventArgs = kernel.OnFunctionInvoking(this, arguments);
+
+            // Invoke pre-invocation filter. If it requests cancellation, throw.
+            var invokingContext = kernel.OnFunctionInvokingFilter(this, arguments);
+
+            if (invokingEventArgs?.Cancel is true)
             {
                 throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.FunctionInvoking)} event handler requested cancellation before function invocation.");
             }
 
+            if (invokingContext?.Cancel is true)
+            {
+                throw new OperationCanceledException("A function filter requested cancellation before function invocation.");
+            }
+
             // Invoke the function.
-            functionResult = await InvokeCoreAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+            functionResult = await this.InvokeCoreAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 
             // Invoke the post-invocation event handler. If it requests cancellation, throw.
-            FunctionInvokedEventArgs? invokedEventArgs = kernel.OnFunctionInvoked(this, arguments, functionResult);
+            var invokedEventArgs = kernel.OnFunctionInvoked(this, arguments, functionResult);
+
+            // Invoke the post-invocation filter. If it requests cancellation, throw.
+            var invokedContext = kernel.OnFunctionInvokedFilter(arguments, functionResult);
 
             if (invokedEventArgs is not null)
             {
@@ -156,9 +167,20 @@ public abstract class KernelFunction
                 functionResult = new FunctionResult(this, invokedEventArgs.ResultValue, functionResult.Culture, invokedEventArgs.Metadata ?? functionResult.Metadata);
             }
 
+            if (invokedContext is not null)
+            {
+                // Apply any changes from the function filters to final result.
+                functionResult = new FunctionResult(this, invokedContext.ResultValue, functionResult.Culture, invokedContext.Metadata ?? functionResult.Metadata);
+            }
+
             if (invokedEventArgs?.Cancel is true)
             {
                 throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.FunctionInvoked)} event handler requested cancellation after function invocation.");
+            }
+
+            if (invokedContext?.Cancel is true)
+            {
+                throw new OperationCanceledException("A function filter requested cancellation after function invocation.");
             }
 
             logger.LogFunctionInvokedSuccess(this.Name);
@@ -197,7 +219,7 @@ public abstract class KernelFunction
         KernelArguments? arguments = null,
         CancellationToken cancellationToken = default)
     {
-        FunctionResult result = await InvokeAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+        FunctionResult result = await this.InvokeAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
         return result.GetValue<TResult>();
     }
 
@@ -217,7 +239,7 @@ public abstract class KernelFunction
         Kernel kernel,
         KernelArguments? arguments = null,
         CancellationToken cancellationToken = default) =>
-        InvokeStreamingAsync<StreamingKernelContent>(kernel, arguments, cancellationToken);
+        this.InvokeStreamingAsync<StreamingKernelContent>(kernel, arguments, cancellationToken);
 
 
     /// <summary>
@@ -240,14 +262,14 @@ public abstract class KernelFunction
     {
         Verify.NotNull(kernel);
 
-        using Activity? activity = s_activitySource.StartActivity(Name);
-        ILogger logger = kernel.LoggerFactory.CreateLogger(Name) ?? NullLogger.Instance;
+        using var activity = s_activitySource.StartActivity(this.Name);
+        ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name) ?? NullLogger.Instance;
 
         arguments ??= new KernelArguments();
-        logger.LogFunctionStreamingInvoking(Name);
+        logger.LogFunctionStreamingInvoking(this.Name);
         logger.LogFunctionArguments(arguments);
 
-        TagList tags = new() { { MeasurementFunctionTagName, Name } };
+        TagList tags = new() { { MeasurementFunctionTagName, this.Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
 
         try
@@ -260,15 +282,23 @@ public abstract class KernelFunction
                 cancellationToken.ThrowIfCancellationRequested();
 
                 // Invoke pre-invocation event handler. If it requests cancellation, throw.
-                FunctionInvokingEventArgs? invokingEventArgs = kernel.OnFunctionInvoking(this, arguments);
+                var invokingEventArgs = kernel.OnFunctionInvoking(this, arguments);
 
-                if (invokingEventArgs is not null && invokingEventArgs.Cancel)
+                // Invoke pre-invocation filter. If it requests cancellation, throw.
+                var invokingContext = kernel.OnFunctionInvokingFilter(this, arguments);
+
+                if (invokingEventArgs?.Cancel is true)
                 {
                     throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.FunctionInvoking)} event handler requested cancellation before function invocation.");
                 }
 
+                if (invokingContext?.Cancel is true)
+                {
+                    throw new OperationCanceledException("A function filter requested cancellation before function invocation.");
+                }
+
                 // Invoke the function and get its streaming enumerator.
-                enumerator = InvokeStreamingCoreAsync<TResult>(kernel, arguments, cancellationToken).GetAsyncEnumerator(cancellationToken);
+                enumerator = this.InvokeStreamingCoreAsync<TResult>(kernel, arguments, cancellationToken).GetAsyncEnumerator(cancellationToken);
 
                 // yielding within a try/catch isn't currently supported, so we break out of the try block
                 // in order to then wrap the actual MoveNextAsync in its own try/catch and allow the yielding
@@ -276,7 +306,7 @@ public abstract class KernelFunction
             }
             catch (Exception ex)
             {
-                HandleException(ex, logger, activity, this, kernel, arguments, null, ref tags);
+                HandleException(ex, logger, activity, this, kernel, arguments, result: null, ref tags);
                 throw;
             }
 
@@ -295,7 +325,7 @@ public abstract class KernelFunction
                     }
                     catch (Exception ex)
                     {
-                        HandleException(ex, logger, activity, this, kernel, arguments, null, ref tags);
+                        HandleException(ex, logger, activity, this, kernel, arguments, result: null, ref tags);
                         throw;
                     }
 
@@ -304,7 +334,7 @@ public abstract class KernelFunction
                 }
             }
 
-            // The FunctionInvoked hook is not used when streaming.
+            // The FunctionInvoked hook and filter are not used when streaming.
         }
         finally
         {

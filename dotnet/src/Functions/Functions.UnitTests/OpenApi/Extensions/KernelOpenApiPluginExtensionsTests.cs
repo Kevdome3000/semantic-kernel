@@ -233,6 +233,25 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
     }
 
 
+    [Fact]
+    public async Task ItShouldSanitizeOperationNameAsync()
+    {
+        // Arrange
+        var openApiDocument = ResourcePluginsProvider.LoadFromResource("documentV3_0.json");
+
+        using var content = OpenApiTestHelper.ModifyOpenApiDocument(openApiDocument, (doc) =>
+        {
+            doc["paths"]!["/secrets/{secret-name}"]!["get"]!["operationId"] = "issues/create-mile.stone";
+        });
+
+        // Act
+        var plugin = await this._kernel.ImportPluginFromOpenApiAsync("fakePlugin", content, this._executionParameters);
+
+        // Assert
+        Assert.True(plugin.TryGetFunction("IssuesCreatemilestone", out var _));
+    }
+
+
     public void Dispose()
     {
         this._openApiDocument.Dispose();

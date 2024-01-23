@@ -1,0 +1,26 @@
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+namespace Microsoft.SemanticKernel;
+
+using System.Diagnostics.CodeAnalysis;
+
+
+/// <summary>
+/// Interface for filtering actions during prompt rendering.
+/// </summary>
+[Experimental("SKEXP0004")]
+public interface IPromptFilter
+{
+    /// <summary>
+    /// Method which is executed before prompt rendering.
+    /// </summary>
+    /// <param name="context">Data related to prompt before rendering.</param>
+    void OnPromptRendering(PromptRenderingContext context);
+
+
+    /// <summary>
+    /// Method which is executed after prompt rendering.
+    /// </summary>
+    /// <param name="context">Data related to prompt after rendering.</param>
+    void OnPromptRendered(PromptRenderedContext context);
+}

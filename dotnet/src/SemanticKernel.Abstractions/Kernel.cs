@@ -36,6 +36,12 @@ public sealed class Kernel
     /// <summary>The collection of plugins, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
     private KernelPluginCollection? _plugins;
 
+    /// <summary>The collection of function filters, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
+    private NonNullCollection<IFunctionFilter>? _functionFilters;
+
+    /// <summary>The collection of prompt filters, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
+    private NonNullCollection<IPromptFilter>? _promptFilters;
+
 
     /// <summary>
     /// Initializes a new instance of <see cref="Kernel"/>.
@@ -72,6 +78,22 @@ public sealed class Kernel
                 this._plugins = new(e);
             }
         }
+
+        // Enumerate any function filters that may have been registered.
+        IEnumerable<IFunctionFilter> functionFilters = this.Services.GetServices<IFunctionFilter>();
+
+        if (functionFilters is not ICollection<IFunctionFilter> functionFilterCollection || functionFilterCollection.Count != 0)
+        {
+            this._functionFilters = new(functionFilters);
+        }
+
+        // Enumerate any prompt filters that may have been registered.
+        IEnumerable<IPromptFilter> promptFilters = this.Services.GetServices<IPromptFilter>();
+
+        if (promptFilters is not ICollection<IPromptFilter> promptFilterCollection || promptFilterCollection.Count != 0)
+        {
+            this._promptFilters = new(promptFilters);
+        }
     }
 
 
@@ -98,7 +120,7 @@ public sealed class Kernel
     /// so changes to the new instance's event delegates will not affect the current instance's event delegates, and vice versa.
     /// </item>
     /// <item>
-    /// A new <see cref="IDictionary{TKey,TValue}"/> containing all of the key/value pairs from the current instance's <see cref="Kernel.Data"/> dictionary.
+    /// A new <see cref="IDictionary{TKey, TValue}"/> containing all of the key/value pairs from the current instance's <see cref="Kernel.Data"/> dictionary.
     /// Any changes made to the new instance's dictionary will not affect the current instance's dictionary, and vice versa.
     /// </item>
     /// <item>The same <see cref="CultureInfo"/> reference as is returned by the current instance's <see cref="Kernel.Culture"/>.</item>
@@ -123,6 +145,24 @@ public sealed class Kernel
         this._plugins ??
         Interlocked.CompareExchange(ref this._plugins, new KernelPluginCollection(), null) ??
         this._plugins;
+
+    /// <summary>
+    /// Gets the collection of function filters available through the kernel.
+    /// </summary>
+    [Experimental("SKEXP0004")]
+    public IList<IFunctionFilter> FunctionFilters =>
+        this._functionFilters ??
+        Interlocked.CompareExchange(ref this._functionFilters, new NonNullCollection<IFunctionFilter>(), null) ??
+        this._functionFilters;
+
+    /// <summary>
+    /// Gets the collection of function filters available through the kernel.
+    /// </summary>
+    [Experimental("SKEXP0004")]
+    public IList<IPromptFilter> PromptFilters =>
+        this._promptFilters ??
+        Interlocked.CompareExchange(ref this._promptFilters, new NonNullCollection<IPromptFilter>(), null) ??
+        this._promptFilters;
 
     /// <summary>
     /// Gets the service provider used to query for services available through the kernel.
@@ -336,6 +376,86 @@ public sealed class Kernel
         }
 
         return eventArgs;
+    }
+
+    #endregion
+
+
+    #region Internal Filtering
+
+    [Experimental("SKEXP0004")]
+    internal FunctionInvokingContext? OnFunctionInvokingFilter(KernelFunction function, KernelArguments arguments)
+    {
+        FunctionInvokingContext? context = null;
+
+        if (this._functionFilters is { Count: > 0 })
+        {
+            context = new(function, arguments);
+
+            for (int i = 0; i < this._functionFilters.Count; i++)
+            {
+                this._functionFilters[i].OnFunctionInvoking(context);
+            }
+        }
+
+        return context;
+    }
+
+
+    [Experimental("SKEXP0004")]
+    internal FunctionInvokedContext? OnFunctionInvokedFilter(KernelArguments arguments, FunctionResult result)
+    {
+        FunctionInvokedContext? context = null;
+
+        if (this._functionFilters is { Count: > 0 })
+        {
+            context = new(arguments, result);
+
+            for (int i = 0; i < this._functionFilters.Count; i++)
+            {
+                this._functionFilters[i].OnFunctionInvoked(context);
+            }
+        }
+
+        return context;
+    }
+
+
+    [Experimental("SKEXP0004")]
+    internal PromptRenderingContext? OnPromptRenderingFilter(KernelFunction function, KernelArguments arguments)
+    {
+        PromptRenderingContext? context = null;
+
+        if (this._promptFilters is { Count: > 0 })
+        {
+            context = new(function, arguments);
+
+            for (int i = 0; i < this._promptFilters.Count; i++)
+            {
+                this._promptFilters[i].OnPromptRendering(context);
+            }
+        }
+
+        return context;
+    }
+
+
+    [Experimental("SKEXP0004")]
+    internal PromptRenderedContext? OnPromptRenderedFilter(KernelFunction function, KernelArguments arguments, string renderedPrompt)
+    {
+        PromptRenderedContext? context = null;
+
+        if (this._promptFilters is { Count: > 0 })
+        {
+            context = new(function, arguments, renderedPrompt);
+
+            for (int i = 0; i < this._promptFilters.Count; i++)
+            {
+                this._promptFilters[i].OnPromptRendered(context);
+            }
+        }
+
+        return context;
     }
 
     #endregion
