@@ -88,7 +88,7 @@ public abstract class KernelFunction
     /// The <see cref="PromptExecutionSettings"/> to use with the function. These will apply unless they've been
     /// overridden by settings passed into the invocation of the function.
     /// </param>
-    internal KernelFunction(string name, string description, IReadOnlyList<KernelParameterMetadata> parameters, KernelReturnParameterMetadata? returnParameter = null, Dictionary<string, PromptExecutionSettings>? executionSettings = null)
+    protected KernelFunction(string name, string description, IReadOnlyList<KernelParameterMetadata> parameters, KernelReturnParameterMetadata? returnParameter = null, Dictionary<string, PromptExecutionSettings>? executionSettings = null)
     {
         Verify.NotNull(name);
         Verify.ParametersUniqueness(parameters);
