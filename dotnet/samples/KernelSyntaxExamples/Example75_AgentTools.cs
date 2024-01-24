@@ -7,10 +7,12 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Experimental.Agents;
 
 
-ing Xunit;
 using Xunit.Abstractions;
 
 namespace Examples;
+
+using Xunit;
+
 
 // ReSharper disable once InconsistentNaming
 /// <summary>

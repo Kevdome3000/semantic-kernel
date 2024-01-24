@@ -236,7 +236,7 @@ public sealed class PromptTemplateConfig
     /// <summary>
     /// Converts the <see cref="InputVariable"/> collection into a collection of <see cref="KernelParameterMetadata"/>.
     /// </summary>
-    internal IReadOnlyList<KernelParameterMetadata> GetKernelParametersMetadata()
+    public IReadOnlyList<KernelParameterMetadata> GetKernelParametersMetadata()
     {
         KernelParameterMetadata[] result = Array.Empty<KernelParameterMetadata>();
 
@@ -265,7 +265,7 @@ public sealed class PromptTemplateConfig
     /// <summary>
     /// Converts any <see cref="OutputVariable"/> into a <see cref="KernelReturnParameterMetadata"/>.
     /// </summary>
-    internal KernelReturnParameterMetadata? GetKernelReturnParameterMetadata() =>
+    public KernelReturnParameterMetadata? GetKernelReturnParameterMetadata() =>
         this.OutputVariable is OutputVariable outputVariable
             ? new KernelReturnParameterMetadata
             {
