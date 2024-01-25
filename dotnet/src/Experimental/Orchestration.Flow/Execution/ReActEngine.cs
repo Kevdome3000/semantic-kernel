@@ -96,36 +96,24 @@ internal sealed class ReActEngine
 
         if (promptConfig is null)
         {
-            promptConfig = new PromptTemplateConfig();
-
-            string promptConfigString = EmbeddedResource.Read("Plugins.ReActEngine.config.json")!;
+            string promptConfigString = EmbeddedResource.Read("Plugins.ReActEngine.yaml")!;
 
             if (!string.IsNullOrEmpty(modelId))
             {
-                var modelConfigString = EmbeddedResource.Read($"Plugins.ReActEngine.{modelId}.config.json", false);
-                promptConfigString = string.IsNullOrEmpty(modelConfigString) ? promptConfigString : modelConfigString!;
+                var modelConfigString = EmbeddedResource.Read($"Plugins.ReActEngine.{modelId}.yaml", false);
+                promptConfigString = string.IsNullOrEmpty(modelConfigString)
+                    ? promptConfigString
+                    : modelConfigString!;
             }
 
-            if (!string.IsNullOrEmpty(promptConfigString))
-            {
-                promptConfig = PromptTemplateConfig.FromJson(promptConfigString);
-            }
-            else
-            {
-                promptConfig.SetMaxTokens(config.MaxTokens);
-            }
-        }
+            promptConfig = KernelFunctionYaml.ToPromptTemplateConfig(promptConfigString);
 
-        var promptTemplate = config.ReActPromptTemplate;
-
-        if (string.IsNullOrEmpty(promptTemplate))
-        {
-            promptTemplate = EmbeddedResource.Read("Plugins.ReActEngine.skprompt.txt")!;
-
-            if (!string.IsNullOrEmpty(promptTemplate))
+            if (!string.IsNullOrEmpty(modelId))
             {
-                var modelPromptTemplate = EmbeddedResource.Read($"Plugins.ReActEngine.{modelId}.skprompt.txt", false);
-                promptConfig.Template = string.IsNullOrEmpty(modelPromptTemplate) ? promptTemplate : modelPromptTemplate!;
+                var modelConfigString = EmbeddedResource.Read($"Plugins.ReActEngine.{modelId}.yaml", false);
+                promptConfigString = string.IsNullOrEmpty(modelConfigString)
+                    ? promptConfigString
+                    : modelConfigString!;
             }
         }
 
@@ -182,11 +170,12 @@ internal sealed class ReActEngine
 
         var actionStep = this.ParseResult(llmResponseText);
 
-        if (!string.IsNullOrEmpty(actionStep.Action) || previousSteps.Count == 0)
+        if (!string.IsNullOrEmpty(actionStep.Action) || previousSteps.Count == 0 || !string.IsNullOrEmpty(actionStep.FinalAnswer))
         {
             return actionStep;
         }
 
+        actionStep.Thought = llmResponseText;
         actionStep.Observation = "Failed to parse valid action step, missing action or final answer.";
         this._logger?.LogWarning("Failed to parse valid action step from llm response={LLMResponseText}", llmResponseText);
         this._logger?.LogWarning("Scratchpad={ScratchPad}", scratchPad);
@@ -194,7 +183,12 @@ internal sealed class ReActEngine
     }
 
 
-    internal async Task<string> InvokeActionAsync(ReActStep actionStep, string chatInput, ChatHistory chatHistory, Kernel kernel, KernelArguments contextVariables)
+    internal async Task<string> InvokeActionAsync(
+        ReActStep actionStep,
+        string chatInput,
+        ChatHistory chatHistory,
+        Kernel kernel,
+        KernelArguments contextVariables)
     {
         var variables = actionStep.ActionVariables ?? new Dictionary<string, string>();
 
@@ -239,7 +233,8 @@ internal sealed class ReActEngine
         }
         catch (Exception e) when (!e.IsNonRetryable())
         {
-            this._logger?.LogError(e, "Something went wrong in action step: {0}.{1}. Error: {2}", targetFunction.PluginName, targetFunction.Name, e.Message);
+            this._logger?.LogError(e, "Something went wrong in action step: {0}.{1}. Error: {2}", targetFunction.PluginName, targetFunction.Name,
+                e.Message);
             return $"Something went wrong in action step: {targetFunction.PluginName}.{targetFunction.Name}. Error: {e.Message} {e.InnerException?.Message}";
         }
     }
@@ -438,7 +433,9 @@ internal sealed class ReActEngine
     {
         var inputs = string.Join("\n", function.Parameters.Select(parameter =>
         {
-            var defaultValueString = parameter.DefaultValue is not string value || string.IsNullOrEmpty(value) ? string.Empty : $"(default='{parameter.DefaultValue}')";
+            var defaultValueString = parameter.DefaultValue is not string value || string.IsNullOrEmpty(value)
+                ? string.Empty
+                : $"(default='{parameter.DefaultValue}')";
             return $"  - {parameter.Name}: {parameter.Description} {defaultValueString}";
         }));
 

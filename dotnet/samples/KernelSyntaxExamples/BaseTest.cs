@@ -3,18 +3,22 @@
 namespace Examples;
 
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using RepoUtils;
-using Xunit.Abstractions;
 
 
 public abstract class BaseTest
 {
     protected ITestOutputHelper Output { get; }
 
+    protected ILoggerFactory LoggerFactory { get; }
+
 
     protected BaseTest(ITestOutputHelper output)
     {
         this.Output = output;
+        this.LoggerFactory = new XunitLogger<object>(output);
+
         LoadUserSecrets();
     }
 

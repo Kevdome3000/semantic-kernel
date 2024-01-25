@@ -88,7 +88,12 @@ public abstract class KernelFunction
     /// The <see cref="PromptExecutionSettings"/> to use with the function. These will apply unless they've been
     /// overridden by settings passed into the invocation of the function.
     /// </param>
-    protected KernelFunction(string name, string description, IReadOnlyList<KernelParameterMetadata> parameters, KernelReturnParameterMetadata? returnParameter = null, Dictionary<string, PromptExecutionSettings>? executionSettings = null)
+    protected KernelFunction(
+        string name,
+        string description,
+        IReadOnlyList<KernelParameterMetadata> parameters,
+        KernelReturnParameterMetadata? returnParameter = null,
+        Dictionary<string, PromptExecutionSettings>? executionSettings = null)
     {
         Verify.NotNull(name);
         Verify.ParametersUniqueness(parameters);
@@ -137,7 +142,9 @@ public abstract class KernelFunction
             cancellationToken.ThrowIfCancellationRequested();
 
             // Invoke pre-invocation event handler. If it requests cancellation, throw.
+#pragma warning disable CS0618 // Events are deprecated
             var invokingEventArgs = kernel.OnFunctionInvoking(this, arguments);
+#pragma warning restore CS0618 // Events are deprecated
 
             // Invoke pre-invocation filter. If it requests cancellation, throw.
             var invokingContext = kernel.OnFunctionInvokingFilter(this, arguments);
@@ -156,7 +163,9 @@ public abstract class KernelFunction
             functionResult = await this.InvokeCoreAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 
             // Invoke the post-invocation event handler. If it requests cancellation, throw.
+#pragma warning disable CS0618 // Events are deprecated
             var invokedEventArgs = kernel.OnFunctionInvoked(this, arguments, functionResult);
+#pragma warning restore CS0618 // Events are deprecated
 
             // Invoke the post-invocation filter. If it requests cancellation, throw.
             var invokedContext = kernel.OnFunctionInvokedFilter(arguments, functionResult);
@@ -190,7 +199,8 @@ public abstract class KernelFunction
         }
         catch (Exception ex)
         {
-            HandleException(ex, logger, activity, this, kernel, arguments, functionResult, ref tags);
+            HandleException(ex, logger, activity, this,
+                kernel, arguments, functionResult, ref tags);
             throw;
         }
         finally
@@ -282,7 +292,9 @@ public abstract class KernelFunction
                 cancellationToken.ThrowIfCancellationRequested();
 
                 // Invoke pre-invocation event handler. If it requests cancellation, throw.
+#pragma warning disable CS0618 // Events are deprecated
                 var invokingEventArgs = kernel.OnFunctionInvoking(this, arguments);
+#pragma warning restore CS0618 // Events are deprecated
 
                 // Invoke pre-invocation filter. If it requests cancellation, throw.
                 var invokingContext = kernel.OnFunctionInvokingFilter(this, arguments);
@@ -306,7 +318,8 @@ public abstract class KernelFunction
             }
             catch (Exception ex)
             {
-                HandleException(ex, logger, activity, this, kernel, arguments, result: null, ref tags);
+                HandleException(ex, logger, activity, this,
+                    kernel, arguments, result: null, ref tags);
                 throw;
             }
 
@@ -325,7 +338,8 @@ public abstract class KernelFunction
                     }
                     catch (Exception ex)
                     {
-                        HandleException(ex, logger, activity, this, kernel, arguments, result: null, ref tags);
+                        HandleException(ex, logger, activity, this,
+                            kernel, arguments, result: null, ref tags);
                         throw;
                     }
 
@@ -395,7 +409,8 @@ public abstract class KernelFunction
         // visible to a consumer if that's needed.
         if (ex is OperationCanceledException cancelEx)
         {
-            throw new KernelFunctionCanceledException(kernel, kernelFunction, arguments, result, cancelEx);
+            throw new KernelFunctionCanceledException(kernel, kernelFunction, arguments, result,
+                cancelEx);
         }
     }
 }

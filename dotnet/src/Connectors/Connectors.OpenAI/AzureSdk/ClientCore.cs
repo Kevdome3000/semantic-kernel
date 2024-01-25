@@ -141,7 +141,8 @@ internal abstract class ClientCore
 
         this.CaptureUsageDetails(responseData.Usage);
         IReadOnlyDictionary<string, object?> metadata = GetResponseMetadata(responseData);
-        return responseData.Choices.Select(choice => new TextContent(choice.Text, this.DeploymentOrModelName, choice, Encoding.UTF8, metadata)).ToList();
+        return responseData.Choices.Select(choice => new TextContent(choice.Text, this.DeploymentOrModelName, choice, Encoding.UTF8,
+            metadata)).ToList();
     }
 
 
@@ -167,7 +168,8 @@ internal abstract class ClientCore
 
             foreach (Choice choice in completions.Choices)
             {
-                yield return new OpenAIStreamingTextContent(choice.Text, choice.Index, this.DeploymentOrModelName, choice, metadata);
+                yield return new OpenAIStreamingTextContent(choice.Text, choice.Index, this.DeploymentOrModelName, choice,
+                    metadata);
             }
         }
     }
@@ -327,7 +329,8 @@ internal abstract class ClientCore
                 // We currently only know about function tool calls. If it's anything else, we'll respond with an error.
                 if (toolCall is not ChatCompletionsFunctionToolCall functionToolCall)
                 {
-                    AddResponseMessage(chatOptions, chat, result: null, "Error: Tool call was not a function call.", toolCall.Id, this.Logger);
+                    AddResponseMessage(chatOptions, chat, result: null, "Error: Tool call was not a function call.",
+                        toolCall.Id, this.Logger);
                     continue;
                 }
 
@@ -340,7 +343,8 @@ internal abstract class ClientCore
                 }
                 catch (JsonException)
                 {
-                    AddResponseMessage(chatOptions, chat, result: null, "Error: Function call arguments were invalid JSON.", toolCall.Id, this.Logger);
+                    AddResponseMessage(chatOptions, chat, result: null, "Error: Function call arguments were invalid JSON.",
+                        toolCall.Id, this.Logger);
                     continue;
                 }
 
@@ -350,14 +354,16 @@ internal abstract class ClientCore
                 if (chatExecutionSettings.ToolCallBehavior?.AllowAnyRequestedKernelFunction is not true &&
                     !IsRequestableTool(chatOptions, openAIFunctionToolCall))
                 {
-                    AddResponseMessage(chatOptions, chat, result: null, "Error: Function call request for a function that wasn't defined.", toolCall.Id, this.Logger);
+                    AddResponseMessage(chatOptions, chat, result: null, "Error: Function call request for a function that wasn't defined.",
+                        toolCall.Id, this.Logger);
                     continue;
                 }
 
                 // Find the function in the kernel and populate the arguments.
                 if (!kernel!.Plugins.TryGetFunctionAndArguments(openAIFunctionToolCall, out KernelFunction? function, out KernelArguments? functionArgs))
                 {
-                    AddResponseMessage(chatOptions, chat, result: null, "Error: Requested function could not be found.", toolCall.Id, this.Logger);
+                    AddResponseMessage(chatOptions, chat, result: null, "Error: Requested function could not be found.",
+                        toolCall.Id, this.Logger);
                     continue;
                 }
 
@@ -376,16 +382,24 @@ internal abstract class ClientCore
                 catch (Exception e)
 #pragma warning restore CA1031
                 {
-                    AddResponseMessage(chatOptions, chat, null, $"Error: Exception while invoking function. {e.Message}", toolCall.Id, this.Logger);
+                    AddResponseMessage(chatOptions, chat, null, $"Error: Exception while invoking function. {e.Message}",
+                        toolCall.Id, this.Logger);
                     continue;
                 }
                 finally
                 {
                     s_inflightAutoInvokes.Value--;
                 }
-                AddResponseMessage(chatOptions, chat, functionResult as string ?? JsonSerializer.Serialize(functionResult), errorMessage: null, toolCall.Id, this.Logger);
+                AddResponseMessage(chatOptions, chat, functionResult as string ?? JsonSerializer.Serialize(functionResult), errorMessage: null,
+                    toolCall.Id, this.Logger);
 
-                static void AddResponseMessage(ChatCompletionsOptions chatOptions, ChatHistory chat, string? result, string? errorMessage, string toolId, ILogger logger)
+                static void AddResponseMessage(
+                    ChatCompletionsOptions chatOptions,
+                    ChatHistory chat,
+                    string? result,
+                    string? errorMessage,
+                    string toolId,
+                    ILogger logger)
                 {
                     // Log any error
                     if (errorMessage is not null && logger.IsEnabled(LogLevel.Debug))
@@ -516,7 +530,8 @@ internal abstract class ClientCore
             // Add the original assistant message to the chatOptions; this is required for the service
             // to understand the tool call responses.
             chatOptions.Messages.Add(GetRequestMessage(streamedRole ?? default, content, toolCalls));
-            chat.Add(new OpenAIChatMessageContent(streamedRole ?? default, content, this.DeploymentOrModelName, toolCalls, metadata));
+            chat.Add(new OpenAIChatMessageContent(streamedRole ?? default, content, this.DeploymentOrModelName, toolCalls,
+                metadata));
 
             // Respond to each tooling request.
             foreach (ChatCompletionsFunctionToolCall toolCall in toolCalls)
@@ -524,7 +539,8 @@ internal abstract class ClientCore
                 // We currently only know about function tool calls. If it's anything else, we'll respond with an error.
                 if (string.IsNullOrEmpty(toolCall.Name))
                 {
-                    AddResponseMessage(chatOptions, chat, streamedRole, toolCall, metadata, result: null, "Error: Tool call was not a function call.", this.Logger);
+                    AddResponseMessage(chatOptions, chat, streamedRole, toolCall,
+                        metadata, result: null, "Error: Tool call was not a function call.", this.Logger);
                     continue;
                 }
 
@@ -537,7 +553,8 @@ internal abstract class ClientCore
                 }
                 catch (JsonException)
                 {
-                    AddResponseMessage(chatOptions, chat, streamedRole, toolCall, metadata, result: null, "Error: Function call arguments were invalid JSON.", this.Logger);
+                    AddResponseMessage(chatOptions, chat, streamedRole, toolCall,
+                        metadata, result: null, "Error: Function call arguments were invalid JSON.", this.Logger);
                     continue;
                 }
 
@@ -547,14 +564,16 @@ internal abstract class ClientCore
                 if (chatExecutionSettings.ToolCallBehavior?.AllowAnyRequestedKernelFunction is not true &&
                     !IsRequestableTool(chatOptions, openAIFunctionToolCall))
                 {
-                    AddResponseMessage(chatOptions, chat, streamedRole, toolCall, metadata, result: null, "Error: Function call request for a function that wasn't defined.", this.Logger);
+                    AddResponseMessage(chatOptions, chat, streamedRole, toolCall,
+                        metadata, result: null, "Error: Function call request for a function that wasn't defined.", this.Logger);
                     continue;
                 }
 
                 // Find the function in the kernel and populate the arguments.
                 if (!kernel!.Plugins.TryGetFunctionAndArguments(openAIFunctionToolCall, out KernelFunction? function, out KernelArguments? functionArgs))
                 {
-                    AddResponseMessage(chatOptions, chat, streamedRole, toolCall, metadata, result: null, "Error: Requested function could not be found.", this.Logger);
+                    AddResponseMessage(chatOptions, chat, streamedRole, toolCall,
+                        metadata, result: null, "Error: Requested function could not be found.", this.Logger);
                     continue;
                 }
 
@@ -573,14 +592,16 @@ internal abstract class ClientCore
                 catch (Exception e)
 #pragma warning restore CA1031
                 {
-                    AddResponseMessage(chatOptions, chat, streamedRole, toolCall, metadata, result: null, $"Error: Exception while invoking function. {e.Message}", this.Logger);
+                    AddResponseMessage(chatOptions, chat, streamedRole, toolCall,
+                        metadata, result: null, $"Error: Exception while invoking function. {e.Message}", this.Logger);
                     continue;
                 }
                 finally
                 {
                     s_inflightAutoInvokes.Value--;
                 }
-                AddResponseMessage(chatOptions, chat, streamedRole, toolCall, metadata, functionResult as string ?? JsonSerializer.Serialize(functionResult), errorMessage: null, this.Logger);
+                AddResponseMessage(chatOptions, chat, streamedRole, toolCall,
+                    metadata, functionResult as string ?? JsonSerializer.Serialize(functionResult), errorMessage: null, this.Logger);
 
                 static void AddResponseMessage(
                     ChatCompletionsOptions chatOptions,
@@ -661,7 +682,8 @@ internal abstract class ClientCore
 
         await foreach (var chatUpdate in this.GetStreamingChatMessageContentsAsync(chat, executionSettings, kernel, cancellationToken))
         {
-            yield return new StreamingTextContent(chatUpdate.Content, chatUpdate.ChoiceIndex, chatUpdate.ModelId, chatUpdate, Encoding.UTF8, chatUpdate.Metadata);
+            yield return new StreamingTextContent(chatUpdate.Content, chatUpdate.ChoiceIndex, chatUpdate.ModelId, chatUpdate,
+                Encoding.UTF8, chatUpdate.Metadata);
         }
     }
 
@@ -676,7 +698,8 @@ internal abstract class ClientCore
 
         ChatHistory chat = CreateNewChat(text, chatSettings);
         return (await this.GetChatMessageContentsAsync(chat, chatSettings, kernel, cancellationToken).ConfigureAwait(false))
-            .Select(chat => new TextContent(chat.Content, chat.ModelId, chat.Content, Encoding.UTF8, chat.Metadata))
+            .Select(chat => new TextContent(chat.Content, chat.ModelId, chat.Content, Encoding.UTF8,
+                chat.Metadata))
             .ToList();
     }
 
@@ -757,7 +780,7 @@ internal abstract class ClientCore
             ChoicesPerPrompt = executionSettings.ResultsPerPrompt,
             GenerationSampleCount = executionSettings.ResultsPerPrompt,
             LogProbabilityCount = null,
-            User = null,
+            User = executionSettings.User,
             DeploymentName = deploymentOrModelName
         };
 
@@ -802,6 +825,7 @@ internal abstract class ClientCore
             ChoiceCount = executionSettings.ResultsPerPrompt,
             DeploymentName = deploymentOrModelName,
             Seed = executionSettings.Seed,
+            User = executionSettings.User
         };
 
         switch (executionSettings.ResponseFormat)

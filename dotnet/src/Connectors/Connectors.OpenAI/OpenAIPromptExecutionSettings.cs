@@ -1,14 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Text;
+using ChatCompletion;
+using Text;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
 /// Execution settings for an OpenAI completion request.
@@ -140,6 +141,11 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     public ToolCallBehavior? ToolCallBehavior { get; set; }
 
     /// <summary>
+    /// A unique identifier representing your end-user, which can help OpenAI to monitor and detect abuse
+    /// </summary>
+    public string? User { get; set; }
+
+    /// <summary>
     /// Default value for chat system property.
     /// </summary>
     internal static string DefaultChatSystemPrompt { get; } = "Assistant is a large language model.";
@@ -148,6 +154,7 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// Default max tokens for a text generation
     /// </summary>
     internal static int DefaultTextMaxTokens { get; } = 256;
+
 
     /// <summary>
     /// Create a new settings object with the values from another settings object.
@@ -173,6 +180,7 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
         var json = JsonSerializer.Serialize(executionSettings);
 
         var openAIExecutionSettings = JsonSerializer.Deserialize<OpenAIPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive);
+
         if (openAIExecutionSettings is not null)
         {
             return openAIExecutionSettings;
@@ -180,6 +188,7 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
 
         throw new ArgumentException($"Invalid execution settings, cannot convert to {nameof(OpenAIPromptExecutionSettings)}", nameof(executionSettings));
     }
+
 
     /// <summary>
     /// Create a new settings object with the values from another settings object.
@@ -201,9 +210,12 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
         return settings;
     }
 
+
     #region private ================================================================================
 
     private string _chatSystemPrompt = DefaultChatSystemPrompt;
 
     #endregion
+
+
 }

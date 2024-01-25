@@ -6,6 +6,8 @@ using System.Globalization;
 using Microsoft.SemanticKernel;
 using Xunit;
 
+#pragma warning disable CS0618 // Events are deprecated
+
 
 public class FunctionInvokedEventArgsTests
 {

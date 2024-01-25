@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using RepoUtils;
-using Xunit;
-using Xunit.Abstractions;
+
+#pragma warning disable CS0618 // Events are deprecated
 
 
 public class Example57_KernelHooks : BaseTest

@@ -10,16 +10,44 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using RepoUtils;
-using Xunit;
-using Xunit.Abstractions;
 
 
 public class Step7_Observability : BaseTest
 {
     /// <summary>
+    /// Shows how to observe the execution of a <see cref="KernelPlugin"/> instance with filters.
+    /// </summary>
+    [Fact]
+    public async Task ObservabilityWithFiltersAsync()
+    {
+        // Create a kernel with OpenAI chat completion
+        IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
+        kernelBuilder.AddOpenAIChatCompletion(
+            modelId: TestConfiguration.OpenAI.ChatModelId,
+            apiKey: TestConfiguration.OpenAI.ApiKey);
+
+        kernelBuilder.Plugins.AddFromType<TimeInformation>();
+
+        // Add filter using DI
+        kernelBuilder.Services.AddSingleton<ITestOutputHelper>(this.Output);
+        kernelBuilder.Services.AddSingleton<IFunctionFilter, MyFunctionFilter>();
+
+        Kernel kernel = kernelBuilder.Build();
+
+        // Add filter without DI
+        kernel.PromptFilters.Add(new MyPromptFilter(this.Output));
+
+        // Invoke the kernel with a prompt and allow the AI to automatically invoke functions
+        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        WriteLine(await kernel.InvokePromptAsync("How many days until Christmas? Explain your thinking.", new(settings)));
+    }
+
+
+    /// <summary>
     /// Shows how to observe the execution of a <see cref="KernelPlugin"/> instance with hooks.
     /// </summary>
     [Fact]
+    [Obsolete("Events are deprecated in favor of filters.")]
     public async Task ObservabilityWithHooksAsync()
     {
         // Create a kernel with OpenAI chat completion
@@ -41,7 +69,7 @@ public class Step7_Observability : BaseTest
         // Handler which is called before a prompt is rendered
         void MyRenderingHandler(object? sender, PromptRenderingEventArgs e)
         {
-            Console.WriteLine($"Rendering prompt for {e.Function.Name}");
+            WriteLine($"Rendering prompt for {e.Function.Name}");
         }
 
         // Handler which is called after a prompt is rendered
@@ -72,31 +100,6 @@ public class Step7_Observability : BaseTest
 
 
     /// <summary>
-    /// Shows how to observe the execution of a <see cref="KernelPlugin"/> instance with filters.
-    /// </summary>
-    [Fact]
-    public async Task ObservabilityWithFiltersAsync()
-    {
-        // Create a kernel with OpenAI chat completion
-        IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.AddOpenAIChatCompletion(
-            modelId: TestConfiguration.OpenAI.ChatModelId,
-            apiKey: TestConfiguration.OpenAI.ApiKey);
-
-        kernelBuilder.Plugins.AddFromType<TimeInformation>();
-
-        kernelBuilder.Services.AddSingleton<IFunctionFilter, MyFunctionFilter>();
-        kernelBuilder.Services.AddSingleton<IPromptFilter, MyPromptFilter>();
-
-        Kernel kernel = kernelBuilder.Build();
-
-        // Invoke the kernel with a prompt and allow the AI to automatically invoke functions
-        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
-        WriteLine(await kernel.InvokePromptAsync("How many days until Christmas? Explain your thinking.", new(settings)));
-    }
-
-
-    /// <summary>
     /// A plugin that returns the current time.
     /// </summary>
     private sealed class TimeInformation
@@ -112,20 +115,29 @@ public class Step7_Observability : BaseTest
     /// </summary>
     private sealed class MyFunctionFilter : IFunctionFilter
     {
+        private readonly ITestOutputHelper _output;
+
+
+        public MyFunctionFilter(ITestOutputHelper output)
+        {
+            this._output = output;
+        }
+
+
         public void OnFunctionInvoked(FunctionInvokedContext context)
         {
             var metadata = context.Result.Metadata;
 
             if (metadata is not null && metadata.ContainsKey("Usage"))
             {
-                Console.WriteLine($"Token usage: {metadata["Usage"]?.AsJson()}");
+                this._output.WriteLine($"Token usage: {metadata["Usage"]?.AsJson()}");
             }
         }
 
 
         public void OnFunctionInvoking(FunctionInvokingContext context)
         {
-            Console.WriteLine($"Invoking {context.Function.Name}");
+            this._output.WriteLine($"Invoking {context.Function.Name}");
         }
     }
 
@@ -135,15 +147,24 @@ public class Step7_Observability : BaseTest
     /// </summary>
     private sealed class MyPromptFilter : IPromptFilter
     {
+        private readonly ITestOutputHelper _output;
+
+
+        public MyPromptFilter(ITestOutputHelper output)
+        {
+            this._output = output;
+        }
+
+
         public void OnPromptRendered(PromptRenderedContext context)
         {
-            Console.WriteLine($"Prompt sent to model: {context.RenderedPrompt}");
+            this._output.WriteLine($"Prompt sent to model: {context.RenderedPrompt}");
         }
 
 
         public void OnPromptRendering(PromptRenderingContext context)
         {
-            Console.WriteLine($"Rendering prompt for {context.Function.Name}");
+            this._output.WriteLine($"Rendering prompt for {context.Function.Name}");
         }
     }
 

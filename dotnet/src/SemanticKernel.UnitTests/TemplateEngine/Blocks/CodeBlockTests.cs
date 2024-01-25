@@ -421,6 +421,7 @@ public class CodeBlockTests
             }
         );
 
+#pragma warning disable CS0618 // Events are deprecated
         kernel.PromptRendering += (object? sender, PromptRenderingEventArgs e) =>
         {
             Assert.Equal(FooValue, e.Arguments[parameterName]);
@@ -430,6 +431,7 @@ public class CodeBlockTests
         {
             Assert.Equal(FooValue, e.Arguments[parameterName]);
         };
+#pragma warning restore CS0618 // Events are deprecated
 
         var codeBlock = new CodeBlock(blockList, "");
         await codeBlock.RenderCodeAsync(kernel);
@@ -466,6 +468,7 @@ public class CodeBlockTests
             }
         );
 
+#pragma warning disable CS0618 // Events are deprecated
         kernel.PromptRendering += (object? sender, PromptRenderingEventArgs e) =>
         {
             Assert.Equal(FooValue, e.Arguments["foo"]);
@@ -477,6 +480,7 @@ public class CodeBlockTests
             Assert.Equal(FooValue, e.Arguments["foo"]);
             Assert.Equal(FooValue, e.Arguments["x11"]);
         };
+#pragma warning restore CS0618 // Events are deprecated
 
         var codeBlock = new CodeBlock(blockList, "");
         await codeBlock.RenderCodeAsync(kernel, arguments);

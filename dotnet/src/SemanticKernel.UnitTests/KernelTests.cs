@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-
-
-// ReSharper disable StringLiteralTypo
+#pragma warning disable CS0618 // Events are deprecated
 
 namespace SemanticKernel.UnitTests;
 
