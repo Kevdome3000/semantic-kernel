@@ -27,7 +27,7 @@ internal static class XmlPromptParser
         // exception is thrown. Try to avoid it in the common case where the prompt is obviously not XML.
         // To be valid XML, at a minimum:
         // - the string would need to be non-null
-        // - it would need to contain a the start of a tag
+        // - it would need to contain the start of a tag
         // - it would need to contain a closing tag, which could include either </ or />
         int startPos;
 
@@ -77,7 +77,9 @@ internal static class XmlPromptParser
 
         var promptNode = new PromptNode(node.Name)
         {
-            Content = !string.IsNullOrEmpty(nodeContent) ? nodeContent : null
+            Content = !string.IsNullOrEmpty(nodeContent)
+                ? nodeContent
+                : null
         };
 
         if (node.Attributes is not null)
