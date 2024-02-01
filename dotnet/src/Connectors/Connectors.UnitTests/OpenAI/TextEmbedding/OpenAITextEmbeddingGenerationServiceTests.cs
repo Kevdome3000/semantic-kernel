@@ -38,7 +38,9 @@ public sealed class OpenAITextEmbeddingGenerationServiceTests : IDisposable
     public void ConstructorWithApiKeyWorksCorrectly(bool includeLoggerFactory)
     {
         // Arrange & Act
-        var service = includeLoggerFactory ? new OpenAITextEmbeddingGenerationService("model-id", "api-key", "organization", loggerFactory: this._mockLoggerFactory.Object) : new OpenAITextEmbeddingGenerationService("model-id", "api-key", "organization");
+        var service = includeLoggerFactory
+            ? new OpenAITextEmbeddingGenerationService("model-id", "api-key", "organization", loggerFactory: this._mockLoggerFactory.Object)
+            : new OpenAITextEmbeddingGenerationService("model-id", "api-key", "organization");
 
         // Assert
         Assert.NotNull(service);
@@ -53,7 +55,9 @@ public sealed class OpenAITextEmbeddingGenerationServiceTests : IDisposable
     {
         // Arrange & Act
         var client = new OpenAIClient("key");
-        var service = includeLoggerFactory ? new OpenAITextEmbeddingGenerationService("model-id", client, loggerFactory: this._mockLoggerFactory.Object) : new OpenAITextEmbeddingGenerationService("model-id", client);
+        var service = includeLoggerFactory
+            ? new OpenAITextEmbeddingGenerationService("model-id", client, loggerFactory: this._mockLoggerFactory.Object)
+            : new OpenAITextEmbeddingGenerationService("model-id", client);
 
         // Assert
         Assert.NotNull(service);
@@ -91,7 +95,7 @@ public sealed class OpenAITextEmbeddingGenerationServiceTests : IDisposable
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<KernelException>(() => service.GenerateEmbeddingsAsync(["test"]));
-        Assert.Equal("Text embedding not found", exception.Message);
+        Assert.Equal("Expected 1 text embedding(s), but received 0", exception.Message);
     }
 
 

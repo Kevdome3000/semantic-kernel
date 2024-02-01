@@ -39,7 +39,10 @@ public sealed class AzureOpenAITextEmbeddingGenerationServiceTests : IDisposable
     public void ConstructorWithApiKeyWorksCorrectly(bool includeLoggerFactory)
     {
         // Arrange & Act
-        var service = includeLoggerFactory ? new AzureOpenAITextEmbeddingGenerationService("deployment-name", "https://endpoint", "api-key", "model-id", loggerFactory: this._mockLoggerFactory.Object) : new AzureOpenAITextEmbeddingGenerationService("deployment-name", "https://endpoint", "api-key", "model-id");
+        var service = includeLoggerFactory
+            ? new AzureOpenAITextEmbeddingGenerationService("deployment-name", "https://endpoint", "api-key", "model-id",
+                loggerFactory: this._mockLoggerFactory.Object)
+            : new AzureOpenAITextEmbeddingGenerationService("deployment-name", "https://endpoint", "api-key", "model-id");
 
         // Assert
         Assert.NotNull(service);
@@ -54,7 +57,10 @@ public sealed class AzureOpenAITextEmbeddingGenerationServiceTests : IDisposable
     {
         // Arrange & Act
         var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
-        var service = includeLoggerFactory ? new AzureOpenAITextEmbeddingGenerationService("deployment", "https://endpoint", credentials, "model-id", loggerFactory: this._mockLoggerFactory.Object) : new AzureOpenAITextEmbeddingGenerationService("deployment", "https://endpoint", credentials, "model-id");
+        var service = includeLoggerFactory
+            ? new AzureOpenAITextEmbeddingGenerationService("deployment", "https://endpoint", credentials, "model-id",
+                loggerFactory: this._mockLoggerFactory.Object)
+            : new AzureOpenAITextEmbeddingGenerationService("deployment", "https://endpoint", credentials, "model-id");
 
         // Assert
         Assert.NotNull(service);
@@ -69,7 +75,9 @@ public sealed class AzureOpenAITextEmbeddingGenerationServiceTests : IDisposable
     {
         // Arrange & Act
         var client = new OpenAIClient("key");
-        var service = includeLoggerFactory ? new AzureOpenAITextEmbeddingGenerationService("deployment", client, "model-id", loggerFactory: this._mockLoggerFactory.Object) : new AzureOpenAITextEmbeddingGenerationService("deployment", client, "model-id");
+        var service = includeLoggerFactory
+            ? new AzureOpenAITextEmbeddingGenerationService("deployment", client, "model-id", loggerFactory: this._mockLoggerFactory.Object)
+            : new AzureOpenAITextEmbeddingGenerationService("deployment", client, "model-id");
 
         // Assert
         Assert.NotNull(service);
@@ -81,7 +89,8 @@ public sealed class AzureOpenAITextEmbeddingGenerationServiceTests : IDisposable
     public async Task GenerateEmbeddingsForEmptyDataReturnsEmptyResultAsync()
     {
         // Arrange
-        var service = new AzureOpenAITextEmbeddingGenerationService("deployment-name", "https://endpoint", "api-key", "model-id", this._httpClient);
+        var service = new AzureOpenAITextEmbeddingGenerationService("deployment-name", "https://endpoint", "api-key", "model-id",
+            this._httpClient);
 
         // Act
         var result = await service.GenerateEmbeddingsAsync([]);
@@ -95,7 +104,8 @@ public sealed class AzureOpenAITextEmbeddingGenerationServiceTests : IDisposable
     public async Task GenerateEmbeddingsWithEmptyResponseThrowsExceptionAsync()
     {
         // Arrange
-        var service = new AzureOpenAITextEmbeddingGenerationService("deployment-name", "https://endpoint", "api-key", "model-id", this._httpClient);
+        var service = new AzureOpenAITextEmbeddingGenerationService("deployment-name", "https://endpoint", "api-key", "model-id",
+            this._httpClient);
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         {
             Content = new StringContent(@"{
@@ -107,7 +117,7 @@ public sealed class AzureOpenAITextEmbeddingGenerationServiceTests : IDisposable
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<KernelException>(() => service.GenerateEmbeddingsAsync(["test"]));
-        Assert.Equal("Text embedding not found", exception.Message);
+        Assert.Equal("Expected 1 text embedding(s), but received 0", exception.Message);
     }
 
 
@@ -115,7 +125,8 @@ public sealed class AzureOpenAITextEmbeddingGenerationServiceTests : IDisposable
     public async Task GenerateEmbeddingsByDefaultWorksCorrectlyAsync()
     {
         // Arrange
-        var service = new AzureOpenAITextEmbeddingGenerationService("deployment-name", "https://endpoint", "api-key", "model-id", this._httpClient);
+        var service = new AzureOpenAITextEmbeddingGenerationService("deployment-name", "https://endpoint", "api-key", "model-id",
+            this._httpClient);
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         {
             Content = new StringContent(@"{

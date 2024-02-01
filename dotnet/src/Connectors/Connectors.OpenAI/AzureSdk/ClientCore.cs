@@ -225,18 +225,20 @@ internal abstract class ClientCore
     {
         var result = new List<ReadOnlyMemory<float>>(data.Count);
 
-        foreach (string text in data)
+        if (data.Count > 0)
         {
-            var options = new EmbeddingsOptions(this.DeploymentOrModelName, new[] { text });
+            var response = await RunRequestAsync(() => this.Client.GetEmbeddingsAsync(new(this.DeploymentOrModelName, data), cancellationToken)).ConfigureAwait(false);
+            var embeddings = response.Value.Data;
 
-            Response<Embeddings> response = await RunRequestAsync(() => this.Client.GetEmbeddingsAsync(options, cancellationToken)).ConfigureAwait(false);
-
-            if (response.Value.Data.Count == 0)
+            if (embeddings.Count != data.Count)
             {
-                throw new KernelException("Text embedding not found");
+                throw new KernelException($"Expected {data.Count} text embedding(s), but received {embeddings.Count}");
             }
 
-            result.Add(response.Value.Data[0].Embedding.ToArray());
+            for (var i = 0; i < embeddings.Count; i++)
+            {
+                result.Add(embeddings[i].Embedding);
+            }
         }
 
         return result;
@@ -500,7 +502,7 @@ internal abstract class ClientCore
                 yield return new OpenAIStreamingChatMessageContent(update, update.ChoiceIndex ?? 0, this.DeploymentOrModelName, metadata);
             }
 
-            // If we don't have a function to invoke, we're done. 
+            // If we don't have a function to invoke, we're done.
             // Note that we don't check the FinishReason and instead check whether there are any tool calls, as the service
             // may return a FinishReason of "stop" even if there are tool calls to be made, in particular if a required tool
             // is specified.
