@@ -10,8 +10,10 @@ using Xunit;
 using Xunit.Abstractions;
 
 
-// This example shows how to create and use a <see cref="Kernel"/>.
-public class Step1_Create_Kernel : BaseTest
+/// <summary>
+/// This example shows how to create and use a <see cref="Kernel"/>.
+/// </summary>
+public sealed class Step1_Create_Kernel : BaseTest
 {
     /// <summary>
     /// Show how to create a <see cref="Kernel"/> and use it to execute prompts.
@@ -36,11 +38,9 @@ public class Step1_Create_Kernel : BaseTest
         WriteLine();
 
         // Example 3. Invoke the kernel with a templated prompt and stream the results to the display
-
         await foreach (var update in kernel.InvokePromptStreamingAsync("What color is the {{$topic}}? Provide a detailed explanation.", arguments))
         {
             Write(update);
-            // Console.Write(update);
         }
 
         WriteLine(string.Empty);

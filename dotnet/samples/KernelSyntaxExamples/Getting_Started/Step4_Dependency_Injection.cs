@@ -13,11 +13,11 @@ using RepoUtils;
 using Xunit;
 using Xunit.Abstractions;
 
-// ReSharper disable once InconsistentNaming
-// ReSharper disable once InconsistentNaming
 
-// This example shows how to using Dependency Injection with the Semantic Kernel
-public class Step4_Dependency_Injection : BaseTest
+/// <summary>
+/// This example shows how to using Dependency Injection with the Semantic Kernel
+/// </summary>
+public sealed class Step4_Dependency_Injection : BaseTest
 {
     /// <summary>
     /// Show how to create a <see cref="Kernel"/> that participates in Dependency Injection.
@@ -33,7 +33,8 @@ public class Step4_Dependency_Injection : BaseTest
         // Invoke the kernel with a templated prompt and stream the results to the display
         KernelArguments arguments = new() { { "topic", "earth when viewed from space" } };
 
-        await foreach (var update in kernel.InvokePromptStreamingAsync("What color is the {{$topic}}? Provide a detailed explanation.", arguments))
+        await foreach (var update in
+                       kernel.InvokePromptStreamingAsync("What color is the {{$topic}}? Provide a detailed explanation.", arguments))
         {
             Write(update);
         }
@@ -41,12 +42,12 @@ public class Step4_Dependency_Injection : BaseTest
 
 
     /// <summary>
-    /// Build a ServiceProvdier that can be used to resolve services.
+    /// Build a ServiceProvider that can be used to resolve services.
     /// </summary>
-    private static ServiceProvider BuildServiceProvider()
+    private ServiceProvider BuildServiceProvider()
     {
         var collection = new ServiceCollection();
-        collection.AddSingleton(ConsoleLogger.LoggerFactory);
+        collection.AddSingleton<ILoggerFactory>(new XunitLogger(this.Output));
 
         var kernelBuilder = collection.AddKernel();
         kernelBuilder.Services.AddOpenAITextGeneration(TestConfiguration.OpenAI.ModelId, TestConfiguration.OpenAI.ApiKey);

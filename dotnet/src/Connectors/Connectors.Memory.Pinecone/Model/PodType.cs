@@ -97,7 +97,13 @@ public enum PodType
     /// Enum Starter for value: starter
     /// </summary>
     [EnumMember(Value = "starter")]
-    Starter = 13
+    Starter = 13,
+
+    /// <summary>
+    /// Enum Nano for value: nano
+    /// </summary>
+    [EnumMember(Value = "nano")]
+    Nano = 14
 }
 
 

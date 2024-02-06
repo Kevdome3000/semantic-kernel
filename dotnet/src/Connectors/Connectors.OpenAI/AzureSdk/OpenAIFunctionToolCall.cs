@@ -5,7 +5,6 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using Azure.AI.OpenAI;
@@ -70,7 +69,9 @@ public sealed class OpenAIFunctionToolCall
     /// </remarks>
     public string FullyQualifiedName =>
         this._fullyQualifiedFunctionName ??=
-            string.IsNullOrEmpty(this.PluginName) ? this.FunctionName : $"{this.PluginName}{OpenAIFunction.NameSeparator}{this.FunctionName}";
+            string.IsNullOrEmpty(this.PluginName)
+                ? this.FunctionName
+                : $"{this.PluginName}{OpenAIFunction.NameSeparator}{this.FunctionName}";
 
 
     /// <inheritdoc/>
@@ -171,7 +172,7 @@ public sealed class OpenAIFunctionToolCall
                 functionNamesByIndex?.TryGetValue(toolCallIndexAndId.Key, out functionName);
                 functionArgumentBuildersByIndex?.TryGetValue(toolCallIndexAndId.Key, out functionArguments);
 
-                toolCalls[i] = CreateChatCompletionsFunctionToolCall(toolCallIndexAndId.Value, functionName ?? string.Empty, functionArguments?.ToString() ?? string.Empty);
+                toolCalls[i] = new ChatCompletionsFunctionToolCall(toolCallIndexAndId.Value, functionName ?? string.Empty, functionArguments?.ToString() ?? string.Empty);
                 i++;
             }
 
@@ -180,16 +181,4 @@ public sealed class OpenAIFunctionToolCall
 
         return toolCalls;
     }
-
-
-    // TODO: Remove this temporary hack once the Azure SDK has been updated to set `base.Type = "function"` in the ChatCompletionsFunctionToolCall ctor
-    internal static ChatCompletionsFunctionToolCall CreateChatCompletionsFunctionToolCall(string id, string name, string arguments)
-    {
-        var c = new ChatCompletionsFunctionToolCall(id, name, arguments);
-        s_type?.SetValue(c, "function");
-        return c;
-    }
-
-
-    private static readonly PropertyInfo? s_type = typeof(ChatCompletionsToolCall).GetProperty("Type", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 }

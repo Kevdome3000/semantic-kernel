@@ -14,6 +14,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -149,7 +150,13 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     private static readonly object[] s_cancellationTokenNoneArray = new object[] { CancellationToken.None };
     private readonly ImplementationFunc _function;
 
-    private record struct MethodDetails(string Name, string Description, ImplementationFunc Function, List<KernelParameterMetadata> Parameters, KernelReturnParameterMetadata ReturnParameter);
+
+    private record struct MethodDetails(
+        string Name,
+        string Description,
+        ImplementationFunc Function,
+        List<KernelParameterMetadata> Parameters,
+        KernelReturnParameterMetadata ReturnParameter);
 
 
     private KernelFunctionFromMethod(
@@ -229,7 +236,9 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         ValueTask<FunctionResult> Function(Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
         {
             // Create the arguments.
-            object?[] args = parameterFuncs.Length != 0 ? new object?[parameterFuncs.Length] : Array.Empty<object?>();
+            object?[] args = parameterFuncs.Length != 0
+                ? new object?[parameterFuncs.Length]
+                : Array.Empty<object?>();
 
             for (int i = 0; i < args.Length; i++)
             {
@@ -343,7 +352,9 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             return ((KernelFunction _, Kernel kernel, KernelArguments _, CancellationToken _) =>
             {
                 // Try to resolve the service from kernel.Services, using the attribute's key if one was provided.
-                object? service = kernel.Services is IKeyedServiceProvider keyedServiceProvider ? keyedServiceProvider.GetKeyedService(type, fromKernelAttr.ServiceKey) : kernel.Services.GetService(type);
+                object? service = kernel.Services is IKeyedServiceProvider keyedServiceProvider
+                    ? keyedServiceProvider.GetKeyedService(type, fromKernelAttr.ServiceKey)
+                    : kernel.Services.GetService(type);
 
                 if (service is not null)
                 {
@@ -389,15 +400,23 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
             object? Process(object? value)
             {
-                if (!type.IsAssignableFrom(value?.GetType()) && converter is not null)
+                if (!type.IsAssignableFrom(value?.GetType()))
                 {
-                    try
+                    if (converter is not null)
                     {
-                        return converter(value, kernel.Culture);
+                        try
+                        {
+                            return converter(value, kernel.Culture);
+                        }
+                        catch (Exception e) when (!e.IsCriticalException())
+                        {
+                            throw new ArgumentOutOfRangeException(name, value, e.Message);
+                        }
                     }
-                    catch (Exception e) when (!e.IsCriticalException())
+
+                    if (value is not null && TryToDeserializeValue(value, type, out var deserializedValue))
                     {
-                        throw new ArgumentOutOfRangeException(name, value, e.Message);
+                        return deserializedValue;
                     }
                 }
 
@@ -416,6 +435,47 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         };
 
         return (parameterFunc, parameterView);
+    }
+
+
+    /// <summary>
+    /// Tries to deserialize the given value into an object of the specified target type.
+    /// </summary>
+    /// <param name="value">The value to be deserialized.</param>
+    /// <param name="targetType">The type of the object to deserialize the value into.</param>
+    /// <param name="deserializedValue">The deserialized object if the method succeeds; otherwise, null.</param>
+    /// <returns>true if the value is successfully deserialized; otherwise, false.</returns>
+    private static bool TryToDeserializeValue(object value, Type targetType, out object? deserializedValue)
+    {
+        try
+        {
+            deserializedValue = value switch
+            {
+                JsonDocument document => document.Deserialize(targetType),
+                JsonNode node => node.Deserialize(targetType),
+                JsonElement element => element.Deserialize(targetType),
+                // The JSON can be represented by other data types from various libraries. For example, JObject, JToken, and JValue from the Newtonsoft.Json library.  
+                // Since we don't take dependencies on these libraries and don't have access to the types here,
+                // the only way to deserialize those types is to convert them to a string first by calling the 'ToString' method.
+                // Attempting to use the 'JsonSerializer.Serialize' method, instead of calling the 'ToString' directly on those types, can lead to unpredictable outcomes.
+                // For instance, the JObject for { "id": 28 } JSON is serialized into the string  "{ "Id": [] }", and the deserialization fails with the
+                // following exception - "The JSON value could not be converted to System.Int32. Path: $.Id | LineNumber: 0 | BytePositionInLine: 7."
+                _ => JsonSerializer.Deserialize(value.ToString(), targetType)
+            };
+
+            return true;
+        }
+        catch (NotSupportedException)
+        {
+            // There is no compatible JsonConverter for targetType or its serializable members.
+        }
+        catch (JsonException)
+        {
+            // The JSON is invalid.
+        }
+
+        deserializedValue = null;
+        return false;
     }
 
 
@@ -606,7 +666,8 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         try
         {
             const BindingFlags BindingFlagsDoNotWrapExceptions = (BindingFlags)0x02000000; // BindingFlags.DoNotWrapExceptions on .NET Core 2.1+, ignored before then
-            result = method.Invoke(target, BindingFlagsDoNotWrapExceptions, binder: null, arguments, culture: null);
+            result = method.Invoke(target, BindingFlagsDoNotWrapExceptions, binder: null, arguments,
+                culture: null);
         }
         catch (TargetInvocationException e) when (e.InnerException is not null)
         {
@@ -721,7 +782,9 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private string DebuggerDisplay => string.IsNullOrWhiteSpace(this.Description) ? this.Name : $"{this.Name} ({this.Description})";
+    private string DebuggerDisplay => string.IsNullOrWhiteSpace(this.Description)
+        ? this.Name
+        : $"{this.Name} ({this.Description})";
 
 
     /// <summary>

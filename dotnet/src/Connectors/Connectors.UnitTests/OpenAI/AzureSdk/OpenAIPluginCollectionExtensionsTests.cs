@@ -70,8 +70,10 @@ public sealed class OpenAIPluginCollectionExtensionsTests
         Assert.Same(function, actualFunction);
 
         Assert.NotNull(actualArguments);
+
         Assert.Equal("San Diego", actualArguments["location"]);
         Assert.Equal("300", actualArguments["max_price"]);
+
         Assert.Null(actualArguments["null_argument"]);
     }
 }
