@@ -20,12 +20,13 @@ internal static class KernelFunctionMetadataExtensions
     /// </summary>
     /// <param name="function">The function.</param>
     /// <param name="includeOutputSchema">Indicates if the schema should include information about the output or return type of the function.</param>
+    /// <param name="nameDelimiter">The delimiter to use between the plugin name and the function name.</param>
     /// <returns>An instance of <see cref="JsonSchemaFunctionView"/></returns>
-    public static JsonSchemaFunctionView ToJsonSchemaFunctionView(this KernelFunctionMetadata function, bool includeOutputSchema = true)
+    public static JsonSchemaFunctionView ToJsonSchemaFunctionView(this KernelFunctionMetadata function, bool includeOutputSchema = true, string nameDelimiter = "-")
     {
         var functionView = new JsonSchemaFunctionView
         {
-            Name = $"{function.PluginName}_{function.Name}",
+            Name = $"{function.PluginName}{nameDelimiter}{function.Name}",
             Description = function.Description,
         };
 
@@ -73,7 +74,9 @@ internal static class KernelFunctionMetadataExtensions
         var inputs = string.Join("\n", function.Parameters.Select(parameter =>
         {
             var defaultValueString = InternalTypeConverter.ConvertToString(parameter.DefaultValue);
-            defaultValueString = string.IsNullOrEmpty(defaultValueString) ? string.Empty : $" (default value: {defaultValueString})";
+            defaultValueString = string.IsNullOrEmpty(defaultValueString)
+                ? string.Empty
+                : $" (default value: {defaultValueString})";
             return $"    - {parameter.Name}: {parameter.Description}{defaultValueString}";
         }));
 

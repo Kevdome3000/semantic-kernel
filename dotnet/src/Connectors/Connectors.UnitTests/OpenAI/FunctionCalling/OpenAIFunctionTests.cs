@@ -21,7 +21,8 @@ public sealed class OpenAIFunctionTests
     {
         // Arrange & Act
         var schema = KernelJsonSchema.Parse("{\"type\": \"object\" }");
-        var functionParameter = new OpenAIFunctionParameter(name, description, true, typeof(string), schema);
+        var functionParameter = new OpenAIFunctionParameter(name, description, true, typeof(string),
+            schema);
 
         // Assert
         Assert.Equal(expectedName, functionParameter.Name);
@@ -67,7 +68,8 @@ public sealed class OpenAIFunctionTests
     public void ItCanConvertToFunctionDefinitionWithNullParameters()
     {
         // Arrange 
-        OpenAIFunction sut = new("plugin", "function", "description", null, null);
+        OpenAIFunction sut = new("plugin", "function", "description", null,
+            null);
 
         // Act
         var result = sut.ToFunctionDefinition();
@@ -90,7 +92,7 @@ public sealed class OpenAIFunctionTests
         FunctionDefinition result = sut.ToFunctionDefinition();
 
         // Assert
-        Assert.Equal("myplugin_myfunc", result.Name);
+        Assert.Equal("myplugin-myfunc", result.Name);
         Assert.Equal(sut.Description, result.Description);
     }
 
@@ -117,7 +119,7 @@ public sealed class OpenAIFunctionTests
         var act = JsonSerializer.Serialize(KernelJsonSchema.Parse(functionDefinition.Parameters));
 
         Assert.NotNull(functionDefinition);
-        Assert.Equal("Tests_TestFunction", functionDefinition.Name);
+        Assert.Equal("Tests-TestFunction", functionDefinition.Name);
         Assert.Equal("My test function", functionDefinition.Description);
         Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse(expectedParameterSchema)), JsonSerializer.Serialize(KernelJsonSchema.Parse(functionDefinition.Parameters)));
     }
@@ -142,7 +144,7 @@ public sealed class OpenAIFunctionTests
         FunctionDefinition functionDefinition = sut.ToFunctionDefinition();
 
         Assert.NotNull(functionDefinition);
-        Assert.Equal("Tests_TestFunction", functionDefinition.Name);
+        Assert.Equal("Tests-TestFunction", functionDefinition.Name);
         Assert.Equal("My test function", functionDefinition.Description);
         Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse(expectedParameterSchema)), JsonSerializer.Serialize(KernelJsonSchema.Parse(functionDefinition.Parameters)));
     }

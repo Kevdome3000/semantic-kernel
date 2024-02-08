@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Planning.Handlebars;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Plugins.DictionaryPlugin;
@@ -85,6 +86,13 @@ public class Example65_HandlebarsPlanner : BaseTest
         var planner = new HandlebarsPlanner(
             new HandlebarsPlannerOptions()
             {
+                // When using OpenAI models, we recommend using low values for temperature and top_p to minimize planner hallucinations.
+                ExecutionSettings = new OpenAIPromptExecutionSettings()
+                {
+                    Temperature = 0.0,
+                    TopP = 0.1,
+                },
+
                 // Change this if you want to test with loops regardless of model selection.
                 AllowLoops = allowLoopsInPlan
             });

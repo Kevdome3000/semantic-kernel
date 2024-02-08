@@ -1,8 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.IntegrationTests.Planners.Stepwise;
+
 using System;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Fakes;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -11,16 +14,16 @@ using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
-using SemanticKernel.IntegrationTests.Fakes;
-using SemanticKernel.IntegrationTests.TestSettings;
+using TestSettings;
 using xRetry;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.Planners.Stepwise;
+
 public sealed class FunctionCallingStepwisePlannerTests : IDisposable
 {
     private readonly string _bingApiKey;
+
 
     public FunctionCallingStepwisePlannerTests(ITestOutputHelper output)
     {
@@ -41,11 +44,12 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         this._bingApiKey = bingApiKeyCandidate;
     }
 
+
     [Theory]
-    [InlineData("What is the tallest mountain on Earth? How tall is it?", new string[] { "WebSearch_Search" })]
-    [InlineData("What is the weather in Seattle?", new string[] { "WebSearch_Search" })]
-    [InlineData("What is the current hour number, plus 5?", new string[] { "Time_HourNumber", "Math_Add" })]
-    [InlineData("What is 387 minus 22? Email the solution to John and Mary.", new string[] { "Math_Subtract", "Email_GetEmailAddress", "Email_SendEmail" })]
+    [InlineData("What is the tallest mountain on Earth? How tall is it?", new string[] { "WebSearch-Search" })]
+    [InlineData("What is the weather in Seattle?", new string[] { "WebSearch-Search" })]
+    [InlineData("What is the current hour number, plus 5?", new string[] { "Time-HourNumber", "Math-Add" })]
+    [InlineData("What is 387 minus 22? Email the solution to John and Mary.", new string[] { "Math-Subtract", "Email-GetEmailAddress", "Email-SendEmail" })]
     public async Task CanExecuteStepwisePlanAsync(string prompt, string[] expectedFunctions)
     {
         // Arrange
@@ -58,7 +62,7 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         kernel.ImportPluginFromType<EmailPluginFake>("Email");
 
         var planner = new FunctionCallingStepwisePlanner(
-            new FunctionCallingStepwisePlannerConfig() { MaxIterations = 10 });
+            new FunctionCallingStepwisePlannerOptions() { MaxIterations = 10 });
 
         // Act
         var planResult = await planner.ExecuteAsync(kernel, prompt);
@@ -71,11 +75,13 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         Assert.NotEmpty(planResult.FinalAnswer);
 
         string serializedChatHistory = JsonSerializer.Serialize(planResult.ChatHistory);
+
         foreach (string expectedFunction in expectedFunctions)
         {
             Assert.Contains(expectedFunction, serializedChatHistory, StringComparison.InvariantCultureIgnoreCase);
         }
     }
+
 
     [RetryFact(typeof(HttpOperationException))]
     public async Task DoesNotThrowWhenPluginFunctionThrowsNonCriticalExceptionAsync()
@@ -86,14 +92,15 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         var emailPluginFake = new ThrowingEmailPluginFake();
         kernel.Plugins.Add(
             KernelPluginFactory.CreateFromFunctions(
-            "Email",
-            new[] {
-                KernelFunctionFactory.CreateFromMethod(emailPluginFake.WritePoemAsync),
-                KernelFunctionFactory.CreateFromMethod(emailPluginFake.SendEmailAsync),
-            }));
+                "Email",
+                new[]
+                {
+                    KernelFunctionFactory.CreateFromMethod(emailPluginFake.WritePoemAsync),
+                    KernelFunctionFactory.CreateFromMethod(emailPluginFake.SendEmailAsync),
+                }));
 
         var planner = new FunctionCallingStepwisePlanner(
-            new FunctionCallingStepwisePlannerConfig() { MaxIterations = 5 });
+            new FunctionCallingStepwisePlannerOptions() { MaxIterations = 5 });
 
         // Act
         var planResult = await planner.ExecuteAsync(kernel, "Email a poem about cats to test@example.com");
@@ -104,9 +111,10 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         Assert.True(planResult.Iterations <= 5);
 
         string serializedChatHistory = JsonSerializer.Serialize(planResult.ChatHistory);
-        Assert.Contains("Email_WritePoem", serializedChatHistory, StringComparison.InvariantCultureIgnoreCase);
-        Assert.Contains("Email_SendEmail", serializedChatHistory, StringComparison.InvariantCultureIgnoreCase);
+        Assert.Contains("Email-WritePoem", serializedChatHistory, StringComparison.InvariantCultureIgnoreCase);
+        Assert.Contains("Email-SendEmail", serializedChatHistory, StringComparison.InvariantCultureIgnoreCase);
     }
+
 
     [RetryFact(typeof(HttpOperationException))]
     public async Task ThrowsWhenPluginFunctionThrowsCriticalExceptionAsync()
@@ -117,19 +125,21 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         var emailPluginFake = new ThrowingEmailPluginFake();
         kernel.Plugins.Add(
             KernelPluginFactory.CreateFromFunctions(
-            "Email",
-            new[] {
-                KernelFunctionFactory.CreateFromMethod(emailPluginFake.WriteJokeAsync),
-                KernelFunctionFactory.CreateFromMethod(emailPluginFake.SendEmailAsync),
-            }));
+                "Email",
+                new[]
+                {
+                    KernelFunctionFactory.CreateFromMethod(emailPluginFake.WriteJokeAsync),
+                    KernelFunctionFactory.CreateFromMethod(emailPluginFake.SendEmailAsync),
+                }));
 
         var planner = new FunctionCallingStepwisePlanner(
-            new FunctionCallingStepwisePlannerConfig() { MaxIterations = 5 });
+            new FunctionCallingStepwisePlannerOptions() { MaxIterations = 5 });
 
         // Act & Assert
         // Planner should call ThrowingEmailPluginFake.WriteJokeAsync, which throws InvalidProgramException
         await Assert.ThrowsAsync<InvalidProgramException>(async () => await planner.ExecuteAsync(kernel, "Email a joke to test@example.com"));
     }
+
 
     private Kernel InitializeKernel()
     {
@@ -139,17 +149,19 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         IKernelBuilder builder = Kernel.CreateBuilder();
         builder.Services.AddSingleton<ILoggerFactory>(this._logger);
         builder.AddOpenAIChatCompletion(
-                modelId: openAIConfiguration.ModelId,
-                apiKey: openAIConfiguration.ApiKey);
+            modelId: openAIConfiguration.ModelId,
+            apiKey: openAIConfiguration.ApiKey);
 
         var kernel = builder.Build();
 
         return kernel;
     }
 
+
     private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
     private readonly XunitLogger<Kernel> _logger;
+
 
     public void Dispose()
     {
@@ -157,10 +169,12 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
+
     ~FunctionCallingStepwisePlannerTests()
     {
         this.Dispose(false);
     }
+
 
     private void Dispose(bool disposing)
     {

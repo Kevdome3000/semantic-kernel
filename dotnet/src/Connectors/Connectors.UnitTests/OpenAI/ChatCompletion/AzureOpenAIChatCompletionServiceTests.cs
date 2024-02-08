@@ -51,7 +51,10 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
     public void ConstructorWithApiKeyWorksCorrectly(bool includeLoggerFactory)
     {
         // Arrange & Act
-        var service = includeLoggerFactory ? new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", loggerFactory: this._mockLoggerFactory.Object) : new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id");
+        var service = includeLoggerFactory
+            ? new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id",
+                loggerFactory: this._mockLoggerFactory.Object)
+            : new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id");
 
         // Assert
         Assert.NotNull(service);
@@ -66,7 +69,10 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
     {
         // Arrange & Act
         var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
-        var service = includeLoggerFactory ? new AzureOpenAIChatCompletionService("deployment", "https://endpoint", credentials, "model-id", loggerFactory: this._mockLoggerFactory.Object) : new AzureOpenAIChatCompletionService("deployment", "https://endpoint", credentials, "model-id");
+        var service = includeLoggerFactory
+            ? new AzureOpenAIChatCompletionService("deployment", "https://endpoint", credentials, "model-id",
+                loggerFactory: this._mockLoggerFactory.Object)
+            : new AzureOpenAIChatCompletionService("deployment", "https://endpoint", credentials, "model-id");
 
         // Assert
         Assert.NotNull(service);
@@ -81,7 +87,9 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
     {
         // Arrange & Act
         var client = new OpenAIClient("key");
-        var service = includeLoggerFactory ? new AzureOpenAIChatCompletionService("deployment", client, "model-id", loggerFactory: this._mockLoggerFactory.Object) : new AzureOpenAIChatCompletionService("deployment", client, "model-id");
+        var service = includeLoggerFactory
+            ? new AzureOpenAIChatCompletionService("deployment", client, "model-id", loggerFactory: this._mockLoggerFactory.Object)
+            : new AzureOpenAIChatCompletionService("deployment", client, "model-id");
 
         // Assert
         Assert.NotNull(service);
@@ -93,7 +101,8 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
     public async Task GetTextContentsWorksCorrectlyAsync()
     {
         // Arrange
-        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
+        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id",
+            this._httpClient);
         this._messageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
@@ -119,7 +128,8 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
     public async Task GetChatMessageContentsWithEmptyChoicesThrowsExceptionAsync()
     {
         // Arrange
-        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
+        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id",
+            this._httpClient);
         this._messageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent("{\"id\":\"response-id\",\"object\":\"chat.completion\",\"created\":1704208954,\"model\":\"gpt-4\",\"choices\":[],\"usage\":{\"prompt_tokens\":55,\"completion_tokens\":100,\"total_tokens\":155},\"system_fingerprint\":null}")
@@ -138,7 +148,8 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
     public async Task GetChatMessageContentsWithInvalidResultsPerPromptValueThrowsExceptionAsync(int resultsPerPrompt)
     {
         // Arrange
-        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
+        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id",
+            this._httpClient);
         var settings = new OpenAIPromptExecutionSettings { ResultsPerPrompt = resultsPerPrompt };
 
         // Act & Assert
@@ -152,7 +163,8 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
     public async Task GetChatMessageContentsHandlesSettingsCorrectlyAsync()
     {
         // Arrange
-        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
+        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id",
+            this._httpClient);
         var settings = new OpenAIPromptExecutionSettings()
         {
             MaxTokens = 123,
@@ -218,7 +230,8 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
     public async Task GetChatMessageContentsHandlesResponseFormatCorrectlyAsync(object responseFormat, string? expectedResponseType)
     {
         // Arrange
-        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
+        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id",
+            this._httpClient);
         var settings = new OpenAIPromptExecutionSettings
         {
             ResponseFormat = responseFormat
@@ -249,7 +262,8 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
     {
         // Arrange
         var kernel = Kernel.CreateBuilder().Build();
-        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
+        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id",
+            this._httpClient);
         var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = behavior };
 
         this._messageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(HttpStatusCode.OK)
@@ -294,7 +308,8 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
 
         kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]));
 
-        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient, this._mockLoggerFactory.Object);
+        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id",
+            this._httpClient, this._mockLoggerFactory.Object);
         var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
         using var response1 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_multiple_function_calls_test_response.json")) };
@@ -331,7 +346,8 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
 
         kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("MyPlugin", [function]));
 
-        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient, this._mockLoggerFactory.Object);
+        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id",
+            this._httpClient, this._mockLoggerFactory.Object);
         var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
         var responses = new List<HttpResponseMessage>();
@@ -369,7 +385,8 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
 
         kernel.Plugins.Add(plugin);
 
-        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient, this._mockLoggerFactory.Object);
+        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id",
+            this._httpClient, this._mockLoggerFactory.Object);
         var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.RequireFunction(openAIFunction, autoInvoke: true) };
 
         using var response1 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_single_function_call_test_response.json")) };
@@ -396,7 +413,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         var secondContentJson = JsonSerializer.Deserialize<JsonElement>(secondContent);
 
         Assert.Equal(1, firstContentJson.GetProperty("tools").GetArrayLength());
-        Assert.Equal("MyPlugin_GetCurrentWeather", firstContentJson.GetProperty("tool_choice").GetProperty("function").GetProperty("name").GetString());
+        Assert.Equal("MyPlugin-GetCurrentWeather", firstContentJson.GetProperty("tool_choice").GetProperty("function").GetProperty("name").GetString());
 
         Assert.Equal("none", secondContentJson.GetProperty("tool_choice").GetString());
     }
@@ -406,7 +423,8 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
     public async Task GetStreamingTextContentsWorksCorrectlyAsync()
     {
         // Arrange
-        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
+        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id",
+            this._httpClient);
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes(OpenAITestHelper.GetTestResponse("chat_completion_streaming_test_response.txt")));
 
         this._messageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(HttpStatusCode.OK)
@@ -426,7 +444,8 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
     public async Task GetStreamingChatMessageContentsWorksCorrectlyAsync()
     {
         // Arrange
-        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
+        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id",
+            this._httpClient);
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes(OpenAITestHelper.GetTestResponse("chat_completion_streaming_test_response.txt")));
 
         this._messageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(HttpStatusCode.OK)
@@ -463,7 +482,8 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
 
         kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]));
 
-        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient, this._mockLoggerFactory.Object);
+        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id",
+            this._httpClient, this._mockLoggerFactory.Object);
         var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
         using var response1 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_streaming_multiple_function_calls_test_response.txt")) };
@@ -499,7 +519,8 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
 
         kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("MyPlugin", [function]));
 
-        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient, this._mockLoggerFactory.Object);
+        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id",
+            this._httpClient, this._mockLoggerFactory.Object);
         var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
         var responses = new List<HttpResponseMessage>();
@@ -539,7 +560,8 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
 
         kernel.Plugins.Add(plugin);
 
-        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient, this._mockLoggerFactory.Object);
+        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id",
+            this._httpClient, this._mockLoggerFactory.Object);
         var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.RequireFunction(openAIFunction, autoInvoke: true) };
 
         using var response1 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_streaming_single_function_call_test_response.txt")) };
@@ -568,7 +590,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         var secondContentJson = JsonSerializer.Deserialize<JsonElement>(secondContent);
 
         Assert.Equal(1, firstContentJson.GetProperty("tools").GetArrayLength());
-        Assert.Equal("MyPlugin_GetCurrentWeather", firstContentJson.GetProperty("tool_choice").GetProperty("function").GetProperty("name").GetString());
+        Assert.Equal("MyPlugin-GetCurrentWeather", firstContentJson.GetProperty("tool_choice").GetProperty("function").GetProperty("name").GetString());
 
         Assert.Equal("none", secondContentJson.GetProperty("tool_choice").GetString());
     }

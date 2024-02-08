@@ -140,9 +140,15 @@ internal sealed class Agent : IAgent
         }
 
         this.Capabilities =
-            (this.Kernel.Plugins.Count > 0 ? AgentCapability.Functions : AgentCapability.None) |
-            (this._model.Tools.Any(t => string.Equals(t.Type, ToolRetrieval, StringComparison.OrdinalIgnoreCase)) ? AgentCapability.Retrieval : AgentCapability.None) |
-            (this._model.Tools.Any(t => string.Equals(t.Type, ToolCodeInterpreter, StringComparison.OrdinalIgnoreCase)) ? AgentCapability.CodeInterpreter : AgentCapability.None);
+            (this.Kernel.Plugins.Count > 0
+                ? AgentCapability.Functions
+                : AgentCapability.None) |
+            (this._model.Tools.Any(t => string.Equals(t.Type, ToolRetrieval, StringComparison.OrdinalIgnoreCase))
+                ? AgentCapability.Retrieval
+                : AgentCapability.None) |
+            (this._model.Tools.Any(t => string.Equals(t.Type, ToolCodeInterpreter, StringComparison.OrdinalIgnoreCase))
+                ? AgentCapability.CodeInterpreter
+                : AgentCapability.None);
 
         this._tools = this._model.Tools.Concat(this.Kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolModel(p.Name)))).ToArray();
     }
@@ -258,7 +264,7 @@ internal sealed class Agent : IAgent
                 new AgentResponse
                 {
                     ThreadId = thread.Id,
-                    Message = string.Concat(messages.Select(m => m.Content)),
+                    Message = string.Join(Environment.NewLine, messages.Select(m => m.Content)),
                 };
 
             return response;

@@ -1,17 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Experimental.Agents;
-
-
-using Xunit.Abstractions;
-
-namespace Examples;
-
 using Xunit;
+using Xunit.Abstractions;
 
 
 // ReSharper disable once InconsistentNaming
@@ -29,30 +26,20 @@ public sealed class Example75_AgentTools : BaseTest
     // Track agents for clean-up
     private readonly List<IAgent> _agents = new();
 
+
     /// <summary>
-    /// Show how to utilize code_interpreter and retrieval tools.
+    /// Show how to utilize code_interpreter tool.
     /// </summary>
     [Fact]
-    public async Task RunAsync()
+    public async Task RunCodeInterpreterToolAsync()
     {
-        this.WriteLine("======== Example75_AgentTools ========");
+        this.WriteLine("======== Using CodeInterpreter tool ========");
 
         if (TestConfiguration.OpenAI.ApiKey == null)
         {
             this.WriteLine("OpenAI apiKey not found. Skipping example.");
             return;
         }
-
-        // Run agent with 'code_interpreter' tool
-        await RunCodeInterpreterToolAsync();
-
-        // Run agent with 'retrieval' tool
-        await RunRetrievalToolAsync();
-    }
-
-    private async Task RunCodeInterpreterToolAsync()
-    {
-        this.WriteLine("======== Run:CodeInterpreterTool ========");
 
         var builder =
             new AgentBuilder()
@@ -81,9 +68,20 @@ public sealed class Example75_AgentTools : BaseTest
         }
     }
 
-    private async Task RunRetrievalToolAsync()
+
+    /// <summary>
+    /// Show how to utilize retrieval tool.
+    /// </summary>
+    [Fact]
+    public async Task RunRetrievalToolAsync()
     {
-        this.WriteLine("======== Run:RunRetrievalTool ========");
+        this.WriteLine("======== Using Retrieval tool ========");
+
+        if (TestConfiguration.OpenAI.ApiKey == null)
+        {
+            this.WriteLine("OpenAI apiKey not found. Skipping example.");
+            return;
+        }
 
         // REQUIRED:
         //
@@ -124,6 +122,7 @@ public sealed class Example75_AgentTools : BaseTest
         }
     }
 
+
     /// <summary>
     /// Common chat loop used for: RunCodeInterpreterToolAsync and RunRetrievalToolAsync.
     /// Processes each question for both "default" and "enabled" agents.
@@ -147,6 +146,7 @@ public sealed class Example75_AgentTools : BaseTest
             await foreach (var message in agent.InvokeAsync(question))
             {
                 string content = message.Content;
+
                 foreach (var annotation in message.Annotations)
                 {
                     content = content.Replace(annotation.Label, string.Empty, StringComparison.Ordinal);
@@ -157,6 +157,7 @@ public sealed class Example75_AgentTools : BaseTest
                 if (message.Annotations.Count > 0)
                 {
                     this.WriteLine("\n# files:");
+
                     foreach (var annotation in message.Annotations)
                     {
                         this.WriteLine($"* {annotation.FileId}");
@@ -168,6 +169,7 @@ public sealed class Example75_AgentTools : BaseTest
         }
     }
 
+
     private IAgent Track(IAgent agent)
     {
         this._agents.Add(agent);
@@ -175,5 +177,8 @@ public sealed class Example75_AgentTools : BaseTest
         return agent;
     }
 
-    public Example75_AgentTools(ITestOutputHelper output) : base(output) { }
+
+    public Example75_AgentTools(ITestOutputHelper output) : base(output)
+    {
+    }
 }

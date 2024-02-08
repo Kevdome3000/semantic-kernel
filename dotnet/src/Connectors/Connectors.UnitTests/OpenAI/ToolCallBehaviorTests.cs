@@ -45,7 +45,11 @@ public sealed class ToolCallBehaviorTests
     public void EnableFunctionsReturnsEnabledFunctionsInstance()
     {
         // Arrange & Act
-        List<OpenAIFunction> functions = [new("Plugin", "Function", "description", [], null)];
+        List<OpenAIFunction> functions =
+        [
+            new("Plugin", "Function", "description", [],
+                null)
+        ];
         var behavior = ToolCallBehavior.EnableFunctions(functions);
 
         // Assert
@@ -57,7 +61,8 @@ public sealed class ToolCallBehaviorTests
     public void RequireFunctionReturnsRequiredFunctionInstance()
     {
         // Arrange & Act
-        var behavior = ToolCallBehavior.RequireFunction(new("Plugin", "Function", "description", [], null));
+        var behavior = ToolCallBehavior.RequireFunction(new("Plugin", "Function", "description", [],
+            null));
 
         // Assert
         Assert.IsType<RequiredFunction>(behavior);
@@ -159,7 +164,7 @@ public sealed class ToolCallBehaviorTests
 
         // Act & Assert
         var exception = Assert.Throws<KernelException>(() => enabledFunctions.ConfigureOptions(kernel, chatCompletionsOptions));
-        Assert.Equal($"The specified {nameof(EnabledFunctions)} function MyPlugin_MyFunction is not available in the kernel.", exception.Message);
+        Assert.Equal($"The specified {nameof(EnabledFunctions)} function MyPlugin-MyFunction is not available in the kernel.", exception.Message);
     }
 
 
@@ -226,7 +231,7 @@ public sealed class ToolCallBehaviorTests
 
         Assert.NotNull(tool);
 
-        Assert.Equal("MyPlugin_MyFunction", tool.Name);
+        Assert.Equal("MyPlugin-MyFunction", tool.Name);
         Assert.Equal("Test Function", tool.Description);
         Assert.Equal("{\"type\":\"object\",\"required\":[],\"properties\":{\"parameter1\":{\"type\":\"string\"},\"parameter2\":{\"type\":\"string\"}}}", tool.Parameters.ToString());
     }

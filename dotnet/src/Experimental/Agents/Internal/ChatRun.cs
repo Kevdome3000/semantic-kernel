@@ -5,6 +5,7 @@ namespace Microsoft.SemanticKernel.Experimental.Agents.Internal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -47,12 +48,13 @@ internal sealed class ChatRun
 
 
     /// <inheritdoc/>
-    public async Task<IList<string>> GetResultAsync(CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> GetResultAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         // Poll until actionable
         await PollRunStatus().ConfigureAwait(false);
 
         // Retrieve steps
+        var processedMessageIds = new HashSet<string>();
         var steps = await this._restContext.GetRunStepsAsync(this.ThreadId, this.Id, cancellationToken).ConfigureAwait(false);
 
         do
@@ -79,15 +81,21 @@ internal sealed class ChatRun
             {
                 throw new AgentException($"Unexpected failure processing run: {this.Id}: {this._model.LastError?.Message ?? "Unknown"}");
             }
+
+            var newMessageIds =
+                steps.Data
+                    .Where(s => s.StepDetails.MessageCreation != null)
+                    .Select(s => (s.StepDetails.MessageCreation!.MessageId, s.CompletedAt))
+                    .Where(t => !processedMessageIds.Contains(t.MessageId))
+                    .OrderBy(t => t.CompletedAt)
+                    .Select(t => t.MessageId);
+
+            foreach (var messageId in newMessageIds)
+            {
+                processedMessageIds.Add(messageId);
+                yield return messageId;
+            }
         } while (!CompletedState.Equals(this._model.Status, StringComparison.OrdinalIgnoreCase));
-
-        var messageIds =
-            steps.Data
-                .Where(s => s.StepDetails.MessageCreation != null)
-                .Select(s => s.StepDetails.MessageCreation!.MessageId)
-                .ToArray();
-
-        return messageIds;
 
         async Task PollRunStatus(bool force = false)
         {
@@ -99,7 +107,9 @@ internal sealed class ChatRun
                 if (!force)
                 {
                     // Reduce polling frequency after a couple attempts
-                    await Task.Delay(count >= 2 ? s_pollingInterval : s_pollingBackoff, cancellationToken).ConfigureAwait(false);
+                    await Task.Delay(count >= 2
+                        ? s_pollingInterval
+                        : s_pollingBackoff, cancellationToken).ConfigureAwait(false);
                     ++count;
                 }
 

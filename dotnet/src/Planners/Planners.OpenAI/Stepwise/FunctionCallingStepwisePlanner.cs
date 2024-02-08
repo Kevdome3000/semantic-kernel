@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Planning;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -7,13 +9,12 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using ChatCompletion;
+using Connectors.OpenAI;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
 using Json.More;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-namespace Microsoft.SemanticKernel.Planning;
 
 /// <summary>
 /// A planner that uses OpenAI function calling in a stepwise manner to fulfill a user goal or question.
@@ -23,15 +24,16 @@ public sealed class FunctionCallingStepwisePlanner
     /// <summary>
     /// Initialize a new instance of the <see cref="FunctionCallingStepwisePlanner"/> class.
     /// </summary>
-    /// <param name="config">The planner configuration.</param>
+    /// <param name="options">The planner options.</param>
     public FunctionCallingStepwisePlanner(
-        FunctionCallingStepwisePlannerConfig? config = null)
+        FunctionCallingStepwisePlannerOptions? options = null)
     {
-        this.Config = config ?? new();
-        this._generatePlanYaml = this.Config.GetPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Stepwise.GeneratePlan.yaml");
-        this._stepPrompt = this.Config.GetStepPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Stepwise.StepPrompt.txt");
-        this.Config.ExcludedPlugins.Add(StepwisePlannerPluginName);
+        this._options = options ?? new();
+        this._generatePlanYaml = this._options.GetInitialPlanPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Stepwise.GeneratePlan.yaml");
+        this._stepPrompt = this._options.GetStepPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Stepwise.StepPrompt.txt");
+        this._options.ExcludedPlugins.Add(StepwisePlannerPluginName);
     }
+
 
     /// <summary>
     /// Execute a plan
@@ -50,8 +52,10 @@ public sealed class FunctionCallingStepwisePlanner
         return PlannerInstrumentation.InvokePlanAsync(
             static (FunctionCallingStepwisePlanner plan, Kernel kernel, string? question, CancellationToken cancellationToken)
                 => plan.ExecuteCoreAsync(kernel, question!, cancellationToken),
-            this, kernel, question, logger, cancellationToken);
+            this, kernel, question, logger,
+            cancellationToken);
     }
+
 
     #region private
 
@@ -66,7 +70,7 @@ public sealed class FunctionCallingStepwisePlanner
         ILoggerFactory loggerFactory = kernel.LoggerFactory;
         ILogger logger = loggerFactory.CreateLogger(this.GetType()) ?? NullLogger.Instance;
         var promptTemplateFactory = new KernelPromptTemplateFactory(loggerFactory);
-        var stepExecutionSettings = this.Config.ExecutionSettings ?? new OpenAIPromptExecutionSettings();
+        var stepExecutionSettings = this._options.ExecutionSettings ?? new OpenAIPromptExecutionSettings();
 
         // Clone the kernel so that we can add planner-specific plugins without affecting the original kernel instance
         var clonedKernel = kernel.Clone();
@@ -75,19 +79,21 @@ public sealed class FunctionCallingStepwisePlanner
         // Create and invoke a kernel function to generate the initial plan
         var initialPlan = await this.GeneratePlanAsync(question, clonedKernel, logger, cancellationToken).ConfigureAwait(false);
 
-        var chatHistoryForSteps = await this.BuildChatHistoryForStepAsync(question, initialPlan, clonedKernel, promptTemplateFactory, cancellationToken).ConfigureAwait(false);
+        var chatHistoryForSteps = await this.BuildChatHistoryForStepAsync(question, initialPlan, clonedKernel, promptTemplateFactory,
+            cancellationToken).ConfigureAwait(false);
 
-        for (int i = 0; i < this.Config.MaxIterations; i++)
+        for (int i = 0; i < this._options.MaxIterations; i++)
         {
             // sleep for a bit to avoid rate limiting
             if (i > 0)
             {
-                await Task.Delay(this.Config.MinIterationTimeMs, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(this._options.MinIterationTimeMs, cancellationToken).ConfigureAwait(false);
             }
 
             // For each step, request another completion to select a function for that step
             chatHistoryForSteps.AddUserMessage(StepwiseUserMessage);
-            var chatResult = await this.GetCompletionWithFunctionsAsync(chatHistoryForSteps, clonedKernel, chatCompletion, stepExecutionSettings, logger, cancellationToken).ConfigureAwait(false);
+            var chatResult = await this.GetCompletionWithFunctionsAsync(chatHistoryForSteps, clonedKernel, chatCompletion, stepExecutionSettings,
+                logger, cancellationToken).ConfigureAwait(false);
             chatHistoryForSteps.Add(chatResult);
 
             // Check for function response
@@ -154,9 +160,10 @@ public sealed class FunctionCallingStepwisePlanner
         {
             FinalAnswer = string.Empty,
             ChatHistory = chatHistoryForSteps,
-            Iterations = this.Config.MaxIterations,
+            Iterations = this._options.MaxIterations,
         };
     }
+
 
     private async Task<ChatMessageContent> GetCompletionWithFunctionsAsync(
         ChatHistory chatHistory,
@@ -168,14 +175,18 @@ public sealed class FunctionCallingStepwisePlanner
     {
         openAIExecutionSettings.ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions;
 
-        await this.ValidateTokenCountAsync(chatHistory, kernel, logger, openAIExecutionSettings, cancellationToken).ConfigureAwait(false);
+        await this.ValidateTokenCountAsync(chatHistory, kernel, logger, openAIExecutionSettings,
+            cancellationToken).ConfigureAwait(false);
         return await chatCompletion.GetChatMessageContentAsync(chatHistory, openAIExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
     }
 
+
     private async Task<string> GetFunctionsManualAsync(Kernel kernel, ILogger logger, CancellationToken cancellationToken)
     {
-        return await kernel.Plugins.GetJsonSchemaFunctionsManualAsync(this.Config, null, logger, false, cancellationToken).ConfigureAwait(false);
+        return await kernel.Plugins.GetJsonSchemaFunctionsManualAsync(this._options, null, logger, false,
+            OpenAIFunction.NameSeparator, cancellationToken).ConfigureAwait(false);
     }
+
 
     // Create and invoke a kernel function to generate the initial plan
     private async Task<string> GeneratePlanAsync(string question, Kernel kernel, ILogger logger, CancellationToken cancellationToken)
@@ -184,12 +195,14 @@ public sealed class FunctionCallingStepwisePlanner
         string functionsManual = await this.GetFunctionsManualAsync(kernel, logger, cancellationToken).ConfigureAwait(false);
         var generatePlanArgs = new KernelArguments
         {
+            [NameDelimiterKey] = OpenAIFunction.NameSeparator,
             [AvailableFunctionsKey] = functionsManual,
             [GoalKey] = question
         };
         var generatePlanResult = await kernel.InvokeAsync(generatePlanFunction, generatePlanArgs, cancellationToken).ConfigureAwait(false);
         return generatePlanResult.GetValue<string>() ?? throw new KernelException("Failed get a completion for the plan.");
     }
+
 
     private async Task<ChatHistory> BuildChatHistoryForStepAsync(
         string goal,
@@ -213,6 +226,7 @@ public sealed class FunctionCallingStepwisePlanner
         return chatHistory;
     }
 
+
     private bool TryGetFunctionResponse(ChatMessageContent chatMessage, [NotNullWhen(true)] out IReadOnlyList<OpenAIFunctionToolCall>? functionResponses, out string? errorMessage)
     {
         OpenAIChatMessageContent? openAiChatMessage = chatMessage as OpenAIChatMessageContent;
@@ -220,6 +234,7 @@ public sealed class FunctionCallingStepwisePlanner
 
         functionResponses = null;
         errorMessage = null;
+
         try
         {
             functionResponses = openAiChatMessage.GetOpenAIFunctionToolCalls();
@@ -231,6 +246,7 @@ public sealed class FunctionCallingStepwisePlanner
 
         return functionResponses is { Count: > 0 };
     }
+
 
     private bool TryFindFinalAnswer(OpenAIFunctionToolCall functionResponse, out string finalAnswer, out string? errorMessage)
     {
@@ -251,6 +267,7 @@ public sealed class FunctionCallingStepwisePlanner
         }
         return false;
     }
+
 
     private static string ParseObjectAsString(object? valueObj)
     {
@@ -283,6 +300,7 @@ public sealed class FunctionCallingStepwisePlanner
         return resultStr;
     }
 
+
     private async Task ValidateTokenCountAsync(
         ChatHistory chatHistory,
         Kernel kernel,
@@ -290,25 +308,30 @@ public sealed class FunctionCallingStepwisePlanner
         OpenAIPromptExecutionSettings openAIExecutionSettings,
         CancellationToken cancellationToken)
     {
-        string functionManual = string.Empty;
-
-        // If using functions, get the functions manual to include in token count estimate
-        if (openAIExecutionSettings.ToolCallBehavior == ToolCallBehavior.EnableKernelFunctions)
+        if (this._options.MaxPromptTokens is not null)
         {
-            functionManual = await this.GetFunctionsManualAsync(kernel, logger, cancellationToken).ConfigureAwait(false);
-        }
+            string functionManual = string.Empty;
 
-        var tokenCount = chatHistory.GetTokenCount(additionalMessage: functionManual);
-        if (tokenCount >= this.Config.MaxPromptTokens)
-        {
-            throw new KernelException("ChatHistory is too long to get a completion. Try reducing the available functions.");
+            // If using functions, get the functions manual to include in token count estimate
+            if (openAIExecutionSettings.ToolCallBehavior == ToolCallBehavior.EnableKernelFunctions)
+            {
+                functionManual = await this.GetFunctionsManualAsync(kernel, logger, cancellationToken).ConfigureAwait(false);
+            }
+
+            var tokenCount = chatHistory.GetTokenCount(additionalMessage: functionManual);
+
+            if (tokenCount >= this._options.MaxPromptTokens)
+            {
+                throw new KernelException("ChatHistory is too long to get a completion. Try reducing the available functions.");
+            }
         }
     }
 
+
     /// <summary>
-    /// The configuration for the StepwisePlanner
+    /// The options for the planner
     /// </summary>
-    private FunctionCallingStepwisePlannerConfig Config { get; }
+    private readonly FunctionCallingStepwisePlannerOptions _options;
 
     /// <summary>
     /// The prompt YAML for generating the initial stepwise plan.
@@ -328,14 +351,16 @@ public sealed class FunctionCallingStepwisePlanner
     /// <summary>
     /// The user message to add to the chat history for each step of the plan.
     /// </summary>
-    private const string StepwiseUserMessage = "Perform the next step of the plan if there is more work to do. When you have reached a final answer, use the UserInteraction_SendFinalAnswer function to communicate this back to the user.";
+    private const string StepwiseUserMessage = "Perform the next step of the plan if there is more work to do. When you have reached a final answer, use the UserInteraction-SendFinalAnswer function to communicate this back to the user.";
 
     // Context variable keys
     private const string AvailableFunctionsKey = "available_functions";
     private const string InitialPlanKey = "initial_plan";
     private const string GoalKey = "goal";
+    private const string NameDelimiterKey = "name_delimiter";
 
     #endregion private
+
 
     /// <summary>
     /// Plugin used by the <see cref="FunctionCallingStepwisePlanner"/> to interact with the caller.
