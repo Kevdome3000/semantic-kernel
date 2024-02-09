@@ -766,7 +766,8 @@ public class RedisMemoryStoreTests
                 {
                     this.MockHashSet(collection, testRecords[i], () =>
                     {
-                        this.MockSearch(collection, compareEmbedding, topN, threshold, returnStringVectorScore: true);
+                        this.MockSearch(collection, compareEmbedding, topN, threshold,
+                            returnStringVectorScore: true);
                     });
                 }
             }
@@ -792,6 +793,12 @@ public class RedisMemoryStoreTests
 
     private void MockCreateIndex(string collection, Action? callback = null)
     {
+        var mockBatch = new Mock<IBatch>();
+
+        this._mockDatabase
+            .Setup(x => x.CreateBatch(It.IsAny<object>()))
+            .Returns(mockBatch.Object);
+
         this._mockDatabase
             .Setup<Task<RedisResult>>(x => x.ExecuteAsync(
                 It.Is<string>(x => x == "FT.CREATE"),
@@ -941,11 +948,18 @@ public class RedisMemoryStoreTests
     }
 
 
-    private void MockSearch(string collection, ReadOnlyMemory<float> compareEmbedding, int topN, double threshold, bool returnStringVectorScore = false)
+    private void MockSearch(
+        string collection,
+        ReadOnlyMemory<float> compareEmbedding,
+        int topN,
+        double threshold,
+        bool returnStringVectorScore = false)
     {
         List<(MemoryRecord Record, double Score)> embeddings = new();
 
-        List<MemoryRecord> records = this._collections.TryGetValue(collection, out var value) ? value : new();
+        List<MemoryRecord> records = this._collections.TryGetValue(collection, out var value)
+            ? value
+            : new();
 
         foreach (var record in records)
         {
@@ -981,7 +995,9 @@ public class RedisMemoryStoreTests
                     RedisResult.Create("timestamp", ResultType.BulkString),
                     RedisResult.Create(timestamp, ResultType.BulkString),
                     RedisResult.Create("vector_score", ResultType.BulkString),
-                    RedisResult.Create(returnStringVectorScore ? $"score:{1 - item.Score}" : 1 - item.Score, ResultType.BulkString),
+                    RedisResult.Create(returnStringVectorScore
+                        ? $"score:{1 - item.Score}"
+                        : 1 - item.Score, ResultType.BulkString),
                 })
             );
         }

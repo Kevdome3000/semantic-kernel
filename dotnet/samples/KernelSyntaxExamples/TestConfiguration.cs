@@ -43,6 +43,7 @@ public sealed class TestConfiguration
     public static ChromaConfig Chroma => LoadSection<ChromaConfig>();
     public static KustoConfig Kusto => LoadSection<KustoConfig>();
     public static MongoDBConfig MongoDB => LoadSection<MongoDBConfig>();
+    public static ChatGPTRetrievalPluginConfig ChatGPTRetrievalPlugin => LoadSection<ChatGPTRetrievalPluginConfig>();
 
 
     private static T LoadSection<T>([CallerMemberName] string? caller = null)
@@ -196,6 +197,12 @@ public sealed class TestConfiguration
     public class MongoDBConfig
     {
         public string ConnectionString { get; set; }
+    }
+
+
+    public class ChatGPTRetrievalPluginConfig
+    {
+        public string Token { get; set; }
     }
 
 
