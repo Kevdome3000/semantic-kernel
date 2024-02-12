@@ -29,6 +29,7 @@ using Http;
 /// </summary>
 internal abstract class ClientCore
 {
+
     private const int MaxResultsPerPrompt = 128;
 
     /// <summary>
@@ -132,7 +133,8 @@ internal abstract class ClientCore
 
         var options = CreateCompletionsOptions(text, textExecutionSettings, this.DeploymentOrModelName);
 
-        var responseData = (await RunRequestAsync(() => this.Client.GetCompletionsAsync(options, cancellationToken)).ConfigureAwait(false)).Value;
+        var responseData = (await RunRequestAsync(() => this.Client.GetCompletionsAsync(options, cancellationToken)).
+            ConfigureAwait(false)).Value;
 
         if (responseData.Choices.Count == 0)
         {
@@ -141,8 +143,10 @@ internal abstract class ClientCore
 
         this.CaptureUsageDetails(responseData.Usage);
         IReadOnlyDictionary<string, object?> metadata = GetResponseMetadata(responseData);
+
         return responseData.Choices.Select(choice => new TextContent(choice.Text, this.DeploymentOrModelName, choice, Encoding.UTF8,
-            metadata)).ToList();
+                metadata)).
+            ToList();
     }
 
 
@@ -158,7 +162,8 @@ internal abstract class ClientCore
 
         var options = CreateCompletionsOptions(prompt, textExecutionSettings, this.DeploymentOrModelName);
 
-        StreamingResponse<Completions>? response = await RunRequestAsync(() => this.Client.GetCompletionsStreamingAsync(options, cancellationToken)).ConfigureAwait(false);
+        StreamingResponse<Completions>? response = await RunRequestAsync(() => this.Client.GetCompletionsStreamingAsync(options, cancellationToken)).
+            ConfigureAwait(false);
 
         IReadOnlyDictionary<string, object?>? metadata = null;
 
@@ -227,7 +232,9 @@ internal abstract class ClientCore
 
         if (data.Count > 0)
         {
-            var response = await RunRequestAsync(() => this.Client.GetEmbeddingsAsync(new(this.DeploymentOrModelName, data), cancellationToken)).ConfigureAwait(false);
+            var response = await RunRequestAsync(() => this.Client.GetEmbeddingsAsync(new(this.DeploymentOrModelName, data), cancellationToken)).
+                ConfigureAwait(false);
+
             var embeddings = response.Value.Data;
 
             if (embeddings.Count != data.Count)
@@ -273,7 +280,9 @@ internal abstract class ClientCore
         for (int iteration = 1;; iteration++)
         {
             // Make the request.
-            var responseData = (await RunRequestAsync(() => this.Client.GetChatCompletionsAsync(chatOptions, cancellationToken)).ConfigureAwait(false)).Value;
+            var responseData = (await RunRequestAsync(() => this.Client.GetChatCompletionsAsync(chatOptions, cancellationToken)).
+                ConfigureAwait(false)).Value;
+
             this.CaptureUsageDetails(responseData.Usage);
 
             if (responseData.Choices.Count == 0)
@@ -287,7 +296,8 @@ internal abstract class ClientCore
             // Or if we are auto-invoking but we somehow end up with other than 1 choice even though only 1 was requested, similarly bail.
             if (!autoInvoke || responseData.Choices.Count != 1)
             {
-                return responseData.Choices.Select(chatChoice => new OpenAIChatMessageContent(chatChoice.Message, this.DeploymentOrModelName, metadata)).ToList();
+                return responseData.Choices.Select(chatChoice => new OpenAIChatMessageContent(chatChoice.Message, this.DeploymentOrModelName, metadata)).
+                    ToList();
             }
 
             Debug.Assert(kernel is not null);
@@ -312,7 +322,8 @@ internal abstract class ClientCore
 
             if (this.Logger.IsEnabled(LogLevel.Trace))
             {
-                this.Logger.LogTrace("Function call requests: {Requests}", string.Join(", ", result.ToolCalls.OfType<ChatCompletionsFunctionToolCall>().Select(ftc => $"{ftc.Name}({ftc.Arguments})")));
+                this.Logger.LogTrace("Function call requests: {Requests}", string.Join(", ", result.ToolCalls.OfType<ChatCompletionsFunctionToolCall>().
+                    Select(ftc => $"{ftc.Name}({ftc.Arguments})")));
             }
 
             // Add the original assistant message to the chatOptions; this is required for the service
@@ -333,6 +344,7 @@ internal abstract class ClientCore
                 {
                     AddResponseMessage(chatOptions, chat, result: null, "Error: Tool call was not a function call.",
                         toolCall.Id, this.Logger);
+
                     continue;
                 }
 
@@ -347,6 +359,7 @@ internal abstract class ClientCore
                 {
                     AddResponseMessage(chatOptions, chat, result: null, "Error: Function call arguments were invalid JSON.",
                         toolCall.Id, this.Logger);
+
                     continue;
                 }
 
@@ -358,6 +371,7 @@ internal abstract class ClientCore
                 {
                     AddResponseMessage(chatOptions, chat, result: null, "Error: Function call request for a function that wasn't defined.",
                         toolCall.Id, this.Logger);
+
                     continue;
                 }
 
@@ -366,6 +380,7 @@ internal abstract class ClientCore
                 {
                     AddResponseMessage(chatOptions, chat, result: null, "Error: Requested function could not be found.",
                         toolCall.Id, this.Logger);
+
                     continue;
                 }
 
@@ -378,7 +393,8 @@ internal abstract class ClientCore
                     // Note that we explicitly do not use executionSettings here; those pertain to the all-up operation and not necessarily to any
                     // further calls made as part of this function invocation. In particular, we must not use function calling settings naively here,
                     // as the called function could in turn telling the model about itself as a possible candidate for invocation.
-                    functionResult = (await function.InvokeAsync(kernel, functionArgs, cancellationToken: cancellationToken).ConfigureAwait(false)).GetValue<object>() ?? string.Empty;
+                    functionResult = (await function.InvokeAsync(kernel, functionArgs, cancellationToken: cancellationToken).
+                        ConfigureAwait(false)).GetValue<object>() ?? string.Empty;
                 }
 #pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception e)
@@ -386,12 +402,14 @@ internal abstract class ClientCore
                 {
                     AddResponseMessage(chatOptions, chat, null, $"Error: Exception while invoking function. {e.Message}",
                         toolCall.Id, this.Logger);
+
                     continue;
                 }
                 finally
                 {
                     s_inflightAutoInvokes.Value--;
                 }
+
                 AddResponseMessage(chatOptions, chat, functionResult as string ?? JsonSerializer.Serialize(functionResult), errorMessage: null,
                     toolCall.Id, this.Logger);
 
@@ -469,7 +487,8 @@ internal abstract class ClientCore
         for (int iteration = 1;; iteration++)
         {
             // Make the request.
-            var response = await RunRequestAsync(() => this.Client.GetChatCompletionsStreamingAsync(chatOptions, cancellationToken)).ConfigureAwait(false);
+            var response = await RunRequestAsync(() => this.Client.GetChatCompletionsStreamingAsync(chatOptions, cancellationToken)).
+                ConfigureAwait(false);
 
             // Reset state
             contentBuilder?.Clear();
@@ -532,6 +551,7 @@ internal abstract class ClientCore
             // Add the original assistant message to the chatOptions; this is required for the service
             // to understand the tool call responses.
             chatOptions.Messages.Add(GetRequestMessage(streamedRole ?? default, content, toolCalls));
+
             chat.Add(new OpenAIChatMessageContent(streamedRole ?? default, content, this.DeploymentOrModelName, toolCalls,
                 metadata));
 
@@ -543,6 +563,7 @@ internal abstract class ClientCore
                 {
                     AddResponseMessage(chatOptions, chat, streamedRole, toolCall,
                         metadata, result: null, "Error: Tool call was not a function call.", this.Logger);
+
                     continue;
                 }
 
@@ -557,6 +578,7 @@ internal abstract class ClientCore
                 {
                     AddResponseMessage(chatOptions, chat, streamedRole, toolCall,
                         metadata, result: null, "Error: Function call arguments were invalid JSON.", this.Logger);
+
                     continue;
                 }
 
@@ -568,6 +590,7 @@ internal abstract class ClientCore
                 {
                     AddResponseMessage(chatOptions, chat, streamedRole, toolCall,
                         metadata, result: null, "Error: Function call request for a function that wasn't defined.", this.Logger);
+
                     continue;
                 }
 
@@ -576,6 +599,7 @@ internal abstract class ClientCore
                 {
                     AddResponseMessage(chatOptions, chat, streamedRole, toolCall,
                         metadata, result: null, "Error: Requested function could not be found.", this.Logger);
+
                     continue;
                 }
 
@@ -588,7 +612,8 @@ internal abstract class ClientCore
                     // Note that we explicitly do not use executionSettings here; those pertain to the all-up operation and not necessarily to any
                     // further calls made as part of this function invocation. In particular, we must not use function calling settings naively here,
                     // as the called function could in turn telling the model about itself as a possible candidate for invocation.
-                    functionResult = (await function.InvokeAsync(kernel, functionArgs, cancellationToken: cancellationToken).ConfigureAwait(false)).GetValue<object>() ?? string.Empty;
+                    functionResult = (await function.InvokeAsync(kernel, functionArgs, cancellationToken: cancellationToken).
+                        ConfigureAwait(false)).GetValue<object>() ?? string.Empty;
                 }
 #pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception e)
@@ -596,12 +621,14 @@ internal abstract class ClientCore
                 {
                     AddResponseMessage(chatOptions, chat, streamedRole, toolCall,
                         metadata, result: null, $"Error: Exception while invoking function. {e.Message}", this.Logger);
+
                     continue;
                 }
                 finally
                 {
                     s_inflightAutoInvokes.Value--;
                 }
+
                 AddResponseMessage(chatOptions, chat, streamedRole, toolCall,
                     metadata, functionResult as string ?? JsonSerializer.Serialize(functionResult), errorMessage: null, this.Logger);
 
@@ -699,10 +726,11 @@ internal abstract class ClientCore
         OpenAIPromptExecutionSettings chatSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
 
         ChatHistory chat = CreateNewChat(text, chatSettings);
-        return (await this.GetChatMessageContentsAsync(chat, chatSettings, kernel, cancellationToken).ConfigureAwait(false))
-            .Select(chat => new TextContent(chat.Content, chat.ModelId, chat.Content, Encoding.UTF8,
-                chat.Metadata))
-            .ToList();
+
+        return (await this.GetChatMessageContentsAsync(chat, chatSettings, kernel, cancellationToken).
+                ConfigureAwait(false)).Select(chat => new TextContent(chat.Content, chat.ModelId, chat.Content, Encoding.UTF8,
+                chat.Metadata)).
+            ToList();
     }
 
 
@@ -835,6 +863,7 @@ internal abstract class ClientCore
             case ChatCompletionsResponseFormat formatObject:
                 // If the response format is an Azure SDK ChatCompletionsResponseFormat, just pass it along.
                 options.ResponseFormat = formatObject;
+
                 break;
 
             case string formatString:
@@ -843,12 +872,15 @@ internal abstract class ClientCore
                 {
                     case "json_object":
                         options.ResponseFormat = ChatCompletionsResponseFormat.JsonObject;
+
                         break;
 
                     case "text":
                         options.ResponseFormat = ChatCompletionsResponseFormat.Text;
+
                         break;
                 }
+
                 break;
 
             case JsonElement formatElement:
@@ -862,13 +894,16 @@ internal abstract class ClientCore
                     {
                         case "json_object":
                             options.ResponseFormat = ChatCompletionsResponseFormat.JsonObject;
+
                             break;
 
                         case "text":
                             options.ResponseFormat = ChatCompletionsResponseFormat.Text;
+
                             break;
                     }
                 }
+
                 break;
         }
 
@@ -927,6 +962,7 @@ internal abstract class ClientCore
                     msg.ToolCalls.Add(tool);
                 }
             }
+
             return msg;
         }
 
@@ -991,6 +1027,7 @@ internal abstract class ClientCore
                             ftcs.Add(new ChatCompletionsFunctionToolCall(id.GetString()!, name.GetString()!, arguments.GetString()!));
                         }
                     }
+
                     tools = ftcs;
                 }
             }
@@ -1065,7 +1102,8 @@ internal abstract class ClientCore
     {
         try
         {
-            return await request.Invoke().ConfigureAwait(false);
+            return await request.Invoke().
+                ConfigureAwait(false);
         }
         catch (RequestFailedException e)
         {
@@ -1080,6 +1118,16 @@ internal abstract class ClientCore
     /// <param name="usage">Instance of <see cref="CompletionsUsage"/> with usage details.</param>
     private void CaptureUsageDetails(CompletionsUsage usage)
     {
+        if (usage is null)
+        {
+            if (this.Logger.IsEnabled(LogLevel.Debug))
+            {
+                this.Logger.LogDebug("Usage information is not available.");
+            }
+
+            return;
+        }
+
         if (this.Logger.IsEnabled(LogLevel.Information))
         {
             this.Logger.LogInformation(
@@ -1091,4 +1139,5 @@ internal abstract class ClientCore
         s_completionTokensCounter.Add(usage.CompletionTokens);
         s_totalTokensCounter.Add(usage.TotalTokens);
     }
+
 }

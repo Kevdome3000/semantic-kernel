@@ -21,6 +21,7 @@ using Identity.Client.Extensions.Msal;
 /// </remarks>
 public sealed class LocalUserMSALCredentialManager
 {
+
     /// <summary>
     /// An in-memory cache of IPublicClientApplications by clientId and tenantId.
     /// </summary>
@@ -58,19 +59,19 @@ public sealed class LocalUserMSALCredentialManager
         // Initialize persistent storage for the token cache
         const string CacheSchemaName = "com.microsoft.semantickernel.tokencache";
 
-        var storage = new StorageCreationPropertiesBuilder("sk.msal.cache", MsalCacheHelper.UserRootDirectory)
-            .WithMacKeyChain(
+        var storage = new StorageCreationPropertiesBuilder("sk.msal.cache", MsalCacheHelper.UserRootDirectory).WithMacKeyChain(
                 serviceName: $"{CacheSchemaName}.service",
-                accountName: $"{CacheSchemaName}.account")
-            .WithLinuxKeyring(
+                accountName: $"{CacheSchemaName}.account").
+            WithLinuxKeyring(
                 schemaName: CacheSchemaName,
                 collection: MsalCacheHelper.LinuxKeyRingDefaultCollection,
                 secretLabel: "MSAL token cache for Semantic Kernel plugins.",
                 attribute1: new KeyValuePair<string, string>("Version", "1"),
-                attribute2: new KeyValuePair<string, string>("Product", "SemanticKernel"))
-            .Build();
+                attribute2: new KeyValuePair<string, string>("Product", "SemanticKernel")).
+            Build();
 
-        var cacheHelper = await MsalCacheHelper.CreateAsync(storage).ConfigureAwait(false);
+        var cacheHelper = await MsalCacheHelper.CreateAsync(storage).
+            ConfigureAwait(false);
 
         return new LocalUserMSALCredentialManager(storage, cacheHelper);
     }
@@ -84,7 +85,11 @@ public sealed class LocalUserMSALCredentialManager
     /// <param name="scopes">The scopes for which the access token is requested.</param>
     /// <param name="redirectUri">The redirect URI of the application.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the access token.</returns>
-    public async Task<string> GetTokenAsync(string clientId, string tenantId, string[] scopes, Uri redirectUri)
+    public async Task<string> GetTokenAsync(
+        string clientId,
+        string tenantId,
+        string[] scopes,
+        Uri redirectUri)
     {
         Ensure.NotNullOrWhitespace(clientId, nameof(clientId));
         Ensure.NotNullOrWhitespace(tenantId, nameof(tenantId));
@@ -95,29 +100,34 @@ public sealed class LocalUserMSALCredentialManager
             key: PublicClientApplicationsKey(clientId, tenantId),
             valueFactory: _ =>
             {
-                IPublicClientApplication newPublicApp = PublicClientApplicationBuilder.Create(clientId)
-                    .WithRedirectUri(redirectUri.ToString())
-                    .WithTenantId(tenantId)
-                    .Build();
+                IPublicClientApplication newPublicApp = PublicClientApplicationBuilder.Create(clientId).
+                    WithRedirectUri(redirectUri.ToString()).
+                    WithAuthority(AzureCloudInstance.AzurePublic, tenantId).
+                    Build();
+
                 this._cacheHelper.RegisterCache(newPublicApp.UserTokenCache);
+
                 return newPublicApp;
             });
 
-        IEnumerable<IAccount> accounts = await app.GetAccountsAsync().ConfigureAwait(false);
+        IEnumerable<IAccount> accounts = await app.GetAccountsAsync().
+            ConfigureAwait(false);
 
         AuthenticationResult result;
 
         try
         {
-            result = await app.AcquireTokenSilent(scopes, accounts.FirstOrDefault())
-                .ExecuteAsync().ConfigureAwait(false);
+            result = await app.AcquireTokenSilent(scopes, accounts.FirstOrDefault()).
+                ExecuteAsync().
+                ConfigureAwait(false);
         }
         catch (MsalUiRequiredException)
         {
             // A MsalUiRequiredException happened on AcquireTokenSilent.
             // This indicates you need to call AcquireTokenInteractive to acquire a token
-            result = await app.AcquireTokenInteractive(scopes)
-                .ExecuteAsync().ConfigureAwait(false);
+            result = await app.AcquireTokenInteractive(scopes).
+                ExecuteAsync().
+                ConfigureAwait(false);
             // throws MsalException
         }
 
@@ -129,4 +139,5 @@ public sealed class LocalUserMSALCredentialManager
     /// Returns a key for the public client application dictionary.
     /// </summary>
     private static string PublicClientApplicationsKey(string clientId, string tenantId) => $"{clientId}_{tenantId}";
+
 }
