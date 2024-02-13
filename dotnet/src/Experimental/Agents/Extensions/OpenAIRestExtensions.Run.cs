@@ -14,6 +14,7 @@ using Models;
 /// </summary>
 internal static partial class OpenAIRestExtensions
 {
+
     /// <summary>
     /// Create a new run.
     /// </summary>
@@ -42,7 +43,7 @@ internal static partial class OpenAIRestExtensions
 
         return
             context.ExecutePostAsync<ThreadRunModel>(
-                GetRunUrl(threadId),
+                context.GetRunsUrl(threadId),
                 payload,
                 cancellationToken);
     }
@@ -64,7 +65,7 @@ internal static partial class OpenAIRestExtensions
     {
         return
             context.ExecuteGetAsync<ThreadRunModel>(
-                GetRunUrl(threadId, runId),
+                context.GetRunUrl(threadId, runId),
                 cancellationToken);
     }
 
@@ -85,7 +86,7 @@ internal static partial class OpenAIRestExtensions
     {
         return
             context.ExecuteGetAsync<ThreadRunStepListModel>(
-                GetRunStepsUrl(threadId, runId),
+                context.GetRunStepsUrl(threadId, runId),
                 cancellationToken);
     }
 
@@ -114,32 +115,33 @@ internal static partial class OpenAIRestExtensions
 
         return
             context.ExecutePostAsync<ThreadRunModel>(
-                GetRunToolOutput(threadId, runId),
+                context.GetRunToolOutputUrl(threadId, runId),
                 payload,
                 cancellationToken);
     }
 
 
-    internal static string GetRunUrl(string threadId)
+    internal static string GetRunsUrl(this OpenAIRestContext context, string threadId)
     {
-        return $"{BaseThreadUrl}/{threadId}/runs";
+        return $"{context.GetThreadUrl(threadId)}/runs";
     }
 
 
-    internal static string GetRunUrl(string threadId, string runId)
+    internal static string GetRunUrl(this OpenAIRestContext context, string threadId, string runId)
     {
-        return $"{BaseThreadUrl}/{threadId}/runs/{runId}";
+        return $"{context.GetThreadUrl(threadId)}/runs/{runId}";
     }
 
 
-    internal static string GetRunStepsUrl(string threadId, string runId)
+    internal static string GetRunStepsUrl(this OpenAIRestContext context, string threadId, string runId)
     {
-        return $"{BaseThreadUrl}/{threadId}/runs/{runId}/steps";
+        return $"{context.GetThreadUrl(threadId)}/runs/{runId}/steps";
     }
 
 
-    internal static string GetRunToolOutput(string threadId, string runId)
+    internal static string GetRunToolOutputUrl(this OpenAIRestContext context, string threadId, string runId)
     {
-        return $"{BaseThreadUrl}/{threadId}/runs/{runId}/submit_tool_outputs";
+        return $"{context.GetThreadUrl(threadId)}/runs/{runId}/submit_tool_outputs";
     }
+
 }

@@ -12,19 +12,12 @@ using System.Text.Json.Serialization;
 /// </summary>
 internal sealed class ThreadRunModel
 {
+
     /// <summary>
     /// Identifier, which can be referenced in API endpoints.
     /// </summary>
     [JsonPropertyName("id")]
     public string Id { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Always "thread.run"
-    /// </summary>
-    [JsonPropertyName("object")]
-#pragma warning disable CA1720 // Identifier contains type name - We don't control the schema
-    public string Object { get; set; } = "thread.run";
-#pragma warning restore CA1720 // Identifier contains type name
 
     /// <summary>
     /// Unix timestamp (in seconds) for when the run was created.
@@ -126,6 +119,7 @@ internal sealed class ThreadRunModel
     /// </summary>
     public sealed class ErrorModel
     {
+
         /// <summary>
         /// Error code.
         /// </summary>
@@ -137,5 +131,7 @@ internal sealed class ThreadRunModel
         /// </summary>
         [JsonPropertyName("message")]
         public string Message { get; set; } = string.Empty;
+
     }
+
 }

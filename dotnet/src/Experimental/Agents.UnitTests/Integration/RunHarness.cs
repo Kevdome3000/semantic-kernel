@@ -26,6 +26,7 @@ using Xunit.Abstractions;
 [Trait("Feature", "Agent")]
 public sealed class RunHarness
 {
+
 #if DISABLEHOST
     private const string SkipReason = "Harness only for local/dev environment";
 #else
@@ -51,20 +52,22 @@ public sealed class RunHarness
     public async Task VerifyRunLifecycleAsync()
     {
         var agent =
-            await AgentBuilder.NewAsync(
-                apiKey: TestConfig.OpenAIApiKey,
-                model: TestConfig.SupportedGpt35TurboModel,
-                instructions: "say something funny",
-                name: "Fred",
-                description: "funny agent").ConfigureAwait(true);
+            await new AgentBuilder().WithOpenAIChatCompletion(TestConfig.SupportedGpt35TurboModel, TestConfig.OpenAIApiKey).
+                WithInstructions("say something funny").
+                WithName("Fred").
+                WithDescription("funny agent").
+                BuildAsync().
+                ConfigureAwait(true);
 
-        var thread = await agent.NewThreadAsync().ConfigureAwait(true);
+        var thread = await agent.NewThreadAsync().
+            ConfigureAwait(true);
 
         await this.ChatAsync(
-            thread,
-            agent,
-            "I was on my way to the store this morning and...",
-            "That was great!  Tell me another.").ConfigureAwait(true);
+                thread,
+                agent,
+                "I was on my way to the store this morning and...",
+                "That was great!  Tell me another.").
+            ConfigureAwait(true);
     }
 
 
@@ -75,19 +78,20 @@ public sealed class RunHarness
     public async Task VerifyRunFromDefinitionAsync()
     {
         var agent =
-            await new AgentBuilder()
-                .WithOpenAIChatCompletion(TestConfig.SupportedGpt35TurboModel, TestConfig.OpenAIApiKey)
-                .FromTemplatePath("Templates/PoetAgent.yaml")
-                .BuildAsync()
-                .ConfigureAwait(true);
+            await new AgentBuilder().WithOpenAIChatCompletion(TestConfig.SupportedGpt35TurboModel, TestConfig.OpenAIApiKey).
+                FromTemplatePath("Templates/PoetAgent.yaml").
+                BuildAsync().
+                ConfigureAwait(true);
 
-        var thread = await agent.NewThreadAsync().ConfigureAwait(true);
+        var thread = await agent.NewThreadAsync().
+            ConfigureAwait(true);
 
         await this.ChatAsync(
-            thread,
-            agent,
-            "Eggs are yummy and beautiful geometric gems.",
-            "It rains a lot in Seattle.").ConfigureAwait(true);
+                thread,
+                agent,
+                "Eggs are yummy and beautiful geometric gems.",
+                "It rains a lot in Seattle.").
+            ConfigureAwait(true);
     }
 
 
@@ -100,21 +104,22 @@ public sealed class RunHarness
         var gamePlugin = KernelPluginFactory.CreateFromType<GuessingGame>();
 
         var agent =
-            await new AgentBuilder()
-                .WithOpenAIChatCompletion(TestConfig.SupportedGpt35TurboModel, TestConfig.OpenAIApiKey)
-                .FromTemplatePath("Templates/GameAgent.yaml")
-                .WithPlugin(gamePlugin)
-                .BuildAsync()
-                .ConfigureAwait(true);
+            await new AgentBuilder().WithOpenAIChatCompletion(TestConfig.SupportedGpt35TurboModel, TestConfig.OpenAIApiKey).
+                FromTemplatePath("Templates/GameAgent.yaml").
+                WithPlugin(gamePlugin).
+                BuildAsync().
+                ConfigureAwait(true);
 
-        var thread = await agent.NewThreadAsync().ConfigureAwait(true);
+        var thread = await agent.NewThreadAsync().
+            ConfigureAwait(true);
 
         await this.ChatAsync(
-            thread,
-            agent,
-            "What is the question for the guessing game?",
-            "Is it 'RED'?",
-            "What is the answer?").ConfigureAwait(true);
+                thread,
+                agent,
+                "What is the question for the guessing game?",
+                "Is it 'RED'?",
+                "What is the answer?").
+            ConfigureAwait(true);
     }
 
 
@@ -122,10 +127,15 @@ public sealed class RunHarness
     {
         foreach (var message in messages)
         {
-            var messageUser = await thread.AddUserMessageAsync(message).ConfigureAwait(true);
+            var messageUser = await thread.AddUserMessageAsync(message).
+                ConfigureAwait(true);
+
             this.LogMessage(messageUser);
 
-            var agentMessages = await thread.InvokeAsync(agent).ToArrayAsync().ConfigureAwait(true);
+            var agentMessages = await thread.InvokeAsync(agent).
+                ToArrayAsync().
+                ConfigureAwait(true);
+
             this.LogMessages(agentMessages);
         }
     }
@@ -151,6 +161,7 @@ public sealed class RunHarness
 
     private sealed class GuessingGame
     {
+
         /// <summary>
         /// Get the question
         /// </summary>
@@ -163,5 +174,7 @@ public sealed class RunHarness
         /// </summary>
         [KernelFunction, Description("Get the answer to the guessing game question.")]
         public string GetAnswer() => "Blue";
+
     }
+
 }

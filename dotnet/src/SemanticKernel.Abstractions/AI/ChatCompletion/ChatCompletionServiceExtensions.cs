@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 /// </summary>
 public static class ChatCompletionServiceExtensions
 {
+
     /// <summary>
     /// Get chat multiple chat message content choices for the prompt and settings.
     /// </summary>
@@ -34,13 +35,16 @@ public static class ChatCompletionServiceExtensions
         CancellationToken cancellationToken = default)
     {
         // Try to parse the text as a chat history
-        if (ChatPromptParser.TryParse(prompt, out var chatHistory))
+        if (ChatPromptParser.TryParse(prompt, out var chatHistoryFromPrompt))
         {
-            return chatCompletionService.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
+            return chatCompletionService.GetChatMessageContentsAsync(chatHistoryFromPrompt, executionSettings, kernel, cancellationToken);
         }
 
-        //Otherwise, use the prompt as the chat system message
-        return chatCompletionService.GetChatMessageContentsAsync(new ChatHistory(prompt), executionSettings, kernel, cancellationToken);
+        // Otherwise, use the prompt as the chat user message
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage(prompt);
+
+        return chatCompletionService.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
     }
 
 
@@ -59,8 +63,8 @@ public static class ChatCompletionServiceExtensions
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => (await chatCompletionService.GetChatMessageContentsAsync(prompt, executionSettings, kernel, cancellationToken).ConfigureAwait(false))
-            .Single();
+        => (await chatCompletionService.GetChatMessageContentsAsync(prompt, executionSettings, kernel, cancellationToken).
+            ConfigureAwait(false)).Single();
 
 
     /// <summary>
@@ -78,8 +82,8 @@ public static class ChatCompletionServiceExtensions
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => (await chatCompletionService.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken).ConfigureAwait(false))
-            .Single();
+        => (await chatCompletionService.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken).
+            ConfigureAwait(false)).Single();
 
 
     /// <summary>
@@ -100,12 +104,16 @@ public static class ChatCompletionServiceExtensions
         CancellationToken cancellationToken = default)
     {
         // Try to parse the text as a chat history
-        if (ChatPromptParser.TryParse(prompt, out var chatHistory))
+        if (ChatPromptParser.TryParse(prompt, out var chatHistoryFromPrompt))
         {
-            return chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
+            return chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistoryFromPrompt, executionSettings, kernel, cancellationToken);
         }
 
-        //Otherwise, use the prompt as the chat system message
-        return chatCompletionService.GetStreamingChatMessageContentsAsync(new ChatHistory(prompt), executionSettings, kernel, cancellationToken);
+        // Otherwise, use the prompt as the chat user message
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage(prompt);
+
+        return chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
     }
+
 }

@@ -12,7 +12,9 @@ using System.Text.Json.Serialization;
 /// </summary>
 internal sealed class AssistantListModel : OpenAIListModel<AssistantModel>
 {
+
     // No specialization
+
 }
 
 
@@ -21,19 +23,12 @@ internal sealed class AssistantListModel : OpenAIListModel<AssistantModel>
 /// </summary>
 internal sealed record AssistantModel
 {
+
     /// <summary>
     /// Identifier, which can be referenced in API endpoints
     /// </summary>
     [JsonPropertyName("id")]
     public string Id { get; init; } = string.Empty;
-
-    /// <summary>
-    /// Always "assistant"
-    /// </summary>
-    [JsonPropertyName("object")]
-#pragma warning disable CA1720 // Identifier contains type name - We don't control the schema
-    public string Object { get; init; } = "assistant";
-#pragma warning restore CA1720 // Identifier contains type name
 
     /// <summary>
     /// Unix timestamp (in seconds) for when the assistant was created
@@ -97,6 +92,7 @@ internal sealed record AssistantModel
     /// </summary>
     public sealed class FileModel
     {
+
         /// <summary>
         /// ID of the assistant.
         /// </summary>
@@ -115,12 +111,6 @@ internal sealed record AssistantModel
         [JsonPropertyName("created_at")]
         public long CreatedAt { get; init; }
 
-        /// <summary>
-        /// Always "assistant.file"
-        /// </summary>
-        [JsonPropertyName("object")]
-#pragma warning disable CA1720 // Identifier contains type name - We don't control the schema
-        public string Object { get; init; } = "assistant.file";
-#pragma warning restore CA1720 // Identifier contains type name
     }
+
 }

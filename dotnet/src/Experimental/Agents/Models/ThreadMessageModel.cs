@@ -13,7 +13,9 @@ using System.Text.Json.Serialization;
 /// </summary>
 internal sealed class ThreadMessageListModel : OpenAIListModel<ThreadMessageModel>
 {
+
     // No specialization
+
 }
 
 
@@ -22,19 +24,12 @@ internal sealed class ThreadMessageListModel : OpenAIListModel<ThreadMessageMode
 /// </summary>
 internal sealed class ThreadMessageModel
 {
+
     /// <summary>
     /// Identifier, which can be referenced in API endpoints.
     /// </summary>
     [JsonPropertyName("id")]
     public string Id { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Always "thread.message"
-    /// </summary>
-    [JsonPropertyName("object")]
-#pragma warning disable CA1720 // Identifier contains type name - We don't control the schema
-    public string Object { get; set; } = "thread.message";
-#pragma warning restore CA1720 // Identifier contains type name
 
     /// <summary>
     /// Unix timestamp (in seconds) for when the message was created.
@@ -93,6 +88,7 @@ internal sealed class ThreadMessageModel
     /// </summary>
     public sealed class ContentModel
     {
+
         /// <summary>
         /// Type of content.
         /// </summary>
@@ -104,6 +100,7 @@ internal sealed class ThreadMessageModel
         /// </summary>
         [JsonPropertyName("text")]
         public TextContentModel? Text { get; set; }
+
     }
 
 
@@ -112,6 +109,7 @@ internal sealed class ThreadMessageModel
     /// </summary>
     public sealed class TextContentModel
     {
+
         /// <summary>
         /// The text itself.
         /// </summary>
@@ -123,11 +121,13 @@ internal sealed class ThreadMessageModel
         /// </summary>
         [JsonPropertyName("annotations")]
         public List<TextAnnotationModel> Annotations { get; set; } = new List<TextAnnotationModel>();
+
     }
 
 
     public sealed class TextAnnotationModel
     {
+
         /// <summary>
         /// Type of content.
         /// </summary>
@@ -163,11 +163,13 @@ internal sealed class ThreadMessageModel
         /// </summary>
         [JsonPropertyName("end_index")]
         public int EndIndex { get; set; }
+
     }
 
 
     public sealed class TextFileCitationModel
     {
+
         /// <summary>
         /// The file identifier.
         /// </summary>
@@ -179,15 +181,19 @@ internal sealed class ThreadMessageModel
         /// </summary>
         [JsonPropertyName("quote")]
         public string Quote { get; set; } = string.Empty;
+
     }
 
 
     public sealed class TextFilePathModel
     {
+
         /// <summary>
         /// The file identifier.
         /// </summary>
         [JsonPropertyName("file_id")]
         public string FileId { get; set; } = string.Empty;
+
     }
+
 }

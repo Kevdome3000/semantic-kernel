@@ -20,7 +20,9 @@ using PromptTemplates.Handlebars;
 /// </summary>
 internal sealed class Agent : IAgent
 {
+
     public const string ToolCodeInterpreter = "code_interpreter";
+
     public const string ToolRetrieval = "retrieval";
 
     /// <inheritdoc/>
@@ -31,13 +33,6 @@ internal sealed class Agent : IAgent
 
     /// <inheritdoc/>
     public KernelPluginCollection Plugins => this.Kernel.Plugins;
-
-    /// <inheritdoc/>
-#pragma warning disable CA1720 // Identifier contains type name - We don't control the schema
-#pragma warning disable CA1716 // Identifiers should not match keywords
-    public string Object => this._model.Object;
-#pragma warning restore CA1720 // Identifier contains type name - We don't control the schema
-#pragma warning restore CA1716 // Identifiers should not match keywords
 
     /// <inheritdoc/>
     public AgentCapability Capabilities { get; }
@@ -73,12 +68,17 @@ internal sealed class Agent : IAgent
         };
 
     private readonly OpenAIRestContext _restContext;
+
     private readonly AssistantModel _model;
+
     private readonly IPromptTemplate _promptTemplate;
+
     private readonly ToolModel[] _tools;
+
     private readonly HashSet<string> _fileIds;
 
     private AgentPlugin? _agentPlugin;
+
     private bool _isDeleted;
 
 
@@ -98,7 +98,8 @@ internal sealed class Agent : IAgent
         IEnumerable<KernelPlugin>? plugins = null,
         CancellationToken cancellationToken = default)
     {
-        var resultModel = await restContext.CreateAssistantModelAsync(assistantModel, cancellationToken).ConfigureAwait(false);
+        var resultModel = await restContext.CreateAssistantModelAsync(assistantModel, cancellationToken).
+            ConfigureAwait(false);
 
         return new Agent(resultModel, config, restContext, plugins);
     }
@@ -129,10 +130,9 @@ internal sealed class Agent : IAgent
         IKernelBuilder builder = Kernel.CreateBuilder();
 
         this.Kernel =
-            Kernel
-                .CreateBuilder()
-                .AddOpenAIChatCompletion(this._model.Model, this._restContext.ApiKey)
-                .Build();
+            Kernel.CreateBuilder().
+                AddOpenAIChatCompletion(this._model.Model, this._restContext.ApiKey).
+                Build();
 
         if (plugins is not null)
         {
@@ -150,7 +150,8 @@ internal sealed class Agent : IAgent
                 ? AgentCapability.CodeInterpreter
                 : AgentCapability.None);
 
-        this._tools = this._model.Tools.Concat(this.Kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolModel(p.Name)))).ToArray();
+        this._tools = this._model.Tools.Concat(this.Kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolModel(p.Name)))).
+            ToArray();
     }
 
 
@@ -185,7 +186,8 @@ internal sealed class Agent : IAgent
             return;
         }
 
-        await this._restContext.DeleteThreadModelAsync(id!, cancellationToken).ConfigureAwait(false);
+        await this._restContext.DeleteThreadModelAsync(id!, cancellationToken).
+            ConfigureAwait(false);
     }
 
 
@@ -202,7 +204,8 @@ internal sealed class Agent : IAgent
             return;
         }
 
-        await this._restContext.AddAssistantFileAsync(this.Id, fileId, cancellationToken).ConfigureAwait(false);
+        await this._restContext.AddAssistantFileAsync(this.Id, fileId, cancellationToken).
+            ConfigureAwait(false);
 
         this._fileIds.Add(fileId);
     }
@@ -221,7 +224,8 @@ internal sealed class Agent : IAgent
             return;
         }
 
-        await this._restContext.RemoveAssistantFileAsync(this.Id, fileId, cancellationToken).ConfigureAwait(false);
+        await this._restContext.RemoveAssistantFileAsync(this.Id, fileId, cancellationToken).
+            ConfigureAwait(false);
 
         this._fileIds.Remove(fileId);
     }
@@ -235,7 +239,9 @@ internal sealed class Agent : IAgent
             return;
         }
 
-        await this._restContext.DeleteAssistantModelAsync(this.Id, cancellationToken).ConfigureAwait(false);
+        await this._restContext.DeleteAssistantModelAsync(this.Id, cancellationToken).
+            ConfigureAwait(false);
+
         this._isDeleted = true;
     }
 
@@ -253,13 +259,18 @@ internal sealed class Agent : IAgent
         KernelArguments arguments,
         CancellationToken cancellationToken = default)
     {
-        var thread = await this.NewThreadAsync(cancellationToken).ConfigureAwait(false);
+        var thread = await this.NewThreadAsync(cancellationToken).
+            ConfigureAwait(false);
 
         try
         {
-            await thread.AddUserMessageAsync(input, cancellationToken).ConfigureAwait(false);
+            await thread.AddUserMessageAsync(input, cancellationToken).
+                ConfigureAwait(false);
 
-            var messages = await thread.InvokeAsync(this, input, arguments, cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
+            var messages = await thread.InvokeAsync(this, input, arguments, cancellationToken).
+                ToArrayAsync(cancellationToken).
+                ConfigureAwait(false);
+
             var response =
                 new AgentResponse
                 {
@@ -271,7 +282,8 @@ internal sealed class Agent : IAgent
         }
         finally
         {
-            await thread.DeleteAsync(cancellationToken).ConfigureAwait(false);
+            await thread.DeleteAsync(cancellationToken).
+                ConfigureAwait(false);
         }
     }
 
@@ -306,13 +318,16 @@ internal sealed class Agent : IAgent
 
     private sealed class AgentPluginImpl : AgentPlugin
     {
+
         public KernelFunction FunctionAsk { get; }
 
         internal override Agent Agent { get; }
 
         public override int FunctionCount => 1;
 
-        private static readonly string s_functionName = nameof(Agent.AskAsync).Substring(0, nameof(AgentPluginImpl.Agent.AskAsync).Length - 5);
+        private static readonly string s_functionName = nameof(Agent.AskAsync).
+            Substring(0, nameof(AgentPluginImpl.Agent.AskAsync).
+                Length - 5);
 
 
         public AgentPluginImpl(Agent agent, KernelFunction functionAsk)
@@ -341,5 +356,7 @@ internal sealed class Agent : IAgent
 
             return function != null;
         }
+
     }
+
 }

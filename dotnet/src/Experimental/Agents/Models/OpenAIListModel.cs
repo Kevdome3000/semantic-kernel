@@ -12,13 +12,6 @@ using System.Text.Json.Serialization;
 /// </summary>
 internal abstract class OpenAIListModel<TModel>
 {
-    /// <summary>
-    /// Always "list"
-    /// </summary>
-    [JsonPropertyName("object")]
-#pragma warning disable CA1720 // Identifier contains type name - We don't control the schema
-    public string Object { get; set; } = "list";
-#pragma warning restore CA1720 // Identifier contains type name
 
     /// <summary>
     /// List of steps.
@@ -43,4 +36,5 @@ internal abstract class OpenAIListModel<TModel>
     /// </summary>
     [JsonPropertyName("has_more")]
     public bool HasMore { get; set; }
+
 }

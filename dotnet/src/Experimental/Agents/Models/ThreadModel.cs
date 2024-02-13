@@ -12,19 +12,12 @@ using System.Text.Json.Serialization;
 /// </summary>
 internal sealed class ThreadModel
 {
+
     /// <summary>
     /// Identifier, which can be referenced in API endpoints.
     /// </summary>
     [JsonPropertyName("id")]
     public string Id { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Always "thread"
-    /// </summary>
-    [JsonPropertyName("object")]
-#pragma warning disable CA1720 // Identifier contains type name - We don't control the schema
-    public string Object { get; set; } = "thread";
-#pragma warning restore CA1720 // Identifier contains type name
 
     /// <summary>
     /// The Unix timestamp (in seconds) for when the thread was created.
@@ -40,4 +33,5 @@ internal sealed class ThreadModel
     /// </summary>
     [JsonPropertyName("metadata")]
     public Dictionary<string, object> Metadata { get; set; } = new Dictionary<string, object>();
+
 }

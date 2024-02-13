@@ -12,7 +12,9 @@ using System.Text.Json.Serialization;
 /// </summary>
 internal sealed class ThreadRunStepListModel : OpenAIListModel<ThreadRunStepModel>
 {
+
     // No specialization
+
 }
 
 
@@ -21,19 +23,12 @@ internal sealed class ThreadRunStepListModel : OpenAIListModel<ThreadRunStepMode
 /// </summary>
 internal sealed class ThreadRunStepModel
 {
+
     /// <summary>
     /// Identifier of the run step, which can be referenced in API endpoints.
     /// </summary>
     [JsonPropertyName("id")]
     public string Id { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Always "thread.run.step"
-    /// </summary>
-    [JsonPropertyName("object")]
-#pragma warning disable CA1720 // Identifier contains type name - We don't control the schema
-    public string Object { get; set; } = "thread.run.step";
-#pragma warning restore CA1720 // Identifier contains type name
 
     /// <summary>
     /// Unix timestamp (in seconds) for when the run step was created.
@@ -115,6 +110,7 @@ internal sealed class ThreadRunStepModel
     /// </summary>
     public sealed class StepDetailsModel
     {
+
         /// <summary>
         /// Empty definition
         /// </summary>
@@ -137,6 +133,7 @@ internal sealed class ThreadRunStepModel
         /// </summary>
         [JsonPropertyName("tool_calls")]
         public ToolCallsDetailsModel[] ToolCalls { get; set; } = Array.Empty<ToolCallsDetailsModel>();
+
     }
 
 
@@ -145,11 +142,13 @@ internal sealed class ThreadRunStepModel
     /// </summary>
     public sealed class MessageCreationDetailsModel
     {
+
         /// <summary>
         /// ID of the message that was created by this run step.
         /// </summary>
         [JsonPropertyName("message_id")]
         public string MessageId { get; set; } = string.Empty;
+
     }
 
 
@@ -158,6 +157,7 @@ internal sealed class ThreadRunStepModel
     /// </summary>
     public sealed class ToolCallsDetailsModel
     {
+
         /// <summary>
         /// ID of the tool call.
         /// </summary>
@@ -175,6 +175,7 @@ internal sealed class ThreadRunStepModel
         /// </summary>
         [JsonPropertyName("function")]
         public FunctionDetailsModel Function { get; set; } = FunctionDetailsModel.Empty;
+
     }
 
 
@@ -183,6 +184,7 @@ internal sealed class ThreadRunStepModel
     /// </summary>
     public sealed class FunctionDetailsModel
     {
+
         /// <summary>
         /// Empty definition
         /// </summary>
@@ -206,5 +208,7 @@ internal sealed class ThreadRunStepModel
         /// </summary>
         [JsonPropertyName("output")]
         public string Output { get; set; } = string.Empty;
+
     }
+
 }

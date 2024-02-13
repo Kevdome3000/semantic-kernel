@@ -13,6 +13,7 @@ using Models;
 /// </summary>
 internal static partial class OpenAIRestExtensions
 {
+
     /// <summary>
     /// Associate uploaded file with the assistant, by identifier.
     /// </summary>
@@ -35,9 +36,10 @@ internal static partial class OpenAIRestExtensions
 
         var result =
             await context.ExecutePostAsync<AssistantModel.FileModel>(
-                GetAssistantFileUrl(assistantId),
-                payload,
-                cancellationToken).ConfigureAwait(false);
+                    context.GetAssistantFileUrl(assistantId),
+                    payload,
+                    cancellationToken).
+                ConfigureAwait(false);
 
         return result.Id;
     }
@@ -56,18 +58,19 @@ internal static partial class OpenAIRestExtensions
         string fileId,
         CancellationToken cancellationToken = default)
     {
-        return context.ExecuteDeleteAsync(GetAssistantFileUrl(assistantId, fileId), cancellationToken);
+        return context.ExecuteDeleteAsync(context.GetAssistantFileUrl(assistantId, fileId), cancellationToken);
     }
 
 
-    internal static string GetAssistantFileUrl(string assistantId)
+    private static string GetAssistantFileUrl(this OpenAIRestContext context, string assistantId)
     {
-        return $"{BaseAssistantUrl}/{assistantId}/files";
+        return $"{context.GetAssistantUrl(assistantId)}/files";
     }
 
 
-    internal static string GetAssistantFileUrl(string assistantId, string fileId)
+    private static string GetAssistantFileUrl(this OpenAIRestContext context, string assistantId, string fileId)
     {
-        return $"{BaseAssistantUrl}/{assistantId}/files/{fileId}";
+        return $"{context.GetAssistantUrl(assistantId)}/files/{fileId}";
     }
+
 }

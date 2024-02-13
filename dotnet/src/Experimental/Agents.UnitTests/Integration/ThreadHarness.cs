@@ -22,6 +22,7 @@ using Xunit.Abstractions;
 [Trait("Feature", "Agent")]
 public sealed class ThreadHarness
 {
+
 #if DISABLEHOST
     private const string SkipReason = "Harness only for local/dev environment";
 #else
@@ -47,28 +48,35 @@ public sealed class ThreadHarness
     public async Task VerifyThreadLifecycleAsync()
     {
         var agent =
-            await new AgentBuilder()
-                .WithOpenAIChatCompletion(TestConfig.SupportedGpt35TurboModel, TestConfig.OpenAIApiKey)
-                .WithName("DeleteMe")
-                .BuildAsync()
-                .ConfigureAwait(true);
+            await new AgentBuilder().WithOpenAIChatCompletion(TestConfig.SupportedGpt35TurboModel, TestConfig.OpenAIApiKey).
+                WithName("DeleteMe").
+                BuildAsync().
+                ConfigureAwait(true);
 
-        var thread = await agent.NewThreadAsync().ConfigureAwait(true);
+        var thread = await agent.NewThreadAsync().
+            ConfigureAwait(true);
 
         Assert.NotNull(thread.Id);
 
         this._output.WriteLine($"# {thread.Id}");
 
-        var message = await thread.AddUserMessageAsync("I'm so confused!").ConfigureAwait(true);
+        var message = await thread.AddUserMessageAsync("I'm so confused!").
+            ConfigureAwait(true);
+
         Assert.NotNull(message);
 
         this._output.WriteLine($"# {message.Id}");
 
-        var context = new OpenAIRestContext(TestConfig.OpenAIApiKey);
-        var copy = await context.GetThreadModelAsync(thread.Id).ConfigureAwait(true);
+        var context = new OpenAIRestContext(AgentBuilder.OpenAIBaseUrl, TestConfig.OpenAIApiKey);
 
-        await context.DeleteThreadModelAsync(thread.Id).ConfigureAwait(true);
+        var copy = await context.GetThreadModelAsync(thread.Id).
+            ConfigureAwait(true);
 
-        await Assert.ThrowsAsync<KernelException>(() => context.GetThreadModelAsync(thread.Id)).ConfigureAwait(true);
+        await context.DeleteThreadModelAsync(thread.Id).
+            ConfigureAwait(true);
+
+        await Assert.ThrowsAsync<HttpOperationException>(() => context.GetThreadModelAsync(thread.Id)).
+            ConfigureAwait(true);
     }
+
 }
