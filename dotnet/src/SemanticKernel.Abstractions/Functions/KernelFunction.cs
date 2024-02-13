@@ -74,7 +74,7 @@ public abstract class KernelFunction
     /// <summary>
     /// Gets the prompt execution settings.
     /// </summary>
-    internal IReadOnlyDictionary<string, PromptExecutionSettings>? ExecutionSettings { get; }
+    public IReadOnlyDictionary<string, PromptExecutionSettings>? ExecutionSettings { get; }
 
 
     /// <summary>
