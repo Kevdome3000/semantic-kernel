@@ -1,8 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-
-
 // Create kernel
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.Plugins.OpenApi;
+
 var builder = Kernel.CreateBuilder();
 // Add a text or chat completion service using either:
 // builder.Services.AddAzureOpenAIChatCompletion()
@@ -13,7 +16,8 @@ builder.WithCompletionService();
 var kernel = builder.Build();
 
 // Add the math plugin using the plugin manifest URL
-await kernel.ImportPluginFromOpenApiAsync("MathPlugin", new Uri("http://localhost:7071/swagger.json")).ConfigureAwait(false);
+await kernel.ImportPluginFromOpenApiAsync("MathPlugin", new Uri("http://localhost:7071/swagger.json")).
+    ConfigureAwait(false);
 
 // Create chat history
 ChatHistory history = new();
@@ -51,9 +55,11 @@ while (true)
             Console.Write("Assistant > ");
             first = false;
         }
+
         Console.Write(content.Content);
         fullMessage += content.Content;
     }
+
     Console.WriteLine();
 
     // Add the message from the agent to the chat history

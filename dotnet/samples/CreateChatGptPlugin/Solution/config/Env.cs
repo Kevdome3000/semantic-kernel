@@ -1,9 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.Configuration;
+
 #pragma warning disable CA1812 // instantiated by AddUserSecrets
 internal sealed class Env
 #pragma warning restore CA1812
 {
+
     /// <summary>
     /// Simple helper used to load env vars and secrets like credentials,
     /// to avoid hard coding them in the sample code
@@ -12,9 +15,8 @@ internal sealed class Env
     /// <returns>Value found in Secret Manager or Environment Variable</returns>
     internal static string? Var(string name)
     {
-        var configuration = new ConfigurationBuilder()
-            .AddUserSecrets<Env>()
-            .Build();
+        var configuration = new ConfigurationBuilder().AddUserSecrets<Env>().
+            Build();
 
         var value = configuration[name];
 
@@ -27,4 +29,5 @@ internal sealed class Env
 
         return value;
     }
+
 }

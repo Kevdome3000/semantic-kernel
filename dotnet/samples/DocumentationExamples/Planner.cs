@@ -9,6 +9,8 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Plugins;
+using Xunit;
+using Xunit.Abstractions;
 
 
 /// <summary>
@@ -17,6 +19,7 @@ using Plugins;
 /// </summary>
 public class Planner : BaseTest
 {
+
     [Fact]
     public async Task RunAsync()
     {
@@ -34,9 +37,12 @@ public class Planner : BaseTest
         }
 
         // <RunningNativeFunction>
-        var builder = Kernel.CreateBuilder()
-            .AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey);
-        builder.Services.AddLogging(c => c.AddDebug().SetMinimumLevel(LogLevel.Trace));
+        var builder = Kernel.CreateBuilder().
+            AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey);
+
+        builder.Services.AddLogging(c => c.AddDebug().
+            SetMinimumLevel(LogLevel.Trace));
+
         builder.Plugins.AddFromType<MathSolver>();
         Kernel kernel = builder.Build();
 
@@ -79,9 +85,11 @@ public class Planner : BaseTest
                     Write("Assistant > ");
                     first = false;
                 }
+
                 Write(content.Content);
                 fullMessage += content.Content;
             }
+
             WriteLine();
 
             // Add the message from the agent to the chat history
@@ -96,4 +104,5 @@ public class Planner : BaseTest
     public Planner(ITestOutputHelper output) : base(output)
     {
     }
+
 }

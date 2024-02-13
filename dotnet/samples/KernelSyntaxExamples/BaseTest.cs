@@ -5,10 +5,12 @@ namespace Examples;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using RepoUtils;
+using Xunit.Abstractions;
 
 
 public abstract class BaseTest
 {
+
     protected ITestOutputHelper Output { get; }
 
     protected ILoggerFactory LoggerFactory { get; }
@@ -25,11 +27,10 @@ public abstract class BaseTest
 
     private static void LoadUserSecrets()
     {
-        IConfigurationRoot configRoot = new ConfigurationBuilder()
-            .AddJsonFile("appsettings.Development.json", true)
-            .AddEnvironmentVariables()
-            .AddUserSecrets<Env>()
-            .Build();
+        IConfigurationRoot configRoot = new ConfigurationBuilder().AddJsonFile("appsettings.Development.json", true).
+            AddEnvironmentVariables().
+            AddUserSecrets<Env>().
+            Build();
 
         TestConfiguration.Initialize(configRoot);
     }
@@ -53,4 +54,5 @@ public abstract class BaseTest
     {
         this.Output.WriteLine(target ?? string.Empty);
     }
+
 }

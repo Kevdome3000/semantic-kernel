@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Plugins.Core;
+using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
+using Xunit;
+using Xunit.Abstractions;
 
 
 /// <summary>
@@ -16,6 +19,7 @@ using Microsoft.SemanticKernel.Plugins.Core;
 /// </summary>
 public class FunctionsWithinPrompts : BaseTest
 {
+
     [Fact]
     public async Task RunAsync()
     {
@@ -33,8 +37,9 @@ public class FunctionsWithinPrompts : BaseTest
         }
 
         // <KernelCreation>
-        var builder = Kernel.CreateBuilder()
-            .AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey);
+        var builder = Kernel.CreateBuilder().
+            AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey);
+
         builder.Plugins.AddFromType<ConversationSummaryPlugin>();
         Kernel kernel = builder.Build();
         // </KernelCreation>
@@ -141,9 +146,11 @@ Assistant: "
                 {
                     Write(chunk.Role + " > ");
                 }
+
                 message += chunk;
                 Write(chunk);
             }
+
             WriteLine();
 
             // Append to history
@@ -163,4 +170,5 @@ Assistant: "
             "That is all, thanks."
         ];
     }
+
 }

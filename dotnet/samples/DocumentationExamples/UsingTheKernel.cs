@@ -10,6 +10,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Core;
+using Xunit;
+using Xunit.Abstractions;
 
 
 /// <summary>
@@ -18,6 +20,7 @@ using Microsoft.SemanticKernel.Plugins.Core;
 /// </summary>
 public class UsingTheKernel : BaseTest
 {
+
     [Fact]
     public async Task RunAsync()
     {
@@ -36,9 +39,12 @@ public class UsingTheKernel : BaseTest
 
         // Create a kernel with a logger and Azure OpenAI chat completion service
         // <KernelCreation>
-        var builder = Kernel.CreateBuilder()
-            .AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey);
-        builder.Services.AddLogging(c => c.AddDebug().SetMinimumLevel(LogLevel.Trace));
+        var builder = Kernel.CreateBuilder().
+            AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey);
+
+        builder.Services.AddLogging(c => c.AddDebug().
+            SetMinimumLevel(LogLevel.Trace));
+
         builder.Plugins.AddFromType<TimePlugin>();
         builder.Plugins.AddFromPromptDirectory("./../../../Plugins/WriterPlugin");
         Kernel kernel = builder.Build();
@@ -56,6 +62,7 @@ public class UsingTheKernel : BaseTest
         {
             { "input", currentTime }
         });
+
         WriteLine(poemResult);
         // </InvokeShortPoem>
     }
@@ -64,4 +71,5 @@ public class UsingTheKernel : BaseTest
     public UsingTheKernel(ITestOutputHelper output) : base(output)
     {
     }
+
 }

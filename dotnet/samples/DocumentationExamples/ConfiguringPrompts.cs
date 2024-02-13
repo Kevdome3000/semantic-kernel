@@ -9,6 +9,8 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Core;
+using Xunit;
+using Xunit.Abstractions;
 
 
 /// <summary>
@@ -17,6 +19,7 @@ using Microsoft.SemanticKernel.Plugins.Core;
 /// </summary>
 public class ConfiguringPrompts : BaseTest
 {
+
     [Fact]
     public async Task RunAsync()
     {
@@ -33,8 +36,9 @@ public class ConfiguringPrompts : BaseTest
             return;
         }
 
-        var builder = Kernel.CreateBuilder()
-            .AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey);
+        var builder = Kernel.CreateBuilder().
+            AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey);
+
         builder.Plugins.AddFromType<ConversationSummaryPlugin>();
         Kernel kernel = builder.Build();
 
@@ -114,9 +118,11 @@ public class ConfiguringPrompts : BaseTest
                 {
                     Write(chunk.Role + " > ");
                 }
+
                 message += chunk;
                 Write(chunk);
             }
+
             WriteLine();
 
             // Append to history
@@ -133,4 +139,5 @@ public class ConfiguringPrompts : BaseTest
     {
         SimulatedInputText = ["Who were the Vikings?"];
     }
+
 }

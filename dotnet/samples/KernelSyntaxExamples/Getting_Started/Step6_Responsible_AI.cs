@@ -6,10 +6,13 @@ using System.Threading.Tasks;
 using Examples;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
+using Xunit;
+using Xunit.Abstractions;
 
 
 public sealed class Step6_Responsible_AI : BaseTest
 {
+
     /// <summary>
     /// Show how to use prompt filters to ensure that prompts are rendered in a responsible manner.
     /// </summary>
@@ -17,8 +20,8 @@ public sealed class Step6_Responsible_AI : BaseTest
     public async Task RunAsync()
     {
         // Create a kernel with OpenAI chat completion
-        var builder = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(
+        var builder = Kernel.CreateBuilder().
+            AddOpenAIChatCompletion(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey);
 
@@ -44,6 +47,7 @@ public sealed class Step6_Responsible_AI : BaseTest
 
     private sealed class PromptFilter : IPromptFilter
     {
+
         private readonly ITestOutputHelper _output;
 
 
@@ -74,5 +78,7 @@ public sealed class Step6_Responsible_AI : BaseTest
                 context.Arguments["card_number"] = "**** **** **** ****";
             }
         }
+
     }
+
 }

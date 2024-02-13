@@ -4,10 +4,13 @@ using System.Threading.Tasks;
 using Examples;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
+using Xunit;
+using Xunit.Abstractions;
 
 
 public class Example76_Filters : BaseTest
 {
+
     /// <summary>
     /// Shows how to use function and prompt filters in Kernel.
     /// </summary>
@@ -48,6 +51,7 @@ public class Example76_Filters : BaseTest
 
     private sealed class FirstFunctionFilter : IFunctionFilter
     {
+
         private readonly ITestOutputHelper _output;
 
 
@@ -63,11 +67,13 @@ public class Example76_Filters : BaseTest
 
         public void OnFunctionInvoked(FunctionInvokedContext context) =>
             this._output.WriteLine($"{nameof(FirstFunctionFilter)}.{nameof(OnFunctionInvoked)} - {context.Function.Name}");
+
     }
 
 
     private sealed class SecondFunctionFilter : IFunctionFilter
     {
+
         private readonly ITestOutputHelper _output;
 
 
@@ -83,11 +89,13 @@ public class Example76_Filters : BaseTest
 
         public void OnFunctionInvoked(FunctionInvokedContext context) =>
             this._output.WriteLine($"{nameof(SecondFunctionFilter)}.{nameof(OnFunctionInvoked)} - {context.Function.Name}");
+
     }
 
 
     private sealed class FirstPromptFilter : IPromptFilter
     {
+
         private readonly ITestOutputHelper _output;
 
 
@@ -103,6 +111,7 @@ public class Example76_Filters : BaseTest
 
         public void OnPromptRendered(PromptRenderedContext context) =>
             this._output.WriteLine($"{nameof(FirstPromptFilter)}.{nameof(OnPromptRendered)} - {context.Function.Name}");
+
     }
 
     #endregion
@@ -112,6 +121,7 @@ public class Example76_Filters : BaseTest
 
     private sealed class FunctionFilterExample : IFunctionFilter
     {
+
         public void OnFunctionInvoked(FunctionInvokedContext context)
         {
             // Example: get function result value
@@ -133,11 +143,13 @@ public class Example76_Filters : BaseTest
             // Example: cancel function execution
             context.Cancel = true;
         }
+
     }
 
 
     private sealed class PromptFilterExample : IPromptFilter
     {
+
         public void OnPromptRendered(PromptRenderedContext context)
         {
             // Example: override rendered prompt before sending it to AI
@@ -150,6 +162,7 @@ public class Example76_Filters : BaseTest
             // Example: get function information
             var functionName = context.Function.Name;
         }
+
     }
 
     #endregion

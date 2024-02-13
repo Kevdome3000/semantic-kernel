@@ -4,6 +4,7 @@ namespace RepoUtils;
 
 using System;
 using Microsoft.Extensions.Logging;
+using Xunit.Abstractions;
 
 
 /// <summary>
@@ -11,6 +12,7 @@ using Microsoft.Extensions.Logging;
 /// </summary>
 internal sealed class XunitLogger : ILoggerFactory, ILogger, IDisposable
 {
+
     private readonly ITestOutputHelper _output;
 
 
@@ -52,4 +54,5 @@ internal sealed class XunitLogger : ILoggerFactory, ILogger, IDisposable
     public ILogger CreateLogger(string categoryName) => this;
 
     public void AddProvider(ILoggerProvider provider) => throw new NotSupportedException();
+
 }

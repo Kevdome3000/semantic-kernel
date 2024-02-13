@@ -4,6 +4,8 @@ namespace Examples;
 
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Xunit;
+using Xunit.Abstractions;
 
 
 /// <summary>
@@ -12,6 +14,7 @@ using Microsoft.SemanticKernel;
 /// </summary>
 public class Prompts : BaseTest
 {
+
     [Fact]
     public async Task RunAsync()
     {
@@ -29,9 +32,9 @@ public class Prompts : BaseTest
         }
 
         // <KernelCreation>
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey)
-            .Build();
+        Kernel kernel = Kernel.CreateBuilder().
+            AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey).
+            Build();
         // </KernelCreation>
 
         // 0.0 Initial prompt
@@ -229,4 +232,5 @@ Bonus: You'll get $20 if you get this right.</message>
     public Prompts(ITestOutputHelper output) : base(output)
     {
     }
+
 }

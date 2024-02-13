@@ -1,7 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel;
+
+
 internal static class KernelBuilderExtensions
 {
+
     /// <summary>
     /// Adds a text completion service to the list. It can be either an OpenAI or Azure OpenAI backend service.
     /// </summary>
@@ -30,6 +34,7 @@ internal static class KernelBuilderExtensions
                         apiKey: Env.Var("AzureOpenAI:ApiKey")!
                     );
                 }
+
                 break;
 
             case "OpenAI":
@@ -49,6 +54,7 @@ internal static class KernelBuilderExtensions
                         orgId: Env.Var("OpenAI:OrgId")
                     );
                 }
+
                 break;
 
             default:
@@ -57,4 +63,5 @@ internal static class KernelBuilderExtensions
 
         return kernelBuilder;
     }
+
 }

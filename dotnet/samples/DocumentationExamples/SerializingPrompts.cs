@@ -10,6 +10,9 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Plugins.Core;
+using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
+using Xunit;
+using Xunit.Abstractions;
 
 
 /// <summary>
@@ -18,6 +21,7 @@ using Microsoft.SemanticKernel.Plugins.Core;
 /// </summary>
 public class SerializingPrompts : BaseTest
 {
+
     [Fact]
     public async Task RunAsync()
     {
@@ -34,8 +38,9 @@ public class SerializingPrompts : BaseTest
             return;
         }
 
-        var builder = Kernel.CreateBuilder()
-            .AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey);
+        var builder = Kernel.CreateBuilder().
+            AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey);
+
         builder.Plugins.AddFromType<ConversationSummaryPlugin>();
         Kernel kernel = builder.Build();
 
@@ -43,7 +48,9 @@ public class SerializingPrompts : BaseTest
         var prompts = kernel.CreatePluginFromPromptDirectory("./../../../Plugins/Prompts");
 
         // Load prompt from YAML
-        using StreamReader reader = new(Assembly.GetExecutingAssembly().GetManifestResourceStream("Resources." + "getIntent.prompt.yaml")!);
+        using StreamReader reader = new(Assembly.GetExecutingAssembly().
+            GetManifestResourceStream("Resources." + "getIntent.prompt.yaml")!);
+
         KernelFunction getIntent = kernel.CreateFunctionFromPromptYaml(
             await reader.ReadToEndAsync(),
             promptTemplateFactory: new HandlebarsPromptTemplateFactory()
@@ -115,9 +122,11 @@ public class SerializingPrompts : BaseTest
                 {
                     Write(chunk.Role + " > ");
                 }
+
                 message += chunk;
                 Write(chunk);
             }
+
             WriteLine();
 
             // Append to history
@@ -138,4 +147,5 @@ public class SerializingPrompts : BaseTest
             "That is all, thanks."
         ];
     }
+
 }

@@ -10,10 +10,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using RepoUtils;
+using Xunit;
+using Xunit.Abstractions;
 
 
 public sealed class Step7_Observability : BaseTest
 {
+
     /// <summary>
     /// Shows how to observe the execution of a <see cref="KernelPlugin"/> instance with filters.
     /// </summary>
@@ -22,6 +25,7 @@ public sealed class Step7_Observability : BaseTest
     {
         // Create a kernel with OpenAI chat completion
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
+
         kernelBuilder.AddOpenAIChatCompletion(
             modelId: TestConfiguration.OpenAI.ChatModelId,
             apiKey: TestConfiguration.OpenAI.ApiKey);
@@ -52,6 +56,7 @@ public sealed class Step7_Observability : BaseTest
     {
         // Create a kernel with OpenAI chat completion
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
+
         kernelBuilder.AddOpenAIChatCompletion(
             modelId: TestConfiguration.OpenAI.ChatModelId,
             apiKey: TestConfiguration.OpenAI.ApiKey);
@@ -104,9 +109,11 @@ public sealed class Step7_Observability : BaseTest
     /// </summary>
     private sealed class TimeInformation
     {
+
         [KernelFunction]
         [Description("Retrieves the current time in UTC.")]
         public string GetCurrentUtcTime() => DateTime.UtcNow.ToString("R");
+
     }
 
 
@@ -115,6 +122,7 @@ public sealed class Step7_Observability : BaseTest
     /// </summary>
     private sealed class MyFunctionFilter : IFunctionFilter
     {
+
         private readonly ITestOutputHelper _output;
 
 
@@ -139,6 +147,7 @@ public sealed class Step7_Observability : BaseTest
         {
             this._output.WriteLine($"Invoking {context.Function.Name}");
         }
+
     }
 
 
@@ -147,6 +156,7 @@ public sealed class Step7_Observability : BaseTest
     /// </summary>
     private sealed class MyPromptFilter : IPromptFilter
     {
+
         private readonly ITestOutputHelper _output;
 
 
@@ -166,10 +176,12 @@ public sealed class Step7_Observability : BaseTest
         {
             this._output.WriteLine($"Rendering prompt for {context.Function.Name}");
         }
+
     }
 
 
     public Step7_Observability(ITestOutputHelper output) : base(output)
     {
     }
+
 }

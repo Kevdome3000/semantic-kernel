@@ -4,13 +4,16 @@ namespace Examples;
 
 using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
+using Xunit.Abstractions;
 
 
 public abstract class BaseTest
 {
+
     protected ITestOutputHelper Output { get; }
 
     protected List<string> SimulatedInputText = new();
+
     protected int SimulatedInputTextIndex = 0;
 
 
@@ -23,11 +26,10 @@ public abstract class BaseTest
 
     private static void LoadUserSecrets()
     {
-        IConfigurationRoot configRoot = new ConfigurationBuilder()
-            .AddJsonFile("appsettings.Development.json", true)
-            .AddEnvironmentVariables()
-            .AddUserSecrets<TestConfiguration>()
-            .Build();
+        IConfigurationRoot configRoot = new ConfigurationBuilder().AddJsonFile("appsettings.Development.json", true).
+            AddEnvironmentVariables().
+            AddUserSecrets<TestConfiguration>().
+            Build();
 
         TestConfiguration.Initialize(configRoot);
     }
@@ -66,4 +68,5 @@ public abstract class BaseTest
 
         return null;
     }
+
 }

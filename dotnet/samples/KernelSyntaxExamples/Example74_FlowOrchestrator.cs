@@ -20,11 +20,14 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
+using Xunit;
+using Xunit.Abstractions;
 
 
 // This example shows how to use FlowOrchestrator to execute a given flow with interaction with client.
 public class Example74_FlowOrchestrator : BaseTest
 {
+
     private static readonly Flow s_flow = FlowSerializer.DeserializeFromYaml(@"
 name: FlowOrchestrator_Example_Flow
 goal: answer question and send email
@@ -77,18 +80,25 @@ provides:
 
         FlowOrchestrator orchestrator = new(
             GetKernelBuilder(LoggerFactory),
-            await FlowStatusProvider.ConnectAsync(new VolatileMemoryStore()).ConfigureAwait(false),
+            await FlowStatusProvider.ConnectAsync(new VolatileMemoryStore()).
+                ConfigureAwait(false),
             plugins,
             config: GetOrchestratorConfig());
-        var sessionId = Guid.NewGuid().ToString();
+
+        var sessionId = Guid.NewGuid().
+            ToString();
 
         WriteLine("*****************************************************");
         WriteLine("Executing " + nameof(RunExampleAsync));
         Stopwatch sw = new();
         sw.Start();
         WriteLine("Flow: " + s_flow.Name);
-        var question = s_flow.Steps.First().Goal;
-        var result = await orchestrator.ExecuteFlowAsync(s_flow, sessionId, question).ConfigureAwait(false);
+
+        var question = s_flow.Steps.First().
+            Goal;
+
+        var result = await orchestrator.ExecuteFlowAsync(s_flow, sessionId, question).
+            ConfigureAwait(false);
 
         WriteLine("Question: " + question);
         WriteLine("Answer: " + result.Metadata!["answer"]);
@@ -106,7 +116,10 @@ provides:
         foreach (var t in userInputs)
         {
             WriteLine($"User: {t}");
-            result = await orchestrator.ExecuteFlowAsync(s_flow, sessionId, t).ConfigureAwait(false);
+
+            result = await orchestrator.ExecuteFlowAsync(s_flow, sessionId, t).
+                ConfigureAwait(false);
+
             var responses = result.GetValue<List<string>>()!;
 
             foreach (var response in responses)
@@ -144,16 +157,16 @@ provides:
         var builder = Kernel.CreateBuilder();
         builder.Services.AddSingleton<ILoggerFactory>(loggerFactory);
 
-        return builder
-            .AddAzureOpenAIChatCompletion(
-                TestConfiguration.AzureOpenAI.ChatDeploymentName,
-                TestConfiguration.AzureOpenAI.Endpoint,
-                TestConfiguration.AzureOpenAI.ApiKey);
+        return builder.AddAzureOpenAIChatCompletion(
+            TestConfiguration.AzureOpenAI.ChatDeploymentName,
+            TestConfiguration.AzureOpenAI.Endpoint,
+            TestConfiguration.AzureOpenAI.ApiKey);
     }
 
 
     public sealed class ChatPlugin
     {
+
         private const string Goal = "Prompt user to provide a valid email address";
 
         private const string EmailRegex = @"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$";
@@ -178,6 +191,7 @@ Do not expose the regex in your response.
         public ChatPlugin(Kernel kernel)
         {
             this._chat = kernel.GetRequiredService<IChatCompletionService>();
+
             this._chatRequestSettings = new OpenAIPromptExecutionSettings
             {
                 MaxTokens = this.MaxTokens,
@@ -212,7 +226,9 @@ Do not expose the regex in your response.
             arguments["email_addresses"] = string.Empty;
             arguments.PromptInput();
 
-            var response = await this._chat.GetChatMessageContentAsync(chat).ConfigureAwait(false);
+            var response = await this._chat.GetChatMessageContentAsync(chat).
+                ConfigureAwait(false);
+
             return response.Content ?? string.Empty;
         }
 
@@ -221,13 +237,16 @@ Do not expose the regex in your response.
         {
             // check using regex
             var regex = new Regex(EmailRegex);
+
             return regex.IsMatch(email);
         }
+
     }
 
 
     public sealed class EmailPluginV2
     {
+
         private readonly JsonSerializerOptions _serializerOptions = new() { WriteIndented = true };
 
 
@@ -256,16 +275,20 @@ Do not expose the regex in your response.
 
         private sealed class Email
         {
+
             public string? Address { get; set; }
 
             public string? Content { get; set; }
+
         }
+
     }
 
 
     public Example74_FlowOrchestrator(ITestOutputHelper output) : base(output)
     {
     }
+
 }
 
 //*****************************************************

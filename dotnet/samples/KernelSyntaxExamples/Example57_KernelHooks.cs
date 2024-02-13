@@ -7,12 +7,15 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using RepoUtils;
+using Xunit;
+using Xunit.Abstractions;
 
 #pragma warning disable CS0618 // Events are deprecated
 
 
 public class Example57_KernelHooks : BaseTest
 {
+
     /// <summary>
     /// Demonstrate using kernel invocation-hooks to monitor usage:
     /// <see cref="Kernel.FunctionInvoking"/>
@@ -24,11 +27,11 @@ public class Example57_KernelHooks : BaseTest
         WriteLine("\n======== Get Usage Data ========\n");
 
         // Create kernel instance
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(
+        Kernel kernel = Kernel.CreateBuilder().
+            AddOpenAIChatCompletion(
                 modelId: _openAIModelId!,
-                apiKey: _openAIApiKey!)
-            .Build();
+                apiKey: _openAIApiKey!).
+            Build();
 
         // Initialize prompt
         const string FunctionPrompt = "Write a random paragraph about: {{$input}}.";
@@ -81,11 +84,11 @@ public class Example57_KernelHooks : BaseTest
         WriteLine("\n======== Get Rendered Prompt ========\n");
 
         // Create kernel instance
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(
+        Kernel kernel = Kernel.CreateBuilder().
+            AddOpenAIChatCompletion(
                 modelId: _openAIModelId!,
-                apiKey: _openAIApiKey!)
-            .Build();
+                apiKey: _openAIApiKey!).
+            Build();
 
         // Initialize prompt
         const string FunctionPrompt = "Write a random paragraph about: {{$input}} in the style of {{$style}}.";
@@ -130,11 +133,11 @@ public class Example57_KernelHooks : BaseTest
         WriteLine("\n======== Changing/Filtering Function Result ========\n");
 
         // Create kernel instance
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(
+        Kernel kernel = Kernel.CreateBuilder().
+            AddOpenAIChatCompletion(
                 modelId: _openAIModelId!,
-                apiKey: _openAIApiKey!)
-            .Build();
+                apiKey: _openAIApiKey!).
+            Build();
 
         // Initialize function
         const string FunctionPrompt = "Write a paragraph about Handlers.";
@@ -175,11 +178,11 @@ public class Example57_KernelHooks : BaseTest
         WriteLine("\n======== Cancelling Pipeline Execution - Invoking event ========\n");
 
         // Create kernel instance
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(
+        Kernel kernel = Kernel.CreateBuilder().
+            AddOpenAIChatCompletion(
                 modelId: _openAIModelId!,
-                apiKey: _openAIApiKey!)
-            .Build();
+                apiKey: _openAIApiKey!).
+            Build();
 
         // Initialize prompt
         const string FunctionPrompt = "Write a paragraph about: Cancellation.";
@@ -198,6 +201,7 @@ public class Example57_KernelHooks : BaseTest
 
         // Technically invoked will never be called since the function will be cancelled
         int functionInvokedCount = 0;
+
         kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
         {
             functionInvokedCount++;
@@ -228,11 +232,11 @@ public class Example57_KernelHooks : BaseTest
         WriteLine("\n======== Cancelling Pipeline Execution - Invoked event ========\n");
 
         // Create kernel instance
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(
+        Kernel kernel = Kernel.CreateBuilder().
+            AddOpenAIChatCompletion(
                 modelId: _openAIModelId!,
-                apiKey: _openAIApiKey!)
-            .Build();
+                apiKey: _openAIApiKey!).
+            Build();
 
         // Initialize prompts
         int functionInvokingCount = 0;
@@ -270,6 +274,7 @@ public class Example57_KernelHooks : BaseTest
 
 
     private readonly string? _openAIModelId;
+
     private readonly string? _openAIApiKey;
 
 
@@ -281,7 +286,9 @@ public class Example57_KernelHooks : BaseTest
         if (this._openAIModelId == null || this._openAIApiKey == null)
         {
             WriteLine("OpenAI credentials not found. Skipping example.");
+
             return;
         }
     }
+
 }

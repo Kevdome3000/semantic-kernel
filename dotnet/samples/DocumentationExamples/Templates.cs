@@ -7,6 +7,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
+using Xunit;
+using Xunit.Abstractions;
 
 
 /// <summary>
@@ -15,6 +18,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 /// </summary>
 public class Templates : BaseTest
 {
+
     [Fact]
     public async Task RunAsync()
     {
@@ -31,9 +35,9 @@ public class Templates : BaseTest
             return;
         }
 
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey)
-            .Build();
+        Kernel kernel = Kernel.CreateBuilder().
+            AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey).
+            Build();
 
         // Create a Semantic Kernel template for chat
         var chat = kernel.CreateFunctionFromPrompt(
@@ -137,6 +141,7 @@ Choices: {{choices}}.</message>
                 message += chunk;
                 Write(chunk);
             }
+
             WriteLine();
 
             // Append to history
@@ -154,4 +159,5 @@ Choices: {{choices}}.</message>
             "That is all, thanks."
         ];
     }
+
 }

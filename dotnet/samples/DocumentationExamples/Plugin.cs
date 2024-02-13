@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Xunit;
+using Xunit.Abstractions;
 
 
 /// <summary>
@@ -17,6 +19,7 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 /// </summary>
 public class Plugin : BaseTest
 {
+
     [Fact]
     public async Task RunAsync()
     {
@@ -35,8 +38,9 @@ public class Plugin : BaseTest
 
         // Create kernel
         // <KernelCreation>
-        var builder = Kernel.CreateBuilder()
-            .AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey);
+        var builder = Kernel.CreateBuilder().
+            AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey);
+
         builder.Plugins.AddFromType<LightPlugin>();
         Kernel kernel = builder.Build();
         // </KernelCreation>
@@ -91,12 +95,14 @@ public class Plugin : BaseTest
             "Can you turn on the lights"
         ];
     }
+
 }
 
 
 // <LightPlugin>
 public class LightPlugin
 {
+
     public bool IsOn { get; set; } = false;
 
 #pragma warning disable CA1024 // Use properties where appropriate
@@ -120,5 +126,6 @@ public class LightPlugin
 
         return state;
     }
+
 }
 // </LightPlugin>
