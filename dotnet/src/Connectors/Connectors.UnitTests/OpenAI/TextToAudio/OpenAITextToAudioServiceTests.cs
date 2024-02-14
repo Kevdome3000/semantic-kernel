@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Connectors.UnitTests.OpenAI.TextToAudio;
+
 using System;
 using System.IO;
 using System.Linq;
@@ -11,16 +13,19 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.OpenAI.TextToAudio;
 
 /// <summary>
 /// Unit tests for <see cref="OpenAITextToAudioService"/> class.
 /// </summary>
 public sealed class OpenAITextToAudioServiceTests : IDisposable
 {
+
     private readonly HttpMessageHandlerStub _messageHandlerStub;
+
     private readonly HttpClient _httpClient;
+
     private readonly Mock<ILoggerFactory> _mockLoggerFactory;
+
 
     public OpenAITextToAudioServiceTests()
     {
@@ -29,20 +34,22 @@ public sealed class OpenAITextToAudioServiceTests : IDisposable
         this._mockLoggerFactory = new Mock<ILoggerFactory>();
     }
 
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
     public void ConstructorWithApiKeyWorksCorrectly(bool includeLoggerFactory)
     {
         // Arrange & Act
-        var service = includeLoggerFactory ?
-            new OpenAITextToAudioService("model-id", "api-key", "organization", loggerFactory: this._mockLoggerFactory.Object) :
-            new OpenAITextToAudioService("model-id", "api-key", "organization");
+        var service = includeLoggerFactory
+            ? new OpenAITextToAudioService("model-id", "api-key", "organization", loggerFactory: this._mockLoggerFactory.Object)
+            : new OpenAITextToAudioService("model-id", "api-key", "organization");
 
         // Assert
         Assert.NotNull(service);
         Assert.Equal("model-id", service.Attributes["ModelId"]);
     }
+
 
     [Theory]
     [MemberData(nameof(ExecutionSettings))]
@@ -65,6 +72,7 @@ public sealed class OpenAITextToAudioServiceTests : IDisposable
         Assert.IsType(expectedExceptionType, exception);
     }
 
+
     [Fact]
     public async Task GetAudioContentByDefaultWorksCorrectlyAsync()
     {
@@ -84,8 +92,11 @@ public sealed class OpenAITextToAudioServiceTests : IDisposable
 
         // Assert
         Assert.NotNull(result?.Data);
-        Assert.True(result.Data.ToArray().SequenceEqual(expectedByteArray));
+
+        Assert.True(result.Data.ToArray().
+            SequenceEqual(expectedByteArray));
     }
+
 
     [Theory]
     [InlineData(true, "http://local-endpoint")]
@@ -115,15 +126,18 @@ public sealed class OpenAITextToAudioServiceTests : IDisposable
         Assert.StartsWith(expectedBaseAddress, this._messageHandlerStub.RequestUri!.AbsoluteUri, StringComparison.InvariantCulture);
     }
 
+
     public void Dispose()
     {
         this._httpClient.Dispose();
         this._messageHandlerStub.Dispose();
     }
 
+
     public static TheoryData<OpenAITextToAudioExecutionSettings?, Type> ExecutionSettings => new()
     {
         { null, typeof(ArgumentNullException) },
         { new OpenAITextToAudioExecutionSettings(""), typeof(ArgumentException) },
     };
+
 }

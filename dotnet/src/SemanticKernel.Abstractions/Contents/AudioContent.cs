@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Contents;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.SemanticKernel.Contents;
 
 /// <summary>
 /// Represents audio content.
@@ -12,10 +13,12 @@ namespace Microsoft.SemanticKernel.Contents;
 [Experimental("SKEXP0005")]
 public class AudioContent : KernelContent
 {
+
     /// <summary>
     /// The audio binary data.
     /// </summary>
     public BinaryData? Data { get; set; }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AudioContent"/> class.
@@ -33,4 +36,5 @@ public class AudioContent : KernelContent
     {
         this.Data = data;
     }
+
 }

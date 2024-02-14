@@ -19,6 +19,7 @@ using Text;
 [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
 public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
 {
+
     /// <summary>
     /// Temperature controls the randomness of the completion.
     /// The higher the temperature, the more random the completion.
@@ -187,6 +188,7 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
             {
                 value = DefaultChatSystemPrompt;
             }
+
             this._chatSystemPrompt = value;
         }
     }
@@ -261,6 +263,7 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
         }
     }
 
+
     /// <inheritdoc/>
     public override void Freeze()
     {
@@ -270,11 +273,13 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
         {
             this._stopSequences = new ReadOnlyCollection<string>(this._stopSequences);
         }
+
         if (this._tokenSelectionBiases is not null)
         {
             this._tokenSelectionBiases = new ReadOnlyDictionary<int, int>(this._tokenSelectionBiases);
         }
     }
+
 
     /// <inheritdoc/>
     public override PromptExecutionSettings Clone()
@@ -282,22 +287,29 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
         return new OpenAIPromptExecutionSettings()
         {
             ModelId = this.ModelId,
-            ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null,
+            ExtensionData = this.ExtensionData is not null
+                ? new Dictionary<string, object>(this.ExtensionData)
+                : null,
             Temperature = this.Temperature,
             TopP = this.TopP,
             PresencePenalty = this.PresencePenalty,
             FrequencyPenalty = this.FrequencyPenalty,
             MaxTokens = this.MaxTokens,
-            StopSequences = this.StopSequences is not null ? new List<string>(this.StopSequences) : null,
+            StopSequences = this.StopSequences is not null
+                ? new List<string>(this.StopSequences)
+                : null,
             ResultsPerPrompt = this.ResultsPerPrompt,
             Seed = this.Seed,
             ResponseFormat = this.ResponseFormat,
-            TokenSelectionBiases = this.TokenSelectionBiases is not null ? new Dictionary<int, int>(this.TokenSelectionBiases) : null,
+            TokenSelectionBiases = this.TokenSelectionBiases is not null
+                ? new Dictionary<int, int>(this.TokenSelectionBiases)
+                : null,
             ToolCallBehavior = this.ToolCallBehavior,
             User = this.User,
             ChatSystemPrompt = this.ChatSystemPrompt
         };
     }
+
 
     /// <summary>
     /// Default value for chat system property.
@@ -368,17 +380,29 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     #region private ================================================================================
 
     private double _temperature = 1;
+
     private double _topP = 1;
+
     private double _presencePenalty;
+
     private double _frequencyPenalty;
+
     private int? _maxTokens;
+
     private IList<string>? _stopSequences;
+
     private int _resultsPerPrompt = 1;
+
     private long? _seed;
+
     private object? _responseFormat;
+
     private IDictionary<int, int>? _tokenSelectionBiases;
+
     private ToolCallBehavior? _toolCallBehavior;
+
     private string? _user;
+
     private string _chatSystemPrompt = DefaultChatSystemPrompt;
 
     #endregion

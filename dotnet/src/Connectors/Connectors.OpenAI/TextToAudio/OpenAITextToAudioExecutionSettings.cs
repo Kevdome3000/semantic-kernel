@@ -1,18 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Text;
+using Text;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
 /// Execution settings for OpenAI text-to-audio request.
 /// </summary>
 public sealed class OpenAITextToAudioExecutionSettings : PromptExecutionSettings
 {
+
     /// <summary>
     /// The voice to use when generating the audio. Supported voices are alloy, echo, fable, onyx, nova, and shimmer.
     /// </summary>
@@ -58,6 +60,7 @@ public sealed class OpenAITextToAudioExecutionSettings : PromptExecutionSettings
         }
     }
 
+
     /// <summary>
     /// Creates an instance of <see cref="OpenAITextToAudioExecutionSettings"/> class.
     /// </summary>
@@ -67,17 +70,21 @@ public sealed class OpenAITextToAudioExecutionSettings : PromptExecutionSettings
         this._voice = voice;
     }
 
+
     /// <inheritdoc/>
     public override PromptExecutionSettings Clone()
     {
         return new OpenAITextToAudioExecutionSettings(this.Voice)
         {
             ModelId = this.ModelId,
-            ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null,
+            ExtensionData = this.ExtensionData is not null
+                ? new Dictionary<string, object>(this.ExtensionData)
+                : null,
             Speed = this.Speed,
             ResponseFormat = this.ResponseFormat
         };
     }
+
 
     /// <summary>
     /// Converts <see cref="PromptExecutionSettings"/> to derived <see cref="OpenAITextToAudioExecutionSettings"/> type.
@@ -108,11 +115,16 @@ public sealed class OpenAITextToAudioExecutionSettings : PromptExecutionSettings
         throw new ArgumentException($"Invalid execution settings, cannot convert to {nameof(OpenAITextToAudioExecutionSettings)}", nameof(executionSettings));
     }
 
+
     #region private ================================================================================
 
     private float _speed = 1.0f;
+
     private string _responseFormat = "mp3";
+
     private string _voice;
 
     #endregion
+
+
 }

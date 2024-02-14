@@ -11,11 +11,13 @@ using System.Text.Json.Serialization;
 /// </summary>
 public sealed class InputVariable
 {
+
     /// <summary>The name of the variable.</summary>
     private string _name = string.Empty;
 
     /// <summary>The description of the variable.</summary>
     private string _description = string.Empty;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="InputVariable"/> class.
@@ -23,6 +25,7 @@ public sealed class InputVariable
     public InputVariable()
     {
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="InputVariable"/> class from an existing instance.
@@ -38,6 +41,7 @@ public sealed class InputVariable
         this.IsRequired = inputVariable.IsRequired;
         this.JsonSchema = inputVariable.JsonSchema;
     }
+
 
     /// <summary>
     /// Gets or sets the name of the variable.
@@ -90,4 +94,5 @@ public sealed class InputVariable
     /// </remarks>
     [JsonPropertyName("json_schema")]
     public string? JsonSchema { get; set; }
+
 }

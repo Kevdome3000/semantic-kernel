@@ -20,6 +20,7 @@ using Xunit.Abstractions;
 /// </summary>
 public sealed class Example75_AgentTools : BaseTest
 {
+
     /// <summary>
     /// Specific model is required that supports agents and parallel function calling.
     /// Currently this is limited to Open AI hosted services.
@@ -41,13 +42,13 @@ public sealed class Example75_AgentTools : BaseTest
         if (TestConfiguration.OpenAI.ApiKey == null)
         {
             this.WriteLine("OpenAI apiKey not found. Skipping example.");
+
             return;
         }
 
         var builder =
-            new AgentBuilder()
-                .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
-                .WithInstructions("Write only code to solve the given problem without comment.");
+            new AgentBuilder().WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey).
+                WithInstructions("Write only code to solve the given problem without comment.");
 
         try
         {
@@ -57,7 +58,8 @@ public sealed class Example75_AgentTools : BaseTest
 
             var codeInterpreterAgent =
                 Track(
-                    await builder.WithCodeInterpreter().BuildAsync());
+                    await builder.WithCodeInterpreter().
+                        BuildAsync());
 
             await ChatAsync(
                 defaultAgent,
@@ -83,11 +85,16 @@ public sealed class Example75_AgentTools : BaseTest
         if (TestConfiguration.OpenAI.ApiKey == null)
         {
             this.WriteLine("OpenAI apiKey not found. Skipping example.");
+
             return;
         }
 
-        var kernel = Kernel.CreateBuilder().AddOpenAIFiles(TestConfiguration.OpenAI.ApiKey).Build();
+        var kernel = Kernel.CreateBuilder().
+            AddOpenAIFiles(TestConfiguration.OpenAI.ApiKey).
+            Build();
+
         var fileService = kernel.GetRequiredService<OpenAIFileService>();
+
         var result =
             await fileService.UploadContentAsync(
                 new BinaryContent(() => Task.FromResult(EmbeddedResource.ReadStream("travelinfo.txt")!)),
@@ -97,16 +104,14 @@ public sealed class Example75_AgentTools : BaseTest
 
         var defaultAgent =
             Track(
-                await new AgentBuilder()
-                    .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
-                    .BuildAsync());
+                await new AgentBuilder().WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey).
+                    BuildAsync());
 
         var retrievalAgent =
             Track(
-                await new AgentBuilder()
-                    .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
-                    .WithRetrieval(fileId)
-                    .BuildAsync());
+                await new AgentBuilder().WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey).
+                    WithRetrieval(fileId).
+                    BuildAsync());
 
         try
         {
@@ -119,7 +124,8 @@ public sealed class Example75_AgentTools : BaseTest
         }
         finally
         {
-            await Task.WhenAll(this._agents.Select(a => a.DeleteAsync()).Append(fileService.DeleteFileAsync(fileId)));
+            await Task.WhenAll(this._agents.Select(a => a.DeleteAsync()).
+                Append(fileService.DeleteFileAsync(fileId)));
         }
     }
 
@@ -182,4 +188,5 @@ public sealed class Example75_AgentTools : BaseTest
     public Example75_AgentTools(ITestOutputHelper output) : base(output)
     {
     }
+
 }

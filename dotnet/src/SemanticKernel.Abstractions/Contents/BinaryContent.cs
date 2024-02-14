@@ -1,19 +1,23 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel;
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Provides access to binary content.
 /// </summary>
 public class BinaryContent : KernelContent
 {
+
     private readonly Func<Task<Stream>>? _streamProvider;
+
     private readonly BinaryData? _content;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BinaryContent"/> class.
@@ -33,6 +37,7 @@ public class BinaryContent : KernelContent
 
         this._content = content;
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BinaryContent"/> class.
@@ -58,6 +63,7 @@ public class BinaryContent : KernelContent
         this._streamProvider = streamProvider;
     }
 
+
     /// <summary>
     /// Access the content stream.
     /// </summary>
@@ -68,7 +74,8 @@ public class BinaryContent : KernelContent
     {
         if (this._streamProvider != null)
         {
-            return await this._streamProvider.Invoke().ConfigureAwait(false);
+            return await this._streamProvider.Invoke().
+                ConfigureAwait(false);
         }
 
         if (this._content != null)
@@ -79,6 +86,7 @@ public class BinaryContent : KernelContent
         throw new KernelException("Null content");
     }
 
+
     /// <summary>
     /// The content stream
     /// </summary>
@@ -86,8 +94,11 @@ public class BinaryContent : KernelContent
     {
         if (this._streamProvider != null)
         {
-            using var stream = await this._streamProvider.Invoke().ConfigureAwait(false);
-            return await BinaryData.FromStreamAsync(stream).ConfigureAwait(false);
+            using var stream = await this._streamProvider.Invoke().
+                ConfigureAwait(false);
+
+            return await BinaryData.FromStreamAsync(stream).
+                ConfigureAwait(false);
         }
 
         if (this._content != null)
@@ -97,4 +108,5 @@ public class BinaryContent : KernelContent
 
         throw new KernelException("Null content");
     }
+
 }

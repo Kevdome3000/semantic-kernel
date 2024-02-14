@@ -1,17 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Contents;
-using Microsoft.SemanticKernel.Http;
+using Contents;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
+using Http;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
 /// OpenAI text-to-audio client for HTTP operations.
@@ -19,17 +20,22 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 [Experimental("SKEXP0005")]
 internal sealed class OpenAITextToAudioClient
 {
+
     private readonly ILogger _logger;
+
     private readonly HttpClient _httpClient;
 
     private readonly string _modelId;
+
     private readonly string _apiKey;
+
     private readonly string? _organization;
 
     /// <summary>
     /// Storage for AI service attributes.
     /// </summary>
     internal Dictionary<string, object?> Attributes { get; } = new();
+
 
     /// <summary>
     /// Creates an instance of the <see cref="OpenAITextToAudioClient"/> with API key auth.
@@ -57,6 +63,7 @@ internal sealed class OpenAITextToAudioClient
         this._logger = logger ?? NullLogger.Instance;
     }
 
+
     internal async Task<AudioContent> GetAudioContentAsync(
         string text,
         PromptExecutionSettings? executionSettings,
@@ -67,13 +74,19 @@ internal sealed class OpenAITextToAudioClient
         Verify.NotNullOrWhiteSpace(audioExecutionSettings?.Voice);
 
         using var request = this.GetRequest(text, audioExecutionSettings);
-        using var response = await this.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
-        using var stream = await response.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
 
-        var binaryData = await BinaryData.FromStreamAsync(stream, cancellationToken).ConfigureAwait(false);
+        using var response = await this.SendRequestAsync(request, cancellationToken).
+            ConfigureAwait(false);
+
+        using var stream = await response.Content.ReadAsStreamAndTranslateExceptionAsync().
+            ConfigureAwait(false);
+
+        var binaryData = await BinaryData.FromStreamAsync(stream, cancellationToken).
+            ConfigureAwait(false);
 
         return new AudioContent(binaryData, this._modelId);
     }
+
 
     internal void AddAttribute(string key, string? value)
     {
@@ -82,6 +95,7 @@ internal sealed class OpenAITextToAudioClient
             this.Attributes.Add(key, value);
         }
     }
+
 
     #region private
 
@@ -99,7 +113,8 @@ internal sealed class OpenAITextToAudioClient
 
         try
         {
-            return await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
+            return await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).
+                ConfigureAwait(false);
         }
         catch (HttpOperationException ex)
         {
@@ -110,13 +125,14 @@ internal sealed class OpenAITextToAudioClient
         }
     }
 
+
     private HttpRequestMessage GetRequest(string text, OpenAITextToAudioExecutionSettings executionSettings)
     {
         const string DefaultBaseUrl = "https://api.openai.com";
 
-        var baseUrl = !string.IsNullOrWhiteSpace(this._httpClient.BaseAddress?.AbsoluteUri) ?
-            this._httpClient.BaseAddress!.AbsoluteUri :
-            DefaultBaseUrl;
+        var baseUrl = !string.IsNullOrWhiteSpace(this._httpClient.BaseAddress?.AbsoluteUri)
+            ? this._httpClient.BaseAddress!.AbsoluteUri
+            : DefaultBaseUrl;
 
         var payload = new TextToAudioRequest(this._modelId, text, executionSettings.Voice)
         {
@@ -128,4 +144,6 @@ internal sealed class OpenAITextToAudioClient
     }
 
     #endregion
+
+
 }

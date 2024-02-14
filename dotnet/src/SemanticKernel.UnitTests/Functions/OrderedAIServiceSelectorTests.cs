@@ -15,6 +15,7 @@ using Xunit;
 
 public class OrderedAIServiceSelectorTests
 {
+
     [Fact]
     public void ItThrowsAKernelExceptionForNoServices()
     {
@@ -204,6 +205,7 @@ public class OrderedAIServiceSelectorTests
         {
             executionSettings.Add(serviceId, new PromptExecutionSettings() { ModelId = serviceId });
         }
+
         var function = kernel.CreateFunctionFromPrompt(promptConfig: new PromptTemplateConfig() { Template = "Hello AI", ExecutionSettings = executionSettings });
         var serviceSelector = new OrderedAIServiceSelector();
 
@@ -250,12 +252,15 @@ public class OrderedAIServiceSelectorTests
 
     private sealed class AIService : IAIService
     {
+
         public IReadOnlyDictionary<string, object?> Attributes => new Dictionary<string, object?>();
+
     }
 
 
     private sealed class TextGenerationService : ITextGenerationService
     {
+
         public IReadOnlyDictionary<string, object?> Attributes => this._attributes;
 
         private readonly Dictionary<string, object?> _attributes = new();
@@ -267,16 +272,25 @@ public class OrderedAIServiceSelectorTests
         }
 
 
-        public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(
+            string prompt,
+            PromptExecutionSettings? executionSettings = null,
+            Kernel? kernel = null,
+            CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
 
-        public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(
+            string prompt,
+            PromptExecutionSettings? executionSettings = null,
+            Kernel? kernel = null,
+            CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
+
     }
 
     #endregion

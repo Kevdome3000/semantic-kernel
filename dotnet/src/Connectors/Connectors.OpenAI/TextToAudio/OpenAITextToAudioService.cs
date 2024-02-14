@@ -1,16 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Contents;
-using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.TextToAudio;
+using Contents;
+using Extensions.Logging;
+using Services;
+using TextToAudio;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
 /// OpenAI text-to-audio service.
@@ -18,6 +19,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 [Experimental("SKEXP0005")]
 public sealed class OpenAITextToAudioService : ITextToAudioService
 {
+
     /// <summary>
     /// OpenAI text-to-audio client for HTTP operations.
     /// </summary>
@@ -30,6 +32,7 @@ public sealed class OpenAITextToAudioService : ITextToAudioService
 
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, object?> Attributes => this._client.Attributes;
+
 
     /// <summary>
     /// Creates an instance of the <see cref="OpenAITextToAudioService"/> with API key auth.
@@ -46,11 +49,13 @@ public sealed class OpenAITextToAudioService : ITextToAudioService
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._client = new(modelId, apiKey, organization, httpClient, loggerFactory?.CreateLogger(typeof(OpenAITextToAudioService)));
+        this._client = new(modelId, apiKey, organization, httpClient,
+            loggerFactory?.CreateLogger(typeof(OpenAITextToAudioService)));
 
         this._client.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
         this._client.AddAttribute(OrganizationKey, organization);
     }
+
 
     /// <inheritdoc/>
     public Task<AudioContent> GetAudioContentAsync(
@@ -59,4 +64,5 @@ public sealed class OpenAITextToAudioService : ITextToAudioService
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
         => this._client.GetAudioContentAsync(text, executionSettings, cancellationToken);
+
 }

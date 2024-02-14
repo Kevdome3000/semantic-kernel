@@ -1,17 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using AudioToText;
 using Azure.AI.OpenAI;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AudioToText;
-using Microsoft.SemanticKernel.Contents;
-using Microsoft.SemanticKernel.Services;
+using Contents;
+using Extensions.Logging;
+using Services;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
 /// OpenAI audio-to-text service.
@@ -19,11 +20,13 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 [Experimental("SKEXP0005")]
 public sealed class OpenAIAudioToTextService : IAudioToTextService
 {
+
     /// <summary>Core implementation shared by OpenAI services.</summary>
     private readonly OpenAIClientCore _core;
 
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
+
 
     /// <summary>
     /// Creates an instance of the <see cref="OpenAIAudioToTextService"/> with API key auth.
@@ -40,11 +43,13 @@ public sealed class OpenAIAudioToTextService : IAudioToTextService
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(modelId, apiKey, organization, httpClient, loggerFactory?.CreateLogger(typeof(OpenAIAudioToTextService)));
+        this._core = new(modelId, apiKey, organization, httpClient,
+            loggerFactory?.CreateLogger(typeof(OpenAIAudioToTextService)));
 
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
         this._core.AddAttribute(OpenAIClientCore.OrganizationKey, organization);
     }
+
 
     /// <summary>
     /// Creates an instance of the <see cref="OpenAIAudioToTextService"/> using the specified <see cref="OpenAIClient"/>.
@@ -62,6 +67,7 @@ public sealed class OpenAIAudioToTextService : IAudioToTextService
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
+
     /// <inheritdoc/>
     public Task<TextContent> GetTextContentAsync(
         AudioContent content,
@@ -69,4 +75,5 @@ public sealed class OpenAIAudioToTextService : IAudioToTextService
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
         => this._core.GetTextContentFromAudioAsync(content, executionSettings, cancellationToken);
+
 }

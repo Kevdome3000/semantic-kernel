@@ -1,15 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Planning.Handlebars;
+
 using System;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Planning.Handlebars;
 
 /// <summary>
 /// Configuration for Handlebars planner instances.
 /// </summary>
 public sealed class HandlebarsPlannerOptions : PlannerOptions
 {
+
     /// <summary>
     /// The prompt execution settings to use for the planner.
     /// </summary>
@@ -53,4 +55,5 @@ public sealed class HandlebarsPlannerOptions : PlannerOptions
         this.LastError = lastError;
         this.AllowLoops = allowLoops;
     }
+
 }

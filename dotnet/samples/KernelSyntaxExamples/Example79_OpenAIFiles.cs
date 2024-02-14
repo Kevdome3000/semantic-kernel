@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -7,7 +9,6 @@ using Resources;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Examples;
 
 // ReSharper disable once InconsistentNaming
 /// <summary>
@@ -15,7 +16,9 @@ namespace Examples;
 /// </summary>
 public sealed class Example79_OpenAIFiles : BaseTest
 {
+
     private const string ResourceFileName = "30-user-context.txt";
+
 
     /// <summary>
     /// Show how to utilize OpenAI file-service.
@@ -28,19 +31,21 @@ public sealed class Example79_OpenAIFiles : BaseTest
         if (TestConfiguration.OpenAI.ApiKey == null)
         {
             this.WriteLine("OpenAI apiKey not found. Skipping example.");
+
             return;
         }
 
         // Initialize file-service
         var kernel =
-            Kernel.CreateBuilder()
-                .AddOpenAIFiles(TestConfiguration.OpenAI.ApiKey)
-                .Build();
+            Kernel.CreateBuilder().
+                AddOpenAIFiles(TestConfiguration.OpenAI.ApiKey).
+                Build();
 
         var fileService = kernel.GetRequiredService<OpenAIFileService>();
 
         // Upload file
         var fileContent = new BinaryContent(() => Task.FromResult(EmbeddedResource.ReadStream(ResourceFileName)!));
+
         var fileReference =
             await fileService.UploadContentAsync(
                 fileContent,
@@ -68,5 +73,9 @@ public sealed class Example79_OpenAIFiles : BaseTest
         }
     }
 
-    public Example79_OpenAIFiles(ITestOutputHelper output) : base(output) { }
+
+    public Example79_OpenAIFiles(ITestOutputHelper output) : base(output)
+    {
+    }
+
 }

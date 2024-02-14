@@ -1,18 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using AudioToText;
 using Azure.AI.OpenAI;
 using Azure.Core;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AudioToText;
-using Microsoft.SemanticKernel.Contents;
-using Microsoft.SemanticKernel.Services;
+using Contents;
+using Extensions.Logging;
+using Services;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
 /// Azure OpenAI audio-to-text service.
@@ -20,11 +21,13 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 [Experimental("SKEXP0005")]
 public sealed class AzureOpenAIAudioToTextService : IAudioToTextService
 {
+
     /// <summary>Core implementation shared by Azure OpenAI services.</summary>
     private readonly AzureOpenAIClientCore _core;
 
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
+
 
     /// <summary>
     /// Creates an instance of the <see cref="AzureOpenAIAudioToTextService"/> with API key auth.
@@ -43,9 +46,12 @@ public sealed class AzureOpenAIAudioToTextService : IAudioToTextService
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(deploymentName, endpoint, apiKey, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAIAudioToTextService)));
+        this._core = new(deploymentName, endpoint, apiKey, httpClient,
+            loggerFactory?.CreateLogger(typeof(AzureOpenAIAudioToTextService)));
+
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
+
 
     /// <summary>
     /// Creates an instance of the <see cref="AzureOpenAIAudioToTextService"/> with AAD auth.
@@ -64,9 +70,12 @@ public sealed class AzureOpenAIAudioToTextService : IAudioToTextService
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(deploymentName, endpoint, credentials, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAIAudioToTextService)));
+        this._core = new(deploymentName, endpoint, credentials, httpClient,
+            loggerFactory?.CreateLogger(typeof(AzureOpenAIAudioToTextService)));
+
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
+
 
     /// <summary>
     /// Creates an instance of the <see cref="AzureOpenAIAudioToTextService"/> using the specified <see cref="OpenAIClient"/>.
@@ -85,6 +94,7 @@ public sealed class AzureOpenAIAudioToTextService : IAudioToTextService
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
+
     /// <inheritdoc/>
     public Task<TextContent> GetTextContentAsync(
         AudioContent content,
@@ -92,4 +102,5 @@ public sealed class AzureOpenAIAudioToTextService : IAudioToTextService
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
         => this._core.GetTextContentFromAudioAsync(content, executionSettings, cancellationToken);
+
 }

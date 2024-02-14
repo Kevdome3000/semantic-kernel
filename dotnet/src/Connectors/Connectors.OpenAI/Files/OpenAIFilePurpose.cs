@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
 /// Defines the purpose associated with the uploaded file.
@@ -10,6 +11,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 [Experimental("SKEXP0015")]
 public enum OpenAIFilePurpose
 {
+
     /// <summary>
     /// File to be used by assistants for model processing.
     /// </summary>
@@ -19,4 +21,5 @@ public enum OpenAIFilePurpose
     /// File to be used by fine-tuning jobs.
     /// </summary>
     FineTune,
+
 }

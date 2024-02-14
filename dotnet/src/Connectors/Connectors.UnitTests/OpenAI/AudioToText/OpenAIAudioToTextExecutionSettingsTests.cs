@@ -1,22 +1,25 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Connectors.UnitTests.OpenAI.AudioToText;
+
 using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.OpenAI.AudioToText;
 
 /// <summary>
 /// Unit tests for <see cref="OpenAIAudioToTextExecutionSettings"/> class.
 /// </summary>
 public sealed class OpenAIAudioToTextExecutionSettingsTests
 {
+
     [Fact]
     public void ItReturnsNullWhenSettingsAreNull()
     {
         Assert.Null(OpenAIAudioToTextExecutionSettings.FromExecutionSettings(null));
     }
+
 
     [Fact]
     public void ItReturnsValidOpenAIAudioToTextExecutionSettings()
@@ -37,6 +40,7 @@ public sealed class OpenAIAudioToTextExecutionSettingsTests
         // Assert
         Assert.Same(audioToTextSettings, settings);
     }
+
 
     [Fact]
     public void ItCreatesOpenAIAudioToTextExecutionSettingsFromJson()
@@ -65,4 +69,5 @@ public sealed class OpenAIAudioToTextExecutionSettingsTests
         Assert.Equal("text", settings.ResponseFormat);
         Assert.Equal(0.2f, settings.Temperature);
     }
+
 }

@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Connectors.UnitTests.OpenAI.Files;
+
 using System;
 using System.IO;
 using System.Linq;
@@ -12,16 +14,19 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.OpenAI.Files;
 
 /// <summary>
 /// Unit tests for <see cref="OpenAITextToImageService"/> class.
 /// </summary>
 public sealed class OpenAIFileServiceTests : IDisposable
 {
+
     private readonly HttpMessageHandlerStub _messageHandlerStub;
+
     private readonly HttpClient _httpClient;
+
     private readonly Mock<ILoggerFactory> _mockLoggerFactory;
+
 
     public OpenAIFileServiceTests()
     {
@@ -30,19 +35,21 @@ public sealed class OpenAIFileServiceTests : IDisposable
         this._mockLoggerFactory = new Mock<ILoggerFactory>();
     }
 
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
     public void ConstructorWorksCorrectly(bool includeLoggerFactory)
     {
         // Arrange & Act
-        var service = includeLoggerFactory ?
-            new OpenAIFileService("api-key", "organization", loggerFactory: this._mockLoggerFactory.Object) :
-            new OpenAIFileService("api-key", "organization");
+        var service = includeLoggerFactory
+            ? new OpenAIFileService("api-key", "organization", loggerFactory: this._mockLoggerFactory.Object)
+            : new OpenAIFileService("api-key", "organization");
 
         // Assert
         Assert.NotNull(service);
     }
+
 
     [Theory]
     [InlineData(true)]
@@ -51,10 +58,11 @@ public sealed class OpenAIFileServiceTests : IDisposable
     {
         // Arrange
         var service = new OpenAIFileService("api-key", "organization", this._httpClient);
+
         using var response =
-            isFailedRequest ?
-                this.CreateFailedResponse() :
-                this.CreateSuccessResponse(
+            isFailedRequest
+                ? this.CreateFailedResponse()
+                : this.CreateSuccessResponse(
                     """
                     {
                         "id": "123",
@@ -64,6 +72,7 @@ public sealed class OpenAIFileServiceTests : IDisposable
                         "created_at": 1677610602
                     }
                     """);
+
         this._messageHandlerStub.ResponseToReturn = response;
 
         // Act & Assert
@@ -77,6 +86,7 @@ public sealed class OpenAIFileServiceTests : IDisposable
         }
     }
 
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
@@ -84,10 +94,11 @@ public sealed class OpenAIFileServiceTests : IDisposable
     {
         // Arrange
         var service = new OpenAIFileService("api-key", "organization", this._httpClient);
+
         using var response =
-            isFailedRequest ?
-                this.CreateFailedResponse() :
-                this.CreateSuccessResponse(
+            isFailedRequest
+                ? this.CreateFailedResponse()
+                : this.CreateSuccessResponse(
                     """
                     {
                         "id": "123",
@@ -97,6 +108,7 @@ public sealed class OpenAIFileServiceTests : IDisposable
                         "created_at": 1677610602
                     }
                     """);
+
         this._messageHandlerStub.ResponseToReturn = response;
 
         // Act & Assert
@@ -115,6 +127,7 @@ public sealed class OpenAIFileServiceTests : IDisposable
         }
     }
 
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
@@ -122,10 +135,11 @@ public sealed class OpenAIFileServiceTests : IDisposable
     {
         // Arrange
         var service = new OpenAIFileService("api-key", "organization", this._httpClient);
+
         using var response =
-            isFailedRequest ?
-                this.CreateFailedResponse() :
-                this.CreateSuccessResponse(
+            isFailedRequest
+                ? this.CreateFailedResponse()
+                : this.CreateSuccessResponse(
                     """
                     {
                         "data": [
@@ -146,6 +160,7 @@ public sealed class OpenAIFileServiceTests : IDisposable
                         ]
                     }
                     """);
+
         this._messageHandlerStub.ResponseToReturn = response;
 
         // Act & Assert
@@ -161,12 +176,14 @@ public sealed class OpenAIFileServiceTests : IDisposable
         }
     }
 
+
     [Fact]
     public async Task GetFileContentWorksCorrectlyAsync()
     {
         // Arrange
         var data = BinaryData.FromString("Hello AI!");
         var service = new OpenAIFileService("api-key", "organization", this._httpClient);
+
         this._messageHandlerStub.ResponseToReturn =
             new HttpResponseMessage(System.Net.HttpStatusCode.OK)
             {
@@ -179,6 +196,7 @@ public sealed class OpenAIFileServiceTests : IDisposable
         Assert.Equal(data.ToArray(), result.ToArray());
     }
 
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
@@ -186,10 +204,11 @@ public sealed class OpenAIFileServiceTests : IDisposable
     {
         // Arrange
         var service = new OpenAIFileService("api-key", "organization", this._httpClient);
+
         using var response =
-            isFailedRequest ?
-                this.CreateFailedResponse() :
-                this.CreateSuccessResponse(
+            isFailedRequest
+                ? this.CreateFailedResponse()
+                : this.CreateSuccessResponse(
                     """
                     {
                         "id": "123",
@@ -199,11 +218,13 @@ public sealed class OpenAIFileServiceTests : IDisposable
                         "created_at": 1677610602
                     }
                     """);
+
         this._messageHandlerStub.ResponseToReturn = response;
 
         var settings = new OpenAIFileUploadExecutionSettings("test.txt", OpenAIFilePurpose.Assistants);
 
         await using var stream = new MemoryStream();
+
         await using (var writer = new StreamWriter(stream, leaveOpen: true))
         {
             await writer.WriteLineAsync("test");
@@ -230,6 +251,7 @@ public sealed class OpenAIFileServiceTests : IDisposable
         }
     }
 
+
     private HttpResponseMessage CreateSuccessResponse(string payload)
     {
         return
@@ -243,24 +265,27 @@ public sealed class OpenAIFileServiceTests : IDisposable
             };
     }
 
+
     private HttpResponseMessage CreateFailedResponse(string? payload = null)
     {
         return
             new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
             {
                 Content =
-                    string.IsNullOrEmpty(payload) ?
-                        null :
-                        new StringContent(
+                    string.IsNullOrEmpty(payload)
+                        ? null
+                        : new StringContent(
                             payload,
                             Encoding.UTF8,
                             "application/json")
             };
     }
 
+
     public void Dispose()
     {
         this._httpClient.Dispose();
         this._messageHandlerStub.Dispose();
     }
+
 }

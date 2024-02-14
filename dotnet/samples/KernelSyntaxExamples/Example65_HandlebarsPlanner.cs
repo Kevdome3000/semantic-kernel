@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,19 +17,21 @@ using xRetry;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Examples;
 
 // This example shows how to use the Handlebars sequential planner.
 public class Example65_HandlebarsPlanner : BaseTest
 {
+
     private static int s_sampleIndex;
 
     private const string CourseraPluginName = "CourseraPlugin";
+
 
     private void WriteSampleHeading(string name)
     {
         WriteLine($"======== [Handlebars Planner] Sample {s_sampleIndex++} - Create and Execute Plan with: {name} ========");
     }
+
 
     private async Task<Kernel?> SetupKernelAsync(params string[] pluginDirectoryNames)
     {
@@ -39,17 +43,18 @@ public class Example65_HandlebarsPlanner : BaseTest
         if (apiKey == null || chatDeploymentName == null || chatModelId == null || endpoint == null)
         {
             WriteLine("Azure endpoint, apiKey, deploymentName, or modelId not found. Skipping example.");
+
             return null;
         }
 
-        var kernel = Kernel.CreateBuilder()
-            .AddAzureOpenAIChatCompletion(
+        var kernel = Kernel.CreateBuilder().
+            AddAzureOpenAIChatCompletion(
                 deploymentName: chatDeploymentName,
                 endpoint: endpoint,
                 serviceId: "AzureOpenAIChat",
                 apiKey: apiKey,
-                modelId: chatModelId)
-            .Build();
+                modelId: chatModelId).
+            Build();
 
         if (pluginDirectoryNames.Length > 0)
         {
@@ -82,7 +87,12 @@ public class Example65_HandlebarsPlanner : BaseTest
         return kernel;
     }
 
-    private void PrintPlannerDetails(string goal, HandlebarsPlan plan, string result, bool shouldPrintPrompt = false)
+
+    private void PrintPlannerDetails(
+        string goal,
+        HandlebarsPlan plan,
+        string result,
+        bool shouldPrintPrompt = false)
     {
         WriteLine($"Goal: {goal}");
         WriteLine($"\nOriginal plan:\n{plan}");
@@ -96,9 +106,15 @@ public class Example65_HandlebarsPlanner : BaseTest
         }
     }
 
-    private async Task RunSampleAsync(string goal, KernelArguments? initialContext = null, bool shouldPrintPrompt = false, params string[] pluginDirectoryNames)
+
+    private async Task RunSampleAsync(
+        string goal,
+        KernelArguments? initialContext = null,
+        bool shouldPrintPrompt = false,
+        params string[] pluginDirectoryNames)
     {
         var kernel = await SetupKernelAsync(pluginDirectoryNames);
+
         if (kernel is null)
         {
             return;
@@ -107,6 +123,7 @@ public class Example65_HandlebarsPlanner : BaseTest
         // Use gpt-4 or newer models if you want to test with loops. 
         // Older models like gpt-35-turbo are less recommended. They do handle loops but are more prone to syntax errors.
         var allowLoopsInPlan = TestConfiguration.AzureOpenAI.ChatDeploymentName.Contains("gpt-4", StringComparison.OrdinalIgnoreCase);
+
         var planner = new HandlebarsPlanner(
             new HandlebarsPlannerOptions()
             {
@@ -130,6 +147,7 @@ public class Example65_HandlebarsPlanner : BaseTest
         PrintPlannerDetails(goal, plan, result, shouldPrintPrompt);
     }
 
+
     [RetryTheory(typeof(HttpOperationException))]
     [InlineData(false)]
     public async Task PlanNotPossibleSampleAsync(bool shouldPrintPrompt = false)
@@ -151,19 +169,20 @@ public class Example65_HandlebarsPlanner : BaseTest
                 Goal: Send Mary an email with the list of meetings I have scheduled today.
                 Available Functions: SummarizePlugin-MakeAbstractReadable, SummarizePlugin-Notegen, SummarizePlugin-Summarize, SummarizePlugin-Topics
                 Planner output:
-                As the available helpers do not contain any functionality to send an email or interact with meeting scheduling data, I cannot create a template to achieve the stated goal. 
+                As the available helpers do not contain any functionality to send an email or interact with meeting scheduling data, I cannot create a template to achieve the stated goal.
                 Additional helpers or information may be required.
             */
             WriteLine($"\n{ex.Message}\n");
         }
     }
 
+
     [RetryTheory(typeof(HttpOperationException))]
     [InlineData(true)]
-
     public Task RunCourseraSampleAsync(bool shouldPrintPrompt = false)
     {
         WriteSampleHeading("Coursera OpenAPI Plugin");
+
         return RunSampleAsync("Show me courses about Artificial Intelligence.", null, shouldPrintPrompt, CourseraPluginName);
         /*
             Original plan:
@@ -191,11 +210,13 @@ public class Example65_HandlebarsPlanner : BaseTest
         */
     }
 
+
     [RetryTheory(typeof(HttpOperationException))]
     [InlineData(false)]
     public Task RunDictionaryWithBasicTypesSampleAsync(bool shouldPrintPrompt = false)
     {
         WriteSampleHeading("Basic Types using Local Dictionary Plugin");
+
         return RunSampleAsync("Get a random word and its definition.", null, shouldPrintPrompt, StringParamsDictionaryPlugin.PluginName);
         /*
             Original plan:
@@ -213,11 +234,13 @@ public class Example65_HandlebarsPlanner : BaseTest
         */
     }
 
+
     [RetryTheory(typeof(HttpOperationException))]
     [InlineData(true)]
     public Task RunLocalDictionaryWithComplexTypesSampleAsync(bool shouldPrintPrompt = false)
     {
         WriteSampleHeading("Complex Types using Local Dictionary Plugin");
+
         return RunSampleAsync("Teach me two random words and their definition.", null, shouldPrintPrompt, ComplexParamsDictionaryPlugin.PluginName);
         /*
             Original Plan:
@@ -249,12 +272,15 @@ public class Example65_HandlebarsPlanner : BaseTest
         */
     }
 
+
     [RetryTheory(typeof(HttpOperationException))]
     [InlineData(false)]
     public Task RunPoetrySampleAsync(bool shouldPrintPrompt = false)
     {
         WriteSampleHeading("Multiple Plugins");
-        return RunSampleAsync("Write a poem about John Doe, then translate it into Italian.", null, shouldPrintPrompt, "SummarizePlugin", "WriterPlugin");
+
+        return RunSampleAsync("Write a poem about John Doe, then translate it into Italian.", null, shouldPrintPrompt, "SummarizePlugin",
+            "WriterPlugin");
         /*
             Original plan:
             {{!-- Step 1: Initialize the scenario for the poem --}}
@@ -278,12 +304,15 @@ public class Example65_HandlebarsPlanner : BaseTest
         */
     }
 
+
     [RetryTheory(typeof(HttpOperationException))]
     [InlineData(false)]
     public Task RunBookSampleAsync(bool shouldPrintPrompt = false)
     {
         WriteSampleHeading("Loops and Conditionals");
-        return RunSampleAsync("Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'", null, shouldPrintPrompt, "WriterPlugin", "MiscPlugin");
+
+        return RunSampleAsync("Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'", null, shouldPrintPrompt, "WriterPlugin",
+            "MiscPlugin");
         /*
             Original plan:
             {{!-- Step 1: Initialize the book title and chapter count --}}
@@ -298,15 +327,16 @@ public class Example65_HandlebarsPlanner : BaseTest
                 {{set "chapterIndex" this}}
                 {{set "chapterSynopsis" (MiscPlugin-ElementAtIndex input=(get "novelOutline") index=(get "chapterIndex"))}}
                 {{set "previousChapterSynopsis" (MiscPlugin-ElementAtIndex input=(get "novelOutline") index=(get "chapterIndex" - 1))}}
-                
+
                 {{!-- Step 4: Write the chapter content using the WriterPlugin-NovelChapter helper --}}
                 {{set "chapterContent" (WriterPlugin-NovelChapter input=(get "chapterSynopsis") theme=(get "bookTitle") previousChapter=(get "previousChapterSynopsis") chapterIndex=(get "chapterIndex"))}}
-                
+
                 {{!-- Step 5: Output the chapter content --}}
                 {{json (get "chapterContent")}}
             {{/each}}
         */
     }
+
 
     [RetryTheory(typeof(HttpOperationException))]
     [InlineData(true)]
@@ -317,16 +347,19 @@ public class Example65_HandlebarsPlanner : BaseTest
         // When using predefined variables, you must pass these arguments to both the CreatePlanAsync and InvokeAsync methods.
         var initialArguments = new KernelArguments()
         {
-            { "greetings", new List<string>(){ "hey", "bye" } },
+            { "greetings", new List<string>() { "hey", "bye" } },
             { "someNumber", 1 },
-            { "person", new Dictionary<string, string>()
             {
-                {"name", "John Doe" },
-                { "language", "Italian" },
-            } }
+                "person", new Dictionary<string, string>()
+                {
+                    { "name", "John Doe" },
+                    { "language", "Italian" },
+                }
+            }
         };
 
-        return RunSampleAsync("Write a poem about the given person, then translate it into French.", initialArguments, shouldPrintPrompt, "WriterPlugin", "MiscPlugin");
+        return RunSampleAsync("Write a poem about the given person, then translate it into French.", initialArguments, shouldPrintPrompt, "WriterPlugin",
+            "MiscPlugin");
         /*
             Original plan:
             {{!-- Step 0: Set the given person --}}
@@ -350,6 +383,7 @@ public class Example65_HandlebarsPlanner : BaseTest
         */
     }
 
+
     [RetryTheory(typeof(HttpOperationException))]
     [InlineData(true)]
     public async Task RunPromptWithAdditionalContextSampleAsync(bool shouldPrintPrompt = false)
@@ -362,6 +396,7 @@ public class Example65_HandlebarsPlanner : BaseTest
             // For demonstration purposes only, beware of token count.
             var repositoryUrl = "https://github.com/microsoft/semantic-kernel";
             var readmeUrl = $"{repositoryUrl}/main/README.md".Replace("github.com", "raw.githubusercontent.com", StringComparison.CurrentCultureIgnoreCase);
+
             try
             {
                 var httpClient = new HttpClient();
@@ -372,12 +407,14 @@ public class Example65_HandlebarsPlanner : BaseTest
                 // Read the response content as a string  
                 var content = await response.Content.ReadAsStringAsync();
                 httpClient.Dispose();
+
                 return "Content imported from the README of https://github.com/microsoft/semantic-kernel:\n" + content;
             }
             catch (HttpRequestException e)
             {
                 Console.WriteLine("\nException Caught!");
                 Console.WriteLine("Message :{0} ", e.Message);
+
                 return "";
             }
         }
@@ -385,6 +422,7 @@ public class Example65_HandlebarsPlanner : BaseTest
         var goal = "Help me onboard to the Semantic Kernel SDK by creating a quick guide that includes a brief overview of the SDK for C# developers and detailed set-up steps. Include relevant links where possible. Then, draft an email with this guide, so I can share it with my team.";
 
         var kernel = await SetupKernelAsync("WriterPlugin");
+
         if (kernel is null)
         {
             return;
@@ -393,6 +431,7 @@ public class Example65_HandlebarsPlanner : BaseTest
         // Use gpt-4 or newer models if you want to test with loops. 
         // Older models like gpt-35-turbo are less recommended. They do handle loops but are more prone to syntax errors.
         var allowLoopsInPlan = TestConfiguration.AzureOpenAI.ChatDeploymentName.Contains("gpt-4", StringComparison.OrdinalIgnoreCase);
+
         var planner = new HandlebarsPlanner(
             new HandlebarsPlannerOptions()
             {
@@ -425,7 +464,7 @@ public class Example65_HandlebarsPlanner : BaseTest
 
             Result:
             Subject: Semantic Kernel SDK: Quick Guide for C# Developers
-            
+
             Body:
             Hi Team,
             I have put together a quick guide to help you onboard to the Semantic Kernel SDK for C# developers. This guide includes a brief overview and detailed set-up steps:
@@ -434,17 +473,19 @@ public class Example65_HandlebarsPlanner : BaseTest
             1. Read the SDK Overview for a brief introduction here: https://learn.microsoft.com/en-us/semantic-kernel/overview/
             2. Install the Nuget package in your project: https://www.nuget.org/packages/Microsoft.SemanticKernel/
             3. Follow the detailed set-up steps in the C# 'Getting Started' guide: dotnet/README.md
-            
+
             Feel free to share this quick guide with your team members to help them onboard quickly with the Semantic Kernel SDK.
-            
+
             I have attached a more comprehensive guide as a document. Please review it and let me know if you have any questions. Let's start integrating the Semantic Kernel SDK into our projects!
-            
+
             Best Regards,
             Your Name
         */
     }
 
+
     public Example65_HandlebarsPlanner(ITestOutputHelper output) : base(output)
     {
     }
+
 }

@@ -1,18 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Planning.Handlebars;
+
 using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace Microsoft.SemanticKernel.Planning.Handlebars;
 
 /// <summary>
 /// Extension methods for the <see cref="HandlebarsPlanner"/> interface.
 /// </summary>
 internal static class HandlebarsPlannerExtensions
 {
+
     /// <summary>
     /// Reads the prompt for the given file name.
     /// </summary>
@@ -28,6 +30,7 @@ internal static class HandlebarsPlannerExtensions
         return reader.ReadToEnd();
     }
 
+
     /// <summary>
     /// Reads the prompt stream for the given file name.
     /// </summary>
@@ -38,12 +41,19 @@ internal static class HandlebarsPlannerExtensions
     public static Stream ReadPromptStream(this HandlebarsPlanner planner, string fileName, string? additionalNamespace = "")
     {
         var assembly = Assembly.GetExecutingAssembly();
-        var plannerNamespace = planner.GetType().Namespace;
-        var targetNamespace = !string.IsNullOrEmpty(additionalNamespace) ? $".{additionalNamespace}" : string.Empty;
+
+        var plannerNamespace = planner.GetType().
+            Namespace;
+
+        var targetNamespace = !string.IsNullOrEmpty(additionalNamespace)
+            ? $".{additionalNamespace}"
+            : string.Empty;
+
         var resourceName = $"{plannerNamespace}{targetNamespace}.{fileName}";
 
         return assembly.GetManifestResourceStream(resourceName)!;
     }
+
 
     /// <summary>
     /// Constructs a Handblebars prompt from the given file name and corresponding partials, if any.
@@ -57,8 +67,10 @@ internal static class HandlebarsPlannerExtensions
     {
         var partials = planner.ReadAllPromptPartials(promptName, additionalNamespace);
         var prompt = planner.ReadPrompt($"{promptName}.handlebars", additionalNamespace);
+
         return partials + prompt;
     }
+
 
     /// <summary>
     /// Reads all embedded Handlebars prompt partials from the Handlebars Planner `PromptPartials` namespace and concatenates their contents.
@@ -70,23 +82,33 @@ internal static class HandlebarsPlannerExtensions
     public static string ReadAllPromptPartials(this HandlebarsPlanner planner, string promptName, string? additionalNamespace = "")
     {
         var assembly = Assembly.GetExecutingAssembly();
-        var plannerNamespace = planner.GetType().Namespace;
-        var parentNamespace = !string.IsNullOrEmpty(additionalNamespace) ? $"{plannerNamespace}.{additionalNamespace}" : plannerNamespace;
+
+        var plannerNamespace = planner.GetType().
+            Namespace;
+
+        var parentNamespace = !string.IsNullOrEmpty(additionalNamespace)
+            ? $"{plannerNamespace}.{additionalNamespace}"
+            : plannerNamespace;
+
         var targetNamespace = $"{parentNamespace}.{promptName}Partials";
 
-        var resourceNames = assembly.GetManifestResourceNames()
-            .Where(name =>
+        var resourceNames = assembly.GetManifestResourceNames().
+            Where(name =>
                 name.StartsWith(targetNamespace, StringComparison.CurrentCulture)
                 && name.EndsWith(".handlebars", StringComparison.CurrentCulture))
             // Sort by the number of dots in the name (subdirectory depth), loading subdirectories first, as the outer partials have dependencies on the inner ones.
-            .OrderByDescending(name => name.Count(c => c == '.'))
+            .
+            OrderByDescending(name => name.Count(c => c == '.'))
             // then by the name itself
-            .ThenBy(name => name);
+            .
+            ThenBy(name => name);
 
         var stringBuilder = new StringBuilder();
+
         foreach (var resourceName in resourceNames)
         {
             using Stream resourceStream = assembly.GetManifestResourceStream(resourceName);
+
             if (resourceStream != null)
             {
                 using var reader = new StreamReader(resourceStream);
@@ -96,4 +118,5 @@ internal static class HandlebarsPlannerExtensions
 
         return stringBuilder.ToString();
     }
+
 }

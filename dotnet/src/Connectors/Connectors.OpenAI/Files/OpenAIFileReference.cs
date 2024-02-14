@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
 /// References an uploaded file by id.
@@ -11,6 +12,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 [Experimental("SKEXP0015")]
 public sealed class OpenAIFileReference
 {
+
     /// <summary>
     /// The file identifier.
     /// </summary>
@@ -35,4 +37,5 @@ public sealed class OpenAIFileReference
     /// The file size, in bytes.
     /// </summary>
     public int SizeInBytes { get; set; }
+
 }

@@ -19,6 +19,7 @@ using Extensions.Logging.Abstractions;
 /// </summary>
 public abstract class KernelFunction
 {
+
     /// <summary>The measurement tag name for the function name.</summary>
     private protected const string MeasurementFunctionTagName = "semantic_kernel.function.name";
 
@@ -80,6 +81,7 @@ public abstract class KernelFunction
     /// </remarks>
     public IReadOnlyDictionary<string, PromptExecutionSettings>? ExecutionSettings { get; }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunction"/> class.
     /// </summary>
@@ -112,7 +114,13 @@ public abstract class KernelFunction
         {
             this.ExecutionSettings = executionSettings.ToDictionary(
                 entry => entry.Key,
-                entry => { var clone = entry.Value.Clone(); clone.Freeze(); return clone; });
+                entry =>
+                {
+                    var clone = entry.Value.Clone();
+                    clone.Freeze();
+
+                    return clone;
+                });
         }
     }
 
@@ -169,7 +177,8 @@ public abstract class KernelFunction
             }
 
             // Invoke the function.
-            functionResult = await this.InvokeCoreAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+            functionResult = await this.InvokeCoreAsync(kernel, arguments, cancellationToken).
+                ConfigureAwait(false);
 
             // Invoke the post-invocation event handler. If it requests cancellation, throw.
 #pragma warning disable CS0618 // Events are deprecated
@@ -210,6 +219,7 @@ public abstract class KernelFunction
         {
             HandleException(ex, logger, activity, this,
                 kernel, arguments, functionResult, ref tags);
+
             throw;
         }
         finally
@@ -238,7 +248,9 @@ public abstract class KernelFunction
         KernelArguments? arguments = null,
         CancellationToken cancellationToken = default)
     {
-        FunctionResult result = await this.InvokeAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+        FunctionResult result = await this.InvokeAsync(kernel, arguments, cancellationToken).
+            ConfigureAwait(false);
+
         return result.GetValue<TResult>();
     }
 
@@ -319,7 +331,8 @@ public abstract class KernelFunction
                 }
 
                 // Invoke the function and get its streaming enumerator.
-                enumerator = this.InvokeStreamingCoreAsync<TResult>(kernel, arguments, cancellationToken).GetAsyncEnumerator(cancellationToken);
+                enumerator = this.InvokeStreamingCoreAsync<TResult>(kernel, arguments, cancellationToken).
+                    GetAsyncEnumerator(cancellationToken);
 
                 // yielding within a try/catch isn't currently supported, so we break out of the try block
                 // in order to then wrap the actual MoveNextAsync in its own try/catch and allow the yielding
@@ -329,6 +342,7 @@ public abstract class KernelFunction
             {
                 HandleException(ex, logger, activity, this,
                     kernel, arguments, result: null, ref tags);
+
                 throw;
             }
 
@@ -340,7 +354,8 @@ public abstract class KernelFunction
                     try
                     {
                         // Move to the next streaming result.
-                        if (!await enumerator.MoveNextAsync().ConfigureAwait(false))
+                        if (!await enumerator.MoveNextAsync().
+                                ConfigureAwait(false))
                         {
                             break;
                         }
@@ -349,6 +364,7 @@ public abstract class KernelFunction
                     {
                         HandleException(ex, logger, activity, this,
                             kernel, arguments, result: null, ref tags);
+
                         throw;
                     }
 
@@ -407,7 +423,9 @@ public abstract class KernelFunction
         ref TagList tags)
     {
         // Log the exception and add its type to the tags that'll be included with recording the invocation duration.
-        tags.Add(MeasurementErrorTagName, ex.GetType().FullName);
+        tags.Add(MeasurementErrorTagName, ex.GetType().
+            FullName);
+
         activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
         logger.LogFunctionError(ex, ex.Message);
 
@@ -422,4 +440,5 @@ public abstract class KernelFunction
                 cancelEx);
         }
     }
+
 }

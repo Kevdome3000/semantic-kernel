@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -15,16 +17,16 @@ using Azure.Search.Documents;
 using Azure.Search.Documents.Indexes;
 using Azure.Search.Documents.Indexes.Models;
 using Azure.Search.Documents.Models;
-using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.Memory;
+using Http;
+using Memory;
 
-namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
 /// <summary>
 /// <see cref="AzureAISearchMemoryStore"/> is a memory store implementation using Azure AI Search.
 /// </summary>
 public class AzureAISearchMemoryStore : IMemoryStore
 {
+
     /// <summary>
     /// Create a new instance of memory storage using Azure AI Search.
     /// </summary>
@@ -34,6 +36,7 @@ public class AzureAISearchMemoryStore : IMemoryStore
         : this(new SearchIndexClient(new Uri(endpoint), new AzureKeyCredential(apiKey), GetClientOptions()))
     {
     }
+
 
     /// <summary>
     /// Create a new instance of memory storage using Azure AI Search.
@@ -45,6 +48,7 @@ public class AzureAISearchMemoryStore : IMemoryStore
     {
     }
 
+
     /// <summary>
     /// Create a new instance of memory storage using Azure AI Search.
     /// </summary>
@@ -54,6 +58,7 @@ public class AzureAISearchMemoryStore : IMemoryStore
         this._adminClient = searchIndexClient;
     }
 
+
     /// <inheritdoc />
     public Task CreateCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
@@ -61,11 +66,13 @@ public class AzureAISearchMemoryStore : IMemoryStore
         return Task.CompletedTask;
     }
 
+
     /// <inheritdoc />
     public IAsyncEnumerable<string> GetCollectionsAsync(CancellationToken cancellationToken = default)
     {
         return RunMemoryStoreOperationAsync(() => this.GetIndexesAsync(cancellationToken));
     }
+
 
     /// <inheritdoc />
     public async Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancellationToken = default)
@@ -74,48 +81,56 @@ public class AzureAISearchMemoryStore : IMemoryStore
 
         var indexes = RunMemoryStoreOperationAsync(() => this.GetIndexesAsync(cancellationToken));
 
-        return await indexes
-            .AnyAsync(index =>
+        return await indexes.AnyAsync(index =>
                     string.Equals(index, collectionName, StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(index, normalizedIndexName, StringComparison.OrdinalIgnoreCase),
                 cancellationToken: cancellationToken
-            )
-            .ConfigureAwait(false);
+            ).
+            ConfigureAwait(false);
     }
+
 
     /// <inheritdoc />
     public async Task DeleteCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
         var normalizedIndexName = this.NormalizeIndexName(collectionName);
 
-        await RunMemoryStoreOperationAsync(() => this._adminClient.DeleteIndexAsync(normalizedIndexName, cancellationToken))
-            .ConfigureAwait(false);
+        await RunMemoryStoreOperationAsync(() => this._adminClient.DeleteIndexAsync(normalizedIndexName, cancellationToken)).
+            ConfigureAwait(false);
     }
+
 
     /// <inheritdoc />
     public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default)
     {
         var normalizedIndexName = this.NormalizeIndexName(collectionName);
 
-        return await RunMemoryStoreOperationAsync(() => this.UpsertRecordAsync(normalizedIndexName, AzureAISearchMemoryRecord.FromMemoryRecord(record), cancellationToken))
-            .ConfigureAwait(false);
+        return await RunMemoryStoreOperationAsync(() => this.UpsertRecordAsync(normalizedIndexName, AzureAISearchMemoryRecord.FromMemoryRecord(record), cancellationToken)).
+            ConfigureAwait(false);
     }
+
 
     /// <inheritdoc />
     public async IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var normalizedIndexName = this.NormalizeIndexName(collectionName);
 
-        var searchRecords = records.Select(AzureAISearchMemoryRecord.FromMemoryRecord).ToList();
+        var searchRecords = records.Select(AzureAISearchMemoryRecord.FromMemoryRecord).
+            ToList();
 
-        var result = await RunMemoryStoreOperationAsync(() => this.UpsertBatchAsync(normalizedIndexName, searchRecords, cancellationToken))
-            .ConfigureAwait(false);
+        var result = await RunMemoryStoreOperationAsync(() => this.UpsertBatchAsync(normalizedIndexName, searchRecords, cancellationToken)).
+            ConfigureAwait(false);
 
         foreach (var x in result) { yield return x; }
     }
 
+
     /// <inheritdoc />
-    public async Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancellationToken = default)
+    public async Task<MemoryRecord?> GetAsync(
+        string collectionName,
+        string key,
+        bool withEmbedding = false,
+        CancellationToken cancellationToken = default)
     {
         var normalizedIndexName = this.NormalizeIndexName(collectionName);
         var client = this.GetSearchClient(normalizedIndexName);
@@ -126,8 +141,8 @@ public class AzureAISearchMemoryStore : IMemoryStore
 
         try
         {
-            result = await RunMemoryStoreOperationAsync(() => client.GetDocumentAsync<AzureAISearchMemoryRecord>(encodedId, cancellationToken: cancellationToken))
-                .ConfigureAwait(false);
+            result = await RunMemoryStoreOperationAsync(() => client.GetDocumentAsync<AzureAISearchMemoryRecord>(encodedId, cancellationToken: cancellationToken)).
+                ConfigureAwait(false);
         }
         catch (HttpOperationException e) when (e.StatusCode == System.Net.HttpStatusCode.NotFound)
         {
@@ -143,6 +158,7 @@ public class AzureAISearchMemoryStore : IMemoryStore
         return result.Value.ToMemoryRecord();
     }
 
+
     /// <inheritdoc />
     public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(
         string collectionName,
@@ -152,10 +168,13 @@ public class AzureAISearchMemoryStore : IMemoryStore
     {
         foreach (var key in keys)
         {
-            var record = await this.GetAsync(collectionName, key, withEmbeddings, cancellationToken).ConfigureAwait(false);
+            var record = await this.GetAsync(collectionName, key, withEmbeddings, cancellationToken).
+                ConfigureAwait(false);
+
             if (record != null) { yield return record; }
         }
     }
+
 
     /// <inheritdoc />
     public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(
@@ -165,10 +184,12 @@ public class AzureAISearchMemoryStore : IMemoryStore
         bool withEmbedding = false,
         CancellationToken cancellationToken = default)
     {
-        return await this.GetNearestMatchesAsync(collectionName, embedding, 1, minRelevanceScore, withEmbedding, cancellationToken)
-            .FirstOrDefaultAsync(cancellationToken)
-            .ConfigureAwait(false);
+        return await this.GetNearestMatchesAsync(collectionName, embedding, 1, minRelevanceScore,
+                withEmbedding, cancellationToken).
+            FirstOrDefaultAsync(cancellationToken).
+            ConfigureAwait(false);
     }
+
 
     /// <inheritdoc />
     public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(
@@ -186,7 +207,9 @@ public class AzureAISearchMemoryStore : IMemoryStore
 
         var client = this.GetSearchClient(normalizedIndexName);
 
-        VectorizedQuery vectorQuery = new(MemoryMarshal.TryGetArray(embedding, out var array) && array.Count == embedding.Length ? array.Array! : embedding.ToArray())
+        VectorizedQuery vectorQuery = new(MemoryMarshal.TryGetArray(embedding, out var array) && array.Count == embedding.Length
+            ? array.Array!
+            : embedding.ToArray())
         {
             KNearestNeighborsCount = limit,
             Fields = { AzureAISearchMemoryRecord.EmbeddingField },
@@ -201,10 +224,11 @@ public class AzureAISearchMemoryStore : IMemoryStore
         };
 
         Response<SearchResults<AzureAISearchMemoryRecord>>? searchResult = null;
+
         try
         {
-            searchResult = await RunMemoryStoreOperationAsync(() => client.SearchAsync<AzureAISearchMemoryRecord>(null, options, cancellationToken: cancellationToken))
-                .ConfigureAwait(false);
+            searchResult = await RunMemoryStoreOperationAsync(() => client.SearchAsync<AzureAISearchMemoryRecord>(null, options, cancellationToken: cancellationToken)).
+                ConfigureAwait(false);
         }
         catch (HttpOperationException e) when (e.StatusCode == System.Net.HttpStatusCode.NotFound)
         {
@@ -214,6 +238,7 @@ public class AzureAISearchMemoryStore : IMemoryStore
         if (searchResult == null) { yield break; }
 
         var minAzureSearchScore = CosineSimilarityToScore(minRelevanceScore);
+
         await foreach (SearchResult<AzureAISearchMemoryRecord>? doc in searchResult.Value.GetResultsAsync())
         {
             if (doc == null || doc.Score < minAzureSearchScore) { continue; }
@@ -224,11 +249,14 @@ public class AzureAISearchMemoryStore : IMemoryStore
         }
     }
 
+
     /// <inheritdoc />
     public async Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default)
     {
-        await this.RemoveBatchAsync(collectionName, new[] { key }, cancellationToken).ConfigureAwait(false);
+        await this.RemoveBatchAsync(collectionName, new[] { key }, cancellationToken).
+            ConfigureAwait(false);
     }
+
 
     /// <inheritdoc />
     public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default)
@@ -241,13 +269,15 @@ public class AzureAISearchMemoryStore : IMemoryStore
 
         try
         {
-            await RunMemoryStoreOperationAsync(() => client.DeleteDocumentsAsync(records, cancellationToken: cancellationToken)).ConfigureAwait(false);
+            await RunMemoryStoreOperationAsync(() => client.DeleteDocumentsAsync(records, cancellationToken: cancellationToken)).
+                ConfigureAwait(false);
         }
         catch (HttpOperationException e) when (e.StatusCode == System.Net.HttpStatusCode.NotFound)
         {
             // Index not found, no data to delete
         }
     }
+
 
     #region private
 
@@ -264,6 +294,7 @@ public class AzureAISearchMemoryStore : IMemoryStore
     private readonly ConcurrentDictionary<string, SearchClient> _clientsByIndex = new();
 
     private readonly SearchIndexClient _adminClient;
+
 
     /// <summary>
     /// Create a new search index.
@@ -312,23 +343,30 @@ public class AzureAISearchMemoryStore : IMemoryStore
         return this._adminClient.CreateIndexAsync(newIndex, cancellationToken);
     }
 
+
     private async IAsyncEnumerable<string> GetIndexesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var indexes = this._adminClient.GetIndexesAsync(cancellationToken).ConfigureAwait(false);
+        var indexes = this._adminClient.GetIndexesAsync(cancellationToken).
+            ConfigureAwait(false);
+
         await foreach (SearchIndex? index in indexes)
         {
             yield return index.Name;
         }
     }
 
+
     private async Task<string> UpsertRecordAsync(
         string indexName,
         AzureAISearchMemoryRecord record,
         CancellationToken cancellationToken = default)
     {
-        var list = await this.UpsertBatchAsync(indexName, new List<AzureAISearchMemoryRecord> { record }, cancellationToken).ConfigureAwait(false);
+        var list = await this.UpsertBatchAsync(indexName, new List<AzureAISearchMemoryRecord> { record }, cancellationToken).
+            ConfigureAwait(false);
+
         return list.First();
     }
+
 
     private async Task<List<string>> UpsertBatchAsync(
         string indexName,
@@ -352,14 +390,19 @@ public class AzureAISearchMemoryStore : IMemoryStore
         }
 
         Response<IndexDocumentsResult>? result;
+
         try
         {
-            result = await UpsertCode().ConfigureAwait(false);
+            result = await UpsertCode().
+                ConfigureAwait(false);
         }
         catch (RequestFailedException e) when (e.Status == 404)
         {
-            await this.CreateIndexAsync(indexName, embeddingSize, cancellationToken).ConfigureAwait(false);
-            result = await UpsertCode().ConfigureAwait(false);
+            await this.CreateIndexAsync(indexName, embeddingSize, cancellationToken).
+                ConfigureAwait(false);
+
+            result = await UpsertCode().
+                ConfigureAwait(false);
         }
 
         if (result == null || result.Value.Results.Count == 0)
@@ -367,8 +410,10 @@ public class AzureAISearchMemoryStore : IMemoryStore
             throw new KernelException("Memory write returned null or an empty set");
         }
 
-        return result.Value.Results.Select(x => x.Key).ToList();
+        return result.Value.Results.Select(x => x.Key).
+            ToList();
     }
+
 
     /// <summary>
     /// Normalize index name to match Azure AI Search rules.
@@ -392,6 +437,7 @@ public class AzureAISearchMemoryStore : IMemoryStore
         return s_replaceIndexNameSymbolsRegex.Replace(indexName.Trim(), "-");
     }
 
+
     /// <summary>
     /// Get a search client for the index specified.
     /// Note: the index might not exist, but we avoid checking everytime and the extra latency.
@@ -410,6 +456,7 @@ public class AzureAISearchMemoryStore : IMemoryStore
         return client;
     }
 
+
     /// <summary>
     /// Options used by the Azure AI Search client, e.g. User Agent.
     /// See also https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/core/Azure.Core/src/DiagnosticsOptions.cs
@@ -425,11 +472,13 @@ public class AzureAISearchMemoryStore : IMemoryStore
         };
     }
 
+
     private static async Task<T> RunMemoryStoreOperationAsync<T>(Func<Task<T>> operation)
     {
         try
         {
-            return await operation.Invoke().ConfigureAwait(false);
+            return await operation.Invoke().
+                ConfigureAwait(false);
         }
         catch (RequestFailedException e)
         {
@@ -437,9 +486,11 @@ public class AzureAISearchMemoryStore : IMemoryStore
         }
     }
 
+
     private static async IAsyncEnumerable<T> RunMemoryStoreOperationAsync<T>(Func<IAsyncEnumerable<T>> operation)
     {
-        IAsyncEnumerator<T> enumerator = operation.Invoke().GetAsyncEnumerator();
+        IAsyncEnumerator<T> enumerator = operation.Invoke().
+            GetAsyncEnumerator();
 
         await using (enumerator.ConfigureAwait(false))
         {
@@ -447,7 +498,8 @@ public class AzureAISearchMemoryStore : IMemoryStore
             {
                 try
                 {
-                    if (!await enumerator.MoveNextAsync().ConfigureAwait(false))
+                    if (!await enumerator.MoveNextAsync().
+                            ConfigureAwait(false))
                     {
                         break;
                     }
@@ -462,12 +514,15 @@ public class AzureAISearchMemoryStore : IMemoryStore
         }
     }
 
+
     private static double ScoreToCosineSimilarity(double score)
     {
         // Azure AI Search score formula. The min value is 0.333 for cosine similarity -1.
         score = Math.Max(score, 1.0 / 3);
+
         return 2 - 1 / score;
     }
+
 
     private static double CosineSimilarityToScore(double similarity)
     {
@@ -475,4 +530,6 @@ public class AzureAISearchMemoryStore : IMemoryStore
     }
 
     #endregion
+
+
 }

@@ -1,16 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Contents;
-using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.TextToAudio;
+using Contents;
+using Extensions.Logging;
+using Services;
+using TextToAudio;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
 /// Azure OpenAI text-to-audio service.
@@ -18,6 +19,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 [Experimental("SKEXP0005")]
 public sealed class AzureOpenAITextToAudioService : ITextToAudioService
 {
+
     /// <summary>
     /// Azure OpenAI text-to-audio client for HTTP operations.
     /// </summary>
@@ -30,6 +32,7 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
     /// Gets the key used to store the deployment name in the <see cref="IAIService.Attributes"/> dictionary.
     /// </summary>
     public static string DeploymentNameKey => "DeploymentName";
+
 
     /// <summary>
     /// Creates an instance of the <see cref="AzureOpenAITextToAudioService"/> connector with API key auth.
@@ -48,11 +51,13 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._client = new(deploymentName, endpoint, apiKey, modelId, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextToAudioService)));
+        this._client = new(deploymentName, endpoint, apiKey, modelId,
+            httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextToAudioService)));
 
         this._client.AddAttribute(DeploymentNameKey, deploymentName);
         this._client.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
+
 
     /// <inheritdoc/>
     public Task<AudioContent> GetAudioContentAsync(
@@ -61,4 +66,5 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
         => this._client.GetAudioContentAsync(text, executionSettings, cancellationToken);
+
 }

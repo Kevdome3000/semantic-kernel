@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Connectors.UnitTests.OpenAI;
+
 using System;
 using System.Net.Http;
 using Azure.AI.OpenAI;
@@ -15,19 +17,21 @@ using Microsoft.SemanticKernel.TextToAudio;
 using Microsoft.SemanticKernel.TextToImage;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.OpenAI;
 
 /// <summary>
 /// Unit tests for <see cref="OpenAIServiceCollectionExtensions"/> class.
 /// </summary>
 public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
 {
+
     private readonly HttpClient _httpClient;
+
 
     public OpenAIServiceCollectionExtensionsTests()
     {
         this._httpClient = new HttpClient();
     }
+
 
     [Theory]
     [InlineData(InitializationType.ApiKey)]
@@ -54,11 +58,13 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         };
 
         // Assert
-        var service = builder.Build().GetRequiredService<ITextGenerationService>();
+        var service = builder.Build().
+            GetRequiredService<ITextGenerationService>();
 
         Assert.NotNull(service);
         Assert.True(service is AzureOpenAITextGenerationService);
     }
+
 
     [Theory]
     [InlineData(InitializationType.ApiKey)]
@@ -85,11 +91,13 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         };
 
         // Assert
-        var service = builder.Build().GetRequiredService<ITextGenerationService>();
+        var service = builder.Build().
+            GetRequiredService<ITextGenerationService>();
 
         Assert.NotNull(service);
         Assert.True(service is AzureOpenAITextGenerationService);
     }
+
 
     [Theory]
     [InlineData(InitializationType.ApiKey)]
@@ -113,11 +121,13 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         };
 
         // Assert
-        var service = builder.Build().GetRequiredService<ITextGenerationService>();
+        var service = builder.Build().
+            GetRequiredService<ITextGenerationService>();
 
         Assert.NotNull(service);
         Assert.True(service is OpenAITextGenerationService);
     }
+
 
     [Theory]
     [InlineData(InitializationType.ApiKey)]
@@ -141,11 +151,13 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         };
 
         // Assert
-        var service = builder.Build().GetRequiredService<ITextGenerationService>();
+        var service = builder.Build().
+            GetRequiredService<ITextGenerationService>();
 
         Assert.NotNull(service);
         Assert.True(service is OpenAITextGenerationService);
     }
+
 
     [Theory]
     [InlineData(InitializationType.ApiKey)]
@@ -172,11 +184,13 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         };
 
         // Assert
-        var service = builder.Build().GetRequiredService<ITextEmbeddingGenerationService>();
+        var service = builder.Build().
+            GetRequiredService<ITextEmbeddingGenerationService>();
 
         Assert.NotNull(service);
         Assert.True(service is AzureOpenAITextEmbeddingGenerationService);
     }
+
 
     [Theory]
     [InlineData(InitializationType.ApiKey)]
@@ -203,11 +217,13 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         };
 
         // Assert
-        var service = builder.Build().GetRequiredService<ITextEmbeddingGenerationService>();
+        var service = builder.Build().
+            GetRequiredService<ITextEmbeddingGenerationService>();
 
         Assert.NotNull(service);
         Assert.True(service is AzureOpenAITextEmbeddingGenerationService);
     }
+
 
     [Theory]
     [InlineData(InitializationType.ApiKey)]
@@ -231,11 +247,13 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         };
 
         // Assert
-        var service = builder.Build().GetRequiredService<ITextEmbeddingGenerationService>();
+        var service = builder.Build().
+            GetRequiredService<ITextEmbeddingGenerationService>();
 
         Assert.NotNull(service);
         Assert.True(service is OpenAITextEmbeddingGenerationService);
     }
+
 
     [Theory]
     [InlineData(InitializationType.ApiKey)]
@@ -259,11 +277,13 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         };
 
         // Assert
-        var service = builder.Build().GetRequiredService<ITextEmbeddingGenerationService>();
+        var service = builder.Build().
+            GetRequiredService<ITextEmbeddingGenerationService>();
 
         Assert.NotNull(service);
         Assert.True(service is OpenAITextEmbeddingGenerationService);
     }
+
 
     [Theory]
     [InlineData(InitializationType.ApiKey)]
@@ -293,7 +313,8 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         };
 
         // Assert
-        var service = builder.Build().GetRequiredService<IChatCompletionService>();
+        var service = builder.Build().
+            GetRequiredService<IChatCompletionService>();
 
         Assert.NotNull(service);
 
@@ -306,6 +327,7 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
             Assert.True(service is AzureOpenAIChatCompletionService);
         }
     }
+
 
     [Theory]
     [InlineData(InitializationType.ApiKey)]
@@ -335,7 +357,8 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         };
 
         // Assert
-        var service = builder.Build().GetRequiredService<IChatCompletionService>();
+        var service = builder.Build().
+            GetRequiredService<IChatCompletionService>();
 
         Assert.NotNull(service);
 
@@ -348,6 +371,7 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
             Assert.True(service is AzureOpenAIChatCompletionService);
         }
     }
+
 
     [Theory]
     [InlineData(InitializationType.ApiKey)]
@@ -371,11 +395,13 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         };
 
         // Assert
-        var service = builder.Build().GetRequiredService<IChatCompletionService>();
+        var service = builder.Build().
+            GetRequiredService<IChatCompletionService>();
 
         Assert.NotNull(service);
         Assert.True(service is OpenAIChatCompletionService);
     }
+
 
     [Theory]
     [InlineData(InitializationType.ApiKey)]
@@ -399,11 +425,13 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         };
 
         // Assert
-        var service = builder.Build().GetRequiredService<IChatCompletionService>();
+        var service = builder.Build().
+            GetRequiredService<IChatCompletionService>();
 
         Assert.NotNull(service);
         Assert.True(service is OpenAIChatCompletionService);
     }
+
 
     [Fact]
     public void KernelBuilderAddAzureOpenAITextToImageAddsValidService()
@@ -415,11 +443,13 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         builder = builder.AddAzureOpenAITextToImage("deployment-name", "https://endpoint", "api-key");
 
         // Assert
-        var service = builder.Build().GetRequiredService<ITextToImageService>();
+        var service = builder.Build().
+            GetRequiredService<ITextToImageService>();
 
         Assert.NotNull(service);
         Assert.True(service is AzureOpenAITextToImageService);
     }
+
 
     [Fact]
     public void ServiceCollectionAddAzureOpenAITextToImageAddsValidService()
@@ -431,11 +461,13 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         builder.Services.AddAzureOpenAITextToImage("deployment-name", "https://endpoint", "api-key");
 
         // Assert
-        var service = builder.Build().GetRequiredService<ITextToImageService>();
+        var service = builder.Build().
+            GetRequiredService<ITextToImageService>();
 
         Assert.NotNull(service);
         Assert.True(service is AzureOpenAITextToImageService);
     }
+
 
     [Fact]
     public void KernelBuilderAddOpenAITextToImageAddsValidService()
@@ -447,11 +479,13 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         builder = builder.AddOpenAITextToImage("model-id", "api-key");
 
         // Assert
-        var service = builder.Build().GetRequiredService<ITextToImageService>();
+        var service = builder.Build().
+            GetRequiredService<ITextToImageService>();
 
         Assert.NotNull(service);
         Assert.True(service is OpenAITextToImageService);
     }
+
 
     [Fact]
     public void ServiceCollectionAddOpenAITextToImageAddsValidService()
@@ -463,11 +497,13 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         builder.Services.AddOpenAITextToImage("model-id", "api-key");
 
         // Assert
-        var service = builder.Build().GetRequiredService<ITextToImageService>();
+        var service = builder.Build().
+            GetRequiredService<ITextToImageService>();
 
         Assert.NotNull(service);
         Assert.True(service is OpenAITextToImageService);
     }
+
 
     [Fact]
     public void KernelBuilderAddAzureOpenAITextToAudioAddsValidService()
@@ -479,11 +515,13 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         builder = builder.AddAzureOpenAITextToAudio("deployment-name", "https://endpoint", "api-key");
 
         // Assert
-        var service = builder.Build().GetRequiredService<ITextToAudioService>();
+        var service = builder.Build().
+            GetRequiredService<ITextToAudioService>();
 
         Assert.NotNull(service);
         Assert.True(service is AzureOpenAITextToAudioService);
     }
+
 
     [Fact]
     public void ServiceCollectionAddAzureOpenAITextToAudioAddsValidService()
@@ -495,11 +533,13 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         builder.Services.AddAzureOpenAITextToAudio("deployment-name", "https://endpoint", "api-key");
 
         // Assert
-        var service = builder.Build().GetRequiredService<ITextToAudioService>();
+        var service = builder.Build().
+            GetRequiredService<ITextToAudioService>();
 
         Assert.NotNull(service);
         Assert.True(service is AzureOpenAITextToAudioService);
     }
+
 
     [Fact]
     public void KernelBuilderAddOpenAITextToAudioAddsValidService()
@@ -511,11 +551,13 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         builder = builder.AddOpenAITextToAudio("model-id", "api-key");
 
         // Assert
-        var service = builder.Build().GetRequiredService<ITextToAudioService>();
+        var service = builder.Build().
+            GetRequiredService<ITextToAudioService>();
 
         Assert.NotNull(service);
         Assert.True(service is OpenAITextToAudioService);
     }
+
 
     [Fact]
     public void ServiceCollectionAddOpenAITextToAudioAddsValidService()
@@ -527,11 +569,13 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         builder.Services.AddOpenAITextToAudio("model-id", "api-key");
 
         // Assert
-        var service = builder.Build().GetRequiredService<ITextToAudioService>();
+        var service = builder.Build().
+            GetRequiredService<ITextToAudioService>();
 
         Assert.NotNull(service);
         Assert.True(service is OpenAITextToAudioService);
     }
+
 
     [Theory]
     [InlineData(InitializationType.ApiKey)]
@@ -558,11 +602,13 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         };
 
         // Assert
-        var service = builder.Build().GetRequiredService<IAudioToTextService>();
+        var service = builder.Build().
+            GetRequiredService<IAudioToTextService>();
 
         Assert.NotNull(service);
         Assert.True(service is AzureOpenAIAudioToTextService);
     }
+
 
     [Theory]
     [InlineData(InitializationType.ApiKey)]
@@ -589,11 +635,13 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         };
 
         // Assert
-        var service = builder.Build().GetRequiredService<IAudioToTextService>();
+        var service = builder.Build().
+            GetRequiredService<IAudioToTextService>();
 
         Assert.NotNull(service);
         Assert.True(service is AzureOpenAIAudioToTextService);
     }
+
 
     [Theory]
     [InlineData(InitializationType.ApiKey)]
@@ -617,11 +665,13 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         };
 
         // Assert
-        var service = builder.Build().GetRequiredService<IAudioToTextService>();
+        var service = builder.Build().
+            GetRequiredService<IAudioToTextService>();
 
         Assert.NotNull(service);
         Assert.True(service is OpenAIAudioToTextService);
     }
+
 
     [Theory]
     [InlineData(InitializationType.ApiKey)]
@@ -645,25 +695,35 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         };
 
         // Assert
-        var service = builder.Build().GetRequiredService<IAudioToTextService>();
+        var service = builder.Build().
+            GetRequiredService<IAudioToTextService>();
 
         Assert.NotNull(service);
         Assert.True(service is OpenAIAudioToTextService);
     }
+
 
     public void Dispose()
     {
         this._httpClient.Dispose();
     }
 
+
     public enum InitializationType
     {
+
         ApiKey,
+
         TokenCredential,
+
         OpenAIClientInline,
+
         OpenAIClientInServiceProvider,
+
         ChatCompletionWithData
+
     }
+
 
     private AzureOpenAIChatCompletionWithDataConfig GetCompletionWithDataConfig()
     {
@@ -678,4 +738,5 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
             DataSourceIndex = "data-source-index"
         };
     }
+
 }

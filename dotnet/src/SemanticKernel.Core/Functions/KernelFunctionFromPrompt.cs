@@ -24,6 +24,7 @@ using TextGeneration;
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 internal sealed class KernelFunctionFromPrompt : KernelFunction
 {
+
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template.
     /// </summary>
@@ -127,7 +128,8 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     {
         this.AddDefaultValues(arguments);
 
-        var result = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+        var result = await this.RenderPromptAsync(kernel, arguments, cancellationToken).
+            ConfigureAwait(false);
 
 #pragma warning disable CS0612 // Events are deprecated
         if (result.RenderedEventArgs?.Cancel is true)
@@ -143,15 +145,21 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         if (result.AIService is IChatCompletionService chatCompletion)
         {
-            var chatContent = await chatCompletion.GetChatMessageContentAsync(result.RenderedPrompt, result.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
+            var chatContent = await chatCompletion.GetChatMessageContentAsync(result.RenderedPrompt, result.ExecutionSettings, kernel, cancellationToken).
+                ConfigureAwait(false);
+
             this.CaptureUsageDetails(chatContent.ModelId, chatContent.Metadata, this._logger);
+
             return new FunctionResult(this, chatContent, kernel.Culture, chatContent.Metadata);
         }
 
         if (result.AIService is ITextGenerationService textGeneration)
         {
-            var textContent = await textGeneration.GetTextContentWithDefaultParserAsync(result.RenderedPrompt, result.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
+            var textContent = await textGeneration.GetTextContentWithDefaultParserAsync(result.RenderedPrompt, result.ExecutionSettings, kernel, cancellationToken).
+                ConfigureAwait(false);
+
             this.CaptureUsageDetails(textContent.ModelId, textContent.Metadata, this._logger);
+
             return new FunctionResult(this, textContent, kernel.Culture, textContent.Metadata);
         }
 
@@ -167,7 +175,8 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     {
         this.AddDefaultValues(arguments);
 
-        var result = await this.RenderPromptAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+        var result = await this.RenderPromptAsync(kernel, arguments, cancellationToken).
+            ConfigureAwait(false);
 
 #pragma warning disable CS0612 // Events are deprecated
         if (result.RenderedEventArgs?.Cancel is true)
@@ -242,14 +251,18 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         this._logger = loggerFactory?.CreateLogger(typeof(KernelFunctionFactory)) ?? NullLogger.Instance;
 
         this._promptTemplate = template;
-        this._inputVariables = promptConfig.InputVariables.Select(iv => new InputVariable(iv)).ToList();
+
+        this._inputVariables = promptConfig.InputVariables.Select(iv => new InputVariable(iv)).
+            ToList();
     }
 
 
     #region private
 
     private readonly ILogger _logger;
+
     private readonly List<InputVariable> _inputVariables;
+
     private readonly IPromptTemplate _promptTemplate;
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -313,7 +326,8 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         kernel.OnPromptRenderingFilter(this, arguments);
 
-        var renderedPrompt = await this._promptTemplate.RenderAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+        var renderedPrompt = await this._promptTemplate.RenderAsync(kernel, arguments, cancellationToken).
+            ConfigureAwait(false);
 
         if (this._logger.IsEnabled(LogLevel.Trace))
         {
@@ -379,18 +393,21 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         if (string.IsNullOrWhiteSpace(modelId))
         {
             logger.LogInformation("No model ID provided to capture usage details.");
+
             return;
         }
 
         if (metadata is null)
         {
             logger.LogInformation("No metadata provided to capture usage details.");
+
             return;
         }
 
         if (!metadata.TryGetValue("Usage", out object? usageObject) || usageObject is null)
         {
             logger.LogInformation("No usage details provided to capture usage details.");
+
             return;
         }
 
@@ -403,6 +420,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         catch (Exception ex) when (ex is NotSupportedException)
         {
             logger.LogWarning(ex, "Error while parsing usage details from model result.");
+
             return;
         }
 

@@ -13,13 +13,16 @@ using Text;
 /// </summary>
 public class ConversationSummaryPlugin
 {
+
     /// <summary>
     /// The max tokens to process in a single prompt function call.
     /// </summary>
     private const int MaxTokens = 1024;
 
     private readonly KernelFunction _summarizeConversationFunction;
+
     private readonly KernelFunction _conversationActionItemsFunction;
+
     private readonly KernelFunction _conversationTopicsFunction;
 
 
@@ -104,10 +107,11 @@ public class ConversationSummaryPlugin
         for (int i = 0; i < results.Length; i++)
         {
             // The first parameter is the input text.
-            results[i] = (await func.InvokeAsync(kernel, new() { ["input"] = paragraphs[i] }).ConfigureAwait(false))
-                .GetValue<string>() ?? string.Empty;
+            results[i] = (await func.InvokeAsync(kernel, new() { ["input"] = paragraphs[i] }).
+                ConfigureAwait(false)).GetValue<string>() ?? string.Empty;
         }
 
         return string.Join("\n", results);
     }
+
 }

@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Threading.Tasks;
-
 namespace System;
+
+using Collections.Generic;
+using Diagnostics.CodeAnalysis;
+using Linq;
+using Threading.Tasks;
+
 
 /// <summary>
 /// Extensions methods for <see cref="System.Type"/>.
@@ -13,6 +14,7 @@ namespace System;
 [ExcludeFromCodeCoverage]
 internal static class TypeExtensions
 {
+
     /// <summary>
     /// Tries to get the result type from a generic parameter.
     /// </summary>
@@ -23,6 +25,7 @@ internal static class TypeExtensions
     public static bool TryGetGenericResultType(this Type? returnType, out Type resultType)
     {
         resultType = typeof(object);
+
         if (returnType is null)
         {
             return false;
@@ -39,8 +42,8 @@ internal static class TypeExtensions
                 resultType = returnType.GetGenericArguments()[0];
             }
             else if (genericTypeDef == typeof(IEnumerable<>)
-                || genericTypeDef == typeof(IList<>)
-                || genericTypeDef == typeof(ICollection<>))
+                     || genericTypeDef == typeof(IList<>)
+                     || genericTypeDef == typeof(ICollection<>))
             {
                 resultType = typeof(List<>).MakeGenericType(returnType.GetGenericArguments()[0]);
             }
@@ -56,6 +59,7 @@ internal static class TypeExtensions
         return false;
     }
 
+
     /// <summary>
     /// Returns a string with the type's name. If the type is generic, it also includes the type parameters in a readable format.
     /// </summary>
@@ -64,13 +68,19 @@ internal static class TypeExtensions
     {
         if (type.IsGenericType)
         {
-            string typeName = type.GetGenericTypeDefinition().Name;
+            string typeName = type.GetGenericTypeDefinition().
+                Name;
+
             // Remove the `1, `2 etc from the type name which indicates the number of generic arguments  
             typeName = typeName.Substring(0, typeName.IndexOf('`', (int)StringComparison.CurrentCulture));
-            string genericArgs = string.Join(", ", type.GetGenericArguments().Select(t => GetFriendlyTypeName(t)));
+
+            string genericArgs = string.Join(", ", type.GetGenericArguments().
+                Select(t => GetFriendlyTypeName(t)));
+
             return $"{typeName}<{genericArgs}>";
         }
 
         return type.Name;
     }
+
 }

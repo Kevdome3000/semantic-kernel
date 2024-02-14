@@ -1,20 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Planners.UnitTests.Handlebars;
+
 using System.Reflection;
 using System.Text.Json;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Planning.Handlebars;
-using Microsoft.SemanticKernel.Text;
+using ChatCompletion;
+using Extensions.DependencyInjection;
 using Moq;
+using Planning.Handlebars;
+using Text;
 using Xunit;
 
-namespace Microsoft.SemanticKernel.Planners.UnitTests.Handlebars;
 
 public sealed class HandlebarsPlannerTests
 {
+
     private const string PlanString =
-    @"```handlebars
+        @"```handlebars
 {{!-- Step 1: Call Summarize function --}}  
 {{set ""summary"" (SummarizePlugin-Summarize)}}  
 
@@ -27,6 +29,7 @@ public sealed class HandlebarsPlannerTests
 {{!-- Step 4: Call SendEmail function with input set to the translated summary and email_address set to the retrieved email address --}}  
 {{email-SendEmail input=(get ""translatedSummary"") email_address=(get ""emailAddress"")}}
 ```";
+
 
     [Theory]
     [InlineData("Summarize this text, translate it to French and send it to John Doe.")]
@@ -45,6 +48,7 @@ public sealed class HandlebarsPlannerTests
         Assert.False(string.IsNullOrEmpty(plan.ToString()));
     }
 
+
     [Fact]
     public async Task EmptyGoalThrowsAsync()
     {
@@ -56,6 +60,7 @@ public sealed class HandlebarsPlannerTests
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(async () => await planner.CreatePlanAsync(kernel, string.Empty));
     }
+
 
     [Fact]
     public async Task InvalidHandlebarsTemplateThrowsAsync()
@@ -70,6 +75,7 @@ public sealed class HandlebarsPlannerTests
         Assert.True(exception?.Message?.Contains("Could not find the plan in the results", StringComparison.InvariantCulture));
     }
 
+
     [Fact]
     public void ItDefinesAllPartialsInlinePrompt()
     {
@@ -79,8 +85,9 @@ public sealed class HandlebarsPlannerTests
 
         var promptName = "CreatePlan";
         var actualPartialsNamespace = $"{planner.GetType().Namespace}.{promptName}PromptPartials";
-        var resourceNames = assemply.GetManifestResourceNames()
-            .Where(name => name.Contains($"{promptName}PromptPartials", StringComparison.CurrentCulture));
+
+        var resourceNames = assemply.GetManifestResourceNames().
+            Where(name => name.Contains($"{promptName}PromptPartials", StringComparison.CurrentCulture));
 
         // Act  
         var actualContent = planner.ReadAllPromptPartials(promptName);
@@ -93,6 +100,7 @@ public sealed class HandlebarsPlannerTests
         }
     }
 
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
@@ -103,25 +111,31 @@ public sealed class HandlebarsPlannerTests
 
         var planner = new HandlebarsPlanner();
 
-        KernelArguments? mockArguments = containsPredefinedVariables ? new(){
-            { "test", new List<string>(){ "test", "test1" } },
-            { "testNumber", 1 },
-            { "testObject", new Dictionary<string, string>()
+        KernelArguments? mockArguments = containsPredefinedVariables
+            ? new()
+            {
+                { "test", new List<string>() { "test", "test1" } },
+                { "testNumber", 1 },
                 {
-                    {"test", "John Doe" },
-                    { "testInfo", "testing" },
+                    "testObject", new Dictionary<string, string>()
+                    {
+                        { "test", "John Doe" },
+                        { "testInfo", "testing" },
+                    }
                 }
             }
-        } : null;
+            : null;
 
         // Act
         var plan = await planner.CreatePlanAsync(kernel, "goal", mockArguments);
 
         // Assert
         var sectionHeader = "### Predefined Variables";
+
         if (containsPredefinedVariables)
         {
             Assert.Contains(sectionHeader, plan.Prompt, StringComparison.CurrentCulture);
+
             foreach (var variable in mockArguments!)
             {
                 Assert.Contains($"- \"{variable.Key}\" ({variable.Value?.GetType().GetFriendlyTypeName()})", plan.Prompt, StringComparison.CurrentCulture);
@@ -133,6 +147,7 @@ public sealed class HandlebarsPlannerTests
             Assert.DoesNotContain(sectionHeader, plan.Prompt, StringComparison.CurrentCulture);
         }
     }
+
 
     [Theory]
     [InlineData(true)]
@@ -146,7 +161,9 @@ public sealed class HandlebarsPlannerTests
         var planner = new HandlebarsPlanner(
             new HandlebarsPlannerOptions()
             {
-                GetAdditionalPromptContext = hasAdditionalContext ? () => Task.FromResult(mockContext) : null
+                GetAdditionalPromptContext = hasAdditionalContext
+                    ? () => Task.FromResult(mockContext)
+                    : null
             });
 
         // Act
@@ -154,6 +171,7 @@ public sealed class HandlebarsPlannerTests
 
         // Assert
         var sectionHeader = "### Additional Context";
+
         if (hasAdditionalContext)
         {
             Assert.Contains("### Additional Context", plan.Prompt, StringComparison.CurrentCulture);
@@ -165,6 +183,7 @@ public sealed class HandlebarsPlannerTests
         }
     }
 
+
     private Kernel CreateKernelWithMockCompletionResult(string testPlanString, KernelPluginCollection? plugins = null)
     {
         plugins ??= new KernelPluginCollection();
@@ -172,16 +191,17 @@ public sealed class HandlebarsPlannerTests
         var chatMessage = new ChatMessageContent(AuthorRole.Assistant, testPlanString);
 
         var chatCompletion = new Mock<IChatCompletionService>();
-        chatCompletion
-            .Setup(cc => cc.GetChatMessageContentsAsync(It.IsAny<ChatHistory>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<ChatMessageContent> { chatMessage });
+
+        chatCompletion.Setup(cc => cc.GetChatMessageContentsAsync(It.IsAny<ChatHistory>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).
+            ReturnsAsync(new List<ChatMessageContent> { chatMessage });
 
         var serviceSelector = new Mock<IAIServiceSelector>();
         IChatCompletionService resultService = chatCompletion.Object;
         PromptExecutionSettings resultSettings = new();
-        serviceSelector
-            .Setup(ss => ss.TrySelectAIService<IChatCompletionService>(It.IsAny<Kernel>(), It.IsAny<KernelFunction>(), It.IsAny<KernelArguments>(), out resultService!, out resultSettings!))
-            .Returns(true);
+
+        serviceSelector.Setup(ss => ss.TrySelectAIService<IChatCompletionService>(It.IsAny<Kernel>(), It.IsAny<KernelFunction>(), It.IsAny<KernelArguments>(), out resultService!,
+                out resultSettings!)).
+            Returns(true);
 
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddSingleton<IAIServiceSelector>(serviceSelector.Object);
@@ -189,6 +209,7 @@ public sealed class HandlebarsPlannerTests
 
         return new Kernel(serviceCollection.BuildServiceProvider(), plugins);
     }
+
 
     private KernelPluginCollection CreatePluginCollection()
     {
@@ -209,4 +230,5 @@ public sealed class HandlebarsPlannerTests
             })
         };
     }
+
 }

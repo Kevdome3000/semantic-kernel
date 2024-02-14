@@ -1,13 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.UnitTests.AI;
+
 using System;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.AI;
+
 public class PromptExecutionSettingsTests
 {
+
     [Fact]
     public void PromptExecutionSettingsCloneWorksAsExpected()
     {
@@ -19,6 +22,7 @@ public class PromptExecutionSettingsTests
             ""presence_penalty"": 0.0,
             ""frequency_penalty"": 0.0
         }";
+
         var executionSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(configPayload);
 
         // Act
@@ -29,6 +33,7 @@ public class PromptExecutionSettingsTests
         Assert.Equal(executionSettings.ModelId, clone.ModelId);
         Assert.Equivalent(executionSettings.ExtensionData, clone.ExtensionData);
     }
+
 
     [Fact]
     public void PromptExecutionSettingsFreezeWorksAsExpected()
@@ -41,6 +46,7 @@ public class PromptExecutionSettingsTests
             ""presence_penalty"": 0.0,
             ""frequency_penalty"": 0.0
         }";
+
         var executionSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(configPayload);
 
         // Act
@@ -53,4 +59,5 @@ public class PromptExecutionSettingsTests
         Assert.Throws<NotSupportedException>(() => executionSettings.ExtensionData.Add("results_per_prompt", 2));
         Assert.Throws<NotSupportedException>(() => executionSettings.ExtensionData["temperature"] = 1);
     }
+
 }

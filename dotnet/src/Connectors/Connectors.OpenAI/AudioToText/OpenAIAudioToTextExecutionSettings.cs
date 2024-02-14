@@ -1,18 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Text;
+using Text;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
 /// Execution settings for OpenAI audio-to-text request.
 /// </summary>
 public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
 {
+
     /// <summary>
     /// Filename or identifier associated with audio data.
     /// Should be in format {filename}.{extension}
@@ -92,6 +94,7 @@ public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
         }
     }
 
+
     /// <summary>
     /// Creates an instance of <see cref="OpenAIAudioToTextExecutionSettings"/> class.
     /// </summary>
@@ -101,19 +104,23 @@ public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
         this._filename = filename;
     }
 
+
     /// <inheritdoc/>
     public override PromptExecutionSettings Clone()
     {
         return new OpenAIAudioToTextExecutionSettings(this.Filename)
         {
             ModelId = this.ModelId,
-            ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null,
+            ExtensionData = this.ExtensionData is not null
+                ? new Dictionary<string, object>(this.ExtensionData)
+                : null,
             Temperature = this.Temperature,
             ResponseFormat = this.ResponseFormat,
             Language = this.Language,
             Prompt = this.Prompt
         };
     }
+
 
     /// <summary>
     /// Converts <see cref="PromptExecutionSettings"/> to derived <see cref="OpenAIAudioToTextExecutionSettings"/> type.
@@ -144,13 +151,20 @@ public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
         throw new ArgumentException($"Invalid execution settings, cannot convert to {nameof(OpenAIAudioToTextExecutionSettings)}", nameof(executionSettings));
     }
 
+
     #region private ================================================================================
 
     private float _temperature = 0;
+
     private string _responseFormat = "json";
+
     private string _filename;
+
     private string? _language;
+
     private string? _prompt;
 
     #endregion
+
+
 }

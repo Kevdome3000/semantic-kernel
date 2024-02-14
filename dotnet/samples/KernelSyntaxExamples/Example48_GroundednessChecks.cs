@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -11,21 +13,22 @@ using xRetry;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Examples;
 
 public class Example48_GroundednessChecks : BaseTest
 {
+
     [RetryFact(typeof(HttpOperationException))]
     public async Task GroundednessCheckingAsync()
     {
         WriteLine("\n======== Groundedness Checks ========");
-        var kernel = Kernel.CreateBuilder()
-            .AddAzureOpenAIChatCompletion(
+
+        var kernel = Kernel.CreateBuilder().
+            AddAzureOpenAIChatCompletion(
                 deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 endpoint: TestConfiguration.AzureOpenAI.Endpoint,
                 apiKey: TestConfiguration.AzureOpenAI.ApiKey,
-                modelId: TestConfiguration.AzureOpenAI.ChatModelId)
-            .Build();
+                modelId: TestConfiguration.AzureOpenAI.ChatModelId).
+            Build();
 
         string folder = RepoFiles.SamplePluginsPath();
         var summarizePlugin = kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
@@ -72,11 +75,13 @@ her a beggar. My father came to her aid and two years later they married.
         WriteLine(excisionResult.GetValue<string>());
     }
 
+
     [Fact]
     public async Task PlanningWithGroundednessAsync()
     {
         var targetTopic = "people and places";
         var samples = "John, Jane, mother, brother, Paris, Rome";
+
         var ask = @$"Make a summary of the following text. Then make a list of entities
 related to {targetTopic} (such as {samples}) which are present in the summary.
 Take this list of entities, and from it make another list of those which are not
@@ -85,13 +90,13 @@ which are not grounded in the original.";
 
         WriteLine("\n======== Planning - Groundedness Checks ========");
 
-        var kernel = Kernel.CreateBuilder()
-            .AddAzureOpenAIChatCompletion(
+        var kernel = Kernel.CreateBuilder().
+            AddAzureOpenAIChatCompletion(
                 deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 endpoint: TestConfiguration.AzureOpenAI.Endpoint,
                 apiKey: TestConfiguration.AzureOpenAI.ApiKey,
-                modelId: TestConfiguration.AzureOpenAI.ChatModelId)
-            .Build();
+                modelId: TestConfiguration.AzureOpenAI.ChatModelId).
+            Build();
 
         string folder = RepoFiles.SamplePluginsPath();
         kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
@@ -112,8 +117,9 @@ which are not grounded in the original.";
 
         var initialArguments = new KernelArguments()
         {
-            { "groundingText", GroundingText}
+            { "groundingText", GroundingText }
         };
+
         var plan = await planner.CreatePlanAsync(kernel, ask, initialArguments);
 
         WriteLine($"======== Goal: ========\n{ask}");
@@ -124,6 +130,7 @@ which are not grounded in the original.";
         WriteLine("======== Result ========");
         WriteLine(result);
     }
+
 
     private const string GroundingText = @"""I am by birth a Genevese, and my family is one of the most distinguished of that republic.
 My ancestors had been for many years counsellors and syndics, and my father had filled several public situations
@@ -162,9 +169,11 @@ the chamber. He came like a protecting spirit to the poor girl, who committed he
 interment of his friend he conducted her to Geneva and placed her under the protection of a relation.Two years
 after this event Caroline became his wife.""";
 
+
     public Example48_GroundednessChecks(ITestOutputHelper output) : base(output)
     {
     }
+
 }
 
 /* Example Output:

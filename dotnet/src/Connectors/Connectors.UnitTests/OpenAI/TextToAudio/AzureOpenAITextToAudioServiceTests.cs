@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Connectors.UnitTests.OpenAI.TextToAudio;
+
 using System;
 using System.IO;
 using System.Linq;
@@ -11,16 +13,19 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.OpenAI.TextToAudio;
 
 /// <summary>
 /// Unit tests for <see cref="AzureOpenAITextToAudioService"/> class.
 /// </summary>
 public sealed class AzureOpenAITextToAudioServiceTests : IDisposable
 {
+
     private readonly HttpMessageHandlerStub _messageHandlerStub;
+
     private readonly HttpClient _httpClient;
+
     private readonly Mock<ILoggerFactory> _mockLoggerFactory;
+
 
     public AzureOpenAITextToAudioServiceTests()
     {
@@ -29,15 +34,17 @@ public sealed class AzureOpenAITextToAudioServiceTests : IDisposable
         this._mockLoggerFactory = new Mock<ILoggerFactory>();
     }
 
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
     public void ConstructorWithApiKeyWorksCorrectly(bool includeLoggerFactory)
     {
         // Arrange & Act
-        var service = includeLoggerFactory ?
-            new AzureOpenAITextToAudioService("deployment-name", "https://endpoint", "api-key", "model-id", loggerFactory: this._mockLoggerFactory.Object) :
-            new AzureOpenAITextToAudioService("deployment-name", "https://endpoint", "api-key", "model-id");
+        var service = includeLoggerFactory
+            ? new AzureOpenAITextToAudioService("deployment-name", "https://endpoint", "api-key", "model-id",
+                loggerFactory: this._mockLoggerFactory.Object)
+            : new AzureOpenAITextToAudioService("deployment-name", "https://endpoint", "api-key", "model-id");
 
         // Assert
         Assert.NotNull(service);
@@ -45,12 +52,15 @@ public sealed class AzureOpenAITextToAudioServiceTests : IDisposable
         Assert.Equal("deployment-name", service.Attributes["DeploymentName"]);
     }
 
+
     [Theory]
     [MemberData(nameof(ExecutionSettings))]
     public async Task GetAudioContentWithInvalidSettingsThrowsExceptionAsync(OpenAITextToAudioExecutionSettings? settings, Type expectedExceptionType)
     {
         // Arrange
-        var service = new AzureOpenAITextToAudioService("deployment-name", "https://endpoint", "api-key", "model-id", this._httpClient);
+        var service = new AzureOpenAITextToAudioService("deployment-name", "https://endpoint", "api-key", "model-id",
+            this._httpClient);
+
         await using var stream = new MemoryStream(new byte[] { 0x00, 0x00, 0xFF, 0x7F });
 
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
@@ -66,13 +76,16 @@ public sealed class AzureOpenAITextToAudioServiceTests : IDisposable
         Assert.IsType(expectedExceptionType, exception);
     }
 
+
     [Fact]
     public async Task GetAudioContentByDefaultWorksCorrectlyAsync()
     {
         // Arrange
         var expectedByteArray = new byte[] { 0x00, 0x00, 0xFF, 0x7F };
 
-        var service = new AzureOpenAITextToAudioService("deployment-name", "https://endpoint", "api-key", "model-id", this._httpClient);
+        var service = new AzureOpenAITextToAudioService("deployment-name", "https://endpoint", "api-key", "model-id",
+            this._httpClient);
+
         await using var stream = new MemoryStream(expectedByteArray);
 
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
@@ -85,8 +98,11 @@ public sealed class AzureOpenAITextToAudioServiceTests : IDisposable
 
         // Assert
         Assert.NotNull(result?.Data);
-        Assert.True(result.Data.ToArray().SequenceEqual(expectedByteArray));
+
+        Assert.True(result.Data.ToArray().
+            SequenceEqual(expectedByteArray));
     }
+
 
     [Theory]
     [InlineData(true, "http://local-endpoint")]
@@ -101,7 +117,9 @@ public sealed class AzureOpenAITextToAudioServiceTests : IDisposable
             this._httpClient.BaseAddress = new Uri("http://local-endpoint");
         }
 
-        var service = new AzureOpenAITextToAudioService("deployment-name", "https://endpoint", "api-key", "model-id", this._httpClient);
+        var service = new AzureOpenAITextToAudioService("deployment-name", "https://endpoint", "api-key", "model-id",
+            this._httpClient);
+
         await using var stream = new MemoryStream(expectedByteArray);
 
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
@@ -116,15 +134,18 @@ public sealed class AzureOpenAITextToAudioServiceTests : IDisposable
         Assert.StartsWith(expectedBaseAddress, this._messageHandlerStub.RequestUri!.AbsoluteUri, StringComparison.InvariantCulture);
     }
 
+
     public void Dispose()
     {
         this._httpClient.Dispose();
         this._messageHandlerStub.Dispose();
     }
 
+
     public static TheoryData<OpenAITextToAudioExecutionSettings?, Type> ExecutionSettings => new()
     {
         { null, typeof(ArgumentNullException) },
         { new OpenAITextToAudioExecutionSettings(""), typeof(ArgumentException) },
     };
+
 }

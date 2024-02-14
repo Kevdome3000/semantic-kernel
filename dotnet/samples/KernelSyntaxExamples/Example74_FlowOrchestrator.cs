@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -21,11 +23,11 @@ using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Examples;
 
 // This example shows how to use FlowOrchestrator to execute a given flow with interaction with client.
 public class Example74_FlowOrchestrator : BaseTest
 {
+
     private static readonly Flow s_flow = FlowSerializer.DeserializeFromYaml(@"
 name: FlowOrchestrator_Example_Flow
 goal: answer question and send email
@@ -57,6 +59,7 @@ provides:
     - email
 ");
 
+
     [Fact(Skip = "Can take more than 1 minute")]
     public async Task RunAsync()
     {
@@ -74,14 +77,19 @@ provides:
             await FlowStatusProvider.ConnectAsync(new VolatileMemoryStore()),
             plugins,
             config: GetOrchestratorConfig());
-        var sessionId = Guid.NewGuid().ToString();
+
+        var sessionId = Guid.NewGuid().
+            ToString();
 
         WriteLine("*****************************************************");
         WriteLine("Executing " + nameof(RunAsync));
         Stopwatch sw = new();
         sw.Start();
         WriteLine("Flow: " + s_flow.Name);
-        var question = s_flow.Steps.First().Goal;
+
+        var question = s_flow.Steps.First().
+            Goal;
+
         var result = await orchestrator.ExecuteFlowAsync(s_flow, sessionId, question);
 
         WriteLine("Question: " + question);
@@ -102,6 +110,7 @@ provides:
             WriteLine($"User: {t}");
             result = await orchestrator.ExecuteFlowAsync(s_flow, sessionId, t);
             var responses = result.GetValue<List<string>>()!;
+
             foreach (var response in responses)
             {
                 WriteLine("Assistant: " + response);
@@ -120,6 +129,7 @@ provides:
         WriteLine("*****************************************************");
     }
 
+
     private static FlowOrchestratorConfig GetOrchestratorConfig()
     {
         var config = new FlowOrchestratorConfig
@@ -130,20 +140,22 @@ provides:
         return config;
     }
 
+
     private static IKernelBuilder GetKernelBuilder(ILoggerFactory loggerFactory)
     {
         var builder = Kernel.CreateBuilder();
         builder.Services.AddSingleton<ILoggerFactory>(loggerFactory);
 
-        return builder
-            .AddAzureOpenAIChatCompletion(
-                TestConfiguration.AzureOpenAI.ChatDeploymentName,
-                TestConfiguration.AzureOpenAI.Endpoint,
-                TestConfiguration.AzureOpenAI.ApiKey);
+        return builder.AddAzureOpenAIChatCompletion(
+            TestConfiguration.AzureOpenAI.ChatDeploymentName,
+            TestConfiguration.AzureOpenAI.Endpoint,
+            TestConfiguration.AzureOpenAI.ApiKey);
     }
+
 
     public sealed class ChatPlugin
     {
+
         private const string Goal = "Prompt user to provide a valid email address";
 
         private const string EmailRegex = @"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$";
@@ -164,9 +176,11 @@ Do not expose the regex in your response.
 
         private readonly PromptExecutionSettings _chatRequestSettings;
 
+
         public ChatPlugin(Kernel kernel)
         {
             this._chat = kernel.GetRequiredService<IChatCompletionService>();
+
             this._chatRequestSettings = new OpenAIPromptExecutionSettings
             {
                 MaxTokens = this.MaxTokens,
@@ -174,6 +188,7 @@ Do not expose the regex in your response.
                 Temperature = 0
             };
         }
+
 
         [KernelFunction("ConfigureEmailAddress")]
         [Description("Useful to assist in configuration of email address, must be called after email provided")]
@@ -186,6 +201,7 @@ Do not expose the regex in your response.
             chat.AddUserMessage(Goal);
 
             ChatHistory? chatHistory = arguments.GetChatHistory();
+
             if (chatHistory?.Count > 0)
             {
                 chat.AddRange(chatHistory);
@@ -199,21 +215,29 @@ Do not expose the regex in your response.
             arguments["email_addresses"] = string.Empty;
             arguments.PromptInput();
 
-            var response = await this._chat.GetChatMessageContentAsync(chat).ConfigureAwait(false);
+            var response = await this._chat.GetChatMessageContentAsync(chat).
+                ConfigureAwait(false);
+
             return response.Content ?? string.Empty;
         }
+
 
         private static bool IsValidEmail(string email)
         {
             // check using regex
             var regex = new Regex(EmailRegex);
+
             return regex.IsMatch(email);
         }
+
     }
+
 
     public sealed class EmailPluginV2
     {
+
         private readonly JsonSerializerOptions _serializerOptions = new() { WriteIndented = true };
+
 
         [KernelFunction]
         [Description("Send email")]
@@ -237,17 +261,23 @@ Do not expose the regex in your response.
             return "Here's the API contract I will post to mail server: " + emailPayload;
         }
 
+
         private sealed class Email
         {
+
             public string? Address { get; set; }
 
             public string? Content { get; set; }
+
         }
+
     }
+
 
     public Example74_FlowOrchestrator(ITestOutputHelper output) : base(output)
     {
     }
+
 }
 
 //*****************************************************

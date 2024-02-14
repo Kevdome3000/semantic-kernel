@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Connectors.UnitTests.OpenAI.AudioToText;
+
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -10,16 +12,19 @@ using Microsoft.SemanticKernel.Contents;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.OpenAI.AudioToText;
 
 /// <summary>
 /// Unit tests for <see cref="OpenAIAudioToTextService"/> class.
 /// </summary>
 public sealed class OpenAIAudioToTextServiceTests : IDisposable
 {
+
     private readonly HttpMessageHandlerStub _messageHandlerStub;
+
     private readonly HttpClient _httpClient;
+
     private readonly Mock<ILoggerFactory> _mockLoggerFactory;
+
 
     public OpenAIAudioToTextServiceTests()
     {
@@ -28,20 +33,22 @@ public sealed class OpenAIAudioToTextServiceTests : IDisposable
         this._mockLoggerFactory = new Mock<ILoggerFactory>();
     }
 
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
     public void ConstructorWithApiKeyWorksCorrectly(bool includeLoggerFactory)
     {
         // Arrange & Act
-        var service = includeLoggerFactory ?
-            new OpenAIAudioToTextService("model-id", "api-key", "organization", loggerFactory: this._mockLoggerFactory.Object) :
-            new OpenAIAudioToTextService("model-id", "api-key", "organization");
+        var service = includeLoggerFactory
+            ? new OpenAIAudioToTextService("model-id", "api-key", "organization", loggerFactory: this._mockLoggerFactory.Object)
+            : new OpenAIAudioToTextService("model-id", "api-key", "organization");
 
         // Assert
         Assert.NotNull(service);
         Assert.Equal("model-id", service.Attributes["ModelId"]);
     }
+
 
     [Theory]
     [InlineData(true)]
@@ -50,20 +57,23 @@ public sealed class OpenAIAudioToTextServiceTests : IDisposable
     {
         // Arrange & Act
         var client = new OpenAIClient("key");
-        var service = includeLoggerFactory ?
-            new OpenAIAudioToTextService("model-id", client, loggerFactory: this._mockLoggerFactory.Object) :
-            new OpenAIAudioToTextService("model-id", client);
+
+        var service = includeLoggerFactory
+            ? new OpenAIAudioToTextService("model-id", client, loggerFactory: this._mockLoggerFactory.Object)
+            : new OpenAIAudioToTextService("model-id", client);
 
         // Assert
         Assert.NotNull(service);
         Assert.Equal("model-id", service.Attributes["ModelId"]);
     }
 
+
     [Fact]
     public async Task GetTextContentByDefaultWorksCorrectlyAsync()
     {
         // Arrange
         var service = new OpenAIAudioToTextService("model-id", "api-key", "organization", this._httpClient);
+
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         {
             Content = new StringContent("Test audio-to-text response")
@@ -77,9 +87,11 @@ public sealed class OpenAIAudioToTextServiceTests : IDisposable
         Assert.Equal("Test audio-to-text response", result.Text);
     }
 
+
     public void Dispose()
     {
         this._httpClient.Dispose();
         this._messageHandlerStub.Dispose();
     }
+
 }

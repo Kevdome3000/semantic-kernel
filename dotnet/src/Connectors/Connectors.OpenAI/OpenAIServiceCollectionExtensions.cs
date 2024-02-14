@@ -1,32 +1,35 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Net.Http;
-using Azure;
-using Azure.AI.OpenAI;
-using Azure.Core;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AudioToText;
-using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Microsoft.SemanticKernel.Embeddings;
-using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.TextGeneration;
-using Microsoft.SemanticKernel.TextToAudio;
-using Microsoft.SemanticKernel.TextToImage;
-
 #pragma warning disable CA2000 // Dispose objects before losing scope
 #pragma warning disable IDE0039 // Use local function
 
 namespace Microsoft.SemanticKernel;
+
+using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Net.Http;
+using AudioToText;
+using Azure;
+using Azure.AI.OpenAI;
+using Azure.Core;
+using ChatCompletion;
+using Connectors.OpenAI;
+using Embeddings;
+using Extensions.DependencyInjection;
+using Extensions.Logging;
+using Http;
+using TextGeneration;
+using TextToAudio;
+using TextToImage;
+
 
 /// <summary>
 /// Provides extension methods for <see cref="IServiceCollection"/> and related classes to configure OpenAI and Azure OpenAI connectors.
 /// </summary>
 public static class OpenAIServiceCollectionExtensions
 {
+
+
     #region Text Completion
 
     /// <summary>
@@ -57,11 +60,13 @@ public static class OpenAIServiceCollectionExtensions
         builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
         {
             var client = CreateAzureOpenAIClient(endpoint, new AzureKeyCredential(apiKey), httpClient ?? serviceProvider.GetService<HttpClient>());
+
             return new AzureOpenAITextGenerationService(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
         });
 
         return builder;
     }
+
 
     /// <summary>
     /// Adds an Azure OpenAI text generation service with the specified configuration.
@@ -89,9 +94,11 @@ public static class OpenAIServiceCollectionExtensions
         return services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
         {
             var client = CreateAzureOpenAIClient(endpoint, new AzureKeyCredential(apiKey), serviceProvider.GetService<HttpClient>());
+
             return new AzureOpenAITextGenerationService(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
         });
     }
+
 
     /// <summary>
     /// Adds an Azure OpenAI text generation service with the specified configuration.
@@ -121,11 +128,13 @@ public static class OpenAIServiceCollectionExtensions
         builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
         {
             var client = CreateAzureOpenAIClient(endpoint, credentials, httpClient ?? serviceProvider.GetService<HttpClient>());
+
             return new AzureOpenAITextGenerationService(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
         });
 
         return builder;
     }
+
 
     /// <summary>
     /// Adds an Azure OpenAI text generation service with the specified configuration.
@@ -153,9 +162,11 @@ public static class OpenAIServiceCollectionExtensions
         return services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
         {
             var client = CreateAzureOpenAIClient(endpoint, credentials, serviceProvider.GetService<HttpClient>());
+
             return new AzureOpenAITextGenerationService(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
         });
     }
+
 
     /// <summary>
     /// Adds an Azure OpenAI text generation service with the specified configuration.
@@ -186,6 +197,7 @@ public static class OpenAIServiceCollectionExtensions
         return builder;
     }
 
+
     /// <summary>
     /// Adds an Azure OpenAI text generation service with the specified configuration.
     /// </summary>
@@ -212,6 +224,7 @@ public static class OpenAIServiceCollectionExtensions
                 modelId,
                 serviceProvider.GetService<ILoggerFactory>()));
     }
+
 
     /// <summary>
     /// Adds an OpenAI text generation service with the specified configuration.
@@ -246,6 +259,7 @@ public static class OpenAIServiceCollectionExtensions
         return builder;
     }
 
+
     /// <summary>
     /// Adds an OpenAI text generation service with the specified configuration.
     /// </summary>
@@ -275,6 +289,7 @@ public static class OpenAIServiceCollectionExtensions
                 serviceProvider.GetService<ILoggerFactory>()));
     }
 
+
     /// <summary>
     /// Adds an OpenAI text generation service with the specified configuration.
     /// </summary>
@@ -301,6 +316,7 @@ public static class OpenAIServiceCollectionExtensions
         return builder;
     }
 
+
     /// <summary>
     /// Adds an OpenAI text generation service with the specified configuration.
     /// </summary>
@@ -309,7 +325,8 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="openAIClient"><see cref="OpenAIClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
-    public static IServiceCollection AddOpenAITextGeneration(this IServiceCollection services,
+    public static IServiceCollection AddOpenAITextGeneration(
+        this IServiceCollection services,
         string modelId,
         OpenAIClient? openAIClient = null,
         string? serviceId = null)
@@ -325,6 +342,7 @@ public static class OpenAIServiceCollectionExtensions
     }
 
     #endregion
+
 
     #region Text Embedding
 
@@ -366,6 +384,7 @@ public static class OpenAIServiceCollectionExtensions
         return builder;
     }
 
+
     /// <summary>
     /// Adds an Azure OpenAI text embeddings service to the list.
     /// </summary>
@@ -399,6 +418,7 @@ public static class OpenAIServiceCollectionExtensions
                 HttpClientProvider.GetHttpClient(serviceProvider),
                 serviceProvider.GetService<ILoggerFactory>()));
     }
+
 
     /// <summary>
     /// Adds an Azure OpenAI text embeddings service to the list.
@@ -438,6 +458,7 @@ public static class OpenAIServiceCollectionExtensions
         return builder;
     }
 
+
     /// <summary>
     /// Adds an Azure OpenAI text embeddings service to the list.
     /// </summary>
@@ -472,6 +493,7 @@ public static class OpenAIServiceCollectionExtensions
                 serviceProvider.GetService<ILoggerFactory>()));
     }
 
+
     /// <summary>
     /// Adds an Azure OpenAI text embeddings service to the list.
     /// </summary>
@@ -502,6 +524,7 @@ public static class OpenAIServiceCollectionExtensions
         return builder;
     }
 
+
     /// <summary>
     /// Adds an Azure OpenAI text embeddings service to the list.
     /// </summary>
@@ -529,6 +552,7 @@ public static class OpenAIServiceCollectionExtensions
                 modelId,
                 serviceProvider.GetService<ILoggerFactory>()));
     }
+
 
     /// <summary>
     /// Adds the OpenAI text embeddings service to the list.
@@ -564,6 +588,7 @@ public static class OpenAIServiceCollectionExtensions
         return builder;
     }
 
+
     /// <summary>
     /// Adds the OpenAI text embeddings service to the list.
     /// </summary>
@@ -594,6 +619,7 @@ public static class OpenAIServiceCollectionExtensions
                 serviceProvider.GetService<ILoggerFactory>()));
     }
 
+
     /// <summary>
     /// Adds the OpenAI text embeddings service to the list.
     /// </summary>
@@ -621,6 +647,7 @@ public static class OpenAIServiceCollectionExtensions
         return builder;
     }
 
+
     /// <summary>
     /// Adds the OpenAI text embeddings service to the list.
     /// </summary>
@@ -630,7 +657,8 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0011")]
-    public static IServiceCollection AddOpenAITextEmbeddingGeneration(this IServiceCollection services,
+    public static IServiceCollection AddOpenAITextEmbeddingGeneration(
+        this IServiceCollection services,
         string modelId,
         OpenAIClient? openAIClient = null,
         string? serviceId = null)
@@ -646,6 +674,7 @@ public static class OpenAIServiceCollectionExtensions
     }
 
     #endregion
+
 
     #region Chat Completion
 
@@ -690,6 +719,7 @@ public static class OpenAIServiceCollectionExtensions
         return builder;
     }
 
+
     /// <summary>
     /// Adds the Azure OpenAI chat completion service to the list.
     /// </summary>
@@ -728,6 +758,7 @@ public static class OpenAIServiceCollectionExtensions
 
         return services;
     }
+
 
     /// <summary>
     /// Adds the Azure OpenAI chat completion service to the list.
@@ -770,6 +801,7 @@ public static class OpenAIServiceCollectionExtensions
         return builder;
     }
 
+
     /// <summary>
     /// Adds the Azure OpenAI chat completion service to the list.
     /// </summary>
@@ -809,6 +841,7 @@ public static class OpenAIServiceCollectionExtensions
         return services;
     }
 
+
     /// <summary>
     /// Adds the Azure OpenAI chat completion service to the list.
     /// </summary>
@@ -837,6 +870,7 @@ public static class OpenAIServiceCollectionExtensions
         return builder;
     }
 
+
     /// <summary>
     /// Adds the Azure OpenAI chat completion service to the list.
     /// </summary>
@@ -864,6 +898,7 @@ public static class OpenAIServiceCollectionExtensions
 
         return services;
     }
+
 
     /// <summary>
     /// Adds the Azure OpenAI chat completion with data service to the list.
@@ -895,6 +930,7 @@ public static class OpenAIServiceCollectionExtensions
         return builder;
     }
 
+
     /// <summary>
     /// Adds the Azure OpenAI chat completion with data service to the list.
     /// </summary>
@@ -924,6 +960,7 @@ public static class OpenAIServiceCollectionExtensions
 
         return services;
     }
+
 
     /// <summary>
     /// Adds the OpenAI chat completion service to the list.
@@ -960,6 +997,7 @@ public static class OpenAIServiceCollectionExtensions
         return builder;
     }
 
+
     /// <summary>
     /// Adds the OpenAI chat completion service to the list.
     /// </summary>
@@ -993,6 +1031,7 @@ public static class OpenAIServiceCollectionExtensions
         return services;
     }
 
+
     /// <summary>
     /// Adds the OpenAI chat completion service to the list.
     /// </summary>
@@ -1019,6 +1058,7 @@ public static class OpenAIServiceCollectionExtensions
         return builder;
     }
 
+
     /// <summary>
     /// Adds the OpenAI chat completion service to the list.
     /// </summary>
@@ -1027,7 +1067,8 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="openAIClient"><see cref="OpenAIClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
-    public static IServiceCollection AddOpenAIChatCompletion(this IServiceCollection services,
+    public static IServiceCollection AddOpenAIChatCompletion(
+        this IServiceCollection services,
         string modelId,
         OpenAIClient? openAIClient = null,
         string? serviceId = null)
@@ -1045,6 +1086,7 @@ public static class OpenAIServiceCollectionExtensions
     }
 
     #endregion
+
 
     #region Images
 
@@ -1088,6 +1130,7 @@ public static class OpenAIServiceCollectionExtensions
         return builder;
     }
 
+
     /// <summary>
     /// Add the  Azure OpenAI DallE text to image service to the list
     /// </summary>
@@ -1123,6 +1166,7 @@ public static class OpenAIServiceCollectionExtensions
                 serviceProvider.GetService<ILoggerFactory>()));
     }
 
+
     /// <summary>
     /// Add the OpenAI Dall-E text to image service to the list
     /// </summary>
@@ -1153,6 +1197,7 @@ public static class OpenAIServiceCollectionExtensions
         return builder;
     }
 
+
     /// <summary>
     /// Add the OpenAI Dall-E text to image service to the list
     /// </summary>
@@ -1162,7 +1207,8 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0012")]
-    public static IServiceCollection AddOpenAITextToImage(this IServiceCollection services,
+    public static IServiceCollection AddOpenAITextToImage(
+        this IServiceCollection services,
         string apiKey,
         string? orgId = null,
         string? serviceId = null)
@@ -1179,6 +1225,7 @@ public static class OpenAIServiceCollectionExtensions
     }
 
     #endregion
+
 
     #region Files
 
@@ -1212,6 +1259,7 @@ public static class OpenAIServiceCollectionExtensions
         return builder;
     }
 
+
     /// <summary>
     /// Add the OpenAI file service to the list
     /// </summary>
@@ -1241,6 +1289,7 @@ public static class OpenAIServiceCollectionExtensions
     }
 
     #endregion
+
 
     #region Text-to-Audio
 
@@ -1282,6 +1331,7 @@ public static class OpenAIServiceCollectionExtensions
         return builder;
     }
 
+
     /// <summary>
     /// Adds the Azure OpenAI text-to-audio service to the list.
     /// </summary>
@@ -1318,6 +1368,7 @@ public static class OpenAIServiceCollectionExtensions
                 serviceProvider.GetService<ILoggerFactory>()));
     }
 
+
     /// <summary>
     /// Adds the OpenAI text-to-audio service to the list.
     /// </summary>
@@ -1352,6 +1403,7 @@ public static class OpenAIServiceCollectionExtensions
         return builder;
     }
 
+
     /// <summary>
     /// Adds the OpenAI text-to-audio service to the list.
     /// </summary>
@@ -1383,6 +1435,7 @@ public static class OpenAIServiceCollectionExtensions
     }
 
     #endregion
+
 
     #region Audio-to-Text
 
@@ -1418,6 +1471,7 @@ public static class OpenAIServiceCollectionExtensions
                 endpoint,
                 new AzureKeyCredential(apiKey),
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider));
+
             return new(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
         };
 
@@ -1425,6 +1479,7 @@ public static class OpenAIServiceCollectionExtensions
 
         return builder;
     }
+
 
     /// <summary>
     /// Adds the Azure OpenAI audio-to-text service to the list.
@@ -1456,6 +1511,7 @@ public static class OpenAIServiceCollectionExtensions
                 endpoint,
                 new AzureKeyCredential(apiKey),
                 HttpClientProvider.GetHttpClient(serviceProvider));
+
             return new(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
         };
 
@@ -1463,6 +1519,7 @@ public static class OpenAIServiceCollectionExtensions
 
         return services;
     }
+
 
     /// <summary>
     /// Adds the Azure OpenAI audio-to-text service to the list.
@@ -1496,6 +1553,7 @@ public static class OpenAIServiceCollectionExtensions
                 endpoint,
                 credentials,
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider));
+
             return new(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
         };
 
@@ -1503,6 +1561,7 @@ public static class OpenAIServiceCollectionExtensions
 
         return builder;
     }
+
 
     /// <summary>
     /// Adds the Azure OpenAI audio-to-text service to the list.
@@ -1534,6 +1593,7 @@ public static class OpenAIServiceCollectionExtensions
                 endpoint,
                 credentials,
                 HttpClientProvider.GetHttpClient(serviceProvider));
+
             return new(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
         };
 
@@ -1541,6 +1601,7 @@ public static class OpenAIServiceCollectionExtensions
 
         return services;
     }
+
 
     /// <summary>
     /// Adds the Azure OpenAI audio-to-text service to the list.
@@ -1570,6 +1631,7 @@ public static class OpenAIServiceCollectionExtensions
         return builder;
     }
 
+
     /// <summary>
     /// Adds the Azure OpenAI audio-to-text service to the list.
     /// </summary>
@@ -1597,6 +1659,7 @@ public static class OpenAIServiceCollectionExtensions
 
         return services;
     }
+
 
     /// <summary>
     /// Adds the OpenAI audio-to-text service to the list.
@@ -1633,6 +1696,7 @@ public static class OpenAIServiceCollectionExtensions
         return builder;
     }
 
+
     /// <summary>
     /// Adds the OpenAI audio-to-text service to the list.
     /// </summary>
@@ -1666,6 +1730,7 @@ public static class OpenAIServiceCollectionExtensions
         return services;
     }
 
+
     /// <summary>
     /// Adds the OpenAI audio-to-text service to the list.
     /// </summary>
@@ -1691,6 +1756,7 @@ public static class OpenAIServiceCollectionExtensions
 
         return builder;
     }
+
 
     /// <summary>
     /// Adds the OpenAI audio-to-text service to the list.
@@ -1720,9 +1786,12 @@ public static class OpenAIServiceCollectionExtensions
 
     #endregion
 
+
     private static OpenAIClient CreateAzureOpenAIClient(string endpoint, AzureKeyCredential credentials, HttpClient? httpClient) =>
         new(new Uri(endpoint), credentials, ClientCore.GetOpenAIClientOptions(httpClient));
 
+
     private static OpenAIClient CreateAzureOpenAIClient(string endpoint, TokenCredential credentials, HttpClient? httpClient) =>
         new(new Uri(endpoint), credentials, ClientCore.GetOpenAIClientOptions(httpClient));
+
 }

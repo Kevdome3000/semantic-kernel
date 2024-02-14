@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
 /// Execution serttings associated with Open AI file upload <see cref="OpenAIFileService.UploadContentAsync"/>.
@@ -10,6 +11,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 [Experimental("SKEXP0015")]
 public sealed class OpenAIFileUploadExecutionSettings
 {
+
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIFileUploadExecutionSettings"/> class.
     /// </summary>
@@ -23,6 +25,7 @@ public sealed class OpenAIFileUploadExecutionSettings
         this.Purpose = purpose;
     }
 
+
     /// <summary>
     /// The file name.
     /// </summary>
@@ -32,4 +35,5 @@ public sealed class OpenAIFileUploadExecutionSettings
     /// The file purpose.
     /// </summary>
     public OpenAIFilePurpose Purpose { get; }
+
 }

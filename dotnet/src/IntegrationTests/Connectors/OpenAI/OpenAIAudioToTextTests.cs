@@ -1,21 +1,25 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
+
 using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Contents;
-using SemanticKernel.IntegrationTests.TestSettings;
+using TestSettings;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
 public sealed class OpenAIAudioToTextTests : IDisposable
 {
+
     private readonly RedirectOutput _testOutputHelper;
+
     private readonly IConfigurationRoot _configuration;
+
 
     public OpenAIAudioToTextTests(ITestOutputHelper output)
     {
@@ -23,13 +27,13 @@ public sealed class OpenAIAudioToTextTests : IDisposable
         Console.SetOut(this._testOutputHelper);
 
         // Load configuration
-        this._configuration = new ConfigurationBuilder()
-            .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
-            .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
-            .AddEnvironmentVariables()
-            .AddUserSecrets<OpenAIAudioToTextTests>()
-            .Build();
+        this._configuration = new ConfigurationBuilder().AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true).
+            AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true).
+            AddEnvironmentVariables().
+            AddUserSecrets<OpenAIAudioToTextTests>().
+            Build();
     }
+
 
     [Fact(Skip = "OpenAI will often throttle requests. This test is for manual verification.")]
     public async Task OpenAIAudioToTextTestAsync()
@@ -37,7 +41,9 @@ public sealed class OpenAIAudioToTextTests : IDisposable
         // Arrange
         const string Filename = "test_audio.wav";
 
-        OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAIAudioToText").Get<OpenAIConfiguration>();
+        OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAIAudioToText").
+            Get<OpenAIConfiguration>();
+
         Assert.NotNull(openAIConfiguration);
 
         var service = new OpenAIAudioToTextService(openAIConfiguration.ModelId, openAIConfiguration.ApiKey);
@@ -52,13 +58,16 @@ public sealed class OpenAIAudioToTextTests : IDisposable
         Assert.Contains("The sun rises in the east and sets in the west.", result.Text, StringComparison.OrdinalIgnoreCase);
     }
 
+
     [Fact]
     public async Task AzureOpenAIAudioToTextTestAsync()
     {
         // Arrange
         const string Filename = "test_audio.wav";
 
-        AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAIAudioToText").Get<AzureOpenAIConfiguration>();
+        AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAIAudioToText").
+            Get<AzureOpenAIConfiguration>();
+
         Assert.NotNull(azureOpenAIConfiguration);
 
         var service = new AzureOpenAIAudioToTextService(
@@ -76,8 +85,10 @@ public sealed class OpenAIAudioToTextTests : IDisposable
         Assert.Contains("The sun rises in the east and sets in the west.", result.Text, StringComparison.OrdinalIgnoreCase);
     }
 
+
     public void Dispose()
     {
         this._testOutputHelper.Dispose();
     }
+
 }

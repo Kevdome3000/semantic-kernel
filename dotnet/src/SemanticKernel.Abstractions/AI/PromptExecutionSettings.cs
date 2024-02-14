@@ -1,13 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel;
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.TextGeneration;
+using ChatCompletion;
+using TextGeneration;
 
-namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Provides execution settings for an AI request.
@@ -19,6 +20,7 @@ namespace Microsoft.SemanticKernel;
 /// </remarks>
 public class PromptExecutionSettings
 {
+
     /// <summary>
     /// Gets the default service identifier.
     /// </summary>
@@ -69,6 +71,7 @@ public class PromptExecutionSettings
         get => this._isFrozen;
     }
 
+
     /// <summary>
     /// Makes the current <see cref="PromptExecutionSettings"/> unmodifiable and sets its IsFrozen property to true.
     /// </summary>
@@ -82,6 +85,7 @@ public class PromptExecutionSettings
         }
     }
 
+
     /// <summary>
     /// Creates a new <see cref="PromptExecutionSettings"/> object that is a copy of the current instance.
     /// </summary>
@@ -90,9 +94,12 @@ public class PromptExecutionSettings
         return new()
         {
             ModelId = this.ModelId,
-            ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null
+            ExtensionData = this.ExtensionData is not null
+                ? new Dictionary<string, object>(this.ExtensionData)
+                : null
         };
     }
+
 
     /// <summary>
     /// Throws an <see cref="InvalidOperationException"/> if the <see cref="PromptExecutionSettings"/> are frozen.
@@ -106,11 +113,16 @@ public class PromptExecutionSettings
         }
     }
 
+
     #region private ================================================================================
 
     private string? _modelId;
+
     private IDictionary<string, object>? _extensionData;
+
     private bool _isFrozen;
 
     #endregion
+
+
 }

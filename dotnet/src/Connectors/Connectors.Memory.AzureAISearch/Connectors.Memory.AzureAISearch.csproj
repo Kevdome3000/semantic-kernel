@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="SemanticKernel.Connectors.AzureAISearch.UnitTests" />
+    <InternalsVisibleTo Include="SemanticKernel.Connectors.AzureAISearch.UnitTests"/>
   </ItemGroup>
 
   <ItemGroup>

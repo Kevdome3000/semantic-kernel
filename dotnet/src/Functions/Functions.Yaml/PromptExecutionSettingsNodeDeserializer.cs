@@ -13,12 +13,18 @@ using YamlDotNet.Serialization;
 /// </summary>
 internal sealed class PromptExecutionSettingsNodeDeserializer : INodeDeserializer
 {
+
     /// <inheritdoc/>
-    public bool Deserialize(IParser reader, Type expectedType, Func<IParser, Type, object?> nestedObjectDeserializer, out object? value)
+    public bool Deserialize(
+        IParser reader,
+        Type expectedType,
+        Func<IParser, Type, object?> nestedObjectDeserializer,
+        out object? value)
     {
         if (expectedType != typeof(PromptExecutionSettings))
         {
             value = null;
+
             return false;
         }
 
@@ -31,15 +37,19 @@ internal sealed class PromptExecutionSettingsNodeDeserializer : INodeDeserialize
             {
                 case "model_id":
                     modelSettings.ModelId = (string)kv.Value;
+
                     break;
 
                 default:
                     (modelSettings.ExtensionData ??= new Dictionary<string, object>()).Add(kv.Key, kv.Value);
+
                     break;
             }
         }
 
         value = modelSettings;
+
         return true;
     }
+
 }
