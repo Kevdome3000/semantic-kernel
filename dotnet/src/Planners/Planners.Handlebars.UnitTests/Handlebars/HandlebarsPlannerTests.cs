@@ -1,18 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Planners.UnitTests.Handlebars;
-
-using ChatCompletion;
-using Extensions.DependencyInjection;
+using System.Reflection;
+using System.Text.Json;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Planning.Handlebars;
+using Microsoft.SemanticKernel.Text;
 using Moq;
-using Planning.Handlebars;
 using Xunit;
 
+namespace Microsoft.SemanticKernel.Planners.UnitTests.Handlebars;
 
 public sealed class HandlebarsPlannerTests
 {
     private const string PlanString =
-        @"```handlebars
+    @"```handlebars
 {{!-- Step 1: Call Summarize function --}}  
 {{set ""summary"" (SummarizePlugin-Summarize)}}  
 
@@ -25,7 +27,6 @@ public sealed class HandlebarsPlannerTests
 {{!-- Step 4: Call SendEmail function with input set to the translated summary and email_address set to the retrieved email address --}}  
 {{email-SendEmail input=(get ""translatedSummary"") email_address=(get ""emailAddress"")}}
 ```";
-
 
     [Theory]
     [InlineData("Summarize this text, translate it to French and send it to John Doe.")]
@@ -40,10 +41,9 @@ public sealed class HandlebarsPlannerTests
         HandlebarsPlan plan = await planner.CreatePlanAsync(kernel, goal);
 
         // Assert
-        Assert.True(!string.IsNullOrEmpty(plan.Prompt));
-        Assert.True(!string.IsNullOrEmpty(plan.ToString()));
+        Assert.False(string.IsNullOrEmpty(plan.Prompt));
+        Assert.False(string.IsNullOrEmpty(plan.ToString()));
     }
-
 
     [Fact]
     public async Task EmptyGoalThrowsAsync()
@@ -56,7 +56,6 @@ public sealed class HandlebarsPlannerTests
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(async () => await planner.CreatePlanAsync(kernel, string.Empty));
     }
-
 
     [Fact]
     public async Task InvalidHandlebarsTemplateThrowsAsync()
@@ -71,6 +70,100 @@ public sealed class HandlebarsPlannerTests
         Assert.True(exception?.Message?.Contains("Could not find the plan in the results", StringComparison.InvariantCulture));
     }
 
+    [Fact]
+    public void ItDefinesAllPartialsInlinePrompt()
+    {
+        // Arrange
+        var assemply = Assembly.GetExecutingAssembly();
+        var planner = new HandlebarsPlanner();
+
+        var promptName = "CreatePlan";
+        var actualPartialsNamespace = $"{planner.GetType().Namespace}.{promptName}PromptPartials";
+        var resourceNames = assemply.GetManifestResourceNames()
+            .Where(name => name.Contains($"{promptName}PromptPartials", StringComparison.CurrentCulture));
+
+        // Act  
+        var actualContent = planner.ReadAllPromptPartials(promptName);
+
+        // Assert
+        foreach (var resourceName in resourceNames)
+        {
+            var expectedInlinePartialHeader = $"{{{{#*inline \"{resourceName}\"}}}}";
+            Assert.Contains(expectedInlinePartialHeader, actualContent, StringComparison.CurrentCulture);
+        }
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ItInjectsPredefinedVariablesWhenAppropriateAsync(bool containsPredefinedVariables)
+    {
+        // Arrange
+        var kernel = this.CreateKernelWithMockCompletionResult(PlanString);
+
+        var planner = new HandlebarsPlanner();
+
+        KernelArguments? mockArguments = containsPredefinedVariables ? new(){
+            { "test", new List<string>(){ "test", "test1" } },
+            { "testNumber", 1 },
+            { "testObject", new Dictionary<string, string>()
+                {
+                    {"test", "John Doe" },
+                    { "testInfo", "testing" },
+                }
+            }
+        } : null;
+
+        // Act
+        var plan = await planner.CreatePlanAsync(kernel, "goal", mockArguments);
+
+        // Assert
+        var sectionHeader = "### Predefined Variables";
+        if (containsPredefinedVariables)
+        {
+            Assert.Contains(sectionHeader, plan.Prompt, StringComparison.CurrentCulture);
+            foreach (var variable in mockArguments!)
+            {
+                Assert.Contains($"- \"{variable.Key}\" ({variable.Value?.GetType().GetFriendlyTypeName()})", plan.Prompt, StringComparison.CurrentCulture);
+                Assert.Contains(JsonSerializer.Serialize(variable.Value, JsonOptionsCache.WriteIndented), plan.Prompt, StringComparison.InvariantCulture);
+            }
+        }
+        else
+        {
+            Assert.DoesNotContain(sectionHeader, plan.Prompt, StringComparison.CurrentCulture);
+        }
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ItInjectsAdditionalContextWhenAppropriateAsync(bool hasAdditionalContext)
+    {
+        // Arrange
+        var kernel = this.CreateKernelWithMockCompletionResult(PlanString);
+        var mockContext = "Mock context";
+
+        var planner = new HandlebarsPlanner(
+            new HandlebarsPlannerOptions()
+            {
+                GetAdditionalPromptContext = hasAdditionalContext ? () => Task.FromResult(mockContext) : null
+            });
+
+        // Act
+        var plan = await planner.CreatePlanAsync(kernel, "goal");
+
+        // Assert
+        var sectionHeader = "### Additional Context";
+        if (hasAdditionalContext)
+        {
+            Assert.Contains("### Additional Context", plan.Prompt, StringComparison.CurrentCulture);
+            Assert.Contains(mockContext, plan.Prompt, StringComparison.CurrentCulture);
+        }
+        else
+        {
+            Assert.DoesNotContain(sectionHeader, plan.Prompt, StringComparison.CurrentCulture);
+        }
+    }
 
     private Kernel CreateKernelWithMockCompletionResult(string testPlanString, KernelPluginCollection? plugins = null)
     {
@@ -96,7 +189,6 @@ public sealed class HandlebarsPlannerTests
 
         return new Kernel(serviceCollection.BuildServiceProvider(), plugins);
     }
-
 
     private KernelPluginCollection CreatePluginCollection()
     {

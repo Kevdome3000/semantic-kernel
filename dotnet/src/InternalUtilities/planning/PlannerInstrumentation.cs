@@ -1,15 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Planning;
-
 using System;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Extensions.Logging;
+using Microsoft.Extensions.Logging;
 
+namespace Microsoft.SemanticKernel.Planning;
 
 /// <summary>Surrounds the invocation of a planner with logging and metrics.</summary>
 internal static partial class PlannerInstrumentation
@@ -32,15 +31,10 @@ internal static partial class PlannerInstrumentation
         unit: "s",
         description: "Duration time of plan execution.");
 
-
     /// <summary>Invokes the supplied <paramref name="createPlanAsync"/> delegate, surrounded by logging and metrics.</summary>
     public static async Task<TPlan> CreatePlanAsync<TPlanner, TPlan>(
-        Func<TPlanner, Kernel, string, CancellationToken, Task<TPlan>> createPlanAsync,
-        TPlanner planner,
-        Kernel kernel,
-        string goal,
-        ILogger logger,
-        CancellationToken cancellationToken)
+        Func<TPlanner, Kernel, string, KernelArguments?, CancellationToken, Task<TPlan>> createPlanAsync,
+        TPlanner planner, Kernel kernel, string goal, KernelArguments? arguments, ILogger logger, CancellationToken cancellationToken)
         where TPlanner : class
         where TPlan : class
     {
@@ -53,10 +47,9 @@ internal static partial class PlannerInstrumentation
 
         TagList tags = new() { { "semantic_kernel.planner.name", plannerName } };
         long startingTimestamp = Stopwatch.GetTimestamp();
-
         try
         {
-            var plan = await createPlanAsync(planner, kernel, goal, cancellationToken).ConfigureAwait(false);
+            var plan = await createPlanAsync(planner, kernel, goal, arguments, cancellationToken).ConfigureAwait(false);
             logger.LogPlanCreated();
             logger.LogPlan(plan);
 
@@ -77,15 +70,10 @@ internal static partial class PlannerInstrumentation
         }
     }
 
-
     // <summary>Invokes the supplied <paramref name="InvokePlanAsync"/> delegate, surrounded by logging and metrics.</summary>
     public static async Task<TPlanResult> InvokePlanAsync<TPlan, TPlanInput, TPlanResult>(
         Func<TPlan, Kernel, TPlanInput?, CancellationToken, Task<TPlanResult>> InvokePlanAsync,
-        TPlan plan,
-        Kernel kernel,
-        TPlanInput? input,
-        ILogger logger,
-        CancellationToken cancellationToken)
+        TPlan plan, Kernel kernel, TPlanInput? input, ILogger logger, CancellationToken cancellationToken)
         where TPlan : class
         where TPlanInput : class
         where TPlanResult : class
@@ -97,7 +85,6 @@ internal static partial class PlannerInstrumentation
 
         TagList tags = new() { { "semantic_kernel.plan.name", planName } };
         long startingTimestamp = Stopwatch.GetTimestamp();
-
         try
         {
             TPlanResult planResult = await InvokePlanAsync(plan, kernel, input, cancellationToken).ConfigureAwait(false);
@@ -122,9 +109,7 @@ internal static partial class PlannerInstrumentation
         }
     }
 
-
     #region CreatePlan Logging helpers
-
 #pragma warning disable SYSLIB1006 // Multiple logging methods cannot use the same event id within a class
     [LoggerMessage(
         EventId = 0,
@@ -132,13 +117,11 @@ internal static partial class PlannerInstrumentation
         Message = "Plan creation started.")]
     static partial void LogCreatePlanStarted(this ILogger logger);
 
-
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Trace, // Sensitive data, logging as trace, disabled by default
         Message = "Goal: {Goal}")]
     static partial void LogGoal(this ILogger logger, string goal);
-
 
     [LoggerMessage(
         EventId = 0,
@@ -146,14 +129,11 @@ internal static partial class PlannerInstrumentation
         Message = "Plan created.")]
     static partial void LogPlanCreated(this ILogger logger);
 
-
     private static readonly Action<ILogger, string, Exception?> s_logPlan =
         LoggerMessage.Define<string>(
-            logLevel: LogLevel.Trace, // Sensitive data, logging as trace, disabled by default
+            logLevel: LogLevel.Trace,   // Sensitive data, logging as trace, disabled by default
             eventId: 0,
             "Plan:\n{Plan}");
-
-
     private static void LogPlan(this ILogger logger, object plan)
     {
         if (logger.IsEnabled(LogLevel.Trace))
@@ -170,13 +150,11 @@ internal static partial class PlannerInstrumentation
         }
     }
 
-
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Error,
         Message = "Plan creation failed. Error: {Message}")]
     static partial void LogCreatePlanError(this ILogger logger, Exception exception, string message);
-
 
     [LoggerMessage(
         EventId = 0,
@@ -186,15 +164,12 @@ internal static partial class PlannerInstrumentation
 
     #endregion
 
-
     #region InvokePlan Logging helpers
-
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Information,
         Message = "Plan execution started.")]
     static partial void LogInvokePlanStarted(this ILogger logger);
-
 
     [LoggerMessage(
         EventId = 0,
@@ -202,13 +177,11 @@ internal static partial class PlannerInstrumentation
         Message = "Plan executed successfully.")]
     static partial void LogInvokePlanSuccess(this ILogger logger);
 
-
     private static readonly Action<ILogger, string, Exception?> s_logPlanResult =
         LoggerMessage.Define<string>(
-            logLevel: LogLevel.Trace, // Sensitive data, logging as trace, disabled by default
+            logLevel: LogLevel.Trace,   // Sensitive data, logging as trace, disabled by default
             eventId: 0,
             "Plan result: {Result}");
-
 
     private static void LogPlanResult(this ILogger logger, object planResult)
     {
@@ -228,13 +201,11 @@ internal static partial class PlannerInstrumentation
         }
     }
 
-
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Error,
         Message = "Plan execution failed. Error: {Message}")]
     static partial void LogInvokePlanError(this ILogger logger, Exception exception, string message);
-
 
     [LoggerMessage(
         EventId = 0,
@@ -242,10 +213,6 @@ internal static partial class PlannerInstrumentation
         Message = "Plan execution duration: {Duration}s.")]
     static partial void LogInvokePlanDuration(this ILogger logger, double duration);
 
-
 #pragma warning restore SYSLIB1006 // Multiple logging methods cannot use the same event id within a class
-
     #endregion
-
-
 }
