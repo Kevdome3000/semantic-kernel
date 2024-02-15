@@ -45,7 +45,7 @@ public sealed class OpenAITextToAudioTests : IDisposable
         var service = new OpenAITextToAudioService(openAIConfiguration.ModelId, openAIConfiguration.ApiKey);
 
         // Act
-        var result = await service.GetAudioContentAsync("The sun rises in the east and sets in the west.", new OpenAITextToAudioExecutionSettings("alloy"));
+        var result = await service.GetAudioContentAsync("The sun rises in the east and sets in the west.");
 
         // Assert
         Assert.NotNull(result?.Data);
@@ -68,7 +68,7 @@ public sealed class OpenAITextToAudioTests : IDisposable
             azureOpenAIConfiguration.ApiKey);
 
         // Act
-        var result = await service.GetAudioContentAsync("The sun rises in the east and sets in the west.", new OpenAITextToAudioExecutionSettings("alloy"));
+        var result = await service.GetAudioContentAsync("The sun rises in the east and sets in the west.");
 
         // Assert
         Assert.NotNull(result?.Data);

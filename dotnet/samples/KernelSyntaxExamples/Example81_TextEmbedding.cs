@@ -12,12 +12,13 @@ using Xunit;
 using Xunit.Abstractions;
 
 
-public class Example78_TextEmbedding : BaseTest
+public class Example81_TextEmbedding : BaseTest
 {
+
     [Fact]
     public async Task RunAsync()
     {
-        this.WriteLine("======== Example76_TextEmbedding ========");
+        this.WriteLine("======== Text Embedding ========");
         await RunExampleAsync();
     }
 
@@ -25,6 +26,7 @@ public class Example78_TextEmbedding : BaseTest
     private async Task RunExampleAsync()
     {
         const string EmbeddingModelName = "text-embedding-ada-002";
+
         var embeddingGenerator = new AzureOpenAITextEmbeddingGenerationService(
             deploymentName: EmbeddingModelName,
             endpoint: TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
@@ -38,12 +40,11 @@ public class Example78_TextEmbedding : BaseTest
 
         // Azure OpenAI currently supports input arrays up to 16 for text-embedding-ada-002 (Version 2).
         // Both require the max input token limit per API request to remain under 8191 for this model.
-        var chunks = paragraphs
-            .ChunkByAggregate(
+        var chunks = paragraphs.ChunkByAggregate(
                 seed: 0,
                 aggregator: (tokenCount, paragraph) => tokenCount + GetTokenCount(EmbeddingModelName, paragraph),
-                predicate: (tokenCount, index) => tokenCount < 8191 && index < 16)
-            .ToList();
+                predicate: (tokenCount, index) => tokenCount < 8191 && index < 16).
+            ToList();
 
         this.WriteLine($"Consolidated paragraphs into {chunks.Count}");
 
@@ -68,7 +69,7 @@ public class Example78_TextEmbedding : BaseTest
     }
 
 
-    public Example78_TextEmbedding(ITestOutputHelper output) : base(output)
+    public Example81_TextEmbedding(ITestOutputHelper output) : base(output)
     {
     }
 

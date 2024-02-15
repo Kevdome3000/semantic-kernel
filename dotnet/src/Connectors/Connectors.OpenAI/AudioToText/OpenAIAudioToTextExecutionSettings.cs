@@ -4,6 +4,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Text;
@@ -12,6 +13,7 @@ using Text;
 /// <summary>
 /// Execution settings for OpenAI audio-to-text request.
 /// </summary>
+[Experimental("SKEXP0005")]
 public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
 {
 
@@ -96,6 +98,15 @@ public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
 
 
     /// <summary>
+    /// Creates an instance of <see cref="OpenAIAudioToTextExecutionSettings"/> class with default filename - "file.mp3".
+    /// </summary>
+    public OpenAIAudioToTextExecutionSettings()
+        : this(DefaultFilename)
+    {
+    }
+
+
+    /// <summary>
     /// Creates an instance of <see cref="OpenAIAudioToTextExecutionSettings"/> class.
     /// </summary>
     /// <param name="filename">Filename or identifier associated with audio data. Should be in format {filename}.{extension}</param>
@@ -131,7 +142,7 @@ public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
     {
         if (executionSettings is null)
         {
-            return null;
+            return new OpenAIAudioToTextExecutionSettings();
         }
 
         if (executionSettings is OpenAIAudioToTextExecutionSettings settings)
@@ -153,6 +164,8 @@ public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
 
 
     #region private ================================================================================
+
+    private const string DefaultFilename = "file.mp3";
 
     private float _temperature = 0;
 

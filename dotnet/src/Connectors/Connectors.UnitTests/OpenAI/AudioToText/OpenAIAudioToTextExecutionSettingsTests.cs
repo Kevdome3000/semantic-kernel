@@ -15,9 +15,9 @@ public sealed class OpenAIAudioToTextExecutionSettingsTests
 {
 
     [Fact]
-    public void ItReturnsNullWhenSettingsAreNull()
+    public void ItReturnsDefaultSettingsWhenSettingsAreNull()
     {
-        Assert.Null(OpenAIAudioToTextExecutionSettings.FromExecutionSettings(null));
+        Assert.NotNull(OpenAIAudioToTextExecutionSettings.FromExecutionSettings(null));
     }
 
 
