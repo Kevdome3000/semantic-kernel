@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Suppressions>
-    <Suppression>
-        <DiagnosticId>CP0002</DiagnosticId>
-        <Target>M:Microsoft.SemanticKernel.PromptExecutionSettings.get_ExtensionData</Target>
-        <IsBaselineSuppression>true</IsBaselineSuppression>
-    </Suppression>
-</Suppressions>

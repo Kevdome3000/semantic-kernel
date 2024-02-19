@@ -17,6 +17,7 @@ using Http;
     Justification = "Semantic Kernel operates on strings")]
 public sealed class HttpPlugin
 {
+
     private readonly HttpClient _client;
 
 
@@ -107,11 +108,21 @@ public sealed class HttpPlugin
     /// <param name="method">The HTTP method for the request.</param>
     /// <param name="requestContent">Optional request content.</param>
     /// <param name="cancellationToken">The token to use to request cancellation.</param>
-    private async Task<string> SendRequestAsync(string uri, HttpMethod method, HttpContent? requestContent, CancellationToken cancellationToken)
+    private async Task<string> SendRequestAsync(
+        string uri,
+        HttpMethod method,
+        HttpContent? requestContent,
+        CancellationToken cancellationToken)
     {
         using var request = new HttpRequestMessage(method, uri) { Content = requestContent };
-        request.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
-        using var response = await this._client.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
-        return await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
+        request.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
+        request.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(HttpPlugin)));
+
+        using var response = await this._client.SendWithSuccessCheckAsync(request, cancellationToken).
+            ConfigureAwait(false);
+
+        return await response.Content.ReadAsStringWithExceptionMappingAsync().
+            ConfigureAwait(false);
     }
+
 }

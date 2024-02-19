@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using System;
 using System.IO;
 using System.Net.Http;
@@ -12,10 +14,10 @@ using RepoUtils;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Examples;
 
 public sealed class Example52_CustomOpenAIClient : BaseTest
 {
+
     [Fact]
     public async Task RunAsync()
     {
@@ -28,18 +30,20 @@ public sealed class Example52_CustomOpenAIClient : BaseTest
         if (endpoint is null || deploymentName is null || apiKey is null)
         {
             this.WriteLine("Azure OpenAI credentials not found. Skipping example.");
+
             return;
         }
 
         // Create an HttpClient and include your custom header(s)
         var httpClient = new HttpClient();
-        httpClient.DefaultRequestHeaders.Add("x-my-custom-header", "My custom value");
+        httpClient.DefaultRequestHeaders.Add("My-Custom-Header", "My Custom Value");
 
         // Configure OpenAIClient to use the customized HttpClient
         var clientOptions = new OpenAIClientOptions
         {
             Transport = new HttpClientTransport(httpClient),
         };
+
         var openAIClient = new OpenAIClient(new Uri(endpoint), new AzureKeyCredential(apiKey), clientOptions);
 
         IKernelBuilder builder = Kernel.CreateBuilder();
@@ -56,10 +60,15 @@ public sealed class Example52_CustomOpenAIClient : BaseTest
             kernel.Plugins["FunPlugin"]["Excuses"],
             new() { ["input"] = "I have no homework" }
         );
+
         this.WriteLine(result.GetValue<string>());
 
         httpClient.Dispose();
     }
 
-    public Example52_CustomOpenAIClient(ITestOutputHelper output) : base(output) { }
+
+    public Example52_CustomOpenAIClient(ITestOutputHelper output) : base(output)
+    {
+    }
+
 }

@@ -15,23 +15,23 @@ using Xunit;
 using Xunit.Abstractions;
 
 
-public sealed class OpenAIToolsTests : IDisposable
+public sealed class OpenAIToolsTests : BaseIntegrationTest, IDisposable
 {
+
     public OpenAIToolsTests(ITestOutputHelper output)
     {
         this._testOutputHelper = new RedirectOutput(output);
 
         // Load configuration
-        this._configuration = new ConfigurationBuilder()
-            .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
-            .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
-            .AddEnvironmentVariables()
-            .AddUserSecrets<FunctionCallingStepwisePlannerTests>()
-            .Build();
+        this._configuration = new ConfigurationBuilder().AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true).
+            AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true).
+            AddEnvironmentVariables().
+            AddUserSecrets<FunctionCallingStepwisePlannerTests>().
+            Build();
     }
 
 
-    [Fact]
+    [Fact(Skip = "OpenAI is throttling requests. Switch this test to use Azure OpenAI.")]
     public async Task CanAutoInvokeKernelFunctionsAsync()
     {
         // Arrange
@@ -59,7 +59,7 @@ public sealed class OpenAIToolsTests : IDisposable
     }
 
 
-    [Fact]
+    [Fact(Skip = "OpenAI is throttling requests. Switch this test to use Azure OpenAI.")]
     public async Task CanAutoInvokeKernelFunctionsStreamingAsync()
     {
         // Arrange
@@ -96,7 +96,7 @@ public sealed class OpenAIToolsTests : IDisposable
     }
 
 
-    [Fact]
+    [Fact(Skip = "OpenAI is throttling requests. Switch this test to use Azure OpenAI.")]
     public async Task CanAutoInvokeKernelFunctionsWithComplexTypeParametersAsync()
     {
         // Arrange
@@ -113,7 +113,7 @@ public sealed class OpenAIToolsTests : IDisposable
     }
 
 
-    [Fact]
+    [Fact(Skip = "OpenAI is throttling requests. Switch this test to use Azure OpenAI.")]
     public async Task CanAutoInvokeKernelFunctionsWithPrimitiveTypeParametersAsync()
     {
         // Arrange
@@ -132,11 +132,13 @@ public sealed class OpenAIToolsTests : IDisposable
 
     private Kernel InitializeKernel()
     {
-        OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("Planners:OpenAI").Get<OpenAIConfiguration>();
+        OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("Planners:OpenAI").
+            Get<OpenAIConfiguration>();
+
         Assert.NotNull(openAIConfiguration);
 
-        IKernelBuilder builder = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(
+        IKernelBuilder builder = this.CreateKernelBuilder().
+            AddOpenAIChatCompletion(
                 modelId: openAIConfiguration.ModelId,
                 apiKey: openAIConfiguration.ApiKey);
 
@@ -147,6 +149,7 @@ public sealed class OpenAIToolsTests : IDisposable
 
 
     private readonly RedirectOutput _testOutputHelper;
+
     private readonly IConfigurationRoot _configuration;
 
     public void Dispose() => this._testOutputHelper.Dispose();
@@ -157,6 +160,7 @@ public sealed class OpenAIToolsTests : IDisposable
     /// </summary>
     public class TimeInformation
     {
+
         [KernelFunction]
         [Description("Retrieves the current time in UTC.")]
         public string GetCurrentUtcTime() => DateTime.UtcNow.ToString("R");
@@ -182,11 +186,13 @@ public sealed class OpenAIToolsTests : IDisposable
 
         [KernelFunction]
         public int InterpretValue(int value) => value * 2;
+
     }
 
 
     public class WeatherPlugin
     {
+
         [KernelFunction, Description("Get current temperature.")]
         public Task<double> GetCurrentTemperatureAsync(WeatherParameters parameters)
         {
@@ -203,8 +209,10 @@ public sealed class OpenAIToolsTests : IDisposable
         public Task<double> ConvertTemperatureAsync(double temperatureInFahrenheit)
         {
             double temperatureInCelsius = (temperatureInFahrenheit - 32) * 5 / 9;
+
             return Task.FromResult(temperatureInCelsius);
         }
+
     }
 
 
@@ -213,7 +221,11 @@ public sealed class OpenAIToolsTests : IDisposable
 
     public class City
     {
+
         public string Name { get; set; } = string.Empty;
+
         public string Country { get; set; } = string.Empty;
+
     }
+
 }

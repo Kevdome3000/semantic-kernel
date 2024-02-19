@@ -20,8 +20,9 @@ using Xunit;
 using Xunit.Abstractions;
 
 
-public sealed class FunctionCallingStepwisePlannerTests : IDisposable
+public sealed class FunctionCallingStepwisePlannerTests : BaseIntegrationTest, IDisposable
 {
+
     private readonly string _bingApiKey;
 
 
@@ -32,12 +33,11 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         Console.SetOut(this._testOutputHelper);
 
         // Load configuration
-        this._configuration = new ConfigurationBuilder()
-            .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
-            .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
-            .AddEnvironmentVariables()
-            .AddUserSecrets<FunctionCallingStepwisePlannerTests>()
-            .Build();
+        this._configuration = new ConfigurationBuilder().AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true).
+            AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true).
+            AddEnvironmentVariables().
+            AddUserSecrets<FunctionCallingStepwisePlannerTests>().
+            Build();
 
         string? bingApiKeyCandidate = this._configuration["Bing:ApiKey"];
         Assert.NotNull(bingApiKeyCandidate);
@@ -45,7 +45,7 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
     }
 
 
-    [Theory]
+    [Theory(Skip = "OpenAI is throttling requests. Switch this test to use Azure OpenAI.")]
     [InlineData("What is the tallest mountain on Earth? How tall is it?", new string[] { "WebSearch-Search" })]
     [InlineData("What is the weather in Seattle?", new string[] { "WebSearch-Search" })]
     [InlineData("What is the current hour number, plus 5?", new string[] { "Time-HourNumber", "Math-Add" })]
@@ -90,6 +90,7 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         Kernel kernel = this.InitializeKernel();
 
         var emailPluginFake = new ThrowingEmailPluginFake();
+
         kernel.Plugins.Add(
             KernelPluginFactory.CreateFromFunctions(
                 "Email",
@@ -123,6 +124,7 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
         Kernel kernel = this.InitializeKernel();
 
         var emailPluginFake = new ThrowingEmailPluginFake();
+
         kernel.Plugins.Add(
             KernelPluginFactory.CreateFromFunctions(
                 "Email",
@@ -143,11 +145,14 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
 
     private Kernel InitializeKernel()
     {
-        OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("Planners:OpenAI").Get<OpenAIConfiguration>();
+        OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("Planners:OpenAI").
+            Get<OpenAIConfiguration>();
+
         Assert.NotNull(openAIConfiguration);
 
-        IKernelBuilder builder = Kernel.CreateBuilder();
+        IKernelBuilder builder = this.CreateKernelBuilder();
         builder.Services.AddSingleton<ILoggerFactory>(this._logger);
+
         builder.AddOpenAIChatCompletion(
             modelId: openAIConfiguration.ModelId,
             apiKey: openAIConfiguration.ApiKey);
@@ -159,7 +164,9 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
 
 
     private readonly RedirectOutput _testOutputHelper;
+
     private readonly IConfigurationRoot _configuration;
+
     private readonly XunitLogger<Kernel> _logger;
 
 
@@ -184,4 +191,5 @@ public sealed class FunctionCallingStepwisePlannerTests : IDisposable
             this._testOutputHelper.Dispose();
         }
     }
+
 }

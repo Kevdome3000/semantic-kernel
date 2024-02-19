@@ -25,9 +25,13 @@ using TextToImage;
 [Experimental("SKEXP0012")]
 public sealed class AzureOpenAITextToImageService : ITextToImageService
 {
+
     private readonly OpenAIClient _client;
+
     private readonly ILogger _logger;
+
     private readonly string _deploymentName;
+
     private readonly Dictionary<string, object?> _attributes = new();
 
     /// <inheritdoc/>
@@ -67,11 +71,14 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
         {
             this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
         }
+
         this.AddAttribute(DeploymentNameKey, deploymentName);
 
         this._logger = loggerFactory?.CreateLogger(typeof(AzureOpenAITextToImageService)) ?? NullLogger.Instance;
 
-        var connectorEndpoint = !string.IsNullOrWhiteSpace(endpoint) ? endpoint! : httpClient?.BaseAddress?.AbsoluteUri;
+        var connectorEndpoint = !string.IsNullOrWhiteSpace(endpoint)
+            ? endpoint!
+            : httpClient?.BaseAddress?.AbsoluteUri;
 
         if (connectorEndpoint is null)
         {
@@ -107,12 +114,13 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
         try
         {
             imageGenerations = await this._client.GetImageGenerationsAsync(
-                new ImageGenerationOptions
-                {
-                    DeploymentName = this._deploymentName,
-                    Prompt = description,
-                    Size = size,
-                }, cancellationToken).ConfigureAwait(false);
+                    new ImageGenerationOptions
+                    {
+                        DeploymentName = this._deploymentName,
+                        Prompt = description,
+                        Size = size,
+                    }, cancellationToken).
+                ConfigureAwait(false);
         }
         catch (RequestFailedException e)
         {
@@ -144,7 +152,7 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
 
         var options = new OpenAIClientOptions(version)
         {
-            Diagnostics = { ApplicationId = HttpHeaderValues.UserAgent }
+            Diagnostics = { ApplicationId = HttpHeaderConstant.Values.UserAgent }
         };
 
         if (httpClient != null)
@@ -166,4 +174,5 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
             this._attributes.Add(key, value);
         }
     }
+
 }

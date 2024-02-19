@@ -21,9 +21,13 @@ using Services;
 public sealed class HuggingFaceTextEmbeddingGenerationService : ITextEmbeddingGenerationService
 #pragma warning restore CA1001 // Types that own disposable fields should be disposable. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
 {
+
     private readonly string _model;
+
     private readonly string? _endpoint;
+
     private readonly HttpClient _httpClient;
+
     private readonly Dictionary<string, object?> _attributes = new();
 
 
@@ -98,7 +102,8 @@ public sealed class HuggingFaceTextEmbeddingGenerationService : ITextEmbeddingGe
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return await this.ExecuteEmbeddingRequestAsync(data, cancellationToken).ConfigureAwait(false);
+        return await this.ExecuteEmbeddingRequestAsync(data, cancellationToken).
+            ConfigureAwait(false);
     }
 
 
@@ -119,14 +124,19 @@ public sealed class HuggingFaceTextEmbeddingGenerationService : ITextEmbeddingGe
 
         using var httpRequestMessage = HttpRequest.CreatePostRequest(this.GetRequestUri(), embeddingRequest);
 
-        httpRequestMessage.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
+        httpRequestMessage.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
+        httpRequestMessage.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(HuggingFaceTextEmbeddingGenerationService)));
 
-        var response = await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
-        var body = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
+        var response = await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).
+            ConfigureAwait(false);
+
+        var body = await response.Content.ReadAsStringWithExceptionMappingAsync().
+            ConfigureAwait(false);
 
         var embeddingResponse = JsonSerializer.Deserialize<TextEmbeddingResponse>(body);
 
-        return embeddingResponse?.Embeddings?.Select(l => l.Embedding).ToList()!;
+        return embeddingResponse?.Embeddings?.Select(l => l.Embedding).
+            ToList()!;
     }
 
 

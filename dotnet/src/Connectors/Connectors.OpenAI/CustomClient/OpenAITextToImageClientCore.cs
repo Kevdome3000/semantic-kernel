@@ -20,6 +20,7 @@ using Text;
 /// <summary>Base type for OpenAI text to image clients.</summary>
 internal sealed class OpenAITextToImageClientCore
 {
+
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAITextToImageClientCore"/> class.
     /// </summary>
@@ -53,8 +54,11 @@ internal sealed class OpenAITextToImageClientCore
         Func<TextToImageResponse.Image, string> extractResponseFunc,
         CancellationToken cancellationToken = default)
     {
-        var result = await this.ExecutePostRequestAsync<TextToImageResponse>(url, requestBody, cancellationToken).ConfigureAwait(false);
-        return result.Images.Select(extractResponseFunc).ToList();
+        var result = await this.ExecutePostRequestAsync<TextToImageResponse>(url, requestBody, cancellationToken).
+            ConfigureAwait(false);
+
+        return result.Images.Select(extractResponseFunc).
+            ToList();
     }
 
 
@@ -86,9 +90,15 @@ internal sealed class OpenAITextToImageClientCore
     internal async Task<T> ExecutePostRequestAsync<T>(string url, string requestBody, CancellationToken cancellationToken = default)
     {
         using var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
-        using var response = await this.ExecuteRequestAsync(url, HttpMethod.Post, content, cancellationToken).ConfigureAwait(false);
-        string responseJson = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
+
+        using var response = await this.ExecuteRequestAsync(url, HttpMethod.Post, content, cancellationToken).
+            ConfigureAwait(false);
+
+        string responseJson = await response.Content.ReadAsStringWithExceptionMappingAsync().
+            ConfigureAwait(false);
+
         T result = JsonDeserialize<T>(responseJson);
+
         return result;
     }
 
@@ -101,7 +111,11 @@ internal sealed class OpenAITextToImageClientCore
     internal event EventHandler<HttpRequestMessage>? RequestCreated;
 
 
-    internal async Task<HttpResponseMessage> ExecuteRequestAsync(string url, HttpMethod method, HttpContent? content, CancellationToken cancellationToken = default)
+    internal async Task<HttpResponseMessage> ExecuteRequestAsync(
+        string url,
+        HttpMethod method,
+        HttpContent? content,
+        CancellationToken cancellationToken = default)
     {
         using var request = new HttpRequestMessage(method, url);
 
@@ -110,10 +124,13 @@ internal sealed class OpenAITextToImageClientCore
             request.Content = content;
         }
 
-        request.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
+        request.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
+        request.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(OpenAITextToImageClientCore)));
+
         this.RequestCreated?.Invoke(this, request);
 
-        var response = await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
+        var response = await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).
+            ConfigureAwait(false);
 
         if (this._logger.IsEnabled(LogLevel.Debug))
         {
@@ -122,4 +139,5 @@ internal sealed class OpenAITextToImageClientCore
 
         return response;
     }
+
 }

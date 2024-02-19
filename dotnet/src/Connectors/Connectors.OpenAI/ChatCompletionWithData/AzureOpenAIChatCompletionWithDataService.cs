@@ -30,6 +30,7 @@ using TextGeneration;
 [Experimental("SKEXP0010")]
 public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionService, ITextGenerationService
 {
+
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureOpenAIChatCompletionWithDataService"/> class.
     /// </summary>
@@ -56,21 +57,34 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
 
 
     /// <inheritdoc/>
-    public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(
+        ChatHistory chatHistory,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
         => this.InternalGetChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
 
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(
+        ChatHistory chatHistory,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
         => this.InternalGetChatStreamingContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
 
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<TextContent>> GetTextContentsAsync(
+        string prompt,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
     {
-        return (await this.GetChatMessageContentsAsync(prompt, executionSettings, kernel, cancellationToken).ConfigureAwait(false))
-            .Select(chat => new TextContent(chat.Content, chat.ModelId, chat, Encoding.UTF8, chat.Metadata))
-            .ToList();
+        return (await this.GetChatMessageContentsAsync(prompt, executionSettings, kernel, cancellationToken).
+                ConfigureAwait(false)).Select(chat => new TextContent(chat.Content, chat.ModelId, chat, Encoding.UTF8,
+                chat.Metadata)).
+            ToList();
     }
 
 
@@ -81,9 +95,11 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
         Kernel? kernel = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var streamingChatContent in this.InternalGetChatStreamingContentsAsync(new ChatHistory(prompt), executionSettings, kernel, cancellationToken).ConfigureAwait(false))
+        await foreach (var streamingChatContent in this.InternalGetChatStreamingContentsAsync(new ChatHistory(prompt), executionSettings, kernel, cancellationToken).
+                           ConfigureAwait(false))
         {
-            yield return new StreamingTextContent(streamingChatContent.Content, streamingChatContent.ChoiceIndex, streamingChatContent.ModelId, streamingChatContent, Encoding.UTF8, streamingChatContent.Metadata);
+            yield return new StreamingTextContent(streamingChatContent.Content, streamingChatContent.ChoiceIndex, streamingChatContent.ModelId, streamingChatContent,
+                Encoding.UTF8, streamingChatContent.Metadata);
         }
     }
 
@@ -95,7 +111,9 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
     private readonly AzureOpenAIChatCompletionWithDataConfig _config;
 
     private readonly HttpClient _httpClient;
+
     private readonly ILogger _logger;
+
     private readonly Dictionary<string, object?> _attributes = new();
 
 
@@ -121,14 +139,18 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
         var openAIExecutionSettings = OpenAIPromptExecutionSettings.FromExecutionSettingsWithData(executionSettings, OpenAIPromptExecutionSettings.DefaultTextMaxTokens);
 
         using var request = this.GetRequest(chat, openAIExecutionSettings, isStreamEnabled: false);
-        using var response = await this.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
-        var body = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
+        using var response = await this.SendRequestAsync(request, cancellationToken).
+            ConfigureAwait(false);
+
+        var body = await response.Content.ReadAsStringWithExceptionMappingAsync().
+            ConfigureAwait(false);
 
         var chatWithDataResponse = this.DeserializeResponse<ChatWithDataResponse>(body);
         IReadOnlyDictionary<string, object?> metadata = GetResponseMetadata(chatWithDataResponse);
 
-        return chatWithDataResponse.Choices.Select(choice => new AzureOpenAIWithDataChatMessageContent(choice, this.GetModelId(), metadata)).ToList();
+        return chatWithDataResponse.Choices.Select(choice => new AzureOpenAIWithDataChatMessageContent(choice, this.GetModelId(), metadata)).
+            ToList();
     }
 
 
@@ -161,12 +183,14 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
         HttpRequestMessage request,
         CancellationToken cancellationToken = default)
     {
-        request.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
+        request.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
         request.Headers.Add("Api-Key", this._config.CompletionApiKey);
+        request.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(AzureOpenAIChatCompletionWithDataService)));
 
         try
         {
-            return await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
+            return await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).
+                ConfigureAwait(false);
         }
         catch (HttpOperationException ex)
         {
@@ -187,16 +211,21 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
         OpenAIPromptExecutionSettings chatRequestSettings = OpenAIPromptExecutionSettings.FromExecutionSettingsWithData(executionSettings);
 
         using var request = this.GetRequest(chatHistory, chatRequestSettings, isStreamEnabled: true);
-        using var response = await this.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+        using var response = await this.SendRequestAsync(request, cancellationToken).
+            ConfigureAwait(false);
 
         const string ServerEventPayloadPrefix = "data:";
 
-        using var stream = await response.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
+        using var stream = await response.Content.ReadAsStreamAndTranslateExceptionAsync().
+            ConfigureAwait(false);
+
         using var reader = new StreamReader(stream);
 
         while (!reader.EndOfStream)
         {
-            var body = await reader.ReadLineAsync().ConfigureAwait(false);
+            var body = await reader.ReadLineAsync().
+                ConfigureAwait(false);
 
             if (string.IsNullOrWhiteSpace(body))
             {
@@ -286,13 +315,12 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
             chat[0].Role = AuthorRole.User;
         }
 
-        return chat
-            .Select(message => new ChatWithDataMessage
+        return chat.Select(message => new ChatWithDataMessage
             {
                 Role = message.Role.Label,
                 Content = message.Content ?? string.Empty
-            })
-            .ToList();
+            }).
+            ToList();
     }
 
 
