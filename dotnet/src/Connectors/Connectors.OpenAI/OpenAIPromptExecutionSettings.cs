@@ -267,6 +267,11 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <inheritdoc/>
     public override void Freeze()
     {
+        if (this.IsFrozen)
+        {
+            return;
+        }
+
         base.Freeze();
 
         if (this._stopSequences is not null)

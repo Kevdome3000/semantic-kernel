@@ -5,7 +5,6 @@ namespace Microsoft.SemanticKernel;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Text.Json.Serialization;
 using ChatCompletion;
 using TextGeneration;
 
@@ -77,6 +76,11 @@ public class PromptExecutionSettings
     /// </summary>
     public virtual void Freeze()
     {
+        if (this.IsFrozen)
+        {
+            return;
+        }
+
         this._isFrozen = true;
 
         if (this._extensionData is not null)

@@ -14,6 +14,7 @@ using static Agents.IChatMessage;
 /// </summary>
 internal sealed class ChatMessage : IChatMessage
 {
+
     /// <inheritdoc/>
     public string Id { get; }
 
@@ -39,10 +40,17 @@ internal sealed class ChatMessage : IChatMessage
     {
         var content = model.Content.First();
         var text = content.Text?.Value ?? string.Empty;
-        this.Annotations = content.Text!.Annotations.Select(a => new Annotation(a.Text, a.StartIndex, a.EndIndex, a.FileCitation?.FileId ?? a.FilePath!.FileId, a.FileCitation?.Quote)).ToArray();
+
+        this.Annotations = content.Text!.Annotations.Select(a => new Annotation(a.Text, a.StartIndex, a.EndIndex, a.FileCitation?.FileId ?? a.FilePath!.FileId,
+                a.FileCitation?.Quote)).
+            ToArray();
 
         this.Id = model.Id;
-        this.AgentId = string.IsNullOrWhiteSpace(model.AgentId) ? null : model.AgentId;
+
+        this.AgentId = string.IsNullOrWhiteSpace(model.AssistantId)
+            ? null
+            : model.AssistantId;
+
         this.Role = model.Role;
         this.Content = text;
         this.Properties = new ReadOnlyDictionary<string, object>(model.Metadata);
@@ -51,7 +59,13 @@ internal sealed class ChatMessage : IChatMessage
 
     private class Annotation : IAnnotation
     {
-        public Annotation(string label, int startIndex, int endIndex, string fileId, string? quote)
+
+        public Annotation(
+            string label,
+            int startIndex,
+            int endIndex,
+            string fileId,
+            string? quote)
         {
             this.FileId = fileId;
             this.Label = label;
@@ -75,5 +89,7 @@ internal sealed class ChatMessage : IChatMessage
 
         /// <inheritdoc/>
         public int EndIndex { get; }
+
     }
+
 }
