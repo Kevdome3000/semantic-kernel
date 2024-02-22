@@ -8,7 +8,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Contents;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
 using Http;

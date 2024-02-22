@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Contents;
+namespace Microsoft.SemanticKernel;
 
 using System;
 using System.Collections.Generic;

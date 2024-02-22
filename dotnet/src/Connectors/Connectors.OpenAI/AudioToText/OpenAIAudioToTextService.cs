@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using AudioToText;
 using Azure.AI.OpenAI;
-using Contents;
 using Extensions.Logging;
 using Services;
 

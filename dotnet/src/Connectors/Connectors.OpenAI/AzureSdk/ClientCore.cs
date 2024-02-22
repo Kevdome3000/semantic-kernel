@@ -20,7 +20,6 @@ using Azure.AI.OpenAI;
 using Azure.Core;
 using Azure.Core.Pipeline;
 using ChatCompletion;
-using Contents;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
 using Http;
@@ -1026,7 +1025,7 @@ internal abstract class ClientCore
 
             if (message.Items is { Count: > 0 })
             {
-                return new ChatRequestUserMessage(message.Items.Select(static (KernelContent item) => (ChatMessageContentItem)(item switch
+                return new ChatRequestUserMessage(message.Items.Select(static item => (ChatMessageContentItem)(item switch
                 {
                     TextContent textContent => new ChatMessageTextContentItem(textContent.Text),
                     ImageContent imageContent => new ChatMessageImageContentItem(imageContent.Uri),
