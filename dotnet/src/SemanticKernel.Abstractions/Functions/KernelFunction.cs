@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Extensions.Logging;
@@ -55,7 +56,9 @@ public abstract class KernelFunction
     /// The name is used anywhere the function needs to be identified, such as in plans describing what functions
     /// should be invoked when, or as part of lookups in a plugin's function collection. Function names are generally
     /// handled in an ordinal case-insensitive manner.
-    /// </remarks>
+    /// </remarks>\
+    [JsonPropertyName("name")]
+    [JsonInclude]
     public string Name => this.Metadata.Name;
 
     /// <summary>
@@ -65,12 +68,16 @@ public abstract class KernelFunction
     /// The description may be supplied to a model in order to elaborate on the function's purpose,
     /// in case it may be beneficial for the model to recommend invoking the function.
     /// </remarks>
+    [JsonPropertyName("description")]
+    [JsonInclude]
     public string Description => this.Metadata.Description;
 
     /// <summary>
     /// Gets the metadata describing the function.
     /// </summary>
     /// <returns>An instance of <see cref="KernelFunctionMetadata"/> describing the function</returns>
+    [JsonPropertyName("metadata")]
+    [JsonInclude]
     public KernelFunctionMetadata Metadata { get; init; }
 
     /// <summary>
@@ -79,6 +86,7 @@ public abstract class KernelFunction
     /// <remarks>
     /// The instances of <see cref="PromptExecutionSettings"/> are frozen and cannot be modified.
     /// </remarks>
+    [JsonIgnore]
     public IReadOnlyDictionary<string, PromptExecutionSettings>? ExecutionSettings { get; }
 
 
