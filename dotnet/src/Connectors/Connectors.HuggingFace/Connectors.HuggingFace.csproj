@@ -18,7 +18,11 @@
     <Description>Semantic Kernel connectors for Hugging Face. Contains clients for text generation and text embedding generation.</Description>
   </PropertyGroup>
 
-  <ItemGroup>
+    <ItemGroup>
+        <InternalsVisibleTo Include="SemanticKernel.Connectors.HuggingFace.UnitTests"/>
+    </ItemGroup>
+
+    <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
 

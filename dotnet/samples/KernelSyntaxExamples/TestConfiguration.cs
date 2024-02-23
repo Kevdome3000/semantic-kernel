@@ -199,6 +199,8 @@ public sealed class TestConfiguration
 
         public string ModelId { get; set; }
 
+        public string EmbeddingModelId { get; set; }
+
     }
 
 

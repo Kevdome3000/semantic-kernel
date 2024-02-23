@@ -1,18 +1,27 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.HuggingFace;
+using static Microsoft.SemanticKernel.Connectors.HuggingFace.Core.TextGenerationResponse;
 
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
+
+namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
+
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 
-/// <summary>
-/// HTTP Schema for completion response.
-/// </summary>
-public sealed class TextGenerationResponse
+internal sealed class TextGenerationResponse : List<GeneratedTextItem>
 {
-    /// <summary>
-    /// Completed text.
-    /// </summary>
-    [JsonPropertyName("generated_text")]
-    public string? Text { get; set; }
+
+    internal sealed class GeneratedTextItem
+    {
+
+        /// <summary>
+        /// The continuated string
+        /// </summary>
+        [JsonPropertyName("generated_text")]
+        public string? GeneratedText { get; set; }
+
+    }
+
 }

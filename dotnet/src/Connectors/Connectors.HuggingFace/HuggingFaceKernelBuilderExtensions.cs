@@ -2,6 +2,7 @@
 
 namespace Microsoft.SemanticKernel;
 
+using System;
 using System.Net.Http;
 using Connectors.HuggingFace;
 using Embeddings;
@@ -15,6 +16,7 @@ using TextGeneration;
 /// </summary>
 public static class HuggingFaceKernelBuilderExtensions
 {
+
     /// <summary>
     /// Adds an Hugging Face text generation service with the specified configuration.
     /// </summary>
@@ -29,7 +31,7 @@ public static class HuggingFaceKernelBuilderExtensions
         this IKernelBuilder builder,
         string model,
         string? apiKey = null,
-        string? endpoint = null,
+        Uri? endpoint = null,
         string? serviceId = null,
         HttpClient? httpClient = null)
     {
@@ -37,7 +39,7 @@ public static class HuggingFaceKernelBuilderExtensions
         Verify.NotNull(model);
 
         builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
-            new HuggingFaceTextGenerationService(model, apiKey, HttpClientProvider.GetHttpClient(httpClient, serviceProvider), endpoint));
+            new HuggingFaceTextGenerationService(model, endpoint, apiKey, HttpClientProvider.GetHttpClient(httpClient, serviceProvider)));
 
         return builder;
     }
@@ -56,14 +58,14 @@ public static class HuggingFaceKernelBuilderExtensions
         this IServiceCollection services,
         string model,
         string? apiKey = null,
-        string? endpoint = null,
+        Uri? endpoint = null,
         string? serviceId = null)
     {
         Verify.NotNull(services);
         Verify.NotNull(model);
 
         return services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
-            new HuggingFaceTextGenerationService(model, apiKey, HttpClientProvider.GetHttpClient(serviceProvider), endpoint));
+            new HuggingFaceTextGenerationService(model, endpoint, apiKey, HttpClientProvider.GetHttpClient(serviceProvider)));
     }
 
 
@@ -72,6 +74,7 @@ public static class HuggingFaceKernelBuilderExtensions
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="model">The name of the Hugging Face model.</param>
+    /// <param name="apiKey">The API key required for accessing the Hugging Face service.</param>
     /// <param name="endpoint">The endpoint for the text embedding generation service.</param>
     /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
@@ -79,7 +82,8 @@ public static class HuggingFaceKernelBuilderExtensions
     public static IKernelBuilder AddHuggingFaceTextEmbeddingGeneration(
         this IKernelBuilder builder,
         string model,
-        string? endpoint = null,
+        string? apiKey = null,
+        Uri? endpoint = null,
         string? serviceId = null,
         HttpClient? httpClient = null)
     {
@@ -87,7 +91,7 @@ public static class HuggingFaceKernelBuilderExtensions
         Verify.NotNull(model);
 
         builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
-            new HuggingFaceTextEmbeddingGenerationService(model, HttpClientProvider.GetHttpClient(httpClient, serviceProvider), endpoint));
+            new HuggingFaceTextEmbeddingGenerationService(model, endpoint, apiKey, HttpClientProvider.GetHttpClient(httpClient, serviceProvider)));
 
         return builder;
     }
@@ -98,19 +102,22 @@ public static class HuggingFaceKernelBuilderExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="model">The name of the Hugging Face model.</param>
+    /// <param name="apiKey">The API key required for accessing the Hugging Face service.</param>
     /// <param name="endpoint">The endpoint for the text embedding generation service.</param>
     /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     public static IServiceCollection AddHuggingFaceTextEmbeddingGeneration(
         this IServiceCollection services,
         string model,
-        string? endpoint = null,
+        string? apiKey = null,
+        Uri? endpoint = null,
         string? serviceId = null)
     {
         Verify.NotNull(services);
         Verify.NotNull(model);
 
         return services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
-            new HuggingFaceTextEmbeddingGenerationService(model, HttpClientProvider.GetHttpClient(serviceProvider), endpoint));
+            new HuggingFaceTextEmbeddingGenerationService(model, endpoint, apiKey, HttpClientProvider.GetHttpClient(serviceProvider)));
     }
+
 }

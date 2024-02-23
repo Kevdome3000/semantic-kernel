@@ -16,7 +16,9 @@ using Xunit;
 /// </summary>
 public sealed class HuggingFaceTextGenerationTests
 {
+
     private const string Endpoint = "http://localhost:5000/completions";
+
     private const string Model = "gpt2";
 
     private readonly IConfigurationRoot _configuration;
@@ -25,11 +27,10 @@ public sealed class HuggingFaceTextGenerationTests
     public HuggingFaceTextGenerationTests()
     {
         // Load configuration
-        this._configuration = new ConfigurationBuilder()
-            .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
-            .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
-            .AddEnvironmentVariables()
-            .Build();
+        this._configuration = new ConfigurationBuilder().AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true).
+            AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true).
+            AddEnvironmentVariables().
+            Build();
     }
 
 
@@ -39,7 +40,7 @@ public sealed class HuggingFaceTextGenerationTests
         // Arrange
         const string Input = "This is test";
 
-        var huggingFaceLocal = new HuggingFaceTextGenerationService(Model, endpoint: Endpoint);
+        var huggingFaceLocal = new HuggingFaceTextGenerationService(Model, endpoint: new Uri(Endpoint));
         var huggingFaceRemote = new HuggingFaceTextGenerationService(Model, apiKey: this.GetApiKey());
 
         // Act
@@ -78,6 +79,8 @@ public sealed class HuggingFaceTextGenerationTests
 
     private string GetApiKey()
     {
-        return this._configuration.GetSection("HuggingFace:ApiKey").Get<string>()!;
+        return this._configuration.GetSection("HuggingFace:ApiKey").
+            Get<string>()!;
     }
+
 }

@@ -11,9 +11,11 @@ using System.Text.Json.Serialization;
 /// </summary>
 public sealed class TextEmbeddingRequest
 {
+
     /// <summary>
     /// Data to embed.
     /// </summary>
     [JsonPropertyName("inputs")]
-    public IList<string> Input { get; set; } = new List<string>();
+    public IList<string> Inputs { get; set; } = new List<string>();
+
 }
