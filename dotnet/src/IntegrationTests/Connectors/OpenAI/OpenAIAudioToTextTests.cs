@@ -7,6 +7,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AudioToText;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using TestSettings;
 using Xunit;
@@ -46,7 +47,11 @@ public sealed class OpenAIAudioToTextTests : IDisposable
 
         Assert.NotNull(openAIConfiguration);
 
-        var service = new OpenAIAudioToTextService(openAIConfiguration.ModelId, openAIConfiguration.ApiKey);
+        var kernel = Kernel.CreateBuilder().
+            AddOpenAIAudioToText(openAIConfiguration.ModelId, openAIConfiguration.ApiKey).
+            Build();
+
+        var service = kernel.GetRequiredService<IAudioToTextService>();
 
         await using Stream audio = File.OpenRead($"./TestData/{Filename}");
         var audioData = await BinaryData.FromStreamAsync(audio);
@@ -70,10 +75,14 @@ public sealed class OpenAIAudioToTextTests : IDisposable
 
         Assert.NotNull(azureOpenAIConfiguration);
 
-        var service = new AzureOpenAIAudioToTextService(
-            azureOpenAIConfiguration.DeploymentName,
-            azureOpenAIConfiguration.Endpoint,
-            azureOpenAIConfiguration.ApiKey);
+        var kernel = Kernel.CreateBuilder().
+            AddAzureOpenAIAudioToText(
+                azureOpenAIConfiguration.DeploymentName,
+                azureOpenAIConfiguration.Endpoint,
+                azureOpenAIConfiguration.ApiKey).
+            Build();
+
+        var service = kernel.GetRequiredService<IAudioToTextService>();
 
         await using Stream audio = File.OpenRead($"./TestData/{Filename}");
         var audioData = await BinaryData.FromStreamAsync(audio);

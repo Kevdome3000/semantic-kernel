@@ -69,7 +69,7 @@ public sealed class AzureOpenAITextToAudioServiceTests : IDisposable
         };
 
         // Act
-        var exception = await Record.ExceptionAsync(() => service.GetAudioContentAsync("Some text", settings));
+        var exception = await Record.ExceptionAsync(() => service.GetAudioContentsAsync("Some text", settings));
 
         // Assert
         Assert.NotNull(exception);
@@ -94,12 +94,12 @@ public sealed class AzureOpenAITextToAudioServiceTests : IDisposable
         };
 
         // Act
-        var result = await service.GetAudioContentAsync("Some text", new OpenAITextToAudioExecutionSettings("voice"));
+        var result = await service.GetAudioContentsAsync("Some text", new OpenAITextToAudioExecutionSettings("voice"));
 
         // Assert
-        Assert.NotNull(result?.Data);
+        Assert.NotNull(result[0].Data);
 
-        Assert.True(result.Data.ToArray().
+        Assert.True(result[0].Data!.ToArray().
             SequenceEqual(expectedByteArray));
     }
 
@@ -128,7 +128,7 @@ public sealed class AzureOpenAITextToAudioServiceTests : IDisposable
         };
 
         // Act
-        var result = await service.GetAudioContentAsync("Some text", new OpenAITextToAudioExecutionSettings("voice"));
+        var result = await service.GetAudioContentsAsync("Some text", new OpenAITextToAudioExecutionSettings("voice"));
 
         // Assert
         Assert.StartsWith(expectedBaseAddress, this._messageHandlerStub.RequestUri!.AbsoluteUri, StringComparison.InvariantCulture);

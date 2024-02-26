@@ -287,8 +287,7 @@ public class Example65_HandlebarsPlanner : BaseTest
         WriteSampleHeading("Multiple Plugins");
 
         return RunSampleAsync("Write a poem about John Doe, then translate it into Italian.", null, null, shouldPrintPrompt,
-            true, "SummarizePlugin",
-            "WriterPlugin");
+            true, "SummarizePlugin", "WriterPlugin");
         /*
             Original plan:
             {{!-- Step 1: Initialize the scenario for the poem --}}
@@ -320,8 +319,7 @@ public class Example65_HandlebarsPlanner : BaseTest
         WriteSampleHeading("Loops and Conditionals");
 
         return RunSampleAsync("Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'", null, null, shouldPrintPrompt,
-            true, "WriterPlugin",
-            "MiscPlugin");
+            true, "WriterPlugin", "MiscPlugin");
         /*
             Original plan:
             {{!-- Step 1: Initialize the book title and chapter count --}}
@@ -368,8 +366,7 @@ public class Example65_HandlebarsPlanner : BaseTest
         };
 
         return RunSampleAsync("Write a poem about the given person, then translate it into French.", null, initialArguments, shouldPrintPrompt,
-            true, "WriterPlugin",
-            "MiscPlugin");
+            true, "WriterPlugin", "MiscPlugin");
         /*
             Original plan:
             {{!-- Step 0: Set the given person --}}
@@ -410,11 +407,11 @@ public class Example65_HandlebarsPlanner : BaseTest
             try
             {
                 var httpClient = new HttpClient();
-                // Send a GET request to the specified URL
+                // Send a GET request to the specified URL  
                 var response = await httpClient.GetAsync(new Uri(readmeUrl));
-                response.EnsureSuccessStatusCode(); // Throw an exception if not successful
+                response.EnsureSuccessStatusCode(); // Throw an exception if not successful  
 
-                // Read the response content as a string
+                // Read the response content as a string  
                 var content = await response.Content.ReadAsStringAsync();
                 httpClient.Dispose();
 
@@ -499,10 +496,11 @@ public class Example65_HandlebarsPlanner : BaseTest
 
         var goal = "I just watched the movie 'Inception' and I loved it! I want to leave a 5 star review. Can you help me?";
 
-        return RunSampleAsync(goal, plannerOptions, null, shouldPrintPrompt,
-            false, "WriterPlugin");
-
+        // Note that since the custom prompt inputs a unique Helpers section with helpers not actually registered with the kernel,
+        // any plan created using this prompt will fail execution; thus, we will skip the InvokePlan call in this example.
         // For a simpler example, see `ItOverridesPromptAsync` in the dotnet\src\Planners\Planners.Handlebars.UnitTests\Handlebars\HandlebarsPlannerTests.cs file.
+        return RunSampleAsync(goal, plannerOptions, null, shouldPrintPrompt,
+            shouldInvokePlan: false, "WriterPlugin");
     }
 
 

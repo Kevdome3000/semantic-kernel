@@ -5,7 +5,8 @@ namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.TextToAudio;
 using TestSettings;
 using Xunit;
 using Xunit.Abstractions;
@@ -42,14 +43,18 @@ public sealed class OpenAITextToAudioTests : IDisposable
 
         Assert.NotNull(openAIConfiguration);
 
-        var service = new OpenAITextToAudioService(openAIConfiguration.ModelId, openAIConfiguration.ApiKey);
+        var kernel = Kernel.CreateBuilder().
+            AddOpenAITextToAudio(openAIConfiguration.ModelId, openAIConfiguration.ApiKey).
+            Build();
+
+        var service = kernel.GetRequiredService<ITextToAudioService>();
 
         // Act
         var result = await service.GetAudioContentAsync("The sun rises in the east and sets in the west.");
 
         // Assert
-        Assert.NotNull(result?.Data);
-        Assert.False(result.Data.IsEmpty);
+        Assert.NotNull(result.Data);
+        Assert.False(result.Data!.IsEmpty);
     }
 
 
@@ -62,17 +67,21 @@ public sealed class OpenAITextToAudioTests : IDisposable
 
         Assert.NotNull(azureOpenAIConfiguration);
 
-        var service = new AzureOpenAITextToAudioService(
-            azureOpenAIConfiguration.DeploymentName,
-            azureOpenAIConfiguration.Endpoint,
-            azureOpenAIConfiguration.ApiKey);
+        var kernel = Kernel.CreateBuilder().
+            AddAzureOpenAITextToAudio(
+                azureOpenAIConfiguration.DeploymentName,
+                azureOpenAIConfiguration.Endpoint,
+                azureOpenAIConfiguration.ApiKey).
+            Build();
+
+        var service = kernel.GetRequiredService<ITextToAudioService>();
 
         // Act
         var result = await service.GetAudioContentAsync("The sun rises in the east and sets in the west.");
 
         // Assert
-        Assert.NotNull(result?.Data);
-        Assert.False(result.Data.IsEmpty);
+        Assert.NotNull(result.Data);
+        Assert.False(result.Data!.IsEmpty);
     }
 
 

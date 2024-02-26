@@ -7,6 +7,7 @@ using System.Text.Json;
 using ChatCompletion;
 using Extensions.DependencyInjection;
 using Moq;
+using Planning;
 using Planning.Handlebars;
 using Text;
 using Xunit;
@@ -66,13 +67,18 @@ public sealed class HandlebarsPlannerTests
     public async Task InvalidHandlebarsTemplateThrowsAsync()
     {
         // Arrange
-        var kernel = this.CreateKernelWithMockCompletionResult("<plan>notvalid<</plan>");
+        var invalidPlan = "<plan>notvalid<</plan>";
+        var kernel = this.CreateKernelWithMockCompletionResult(invalidPlan);
 
         var planner = new HandlebarsPlanner();
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<KernelException>(async () => await planner.CreatePlanAsync(kernel, "goal"));
-        Assert.True(exception?.Message?.Contains("Could not find the plan in the results", StringComparison.InvariantCulture));
+        var exception = await Assert.ThrowsAsync<PlanCreationException>(async () => await planner.CreatePlanAsync(kernel, "goal"));
+
+        Assert.True(exception?.Message?.Contains("CreatePlan failed. See inner exception for details.", StringComparison.InvariantCulture));
+        Assert.True(exception?.InnerException?.Message?.Contains("Could not find the plan in the results", StringComparison.InvariantCulture));
+        Assert.Equal(exception?.ModelResults?.Content, invalidPlan);
+        Assert.NotNull(exception?.CreatePlanPrompt);
     }
 
 

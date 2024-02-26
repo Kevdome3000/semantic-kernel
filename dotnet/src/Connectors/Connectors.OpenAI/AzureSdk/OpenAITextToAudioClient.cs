@@ -63,7 +63,7 @@ internal sealed class OpenAITextToAudioClient
     }
 
 
-    internal async Task<AudioContent> GetAudioContentAsync(
+    internal async Task<IReadOnlyList<AudioContent>> GetAudioContentsAsync(
         string text,
         PromptExecutionSettings? executionSettings,
         CancellationToken cancellationToken)
@@ -83,7 +83,7 @@ internal sealed class OpenAITextToAudioClient
         var binaryData = await BinaryData.FromStreamAsync(stream, cancellationToken).
             ConfigureAwait(false);
 
-        return new AudioContent(binaryData, this._modelId);
+        return new List<AudioContent> { new(binaryData, this._modelId) };
     }
 
 

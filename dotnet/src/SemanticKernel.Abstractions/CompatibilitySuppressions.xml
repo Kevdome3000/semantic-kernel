@@ -29,7 +29,7 @@
     <Suppression>
         <DiagnosticId>CP0006</DiagnosticId>
         <Target>
-            M:Microsoft.SemanticKernel.AudioToText.IAudioToTextService.GetTextContentAsync(Microsoft.SemanticKernel.AudioContent,Microsoft.SemanticKernel.PromptExecutionSettings,Microsoft.SemanticKernel.Kernel,System.Threading.CancellationToken)
+            M:Microsoft.SemanticKernel.AudioToText.IAudioToTextService.GetTextContentsAsync(Microsoft.SemanticKernel.AudioContent,Microsoft.SemanticKernel.PromptExecutionSettings,Microsoft.SemanticKernel.Kernel,System.Threading.CancellationToken)
         </Target>
         <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Left>
         <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Right>
@@ -38,7 +38,7 @@
     <Suppression>
         <DiagnosticId>CP0006</DiagnosticId>
         <Target>
-            M:Microsoft.SemanticKernel.TextToAudio.ITextToAudioService.GetAudioContentAsync(System.String,Microsoft.SemanticKernel.PromptExecutionSettings,Microsoft.SemanticKernel.Kernel,System.Threading.CancellationToken)
+            M:Microsoft.SemanticKernel.TextToAudio.ITextToAudioService.GetAudioContentsAsync(System.String,Microsoft.SemanticKernel.PromptExecutionSettings,Microsoft.SemanticKernel.Kernel,System.Threading.CancellationToken)
         </Target>
         <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Left>
         <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Right>

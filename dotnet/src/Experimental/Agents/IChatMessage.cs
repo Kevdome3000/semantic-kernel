@@ -7,10 +7,30 @@ using System.Collections.ObjectModel;
 
 
 /// <summary>
+/// $$$
+/// </summary>
+public enum ChatMessageType
+{
+
+    /// <summary>
+    /// $$$
+    /// </summary>
+    Text,
+
+    /// <summary>
+    /// $$$
+    /// </summary>
+    Image,
+
+}
+
+
+/// <summary>
 /// Represents a message that is part of an agent thread.
 /// </summary>
 public interface IChatMessage
 {
+
     /// <summary>
     /// The message identifier (which can be referenced in API endpoints).
     /// </summary>
@@ -20,6 +40,11 @@ public interface IChatMessage
     /// The id of the agent associated with the a message where role = "agent", otherwise null.
     /// </summary>
     string? AgentId { get; }
+
+    /// <summary>
+    /// $$$
+    /// </summary>
+    ChatMessageType ContentType { get; }
 
     /// <summary>
     /// The chat message content.
@@ -47,6 +72,7 @@ public interface IChatMessage
     /// </summary>
     interface IAnnotation
     {
+
         /// <summary>
         /// The file identifier.
         /// </summary>
@@ -71,5 +97,7 @@ public interface IChatMessage
         /// End index of the citation.
         /// </summary>
         int EndIndex { get; }
+
     }
+
 }

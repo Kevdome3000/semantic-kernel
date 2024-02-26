@@ -17,6 +17,7 @@ using HandlebarsDotNet.Compiler;
 /// </summary>
 internal static class KernelFunctionHelpers
 {
+
     /// <summary>
     /// Register all (default) or specific categories.
     /// </summary>
@@ -34,7 +35,8 @@ internal static class KernelFunctionHelpers
     {
         foreach (var function in kernel.Plugins.GetFunctionsMetadata())
         {
-            RegisterFunctionAsHelper(kernel, executionContext, handlebarsInstance, function, nameDelimiter, cancellationToken);
+            RegisterFunctionAsHelper(kernel, executionContext, handlebarsInstance, function,
+                nameDelimiter, cancellationToken);
         }
     }
 
@@ -59,7 +61,8 @@ internal static class KernelFunctionHelpers
                 // Get the parameters from the template arguments
                 if (handlebarsArguments.Length is not 0)
                 {
-                    if (handlebarsArguments[0].GetType() == typeof(HashParameterDictionary))
+                    if (handlebarsArguments[0].
+                            GetType() == typeof(HashParameterDictionary))
                     {
                         ProcessHashArguments(functionMetadata, executionContext, (IDictionary<string, object>)handlebarsArguments[0], nameDelimiter);
                     }
@@ -159,7 +162,8 @@ internal static class KernelFunctionHelpers
     /// <exception cref="KernelException">Thrown when a required parameter is missing.</exception>
     private static void ProcessPositionalArguments(KernelFunctionMetadata functionMetadata, KernelArguments executionContext, Arguments handlebarsArguments)
     {
-        var requiredParameters = functionMetadata.Parameters.Where(p => p.IsRequired).ToList();
+        var requiredParameters = functionMetadata.Parameters.Where(p => p.IsRequired).
+            ToList();
 
         if (requiredParameters.Count <= handlebarsArguments.Length && handlebarsArguments.Length <= functionMetadata.Parameters.Count)
         {
@@ -197,7 +201,9 @@ internal static class KernelFunctionHelpers
         CancellationToken cancellationToken)
     {
 #pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
-        FunctionResult result = function.InvokeAsync(kernel, executionContext, cancellationToken: cancellationToken).GetAwaiter().GetResult();
+        FunctionResult result = function.InvokeAsync(kernel, executionContext, cancellationToken: cancellationToken).
+            GetAwaiter().
+            GetResult();
 #pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
 
         return ParseResult(result);
@@ -222,9 +228,10 @@ internal static class KernelFunctionHelpers
         if (resultAsObject is RestApiOperationResponse restApiOperationResponse)
         {
             // Deserialize any JSON content or return the content as a string
-            if (string.Equals(restApiOperationResponse.ContentType, "application/json", StringComparison.OrdinalIgnoreCase))
+            if (restApiOperationResponse.ContentType?.IndexOf("application/json", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 var parsedJson = JsonValue.Parse(restApiOperationResponse.Content.ToString());
+
                 return KernelHelpersUtils.DeserializeJsonNode(parsedJson);
             }
 
@@ -235,6 +242,7 @@ internal static class KernelFunctionHelpers
         {
             // Serialize then deserialize the result to ensure it is parsed as the correct type with appropriate property casing
             var serializedResult = JsonSerializer.Serialize(resultAsObject);
+
             return JsonSerializer.Deserialize(serializedResult, result.ValueType);
         }
 

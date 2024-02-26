@@ -1,12 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using static Microsoft.SemanticKernel.Experimental.Agents.IChatMessage;
+
 namespace Microsoft.SemanticKernel.Experimental.Agents.Internal;
 
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Models;
-using static Agents.IChatMessage;
 
 
 /// <summary>
@@ -20,6 +22,9 @@ internal sealed class ChatMessage : IChatMessage
 
     /// <inheritdoc/>
     public string? AgentId { get; }
+
+    /// <inheritdoc/>
+    public ChatMessageType ContentType { get; }
 
     /// <inheritdoc/>
     public string Content { get; }
@@ -39,11 +44,13 @@ internal sealed class ChatMessage : IChatMessage
     internal ChatMessage(ThreadMessageModel model)
     {
         var content = model.Content.First();
-        var text = content.Text?.Value ?? string.Empty;
 
-        this.Annotations = content.Text!.Annotations.Select(a => new Annotation(a.Text, a.StartIndex, a.EndIndex, a.FileCitation?.FileId ?? a.FilePath!.FileId,
-                a.FileCitation?.Quote)).
-            ToArray();
+        this.Annotations =
+            content.Text == null
+                ? Array.Empty<IAnnotation>()
+                : content.Text.Annotations.Select(a => new Annotation(a.Text, a.StartIndex, a.EndIndex, a.FileCitation?.FileId ?? a.FilePath!.FileId,
+                        a.FileCitation?.Quote)).
+                    ToArray();
 
         this.Id = model.Id;
 
@@ -52,7 +59,12 @@ internal sealed class ChatMessage : IChatMessage
             : model.AssistantId;
 
         this.Role = model.Role;
-        this.Content = text;
+
+        this.ContentType = content.Text == null
+            ? ChatMessageType.Image
+            : ChatMessageType.Text;
+
+        this.Content = content.Text?.Value ?? content.Image?.FileId ?? string.Empty;
         this.Properties = new ReadOnlyDictionary<string, object>(model.Metadata);
     }
 
