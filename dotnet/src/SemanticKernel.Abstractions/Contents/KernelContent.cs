@@ -9,8 +9,16 @@ using System.Text.Json.Serialization;
 /// <summary>
 /// Base class for all AI non-streaming results
 /// </summary>
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
+[JsonDerivedType(typeof(TextContent), typeDiscriminator: nameof(TextContent))]
+[JsonDerivedType(typeof(ImageContent), typeDiscriminator: nameof(ImageContent))]
+[JsonDerivedType(typeof(BinaryContent), typeDiscriminator: nameof(BinaryContent))]
+#pragma warning disable SKEXP0005
+[JsonDerivedType(typeof(AudioContent), typeDiscriminator: nameof(AudioContent))]
+#pragma warning restore SKEXP0005
 public abstract class KernelContent
 {
+
     /// <summary>
     /// The inner content representation. Use this to bypass the current abstraction.
     /// </summary>
@@ -43,4 +51,5 @@ public abstract class KernelContent
         this.InnerContent = innerContent;
         this.Metadata = metadata;
     }
+
 }

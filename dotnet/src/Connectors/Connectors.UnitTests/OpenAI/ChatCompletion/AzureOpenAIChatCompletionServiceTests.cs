@@ -220,7 +220,15 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         Assert.Equal("user", userMessage.GetProperty("role").
             GetString());
 
-        Assert.Equal("User Message", userMessage.GetProperty("content").
+        var contentItems = userMessage.GetProperty("content");
+        Assert.Equal(1, contentItems.GetArrayLength());
+
+        Assert.Equal("User Message", contentItems[0].
+            GetProperty("text").
+            GetString());
+
+        Assert.Equal("text", contentItems[0].
+            GetProperty("type").
             GetString());
 
         Assert.Equal("system", systemMessage.GetProperty("role").
@@ -734,12 +742,21 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
             GetProperty("role").
             GetString());
 
-        Assert.Equal("This is test prompt", messages[1].
-            GetProperty("content").
-            GetString());
-
         Assert.Equal("user", messages[1].
             GetProperty("role").
+            GetString());
+
+        var contentItems = messages[1].
+            GetProperty("content");
+
+        Assert.Equal(1, contentItems.GetArrayLength());
+
+        Assert.Equal("This is test prompt", contentItems[0].
+            GetProperty("text").
+            GetString());
+
+        Assert.Equal("text", contentItems[0].
+            GetProperty("type").
             GetString());
     }
 

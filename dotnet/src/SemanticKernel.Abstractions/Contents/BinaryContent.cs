@@ -5,6 +5,7 @@ namespace Microsoft.SemanticKernel;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 
@@ -16,7 +17,10 @@ public class BinaryContent : KernelContent
 
     private readonly Func<Task<Stream>>? _streamProvider;
 
-    private readonly BinaryData? _content;
+    /// <summary>
+    /// The binary content.
+    /// </summary>
+    public BinaryData? Content { get; set; }
 
 
     /// <summary>
@@ -26,6 +30,7 @@ public class BinaryContent : KernelContent
     /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="innerContent">Inner content</param>
     /// <param name="metadata">Additional metadata</param>
+    [JsonConstructor]
     public BinaryContent(
         BinaryData content,
         string? modelId = null,
@@ -35,7 +40,7 @@ public class BinaryContent : KernelContent
     {
         Verify.NotNull(content, nameof(content));
 
-        this._content = content;
+        this.Content = content;
     }
 
 
@@ -78,9 +83,9 @@ public class BinaryContent : KernelContent
                 ConfigureAwait(false);
         }
 
-        if (this._content != null)
+        if (this.Content != null)
         {
-            return this._content.ToStream();
+            return this.Content.ToStream();
         }
 
         throw new KernelException("Null content");
@@ -101,9 +106,9 @@ public class BinaryContent : KernelContent
                 ConfigureAwait(false);
         }
 
-        if (this._content != null)
+        if (this.Content != null)
         {
-            return this._content;
+            return this.Content;
         }
 
         throw new KernelException("Null content");

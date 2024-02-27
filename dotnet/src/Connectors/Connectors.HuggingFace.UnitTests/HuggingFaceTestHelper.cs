@@ -2,6 +2,15 @@
 
 namespace SemanticKernel.Connectors.HuggingFace.UnitTests;
 
+using System;
+using System.IO;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using Moq;
+using Moq.Protected;
+
+
 /// <summary>
 /// Helper for HuggingFace test purposes.
 /// </summary>
@@ -15,6 +24,12 @@ internal static class HuggingFaceTestHelper
     internal static string GetTestResponse(string fileName)
     {
         return File.ReadAllText($"./TestData/{fileName}");
+    }
+
+
+    internal static ReadOnlyMemory<byte> GetTestResponseBytes(string fileName)
+    {
+        return File.ReadAllBytes($"./TestData/{fileName}");
     }
 
 

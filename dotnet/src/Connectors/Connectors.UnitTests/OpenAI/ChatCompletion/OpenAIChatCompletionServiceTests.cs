@@ -26,10 +26,15 @@ using Xunit;
 /// </summary>
 public sealed class OpenAIChatCompletionServiceTests : IDisposable
 {
+
     private readonly HttpMessageHandlerStub _messageHandlerStub;
+
     private readonly HttpClient _httpClient;
+
     private readonly OpenAIFunction _timepluginDate, _timepluginNow;
+
     private readonly OpenAIPromptExecutionSettings _executionSettings;
+
     private readonly Mock<ILoggerFactory> _mockLoggerFactory;
 
 
@@ -40,13 +45,17 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         this._mockLoggerFactory = new Mock<ILoggerFactory>();
 
         IList<KernelFunctionMetadata> functions = KernelPluginFactory.CreateFromFunctions("TimePlugin", new[]
-        {
-            KernelFunctionFactory.CreateFromMethod((string? format = null) => DateTime.Now.Date.ToString(format, CultureInfo.InvariantCulture), "Date", "TimePlugin.Date"),
-            KernelFunctionFactory.CreateFromMethod((string? format = null) => DateTime.Now.ToString(format, CultureInfo.InvariantCulture), "Now", "TimePlugin.Now"),
-        }).GetFunctionsMetadata();
+            {
+                KernelFunctionFactory.CreateFromMethod((string? format = null) => DateTime.Now.Date.ToString(format, CultureInfo.InvariantCulture), "Date", "TimePlugin.Date"),
+                KernelFunctionFactory.CreateFromMethod((string? format = null) => DateTime.Now.ToString(format, CultureInfo.InvariantCulture), "Now", "TimePlugin.Now"),
+            }).
+            GetFunctionsMetadata();
 
-        this._timepluginDate = functions[0].ToOpenAIFunction();
-        this._timepluginNow = functions[1].ToOpenAIFunction();
+        this._timepluginDate = functions[0].
+            ToOpenAIFunction();
+
+        this._timepluginNow = functions[1].
+            ToOpenAIFunction();
 
         this._executionSettings = new()
         {
@@ -78,6 +87,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
     {
         // Arrange & Act
         var client = new OpenAIClient("key");
+
         var service = includeLoggerFactory
             ? new OpenAIChatCompletionService("model-id", client, loggerFactory: this._mockLoggerFactory.Object)
             : new OpenAIChatCompletionService("model-id", client);
@@ -93,6 +103,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
     {
         // Arrange
         var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
             { Content = new StringContent(ChatCompletionResponse) };
 
@@ -103,9 +114,19 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
         var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
-        Assert.Equal(2, optionsJson.GetProperty("tools").GetArrayLength());
-        Assert.Equal("TimePlugin-Date", optionsJson.GetProperty("tools")[0].GetProperty("function").GetProperty("name").GetString());
-        Assert.Equal("TimePlugin-Now", optionsJson.GetProperty("tools")[1].GetProperty("function").GetProperty("name").GetString());
+
+        Assert.Equal(2, optionsJson.GetProperty("tools").
+            GetArrayLength());
+
+        Assert.Equal("TimePlugin-Date", optionsJson.GetProperty("tools")[0].
+            GetProperty("function").
+            GetProperty("name").
+            GetString());
+
+        Assert.Equal("TimePlugin-Now", optionsJson.GetProperty("tools")[1].
+            GetProperty("function").
+            GetProperty("name").
+            GetString());
     }
 
 
@@ -114,8 +135,10 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
     {
         // Arrange
         var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
             { Content = new StringContent(ChatCompletionResponse) };
+
         this._executionSettings.ToolCallBehavior = ToolCallBehavior.RequireFunction(this._timepluginNow);
 
         // Act
@@ -125,8 +148,14 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
         var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
-        Assert.Equal(1, optionsJson.GetProperty("tools").GetArrayLength());
-        Assert.Equal("TimePlugin-Now", optionsJson.GetProperty("tools")[0].GetProperty("function").GetProperty("name").GetString());
+
+        Assert.Equal(1, optionsJson.GetProperty("tools").
+            GetArrayLength());
+
+        Assert.Equal("TimePlugin-Now", optionsJson.GetProperty("tools")[0].
+            GetProperty("function").
+            GetProperty("name").
+            GetString());
     }
 
 
@@ -135,8 +164,10 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
     {
         // Arrange
         var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
             { Content = new StringContent(ChatCompletionResponse) };
+
         this._executionSettings.ToolCallBehavior = null;
 
         // Act
@@ -155,8 +186,10 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
     {
         // Arrange
         var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
             { Content = new StringContent(ChatCompletionResponse) };
+
         var chatHistory = new ChatHistory();
         chatHistory.AddMessage(AuthorRole.User, "Hello", metadata: new Dictionary<string, object?>() { { OpenAIChatMessageContent.ToolIdProperty, "John Doe" } });
 
@@ -167,8 +200,13 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
         var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
-        Assert.Equal(2, optionsJson.GetProperty("messages").GetArrayLength());
-        Assert.Equal("John Doe", optionsJson.GetProperty("messages")[1].GetProperty("tool_call_id").GetString());
+
+        Assert.Equal(2, optionsJson.GetProperty("messages").
+            GetArrayLength());
+
+        Assert.Equal("John Doe", optionsJson.GetProperty("messages")[1].
+            GetProperty("tool_call_id").
+            GetString());
     }
 
 
@@ -177,6 +215,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
     {
         // Arrange
         var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
             { Content = new StringContent(AzureChatCompletionResponse, Encoding.UTF8, "application/json") };
 
@@ -197,6 +236,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
     {
         // Arrange
         var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
             { Content = new StringContent(AzureChatCompletionResponse, Encoding.UTF8, "application/json") };
 
@@ -257,8 +297,10 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
     {
         // Arrange
         var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
             { Content = new StringContent(ChatCompletionResponse) };
+
         var chatHistory = new ChatHistory();
         chatHistory.AddMessage(AuthorRole.User, "Hello");
 
@@ -269,11 +311,34 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
         var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
-        Assert.Equal(2, optionsJson.GetProperty("messages").GetArrayLength());
-        Assert.Equal("Assistant is a large language model.", optionsJson.GetProperty("messages")[0].GetProperty("content").GetString());
-        Assert.Equal("system", optionsJson.GetProperty("messages")[0].GetProperty("role").GetString());
-        Assert.Equal("Hello", optionsJson.GetProperty("messages")[1].GetProperty("content").GetString());
-        Assert.Equal("user", optionsJson.GetProperty("messages")[1].GetProperty("role").GetString());
+
+        var messages = optionsJson.GetProperty("messages");
+        Assert.Equal(2, messages.GetArrayLength());
+
+        Assert.Equal("Assistant is a large language model.", messages[0].
+            GetProperty("content").
+            GetString());
+
+        Assert.Equal("system", messages[0].
+            GetProperty("role").
+            GetString());
+
+        Assert.Equal("user", messages[1].
+            GetProperty("role").
+            GetString());
+
+        var contentItems = messages[1].
+            GetProperty("content");
+
+        Assert.Equal(1, contentItems.GetArrayLength());
+
+        Assert.Equal("Hello", contentItems[0].
+            GetProperty("text").
+            GetString());
+
+        Assert.Equal("text", contentItems[0].
+            GetProperty("type").
+            GetString());
     }
 
 
@@ -372,4 +437,5 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         ""total_tokens"": 46
     }
 }";
+
 }

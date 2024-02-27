@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
 using Http;
+using ImageToText;
 using TextGeneration;
 
 
@@ -245,6 +246,11 @@ internal sealed class HuggingFaceClient
             ToList();
 
 
+    private static List<TextContent> GetTextContentFromResponse(ImageToTextGenerationResponse response, string modelId)
+        => response.Select(r => new TextContent(r.GeneratedText, modelId, r, Encoding.UTF8)).
+            ToList();
+
+
     private void LogTextGenerationUsage(PromptExecutionSettings? executionSettings)
     {
         this._logger?.LogDebug(
@@ -264,15 +270,62 @@ internal sealed class HuggingFaceClient
     private HttpRequestMessage CreatePost(object requestData, Uri endpoint, string? apiKey)
     {
         var httpRequestMessage = HttpRequest.CreatePostRequest(endpoint, requestData);
-        httpRequestMessage.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
-        httpRequestMessage.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(this.GetType()));
-
-        if (!string.IsNullOrEmpty(apiKey))
-        {
-            httpRequestMessage.Headers.Add("Authorization", $"Bearer {apiKey}");
-        }
+        this.SetRequestHeaders(httpRequestMessage);
 
         return httpRequestMessage;
     }
+
+
+    public async Task<IReadOnlyList<TextContent>> GenerateTextFromImageAsync(
+        ImageContent content,
+        PromptExecutionSettings? executionSettings,
+        Kernel? kernel,
+        CancellationToken cancellationToken)
+    {
+        using var httpRequestMessage = this.CreateImageToTextRequest(content, executionSettings);
+
+        string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken).
+            ConfigureAwait(false);
+
+        var response = DeserializeResponse<ImageToTextGenerationResponse>(body);
+        var textContents = GetTextContentFromResponse(response, executionSettings?.ModelId ?? this._modelId);
+
+        return textContents;
+    }
+
+
+    private HttpRequestMessage CreateImageToTextRequest(ImageContent content, PromptExecutionSettings? executionSettings)
+    {
+        var endpoint = this.GetImageToTextGenerationEndpoint(executionSettings?.ModelId ?? this._modelId);
+
+        // Read the file into a byte array
+        var imageContent = new ByteArrayContent(content.Data?.ToArray());
+        imageContent.Headers.ContentType = new(content.Data?.MediaType);
+
+        var request = new HttpRequestMessage(HttpMethod.Post, endpoint)
+        {
+            Content = imageContent
+        };
+
+        this.SetRequestHeaders(request);
+
+        return request;
+    }
+
+
+    private void SetRequestHeaders(HttpRequestMessage request)
+    {
+        request.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
+        request.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(this.GetType()));
+
+        if (!string.IsNullOrEmpty(this._apiKey))
+        {
+            request.Headers.Add("Authorization", $"Bearer {this._apiKey}");
+        }
+    }
+
+
+    private Uri GetImageToTextGenerationEndpoint(string modelId)
+        => new($"{this._endpoint}{this._separator}models/{modelId}");
 
 }

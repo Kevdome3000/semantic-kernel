@@ -16,6 +16,16 @@ using HandlebarsDotNet.Compiler;
 /// </summary>
 internal static class KernelSystemHelpers
 {
+
+    /// <summary>
+    /// The "NaN", "Infinity", and "-Infinity" String tokens can be read as floating-point constants, and the Single and Double values for these constants will be written as their corresponding JSON string representations.
+    /// </summary>
+    private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
+    {
+        NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowNamedFloatingPointLiterals
+    };
+
+
     /// <summary>
     /// Register all (default) or specific categories of system helpers.
     /// </summary>
@@ -47,7 +57,11 @@ internal static class KernelSystemHelpers
     {
         // TODO [@teresaqhoang]: Issue #3947 Isolate Handlebars Kernel System helpers in their own class
         // Should also consider standardizing the naming conventions for these helpers, i.e., 'Message' instead of 'message'
-        handlebarsInstance.RegisterHelper("message", static (writer, options, context, arguments) =>
+        handlebarsInstance.RegisterHelper("message", static (
+            writer,
+            options,
+            context,
+            arguments) =>
         {
             var parameters = (IDictionary<string, object>)arguments[0];
 
@@ -67,7 +81,8 @@ internal static class KernelSystemHelpers
             var name = string.Empty;
             object? value = string.Empty;
 
-            if (arguments[0].GetType() == typeof(HashParameterDictionary))
+            if (arguments[0].
+                    GetType() == typeof(HashParameterDictionary))
             {
                 // Get the parameters from the template arguments
                 var parameters = (IDictionary<string, object>)arguments[0];
@@ -77,7 +92,10 @@ internal static class KernelSystemHelpers
             else
             {
                 var args = ProcessArguments(arguments, variables);
-                name = args[0].ToString();
+
+                name = args[0].
+                    ToString();
+
                 value = args[1];
             }
 
@@ -95,26 +113,34 @@ internal static class KernelSystemHelpers
             var args = ProcessArguments(arguments, variables);
             object objectToSerialize = args[0];
 
-            return objectToSerialize switch
+            object v = objectToSerialize switch
             {
                 string stringObject => objectToSerialize,
-                _ => JsonSerializer.Serialize(objectToSerialize)
+                _ => JsonSerializer.Serialize(objectToSerialize, s_jsonSerializerOptions)
             };
+
+            return v;
         });
 
         handlebarsInstance.RegisterHelper("concat", (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
             var args = ProcessArguments(arguments, variables);
+
             return string.Concat(args);
         });
 
         handlebarsInstance.RegisterHelper("array", (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
             var args = ProcessArguments(arguments, variables);
+
             return args.ToArray();
         });
 
-        handlebarsInstance.RegisterHelper("raw", static (writer, options, context, arguments) =>
+        handlebarsInstance.RegisterHelper("raw", static (
+            writer,
+            options,
+            context,
+            arguments) =>
         {
             options.Template(writer, null);
         });
@@ -124,8 +150,12 @@ internal static class KernelSystemHelpers
             var args = ProcessArguments(arguments, variables);
 
             // Create list with numbers from start to end (inclusive)
-            var start = int.Parse(args[0].ToString(), kernel.Culture);
-            var end = int.Parse(args[1].ToString(), kernel.Culture) + 1;
+            var start = int.Parse(args[0].
+                ToString(), kernel.Culture);
+
+            var end = int.Parse(args[1].
+                ToString(), kernel.Culture) + 1;
+
             var count = end - start;
 
             return Enumerable.Range(start, count);
@@ -148,12 +178,14 @@ internal static class KernelSystemHelpers
         handlebarsInstance.RegisterHelper("add", (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
             var args = ProcessArguments(arguments, variables);
+
             return args.Sum(arg => decimal.Parse(arg.ToString(), kernel.Culture));
         });
 
         handlebarsInstance.RegisterHelper("subtract", (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
             var args = ProcessArguments(arguments, variables);
+
             return args.Aggregate((a, b) => decimal.Parse(a.ToString(), kernel.Culture) - decimal.Parse(b.ToString(), kernel.Culture));
         });
 
@@ -171,4 +203,5 @@ internal static class KernelSystemHelpers
             return left == right || (left is not null && left.Equals(right));
         });
     }
+
 }

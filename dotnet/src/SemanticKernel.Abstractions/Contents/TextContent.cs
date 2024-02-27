@@ -13,6 +13,7 @@ using TextGeneration;
 /// </summary>
 public sealed class TextContent : KernelContent
 {
+
     /// <summary>
     /// The text content.
     /// </summary>
@@ -33,7 +34,13 @@ public sealed class TextContent : KernelContent
     /// <param name="innerContent">Inner content</param>
     /// <param name="encoding">Encoding of the text</param>
     /// <param name="metadata">Additional metadata</param>
-    public TextContent(string? text, string? modelId = null, object? innerContent = null, Encoding? encoding = null, IReadOnlyDictionary<string, object?>? metadata = null) : base(innerContent, modelId, metadata)
+    [JsonConstructor]
+    public TextContent(
+        string? text,
+        string? modelId = null,
+        object? innerContent = null,
+        Encoding? encoding = null,
+        IReadOnlyDictionary<string, object?>? metadata = null) : base(innerContent, modelId, metadata)
     {
         this.Text = text;
         this.Encoding = encoding ?? Encoding.UTF8;
@@ -45,4 +52,5 @@ public sealed class TextContent : KernelContent
     {
         return this.Text ?? string.Empty;
     }
+
 }
