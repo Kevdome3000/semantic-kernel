@@ -5,7 +5,7 @@ namespace Microsoft.SemanticKernel.Connectors.HuggingFace.TextGeneration;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
-using Core;
+using Client;
 
 
 /// <summary>
@@ -54,7 +54,7 @@ public sealed class TextGenerationStreamMetadata : ReadOnlyDictionary<string, ob
     }
 
     /// <summary>
-    /// Unique token idenfitier for the model
+    /// Unique token identifier for the model
     /// </summary>
     public int? TokenId
     {

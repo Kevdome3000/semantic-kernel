@@ -2,6 +2,13 @@
 
 namespace SemanticKernel.Connectors.HuggingFace.UnitTests.TextGeneration;
 
+using System.Collections.Generic;
+using System.IO;
+using System.Text.Json;
+using Microsoft.SemanticKernel.Connectors.HuggingFace.Client;
+using Xunit;
+
+
 public class TextGenerationStreamResponseTests
 {
 
