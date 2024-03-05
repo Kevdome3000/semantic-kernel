@@ -2,7 +2,6 @@
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
@@ -77,13 +76,10 @@ internal sealed class OpenAITextToAudioClient
         using var response = await this.SendRequestAsync(request, cancellationToken).
             ConfigureAwait(false);
 
-        using var stream = await response.Content.ReadAsStreamAndTranslateExceptionAsync().
+        var data = await response.Content.ReadAsByteArrayAndTranslateExceptionAsync().
             ConfigureAwait(false);
 
-        var binaryData = await BinaryData.FromStreamAsync(stream, cancellationToken).
-            ConfigureAwait(false);
-
-        return new List<AudioContent> { new(binaryData, this._modelId) };
+        return new List<AudioContent> { new(data, this._modelId) };
     }
 
 

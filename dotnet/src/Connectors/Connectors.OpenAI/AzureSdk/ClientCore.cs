@@ -274,7 +274,7 @@ internal abstract class ClientCore
 
         var audioOptions = new AudioTranscriptionOptions
         {
-            AudioData = content.Data,
+            AudioData = BinaryData.FromBytes(content.Data.Value),
             DeploymentName = this.DeploymentOrModelName,
             Filename = audioExecutionSettings.Filename,
             Language = audioExecutionSettings.Language,
@@ -446,7 +446,9 @@ internal abstract class ClientCore
                     s_inflightAutoInvokes.Value--;
                 }
 
-                AddResponseMessage(chatOptions, chat, functionResult as string ?? JsonSerializer.Serialize(functionResult), errorMessage: null,
+                var stringResult = ProcessFunctionResult(functionResult, chatExecutionSettings.ToolCallBehavior);
+
+                AddResponseMessage(chatOptions, chat, stringResult, errorMessage: null,
                     toolCall.Id, this.Logger);
 
                 static void AddResponseMessage(
@@ -665,8 +667,10 @@ internal abstract class ClientCore
                     s_inflightAutoInvokes.Value--;
                 }
 
+                var stringResult = ProcessFunctionResult(functionResult, chatExecutionSettings.ToolCallBehavior);
+
                 AddResponseMessage(chatOptions, chat, streamedRole, toolCall,
-                    metadata, functionResult as string ?? JsonSerializer.Serialize(functionResult), errorMessage: null, this.Logger);
+                    metadata, stringResult, errorMessage: null, this.Logger);
 
                 static void AddResponseMessage(
                     ChatCompletionsOptions chatOptions,
@@ -1025,7 +1029,7 @@ internal abstract class ClientCore
 
             if (message.Items is { Count: > 0 })
             {
-                return new ChatRequestUserMessage(message.Items.Select(static item => (ChatMessageContentItem)(item switch
+                return new ChatRequestUserMessage(message.Items.Select(static (KernelContent item) => (ChatMessageContentItem)(item switch
                 {
                     TextContent textContent => new ChatMessageTextContentItem(textContent.Text),
                     ImageContent imageContent => new ChatMessageImageContentItem(imageContent.Uri),
@@ -1176,6 +1180,34 @@ internal abstract class ClientCore
         s_promptTokensCounter.Add(usage.PromptTokens);
         s_completionTokensCounter.Add(usage.CompletionTokens);
         s_totalTokensCounter.Add(usage.TotalTokens);
+    }
+
+
+    /// <summary>
+    /// Processes the function result.
+    /// </summary>
+    /// <param name="functionResult">The result of the function call.</param>
+    /// <param name="toolCallBehavior">The ToolCallBehavior object containing optional settings like JsonSerializerOptions.TypeInfoResolver.</param>
+    /// <returns>A string representation of the function result.</returns>
+    private static string? ProcessFunctionResult(object functionResult, ToolCallBehavior? toolCallBehavior)
+    {
+        if (functionResult is string stringResult)
+        {
+            return stringResult;
+        }
+
+        // This is an optimization to use ChatMessageContent content directly  
+        // without unnecessary serialization of the whole message content class.  
+        if (functionResult is ChatMessageContent chatMessageContent)
+        {
+            return chatMessageContent.ToString();
+        }
+
+        // For polymorphic serialization of unknown in advance child classes of the KernelContent class,  
+        // a corresponding JsonTypeInfoResolver should be provided via the JsonSerializerOptions.TypeInfoResolver property.  
+        // For more details about the polymorphic serialization, see the article at:  
+        // https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/polymorphism?pivots=dotnet-8-0
+        return JsonSerializer.Serialize(functionResult, toolCallBehavior?.ToolCallResultSerializerOptions);
     }
 
 }

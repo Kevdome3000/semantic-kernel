@@ -114,14 +114,7 @@ public partial class AgentBuilder
         var model = await restContext.GetAssistantModelAsync(agentId, cancellationToken).
             ConfigureAwait(false);
 
-        return
-            await Agent.CreateAsync(
-                    restContext,
-                    model,
-                    this._config,
-                    this._plugins,
-                    cancellationToken).
-                ConfigureAwait(false);
+        return new Agent(model, this._config, restContext, this._plugins);
     }
 
 

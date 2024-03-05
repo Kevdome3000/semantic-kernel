@@ -16,6 +16,7 @@ using ChatCompletion;
 /// </summary>
 public class ChatMessageContent : KernelContent
 {
+
     /// <summary>
     /// Role of the author of the message
     /// </summary>
@@ -29,7 +30,9 @@ public class ChatMessageContent : KernelContent
     {
         get
         {
-            var textContent = this.Items.OfType<TextContent>().FirstOrDefault();
+            var textContent = this.Items.OfType<TextContent>().
+                FirstOrDefault();
+
             return textContent?.Text;
         }
         set
@@ -39,7 +42,9 @@ public class ChatMessageContent : KernelContent
                 return;
             }
 
-            var textContent = this.Items.OfType<TextContent>().FirstOrDefault();
+            var textContent = this.Items.OfType<TextContent>().
+                FirstOrDefault();
+
             if (textContent is not null)
             {
                 textContent.Text = value;
@@ -48,12 +53,13 @@ public class ChatMessageContent : KernelContent
             else
             {
                 this.Items.Add(new TextContent(
-                    text: value,
-                    modelId: this.ModelId,
-                    innerContent: this.InnerContent,
-                    encoding: this.Encoding,
-                    metadata: this.Metadata
-                ));
+                        text: value,
+                        modelId: this.ModelId,
+                        innerContent: this.InnerContent,
+                        encoding: this.Encoding,
+                        metadata: this.Metadata
+                    )
+                    { MimeType = this.MimeType });
             }
         }
     }
@@ -75,7 +81,9 @@ public class ChatMessageContent : KernelContent
     {
         get
         {
-            var textContent = this.Items.OfType<TextContent>().FirstOrDefault();
+            var textContent = this.Items.OfType<TextContent>().
+                FirstOrDefault();
+
             if (textContent is not null)
             {
                 return textContent.Encoding;
@@ -87,7 +95,9 @@ public class ChatMessageContent : KernelContent
         {
             this._encoding = value;
 
-            var textContent = this.Items.OfType<TextContent>().FirstOrDefault();
+            var textContent = this.Items.OfType<TextContent>().
+                FirstOrDefault();
+
             if (textContent is not null)
             {
                 textContent.Encoding = value;
@@ -110,13 +120,22 @@ public class ChatMessageContent : KernelContent
     /// <summary>
     /// Creates a new instance of the <see cref="ChatMessageContent"/> class
     /// </summary>
+    [JsonConstructor]
+    public ChatMessageContent()
+    {
+        this._encoding = Encoding.UTF8;
+    }
+
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="ChatMessageContent"/> class
+    /// </summary>
     /// <param name="role">Role of the author of the message</param>
     /// <param name="content">Content of the message</param>
     /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="innerContent">Inner content object reference</param>
     /// <param name="encoding">Encoding of the text</param>
     /// <param name="metadata">Dictionary for any additional metadata</param>
-    [JsonConstructor]
     public ChatMessageContent(
         AuthorRole role,
         string? content,
@@ -162,6 +181,9 @@ public class ChatMessageContent : KernelContent
         return this.Content ?? string.Empty;
     }
 
+
     private ChatMessageContentItemCollection? _items;
+
     private Encoding _encoding;
+
 }

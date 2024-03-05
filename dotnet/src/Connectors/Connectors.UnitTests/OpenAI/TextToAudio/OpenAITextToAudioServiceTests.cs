@@ -4,7 +4,6 @@ namespace SemanticKernel.Connectors.UnitTests.OpenAI.TextToAudio;
 
 using System;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -92,9 +91,7 @@ public sealed class OpenAITextToAudioServiceTests : IDisposable
 
         // Assert
         Assert.NotNull(result[0].Data);
-
-        Assert.True(result[0].Data!.ToArray().
-            SequenceEqual(expectedByteArray));
+        Assert.True(result[0].Data!.Value.Span.SequenceEqual(expectedByteArray));
     }
 
 

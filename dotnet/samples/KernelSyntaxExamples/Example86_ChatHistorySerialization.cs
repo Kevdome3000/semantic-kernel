@@ -4,6 +4,7 @@ namespace Examples;
 
 using System;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.SemanticKernel;
@@ -51,9 +52,9 @@ public class Example86_ChatHistorySerialization : BaseTest
 
         WriteLine($"Image content: {(deserializedMessage.Items![1]! as ImageContent)!.Uri}");
 
-        WriteLine($"Binary content: {(deserializedMessage.Items![2]! as BinaryContent)!.Content}");
+        WriteLine($"Binary content: {Encoding.UTF8.GetString((deserializedMessage.Items![2]! as BinaryContent)!.Content!.Value.Span)}");
 
-        WriteLine($"Audio content: {(deserializedMessage.Items![3]! as AudioContent)!.Data}");
+        WriteLine($"Audio content: {Encoding.UTF8.GetString((deserializedMessage.Items![3]! as AudioContent)!.Data!.Value.Span)}");
     }
 
 

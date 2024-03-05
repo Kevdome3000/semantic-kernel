@@ -5,12 +5,14 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.Json;
 using Azure.AI.OpenAI;
 
 
 /// <summary>Represents a behavior for OpenAI tool calls.</summary>
 public abstract class ToolCallBehavior
 {
+
     // NOTE: Right now, the only tools that are available are for function calling. In the future,
     // this class can be extended to support additional kinds of tools, including composite ones:
     // the OpenAIPromptExecutionSettings has a single ToolCallBehavior property, but we could
@@ -67,6 +69,7 @@ public abstract class ToolCallBehavior
     public static ToolCallBehavior EnableFunctions(IEnumerable<OpenAIFunction> functions, bool autoInvoke = false)
     {
         Verify.NotNull(functions);
+
         return new EnabledFunctions(functions, autoInvoke);
     }
 
@@ -81,6 +84,7 @@ public abstract class ToolCallBehavior
     public static ToolCallBehavior RequireFunction(OpenAIFunction function, bool autoInvoke = false)
     {
         Verify.NotNull(function);
+
         return new RequiredFunction(function, autoInvoke);
     }
 
@@ -88,9 +92,16 @@ public abstract class ToolCallBehavior
     /// <summary>Initializes the instance; prevents external instantiation.</summary>
     private ToolCallBehavior(bool autoInvoke)
     {
-        this.MaximumAutoInvokeAttempts = autoInvoke ? DefaultMaximumAutoInvokeAttempts : 0;
+        this.MaximumAutoInvokeAttempts = autoInvoke
+            ? DefaultMaximumAutoInvokeAttempts
+            : 0;
     }
 
+
+    /// <summary>
+    /// Options to control tool call result serialization behavior.
+    /// </summary>
+    public virtual JsonSerializerOptions? ToolCallResultSerializerOptions { get; set; }
 
     /// <summary>Gets how many requests are part of a single interaction should include this tool in the request.</summary>
     /// <remarks>
@@ -126,6 +137,7 @@ public abstract class ToolCallBehavior
     /// </summary>
     internal sealed class KernelFunctions : ToolCallBehavior
     {
+
         internal KernelFunctions(bool autoInvoke) : base(autoInvoke)
         {
         }
@@ -148,7 +160,9 @@ public abstract class ToolCallBehavior
 
                     for (int i = 0; i < functions.Count; i++)
                     {
-                        options.Tools.Add(new ChatCompletionsFunctionToolDefinition(functions[i].ToOpenAIFunction().ToFunctionDefinition()));
+                        options.Tools.Add(new ChatCompletionsFunctionToolDefinition(functions[i].
+                            ToOpenAIFunction().
+                            ToFunctionDefinition()));
                     }
                 }
             }
@@ -156,6 +170,7 @@ public abstract class ToolCallBehavior
 
 
         internal override bool AllowAnyRequestedKernelFunction => true;
+
     }
 
 
@@ -164,7 +179,9 @@ public abstract class ToolCallBehavior
     /// </summary>
     internal sealed class EnabledFunctions : ToolCallBehavior
     {
+
         private readonly OpenAIFunction[] _openAIFunctions;
+
         private readonly ChatCompletionsFunctionToolDefinition[] _functions;
 
 
@@ -176,8 +193,10 @@ public abstract class ToolCallBehavior
 
             for (int i = 0; i < defs.Length; i++)
             {
-                defs[i] = new ChatCompletionsFunctionToolDefinition(this._openAIFunctions[i].ToFunctionDefinition());
+                defs[i] = new ChatCompletionsFunctionToolDefinition(this._openAIFunctions[i].
+                    ToFunctionDefinition());
             }
+
             this._functions = defs;
         }
 
@@ -193,7 +212,7 @@ public abstract class ToolCallBehavior
 
             if (openAIFunctions.Length > 0)
             {
-                bool autoInvoke = MaximumAutoInvokeAttempts > 0;
+                bool autoInvoke = base.MaximumAutoInvokeAttempts > 0;
 
                 // If auto-invocation is specified, we need a kernel to be able to invoke the functions.
                 // Lack of a kernel is fatal: we don't want to tell the model we can handle the functions
@@ -226,13 +245,16 @@ public abstract class ToolCallBehavior
                 }
             }
         }
+
     }
 
 
     /// <summary>Represents a <see cref="ToolCallBehavior"/> that requests the model use a specific function.</summary>
     internal sealed class RequiredFunction : ToolCallBehavior
     {
+
         private readonly ChatCompletionsFunctionToolDefinition _tool;
+
         private readonly ChatCompletionsToolChoice _choice;
 
 
@@ -261,5 +283,7 @@ public abstract class ToolCallBehavior
         /// Thus for "requires", we must send the tool information only once.
         /// </remarks>
         internal override int MaximumUseAttempts => 1;
+
     }
+
 }
