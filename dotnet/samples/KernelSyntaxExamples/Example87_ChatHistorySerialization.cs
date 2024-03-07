@@ -13,7 +13,7 @@ using Xunit;
 using Xunit.Abstractions;
 
 
-public class Example86_ChatHistorySerialization : BaseTest
+public class Example87_ChatHistorySerialization : BaseTest
 {
 
     /// <summary>
@@ -95,7 +95,7 @@ public class Example86_ChatHistorySerialization : BaseTest
     }
 
 
-    public Example86_ChatHistorySerialization(ITestOutputHelper output) : base(output)
+    public Example87_ChatHistorySerialization(ITestOutputHelper output) : base(output)
     {
     }
 

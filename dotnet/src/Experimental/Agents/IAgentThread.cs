@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 /// </summary>
 public interface IAgentThread
 {
+
     /// <summary>
     /// The thread identifier (which can be referenced in API endpoints).
     /// </summary>
@@ -22,9 +23,10 @@ public interface IAgentThread
     /// Add a textual user message to the thread.
     /// </summary>
     /// <param name="message">The user message</param>
+    /// <param name="fileIds">up to 10 file ids to reference for the message</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns></returns>
-    Task<IChatMessage> AddUserMessageAsync(string message, CancellationToken cancellationToken = default);
+    Task<IChatMessage> AddUserMessageAsync(string message, IEnumerable<string>? fileIds = null, CancellationToken cancellationToken = default);
 
 
     /// <summary>
@@ -43,9 +45,15 @@ public interface IAgentThread
     /// <param name="agent">An agent instance.</param>
     /// <param name="userMessage">The user message</param>
     /// <param name="arguments">Optional arguments for parameterized instructions</param>
+    /// <param name="fileIds">up to 10 file ids to reference for the message</param>
     /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>The resulting agent message(s)</returns>
-    IAsyncEnumerable<IChatMessage> InvokeAsync(IAgent agent, string userMessage, KernelArguments? arguments = null, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<IChatMessage> InvokeAsync(
+        IAgent agent,
+        string userMessage,
+        KernelArguments? arguments = null,
+        IEnumerable<string>? fileIds = null,
+        CancellationToken cancellationToken = default);
 
 
     /// <summary>
@@ -54,4 +62,5 @@ public interface IAgentThread
     /// </summary>
     /// <param name="cancellationToken">A cancellation token</param>
     Task DeleteAsync(CancellationToken cancellationToken = default);
+
 }
