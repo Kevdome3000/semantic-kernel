@@ -18,9 +18,10 @@ using Services;
 /// <summary>
 /// Azure OpenAI text embedding service.
 /// </summary>
-[Experimental("SKEXP0011")]
+[Experimental("SKEXP0010")]
 public sealed class AzureOpenAITextEmbeddingGenerationService : ITextEmbeddingGenerationService
 {
+
     private readonly AzureOpenAIClientCore _core;
 
 
@@ -41,7 +42,8 @@ public sealed class AzureOpenAITextEmbeddingGenerationService : ITextEmbeddingGe
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(deploymentName, endpoint, apiKey, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextEmbeddingGenerationService)));
+        this._core = new(deploymentName, endpoint, apiKey, httpClient,
+            loggerFactory?.CreateLogger(typeof(AzureOpenAITextEmbeddingGenerationService)));
 
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
@@ -64,7 +66,8 @@ public sealed class AzureOpenAITextEmbeddingGenerationService : ITextEmbeddingGe
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(deploymentName, endpoint, credential, httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextEmbeddingGenerationService)));
+        this._core = new(deploymentName, endpoint, credential, httpClient,
+            loggerFactory?.CreateLogger(typeof(AzureOpenAITextEmbeddingGenerationService)));
 
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
@@ -101,4 +104,5 @@ public sealed class AzureOpenAITextEmbeddingGenerationService : ITextEmbeddingGe
     {
         return this._core.GetEmbeddingsAsync(data, kernel, cancellationToken);
     }
+
 }

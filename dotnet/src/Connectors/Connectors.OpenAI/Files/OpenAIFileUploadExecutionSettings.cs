@@ -8,7 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 /// <summary>
 /// Execution serttings associated with Open AI file upload <see cref="OpenAIFileService.UploadContentAsync"/>.
 /// </summary>
-[Experimental("SKEXP0015")]
+[Experimental("SKEXP0010")]
 public sealed class OpenAIFileUploadExecutionSettings
 {
 

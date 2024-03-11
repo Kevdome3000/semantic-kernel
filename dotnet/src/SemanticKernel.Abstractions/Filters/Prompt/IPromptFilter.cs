@@ -8,9 +8,10 @@ using System.Diagnostics.CodeAnalysis;
 /// <summary>
 /// Interface for filtering actions during prompt rendering.
 /// </summary>
-[Experimental("SKEXP0004")]
+[Experimental("SKEXP0001")]
 public interface IPromptFilter
 {
+
     /// <summary>
     /// Method which is executed before prompt rendering.
     /// </summary>
@@ -23,4 +24,5 @@ public interface IPromptFilter
     /// </summary>
     /// <param name="context">Data related to prompt after rendering.</param>
     void OnPromptRendered(PromptRenderedContext context);
+
 }

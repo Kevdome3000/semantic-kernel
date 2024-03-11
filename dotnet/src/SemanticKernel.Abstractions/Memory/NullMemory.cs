@@ -12,9 +12,10 @@ using System.Threading.Tasks;
 /// <summary>
 /// Implementation of <see cref="ISemanticTextMemory"/> that stores nothing.
 /// </summary>
-[Experimental("SKEXP0003")]
+[Experimental("SKEXP0001")]
 public sealed class NullMemory : ISemanticTextMemory
 {
+
     private static readonly Task<string> s_emptyStringTask = Task.FromResult(string.Empty);
 
     /// <summary>
@@ -101,4 +102,5 @@ public sealed class NullMemory : ISemanticTextMemory
     private NullMemory()
     {
     }
+
 }

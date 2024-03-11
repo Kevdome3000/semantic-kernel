@@ -13,18 +13,21 @@ using Xunit;
 using Xunit.Abstractions;
 
 
-// The following example shows how to use Semantic Kernel with OpenAI Dall-E 2 to create images
+// The following example shows how to use Semantic Kernel with OpenAI DALL-E 2 to create images
 public class Example18_DallE : BaseTest
 {
+
     [Fact]
     public async Task OpenAIDallEAsync()
     {
-        WriteLine("======== OpenAI Dall-E 2 Text To Image ========");
+        WriteLine("======== OpenAI DALL-E 2 Text To Image ========");
 
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddOpenAITextToImage(TestConfiguration.OpenAI.ApiKey) // Add your text to image service
-            .AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey) // Add your chat completion service
-            .Build();
+        Kernel kernel = Kernel.CreateBuilder().
+            AddOpenAITextToImage(TestConfiguration.OpenAI.ApiKey) // Add your text to image service
+            .
+            AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey) // Add your chat completion service
+            .
+            Build();
 
         ITextToImageService dallE = kernel.GetRequiredService<ITextToImageService>();
 
@@ -44,6 +47,7 @@ public class Example18_DallE : BaseTest
         WriteLine("======== Chat with images ========");
 
         var chatGPT = kernel.GetRequiredService<IChatCompletionService>();
+
         var chatHistory = new ChatHistory(
             "You're chatting with a user. Instead of replying directly to the user" +
             " provide the description of an image that expresses what you want to say." +
@@ -87,16 +91,17 @@ public class Example18_DallE : BaseTest
     [Fact(Skip = "Generating the Image can take too long and often break the test")]
     public async Task AzureOpenAIDallEAsync()
     {
-        WriteLine("========Azure OpenAI Dall-E 3 Text To Image ========");
+        WriteLine("========Azure OpenAI DALL-E 3 Text To Image ========");
 
-        var builder = Kernel.CreateBuilder()
-            .AddAzureOpenAITextToImage( // Add your text to image service
-                deploymentName: TestConfiguration.AzureOpenAI.ImageModelId,
+        var builder = Kernel.CreateBuilder().
+            AddAzureOpenAITextToImage( // Add your text to image service
+                deploymentName: TestConfiguration.AzureOpenAI.ImageDeploymentName,
                 endpoint: TestConfiguration.AzureOpenAI.ImageEndpoint,
                 apiKey: TestConfiguration.AzureOpenAI.ImageApiKey,
                 modelId: TestConfiguration.AzureOpenAI.ImageModelId,
-                apiVersion: "2023-12-01-preview") //Dall-E 3 is only supported in this version
-            .AddAzureOpenAIChatCompletion( // Add your chat completion service
+                apiVersion: "2024-02-15-preview") //DALL-E 3 is only supported in this version
+            .
+            AddAzureOpenAIChatCompletion( // Add your chat completion service
                 deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 endpoint: TestConfiguration.AzureOpenAI.Endpoint,
                 apiKey: TestConfiguration.AzureOpenAI.ApiKey);
@@ -104,11 +109,12 @@ public class Example18_DallE : BaseTest
         builder.Services.ConfigureHttpClientDefaults(c =>
         {
             // Use a standard resiliency policy, augmented to retry 5 times
-            c.AddStandardResilienceHandler().Configure(o =>
-            {
-                o.Retry.MaxRetryAttempts = 5;
-                o.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(60);
-            });
+            c.AddStandardResilienceHandler().
+                Configure(o =>
+                {
+                    o.Retry.MaxRetryAttempts = 5;
+                    o.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(60);
+                });
         });
 
         var kernel = builder.Build();
@@ -130,6 +136,7 @@ public class Example18_DallE : BaseTest
         WriteLine("======== Chat with images ========");
 
         var chatGPT = kernel.GetRequiredService<IChatCompletionService>();
+
         var chatHistory = new ChatHistory(
             "You're chatting with a user. Instead of replying directly to the user" +
             " provide the description of an image that expresses what you want to say." +
@@ -173,4 +180,5 @@ public class Example18_DallE : BaseTest
     public Example18_DallE(ITestOutputHelper output) : base(output)
     {
     }
+
 }

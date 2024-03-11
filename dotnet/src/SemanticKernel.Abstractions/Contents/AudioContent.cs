@@ -11,7 +11,7 @@ using System.Text.Json.Serialization;
 /// <summary>
 /// Represents audio content.
 /// </summary>
-[Experimental("SKEXP0005")]
+[Experimental("SKEXP0001")]
 public class AudioContent : KernelContent
 {
 

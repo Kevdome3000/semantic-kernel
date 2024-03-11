@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 /// <summary>
 /// Provides access to binary content.
 /// </summary>
-[Experimental("SKEXP0015")]
+[Experimental("SKEXP0010")]
 public class BinaryContent : KernelContent
 {
 

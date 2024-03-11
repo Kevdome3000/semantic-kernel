@@ -11,9 +11,10 @@ using System.Threading.Tasks;
 /// <summary>
 /// An interface for semantic memory that creates and recalls memories associated with text.
 /// </summary>
-[Experimental("SKEXP0003")]
+[Experimental("SKEXP0001")]
 public interface ISemanticTextMemory
 {
+
     /// <summary>
     /// Save some information into the semantic memory, keeping a copy of the source information.
     /// </summary>
@@ -69,7 +70,12 @@ public interface ISemanticTextMemory
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Memory record, or null when nothing is found</returns>
-    public Task<MemoryQueryResult?> GetAsync(string collection, string key, bool withEmbedding = false, Kernel? kernel = null, CancellationToken cancellationToken = default);
+    public Task<MemoryQueryResult?> GetAsync(
+        string collection,
+        string key,
+        bool withEmbedding = false,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default);
 
 
     /// <summary>
@@ -81,7 +87,11 @@ public interface ISemanticTextMemory
     /// <param name="key">Unique memory record identifier.</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    public Task RemoveAsync(string collection, string key, Kernel? kernel = null, CancellationToken cancellationToken = default);
+    public Task RemoveAsync(
+        string collection,
+        string key,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default);
 
 
     /// <summary>
@@ -112,4 +122,5 @@ public interface ISemanticTextMemory
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A group of collection names.</returns>
     public Task<IList<string>> GetCollectionsAsync(Kernel? kernel = null, CancellationToken cancellationToken = default);
+
 }

@@ -20,7 +20,7 @@ using Http;
 /// <summary>
 /// File service access for OpenAI: https://api.openai.com/v1/files
 /// </summary>
-[Experimental("SKEXP0015")]
+[Experimental("SKEXP0010")]
 public sealed class OpenAIFileService
 {
 

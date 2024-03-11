@@ -11,9 +11,10 @@ using Text;
 /// <summary>
 /// Copy of metadata associated with a memory entry.
 /// </summary>
-[Experimental("SKEXP0003")]
+[Experimental("SKEXP0001")]
 public class MemoryQueryResult
 {
+
     /// <summary>
     /// Whether the source data used to calculate embeddings are stored in the local
     /// storage provider or is available through an external service, such as web site, MS Graph, etc.
@@ -65,6 +66,9 @@ public class MemoryQueryResult
         return new MemoryQueryResult(
             (MemoryRecordMetadata)record.Metadata.Clone(),
             relevance,
-            record.Embedding.IsEmpty ? null : record.Embedding);
+            record.Embedding.IsEmpty
+                ? null
+                : record.Embedding);
     }
+
 }

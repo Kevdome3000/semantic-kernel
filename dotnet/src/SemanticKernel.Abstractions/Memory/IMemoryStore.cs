@@ -12,9 +12,10 @@ using System.Threading.Tasks;
 /// <summary>
 /// An interface for storing and retrieving indexed <see cref="MemoryRecord"/> objects in a data store.
 /// </summary>
-[Experimental("SKEXP0003")]
+[Experimental("SKEXP0001")]
 public interface IMemoryStore
 {
+
     /// <summary>
     /// Creates a new collection in the data store.
     /// </summary>
@@ -80,7 +81,11 @@ public interface IMemoryStore
     /// <param name="withEmbedding">If true, the embedding will be returned in the memory record.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The memory record if found, otherwise null.</returns>
-    Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancellationToken = default);
+    Task<MemoryRecord?> GetAsync(
+        string collectionName,
+        string key,
+        bool withEmbedding = false,
+        CancellationToken cancellationToken = default);
 
 
     /// <summary>
@@ -91,7 +96,11 @@ public interface IMemoryStore
     /// <param name="withEmbeddings">If true, the embeddings will be returned in the memory records.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The memory records associated with the unique keys provided.</returns>
-    IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = false, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<MemoryRecord> GetBatchAsync(
+        string collectionName,
+        IEnumerable<string> keys,
+        bool withEmbeddings = false,
+        CancellationToken cancellationToken = default);
 
 
     /// <summary>
@@ -146,4 +155,5 @@ public interface IMemoryStore
         double minRelevanceScore = 0.0,
         bool withEmbedding = false,
         CancellationToken cancellationToken = default);
+
 }

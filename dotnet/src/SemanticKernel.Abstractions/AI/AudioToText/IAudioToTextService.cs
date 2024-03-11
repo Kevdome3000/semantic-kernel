@@ -12,7 +12,7 @@ using Services;
 /// <summary>
 /// Interface for audio-to-text services.
 /// </summary>
-[Experimental("SKEXP0005")]
+[Experimental("SKEXP0001")]
 public interface IAudioToTextService : IAIService
 {
 

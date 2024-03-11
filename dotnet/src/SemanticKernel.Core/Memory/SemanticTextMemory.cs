@@ -16,10 +16,12 @@ using Embeddings;
 /// Implementation of <see cref="ISemanticTextMemory"/>. Provides methods to save, retrieve, and search for text information
 /// in a semantic memory store.
 /// </summary>
-[Experimental("SKEXP0003")]
+[Experimental("SKEXP0001")]
 public sealed class SemanticTextMemory : ISemanticTextMemory
 {
+
     private readonly ITextEmbeddingGenerationService _embeddingGenerator;
+
     private readonly IMemoryStore _storage;
 
 
@@ -47,16 +49,22 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        var embedding = await this._embeddingGenerator.GenerateEmbeddingAsync(text, kernel, cancellationToken).ConfigureAwait(false);
-        MemoryRecord data = MemoryRecord.LocalRecord(
-            id: id, text: text, description: description, additionalMetadata: additionalMetadata, embedding: embedding);
+        var embedding = await this._embeddingGenerator.GenerateEmbeddingAsync(text, kernel, cancellationToken).
+            ConfigureAwait(false);
 
-        if (!(await this._storage.DoesCollectionExistAsync(collection, cancellationToken).ConfigureAwait(false)))
+        MemoryRecord data = MemoryRecord.LocalRecord(
+            id: id, text: text, description: description, additionalMetadata: additionalMetadata,
+            embedding: embedding);
+
+        if (!(await this._storage.DoesCollectionExistAsync(collection, cancellationToken).
+                ConfigureAwait(false)))
         {
-            await this._storage.CreateCollectionAsync(collection, cancellationToken).ConfigureAwait(false);
+            await this._storage.CreateCollectionAsync(collection, cancellationToken).
+                ConfigureAwait(false);
         }
 
-        return await this._storage.UpsertAsync(collection, data, cancellationToken).ConfigureAwait(false);
+        return await this._storage.UpsertAsync(collection, data, cancellationToken).
+            ConfigureAwait(false);
     }
 
 
@@ -71,16 +79,21 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        var embedding = await this._embeddingGenerator.GenerateEmbeddingAsync(text, kernel, cancellationToken).ConfigureAwait(false);
+        var embedding = await this._embeddingGenerator.GenerateEmbeddingAsync(text, kernel, cancellationToken).
+            ConfigureAwait(false);
+
         var data = MemoryRecord.ReferenceRecord(externalId: externalId, sourceName: externalSourceName, description: description,
             additionalMetadata: additionalMetadata, embedding: embedding);
 
-        if (!(await this._storage.DoesCollectionExistAsync(collection, cancellationToken).ConfigureAwait(false)))
+        if (!(await this._storage.DoesCollectionExistAsync(collection, cancellationToken).
+                ConfigureAwait(false)))
         {
-            await this._storage.CreateCollectionAsync(collection, cancellationToken).ConfigureAwait(false);
+            await this._storage.CreateCollectionAsync(collection, cancellationToken).
+                ConfigureAwait(false);
         }
 
-        return await this._storage.UpsertAsync(collection, data, cancellationToken).ConfigureAwait(false);
+        return await this._storage.UpsertAsync(collection, data, cancellationToken).
+            ConfigureAwait(false);
     }
 
 
@@ -92,7 +105,8 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        MemoryRecord? record = await this._storage.GetAsync(collection, key, withEmbedding, cancellationToken).ConfigureAwait(false);
+        MemoryRecord? record = await this._storage.GetAsync(collection, key, withEmbedding, cancellationToken).
+            ConfigureAwait(false);
 
         if (record == null) { return null; }
 
@@ -107,7 +121,8 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        await this._storage.RemoveAsync(collection, key, cancellationToken).ConfigureAwait(false);
+        await this._storage.RemoveAsync(collection, key, cancellationToken).
+            ConfigureAwait(false);
     }
 
 
@@ -121,7 +136,8 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
         Kernel? kernel = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        ReadOnlyMemory<float> queryEmbedding = await this._embeddingGenerator.GenerateEmbeddingAsync(query, kernel, cancellationToken).ConfigureAwait(false);
+        ReadOnlyMemory<float> queryEmbedding = await this._embeddingGenerator.GenerateEmbeddingAsync(query, kernel, cancellationToken).
+            ConfigureAwait(false);
 
         IAsyncEnumerable<(MemoryRecord, double)> results = this._storage.GetNearestMatchesAsync(
             collectionName: collection,
@@ -141,6 +157,9 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
     /// <inheritdoc/>
     public async Task<IList<string>> GetCollectionsAsync(Kernel? kernel = null, CancellationToken cancellationToken = default)
     {
-        return await this._storage.GetCollectionsAsync(cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
+        return await this._storage.GetCollectionsAsync(cancellationToken).
+            ToListAsync(cancellationToken).
+            ConfigureAwait(false);
     }
+
 }

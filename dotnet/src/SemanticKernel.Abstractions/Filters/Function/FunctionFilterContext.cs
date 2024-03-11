@@ -9,9 +9,10 @@ using System.Diagnostics.CodeAnalysis;
 /// <summary>
 /// Base class with data related to function invocation.
 /// </summary>
-[Experimental("SKEXP0004")]
+[Experimental("SKEXP0001")]
 public abstract class FunctionFilterContext
 {
+
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionFilterContext"/> class.
     /// </summary>
@@ -55,4 +56,5 @@ public abstract class FunctionFilterContext
     /// be considered by the component that triggers filter.
     /// </remarks>
     public bool Cancel { get; set; }
+
 }

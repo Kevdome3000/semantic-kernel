@@ -24,6 +24,7 @@ using Services;
 /// </remarks>
 public sealed class Kernel
 {
+
     /// <summary>Key used by KernelBuilder to store type information into the service provider.</summary>
     internal const string KernelServiceTypeToKeyMappings = nameof(KernelServiceTypeToKeyMappings);
 
@@ -153,7 +154,7 @@ public sealed class Kernel
     /// <summary>
     /// Gets the collection of function filters available through the kernel.
     /// </summary>
-    [Experimental("SKEXP0004")]
+    [Experimental("SKEXP0001")]
     public IList<IFunctionFilter> FunctionFilters =>
         this._functionFilters ??
         Interlocked.CompareExchange(ref this._functionFilters, new NonNullCollection<IFunctionFilter>(), null) ??
@@ -162,7 +163,7 @@ public sealed class Kernel
     /// <summary>
     /// Gets the collection of function filters available through the kernel.
     /// </summary>
-    [Experimental("SKEXP0004")]
+    [Experimental("SKEXP0001")]
     public IList<IPromptFilter> PromptFilters =>
         this._promptFilters ??
         Interlocked.CompareExchange(ref this._promptFilters, new NonNullCollection<IPromptFilter>(), null) ??
@@ -248,7 +249,8 @@ public sealed class Kernel
 
             if (service is null && this.Services is IKeyedServiceProvider)
             {
-                service = this.GetAllServices<T>().LastOrDefault();
+                service = this.GetAllServices<T>().
+                    LastOrDefault();
             }
         }
 
@@ -299,7 +301,7 @@ public sealed class Kernel
 
     #region Internal Filtering
 
-    [Experimental("SKEXP0004")]
+    [Experimental("SKEXP0001")]
     internal FunctionInvokingContext? OnFunctionInvokingFilter(KernelFunction function, KernelArguments arguments)
     {
         FunctionInvokingContext? context = null;
@@ -310,7 +312,8 @@ public sealed class Kernel
 
             for (int i = 0; i < this._functionFilters.Count; i++)
             {
-                this._functionFilters[i].OnFunctionInvoking(context);
+                this._functionFilters[i].
+                    OnFunctionInvoking(context);
             }
         }
 
@@ -318,7 +321,7 @@ public sealed class Kernel
     }
 
 
-    [Experimental("SKEXP0004")]
+    [Experimental("SKEXP0001")]
     internal FunctionInvokedContext? OnFunctionInvokedFilter(KernelArguments arguments, FunctionResult result)
     {
         FunctionInvokedContext? context = null;
@@ -329,7 +332,8 @@ public sealed class Kernel
 
             for (int i = 0; i < this._functionFilters.Count; i++)
             {
-                this._functionFilters[i].OnFunctionInvoked(context);
+                this._functionFilters[i].
+                    OnFunctionInvoked(context);
             }
         }
 
@@ -337,7 +341,7 @@ public sealed class Kernel
     }
 
 
-    [Experimental("SKEXP0004")]
+    [Experimental("SKEXP0001")]
     internal PromptRenderingContext? OnPromptRenderingFilter(KernelFunction function, KernelArguments arguments)
     {
         PromptRenderingContext? context = null;
@@ -348,7 +352,8 @@ public sealed class Kernel
 
             for (int i = 0; i < this._promptFilters.Count; i++)
             {
-                this._promptFilters[i].OnPromptRendering(context);
+                this._promptFilters[i].
+                    OnPromptRendering(context);
             }
         }
 
@@ -356,7 +361,7 @@ public sealed class Kernel
     }
 
 
-    [Experimental("SKEXP0004")]
+    [Experimental("SKEXP0001")]
     internal PromptRenderedContext? OnPromptRenderedFilter(KernelFunction function, KernelArguments arguments, string renderedPrompt)
     {
         PromptRenderedContext? context = null;
@@ -367,7 +372,8 @@ public sealed class Kernel
 
             for (int i = 0; i < this._promptFilters.Count; i++)
             {
-                this._promptFilters[i].OnPromptRendered(context);
+                this._promptFilters[i].
+                    OnPromptRendered(context);
             }
         }
 
@@ -450,7 +456,9 @@ public sealed class Kernel
         KernelArguments? arguments = null,
         CancellationToken cancellationToken = default)
     {
-        FunctionResult result = await this.InvokeAsync(function, arguments, cancellationToken).ConfigureAwait(false);
+        FunctionResult result = await this.InvokeAsync(function, arguments, cancellationToken).
+            ConfigureAwait(false);
+
         return result.GetValue<TResult>();
     }
 
@@ -478,7 +486,9 @@ public sealed class Kernel
         KernelArguments? arguments = null,
         CancellationToken cancellationToken = default)
     {
-        FunctionResult result = await this.InvokeAsync(pluginName, functionName, arguments, cancellationToken).ConfigureAwait(false);
+        FunctionResult result = await this.InvokeAsync(pluginName, functionName, arguments, cancellationToken).
+            ConfigureAwait(false);
+
         return result.GetValue<TResult>();
     }
 

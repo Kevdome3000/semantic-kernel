@@ -10,9 +10,10 @@ using System.Text.Json.Serialization;
 /// <summary>
 /// Class representing the metadata associated with a Semantic Kernel memory.
 /// </summary>
-[Experimental("SKEXP0003")]
+[Experimental("SKEXP0001")]
 public class MemoryRecordMetadata : ICloneable
 {
+
     /// <summary>
     /// Whether the source data used to calculate embeddings are stored in the local
     /// storage provider or is available through and external service, such as web site, MS Graph, etc.
@@ -94,4 +95,5 @@ public class MemoryRecordMetadata : ICloneable
     {
         return this.MemberwiseClone();
     }
+
 }

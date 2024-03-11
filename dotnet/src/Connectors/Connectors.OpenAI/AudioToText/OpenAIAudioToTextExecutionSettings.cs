@@ -13,7 +13,7 @@ using Text;
 /// <summary>
 /// Execution settings for OpenAI audio-to-text request.
 /// </summary>
-[Experimental("SKEXP0005")]
+[Experimental("SKEXP0001")]
 public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
 {
 

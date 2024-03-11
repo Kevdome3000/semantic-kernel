@@ -12,9 +12,10 @@ using Text;
 /// <summary>
 /// IMPORTANT: this is a storage schema. Changing the fields will invalidate existing metadata stored in persistent vector DBs.
 /// </summary>
-[Experimental("SKEXP0003")]
+[Experimental("SKEXP0001")]
 public class MemoryRecord : DataEntryBase
 {
+
     /// <summary>
     /// Source content embeddings.
     /// </summary>
@@ -136,6 +137,7 @@ public class MemoryRecord : DataEntryBase
         DateTimeOffset? timestamp = null)
     {
         var metadata = JsonSerializer.Deserialize<MemoryRecordMetadata>(json);
+
         return metadata != null
             ? new MemoryRecord(metadata, embedding, key, timestamp)
             : throw new KernelException("Unable to create memory record from serialized metadata");
@@ -168,4 +170,5 @@ public class MemoryRecord : DataEntryBase
     {
         return JsonSerializer.Serialize(this.Metadata);
     }
+
 }

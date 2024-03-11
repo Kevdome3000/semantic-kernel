@@ -15,13 +15,14 @@ using Connectors.OpenAI;
 /// </summary>
 public static class ChatHistoryExtensions
 {
+
     /// <summary>
     /// Add a message to the chat history at the end of the streamed message
     /// </summary>
     /// <param name="chatHistory">Target chat history</param>
     /// <param name="streamingMessageContents"><see cref="IAsyncEnumerator{T}"/> list of streaming message contents</param>
     /// <returns>Returns the original streaming results with some message processing</returns>
-    [Experimental("SKEXP0014")]
+    [Experimental("SKEXP0010")]
     public static async IAsyncEnumerable<StreamingChatMessageContent> AddStreamingMessageAsync(this ChatHistory chatHistory, IAsyncEnumerable<OpenAIStreamingChatMessageContent> streamingMessageContents)
     {
         List<StreamingChatMessageContent> messageContents = new();
@@ -49,6 +50,7 @@ public static class ChatHistoryExtensions
             streamedRole ??= chatMessage.Role;
 
             messageContents.Add(chatMessage);
+
             yield return chatMessage;
         }
 
@@ -62,4 +64,5 @@ public static class ChatHistoryExtensions
                 metadata));
         }
     }
+
 }

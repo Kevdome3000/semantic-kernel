@@ -9,9 +9,10 @@ using System.Diagnostics.CodeAnalysis;
 /// <summary>
 /// Base class with data related to prompt rendering.
 /// </summary>
-[Experimental("SKEXP0004")]
+[Experimental("SKEXP0001")]
 public abstract class PromptFilterContext
 {
+
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptFilterContext"/> class.
     /// </summary>
@@ -43,4 +44,5 @@ public abstract class PromptFilterContext
     /// Gets a dictionary of metadata associated with the operation.
     /// </summary>
     public IReadOnlyDictionary<string, object?>? Metadata { get; }
+
 }

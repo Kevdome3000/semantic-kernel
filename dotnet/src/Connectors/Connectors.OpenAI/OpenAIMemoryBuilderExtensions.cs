@@ -14,6 +14,7 @@ using Memory;
 /// </summary>
 public static class OpenAIMemoryBuilderExtensions
 {
+
     /// <summary>
     /// Adds an Azure OpenAI text embeddings service.
     /// See https://learn.microsoft.com/azure/cognitive-services/openai for service details.
@@ -25,7 +26,7 @@ public static class OpenAIMemoryBuilderExtensions
     /// <param name="modelId">Model identifier</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <returns>Self instance</returns>
-    [Experimental("SKEXP0011")]
+    [Experimental("SKEXP0010")]
     public static MemoryBuilder WithAzureOpenAITextEmbeddingGeneration(
         this MemoryBuilder builder,
         string deploymentName,
@@ -56,7 +57,7 @@ public static class OpenAIMemoryBuilderExtensions
     /// <param name="modelId">Model identifier</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <returns>Self instance</returns>
-    [Experimental("SKEXP0011")]
+    [Experimental("SKEXP0010")]
     public static MemoryBuilder WithAzureOpenAITextEmbeddingGeneration(
         this MemoryBuilder builder,
         string deploymentName,
@@ -86,7 +87,7 @@ public static class OpenAIMemoryBuilderExtensions
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <returns>Self instance</returns>
-    [Experimental("SKEXP0011")]
+    [Experimental("SKEXP0010")]
     public static MemoryBuilder WithOpenAITextEmbeddingGeneration(
         this MemoryBuilder builder,
         string modelId,
@@ -102,4 +103,5 @@ public static class OpenAIMemoryBuilderExtensions
                 HttpClientProvider.GetHttpClient(httpClient ?? builderHttpClient),
                 loggerFactory));
     }
+
 }

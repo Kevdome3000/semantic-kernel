@@ -13,12 +13,16 @@ using Extensions.Logging.Abstractions;
 /// <summary>
 /// A builder for Memory plugin.
 /// </summary>
-[Experimental("SKEXP0003")]
+[Experimental("SKEXP0001")]
 public sealed class MemoryBuilder
 {
+
     private Func<IMemoryStore>? _memoryStoreFactory = null;
+
     private Func<ITextEmbeddingGenerationService>? _embeddingGenerationFactory = null;
+
     private HttpClient? _httpClient;
+
     private ILoggerFactory _loggerFactory = NullLoggerFactory.Instance;
 
 
@@ -47,6 +51,7 @@ public sealed class MemoryBuilder
     {
         Verify.NotNull(loggerFactory);
         this._loggerFactory = loggerFactory;
+
         return this;
     }
 
@@ -60,6 +65,7 @@ public sealed class MemoryBuilder
     {
         Verify.NotNull(httpClient);
         this._httpClient = httpClient;
+
         return this;
     }
 
@@ -73,6 +79,7 @@ public sealed class MemoryBuilder
     {
         Verify.NotNull(store);
         this._memoryStoreFactory = () => store;
+
         return this;
     }
 
@@ -86,6 +93,7 @@ public sealed class MemoryBuilder
     {
         Verify.NotNull(factory);
         this._memoryStoreFactory = () => factory(this._loggerFactory);
+
         return this;
     }
 
@@ -99,6 +107,7 @@ public sealed class MemoryBuilder
     {
         Verify.NotNull(factory);
         this._memoryStoreFactory = () => factory(this._loggerFactory, this._httpClient);
+
         return this;
     }
 
@@ -112,6 +121,7 @@ public sealed class MemoryBuilder
     {
         Verify.NotNull(textEmbeddingGeneration);
         this._embeddingGenerationFactory = () => textEmbeddingGeneration;
+
         return this;
     }
 
@@ -126,6 +136,8 @@ public sealed class MemoryBuilder
     {
         Verify.NotNull(factory);
         this._embeddingGenerationFactory = () => factory(this._loggerFactory, this._httpClient);
+
         return this;
     }
+
 }

@@ -17,7 +17,7 @@ using Services;
 /// <summary>
 /// Azure OpenAI audio-to-text service.
 /// </summary>
-[Experimental("SKEXP0005")]
+[Experimental("SKEXP0001")]
 public sealed class AzureOpenAIAudioToTextService : IAudioToTextService
 {
 

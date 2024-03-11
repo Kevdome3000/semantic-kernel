@@ -10,9 +10,10 @@ using System.Text.Json.Serialization;
 /// <summary>
 /// A base class for data entries.
 /// </summary>
-[Experimental("SKEXP0003")]
+[Experimental("SKEXP0001")]
 public class DataEntryBase
 {
+
     /// <summary>
     /// Creates an instance of a <see cref="DataEntryBase"/>.
     /// </summary>
@@ -43,4 +44,5 @@ public class DataEntryBase
     /// </summary>
     [JsonIgnore]
     public bool HasTimestamp => this.Timestamp.HasValue;
+
 }

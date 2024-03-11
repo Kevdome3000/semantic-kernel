@@ -16,9 +16,10 @@ using TextToImage;
 /// <summary>
 /// OpenAI text to image service.
 /// </summary>
-[Experimental("SKEXP0012")]
+[Experimental("SKEXP0010")]
 public sealed class OpenAITextToImageService : ITextToImageService
 {
+
     private readonly OpenAITextToImageClientCore _core;
 
     /// <summary>
@@ -74,7 +75,12 @@ public sealed class OpenAITextToImageService : ITextToImageService
 
 
     /// <inheritdoc/>
-    public Task<string> GenerateImageAsync(string description, int width, int height, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    public Task<string> GenerateImageAsync(
+        string description,
+        int width,
+        int height,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
     {
         Verify.NotNull(description);
 
@@ -83,7 +89,8 @@ public sealed class OpenAITextToImageService : ITextToImageService
             throw new ArgumentOutOfRangeException(nameof(width), width, "OpenAI can generate only square images of size 256x256, 512x512, or 1024x1024.");
         }
 
-        return this.GenerateImageAsync(description, width, height, "url", x => x.Url, cancellationToken);
+        return this.GenerateImageAsync(description, width, height, "url",
+            x => x.Url, cancellationToken);
     }
 
 
@@ -105,7 +112,10 @@ public sealed class OpenAITextToImageService : ITextToImageService
             Format = format,
         });
 
-        var list = await this._core.ExecuteImageGenerationRequestAsync(OpenAIEndpoint, requestBody, extractResponse!, cancellationToken).ConfigureAwait(false);
+        var list = await this._core.ExecuteImageGenerationRequestAsync(OpenAIEndpoint, requestBody, extractResponse!, cancellationToken).
+            ConfigureAwait(false);
+
         return list[0];
     }
+
 }

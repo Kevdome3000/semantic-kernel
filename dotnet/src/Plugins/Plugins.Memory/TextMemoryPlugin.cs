@@ -17,9 +17,10 @@ using SemanticKernel.Memory;
 /// <summary>
 /// TextMemoryPlugin provides a plugin to save or recall information from the long or short term memory.
 /// </summary>
-[Experimental("SKEXP0003")]
+[Experimental("SKEXP0001")]
 public sealed class TextMemoryPlugin
 {
+
     /// <summary>
     /// Name used to specify the input text.
     /// </summary>
@@ -46,10 +47,13 @@ public sealed class TextMemoryPlugin
     public const string LimitParam = "limit";
 
     private const string DefaultCollection = "generic";
+
     private const double DefaultRelevance = 0.0;
+
     private const int DefaultLimit = 1;
 
     private readonly ISemanticTextMemory _memory;
+
     private readonly ILogger _logger;
 
 
@@ -87,7 +91,8 @@ public sealed class TextMemoryPlugin
             this._logger.LogDebug("Recalling memory with key '{0}' from collection '{1}'", key, collection);
         }
 
-        var memory = await this._memory.GetAsync(collection, key, cancellationToken: cancellationToken).ConfigureAwait(false);
+        var memory = await this._memory.GetAsync(collection, key, cancellationToken: cancellationToken).
+            ConfigureAwait(false);
 
         return memory?.Metadata.Text ?? string.Empty;
     }
@@ -125,11 +130,10 @@ public sealed class TextMemoryPlugin
         }
 
         // Search memory
-        List<MemoryQueryResult> memories = await this._memory
-            .SearchAsync(collection, input, limit.Value, relevance.Value,
-                cancellationToken: cancellationToken)
-            .ToListAsync(cancellationToken)
-            .ConfigureAwait(false);
+        List<MemoryQueryResult> memories = await this._memory.SearchAsync(collection, input, limit.Value, relevance.Value,
+                cancellationToken: cancellationToken).
+            ToListAsync(cancellationToken).
+            ConfigureAwait(false);
 
         if (memories.Count == 0)
         {
@@ -137,6 +141,7 @@ public sealed class TextMemoryPlugin
             {
                 this._logger.LogWarning("Memories not found in collection: {0}", collection);
             }
+
             return string.Empty;
         }
 
@@ -171,7 +176,8 @@ public sealed class TextMemoryPlugin
             this._logger.LogDebug("Saving memory to collection '{0}'", collection);
         }
 
-        await this._memory.SaveInformationAsync(collection, text: input, id: key, cancellationToken: cancellationToken).ConfigureAwait(false);
+        await this._memory.SaveInformationAsync(collection, text: input, id: key, cancellationToken: cancellationToken).
+            ConfigureAwait(false);
     }
 
 
@@ -197,6 +203,8 @@ public sealed class TextMemoryPlugin
             this._logger.LogDebug("Removing memory from collection '{0}'", collection);
         }
 
-        await this._memory.RemoveAsync(collection, key, cancellationToken: cancellationToken).ConfigureAwait(false);
+        await this._memory.RemoveAsync(collection, key, cancellationToken: cancellationToken).
+            ConfigureAwait(false);
     }
+
 }

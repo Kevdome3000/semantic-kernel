@@ -8,9 +8,10 @@ using System.Diagnostics.CodeAnalysis;
 /// <summary>
 /// Interface for filtering actions during function invocation.
 /// </summary>
-[Experimental("SKEXP0004")]
+[Experimental("SKEXP0001")]
 public interface IFunctionFilter
 {
+
     /// <summary>
     /// Method which is executed before function invocation.
     /// </summary>
@@ -23,4 +24,5 @@ public interface IFunctionFilter
     /// </summary>
     /// <param name="context">Data related to function after invocation.</param>
     void OnFunctionInvoked(FunctionInvokedContext context);
+
 }

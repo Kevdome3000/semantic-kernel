@@ -9,9 +9,10 @@ using System.Diagnostics.CodeAnalysis;
 /// <summary>
 /// Class with data related to function after invocation.
 /// </summary>
-[Experimental("SKEXP0004")]
+[Experimental("SKEXP0001")]
 public sealed class FunctionInvokedContext : FunctionFilterContext
 {
+
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionInvokedContext"/> class.
     /// </summary>
@@ -44,4 +45,5 @@ public sealed class FunctionInvokedContext : FunctionFilterContext
     {
         this.ResultValue = value;
     }
+
 }
