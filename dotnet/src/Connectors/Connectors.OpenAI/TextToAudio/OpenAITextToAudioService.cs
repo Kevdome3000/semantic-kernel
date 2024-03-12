@@ -3,7 +3,6 @@
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,7 +14,6 @@ using TextToAudio;
 /// <summary>
 /// OpenAI text-to-audio service.
 /// </summary>
-[Experimental("SKEXP0001")]
 public sealed class OpenAITextToAudioService : ITextToAudioService
 {
 
@@ -30,7 +28,7 @@ public sealed class OpenAITextToAudioService : ITextToAudioService
     public static string OrganizationKey => "Organization";
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object?> Attributes => this._client.Attributes;
+    public IReadOnlyDictionary<string, object?> Attributes => _client.Attributes;
 
 
     /// <summary>
@@ -48,11 +46,11 @@ public sealed class OpenAITextToAudioService : ITextToAudioService
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._client = new(modelId, apiKey, organization, httpClient,
+        _client = new OpenAITextToAudioClient(modelId, apiKey, organization, httpClient,
             loggerFactory?.CreateLogger(typeof(OpenAITextToAudioService)));
 
-        this._client.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
-        this._client.AddAttribute(OrganizationKey, organization);
+        _client.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        _client.AddAttribute(OrganizationKey, organization);
     }
 
 
@@ -62,6 +60,6 @@ public sealed class OpenAITextToAudioService : ITextToAudioService
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => this._client.GetAudioContentsAsync(text, executionSettings, cancellationToken);
+        => _client.GetAudioContentsAsync(text, executionSettings, cancellationToken);
 
 }

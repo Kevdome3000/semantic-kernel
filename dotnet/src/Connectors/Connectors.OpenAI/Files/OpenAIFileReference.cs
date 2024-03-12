@@ -3,13 +3,11 @@
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 
 
 /// <summary>
 /// References an uploaded file by id.
 /// </summary>
-[Experimental("SKEXP0010")]
 public sealed class OpenAIFileReference
 {
 

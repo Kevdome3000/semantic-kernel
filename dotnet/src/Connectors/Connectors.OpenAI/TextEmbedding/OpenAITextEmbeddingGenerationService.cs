@@ -4,7 +4,6 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,7 +16,6 @@ using Services;
 /// <summary>
 /// OpenAI text embedding service.
 /// </summary>
-[Experimental("SKEXP0010")]
 public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerationService
 {
 
@@ -39,10 +37,10 @@ public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerat
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(modelId, apiKey, organization, httpClient,
+        _core = new OpenAIClientCore(modelId, apiKey, organization, httpClient,
             loggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGenerationService)));
 
-        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        _core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
 
@@ -57,13 +55,13 @@ public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerat
         OpenAIClient openAIClient,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGenerationService)));
-        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        _core = new OpenAIClientCore(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGenerationService)));
+        _core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
+    public IReadOnlyDictionary<string, object?> Attributes => _core.Attributes;
 
 
     /// <inheritdoc/>
@@ -72,9 +70,9 @@ public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerat
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        this._core.LogActionDetails();
+        _core.LogActionDetails();
 
-        return this._core.GetEmbeddingsAsync(data, kernel, cancellationToken);
+        return _core.GetEmbeddingsAsync(data, kernel, cancellationToken);
     }
 
 }

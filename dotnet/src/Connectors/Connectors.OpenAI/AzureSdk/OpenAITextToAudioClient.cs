@@ -3,7 +3,6 @@
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,7 +14,6 @@ using Http;
 /// <summary>
 /// OpenAI text-to-audio client for HTTP operations.
 /// </summary>
-[Experimental("SKEXP0001")]
 internal sealed class OpenAITextToAudioClient
 {
 
@@ -53,12 +51,12 @@ internal sealed class OpenAITextToAudioClient
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        this._modelId = modelId;
-        this._apiKey = apiKey;
-        this._organization = organization;
+        _modelId = modelId;
+        _apiKey = apiKey;
+        _organization = organization;
 
-        this._httpClient = HttpClientProvider.GetHttpClient(httpClient);
-        this._logger = logger ?? NullLogger.Instance;
+        _httpClient = HttpClientProvider.GetHttpClient(httpClient);
+        _logger = logger ?? NullLogger.Instance;
     }
 
 
@@ -71,15 +69,15 @@ internal sealed class OpenAITextToAudioClient
 
         Verify.NotNullOrWhiteSpace(audioExecutionSettings?.Voice);
 
-        using var request = this.GetRequest(text, audioExecutionSettings);
+        using var request = GetRequest(text, audioExecutionSettings);
 
-        using var response = await this.SendRequestAsync(request, cancellationToken).
+        using var response = await SendRequestAsync(request, cancellationToken).
             ConfigureAwait(false);
 
         var data = await response.Content.ReadAsByteArrayAndTranslateExceptionAsync().
             ConfigureAwait(false);
 
-        return new List<AudioContent> { new(data, this._modelId) };
+        return new List<AudioContent> { new(data, _modelId) };
     }
 
 
@@ -87,7 +85,7 @@ internal sealed class OpenAITextToAudioClient
     {
         if (!string.IsNullOrEmpty(value))
         {
-            this.Attributes.Add(key, value);
+            Attributes.Add(key, value);
         }
     }
 
@@ -99,22 +97,22 @@ internal sealed class OpenAITextToAudioClient
         CancellationToken cancellationToken)
     {
         request.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
-        request.Headers.Add("Authorization", $"Bearer {this._apiKey}");
+        request.Headers.Add("Authorization", $"Bearer {_apiKey}");
         request.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(OpenAITextToAudioClient)));
 
-        if (!string.IsNullOrWhiteSpace(this._organization))
+        if (!string.IsNullOrWhiteSpace(_organization))
         {
-            request.Headers.Add("OpenAI-Organization", this._organization);
+            request.Headers.Add("OpenAI-Organization", _organization);
         }
 
         try
         {
-            return await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).
+            return await _httpClient.SendWithSuccessCheckAsync(request, cancellationToken).
                 ConfigureAwait(false);
         }
         catch (HttpOperationException ex)
         {
-            this._logger.LogError(
+            _logger.LogError(
                 "Error occurred on text-to-audio request execution: {ExceptionMessage}", ex.Message);
 
             throw;
@@ -126,11 +124,11 @@ internal sealed class OpenAITextToAudioClient
     {
         const string DefaultBaseUrl = "https://api.openai.com";
 
-        var baseUrl = !string.IsNullOrWhiteSpace(this._httpClient.BaseAddress?.AbsoluteUri)
-            ? this._httpClient.BaseAddress!.AbsoluteUri
+        var baseUrl = !string.IsNullOrWhiteSpace(_httpClient.BaseAddress?.AbsoluteUri)
+            ? _httpClient.BaseAddress!.AbsoluteUri
             : DefaultBaseUrl;
 
-        var payload = new TextToAudioRequest(this._modelId, text, executionSettings.Voice)
+        var payload = new TextToAudioRequest(_modelId, text, executionSettings.Voice)
         {
             ResponseFormat = executionSettings.ResponseFormat,
             Speed = executionSettings.Speed

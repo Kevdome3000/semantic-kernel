@@ -2,7 +2,6 @@
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
-using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Azure.Core;
 using Http;
@@ -26,7 +25,6 @@ public static class OpenAIMemoryBuilderExtensions
     /// <param name="modelId">Model identifier</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <returns>Self instance</returns>
-    [Experimental("SKEXP0010")]
     public static MemoryBuilder WithAzureOpenAITextEmbeddingGeneration(
         this MemoryBuilder builder,
         string deploymentName,
@@ -57,7 +55,6 @@ public static class OpenAIMemoryBuilderExtensions
     /// <param name="modelId">Model identifier</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <returns>Self instance</returns>
-    [Experimental("SKEXP0010")]
     public static MemoryBuilder WithAzureOpenAITextEmbeddingGeneration(
         this MemoryBuilder builder,
         string deploymentName,
@@ -87,7 +84,6 @@ public static class OpenAIMemoryBuilderExtensions
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <returns>Self instance</returns>
-    [Experimental("SKEXP0010")]
     public static MemoryBuilder WithOpenAITextEmbeddingGeneration(
         this MemoryBuilder builder,
         string modelId,

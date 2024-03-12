@@ -4,7 +4,6 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Text;
@@ -13,7 +12,6 @@ using Text;
 /// <summary>
 /// Execution settings for OpenAI text-to-audio request.
 /// </summary>
-[Experimental("SKEXP0001")]
 public sealed class OpenAITextToAudioExecutionSettings : PromptExecutionSettings
 {
 
@@ -23,12 +21,12 @@ public sealed class OpenAITextToAudioExecutionSettings : PromptExecutionSettings
     [JsonPropertyName("voice")]
     public string Voice
     {
-        get => this._voice;
+        get => _voice;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._voice = value;
+            ThrowIfFrozen();
+            _voice = value;
         }
     }
 
@@ -38,12 +36,12 @@ public sealed class OpenAITextToAudioExecutionSettings : PromptExecutionSettings
     [JsonPropertyName("response_format")]
     public string ResponseFormat
     {
-        get => this._responseFormat;
+        get => _responseFormat;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._responseFormat = value;
+            ThrowIfFrozen();
+            _responseFormat = value;
         }
     }
 
@@ -53,12 +51,12 @@ public sealed class OpenAITextToAudioExecutionSettings : PromptExecutionSettings
     [JsonPropertyName("speed")]
     public float Speed
     {
-        get => this._speed;
+        get => _speed;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._speed = value;
+            ThrowIfFrozen();
+            _speed = value;
         }
     }
 
@@ -76,25 +74,19 @@ public sealed class OpenAITextToAudioExecutionSettings : PromptExecutionSettings
     /// Creates an instance of <see cref="OpenAITextToAudioExecutionSettings"/> class.
     /// </summary>
     /// <param name="voice">The voice to use when generating the audio. Supported voices are alloy, echo, fable, onyx, nova, and shimmer.</param>
-    public OpenAITextToAudioExecutionSettings(string voice)
-    {
-        this._voice = voice;
-    }
+    public OpenAITextToAudioExecutionSettings(string voice) => _voice = voice;
 
 
     /// <inheritdoc/>
-    public override PromptExecutionSettings Clone()
+    public override PromptExecutionSettings Clone() => new OpenAITextToAudioExecutionSettings(Voice)
     {
-        return new OpenAITextToAudioExecutionSettings(this.Voice)
-        {
-            ModelId = this.ModelId,
-            ExtensionData = this.ExtensionData is not null
-                ? new Dictionary<string, object>(this.ExtensionData)
-                : null,
-            Speed = this.Speed,
-            ResponseFormat = this.ResponseFormat
-        };
-    }
+        ModelId = ModelId,
+        ExtensionData = ExtensionData is not null
+            ? new Dictionary<string, object>(ExtensionData)
+            : null,
+        Speed = Speed,
+        ResponseFormat = ResponseFormat
+    };
 
 
     /// <summary>

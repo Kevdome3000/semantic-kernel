@@ -3,7 +3,6 @@
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,7 +14,6 @@ using Http;
 /// <summary>
 /// Azure OpenAI text-to-audio client for HTTP operations.
 /// </summary>
-[Experimental("SKEXP0001")]
 internal sealed class AzureOpenAITextToAudioClient
 {
 
@@ -59,13 +57,13 @@ internal sealed class AzureOpenAITextToAudioClient
         Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        this._deploymentName = deploymentName;
-        this._endpoint = endpoint;
-        this._apiKey = apiKey;
-        this._modelId = modelId;
+        _deploymentName = deploymentName;
+        _endpoint = endpoint;
+        _apiKey = apiKey;
+        _modelId = modelId;
 
-        this._httpClient = HttpClientProvider.GetHttpClient(httpClient);
-        this._logger = logger ?? NullLogger.Instance;
+        _httpClient = HttpClientProvider.GetHttpClient(httpClient);
+        _logger = logger ?? NullLogger.Instance;
     }
 
 
@@ -78,11 +76,11 @@ internal sealed class AzureOpenAITextToAudioClient
 
         Verify.NotNullOrWhiteSpace(audioExecutionSettings?.Voice);
 
-        var modelId = this.GetModelId(audioExecutionSettings);
+        var modelId = GetModelId(audioExecutionSettings);
 
-        using var request = this.GetRequest(text, modelId, audioExecutionSettings);
+        using var request = GetRequest(text, modelId, audioExecutionSettings);
 
-        using var response = await this.SendRequestAsync(request, cancellationToken).
+        using var response = await SendRequestAsync(request, cancellationToken).
             ConfigureAwait(false);
 
         var data = await response.Content.ReadAsByteArrayAndTranslateExceptionAsync().
@@ -96,7 +94,7 @@ internal sealed class AzureOpenAITextToAudioClient
     {
         if (!string.IsNullOrEmpty(value))
         {
-            this.Attributes.Add(key, value);
+            Attributes.Add(key, value);
         }
     }
 
@@ -108,17 +106,17 @@ internal sealed class AzureOpenAITextToAudioClient
         CancellationToken cancellationToken)
     {
         request.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
-        request.Headers.Add("Api-Key", this._apiKey);
+        request.Headers.Add("Api-Key", _apiKey);
         request.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(AzureOpenAITextToAudioClient)));
 
         try
         {
-            return await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).
+            return await _httpClient.SendWithSuccessCheckAsync(request, cancellationToken).
                 ConfigureAwait(false);
         }
         catch (HttpOperationException ex)
         {
-            this._logger.LogError(
+            _logger.LogError(
                 "Error occurred on text-to-audio request execution: {ExceptionMessage}", ex.Message);
 
             throw;
@@ -130,11 +128,11 @@ internal sealed class AzureOpenAITextToAudioClient
     {
         const string DefaultApiVersion = "2024-02-15-preview";
 
-        var baseUrl = !string.IsNullOrWhiteSpace(this._httpClient.BaseAddress?.AbsoluteUri)
-            ? this._httpClient.BaseAddress!.AbsoluteUri
-            : this._endpoint;
+        var baseUrl = !string.IsNullOrWhiteSpace(_httpClient.BaseAddress?.AbsoluteUri)
+            ? _httpClient.BaseAddress!.AbsoluteUri
+            : _endpoint;
 
-        var requestUrl = $"openai/deployments/{this._deploymentName}/audio/speech?api-version={DefaultApiVersion}";
+        var requestUrl = $"openai/deployments/{_deploymentName}/audio/speech?api-version={DefaultApiVersion}";
 
         var payload = new TextToAudioRequest(modelId, text, executionSettings.Voice)
         {
@@ -146,13 +144,9 @@ internal sealed class AzureOpenAITextToAudioClient
     }
 
 
-    private string GetModelId(OpenAITextToAudioExecutionSettings executionSettings)
-    {
-        return
-            !string.IsNullOrWhiteSpace(this._modelId) ? this._modelId! :
-            !string.IsNullOrWhiteSpace(executionSettings.ModelId) ? executionSettings.ModelId! :
-            this._deploymentName;
-    }
+    private string GetModelId(OpenAITextToAudioExecutionSettings executionSettings) => !string.IsNullOrWhiteSpace(_modelId) ? _modelId! :
+        !string.IsNullOrWhiteSpace(executionSettings.ModelId) ? executionSettings.ModelId! :
+        _deploymentName;
 
     #endregion
 

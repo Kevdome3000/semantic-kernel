@@ -4,13 +4,12 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 
-[Experimental("SKEXP0010")]
 internal sealed class ChatWithDataRequest
 {
+
     [JsonPropertyName("temperature")]
     public double Temperature { get; set; } = 0;
 
@@ -40,12 +39,13 @@ internal sealed class ChatWithDataRequest
 
     [JsonPropertyName("messages")]
     public IList<ChatWithDataMessage> Messages { get; set; } = Array.Empty<ChatWithDataMessage>();
+
 }
 
 
-[Experimental("SKEXP0010")]
 internal sealed class ChatWithDataSource
 {
+
     [JsonPropertyName("type")]
     // The current API only supports "AzureCognitiveSearch" as name otherwise an error is returned.
     // Validation error at #/dataSources/0: Input tag 'AzureAISearch' found using 'type' does not match any of
@@ -54,12 +54,13 @@ internal sealed class ChatWithDataSource
 
     [JsonPropertyName("parameters")]
     public ChatWithDataSourceParameters Parameters { get; set; } = new();
+
 }
 
 
-[Experimental("SKEXP0010")]
 internal sealed class ChatWithDataSourceParameters
 {
+
     [JsonPropertyName("endpoint")]
     public string Endpoint { get; set; } = string.Empty;
 
@@ -68,4 +69,5 @@ internal sealed class ChatWithDataSourceParameters
 
     [JsonPropertyName("indexName")]
     public string IndexName { get; set; } = string.Empty;
+
 }

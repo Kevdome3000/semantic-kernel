@@ -2,13 +2,9 @@
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
-using System.Diagnostics.CodeAnalysis;
-
-
 /// <summary>
 /// Execution serttings associated with Open AI file upload <see cref="OpenAIFileService.UploadContentAsync"/>.
 /// </summary>
-[Experimental("SKEXP0010")]
 public sealed class OpenAIFileUploadExecutionSettings
 {
 
@@ -21,8 +17,8 @@ public sealed class OpenAIFileUploadExecutionSettings
     {
         Verify.NotNull(fileName, nameof(fileName));
 
-        this.FileName = fileName;
-        this.Purpose = purpose;
+        FileName = fileName;
+        Purpose = purpose;
     }
 
 

@@ -10,9 +10,9 @@ using System.Text.Json.Serialization;
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes
 
 
-[Experimental("SKEXP0010")]
 internal sealed class ChatWithDataResponse
 {
+
     [JsonPropertyName("id")]
     public string Id { get; set; } = string.Empty;
 
@@ -33,25 +33,24 @@ internal sealed class ChatWithDataResponse
 
 
     [JsonConstructor]
-    public ChatWithDataResponse(ChatWithDataUsage usage)
-    {
-        this.Usage = usage;
-    }
+    public ChatWithDataResponse(ChatWithDataUsage usage) => Usage = usage;
+
 }
 
 
-[Experimental("SKEXP0010")]
 [SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Used for JSON deserialization")]
 internal sealed class ChatWithDataChoice
 {
+
     [JsonPropertyName("messages")]
     public IList<ChatWithDataMessage> Messages { get; set; } = Array.Empty<ChatWithDataMessage>();
+
 }
 
 
-[Experimental("SKEXP0010")]
 internal sealed class ChatWithDataUsage
 {
+
     [JsonPropertyName("prompt_tokens")]
     public int PromptTokens { get; set; }
 
@@ -60,4 +59,5 @@ internal sealed class ChatWithDataUsage
 
     [JsonPropertyName("total_tokens")]
     public int TotalTokens { get; set; }
+
 }

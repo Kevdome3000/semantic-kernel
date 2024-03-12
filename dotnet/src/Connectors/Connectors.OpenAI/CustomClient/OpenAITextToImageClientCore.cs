@@ -4,7 +4,6 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -28,8 +27,8 @@ internal sealed class OpenAITextToImageClientCore
     /// <param name="logger">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     internal OpenAITextToImageClientCore(HttpClient? httpClient, ILogger? logger = null)
     {
-        this._httpClient = HttpClientProvider.GetHttpClient(httpClient);
-        this._logger = logger ?? NullLogger.Instance;
+        _httpClient = HttpClientProvider.GetHttpClient(httpClient);
+        _logger = logger ?? NullLogger.Instance;
     }
 
 
@@ -47,14 +46,13 @@ internal sealed class OpenAITextToImageClientCore
     /// <param name="extractResponseFunc">Function to invoke to extract the desired portion of the text to image response.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>List of image URLs</returns>
-    [Experimental("SKEXP0010")]
     internal async Task<IList<string>> ExecuteImageGenerationRequestAsync(
         string url,
         string requestBody,
         Func<TextToImageResponse.Image, string> extractResponseFunc,
         CancellationToken cancellationToken = default)
     {
-        var result = await this.ExecutePostRequestAsync<TextToImageResponse>(url, requestBody, cancellationToken).
+        var result = await ExecutePostRequestAsync<TextToImageResponse>(url, requestBody, cancellationToken).
             ConfigureAwait(false);
 
         return result.Images.Select(extractResponseFunc).
@@ -71,7 +69,7 @@ internal sealed class OpenAITextToImageClientCore
     {
         if (!string.IsNullOrEmpty(value))
         {
-            this.Attributes.Add(key, value!);
+            Attributes.Add(key, value!);
         }
     }
 
@@ -91,7 +89,7 @@ internal sealed class OpenAITextToImageClientCore
     {
         using var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
 
-        using var response = await this.ExecuteRequestAsync(url, HttpMethod.Post, content, cancellationToken).
+        using var response = await ExecuteRequestAsync(url, HttpMethod.Post, content, cancellationToken).
             ConfigureAwait(false);
 
         string responseJson = await response.Content.ReadAsStringWithExceptionMappingAsync().
@@ -127,14 +125,14 @@ internal sealed class OpenAITextToImageClientCore
         request.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
         request.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(OpenAITextToImageClientCore)));
 
-        this.RequestCreated?.Invoke(this, request);
+        RequestCreated?.Invoke(this, request);
 
-        var response = await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).
+        var response = await _httpClient.SendWithSuccessCheckAsync(request, cancellationToken).
             ConfigureAwait(false);
 
-        if (this._logger.IsEnabled(LogLevel.Debug))
+        if (_logger.IsEnabled(LogLevel.Debug))
         {
-            this._logger.LogDebug("HTTP response: {0} {1}", (int)response.StatusCode, response.StatusCode.ToString("G"));
+            _logger.LogDebug("HTTP response: {0} {1}", (int)response.StatusCode, response.StatusCode.ToString("G"));
         }
 
         return response;

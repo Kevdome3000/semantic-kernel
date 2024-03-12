@@ -3,7 +3,6 @@
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,7 +14,6 @@ using TextToAudio;
 /// <summary>
 /// Azure OpenAI text-to-audio service.
 /// </summary>
-[Experimental("SKEXP0001")]
 public sealed class AzureOpenAITextToAudioService : ITextToAudioService
 {
 
@@ -25,7 +23,7 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
     private readonly AzureOpenAITextToAudioClient _client;
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object?> Attributes => this._client.Attributes;
+    public IReadOnlyDictionary<string, object?> Attributes => _client.Attributes;
 
     /// <summary>
     /// Gets the key used to store the deployment name in the <see cref="IAIService.Attributes"/> dictionary.
@@ -50,11 +48,11 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._client = new(deploymentName, endpoint, apiKey, modelId,
+        _client = new AzureOpenAITextToAudioClient(deploymentName, endpoint, apiKey, modelId,
             httpClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextToAudioService)));
 
-        this._client.AddAttribute(DeploymentNameKey, deploymentName);
-        this._client.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        _client.AddAttribute(DeploymentNameKey, deploymentName);
+        _client.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
 
@@ -64,6 +62,6 @@ public sealed class AzureOpenAITextToAudioService : ITextToAudioService
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => this._client.GetAudioContentsAsync(text, executionSettings, cancellationToken);
+        => _client.GetAudioContentsAsync(text, executionSettings, cancellationToken);
 
 }
