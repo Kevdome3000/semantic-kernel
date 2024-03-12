@@ -2,13 +2,9 @@
 
 namespace Microsoft.SemanticKernel;
 
-using System.Diagnostics.CodeAnalysis;
-
-
 /// <summary>
 /// Interface for filtering actions during function invocation.
 /// </summary>
-[Experimental("SKEXP0001")]
 public interface IFunctionFilter
 {
 

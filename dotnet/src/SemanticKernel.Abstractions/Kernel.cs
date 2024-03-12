@@ -61,39 +61,39 @@ public sealed class Kernel
         KernelPluginCollection? plugins = null)
     {
         // Store the provided services, or an empty singleton if there aren't any.
-        this.Services = services ?? EmptyServiceProvider.Instance;
+        Services = services ?? EmptyServiceProvider.Instance;
 
         // Store the provided plugins. If there weren't any, look in DI to see if there's a plugin collection.
-        this._plugins = plugins ?? this.Services.GetService<KernelPluginCollection>();
+        _plugins = plugins ?? Services.GetService<KernelPluginCollection>();
 
-        if (this._plugins is null)
+        if (_plugins is null)
         {
             // Otherwise, enumerate any plugins that may have been registered directly.
-            IEnumerable<KernelPlugin> e = this.Services.GetServices<KernelPlugin>();
+            IEnumerable<KernelPlugin> e = Services.GetServices<KernelPlugin>();
 
             // It'll be common not to have any plugins directly registered as a service.
             // If we can efficiently tell there aren't any, avoid proactively allocating
             // the plugins collection.
             if (e is not ICollection<KernelPlugin> c || c.Count != 0)
             {
-                this._plugins = new(e);
+                _plugins = new KernelPluginCollection(e);
             }
         }
 
         // Enumerate any function filters that may have been registered.
-        IEnumerable<IFunctionFilter> functionFilters = this.Services.GetServices<IFunctionFilter>();
+        IEnumerable<IFunctionFilter> functionFilters = Services.GetServices<IFunctionFilter>();
 
         if (functionFilters is not ICollection<IFunctionFilter> functionFilterCollection || functionFilterCollection.Count != 0)
         {
-            this._functionFilters = new(functionFilters);
+            _functionFilters = new NonNullCollection<IFunctionFilter>(functionFilters);
         }
 
         // Enumerate any prompt filters that may have been registered.
-        IEnumerable<IPromptFilter> promptFilters = this.Services.GetServices<IPromptFilter>();
+        IEnumerable<IPromptFilter> promptFilters = Services.GetServices<IPromptFilter>();
 
         if (promptFilters is not ICollection<IPromptFilter> promptFilterCollection || promptFilterCollection.Count != 0)
         {
-            this._promptFilters = new(promptFilters);
+            _promptFilters = new NonNullCollection<IPromptFilter>(promptFilters);
         }
     }
 
@@ -128,18 +128,18 @@ public sealed class Kernel
     /// </list>
     /// </remarks>
     public Kernel Clone() =>
-        new(this.Services, this._plugins is { Count: > 0 }
-            ? new KernelPluginCollection(this._plugins)
+        new(Services, _plugins is { Count: > 0 }
+            ? new KernelPluginCollection(_plugins)
             : null)
         {
-            FunctionInvoking = this.FunctionInvoking,
-            FunctionInvoked = this.FunctionInvoked,
-            PromptRendering = this.PromptRendering,
-            PromptRendered = this.PromptRendered,
-            _data = this._data is { Count: > 0 }
-                ? new Dictionary<string, object?>(this._data)
+            FunctionInvoking = FunctionInvoking,
+            FunctionInvoked = FunctionInvoked,
+            PromptRendering = PromptRendering,
+            PromptRendered = PromptRendered,
+            _data = _data is { Count: > 0 }
+                ? new Dictionary<string, object?>(_data)
                 : null,
-            _culture = this._culture,
+            _culture = _culture
         };
 
 
@@ -147,27 +147,27 @@ public sealed class Kernel
     /// Gets the collection of plugins available through the kernel.
     /// </summary>
     public KernelPluginCollection Plugins =>
-        this._plugins ??
-        Interlocked.CompareExchange(ref this._plugins, new KernelPluginCollection(), null) ??
-        this._plugins;
+        _plugins ??
+        Interlocked.CompareExchange(ref _plugins, new KernelPluginCollection(), null) ??
+        _plugins;
 
     /// <summary>
     /// Gets the collection of function filters available through the kernel.
     /// </summary>
-    [Experimental("SKEXP0001")]
+
     public IList<IFunctionFilter> FunctionFilters =>
-        this._functionFilters ??
-        Interlocked.CompareExchange(ref this._functionFilters, new NonNullCollection<IFunctionFilter>(), null) ??
-        this._functionFilters;
+        _functionFilters ??
+        Interlocked.CompareExchange(ref _functionFilters, new NonNullCollection<IFunctionFilter>(), null) ??
+        _functionFilters;
 
     /// <summary>
     /// Gets the collection of function filters available through the kernel.
     /// </summary>
-    [Experimental("SKEXP0001")]
+
     public IList<IPromptFilter> PromptFilters =>
-        this._promptFilters ??
-        Interlocked.CompareExchange(ref this._promptFilters, new NonNullCollection<IPromptFilter>(), null) ??
-        this._promptFilters;
+        _promptFilters ??
+        Interlocked.CompareExchange(ref _promptFilters, new NonNullCollection<IPromptFilter>(), null) ??
+        _promptFilters;
 
     /// <summary>
     /// Gets the service provider used to query for services available through the kernel.
@@ -186,8 +186,8 @@ public sealed class Kernel
     [AllowNull]
     public CultureInfo Culture
     {
-        get => this._culture;
-        set => this._culture = value ?? CultureInfo.InvariantCulture;
+        get => _culture;
+        set => _culture = value ?? CultureInfo.InvariantCulture;
     }
 
     /// <summary>
@@ -198,14 +198,14 @@ public sealed class Kernel
     /// none, it returns an <see cref="ILoggerFactory"/> that won't perform any logging.
     /// </remarks>
     public ILoggerFactory LoggerFactory =>
-        this.Services.GetService<ILoggerFactory>() ??
+        Services.GetService<ILoggerFactory>() ??
         NullLoggerFactory.Instance;
 
     /// <summary>
     /// Gets the <see cref="IAIServiceSelector"/> associated with this <see cref="Kernel"/>.
     /// </summary>
     public IAIServiceSelector ServiceSelector =>
-        this.Services.GetService<IAIServiceSelector>() ??
+        Services.GetService<IAIServiceSelector>() ??
         OrderedAIServiceSelector.Instance;
 
     /// <summary>
@@ -215,9 +215,9 @@ public sealed class Kernel
     /// This may be used to flow arbitrary data in and out of operations performed with this kernel instance.
     /// </remarks>
     public IDictionary<string, object?> Data =>
-        this._data ??
-        Interlocked.CompareExchange(ref this._data, new Dictionary<string, object?>(), null) ??
-        this._data;
+        _data ??
+        Interlocked.CompareExchange(ref _data, new Dictionary<string, object?>(), null) ??
+        _data;
 
 
     #region GetServices
@@ -233,10 +233,10 @@ public sealed class Kernel
 
         if (serviceKey is not null)
         {
-            if (this.Services is IKeyedServiceProvider)
+            if (Services is IKeyedServiceProvider)
             {
                 // We were given a service ID, so we need to use the keyed service lookup.
-                service = this.Services.GetKeyedService<T>(serviceKey);
+                service = Services.GetKeyedService<T>(serviceKey);
             }
         }
         else
@@ -245,11 +245,11 @@ public sealed class Kernel
             // a service registered without an ID. If we can't find one, then we try to match with
             // a service registered with an ID. In both cases, if there were multiple, this will match
             // with whichever was registered last.
-            service = this.Services.GetService<T>();
+            service = Services.GetService<T>();
 
-            if (service is null && this.Services is IKeyedServiceProvider)
+            if (service is null && Services is IKeyedServiceProvider)
             {
-                service = this.GetAllServices<T>().
+                service = GetAllServices<T>().
                     LastOrDefault();
             }
         }
@@ -259,7 +259,7 @@ public sealed class Kernel
         {
             string message =
                 serviceKey is null ? $"Service of type '{typeof(T)}' not registered." :
-                this.Services is not IKeyedServiceProvider ? $"Key '{serviceKey}' specified but service provider '{this.Services}' is not a {nameof(IKeyedServiceProvider)}." :
+                Services is not IKeyedServiceProvider ? $"Key '{serviceKey}' specified but service provider '{Services}' is not a {nameof(IKeyedServiceProvider)}." :
                 $"Service of type '{typeof(T)}' and key '{serviceKey}' not registered.";
 
             throw new KernelException(message);
@@ -276,24 +276,24 @@ public sealed class Kernel
     /// <remarks>There is no guaranteed ordering on the results.</remarks>
     public IEnumerable<T> GetAllServices<T>() where T : class
     {
-        if (this.Services is IKeyedServiceProvider)
+        if (Services is IKeyedServiceProvider)
         {
             // M.E.DI doesn't support querying for a service without a key, and it also doesn't
             // support AnyKey currently: https://github.com/dotnet/runtime/issues/91466
             // As a workaround, KernelBuilder injects a service containing the type-to-all-keys
             // mapping. We can query for that service and and then use it to try to get a service.
-            if (this.Services.GetKeyedService<Dictionary<Type, HashSet<object?>>>(KernelServiceTypeToKeyMappings) is { } typeToKeyMappings)
+            if (Services.GetKeyedService<Dictionary<Type, HashSet<object?>>>(KernelServiceTypeToKeyMappings) is { } typeToKeyMappings)
             {
                 if (typeToKeyMappings.TryGetValue(typeof(T), out HashSet<object?>? keys))
                 {
-                    return keys.SelectMany(key => this.Services.GetKeyedServices<T>(key));
+                    return keys.SelectMany(key => Services.GetKeyedServices<T>(key));
                 }
 
                 return Enumerable.Empty<T>();
             }
         }
 
-        return this.Services.GetServices<T>();
+        return Services.GetServices<T>();
     }
 
     #endregion
@@ -301,18 +301,17 @@ public sealed class Kernel
 
     #region Internal Filtering
 
-    [Experimental("SKEXP0001")]
     internal FunctionInvokingContext? OnFunctionInvokingFilter(KernelFunction function, KernelArguments arguments)
     {
         FunctionInvokingContext? context = null;
 
-        if (this._functionFilters is { Count: > 0 })
+        if (_functionFilters is { Count: > 0 })
         {
-            context = new(function, arguments);
+            context = new FunctionInvokingContext(function, arguments);
 
-            for (int i = 0; i < this._functionFilters.Count; i++)
+            for (int i = 0; i < _functionFilters.Count; i++)
             {
-                this._functionFilters[i].
+                _functionFilters[i].
                     OnFunctionInvoking(context);
             }
         }
@@ -321,18 +320,17 @@ public sealed class Kernel
     }
 
 
-    [Experimental("SKEXP0001")]
     internal FunctionInvokedContext? OnFunctionInvokedFilter(KernelArguments arguments, FunctionResult result)
     {
         FunctionInvokedContext? context = null;
 
-        if (this._functionFilters is { Count: > 0 })
+        if (_functionFilters is { Count: > 0 })
         {
-            context = new(arguments, result);
+            context = new FunctionInvokedContext(arguments, result);
 
-            for (int i = 0; i < this._functionFilters.Count; i++)
+            for (int i = 0; i < _functionFilters.Count; i++)
             {
-                this._functionFilters[i].
+                _functionFilters[i].
                     OnFunctionInvoked(context);
             }
         }
@@ -341,18 +339,17 @@ public sealed class Kernel
     }
 
 
-    [Experimental("SKEXP0001")]
     internal PromptRenderingContext? OnPromptRenderingFilter(KernelFunction function, KernelArguments arguments)
     {
         PromptRenderingContext? context = null;
 
-        if (this._promptFilters is { Count: > 0 })
+        if (_promptFilters is { Count: > 0 })
         {
-            context = new(function, arguments);
+            context = new PromptRenderingContext(function, arguments);
 
-            for (int i = 0; i < this._promptFilters.Count; i++)
+            for (int i = 0; i < _promptFilters.Count; i++)
             {
-                this._promptFilters[i].
+                _promptFilters[i].
                     OnPromptRendering(context);
             }
         }
@@ -361,18 +358,17 @@ public sealed class Kernel
     }
 
 
-    [Experimental("SKEXP0001")]
     internal PromptRenderedContext? OnPromptRenderedFilter(KernelFunction function, KernelArguments arguments, string renderedPrompt)
     {
         PromptRenderedContext? context = null;
 
-        if (this._promptFilters is { Count: > 0 })
+        if (_promptFilters is { Count: > 0 })
         {
-            context = new(function, arguments, renderedPrompt);
+            context = new PromptRenderedContext(function, arguments, renderedPrompt);
 
-            for (int i = 0; i < this._promptFilters.Count; i++)
+            for (int i = 0; i < _promptFilters.Count; i++)
             {
-                this._promptFilters[i].
+                _promptFilters[i].
                     OnPromptRendered(context);
             }
         }
@@ -431,7 +427,7 @@ public sealed class Kernel
     {
         Verify.NotNullOrWhiteSpace(functionName);
 
-        var function = this.Plugins.GetFunction(pluginName, functionName);
+        var function = Plugins.GetFunction(pluginName, functionName);
 
         return function.InvokeAsync(this, arguments, cancellationToken);
     }
@@ -456,7 +452,7 @@ public sealed class Kernel
         KernelArguments? arguments = null,
         CancellationToken cancellationToken = default)
     {
-        FunctionResult result = await this.InvokeAsync(function, arguments, cancellationToken).
+        FunctionResult result = await InvokeAsync(function, arguments, cancellationToken).
             ConfigureAwait(false);
 
         return result.GetValue<TResult>();
@@ -486,7 +482,7 @@ public sealed class Kernel
         KernelArguments? arguments = null,
         CancellationToken cancellationToken = default)
     {
-        FunctionResult result = await this.InvokeAsync(pluginName, functionName, arguments, cancellationToken).
+        FunctionResult result = await InvokeAsync(pluginName, functionName, arguments, cancellationToken).
             ConfigureAwait(false);
 
         return result.GetValue<TResult>();
@@ -543,7 +539,7 @@ public sealed class Kernel
     {
         Verify.NotNullOrWhiteSpace(functionName);
 
-        var function = this.Plugins.GetFunction(pluginName, functionName);
+        var function = Plugins.GetFunction(pluginName, functionName);
 
         return function.InvokeStreamingAsync<StreamingKernelContent>(this, arguments, cancellationToken);
     }
@@ -595,7 +591,7 @@ public sealed class Kernel
     {
         Verify.NotNullOrWhiteSpace(functionName);
 
-        var function = this.Plugins.GetFunction(pluginName, functionName);
+        var function = Plugins.GetFunction(pluginName, functionName);
 
         return function.InvokeStreamingAsync<T>(this, arguments, cancellationToken);
     }
@@ -635,9 +631,9 @@ public sealed class Kernel
     {
         FunctionInvokingEventArgs? eventArgs = null;
 
-        if (this.FunctionInvoking is { } functionInvoking)
+        if (FunctionInvoking is { } functionInvoking)
         {
-            eventArgs = new(function, arguments);
+            eventArgs = new FunctionInvokingEventArgs(function, arguments);
             functionInvoking.Invoke(this, eventArgs);
         }
 
@@ -650,9 +646,9 @@ public sealed class Kernel
     {
         FunctionInvokedEventArgs? eventArgs = null;
 
-        if (this.FunctionInvoked is { } functionInvoked)
+        if (FunctionInvoked is { } functionInvoked)
         {
-            eventArgs = new(function, arguments, result);
+            eventArgs = new FunctionInvokedEventArgs(function, arguments, result);
             functionInvoked.Invoke(this, eventArgs);
         }
 
@@ -665,9 +661,9 @@ public sealed class Kernel
     {
         PromptRenderingEventArgs? eventArgs = null;
 
-        if (this.PromptRendering is { } promptRendering)
+        if (PromptRendering is { } promptRendering)
         {
-            eventArgs = new(function, arguments);
+            eventArgs = new PromptRenderingEventArgs(function, arguments);
             promptRendering.Invoke(this, eventArgs);
         }
 
@@ -680,9 +676,9 @@ public sealed class Kernel
     {
         PromptRenderedEventArgs? eventArgs = null;
 
-        if (this.PromptRendered is { } promptRendered)
+        if (PromptRendered is { } promptRendered)
         {
-            eventArgs = new(function, arguments, renderedPrompt);
+            eventArgs = new PromptRenderedEventArgs(function, arguments, renderedPrompt);
             promptRendered.Invoke(this, eventArgs);
         }
 

@@ -3,7 +3,6 @@
 namespace Microsoft.SemanticKernel.Embeddings;
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,9 +11,9 @@ using System.Threading.Tasks;
 /// <summary>
 /// Provides a collection of static methods for operating on <see cref="IEmbeddingGenerationService{TValue,TEmbedding}"/> objects.
 /// </summary>
-[Experimental("SKEXP0001")]
 public static class EmbeddingGenerationExtensions
 {
+
     /// <summary>
     /// Generates an embedding from the given <paramref name="value"/>.
     /// </summary>
@@ -25,7 +24,6 @@ public static class EmbeddingGenerationExtensions
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>A list of embedding structs representing the input <paramref name="value"/>.</returns>
-    [Experimental("SKEXP0001")]
     public static async Task<ReadOnlyMemory<TEmbedding>> GenerateEmbeddingAsync<TValue, TEmbedding>(
         this IEmbeddingGenerationService<TValue, TEmbedding> generator,
         TValue value,
@@ -34,6 +32,9 @@ public static class EmbeddingGenerationExtensions
         where TEmbedding : unmanaged
     {
         Verify.NotNull(generator);
-        return (await generator.GenerateEmbeddingsAsync(new[] { value }, kernel, cancellationToken).ConfigureAwait(false)).FirstOrDefault();
+
+        return (await generator.GenerateEmbeddingsAsync(new[] { value }, kernel, cancellationToken).
+            ConfigureAwait(false)).FirstOrDefault();
     }
+
 }

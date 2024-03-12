@@ -3,7 +3,6 @@
 namespace Microsoft.SemanticKernel.Memory;
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Text;
 
@@ -11,7 +10,6 @@ using Text;
 /// <summary>
 /// Copy of metadata associated with a memory entry.
 /// </summary>
-[Experimental("SKEXP0001")]
 public class MemoryQueryResult
 {
 
@@ -48,9 +46,9 @@ public class MemoryQueryResult
         double relevance,
         ReadOnlyMemory<float>? embedding)
     {
-        this.Metadata = metadata;
-        this.Relevance = relevance;
-        this.Embedding = embedding;
+        Metadata = metadata;
+        Relevance = relevance;
+        Embedding = embedding;
     }
 
 
@@ -61,14 +59,11 @@ public class MemoryQueryResult
     /// <param name="relevance">Search relevance, from 0 to 1, where 1 means perfect match.</param>
     public static MemoryQueryResult FromMemoryRecord(
         MemoryRecord record,
-        double relevance)
-    {
-        return new MemoryQueryResult(
-            (MemoryRecordMetadata)record.Metadata.Clone(),
-            relevance,
-            record.Embedding.IsEmpty
-                ? null
-                : record.Embedding);
-    }
+        double relevance) => new(
+        (MemoryRecordMetadata)record.Metadata.Clone(),
+        relevance,
+        record.Embedding.IsEmpty
+            ? null
+            : record.Embedding);
 
 }

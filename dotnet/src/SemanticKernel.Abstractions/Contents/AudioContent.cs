@@ -4,14 +4,12 @@ namespace Microsoft.SemanticKernel;
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 
 /// <summary>
 /// Represents audio content.
 /// </summary>
-[Experimental("SKEXP0001")]
 public class AudioContent : KernelContent
 {
 
@@ -42,9 +40,6 @@ public class AudioContent : KernelContent
         string? modelId = null,
         object? innerContent = null,
         IReadOnlyDictionary<string, object?>? metadata = null)
-        : base(innerContent, modelId, metadata)
-    {
-        this.Data = data;
-    }
+        : base(innerContent, modelId, metadata) => Data = data;
 
 }

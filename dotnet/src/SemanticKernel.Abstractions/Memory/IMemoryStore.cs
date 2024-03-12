@@ -4,7 +4,6 @@ namespace Microsoft.SemanticKernel.Memory;
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,7 +11,6 @@ using System.Threading.Tasks;
 /// <summary>
 /// An interface for storing and retrieving indexed <see cref="MemoryRecord"/> objects in a data store.
 /// </summary>
-[Experimental("SKEXP0001")]
 public interface IMemoryStore
 {
 

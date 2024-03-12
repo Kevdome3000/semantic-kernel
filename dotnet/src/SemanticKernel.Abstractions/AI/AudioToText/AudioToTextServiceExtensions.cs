@@ -2,7 +2,6 @@
 
 namespace Microsoft.SemanticKernel.AudioToText;
 
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,7 +10,6 @@ using System.Threading.Tasks;
 /// <summary>
 /// Class with extension methods for <see cref="IAudioToTextService"/> interface.
 /// </summary>
-[Experimental("SKEXP0001")]
 public static class AudioToTextServiceExtensions
 {
 

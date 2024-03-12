@@ -4,7 +4,6 @@ namespace Microsoft.SemanticKernel.Embeddings;
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Services;
@@ -15,10 +14,10 @@ using Services;
 /// </summary>
 /// <typeparam name="TValue">The type from which embeddings will be generated.</typeparam>
 /// <typeparam name="TEmbedding">The numeric type of the embedding data.</typeparam>
-[Experimental("SKEXP0001")]
 public interface IEmbeddingGenerationService<TValue, TEmbedding> : IAIService
     where TEmbedding : unmanaged
 {
+
     /// <summary>
     /// Generates an embedding from the given <paramref name="data"/>.
     /// </summary>
@@ -30,4 +29,5 @@ public interface IEmbeddingGenerationService<TValue, TEmbedding> : IAIService
         IList<TValue> data,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default);
+
 }

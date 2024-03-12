@@ -8,7 +8,6 @@ using System.Diagnostics.CodeAnalysis;
 /// <summary>
 /// Class with data related to prompt after rendering.
 /// </summary>
-[Experimental("SKEXP0001")]
 public sealed class PromptRenderedContext : PromptFilterContext
 {
 
@@ -22,10 +21,7 @@ public sealed class PromptRenderedContext : PromptFilterContext
     /// <param name="arguments">The arguments associated with the operation.</param>
     /// <param name="renderedPrompt">The prompt that was rendered by the associated operation.</param>
     public PromptRenderedContext(KernelFunction function, KernelArguments arguments, string renderedPrompt)
-        : base(function, arguments, metadata: null)
-    {
-        this.RenderedPrompt = renderedPrompt;
-    }
+        : base(function, arguments, null) => RenderedPrompt = renderedPrompt;
 
 
     /// <summary>
@@ -51,12 +47,12 @@ public sealed class PromptRenderedContext : PromptFilterContext
     /// </remarks>
     public string RenderedPrompt
     {
-        get => this._renderedPrompt;
+        get => _renderedPrompt;
         [MemberNotNull(nameof(_renderedPrompt))]
         set
         {
             Verify.NotNullOrWhiteSpace(value);
-            this._renderedPrompt = value;
+            _renderedPrompt = value;
         }
     }
 

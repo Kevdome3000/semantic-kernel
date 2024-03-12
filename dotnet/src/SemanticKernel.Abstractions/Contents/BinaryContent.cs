@@ -4,7 +4,6 @@ namespace Microsoft.SemanticKernel;
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -13,7 +12,6 @@ using System.Threading.Tasks;
 /// <summary>
 /// Provides access to binary content.
 /// </summary>
-[Experimental("SKEXP0010")]
 public class BinaryContent : KernelContent
 {
 
@@ -50,7 +48,7 @@ public class BinaryContent : KernelContent
     {
         Verify.NotNull(content, nameof(content));
 
-        this.Content = content;
+        Content = content;
     }
 
 
@@ -75,7 +73,7 @@ public class BinaryContent : KernelContent
     {
         Verify.NotNull(streamProvider, nameof(streamProvider));
 
-        this._streamProvider = streamProvider;
+        _streamProvider = streamProvider;
     }
 
 
@@ -87,15 +85,15 @@ public class BinaryContent : KernelContent
     /// </remarks>
     public async Task<Stream> GetStreamAsync()
     {
-        if (this._streamProvider is not null)
+        if (_streamProvider is not null)
         {
-            return await this._streamProvider.Invoke().
+            return await _streamProvider.Invoke().
                 ConfigureAwait(false);
         }
 
-        if (this.Content is not null)
+        if (Content is not null)
         {
-            return new MemoryStream(this.Content.Value.ToArray());
+            return new MemoryStream(Content.Value.ToArray());
         }
 
         throw new KernelException("Null content");
@@ -107,9 +105,9 @@ public class BinaryContent : KernelContent
     /// </summary>
     public async Task<ReadOnlyMemory<byte>> GetContentAsync()
     {
-        if (this._streamProvider is not null)
+        if (_streamProvider is not null)
         {
-            using var stream = await this._streamProvider.Invoke().
+            using var stream = await _streamProvider.Invoke().
                 ConfigureAwait(false);
 
             using var memoryStream = new MemoryStream();
@@ -120,9 +118,9 @@ public class BinaryContent : KernelContent
             return memoryStream.ToArray();
         }
 
-        if (this.Content is not null)
+        if (Content is not null)
         {
-            return this.Content.Value;
+            return Content.Value;
         }
 
         throw new KernelException("Null content");

@@ -3,13 +3,11 @@
 namespace Microsoft.SemanticKernel;
 
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 
 
 /// <summary>
 /// Base class with data related to function invocation.
 /// </summary>
-[Experimental("SKEXP0001")]
 public abstract class FunctionFilterContext
 {
 
@@ -24,9 +22,9 @@ public abstract class FunctionFilterContext
         Verify.NotNull(function);
         Verify.NotNull(arguments);
 
-        this.Function = function;
-        this.Arguments = arguments;
-        this.Metadata = metadata;
+        Function = function;
+        Arguments = arguments;
+        Metadata = metadata;
     }
 
 

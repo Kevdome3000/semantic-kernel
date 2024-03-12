@@ -3,14 +3,12 @@
 namespace Microsoft.SemanticKernel.Memory;
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 
 /// <summary>
 /// A base class for data entries.
 /// </summary>
-[Experimental("SKEXP0001")]
 public class DataEntryBase
 {
 
@@ -22,8 +20,8 @@ public class DataEntryBase
     [JsonConstructor]
     public DataEntryBase(string? key = null, DateTimeOffset? timestamp = null)
     {
-        this.Key = key ?? string.Empty;
-        this.Timestamp = timestamp;
+        Key = key ?? string.Empty;
+        Timestamp = timestamp;
     }
 
 
@@ -43,6 +41,6 @@ public class DataEntryBase
     /// <c>true</c> if the data has a timestamp.
     /// </summary>
     [JsonIgnore]
-    public bool HasTimestamp => this.Timestamp.HasValue;
+    public bool HasTimestamp => Timestamp.HasValue;
 
 }

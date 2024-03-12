@@ -3,7 +3,6 @@
 namespace Microsoft.SemanticKernel.ImageToText;
 
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Services;
@@ -12,7 +11,6 @@ using Services;
 /// <summary>
 /// Interface for image-to-text services.
 /// </summary>
-[Experimental("SKEXP0001")]
 public interface IImageToTextService : IAIService
 {
 

@@ -2,7 +2,6 @@
 
 namespace Microsoft.SemanticKernel.ImageToText;
 
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,7 +10,6 @@ using System.Threading.Tasks;
 /// <summary>
 /// Class sponsor that holds extension methods for <see cref ="IImageToTextService" /> interface.
 /// </summary>
-[Experimental("SKEXP0001")]
 public static class ImageToTextExtensions
 {
 

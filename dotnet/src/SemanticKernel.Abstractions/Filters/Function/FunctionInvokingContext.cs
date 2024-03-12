@@ -2,13 +2,9 @@
 
 namespace Microsoft.SemanticKernel;
 
-using System.Diagnostics.CodeAnalysis;
-
-
 /// <summary>
 /// Class with data related to function before invocation.
 /// </summary>
-[Experimental("SKEXP0001")]
 public sealed class FunctionInvokingContext : FunctionFilterContext
 {
 
@@ -18,7 +14,7 @@ public sealed class FunctionInvokingContext : FunctionFilterContext
     /// <param name="function">The <see cref="KernelFunction"/> with which this filter is associated.</param>
     /// <param name="arguments">The arguments associated with the operation.</param>
     public FunctionInvokingContext(KernelFunction function, KernelArguments arguments)
-        : base(function, arguments, metadata: null)
+        : base(function, arguments, null)
     {
     }
 
