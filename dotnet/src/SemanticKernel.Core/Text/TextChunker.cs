@@ -5,7 +5,6 @@ namespace Microsoft.SemanticKernel.Text;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 
@@ -15,7 +14,6 @@ using System.Text;
 /// For plain text, split looking at new lines first, then periods, and so on.
 /// For markdown, split looking at punctuation first, and so on.
 /// </summary>
-[Experimental("SKEXP0050")]
 public static class TextChunker
 {
 
@@ -27,11 +25,11 @@ public static class TextChunker
     public delegate int TokenCounter(string input);
 
 
-    private static readonly char[] s_spaceChar = new[] { ' ' };
+    private static readonly char[] s_spaceChar = { ' ' };
 
-    private static readonly string?[] s_plaintextSplitOptions = new[] { "\n\r", ".", "?!", ";", ":", ",", ")]}", " ", "-", null };
+    private static readonly string?[] s_plaintextSplitOptions = { "\n\r", ".", "?!", ";", ":", ",", ")]}", " ", "-", null };
 
-    private static readonly string?[] s_markdownSplitOptions = new[] { ".", "?!", ";", ":", ",", ")]}", " ", "-", "\n\r", null };
+    private static readonly string?[] s_markdownSplitOptions = { ".", "?!", ";", ":", ",", ")]}", " ", "-", "\n\r", null };
 
 
     /// <summary>
@@ -41,9 +39,8 @@ public static class TextChunker
     /// <param name="maxTokensPerLine">Maximum number of tokens per line.</param>
     /// <param name="tokenCounter">Function to count tokens in a string. If not supplied, the default counter will be used.</param>
     /// <returns>List of lines.</returns>
-    [Experimental("SKEXP0050")]
     public static List<string> SplitPlainTextLines(string text, int maxTokensPerLine, TokenCounter? tokenCounter = null) =>
-        InternalSplitLines(text, maxTokensPerLine, trim: true, s_plaintextSplitOptions,
+        InternalSplitLines(text, maxTokensPerLine, true, s_plaintextSplitOptions,
             tokenCounter);
 
 
@@ -54,9 +51,8 @@ public static class TextChunker
     /// <param name="maxTokensPerLine">Maximum number of tokens per line.</param>
     /// <param name="tokenCounter">Function to count tokens in a string. If not supplied, the default counter will be used.</param>
     /// <returns>List of lines.</returns>
-    [Experimental("SKEXP0050")]
     public static List<string> SplitMarkDownLines(string text, int maxTokensPerLine, TokenCounter? tokenCounter = null) =>
-        InternalSplitLines(text, maxTokensPerLine, trim: true, s_markdownSplitOptions,
+        InternalSplitLines(text, maxTokensPerLine, true, s_markdownSplitOptions,
             tokenCounter);
 
 
@@ -69,7 +65,6 @@ public static class TextChunker
     /// <param name="chunkHeader">Text to be prepended to each individual chunk.</param>
     /// <param name="tokenCounter">Function to count tokens in a string. If not supplied, the default counter will be used.</param>
     /// <returns>List of paragraphs.</returns>
-    [Experimental("SKEXP0050")]
     public static List<string> SplitPlainTextParagraphs(
         List<string> lines,
         int maxTokensPerParagraph,
@@ -77,7 +72,7 @@ public static class TextChunker
         string? chunkHeader = null,
         TokenCounter? tokenCounter = null) =>
         InternalSplitTextParagraphs(lines, maxTokensPerParagraph, overlapTokens, chunkHeader,
-            static (text, maxTokens, tokenCounter) => InternalSplitLines(text, maxTokens, trim: false, s_plaintextSplitOptions,
+            static (text, maxTokens, tokenCounter) => InternalSplitLines(text, maxTokens, false, s_plaintextSplitOptions,
                 tokenCounter), tokenCounter);
 
 
@@ -90,7 +85,6 @@ public static class TextChunker
     /// <param name="chunkHeader">Text to be prepended to each individual chunk.</param>
     /// <param name="tokenCounter">Function to count tokens in a string. If not supplied, the default counter will be used.</param>
     /// <returns>List of paragraphs.</returns>
-    [Experimental("SKEXP0050")]
     public static List<string> SplitMarkdownParagraphs(
         List<string> lines,
         int maxTokensPerParagraph,
@@ -98,11 +92,10 @@ public static class TextChunker
         string? chunkHeader = null,
         TokenCounter? tokenCounter = null) =>
         InternalSplitTextParagraphs(lines, maxTokensPerParagraph, overlapTokens, chunkHeader,
-            static (text, maxTokens, tokenCounter) => InternalSplitLines(text, maxTokens, trim: false, s_markdownSplitOptions,
+            static (text, maxTokens, tokenCounter) => InternalSplitLines(text, maxTokens, false, s_markdownSplitOptions,
                 tokenCounter), tokenCounter);
 
 
-    [Experimental("SKEXP0050")]
     private static List<string> InternalSplitTextParagraphs(
         List<string> lines,
         int maxTokensPerParagraph,
@@ -144,7 +137,6 @@ public static class TextChunker
     }
 
 
-    [Experimental("SKEXP0050")]
     private static List<string> BuildParagraph(IEnumerable<string> truncatedLines, int maxTokensPerParagraph, TokenCounter? tokenCounter)
     {
         StringBuilder paragraphBuilder = new();
@@ -188,7 +180,6 @@ public static class TextChunker
     }
 
 
-    [Experimental("SKEXP0050")]
     private static List<string> ProcessParagraphs(
         List<string> paragraphs,
         int adjustedMaxTokensPerParagraph,
@@ -261,7 +252,6 @@ public static class TextChunker
     }
 
 
-    [Experimental("SKEXP0050")]
     private static List<string> InternalSplitLines(
         string text,
         int maxTokensPerLine,
@@ -294,7 +284,6 @@ public static class TextChunker
     }
 
 
-    [Experimental("SKEXP0050")]
     private static (List<string>, bool) Split(
         List<string> input,
         int maxTokens,
@@ -320,7 +309,6 @@ public static class TextChunker
     }
 
 
-    [Experimental("SKEXP0050")]
     private static (List<string>, bool) Split(
         ReadOnlySpan<char> input,
         string? inputString,
@@ -407,7 +395,7 @@ public static class TextChunker
             (true, false) => inputString!,
             (false, true) => input.Trim().
                 ToString(),
-            (false, false) => input.ToString(),
+            (false, false) => input.ToString()
         });
 
         return (result, inputWasSplit);

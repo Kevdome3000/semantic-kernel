@@ -3,7 +3,6 @@
 namespace Microsoft.SemanticKernel.Memory;
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Embeddings;
 using Extensions.Logging;
@@ -13,13 +12,12 @@ using Extensions.Logging.Abstractions;
 /// <summary>
 /// A builder for Memory plugin.
 /// </summary>
-[Experimental("SKEXP0001")]
 public sealed class MemoryBuilder
 {
 
-    private Func<IMemoryStore>? _memoryStoreFactory = null;
+    private Func<IMemoryStore>? _memoryStoreFactory;
 
-    private Func<ITextEmbeddingGenerationService>? _embeddingGenerationFactory = null;
+    private Func<ITextEmbeddingGenerationService>? _embeddingGenerationFactory;
 
     private HttpClient? _httpClient;
 
@@ -32,10 +30,10 @@ public sealed class MemoryBuilder
     /// <returns>Instance of <see cref="ISemanticTextMemory"/>.</returns>
     public ISemanticTextMemory Build()
     {
-        var memoryStore = this._memoryStoreFactory?.Invoke() ??
+        var memoryStore = _memoryStoreFactory?.Invoke() ??
                           throw new KernelException($"{nameof(IMemoryStore)} dependency was not provided. Use {nameof(WithMemoryStore)} method.");
 
-        var embeddingGeneration = this._embeddingGenerationFactory?.Invoke() ??
+        var embeddingGeneration = _embeddingGenerationFactory?.Invoke() ??
                                   throw new KernelException($"{nameof(ITextEmbeddingGenerationService)} dependency was not provided. Use {nameof(WithTextEmbeddingGeneration)} method.");
 
         return new SemanticTextMemory(memoryStore, embeddingGeneration);
@@ -50,7 +48,7 @@ public sealed class MemoryBuilder
     public MemoryBuilder WithLoggerFactory(ILoggerFactory loggerFactory)
     {
         Verify.NotNull(loggerFactory);
-        this._loggerFactory = loggerFactory;
+        _loggerFactory = loggerFactory;
 
         return this;
     }
@@ -64,7 +62,7 @@ public sealed class MemoryBuilder
     public MemoryBuilder WithHttpClient(HttpClient httpClient)
     {
         Verify.NotNull(httpClient);
-        this._httpClient = httpClient;
+        _httpClient = httpClient;
 
         return this;
     }
@@ -78,7 +76,7 @@ public sealed class MemoryBuilder
     public MemoryBuilder WithMemoryStore(IMemoryStore store)
     {
         Verify.NotNull(store);
-        this._memoryStoreFactory = () => store;
+        _memoryStoreFactory = () => store;
 
         return this;
     }
@@ -92,7 +90,7 @@ public sealed class MemoryBuilder
     public MemoryBuilder WithMemoryStore<TStore>(Func<ILoggerFactory, TStore> factory) where TStore : IMemoryStore
     {
         Verify.NotNull(factory);
-        this._memoryStoreFactory = () => factory(this._loggerFactory);
+        _memoryStoreFactory = () => factory(_loggerFactory);
 
         return this;
     }
@@ -106,7 +104,7 @@ public sealed class MemoryBuilder
     public MemoryBuilder WithMemoryStore<TStore>(Func<ILoggerFactory, HttpClient?, TStore> factory) where TStore : IMemoryStore
     {
         Verify.NotNull(factory);
-        this._memoryStoreFactory = () => factory(this._loggerFactory, this._httpClient);
+        _memoryStoreFactory = () => factory(_loggerFactory, _httpClient);
 
         return this;
     }
@@ -120,7 +118,7 @@ public sealed class MemoryBuilder
     public MemoryBuilder WithTextEmbeddingGeneration(ITextEmbeddingGenerationService textEmbeddingGeneration)
     {
         Verify.NotNull(textEmbeddingGeneration);
-        this._embeddingGenerationFactory = () => textEmbeddingGeneration;
+        _embeddingGenerationFactory = () => textEmbeddingGeneration;
 
         return this;
     }
@@ -135,7 +133,7 @@ public sealed class MemoryBuilder
         Func<ILoggerFactory, HttpClient?, TEmbeddingGeneration> factory) where TEmbeddingGeneration : ITextEmbeddingGenerationService
     {
         Verify.NotNull(factory);
-        this._embeddingGenerationFactory = () => factory(this._loggerFactory, this._httpClient);
+        _embeddingGenerationFactory = () => factory(_loggerFactory, _httpClient);
 
         return this;
     }
