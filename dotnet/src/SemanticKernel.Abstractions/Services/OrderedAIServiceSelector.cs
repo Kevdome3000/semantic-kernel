@@ -3,6 +3,7 @@
 namespace Microsoft.SemanticKernel.Services;
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Extensions.DependencyInjection;
@@ -14,6 +15,7 @@ using Extensions.DependencyInjection;
 /// </summary>
 internal sealed class OrderedAIServiceSelector : IAIServiceSelector
 {
+
     public static OrderedAIServiceSelector Instance { get; } = new();
 
 
@@ -26,7 +28,7 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
         out PromptExecutionSettings? serviceSettings) where T : class, IAIService
     {
         // Allow the execution settings from the kernel arguments to take precedence
-        var executionSettings = arguments.ExecutionSettings ?? function.ExecutionSettings;
+        IReadOnlyDictionary<string, PromptExecutionSettings>? executionSettings = arguments.ExecutionSettings ?? function.ExecutionSettings;
 
         if (executionSettings is null || executionSettings.Count == 0)
         {
@@ -35,6 +37,7 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
             if (service is not null)
             {
                 serviceSettings = null;
+
                 return true;
             }
         }
@@ -43,10 +46,10 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
             PromptExecutionSettings? defaultExecutionSettings = null;
 
             // Search by service id first
-            foreach (var keyValue in executionSettings)
+            foreach (KeyValuePair<string, PromptExecutionSettings> keyValue in executionSettings)
             {
-                var settings = keyValue.Value;
-                var serviceId = keyValue.Key;
+                PromptExecutionSettings? settings = keyValue.Value;
+                string? serviceId = keyValue.Key;
 
                 if (string.IsNullOrEmpty(serviceId) || serviceId!.Equals(PromptExecutionSettings.DefaultServiceId, StringComparison.OrdinalIgnoreCase))
                 {
@@ -59,24 +62,26 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
                     if (service is not null)
                     {
                         serviceSettings = settings;
+
                         return true;
                     }
                 }
             }
 
             // Search by model id next
-            foreach (var keyValue in executionSettings)
+            foreach (KeyValuePair<string, PromptExecutionSettings> keyValue in executionSettings)
             {
-                var settings = keyValue.Value;
-                var serviceId = keyValue.Key;
+                PromptExecutionSettings? settings = keyValue.Value;
+                string? serviceId = keyValue.Key;
 
                 if (!string.IsNullOrEmpty(settings.ModelId))
                 {
-                    service = this.GetServiceByModelId<T>(kernel, settings.ModelId!);
+                    service = GetServiceByModelId<T>(kernel, settings.ModelId!);
 
                     if (service is not null)
                     {
                         serviceSettings = settings;
+
                         return true;
                     }
                 }
@@ -90,6 +95,7 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
                 if (service is not null)
                 {
                     serviceSettings = defaultExecutionSettings;
+
                     return true;
                 }
             }
@@ -97,12 +103,14 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
 
         service = null;
         serviceSettings = null;
+
         return false;
 
         // Get's a non-required service, regardless of service key
         static T? GetAnyService(Kernel kernel) =>
             kernel.Services is IKeyedServiceProvider
-                ? kernel.GetAllServices<T>().LastOrDefault()
+                ? kernel.GetAllServices<T>().
+                    LastOrDefault()
                 : // see comments in Kernel/KernelBuilder for why we can't use GetKeyedService
                 kernel.Services.GetService<T>();
     }
@@ -110,7 +118,7 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
 
     private T? GetServiceByModelId<T>(Kernel kernel, string modelId) where T : class, IAIService
     {
-        foreach (var service in kernel.GetAllServices<T>())
+        foreach (T? service in kernel.GetAllServices<T>())
         {
             string? serviceModelId = service.GetModelId();
 
@@ -122,4 +130,5 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
 
         return null;
     }
+
 }
