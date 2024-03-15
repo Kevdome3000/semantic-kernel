@@ -12,6 +12,7 @@ using System.Diagnostics.CodeAnalysis;
 /// </summary>
 internal sealed class DefaultKernelPlugin : KernelPlugin
 {
+
     /// <summary>The collection of functions associated with this plugin.</summary>
     private readonly Dictionary<string, KernelFunction> _functions;
 
@@ -33,7 +34,9 @@ internal sealed class DefaultKernelPlugin : KernelPlugin
             foreach (KernelFunction f in functions)
             {
                 Verify.NotNull(f, nameof(functions));
-                this._functions.Add(f.Name, f);
+
+                var cloned = f.Clone(name);
+                this._functions.Add(cloned.Name, cloned);
             }
         }
     }
@@ -50,4 +53,5 @@ internal sealed class DefaultKernelPlugin : KernelPlugin
 
     /// <inheritdoc/>
     public override IEnumerator<KernelFunction> GetEnumerator() => this._functions.Values.GetEnumerator();
+
 }

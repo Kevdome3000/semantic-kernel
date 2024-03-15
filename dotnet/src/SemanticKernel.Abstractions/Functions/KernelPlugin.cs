@@ -22,6 +22,7 @@ using System.Linq;
 [DebuggerTypeProxy(typeof(TypeProxy))]
 public abstract class KernelPlugin : IEnumerable<KernelFunction>
 {
+
     /// <summary>Initializes the new plugin from the provided name, description, and function collection.</summary>
     /// <param name="name">The name for the plugin.</param>
     /// <param name="description">A description of the plugin.</param>
@@ -32,7 +33,10 @@ public abstract class KernelPlugin : IEnumerable<KernelFunction>
         Verify.ValidPluginName(name);
 
         this.Name = name;
-        this.Description = !string.IsNullOrWhiteSpace(description) ? description! : "";
+
+        this.Description = !string.IsNullOrWhiteSpace(description)
+            ? description!
+            : "";
     }
 
 
@@ -47,7 +51,9 @@ public abstract class KernelPlugin : IEnumerable<KernelFunction>
     /// <returns>The function.</returns>
     /// <exception cref="KeyNotFoundException">The plugin does not contain a function with the specified name.</exception>
     public KernelFunction this[string functionName] =>
-        this.TryGetFunction(functionName, out KernelFunction? function) ? function : throw new KeyNotFoundException($"The plugin does not contain a function with the specified name. Plugin name - '{this.Name}', function name - '{functionName}'.");
+        this.TryGetFunction(functionName, out KernelFunction? function)
+            ? function
+            : throw new KeyNotFoundException($"The plugin does not contain a function with the specified name. Plugin name - '{this.Name}', function name - '{functionName}'.");
 
 
     /// <summary>Gets whether the plugin contains a function with the specified name.</summary>
@@ -91,7 +97,7 @@ public abstract class KernelPlugin : IEnumerable<KernelFunction>
 
         foreach (KernelFunction function in this)
         {
-            metadata.Add(new KernelFunctionMetadata(function.Metadata) { PluginName = this.Name });
+            metadata.Add(function.Metadata);
         }
 
         return metadata;
@@ -109,6 +115,7 @@ public abstract class KernelPlugin : IEnumerable<KernelFunction>
     /// <summary>Debugger type proxy for the kernel plugin.</summary>
     private sealed class TypeProxy
     {
+
         private readonly KernelPlugin _plugin;
 
         public TypeProxy(KernelPlugin plugin) => this._plugin = plugin;
@@ -117,6 +124,9 @@ public abstract class KernelPlugin : IEnumerable<KernelFunction>
 
         public string Description => this._plugin.Description;
 
-        public KernelFunction[] Functions => this._plugin.OrderBy(f => f.Name, StringComparer.OrdinalIgnoreCase).ToArray();
+        public KernelFunction[] Functions => this._plugin.OrderBy(f => f.Name, StringComparer.OrdinalIgnoreCase).
+            ToArray();
+
     }
+
 }

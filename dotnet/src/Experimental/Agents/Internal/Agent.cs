@@ -251,14 +251,12 @@ internal sealed class Agent : IAgent
     /// </summary>
     /// <param name="input">The user input</param>
     /// <param name="arguments">Arguments for parameterized instructions</param>
-    /// <param name="fileIds">an array of up to 10 file ids to reference for the message</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>An agent response (<see cref="AgentResponse"/></returns>
     private async Task<AgentResponse> AskAsync(
         [Description("The user message provided to the agent.")]
         string input,
         KernelArguments arguments,
-        string[]? fileIds = null,
         CancellationToken cancellationToken = default)
     {
         var thread = await this.NewThreadAsync(cancellationToken).
@@ -266,10 +264,7 @@ internal sealed class Agent : IAgent
 
         try
         {
-            await thread.AddUserMessageAsync(input, fileIds, cancellationToken).
-                ConfigureAwait(false);
-
-            var messages = await thread.InvokeAsync(this, input, arguments, fileIds,
+            var messages = await thread.InvokeAsync(this, input, arguments, fileIds: null,
                     cancellationToken).
                 ToArrayAsync(cancellationToken).
                 ConfigureAwait(false);

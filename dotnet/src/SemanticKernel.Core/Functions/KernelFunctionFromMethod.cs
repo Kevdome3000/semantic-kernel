@@ -30,6 +30,7 @@ using Text;
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 internal sealed class KernelFunctionFromMethod : KernelFunction
 {
+
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
     /// and an optional target object if the method is an instance method.
@@ -59,6 +60,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         }
 
         MethodDetails methodDetails = GetMethodDetails(functionName, method, target);
+
         var result = new KernelFunctionFromMethod(
             methodDetails.Function,
             methodDetails.Name,
@@ -92,7 +94,8 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         KernelArguments arguments,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        FunctionResult functionResult = await this.InvokeCoreAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+        FunctionResult functionResult = await this.InvokeCoreAsync(kernel, arguments, cancellationToken).
+            ConfigureAwait(false);
 
         if (functionResult.Value is TResult result)
         {
@@ -106,7 +109,8 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         // Invoke{Prompt}StreamingAsync and returns its result enumerable directly.
         if (functionResult.Value is IAsyncEnumerable<TResult> asyncEnumerable)
         {
-            await foreach (TResult item in asyncEnumerable.WithCancellation(cancellationToken).ConfigureAwait(false))
+            await foreach (TResult item in asyncEnumerable.WithCancellation(cancellationToken).
+                               ConfigureAwait(false))
             {
                 yield return item;
             }
@@ -122,12 +126,28 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             {
                 yield return (TResult)(object)new StreamingMethodContent(functionResult.Value, functionResult.Metadata);
             }
+
             yield break;
         }
 
         throw new NotSupportedException($"Streaming function {this.Name} does not support type {typeof(TResult)}");
 
         // We don't invoke the hook here as the InvokeCoreAsync will do that for us
+    }
+
+
+    /// <inheritdoc/>
+    public override KernelFunction Clone(string pluginName)
+    {
+        Verify.NotNullOrWhiteSpace(pluginName, nameof(pluginName));
+
+        return new KernelFunctionFromMethod(
+            this._function,
+            this.Name,
+            pluginName,
+            this.Description,
+            this.Metadata.Parameters,
+            this.Metadata.ReturnParameter);
     }
 
 
@@ -148,6 +168,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
 
     private static readonly object[] s_cancellationTokenNoneArray = new object[] { CancellationToken.None };
+
     private readonly ImplementationFunc _function;
 
 
@@ -165,7 +186,21 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         string description,
         IReadOnlyList<KernelParameterMetadata> parameters,
         KernelReturnParameterMetadata returnParameter) :
-        base(functionName, description, parameters, returnParameter)
+        this(implementationFunc, functionName, null, description,
+            parameters, returnParameter)
+    {
+    }
+
+
+    private KernelFunctionFromMethod(
+        ImplementationFunc implementationFunc,
+        string functionName,
+        string? pluginName,
+        string description,
+        IReadOnlyList<KernelParameterMetadata> parameters,
+        KernelReturnParameterMetadata returnParameter) :
+        base(functionName, pluginName, description, parameters,
+            returnParameter)
     {
         Verify.ValidFunctionName(functionName);
 
@@ -183,7 +218,8 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             // Otherwise, we use the name of the method, but strip off any "Async" suffix if it's {Value}Task-returning.
             // We don't apply any heuristics to the value supplied by KernelFunction's Name so that it can always be used
             // as a definitive override.
-            functionName = method.GetCustomAttribute<KernelFunctionAttribute>(inherit: true)?.Name?.Trim();
+            functionName = method.GetCustomAttribute<KernelFunctionAttribute>(inherit: true)?.
+                Name?.Trim();
 
             if (string.IsNullOrEmpty(functionName))
             {
@@ -233,7 +269,11 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         }
 
         // Create the func
-        ValueTask<FunctionResult> Function(Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
+        ValueTask<FunctionResult> Function(
+            Kernel kernel,
+            KernelFunction function,
+            KernelArguments arguments,
+            CancellationToken cancellationToken)
         {
             // Create the arguments.
             object?[] args = parameterFuncs.Length != 0
@@ -257,12 +297,14 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         {
             Function = Function,
             Name = functionName!,
-            Description = method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? "",
+            Description = method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.
+                Description ?? "",
             Parameters = argParameterViews,
             ReturnParameter = new KernelReturnParameterMetadata()
             {
                 ParameterType = returnType,
-                Description = method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
+                Description = method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.
+                    Description,
             }
         };
     }
@@ -307,49 +349,85 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
         if (type == typeof(KernelFunction))
         {
-            return (static (KernelFunction func, Kernel _, KernelArguments _, CancellationToken _) => func, null);
+            return (static (
+                KernelFunction func,
+                Kernel _,
+                KernelArguments _,
+                CancellationToken _) => func, null);
         }
 
         if (type == typeof(Kernel))
         {
-            return (static (KernelFunction _, Kernel kernel, KernelArguments _, CancellationToken _) => kernel, null);
+            return (static (
+                KernelFunction _,
+                Kernel kernel,
+                KernelArguments _,
+                CancellationToken _) => kernel, null);
         }
 
         if (type == typeof(KernelArguments))
         {
-            return (static (KernelFunction _, Kernel _, KernelArguments arguments, CancellationToken _) => arguments, null);
+            return (static (
+                KernelFunction _,
+                Kernel _,
+                KernelArguments arguments,
+                CancellationToken _) => arguments, null);
         }
 
         if (type == typeof(ILoggerFactory))
         {
-            return ((KernelFunction _, Kernel kernel, KernelArguments _, CancellationToken _) => kernel.LoggerFactory, null);
+            return ((
+                KernelFunction _,
+                Kernel kernel,
+                KernelArguments _,
+                CancellationToken _) => kernel.LoggerFactory, null);
         }
 
         if (type == typeof(ILogger))
         {
-            return ((KernelFunction _, Kernel kernel, KernelArguments _, CancellationToken _) => kernel.LoggerFactory.CreateLogger(method?.DeclaringType ?? typeof(KernelFunctionFromPrompt)) ?? NullLogger.Instance, null);
+            return ((
+                KernelFunction _,
+                Kernel kernel,
+                KernelArguments _,
+                CancellationToken _) => kernel.LoggerFactory.CreateLogger(method?.DeclaringType ?? typeof(KernelFunctionFromPrompt)) ?? NullLogger.Instance, null);
         }
 
         if (type == typeof(IAIServiceSelector))
         {
-            return ((KernelFunction _, Kernel kernel, KernelArguments _, CancellationToken _) => kernel.ServiceSelector, null);
+            return ((
+                KernelFunction _,
+                Kernel kernel,
+                KernelArguments _,
+                CancellationToken _) => kernel.ServiceSelector, null);
         }
 
         if (type == typeof(CultureInfo) || type == typeof(IFormatProvider))
         {
-            return (static (KernelFunction _, Kernel kernel, KernelArguments _, CancellationToken _) => kernel.Culture, null);
+            return (static (
+                KernelFunction _,
+                Kernel kernel,
+                KernelArguments _,
+                CancellationToken _) => kernel.Culture, null);
         }
 
         if (type == typeof(CancellationToken))
         {
-            return (static (KernelFunction _, Kernel _, KernelArguments _, CancellationToken cancellationToken) => cancellationToken, null);
+            return (static (
+                KernelFunction _,
+                Kernel _,
+                KernelArguments _,
+                CancellationToken cancellationToken) => cancellationToken, null);
         }
 
         // Handle the special FromKernelServicesAttribute, which indicates that the parameter should be sourced from the kernel's services.
         // As with the above, these are not reported as part of KernelParameterMetadata because they're not satisfied from arguments.
         if (parameter.GetCustomAttribute<FromKernelServicesAttribute>() is FromKernelServicesAttribute fromKernelAttr)
         {
-            return ((KernelFunction _, Kernel kernel, KernelArguments _, CancellationToken _) =>
+            return ((
+                KernelFunction _,
+                Kernel kernel,
+                KernelArguments _,
+                CancellationToken _) =>
             {
                 // Try to resolve the service from kernel.Services, using the attribute's key if one was provided.
                 object? service = kernel.Services is IKeyedServiceProvider keyedServiceProvider
@@ -380,7 +458,11 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
         var converter = GetConverter(type);
 
-        object? parameterFunc(KernelFunction _, Kernel kernel, KernelArguments arguments, CancellationToken __)
+        object? parameterFunc(
+            KernelFunction _,
+            Kernel kernel,
+            KernelArguments arguments,
+            CancellationToken __)
         {
             // 1. Use the value of the variable if it exists.
             if (arguments.TryGetValue(name, out object? value))
@@ -428,7 +510,8 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
         var parameterView = new KernelParameterMetadata(name)
         {
-            Description = parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
+            Description = parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.
+                Description,
             DefaultValue = parameter.DefaultValue?.ToString(),
             IsRequired = !parameter.IsOptional,
             ParameterType = type,
@@ -454,7 +537,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
                 JsonDocument document => document.Deserialize(targetType),
                 JsonNode node => node.Deserialize(targetType),
                 JsonElement element => element.Deserialize(targetType),
-                // The JSON can be represented by other data types from various libraries. For example, JObject, JToken, and JValue from the Newtonsoft.Json library.  
+                // The JSON can be represented by other data types from various libraries. For example, JObject, JToken, and JValue from the Newtonsoft.Json library.
                 // Since we don't take dependencies on these libraries and don't have access to the types here,
                 // the only way to deserialize those types is to convert them to a string first by calling the 'ToString' method.
                 // Attempting to use the 'JsonSerializer.Serialize' method, instead of calling the 'ToString' directly on those types, can lead to unpredictable outcomes.
@@ -475,6 +558,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         }
 
         deserializedValue = null;
+
         return false;
     }
 
@@ -500,6 +584,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             return (typeof(void), async static (_, function, result) =>
                     {
                         await ((Task)ThrowIfNullResult(result)).ConfigureAwait(false);
+
                         return new FunctionResult(function);
                     }
                 );
@@ -510,6 +595,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             return (typeof(void), async static (_, function, result) =>
                     {
                         await ((ValueTask)ThrowIfNullResult(result)).ConfigureAwait(false);
+
                         return new FunctionResult(function);
                     }
                 );
@@ -522,6 +608,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             return (typeof(string), static (kernel, function, result) =>
                     {
                         var resultString = (string?)result;
+
                         return new ValueTask<FunctionResult>(new FunctionResult(function, resultString, kernel.Culture));
                     }
                 );
@@ -532,6 +619,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             return (typeof(string), async static (kernel, function, result) =>
                     {
                         var resultString = await ((Task<string>)ThrowIfNullResult(result)).ConfigureAwait(false);
+
                         return new FunctionResult(function, resultString, kernel.Culture);
                     }
                 );
@@ -542,6 +630,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             return (typeof(string), async static (kernel, function, result) =>
                     {
                         var resultString = await ((ValueTask<string>)ThrowIfNullResult(result)).ConfigureAwait(false);
+
                         return new FunctionResult(function, resultString, kernel.Culture);
                     }
                 );
@@ -552,6 +641,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             return (typeof(object), static (_, function, result) =>
                     {
                         var functionResult = (FunctionResult?)result;
+
                         return new ValueTask<FunctionResult>(functionResult ?? new FunctionResult(function));
                     }
                 );
@@ -562,6 +652,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             return (typeof(object), async static (_, _, result) =>
                     {
                         var functionResult = await ((Task<FunctionResult>)ThrowIfNullResult(result)).ConfigureAwait(false);
+
                         return functionResult;
                     }
                 );
@@ -572,6 +663,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             return (typeof(object), async static (_, _, result) =>
                     {
                         var functionResult = await ((ValueTask<FunctionResult>)ThrowIfNullResult(result)).ConfigureAwait(false);
+
                         return functionResult;
                     }
                 );
@@ -593,13 +685,15 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         // Task<T>
         if (returnType.GetGenericTypeDefinition() is Type genericTask &&
             genericTask == typeof(Task<>) &&
-            returnType.GetProperty("Result", BindingFlags.Public | BindingFlags.Instance)?.GetGetMethod() is MethodInfo taskResultGetter)
+            returnType.GetProperty("Result", BindingFlags.Public | BindingFlags.Instance)?.
+                GetGetMethod() is MethodInfo taskResultGetter)
         {
             return (taskResultGetter.ReturnType, async (kernel, function, result) =>
                     {
                         await ((Task)ThrowIfNullResult(result)).ConfigureAwait(false);
 
                         var taskResult = Invoke(taskResultGetter, result, Array.Empty<object>());
+
                         return new FunctionResult(function, taskResult, kernel.Culture);
                     }
                 );
@@ -609,7 +703,8 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         if (returnType.GetGenericTypeDefinition() is Type genericValueTask &&
             genericValueTask == typeof(ValueTask<>) &&
             returnType.GetMethod("AsTask", BindingFlags.Public | BindingFlags.Instance) is MethodInfo valueTaskAsTask &&
-            valueTaskAsTask.ReturnType.GetProperty("Result", BindingFlags.Public | BindingFlags.Instance)?.GetGetMethod() is MethodInfo asTaskResultGetter)
+            valueTaskAsTask.ReturnType.GetProperty("Result", BindingFlags.Public | BindingFlags.Instance)?.
+                GetGetMethod() is MethodInfo asTaskResultGetter)
         {
             return (asTaskResultGetter.ReturnType, async (kernel, function, result) =>
                     {
@@ -617,6 +712,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
                         await task.ConfigureAwait(false);
 
                         var taskResult = Invoke(asTaskResultGetter, task, Array.Empty<object>());
+
                         return new FunctionResult(function, taskResult, kernel.Culture);
                     }
                 );
@@ -627,9 +723,8 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         {
             Type elementType = returnType.GetGenericArguments()[0];
 
-            MethodInfo? getAsyncEnumeratorMethod = typeof(IAsyncEnumerable<>)
-                .MakeGenericType(elementType)
-                .GetMethod("GetAsyncEnumerator");
+            MethodInfo? getAsyncEnumeratorMethod = typeof(IAsyncEnumerable<>).MakeGenericType(elementType).
+                GetMethod("GetAsyncEnumerator");
 
             if (getAsyncEnumeratorMethod is not null)
             {
@@ -666,6 +761,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         try
         {
             const BindingFlags BindingFlagsDoNotWrapExceptions = (BindingFlags)0x02000000; // BindingFlags.DoNotWrapExceptions on .NET Core 2.1+, ignored before then
+
             result = method.Invoke(target, BindingFlagsDoNotWrapExceptions, binder: null, arguments,
                 culture: null);
         }
@@ -674,7 +770,8 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             // If we're targeting .NET Framework, such that BindingFlags.DoNotWrapExceptions
             // is ignored, the original exception will be wrapped in a TargetInvocationException.
             // Unwrap it and throw that original exception, maintaining its stack information.
-            ExceptionDispatchInfo.Capture(e.InnerException).Throw();
+            ExceptionDispatchInfo.Capture(e.InnerException).
+                Throw();
         }
 
         return result;
@@ -736,7 +833,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
                     {
                         if (input?.GetType() is Type type && converter.CanConvertFrom(type))
                         {
-                            // This line performs string to type conversion 
+                            // This line performs string to type conversion
                             return converter.ConvertFrom(context: null, culture, input);
                         }
 

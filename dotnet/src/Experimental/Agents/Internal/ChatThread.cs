@@ -3,6 +3,7 @@
 namespace Microsoft.SemanticKernel.Experimental.Agents.Internal;
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,7 +37,7 @@ internal sealed class ChatThread : IAgentThread
         var threadModel = await restContext.CreateThreadModelAsync(cancellationToken).
             ConfigureAwait(false);
 
-        return new ChatThread(threadModel, messageListModel: null, restContext);
+        return new ChatThread(threadModel, restContext);
     }
 
 
@@ -52,10 +53,7 @@ internal sealed class ChatThread : IAgentThread
         var threadModel = await restContext.GetThreadModelAsync(threadId, cancellationToken).
             ConfigureAwait(false);
 
-        var messageListModel = await restContext.GetMessagesAsync(threadId, cancellationToken).
-            ConfigureAwait(false);
-
-        return new ChatThread(threadModel, messageListModel, restContext);
+        return new ChatThread(threadModel, restContext);
     }
 
 
@@ -68,6 +66,17 @@ internal sealed class ChatThread : IAgentThread
             ConfigureAwait(false);
 
         return new ChatMessage(messageModel);
+    }
+
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyList<IChatMessage>> GetMessagesAsync(int? count = null, string? lastMessageId = null, CancellationToken cancellationToken = default)
+    {
+        var messageModel = await this._restContext.GetMessagesAsync(this.Id, lastMessageId, count, cancellationToken).
+            ConfigureAwait(false);
+
+        return messageModel.Data.Select(m => new ChatMessage(m)).
+            ToArray();
     }
 
 
@@ -141,7 +150,6 @@ internal sealed class ChatThread : IAgentThread
     /// </summary>
     private ChatThread(
         ThreadModel threadModel,
-        ThreadMessageListModel? messageListModel,
         OpenAIRestContext restContext)
     {
         this.Id = threadModel.Id;

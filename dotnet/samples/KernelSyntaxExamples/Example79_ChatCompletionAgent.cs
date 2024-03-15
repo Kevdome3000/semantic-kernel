@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Examples;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -94,10 +95,10 @@ public class Example79_ChatCompletionAgent : BaseTest
         );
 
         var chat = new TurnBasedChat(new[] { fitnessTrainer, stressManagementExpert }, (chatHistory, replies, turn) =>
-            turn >= 10 || // Limit the number of turns to 10
+            turn >= 10 || // Limit the number of turns to 10    
             replies.Any(
                 message => message.Role == AuthorRole.Assistant &&
-                           message.Content!.Contains("WELLNESS_PLAN_COMPLETE", StringComparison.InvariantCulture))); // Exit when the message "WELLNESS_PLAN_COMPLETE" received from agent
+                           message.Content!.Contains("WELLNESS_PLAN_COMPLETE", StringComparison.InvariantCulture))); // Exit when the message "WELLNESS_PLAN_COMPLETE" received from agent  
 
         var prompt = "I need help creating a simple wellness plan for a beginner. Please guide me.";
         PrintConversation(await chat.SendMessageAsync(prompt));

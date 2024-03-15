@@ -13,6 +13,7 @@ using Xunit;
 /// </summary>
 public sealed class OpenAIPluginCollectionExtensionsTests
 {
+
     [Fact]
     public void TryGetFunctionAndArgumentsWithNonExistingFunctionReturnsFalse()
     {
@@ -47,7 +48,7 @@ public sealed class OpenAIPluginCollectionExtensionsTests
 
         // Assert
         Assert.True(result);
-        Assert.Same(function, actualFunction);
+        Assert.Equal(function.Name, actualFunction?.Name);
         Assert.Null(actualArguments);
     }
 
@@ -67,7 +68,7 @@ public sealed class OpenAIPluginCollectionExtensionsTests
 
         // Assert
         Assert.True(result);
-        Assert.Same(function, actualFunction);
+        Assert.Equal(function.Name, actualFunction?.Name);
 
         Assert.NotNull(actualArguments);
 
@@ -76,4 +77,5 @@ public sealed class OpenAIPluginCollectionExtensionsTests
 
         Assert.Null(actualArguments["null_argument"]);
     }
+
 }
