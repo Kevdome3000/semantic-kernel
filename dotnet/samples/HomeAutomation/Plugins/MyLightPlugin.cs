@@ -2,6 +2,10 @@
 
 namespace HomeAutomation.Plugins;
 
+using System.ComponentModel;
+using Microsoft.SemanticKernel;
+
+
 /// <summary>
 /// Class that represents a controllable light.
 /// </summary>

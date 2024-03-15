@@ -2,6 +2,10 @@
 
 namespace HomeAutomation.Plugins;
 
+using System.ComponentModel;
+using Microsoft.SemanticKernel;
+
+
 /// <summary>
 /// Simple plugin to illustrate creating plugins which have dependencies
 /// that can be resolved through dependency injection.

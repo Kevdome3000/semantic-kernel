@@ -2,7 +2,21 @@
 
 namespace SemanticKernel.Connectors.UnitTests.Memory.AzureAISearch;
 
+using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
+using Azure;
+using Azure.Search.Documents;
+using Azure.Search.Documents.Indexes;
+using Azure.Search.Documents.Indexes.Models;
+using Azure.Search.Documents.Models;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
+using Microsoft.SemanticKernel.Memory;
+using Moq;
+using Xunit;
 
 
 /// <summary>

@@ -2,6 +2,9 @@
 
 namespace HomeAutomation.Options;
 
+using System.ComponentModel.DataAnnotations;
+
+
 /// <summary>
 /// Azure OpenAI settings.
 /// </summary>

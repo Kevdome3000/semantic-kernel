@@ -2,7 +2,10 @@
 
 namespace SemanticKernel.Connectors.HuggingFace.UnitTests.Core;
 
+using System.Text.Json;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.HuggingFace;
+using Xunit;
 
 
 public class HuggingFacePromptExecutionSettingsTests
