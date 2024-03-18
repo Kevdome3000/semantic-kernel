@@ -134,7 +134,7 @@ public abstract class KernelFunction
     /// The <see cref="PromptExecutionSettings"/> to use with the function. These will apply unless they've been
     /// overridden by settings passed into the invocation of the function.
     /// </param>
-    internal KernelFunction(
+    protected KernelFunction(
         string name,
         string? pluginName,
         string description,
