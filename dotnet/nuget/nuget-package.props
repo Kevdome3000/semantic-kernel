@@ -1,7 +1,17 @@
 <Project>
   <PropertyGroup>
     <!-- Central version prefix - applies to all nuget packages. -->
+    <
+    <
+    <
+    <
+    <
+    <
+    < HEAD
       <VersionPrefix>1.6.2</VersionPrefix>
+    =======
+    <VersionPrefix>1.6.3</VersionPrefix>
+    >>>>>>> upstream/main
 
     <PackageVersion Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
     <PackageVersion Condition="'$(VersionSuffix)' == ''">$(VersionPrefix)</PackageVersion>
@@ -10,7 +20,17 @@
     <IsPackable>true</IsPackable>
 
     <!-- Package validation. Baseline Version should be lower than current version. -->
+    <
+    <
+    <
+    <
+    <
+    <
+    < HEAD
       <PackageValidationBaselineVersion>1.5.0</PackageValidationBaselineVersion>
+    =======
+    <PackageValidationBaselineVersion>1.6.2</PackageValidationBaselineVersion>
+    >>>>>>> upstream/main
     <!-- Validate assembly attributes only for Publish builds -->
     <NoWarn Condition="'$(Configuration)' != 'Publish'">$(NoWarn);CP0003</NoWarn>
     <!-- Do not validate reference assemblies -->
