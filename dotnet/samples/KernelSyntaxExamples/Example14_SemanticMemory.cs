@@ -22,6 +22,7 @@ using Xunit.Abstractions;
  */
 public class Example14_SemanticMemory : BaseTest
 {
+
     private const string MemoryCollectionName = "SKGitHub";
 
 
@@ -38,10 +39,9 @@ public class Example14_SemanticMemory : BaseTest
          * need to worry about embedding generation.
          */
 
-        var memoryWithACS = new MemoryBuilder()
-            .WithOpenAITextEmbeddingGeneration("text-embedding-ada-002", TestConfiguration.OpenAI.ApiKey)
-            .WithMemoryStore(new AzureAISearchMemoryStore(TestConfiguration.AzureAISearch.Endpoint, TestConfiguration.AzureAISearch.ApiKey))
-            .Build();
+        var memoryWithACS = new MemoryBuilder().WithOpenAITextEmbeddingGeneration("text-embedding-ada-002", TestConfiguration.OpenAI.ApiKey).
+            WithMemoryStore(new AzureAISearchMemoryStore(TestConfiguration.AzureAISearch.Endpoint, TestConfiguration.AzureAISearch.ApiKey)).
+            Build();
 
         await RunExampleAsync(memoryWithACS);
 
@@ -58,10 +58,9 @@ public class Example14_SemanticMemory : BaseTest
          * or implement your connectors for Pinecone, Vespa, Postgres + pgvector, SQLite VSS, etc.
          */
 
-        var memoryWithCustomDb = new MemoryBuilder()
-            .WithOpenAITextEmbeddingGeneration("text-embedding-ada-002", TestConfiguration.OpenAI.ApiKey)
-            .WithMemoryStore(new VolatileMemoryStore())
-            .Build();
+        var memoryWithCustomDb = new MemoryBuilder().WithOpenAITextEmbeddingGeneration("text-embedding-ada-002", TestConfiguration.OpenAI.ApiKey).
+            WithMemoryStore(new VolatileMemoryStore()).
+            Build();
 
         await RunExampleAsync(memoryWithCustomDb);
     }
@@ -170,7 +169,7 @@ public class Example14_SemanticMemory : BaseTest
                 = "Jupyter notebook describing how to get started with the Semantic Kernel",
             ["https://github.com/microsoft/semantic-kernel/tree/main/samples/plugins/ChatPlugin/ChatGPT"]
                 = "Sample demonstrating how to create a chat plugin interfacing with ChatGPT",
-            ["https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel/Memory/VolatileMemoryStore.cs"]
+            ["https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/Plugins/Plugins.Memory/VolatileMemoryStore.cs"]
                 = "C# class that defines a volatile embedding store",
         };
     }
@@ -179,4 +178,5 @@ public class Example14_SemanticMemory : BaseTest
     public Example14_SemanticMemory(ITestOutputHelper output) : base(output)
     {
     }
+
 }

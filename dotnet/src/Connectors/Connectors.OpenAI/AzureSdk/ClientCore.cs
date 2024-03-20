@@ -822,20 +822,22 @@ internal abstract class ClientCore
 
     /// <summary>Gets options to use for an OpenAIClient</summary>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="serviceVersion">Optional API version.</param>
     /// <returns>An instance of <see cref="OpenAIClientOptions"/>.</returns>
-    internal static OpenAIClientOptions GetOpenAIClientOptions(HttpClient? httpClient)
+    internal static OpenAIClientOptions GetOpenAIClientOptions(HttpClient? httpClient, OpenAIClientOptions.ServiceVersion? serviceVersion = null)
     {
-        OpenAIClientOptions options = new()
-        {
-            Diagnostics = { ApplicationId = HttpHeaderConstant.Values.UserAgent }
-        };
+        OpenAIClientOptions options = serviceVersion is not null
+            ? new(serviceVersion.Value)
+            : new();
 
+        options.Diagnostics.ApplicationId = HttpHeaderConstant.Values.UserAgent;
         options.AddPolicy(new AddHeaderRequestPolicy(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(ClientCore))), HttpPipelinePosition.PerCall);
 
         if (httpClient is not null)
         {
             options.Transport = new HttpClientTransport(httpClient);
             options.RetryPolicy = new RetryPolicy(maxRetries: 0); // Disable Azure SDK retry policy if and only if a custom HttpClient is provided.
+            options.Retry.NetworkTimeout = Timeout.InfiniteTimeSpan; // Disable Azure SDK default timeout
         }
 
         return options;
@@ -1233,16 +1235,16 @@ internal abstract class ClientCore
             return stringResult;
         }
 
-        // This is an optimization to use ChatMessageContent content directly  
-        // without unnecessary serialization of the whole message content class.  
+        // This is an optimization to use ChatMessageContent content directly
+        // without unnecessary serialization of the whole message content class.
         if (functionResult is ChatMessageContent chatMessageContent)
         {
             return chatMessageContent.ToString();
         }
 
-        // For polymorphic serialization of unknown in advance child classes of the KernelContent class,  
-        // a corresponding JsonTypeInfoResolver should be provided via the JsonSerializerOptions.TypeInfoResolver property.  
-        // For more details about the polymorphic serialization, see the article at:  
+        // For polymorphic serialization of unknown in advance child classes of the KernelContent class,
+        // a corresponding JsonTypeInfoResolver should be provided via the JsonSerializerOptions.TypeInfoResolver property.
+        // For more details about the polymorphic serialization, see the article at:
         // https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/polymorphism?pivots=dotnet-8-0
         return JsonSerializer.Serialize(functionResult, toolCallBehavior?.ToolCallResultSerializerOptions);
     }

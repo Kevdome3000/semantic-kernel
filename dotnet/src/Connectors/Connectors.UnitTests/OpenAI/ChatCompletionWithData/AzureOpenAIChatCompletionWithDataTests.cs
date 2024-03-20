@@ -19,10 +19,13 @@ using Xunit;
 /// </summary>
 public sealed class AzureOpenAIChatCompletionWithDataTests : IDisposable
 {
+
     private readonly AzureOpenAIChatCompletionWithDataConfig _config;
 
     private readonly HttpMessageHandlerStub _messageHandlerStub;
+
     private readonly HttpClient _httpClient;
+
     private readonly Mock<ILoggerFactory> _mockLoggerFactory;
 
 
@@ -42,7 +45,9 @@ public sealed class AzureOpenAIChatCompletionWithDataTests : IDisposable
     public void ConstructorWorksCorrectly(bool includeLoggerFactory)
     {
         // Arrange & Act
-        var service = includeLoggerFactory ? new AzureOpenAIChatCompletionWithDataService(this._config, this._httpClient, this._mockLoggerFactory.Object) : new AzureOpenAIChatCompletionWithDataService(this._config, this._httpClient);
+        var service = includeLoggerFactory
+            ? new AzureOpenAIChatCompletionWithDataService(this._config, this._httpClient, this._mockLoggerFactory.Object)
+            : new AzureOpenAIChatCompletionWithDataService(this._config, this._httpClient);
 
         // Assert
         Assert.NotNull(service);
@@ -89,7 +94,7 @@ public sealed class AzureOpenAIChatCompletionWithDataTests : IDisposable
         // Assert
         var actualUri = this._messageHandlerStub.RequestUri?.AbsoluteUri;
 
-        Assert.Contains("2023-06-01-preview", actualUri, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("2024-02-01", actualUri, StringComparison.OrdinalIgnoreCase);
     }
 
 
@@ -98,6 +103,7 @@ public sealed class AzureOpenAIChatCompletionWithDataTests : IDisposable
     {
         // Arrange
         var service = new AzureOpenAIChatCompletionWithDataService(this._config, this._httpClient);
+
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_with_data_test_response.json"))
@@ -110,7 +116,8 @@ public sealed class AzureOpenAIChatCompletionWithDataTests : IDisposable
         Assert.True(result.Count > 0);
         Assert.Equal("Test chat with data response", result[0].Content);
 
-        var usage = result[0].Metadata?["Usage"] as ChatWithDataUsage;
+        var usage = result[0].
+            Metadata?["Usage"] as ChatWithDataUsage;
 
         Assert.NotNull(usage);
         Assert.Equal(55, usage.PromptTokens);
@@ -144,6 +151,7 @@ public sealed class AzureOpenAIChatCompletionWithDataTests : IDisposable
     {
         // Arrange
         var service = new AzureOpenAIChatCompletionWithDataService(this._config, this._httpClient);
+
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_with_data_test_response.json"))
@@ -156,7 +164,8 @@ public sealed class AzureOpenAIChatCompletionWithDataTests : IDisposable
         Assert.True(result.Count > 0);
         Assert.Equal("Test chat with data response", result[0].Text);
 
-        var usage = result[0].Metadata?["Usage"] as ChatWithDataUsage;
+        var usage = result[0].
+            Metadata?["Usage"] as ChatWithDataUsage;
 
         Assert.NotNull(usage);
         Assert.Equal(55, usage.PromptTokens);
@@ -205,4 +214,5 @@ public sealed class AzureOpenAIChatCompletionWithDataTests : IDisposable
             DataSourceIndex = "fake-data-source-index"
         };
     }
+
 }
