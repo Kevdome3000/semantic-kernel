@@ -11,6 +11,7 @@ using Xunit;
 
 public class PromptTemplateConfigTests
 {
+
     [Fact]
     public void DeserializingDoNotExpectChatSystemPromptToExist()
     {
@@ -28,8 +29,7 @@ public class PromptTemplateConfigTests
 
         // Assert
         Assert.NotNull(settings);
-        Assert.NotNull(settings.ChatSystemPrompt);
-        Assert.Equal("Assistant is a large language model.", settings.ChatSystemPrompt);
+        Assert.Null(settings.ChatSystemPrompt);
     }
 
 
@@ -168,7 +168,10 @@ public class PromptTemplateConfigTests
         Assert.Single(promptTemplateConfig.InputVariables);
         Assert.Equal("input variable name", promptTemplateConfig.InputVariables[0].Name);
         Assert.Equal("input variable description", promptTemplateConfig.InputVariables[0].Description);
-        Assert.Equal("default value", promptTemplateConfig.InputVariables[0].Default?.ToString());
+
+        Assert.Equal("default value", promptTemplateConfig.InputVariables[0].
+            Default?.ToString());
+
         Assert.True(promptTemplateConfig.InputVariables[0].IsRequired);
     }
 
@@ -225,7 +228,9 @@ public class PromptTemplateConfigTests
         var config = PromptTemplateConfig.FromJson(json);
 
         Assert.NotNull(config?.InputVariables);
-        Assert.Equal("123", config.InputVariables[0].Default?.ToString());
+
+        Assert.Equal("123", config.InputVariables[0].
+            Default?.ToString());
     }
 
 
@@ -274,4 +279,5 @@ public class PromptTemplateConfigTests
         json = CreateJson(new { p1 = "v1" });
         Assert.Throws<NotSupportedException>(() => PromptTemplateConfig.FromJson(json));
     }
+
 }
