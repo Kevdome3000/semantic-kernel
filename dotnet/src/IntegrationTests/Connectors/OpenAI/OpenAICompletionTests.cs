@@ -38,7 +38,6 @@ public sealed class OpenAICompletionTests : IDisposable
     {
         this._logger = new XunitLogger<Kernel>(output);
         this._testOutputHelper = new RedirectOutput(output);
-        Console.SetOut(this._testOutputHelper);
 
         // Load configuration
         this._configuration = new ConfigurationBuilder().AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true).
@@ -574,24 +573,8 @@ public sealed class OpenAICompletionTests : IDisposable
 
     public void Dispose()
     {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-
-    ~OpenAICompletionTests()
-    {
-        this.Dispose(false);
-    }
-
-
-    private void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            this._logger.Dispose();
-            this._testOutputHelper.Dispose();
-        }
+        this._logger.Dispose();
+        this._testOutputHelper.Dispose();
     }
 
 

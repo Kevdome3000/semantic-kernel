@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Experimental.Orchestration;
 using Microsoft.SemanticKernel.Memory;
@@ -16,26 +15,22 @@ using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using TestSettings;
 using xRetry;
 using Xunit;
-using Xunit.Abstractions;
 
 
-public sealed class FlowOrchestratorTests : IDisposable
+public sealed class FlowOrchestratorTests
 {
+
     private readonly string _bingApiKey;
 
 
-    public FlowOrchestratorTests(ITestOutputHelper output)
+    public FlowOrchestratorTests()
     {
-        this._logger = new XunitLogger<object>(output);
-        this._testOutputHelper = new RedirectOutput(output);
-
         // Load configuration
-        this._configuration = new ConfigurationBuilder()
-            .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
-            .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
-            .AddEnvironmentVariables()
-            .AddUserSecrets<FlowOrchestratorTests>()
-            .Build();
+        this._configuration = new ConfigurationBuilder().AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true).
+            AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true).
+            AddEnvironmentVariables().
+            AddUserSecrets<FlowOrchestratorTests>().
+            Build();
 
         string? bingApiKeyCandidate = this._configuration["Bing:ApiKey"];
         Assert.NotNull(bingApiKeyCandidate);
@@ -50,7 +45,10 @@ public sealed class FlowOrchestratorTests : IDisposable
         IKernelBuilder builder = this.InitializeKernelBuilder();
         var bingConnector = new BingConnector(this._bingApiKey);
         var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
-        var sessionId = Guid.NewGuid().ToString();
+
+        var sessionId = Guid.NewGuid().
+            ToString();
+
         string dummyAddress = "abc@xyz.com";
 
         Dictionary<object, string?> plugins = new()
@@ -107,45 +105,19 @@ steps:
 
     private IKernelBuilder InitializeKernelBuilder()
     {
-        AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
+        AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").
+            Get<AzureOpenAIConfiguration>();
+
         Assert.NotNull(azureOpenAIConfiguration);
 
-        return Kernel.CreateBuilder()
-            .AddAzureOpenAIChatCompletion(
+        return Kernel.CreateBuilder().
+            AddAzureOpenAIChatCompletion(
                 deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
                 endpoint: azureOpenAIConfiguration.Endpoint,
                 apiKey: azureOpenAIConfiguration.ApiKey);
     }
 
 
-    private readonly ILoggerFactory _logger;
-    private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
 
-
-    public void Dispose()
-    {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-
-    ~FlowOrchestratorTests()
-    {
-        this.Dispose(false);
-    }
-
-
-    private void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            if (this._logger is IDisposable ld)
-            {
-                ld.Dispose();
-            }
-
-            this._testOutputHelper.Dispose();
-        }
-    }
 }

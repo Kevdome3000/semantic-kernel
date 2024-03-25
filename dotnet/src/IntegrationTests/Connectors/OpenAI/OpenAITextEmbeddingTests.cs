@@ -15,22 +15,22 @@ using Xunit.Abstractions;
 
 public sealed class OpenAITextEmbeddingTests : IDisposable
 {
+
     private const int AdaVectorLength = 1536;
+
     private readonly IConfigurationRoot _configuration;
 
 
     public OpenAITextEmbeddingTests(ITestOutputHelper output)
     {
         this._testOutputHelper = new RedirectOutput(output);
-        Console.SetOut(this._testOutputHelper);
 
         // Load configuration
-        this._configuration = new ConfigurationBuilder()
-            .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
-            .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
-            .AddEnvironmentVariables()
-            .AddUserSecrets<OpenAITextEmbeddingTests>()
-            .Build();
+        this._configuration = new ConfigurationBuilder().AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true).
+            AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true).
+            AddEnvironmentVariables().
+            AddUserSecrets<OpenAITextEmbeddingTests>().
+            Build();
     }
 
 
@@ -39,7 +39,9 @@ public sealed class OpenAITextEmbeddingTests : IDisposable
     public async Task OpenAITestAsync(string testInputString)
     {
         // Arrange
-        OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAIEmbeddings").Get<OpenAIConfiguration>();
+        OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAIEmbeddings").
+            Get<OpenAIConfiguration>();
+
         Assert.NotNull(openAIConfiguration);
 
         var embeddingGenerator = new OpenAITextEmbeddingGenerationService(openAIConfiguration.ModelId, openAIConfiguration.ApiKey);
@@ -59,7 +61,9 @@ public sealed class OpenAITextEmbeddingTests : IDisposable
     public async Task AzureOpenAITestAsync(string testInputString)
     {
         // Arrange
-        AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
+        AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").
+            Get<AzureOpenAIConfiguration>();
+
         Assert.NotNull(azureOpenAIConfiguration);
 
         var embeddingGenerator = new AzureOpenAITextEmbeddingGenerationService(azureOpenAIConfiguration.DeploymentName,
@@ -83,23 +87,7 @@ public sealed class OpenAITextEmbeddingTests : IDisposable
 
     public void Dispose()
     {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-
-    ~OpenAITextEmbeddingTests()
-    {
-        this.Dispose(false);
-    }
-
-
-    private void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            this._testOutputHelper.Dispose();
-        }
+        this._testOutputHelper.Dispose();
     }
 
     #endregion

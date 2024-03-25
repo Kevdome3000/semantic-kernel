@@ -19,19 +19,18 @@ using Xunit.Abstractions;
 
 public sealed class PromptTests : IDisposable
 {
+
     public PromptTests(ITestOutputHelper output)
     {
         this._logger = new XunitLogger<Kernel>(output);
         this._testOutputHelper = new RedirectOutput(output);
-        Console.SetOut(this._testOutputHelper);
 
         // Load configuration
-        this._configuration = new ConfigurationBuilder()
-            .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
-            .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
-            .AddEnvironmentVariables()
-            .AddUserSecrets<OpenAICompletionTests>()
-            .Build();
+        this._configuration = new ConfigurationBuilder().AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true).
+            AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true).
+            AddEnvironmentVariables().
+            AddUserSecrets<OpenAICompletionTests>().
+            Build();
 
         this._kernelBuilder = Kernel.CreateBuilder();
         this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
@@ -49,8 +48,13 @@ public sealed class PromptTests : IDisposable
         var kernel = builder.Build();
 
         // Load prompt from resource
-        var promptTemplateFactory = isHandlebars ? new HandlebarsPromptTemplateFactory() : null;
-        using StreamReader reader = new(Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName)!);
+        var promptTemplateFactory = isHandlebars
+            ? new HandlebarsPromptTemplateFactory()
+            : null;
+
+        using StreamReader reader = new(Assembly.GetExecutingAssembly().
+            GetManifestResourceStream(resourceName)!);
+
         var function = kernel.CreateFunctionFromPromptYaml(await reader.ReadToEndAsync(), promptTemplateFactory);
 
         // Act
@@ -68,37 +72,25 @@ public sealed class PromptTests : IDisposable
     #region private methods
 
     private readonly IKernelBuilder _kernelBuilder;
+
     private readonly IConfigurationRoot _configuration;
+
     private readonly XunitLogger<Kernel> _logger;
+
     private readonly RedirectOutput _testOutputHelper;
 
 
     public void Dispose()
     {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-
-    ~PromptTests()
-    {
-        this.Dispose(false);
-    }
-
-
-    private void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            this._logger.Dispose();
-            this._testOutputHelper.Dispose();
-        }
+        this._logger.Dispose();
+        this._testOutputHelper.Dispose();
     }
 
 
     private void ConfigureAzureOpenAI(IKernelBuilder kernelBuilder)
     {
-        var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
+        var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").
+            Get<AzureOpenAIConfiguration>();
 
         Assert.NotNull(azureOpenAIConfiguration);
         Assert.NotNull(azureOpenAIConfiguration.DeploymentName);

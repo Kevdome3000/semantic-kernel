@@ -19,6 +19,7 @@ using Xunit;
 /// </summary>
 public sealed class ChromaMemoryStoreTests : IDisposable
 {
+
     // If null, all tests will be enabled
     private const string SkipReason = "Requires Chroma server up and running";
 
@@ -48,7 +49,8 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         await this._chromaMemoryStore.CreateCollectionAsync(collectionName3);
 
         // Assert
-        var collections = await this._chromaMemoryStore.GetCollectionsAsync().ToListAsync();
+        var collections = await this._chromaMemoryStore.GetCollectionsAsync().
+            ToListAsync();
 
         Assert.Contains(collectionName1, collections);
         Assert.Contains(collectionName2, collections);
@@ -67,8 +69,11 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         await this._chromaMemoryStore.CreateCollectionAsync(collectionName);
 
         // Assert
-        var collections = await this._chromaMemoryStore.GetCollectionsAsync().ToListAsync();
-        var filteredCollections = collections.Where(collection => collection.Equals(collectionName, StringComparison.Ordinal)).ToList();
+        var collections = await this._chromaMemoryStore.GetCollectionsAsync().
+            ToListAsync();
+
+        var filteredCollections = collections.Where(collection => collection.Equals(collectionName, StringComparison.Ordinal)).
+            ToList();
 
         Assert.Single(filteredCollections);
     }
@@ -103,14 +108,18 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 
         await this._chromaMemoryStore.CreateCollectionAsync(collectionName);
 
-        var collectionsBeforeDeletion = await this._chromaMemoryStore.GetCollectionsAsync().ToListAsync();
+        var collectionsBeforeDeletion = await this._chromaMemoryStore.GetCollectionsAsync().
+            ToListAsync();
+
         Assert.Contains(collectionName, collectionsBeforeDeletion);
 
         // Act
         await this._chromaMemoryStore.DeleteCollectionAsync(collectionName);
 
         // Assert
-        var collectionsAfterDeletion = await this._chromaMemoryStore.GetCollectionsAsync().ToListAsync();
+        var collectionsAfterDeletion = await this._chromaMemoryStore.GetCollectionsAsync().
+            ToListAsync();
+
         Assert.DoesNotContain(collectionName, collectionsAfterDeletion);
     }
 
@@ -126,6 +135,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 
         // Assert
         Assert.IsType<KernelException>(exception);
+
         Assert.Contains(
             $"Cannot delete non-existent collection {collectionName}",
             exception.Message,
@@ -138,7 +148,9 @@ public sealed class ChromaMemoryStoreTests : IDisposable
     {
         // Arrange
         var collectionName = this.GetRandomCollectionName();
-        var key = Guid.NewGuid().ToString();
+
+        var key = Guid.NewGuid().
+            ToString();
 
         await this._chromaMemoryStore.CreateCollectionAsync(collectionName);
 
@@ -188,14 +200,16 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         await this._chromaMemoryStore.CreateCollectionAsync(collectionName);
 
         // Act
-        var createdRecordKeys = await this._chromaMemoryStore.UpsertBatchAsync(collectionName, batch).ToListAsync();
+        var createdRecordKeys = await this._chromaMemoryStore.UpsertBatchAsync(collectionName, batch).
+            ToListAsync();
 
         // Assert
         Assert.Equal(expectedRecord1.Key, createdRecordKeys[0]);
         Assert.Equal(expectedRecord2.Key, createdRecordKeys[1]);
         Assert.Equal(expectedRecord3.Key, createdRecordKeys[2]);
 
-        var actualRecords = await this._chromaMemoryStore.GetBatchAsync(collectionName, batch.Select(l => l.Key), true).ToListAsync();
+        var actualRecords = await this._chromaMemoryStore.GetBatchAsync(collectionName, batch.Select(l => l.Key), true).
+            ToListAsync();
 
         actualRecords.ForEach(Assert.NotNull);
 
@@ -241,9 +255,12 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         var keys = batch.Select(l => l.Key);
 
         await this._chromaMemoryStore.CreateCollectionAsync(collectionName);
-        await this._chromaMemoryStore.UpsertBatchAsync(collectionName, batch).ToListAsync();
 
-        var recordsBeforeDeletion = await this._chromaMemoryStore.GetBatchAsync(collectionName, keys).ToListAsync();
+        await this._chromaMemoryStore.UpsertBatchAsync(collectionName, batch).
+            ToListAsync();
+
+        var recordsBeforeDeletion = await this._chromaMemoryStore.GetBatchAsync(collectionName, keys).
+            ToListAsync();
 
         Assert.Equal(batch.Count, recordsBeforeDeletion.Count);
         recordsBeforeDeletion.ForEach(Assert.NotNull);
@@ -252,7 +269,9 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         await this._chromaMemoryStore.RemoveBatchAsync(collectionName, keys);
 
         // Assert
-        var recordsAfterDeletion = await this._chromaMemoryStore.GetBatchAsync(collectionName, keys).ToListAsync();
+        var recordsAfterDeletion = await this._chromaMemoryStore.GetBatchAsync(collectionName, keys).
+            ToListAsync();
+
         Assert.Empty(recordsAfterDeletion);
     }
 
@@ -273,7 +292,9 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         var keys = batch.Select(l => l.Key);
 
         await this._chromaMemoryStore.CreateCollectionAsync(collectionName);
-        await this._chromaMemoryStore.UpsertBatchAsync(collectionName, batch).ToListAsync();
+
+        await this._chromaMemoryStore.UpsertBatchAsync(collectionName, batch).
+            ToListAsync();
 
         // Act
         var nearestMatch = await this._chromaMemoryStore.GetNearestMatchAsync(collectionName, searchEmbedding, withEmbedding: true);
@@ -305,12 +326,13 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         var keys = batch.Select(l => l.Key);
 
         await this._chromaMemoryStore.CreateCollectionAsync(collectionName);
-        await this._chromaMemoryStore.UpsertBatchAsync(collectionName, batch).ToListAsync();
+
+        await this._chromaMemoryStore.UpsertBatchAsync(collectionName, batch).
+            ToListAsync();
 
         // Act
-        var nearestMatches = await this._chromaMemoryStore
-            .GetNearestMatchesAsync(collectionName, searchEmbedding, batch.Count, withEmbeddings: true)
-            .ToListAsync();
+        var nearestMatches = await this._chromaMemoryStore.GetNearestMatchesAsync(collectionName, searchEmbedding, batch.Count, withEmbeddings: true).
+            ToListAsync();
 
         // Assert
         Assert.NotNull(nearestMatches);
@@ -421,24 +443,15 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 
     public void Dispose()
     {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
+        this._httpClient.Dispose();
     }
 
 
     #region private ================================================================================
 
     private readonly HttpClient _httpClient;
+
     private readonly ChromaMemoryStore _chromaMemoryStore;
-
-
-    private void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            this._httpClient.Dispose();
-        }
-    }
 
 
     private void AssertMemoryRecordEqual(MemoryRecord expectedRecord, MemoryRecord actualRecord)
@@ -462,15 +475,20 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 
     private MemoryRecord GetRandomMemoryRecord(string? key = null, ReadOnlyMemory<float>? embedding = null)
     {
-        var recordKey = key ?? Guid.NewGuid().ToString();
+        var recordKey = key ?? Guid.NewGuid().
+            ToString();
+
         var recordEmbedding = embedding ?? new[] { 1f, 3f, 5f };
 
         return MemoryRecord.LocalRecord(
             id: recordKey,
-            text: "text-" + Guid.NewGuid().ToString(),
-            description: "description-" + Guid.NewGuid().ToString(),
+            text: "text-" + Guid.NewGuid().
+                ToString(),
+            description: "description-" + Guid.NewGuid().
+                ToString(),
             embedding: recordEmbedding,
-            additionalMetadata: "metadata-" + Guid.NewGuid().ToString(),
+            additionalMetadata: "metadata-" + Guid.NewGuid().
+                ToString(),
             key: recordKey);
     }
 
@@ -488,15 +506,20 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 
     private MemoryRecordMetadata GetRandomMemoryRecordMetadata(bool isReference = false, string? key = null)
     {
-        var recordKey = key ?? Guid.NewGuid().ToString();
+        var recordKey = key ?? Guid.NewGuid().
+            ToString();
 
         return new MemoryRecordMetadata(
             isReference: isReference,
             id: recordKey,
-            text: "text-" + Guid.NewGuid().ToString(),
-            description: "description-" + Guid.NewGuid().ToString(),
-            externalSourceName: "source-name-" + Guid.NewGuid().ToString(),
-            additionalMetadata: "metadata-" + Guid.NewGuid().ToString());
+            text: "text-" + Guid.NewGuid().
+                ToString(),
+            description: "description-" + Guid.NewGuid().
+                ToString(),
+            externalSourceName: "source-name-" + Guid.NewGuid().
+                ToString(),
+            additionalMetadata: "metadata-" + Guid.NewGuid().
+                ToString());
     }
 
     #endregion

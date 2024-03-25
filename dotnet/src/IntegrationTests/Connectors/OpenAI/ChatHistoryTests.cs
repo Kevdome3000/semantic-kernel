@@ -20,10 +20,15 @@ using Xunit.Abstractions;
 
 public sealed class ChatHistoryTests : IDisposable
 {
+
     private readonly IKernelBuilder _kernelBuilder;
+
     private readonly XunitLogger<Kernel> _logger;
+
     private readonly RedirectOutput _testOutputHelper;
+
     private readonly IConfigurationRoot _configuration;
+
     private static readonly JsonSerializerOptions s_jsonOptionsCache = new() { WriteIndented = true };
 
 
@@ -31,15 +36,13 @@ public sealed class ChatHistoryTests : IDisposable
     {
         this._logger = new XunitLogger<Kernel>(output);
         this._testOutputHelper = new RedirectOutput(output);
-        Console.SetOut(this._testOutputHelper);
 
         // Load configuration
-        this._configuration = new ConfigurationBuilder()
-            .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
-            .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
-            .AddEnvironmentVariables()
-            .AddUserSecrets<OpenAICompletionTests>()
-            .Build();
+        this._configuration = new ConfigurationBuilder().AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true).
+            AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true).
+            AddEnvironmentVariables().
+            AddUserSecrets<OpenAICompletionTests>().
+            Build();
 
         this._kernelBuilder = Kernel.CreateBuilder();
     }
@@ -127,7 +130,8 @@ public sealed class ChatHistoryTests : IDisposable
 
     private void ConfigureAzureOpenAIChatAsText(IKernelBuilder kernelBuilder)
     {
-        var azureOpenAIConfiguration = this._configuration.GetSection("Planners:AzureOpenAI").Get<AzureOpenAIConfiguration>();
+        var azureOpenAIConfiguration = this._configuration.GetSection("Planners:AzureOpenAI").
+            Get<AzureOpenAIConfiguration>();
 
         Assert.NotNull(azureOpenAIConfiguration);
         Assert.NotNull(azureOpenAIConfiguration.ChatDeploymentName);
@@ -146,27 +150,20 @@ public sealed class ChatHistoryTests : IDisposable
 
     public class FakePlugin
     {
+
         [KernelFunction, Description("creates a special poem")]
         public string CreateSpecialPoem()
         {
             return "ABCDE";
         }
+
     }
 
 
     public void Dispose()
     {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
+        this._logger.Dispose();
+        this._testOutputHelper.Dispose();
     }
 
-
-    private void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            this._logger.Dispose();
-            this._testOutputHelper.Dispose();
-        }
-    }
 }

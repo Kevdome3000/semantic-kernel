@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Extensions.Logging;
-using Extensions.Logging.Abstractions;
 using global::Google.Apis.CustomSearchAPI.v1;
 using global::Google.Apis.Services;
 
@@ -19,8 +18,11 @@ using global::Google.Apis.Services;
 /// </summary>
 public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
 {
+
     private readonly ILogger _logger;
+
     private readonly CustomSearchAPIService _search;
+
     private readonly string? _searchEngineId;
 
 
@@ -82,22 +84,10 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
         search.Num = count;
         search.Start = offset;
 
-        var results = await search.ExecuteAsync(cancellationToken).ConfigureAwait(false);
+        var results = await search.ExecuteAsync(cancellationToken).
+            ConfigureAwait(false);
 
         return results.Items.Select(item => item.Snippet);
-    }
-
-
-    /// <summary>
-    /// Disposes the resources used by the <see cref="GoogleConnector"/> instance.
-    /// </summary>
-    /// <param name="disposing">True to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
-    private void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            this._search.Dispose();
-        }
     }
 
 
@@ -106,7 +96,7 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
     /// </summary>
     public void Dispose()
     {
-        this.Dispose(disposing: true);
-        GC.SuppressFinalize(this);
+        this._search.Dispose();
     }
+
 }

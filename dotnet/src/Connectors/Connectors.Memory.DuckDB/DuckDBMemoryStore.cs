@@ -21,6 +21,7 @@ using Memory;
 /// The caller is responsible for deleting the file.</remarks>
 public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
 {
+
     /// <summary>
     /// Connect a DuckDB database
     /// </summary>
@@ -31,7 +32,9 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
         CancellationToken cancellationToken = default)
     {
         var memoryStore = new DuckDBMemoryStore(filename);
-        return await InitialiseMemoryStoreAsync(memoryStore, cancellationToken).ConfigureAwait(false);
+
+        return await InitialiseMemoryStoreAsync(memoryStore, cancellationToken).
+            ConfigureAwait(false);
     }
 
 
@@ -56,21 +59,25 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
         CancellationToken cancellationToken = default)
     {
         var memoryStore = new DuckDBMemoryStore(connection);
-        return await InitialiseMemoryStoreAsync(memoryStore, cancellationToken).ConfigureAwait(false);
+
+        return await InitialiseMemoryStoreAsync(memoryStore, cancellationToken).
+            ConfigureAwait(false);
     }
 
 
     /// <inheritdoc/>
     public async Task CreateCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
-        await this._dbConnector.CreateCollectionAsync(this._dbConnection, collectionName, cancellationToken).ConfigureAwait(false);
+        await this._dbConnector.CreateCollectionAsync(this._dbConnection, collectionName, cancellationToken).
+            ConfigureAwait(false);
     }
 
 
     /// <inheritdoc/>
     public async Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancellationToken = default)
     {
-        return await this._dbConnector.DoesCollectionExistsAsync(this._dbConnection, collectionName, cancellationToken).ConfigureAwait(false);
+        return await this._dbConnector.DoesCollectionExistsAsync(this._dbConnection, collectionName, cancellationToken).
+            ConfigureAwait(false);
     }
 
 
@@ -87,14 +94,16 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc/>
     public async Task DeleteCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
-        await this._dbConnector.DeleteCollectionAsync(this._dbConnection, collectionName, cancellationToken).ConfigureAwait(false);
+        await this._dbConnector.DeleteCollectionAsync(this._dbConnection, collectionName, cancellationToken).
+            ConfigureAwait(false);
     }
 
 
     /// <inheritdoc/>
     public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default)
     {
-        return await this.InternalUpsertAsync(this._dbConnection, collectionName, record, cancellationToken).ConfigureAwait(false);
+        return await this.InternalUpsertAsync(this._dbConnection, collectionName, record, cancellationToken).
+            ConfigureAwait(false);
     }
 
 
@@ -106,15 +115,22 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
     {
         foreach (var record in records)
         {
-            yield return await this.InternalUpsertAsync(this._dbConnection, collectionName, record, cancellationToken).ConfigureAwait(false);
+            yield return await this.InternalUpsertAsync(this._dbConnection, collectionName, record, cancellationToken).
+                ConfigureAwait(false);
         }
     }
 
 
     /// <inheritdoc/>
-    public async Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancellationToken = default)
+    public async Task<MemoryRecord?> GetAsync(
+        string collectionName,
+        string key,
+        bool withEmbedding = false,
+        CancellationToken cancellationToken = default)
     {
-        return await this.InternalGetAsync(this._dbConnection, collectionName, key, withEmbedding, cancellationToken).ConfigureAwait(false);
+        return await this.InternalGetAsync(this._dbConnection, collectionName, key, withEmbedding,
+                cancellationToken).
+            ConfigureAwait(false);
     }
 
 
@@ -127,7 +143,9 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
     {
         foreach (var key in keys)
         {
-            var result = await this.InternalGetAsync(this._dbConnection, collectionName, key, withEmbeddings, cancellationToken).ConfigureAwait(false);
+            var result = await this.InternalGetAsync(this._dbConnection, collectionName, key, withEmbeddings,
+                    cancellationToken).
+                ConfigureAwait(false);
 
             if (result != null)
             {
@@ -144,14 +162,16 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc/>
     public async Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default)
     {
-        await this._dbConnector.DeleteAsync(this._dbConnection, collectionName, key, cancellationToken).ConfigureAwait(false);
+        await this._dbConnector.DeleteAsync(this._dbConnection, collectionName, key, cancellationToken).
+            ConfigureAwait(false);
     }
 
 
     /// <inheritdoc/>
     public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
-        await Task.WhenAll(keys.Select(k => this._dbConnector.DeleteAsync(this._dbConnection, collectionName, k, cancellationToken))).ConfigureAwait(false);
+        await Task.WhenAll(keys.Select(k => this._dbConnector.DeleteAsync(this._dbConnection, collectionName, k, cancellationToken))).
+            ConfigureAwait(false);
     }
 
 
@@ -171,17 +191,22 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
 
         List<(MemoryRecord Record, double Score)> embeddings = new();
 
-        await foreach (var dbEntry in this._dbConnector.GetNearestMatchesAsync(this._dbConnection, collectionName, embedding.ToArray(), limit, minRelevanceScore, cancellationToken))
+        await foreach (var dbEntry in this._dbConnector.GetNearestMatchesAsync(this._dbConnection, collectionName, embedding.ToArray(), limit,
+                           minRelevanceScore, cancellationToken))
         {
             var entry = MemoryRecord.FromJsonMetadata(
                 json: dbEntry.MetadataString,
-                withEmbeddings ? dbEntry.Embedding : Array.Empty<float>(),
+                withEmbeddings
+                    ? dbEntry.Embedding
+                    : Array.Empty<float>(),
                 dbEntry.Key,
                 ParseTimestamp(dbEntry.Timestamp));
+
             embeddings.Add(new(entry, dbEntry.Score));
         }
 
-        foreach (var item in embeddings.OrderByDescending(l => l.Score).Take(limit))
+        foreach (var item in embeddings.OrderByDescending(l => l.Score).
+                     Take(limit))
         {
             yield return (item.Record, item.Score);
         }
@@ -197,57 +222,47 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
         CancellationToken cancellationToken = default)
     {
         return await this.GetNearestMatchesAsync(
-            collectionName: collectionName,
-            embedding: embedding,
-            limit: 1,
-            minRelevanceScore: minRelevanceScore,
-            withEmbeddings: withEmbedding,
-            cancellationToken: cancellationToken).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+                collectionName: collectionName,
+                embedding: embedding,
+                limit: 1,
+                minRelevanceScore: minRelevanceScore,
+                withEmbeddings: withEmbedding,
+                cancellationToken: cancellationToken).
+            FirstOrDefaultAsync(cancellationToken).
+            ConfigureAwait(false);
     }
 
 
     /// <inheritdoc/>
     public void Dispose()
     {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-
-    #region protected ================================================================================
-
-    /// <summary>
-    /// Disposes the resources used by the <see cref="DuckDBMemoryStore"/> instance.
-    /// </summary>
-    /// <param name="disposing">True to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
-    private void Dispose(bool disposing)
-    {
         if (!this._disposedValue)
         {
-            if (disposing)
-            {
-                this._dbConnection.Close();
-                this._dbConnection.Dispose();
-            }
+            this._dbConnection.Close();
+            this._dbConnection.Dispose();
 
             this._disposedValue = true;
         }
     }
 
-    #endregion
-
 
     #region private ================================================================================
 
     private readonly Database _dbConnector;
+
     private readonly DuckDBConnection _dbConnection;
+
     private bool _disposedValue;
 
 
     private static async Task<DuckDBMemoryStore> InitialiseMemoryStoreAsync(DuckDBMemoryStore memoryStore, CancellationToken cancellationToken = default)
     {
-        await memoryStore._dbConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
-        await memoryStore._dbConnector.CreateTableAsync(memoryStore._dbConnection, cancellationToken).ConfigureAwait(false);
+        await memoryStore._dbConnection.OpenAsync(cancellationToken).
+            ConfigureAwait(false);
+
+        await memoryStore._dbConnector.CreateTableAsync(memoryStore._dbConnection, cancellationToken).
+            ConfigureAwait(false);
+
         return memoryStore;
     }
 
@@ -294,17 +309,22 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
     }
 
 
-    private async Task<string> InternalUpsertAsync(DuckDBConnection connection, string collectionName, MemoryRecord record, CancellationToken cancellationToken)
+    private async Task<string> InternalUpsertAsync(
+        DuckDBConnection connection,
+        string collectionName,
+        MemoryRecord record,
+        CancellationToken cancellationToken)
     {
         record.Key = record.Metadata.Id;
 
         await this._dbConnector.UpdateOrInsertAsync(conn: connection,
-            collectionName: collectionName,
-            key: record.Key,
-            metadata: record.GetSerializedMetadata(),
-            embedding: record.Embedding.ToArray(),
-            timestamp: ToTimestampString(record.Timestamp),
-            cancellationToken: cancellationToken).ConfigureAwait(false);
+                collectionName: collectionName,
+                key: record.Key,
+                metadata: record.GetSerializedMetadata(),
+                embedding: record.Embedding.ToArray(),
+                timestamp: ToTimestampString(record.Timestamp),
+                cancellationToken: cancellationToken).
+            ConfigureAwait(false);
 
         return record.Key;
     }
@@ -317,7 +337,8 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
         bool withEmbedding,
         CancellationToken cancellationToken)
     {
-        DatabaseEntry? entry = await this._dbConnector.ReadAsync(connection, collectionName, key, cancellationToken).ConfigureAwait(false);
+        DatabaseEntry? entry = await this._dbConnector.ReadAsync(connection, collectionName, key, cancellationToken).
+            ConfigureAwait(false);
 
         if (!entry.HasValue) { return null; }
 

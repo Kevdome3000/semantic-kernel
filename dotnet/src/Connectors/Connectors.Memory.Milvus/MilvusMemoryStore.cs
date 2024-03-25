@@ -20,35 +20,44 @@ using Memory;
 /// </summary>
 public class MilvusMemoryStore : IMemoryStore, IDisposable
 {
+
     private readonly int _vectorSize;
+
     private readonly SimilarityMetricType _metricType;
+
+    private readonly ConsistencyLevel _consistencyLevel;
+
     private readonly bool _ownsMilvusClient;
+
     private readonly string _indexName;
 
     private const string DefaultIndexName = "default";
+
     private const string IsReferenceFieldName = "is_reference";
+
     private const string ExternalSourceNameFieldName = "external_source_name";
+
     private const string IdFieldName = "id";
+
     private const string DescriptionFieldName = "description";
+
     private const string TextFieldName = "text";
+
     private const string AdditionalMetadataFieldName = "additional_metadata";
+
     private const string EmbeddingFieldName = "embedding";
+
     private const string KeyFieldName = "key";
+
     private const string TimestampFieldName = "timestamp";
 
     private const int DefaultMilvusPort = 19530;
-    private const ConsistencyLevel DefaultConsistencyLevel = ConsistencyLevel.Session;
+
     private const int DefaultVarcharLength = 65_535;
 
-    private readonly QueryParameters _queryParametersWithEmbedding = new()
-    {
-        OutputFields = { IsReferenceFieldName, ExternalSourceNameFieldName, IdFieldName, DescriptionFieldName, TextFieldName, AdditionalMetadataFieldName, EmbeddingFieldName, KeyFieldName, TimestampFieldName }
-    };
+    private readonly QueryParameters _queryParametersWithEmbedding;
 
-    private readonly QueryParameters _queryParametersWithoutEmbedding = new()
-    {
-        OutputFields = { IsReferenceFieldName, ExternalSourceNameFieldName, IdFieldName, DescriptionFieldName, TextFieldName, AdditionalMetadataFieldName, KeyFieldName, TimestampFieldName }
-    };
+    private readonly QueryParameters _queryParametersWithoutEmbedding;
 
     private readonly SearchParameters _searchParameters = new()
     {
@@ -66,7 +75,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
     /// <summary>
     /// Creates a new <see cref="MilvusMemoryStore" />, connecting to the given hostname on the default Milvus port of 19530.
     /// For more advanced configuration opens, construct a <see cref="MilvusClient" /> instance and pass it to
-    /// <see cref="MilvusMemoryStore(MilvusClient, string, int, SimilarityMetricType)" />.
+    /// <see cref="MilvusMemoryStore(MilvusClient, string, int, SimilarityMetricType, ConsistencyLevel)" />.
     /// </summary>
     /// <param name="host">The hostname or IP address to connect to.</param>
     /// <param name="port">The port to connect to. Defaults to 19530.</param>
@@ -75,6 +84,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
     /// <param name="indexName">The name of the index to use. Defaults to <see cref="DefaultIndexName" />.</param>
     /// <param name="vectorSize">The size of the vectors used in Milvus. Defaults to 1536.</param>
     /// <param name="metricType">The metric used to measure similarity between vectors. Defaults to <see cref="SimilarityMetricType.Ip" />.</param>
+    /// <param name="consistencyLevel">The consistency level to be used in the search. Defaults to <see cref="ConsistencyLevel.Session"/>.</param>
     /// <param name="loggerFactory">An optional logger factory through which the Milvus client will log.</param>
     public MilvusMemoryStore(
         string host,
@@ -84,8 +94,12 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         string? indexName = null,
         int vectorSize = 1536,
         SimilarityMetricType metricType = SimilarityMetricType.Ip,
+        ConsistencyLevel consistencyLevel = ConsistencyLevel.Session,
         ILoggerFactory? loggerFactory = null)
-        : this(new MilvusClient(host, port, ssl, database, callOptions: default, loggerFactory), indexName, vectorSize, metricType)
+        : this(
+            new MilvusClient(host, port, ssl, database,
+                callOptions: default, loggerFactory),
+            indexName, vectorSize, metricType, consistencyLevel)
     {
         this._ownsMilvusClient = true;
     }
@@ -94,7 +108,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
     /// <summary>
     /// Creates a new <see cref="MilvusMemoryStore" />, connecting to the given hostname on the default Milvus port of 19530.
     /// For more advanced configuration opens, construct a <see cref="MilvusClient" /> instance and pass it to
-    /// <see cref="MilvusMemoryStore(MilvusClient, string, int, SimilarityMetricType)" />.
+    /// <see cref="MilvusMemoryStore(MilvusClient, string, int, SimilarityMetricType, ConsistencyLevel)" />.
     /// </summary>
     /// <param name="host">The hostname or IP address to connect to.</param>
     /// <param name="username">The username to use for authentication.</param>
@@ -105,6 +119,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
     /// <param name="indexName">The name of the index to use. Defaults to <see cref="DefaultIndexName" />.</param>
     /// <param name="vectorSize">The size of the vectors used in Milvus. Defaults to 1536.</param>
     /// <param name="metricType">The metric used to measure similarity between vectors. Defaults to <see cref="SimilarityMetricType.Ip" />.</param>
+    /// <param name="consistencyLevel">The consistency level to be used in the search. Defaults to <see cref="ConsistencyLevel.Session"/>.</param>
     /// <param name="loggerFactory">An optional logger factory through which the Milvus client will log.</param>
     public MilvusMemoryStore(
         string host,
@@ -116,8 +131,12 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         string? indexName = null,
         int vectorSize = 1536,
         SimilarityMetricType metricType = SimilarityMetricType.Ip,
+        ConsistencyLevel consistencyLevel = ConsistencyLevel.Session,
         ILoggerFactory? loggerFactory = null)
-        : this(new MilvusClient(host, username, password, port, ssl, database, callOptions: default, loggerFactory), indexName, vectorSize, metricType)
+        : this(
+            new MilvusClient(host, username, password, port,
+                ssl, database, callOptions: default, loggerFactory),
+            indexName, vectorSize, metricType, consistencyLevel)
     {
         this._ownsMilvusClient = true;
     }
@@ -126,7 +145,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
     /// <summary>
     /// Creates a new <see cref="MilvusMemoryStore" />, connecting to the given hostname on the default Milvus port of 19530.
     /// For more advanced configuration opens, construct a <see cref="MilvusClient" /> instance and pass it to
-    /// <see cref="MilvusMemoryStore(MilvusClient, string, int, SimilarityMetricType)" />.
+    /// <see cref="MilvusMemoryStore(MilvusClient, string, int, SimilarityMetricType, ConsistencyLevel)" />.
     /// </summary>
     /// <param name="host">The hostname or IP address to connect to.</param>
     /// <param name="apiKey">An API key to be used for authentication, instead of a username and password.</param>
@@ -136,6 +155,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
     /// <param name="indexName">The name of the index to use. Defaults to <see cref="DefaultIndexName" />.</param>
     /// <param name="vectorSize">The size of the vectors used in Milvus. Defaults to 1536.</param>
     /// <param name="metricType">The metric used to measure similarity between vectors. Defaults to <see cref="SimilarityMetricType.Ip" />.</param>
+    /// <param name="consistencyLevel">The consistency level to be used in the search. Defaults to <see cref="ConsistencyLevel.Session"/>.</param>
     /// <param name="loggerFactory">An optional logger factory through which the Milvus client will log.</param>
     public MilvusMemoryStore(
         string host,
@@ -146,8 +166,12 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         string? indexName = null,
         int vectorSize = 1536,
         SimilarityMetricType metricType = SimilarityMetricType.Ip,
+        ConsistencyLevel consistencyLevel = ConsistencyLevel.Session,
         ILoggerFactory? loggerFactory = null)
-        : this(new MilvusClient(host, apiKey, port, ssl, database, callOptions: default, loggerFactory), indexName, vectorSize, metricType)
+        : this(
+            new MilvusClient(host, apiKey, port, ssl,
+                database, callOptions: default, loggerFactory),
+            indexName, vectorSize, metricType, consistencyLevel)
     {
         this._ownsMilvusClient = true;
     }
@@ -160,12 +184,15 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
     /// <param name="indexName">The name of the index to use. Defaults to <see cref="DefaultIndexName" />.</param>
     /// <param name="vectorSize">The size of the vectors used in Milvus. Defaults to 1536.</param>
     /// <param name="metricType">The metric used to measure similarity between vectors. Defaults to <see cref="SimilarityMetricType.Ip" />.</param>
+    /// <param name="consistencyLevel">The consistency level to be used in the search. Defaults to <see cref="ConsistencyLevel.Session"/>.</param>
     public MilvusMemoryStore(
         MilvusClient client,
         string? indexName = null,
         int vectorSize = 1536,
-        SimilarityMetricType metricType = SimilarityMetricType.Ip)
-        : this(client, ownsMilvusClient: false, indexName, vectorSize, metricType)
+        SimilarityMetricType metricType = SimilarityMetricType.Ip,
+        ConsistencyLevel consistencyLevel = ConsistencyLevel.Session)
+        : this(client, ownsMilvusClient: false, indexName, vectorSize,
+            metricType, consistencyLevel)
     {
     }
 
@@ -173,15 +200,29 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
     private MilvusMemoryStore(
         MilvusClient client,
         bool ownsMilvusClient,
-        string? indexName = null,
-        int vectorSize = 1536,
-        SimilarityMetricType metricType = SimilarityMetricType.Ip)
+        string? indexName,
+        int vectorSize,
+        SimilarityMetricType metricType,
+        ConsistencyLevel consistencyLevel)
     {
         this.Client = client;
         this._indexName = indexName ?? DefaultIndexName;
         this._vectorSize = vectorSize;
         this._metricType = metricType;
         this._ownsMilvusClient = ownsMilvusClient;
+        this._consistencyLevel = consistencyLevel;
+
+        this._queryParametersWithEmbedding = new()
+        {
+            OutputFields = { IsReferenceFieldName, ExternalSourceNameFieldName, IdFieldName, DescriptionFieldName, TextFieldName, AdditionalMetadataFieldName, EmbeddingFieldName, KeyFieldName, TimestampFieldName },
+            ConsistencyLevel = this._consistencyLevel
+        };
+
+        this._queryParametersWithoutEmbedding = new()
+        {
+            OutputFields = { IsReferenceFieldName, ExternalSourceNameFieldName, IdFieldName, DescriptionFieldName, TextFieldName, AdditionalMetadataFieldName, KeyFieldName, TimestampFieldName },
+            ConsistencyLevel = this._consistencyLevel
+        };
     }
 
     #endregion Constructors
@@ -190,7 +231,8 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc />
     public async Task CreateCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
-        var exists = await this.Client.HasCollectionAsync(collectionName, cancellationToken: cancellationToken).ConfigureAwait(false);
+        var exists = await this.Client.HasCollectionAsync(collectionName, cancellationToken: cancellationToken).
+            ConfigureAwait(false);
 
         if (!exists)
         {
@@ -204,13 +246,20 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
                 EnableDynamicFields = true
             };
 
-            MilvusCollection collection = await this.Client.CreateCollectionAsync(collectionName, schema, DefaultConsistencyLevel, cancellationToken: cancellationToken).ConfigureAwait(false);
+            MilvusCollection collection = await this.Client.CreateCollectionAsync(collectionName, schema, this._consistencyLevel, cancellationToken: cancellationToken).
+                ConfigureAwait(false);
 
-            await collection.CreateIndexAsync(EmbeddingFieldName, metricType: this._metricType, indexName: this._indexName, cancellationToken: cancellationToken).ConfigureAwait(false);
-            await collection.WaitForIndexBuildAsync("float_vector", this._indexName, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await collection.CreateIndexAsync(EmbeddingFieldName, metricType: this._metricType, indexName: this._indexName, cancellationToken: cancellationToken).
+                ConfigureAwait(false);
 
-            await collection.LoadAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
-            await collection.WaitForCollectionLoadAsync(waitingInterval: TimeSpan.FromMilliseconds(100), timeout: TimeSpan.FromMinutes(1), cancellationToken: cancellationToken).ConfigureAwait(false);
+            await collection.WaitForIndexBuildAsync("float_vector", this._indexName, cancellationToken: cancellationToken).
+                ConfigureAwait(false);
+
+            await collection.LoadAsync(cancellationToken: cancellationToken).
+                ConfigureAwait(false);
+
+            await collection.WaitForCollectionLoadAsync(waitingInterval: TimeSpan.FromMilliseconds(100), timeout: TimeSpan.FromMinutes(1), cancellationToken: cancellationToken).
+                ConfigureAwait(false);
         }
     }
 
@@ -218,7 +267,8 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc />
     public async IAsyncEnumerable<string> GetCollectionsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        foreach (MilvusCollectionInfo collection in await this.Client.ListCollectionsAsync(cancellationToken: cancellationToken).ConfigureAwait(false))
+        foreach (MilvusCollectionInfo collection in await this.Client.ListCollectionsAsync(cancellationToken: cancellationToken).
+                     ConfigureAwait(false))
         {
             yield return collection.Name;
         }
@@ -232,15 +282,14 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
 
     /// <inheritdoc />
     public Task DeleteCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
-        => this.Client.GetCollection(collectionName).DropAsync(cancellationToken);
+        => this.Client.GetCollection(collectionName).
+            DropAsync(cancellationToken);
 
 
     /// <inheritdoc />
     public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default)
     {
         MilvusCollection collection = this.Client.GetCollection(collectionName);
-
-        await collection.DeleteAsync($@"{IdFieldName} in [""{record.Metadata.Id}""]", cancellationToken: cancellationToken).ConfigureAwait(false);
 
         var metadata = record.Metadata;
 
@@ -258,7 +307,8 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
             FieldData.Create(TimestampFieldName, new[] { record.Timestamp?.ToString(CultureInfo.InvariantCulture) ?? string.Empty }, isDynamic: true)
         };
 
-        MutationResult result = await collection.InsertAsync(fieldData, cancellationToken: cancellationToken).ConfigureAwait(false);
+        MutationResult result = await collection.UpsertAsync(fieldData, cancellationToken: cancellationToken).
+            ConfigureAwait(false);
 
         return result.Ids.StringIds![0];
     }
@@ -270,9 +320,6 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         IEnumerable<MemoryRecord> records,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        // TODO: Milvus v2.3.0 will have a 1st-class upsert API which we should use.
-        // In the meantime, we do delete+insert, following the Python connector's example.
-
         StringBuilder idString = new();
 
         List<bool> isReferenceData = new();
@@ -294,7 +341,9 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
                 idString.Append(',');
             }
 
-            idString.Append('"').Append(metadata.Id).Append('"');
+            idString.Append('"').
+                Append(metadata.Id).
+                Append('"');
 
             isReferenceData.Add(metadata.IsReference);
             externalSourceNameData.Add(metadata.ExternalSourceName);
@@ -308,7 +357,6 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         }
 
         MilvusCollection collection = this.Client.GetCollection(collectionName);
-        await collection.DeleteAsync($"{IdFieldName} in [{idString}]", cancellationToken: cancellationToken).ConfigureAwait(false);
 
         FieldData[] fieldData =
         {
@@ -324,7 +372,8 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
             FieldData.Create(TimestampFieldName, timestampData, isDynamic: true)
         };
 
-        MutationResult result = await collection.InsertAsync(fieldData, cancellationToken: cancellationToken).ConfigureAwait(false);
+        MutationResult result = await collection.UpsertAsync(fieldData, cancellationToken: cancellationToken).
+            ConfigureAwait(false);
 
         foreach (var id in result.Ids.StringIds!)
         {
@@ -365,13 +414,19 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
                 idString.Append(',');
             }
 
-            idString.Append('"').Append(key).Append('"');
+            idString.Append('"').
+                Append(key).
+                Append('"');
         }
 
-        IReadOnlyList<FieldData> fields = await this.Client
-            .GetCollection(collectionName)
-            .QueryAsync($"{IdFieldName} in [{idString}]", withEmbeddings ? this._queryParametersWithEmbedding : this._queryParametersWithoutEmbedding, cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
+        IReadOnlyList<FieldData> fields = await this.Client.GetCollection(collectionName).
+            QueryAsync(
+                $"{IdFieldName} in [{idString}]",
+                withEmbeddings
+                    ? this._queryParametersWithEmbedding
+                    : this._queryParametersWithoutEmbedding,
+                cancellationToken: cancellationToken).
+            ConfigureAwait(false);
 
         var rowCount = fields[0].RowCount;
 
@@ -384,8 +439,8 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
 
     /// <inheritdoc />
     public Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default)
-        => this.Client.GetCollection(collectionName)
-            .DeleteAsync($@"{IdFieldName} in [""{key}""]", cancellationToken: cancellationToken);
+        => this.Client.GetCollection(collectionName).
+            DeleteAsync($@"{IdFieldName} in [""{key}""]", cancellationToken: cancellationToken);
 
 
     /// <inheritdoc />
@@ -393,7 +448,8 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
     {
         StringBuilder idString = new();
 
-        idString.Append(IdFieldName).Append(" in [");
+        idString.Append(IdFieldName).
+            Append(" in [");
 
         bool first = true;
 
@@ -408,14 +464,15 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
                 idString.Append(',');
             }
 
-            idString.Append('"').Append(id).Append('"');
+            idString.Append('"').
+                Append(id).
+                Append('"');
         }
 
         idString.Append(']');
 
-        return this.Client
-            .GetCollection(collectionName)
-            .DeleteAsync(idString.ToString(), cancellationToken: cancellationToken);
+        return this.Client.GetCollection(collectionName).
+            DeleteAsync(idString.ToString(), cancellationToken: cancellationToken);
     }
 
 
@@ -427,7 +484,8 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         bool withEmbedding = false,
         CancellationToken cancellationToken = default)
     {
-        await foreach ((MemoryRecord, double) result in this.GetNearestMatchesAsync(collectionName, embedding, limit: 1, minRelevanceScore, withEmbedding, cancellationToken))
+        await foreach ((MemoryRecord, double) result in this.GetNearestMatchesAsync(collectionName, embedding, limit: 1, minRelevanceScore,
+                           withEmbedding, cancellationToken))
         {
             return result;
         }
@@ -447,9 +505,9 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
     {
         MilvusCollection collection = this.Client.GetCollection(collectionName);
 
-        SearchResults results = await collection
-            .SearchAsync(EmbeddingFieldName, new[] { embedding }, SimilarityMetricType.Ip, limit, this._searchParameters, cancellationToken)
-            .ConfigureAwait(false);
+        SearchResults results = await collection.SearchAsync(EmbeddingFieldName, new[] { embedding }, SimilarityMetricType.Ip, limit,
+                this._searchParameters, cancellationToken).
+            ConfigureAwait(false);
 
         IReadOnlyList<string> ids = results.Ids.StringIds!;
         int rowCount = ids.Count;
@@ -463,7 +521,9 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         if (withEmbeddings)
         {
             StringBuilder filter = new();
-            filter.Append(IdFieldName).Append(" in [");
+
+            filter.Append(IdFieldName).
+                Append(" in [");
 
             for (int rowNum = 0; rowNum < ids.Count; rowNum++)
             {
@@ -472,7 +532,9 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
                     filter.Append(',');
                 }
 
-                filter.Append('"').Append(ids[rowNum]).Append('"');
+                filter.Append('"').
+                    Append(ids[rowNum]).
+                    Append('"');
             }
 
             filter.Append(']');
@@ -480,8 +542,8 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
             IReadOnlyList<FieldData> fieldData = await collection.QueryAsync(
                     filter.ToString(),
                     new() { OutputFields = { EmbeddingFieldName } },
-                    cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
+                    cancellationToken: cancellationToken).
+                ConfigureAwait(false);
 
             IReadOnlyList<string> idData = (fieldData[0] as FieldData<string> ?? fieldData[1] as FieldData<string>)!.Data;
             IReadOnlyList<ReadOnlyMemory<float>> embeddingData = (fieldData[0] as FloatVectorFieldData ?? fieldData[1] as FloatVectorFieldData)!.Data;
@@ -500,7 +562,9 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
             if (results.Scores[rowNum] >= minRelevanceScore)
             {
                 yield return (
-                    this.ReadMemoryRecord(data, rowNum, withEmbeddings ? embeddingMap![ids[rowNum]] : null),
+                    this.ReadMemoryRecord(data, rowNum, withEmbeddings
+                        ? embeddingMap![ids[rowNum]]
+                        : null),
                     results.Scores[rowNum]);
             }
         }
@@ -525,42 +589,52 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
             {
                 case IsReferenceFieldName when field is FieldData<bool> isReferenceField:
                     isReference = isReferenceField.Data[rowNum];
+
                     break;
 
                 case ExternalSourceNameFieldName when field is FieldData<string> externalSourceNameField:
                     externalSourceName = externalSourceNameField.Data[rowNum];
+
                     break;
 
                 case IdFieldName when field is FieldData<string> idField:
                     id = idField.Data[rowNum];
+
                     break;
 
                 case DescriptionFieldName when field is FieldData<string> descriptionField:
                     description = descriptionField.Data[rowNum];
+
                     break;
 
                 case TextFieldName when field is FieldData<string> textField:
                     text = textField.Data[rowNum];
+
                     break;
 
                 case AdditionalMetadataFieldName when field is FieldData<string> additionalMetadataField:
                     additionalMetadata = additionalMetadataField.Data[rowNum];
+
                     break;
 
                 case EmbeddingFieldName when field is FloatVectorFieldData embeddingField:
                     Debug.Assert(externalEmbedding is null);
                     embedding = embeddingField.Data[rowNum];
+
                     break;
 
                 case KeyFieldName when field is FieldData<string> keyField:
                     key = keyField.Data[rowNum];
+
                     break;
 
                 case TimestampFieldName when field is FieldData<string> timestampField:
                     string timestampString = timestampField.Data[rowNum];
+
                     timestamp = timestampString is { Length: > 0 }
                         ? DateTimeOffset.Parse(timestampString, CultureInfo.InvariantCulture)
                         : null;
+
                     break;
 
                 default:
@@ -569,7 +643,8 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         }
 
         return new MemoryRecord(
-            new MemoryRecordMetadata(isReference, id, text, description, externalSourceName, additionalMetadata),
+            new MemoryRecordMetadata(isReference, id, text, description,
+                externalSourceName, additionalMetadata),
             embedding ?? externalEmbedding ?? Array.Empty<float>(),
             key,
             timestamp);
@@ -594,4 +669,5 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         this.Dispose(true);
         GC.SuppressFinalize(this);
     }
+
 }

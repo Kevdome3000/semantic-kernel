@@ -23,7 +23,6 @@ public sealed class OpenAITextToAudioTests : IDisposable
     public OpenAITextToAudioTests(ITestOutputHelper output)
     {
         this._testOutputHelper = new RedirectOutput(output);
-        Console.SetOut(this._testOutputHelper);
 
         // Load configuration
         this._configuration = new ConfigurationBuilder().AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true).

@@ -14,9 +14,11 @@ using Moq.Protected;
 using Xunit;
 
 
-public class HttpPluginTests : IDisposable
+public sealed class HttpPluginTests : IDisposable
 {
+
     private readonly string _content = "hello world";
+
     private readonly string _uriString = "http://www.example.com";
 
     private readonly HttpResponseMessage _response = new()
@@ -113,39 +115,33 @@ public class HttpPluginTests : IDisposable
     private Mock<HttpMessageHandler> CreateMock()
     {
         var mockHandler = new Mock<HttpMessageHandler>();
-        mockHandler.Protected()
-            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-            .ReturnsAsync(this._response);
+
+        mockHandler.Protected().
+            Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>()).
+            ReturnsAsync(this._response);
+
         return mockHandler;
     }
 
 
     private void VerifyMock(Mock<HttpMessageHandler> mockHandler, HttpMethod method)
     {
-        mockHandler.Protected().Verify(
-            "SendAsync",
-            Times.Exactly(1), // we expected a single external request
-            ItExpr.Is<HttpRequestMessage>(req =>
-                    req.Method == method // we expected a POST request
-                    && req.RequestUri == new Uri(this._uriString) // to this uri
-            ),
-            ItExpr.IsAny<CancellationToken>()
-        );
+        mockHandler.Protected().
+            Verify(
+                "SendAsync",
+                Times.Exactly(1), // we expected a single external request
+                ItExpr.Is<HttpRequestMessage>(req =>
+                        req.Method == method // we expected a POST request
+                        && req.RequestUri == new Uri(this._uriString) // to this uri
+                ),
+                ItExpr.IsAny<CancellationToken>()
+            );
     }
 
 
     public void Dispose()
     {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
+        this._response.Dispose();
     }
 
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            this._response.Dispose();
-        }
-    }
 }
