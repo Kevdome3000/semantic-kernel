@@ -10,12 +10,14 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.TextGeneration;
 using Moq;
 using Xunit;
@@ -23,6 +25,7 @@ using Xunit;
 
 public class KernelTests
 {
+
     private const string InputParameterName = "input";
 
 
@@ -110,6 +113,7 @@ public class KernelTests
         var function = KernelFunctionFactory.CreateFromMethod(() => functionInvocations++);
 
         var handlerInvocations = 0;
+
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
             handlerInvocations++;
@@ -133,6 +137,7 @@ public class KernelTests
         var function = KernelFunctionFactory.CreateFromMethod(() => functionInvocations++);
 
         var handlerInvocations = 0;
+
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
             handlerInvocations++;
@@ -156,6 +161,7 @@ public class KernelTests
         var function = KernelFunctionFactory.CreateFromMethod(() => functionInvocations++);
 
         var handlerInvocations = 0;
+
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
             handlerInvocations++;
@@ -184,6 +190,7 @@ public class KernelTests
         var functions = kernel.ImportPluginFromType<MyPlugin>();
 
         var invoked = 0;
+
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
             e.Cancel = true;
@@ -213,6 +220,7 @@ public class KernelTests
         var function = KernelFunctionFactory.CreateFromMethod(() => functionInvocations++);
 
         int handlerInvocations = 0;
+
         kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
         {
             handlerInvocations++;
@@ -238,6 +246,7 @@ public class KernelTests
         var function = KernelFunctionFactory.CreateFromMethod(() => functionInvocations++);
 
         var handlerInvocations = 0;
+
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
             handlerInvocations++;
@@ -264,6 +273,7 @@ public class KernelTests
         var function = KernelFunctionFactory.CreateFromMethod(() => functionInvocations++);
 
         int handlerInvocations = 0;
+
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
             handlerInvocations++;
@@ -289,6 +299,7 @@ public class KernelTests
         var functions = kernel.ImportPluginFromType<MyPlugin>();
 
         var invoked = 0;
+
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
             e.Cancel = true;
@@ -318,6 +329,7 @@ public class KernelTests
         var function = KernelFunctionFactory.CreateFromMethod(() => functionInvocations++);
 
         int handlerInvocations = 0;
+
         kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
         {
             handlerInvocations++;
@@ -607,15 +619,18 @@ public class KernelTests
         // Kernel with all properties set
         var serviceSelector = new Mock<IAIServiceSelector>();
         var loggerFactory = new Mock<ILoggerFactory>();
-        var serviceProvider = new ServiceCollection()
-            .AddSingleton(serviceSelector.Object)
+
+        var serviceProvider = new ServiceCollection().AddSingleton(serviceSelector.Object)
 #pragma warning disable CA2000 // Dispose objects before losing scope
-            .AddSingleton(new HttpClient())
+            .
+            AddSingleton(new HttpClient())
 #pragma warning restore CA2000
-            .AddSingleton(loggerFactory.Object)
-            .AddSingleton<IFunctionFilter>(new MyFunctionFilter())
-            .AddSingleton<IPromptFilter>(new MyPromptFilter())
-            .BuildServiceProvider();
+            .
+            AddSingleton(loggerFactory.Object).
+            AddSingleton<IFunctionFilter>(new MyFunctionFilter()).
+            AddSingleton<IPromptFilter>(new MyPromptFilter()).
+            BuildServiceProvider();
+
         var plugin = KernelPluginFactory.CreateFromFunctions("plugin1");
         var plugins = new KernelPluginCollection() { plugin };
         Kernel kernel1 = new(serviceProvider, plugins);
@@ -653,6 +668,7 @@ public class KernelTests
         var mockTextCompletion = this.SetupStreamingMocks(
             new StreamingTextContent("chunk1"),
             new StreamingTextContent("chunk2"));
+
         IKernelBuilder builder = Kernel.CreateBuilder();
         builder.Services.AddSingleton<ITextGenerationService>(mockTextCompletion.Object);
         Kernel kernel = builder.Build();
@@ -674,12 +690,82 @@ public class KernelTests
     }
 
 
+    [Fact]
+    public async Task ValidateInvokeAsync()
+    {
+        // Arrange
+        var kernel = new Kernel();
+        var function = KernelFunctionFactory.CreateFromMethod(() => "ExpectedResult");
+
+        // Act
+        var result = await kernel.InvokeAsync(function);
+
+        // Assert
+        Assert.NotNull(result.Value);
+        Assert.Equal("ExpectedResult", result.Value);
+    }
+
+
+    [Fact]
+    public async Task ValidateInvokePromptAsync()
+    {
+        // Arrange
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddTransient<IChatCompletionService>((sp) => new FakeChatCompletionService("ExpectedResult"));
+        Kernel kernel = builder.Build();
+
+        // Act
+        var result = await kernel.InvokePromptAsync("My Test Prompt");
+
+        // Assert
+        Assert.NotNull(result.Value);
+        Assert.Equal("ExpectedResult", result.Value.ToString());
+    }
+
+
+    private sealed class FakeChatCompletionService(string result) : IChatCompletionService
+    {
+
+        private readonly IReadOnlyDictionary<string, object?> _attributes = new Dictionary<string, object?>();
+
+        public IReadOnlyDictionary<string, object?> Attributes => this._attributes;
+
+
+        public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(
+            ChatHistory chatHistory,
+            PromptExecutionSettings? executionSettings = null,
+            Kernel? kernel = null,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<IReadOnlyList<ChatMessageContent>>([new(AuthorRole.Assistant, result)]);
+        }
+
+
+#pragma warning disable IDE0036 // Order modifiers
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        public async IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(
+            ChatHistory chatHistory,
+            PromptExecutionSettings? executionSettings = null,
+            Kernel? kernel = null,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+#pragma warning restore IDE0036 // Order modifiers
+        {
+            yield return new StreamingChatMessageContent(AuthorRole.Assistant, result);
+        }
+
+    }
+
+
     private (TextContent mockTextContent, Mock<ITextGenerationService> textCompletionMock) SetupMocks(string? completionResult = null)
     {
         var mockTextContent = new TextContent(completionResult ?? "LLM Result about UnitTests");
 
         var mockTextCompletion = new Mock<ITextGenerationService>();
-        mockTextCompletion.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<TextContent> { mockTextContent });
+
+        mockTextCompletion.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).
+            ReturnsAsync(new List<TextContent> { mockTextContent });
+
         return (mockTextContent, mockTextCompletion);
     }
 
@@ -687,7 +773,9 @@ public class KernelTests
     private Mock<ITextGenerationService> SetupStreamingMocks(params StreamingTextContent[] streamingContents)
     {
         var mockTextCompletion = new Mock<ITextGenerationService>();
-        mockTextCompletion.Setup(m => m.GetStreamingTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).Returns(streamingContents.ToAsyncEnumerable());
+
+        mockTextCompletion.Setup(m => m.GetStreamingTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).
+            Returns(streamingContents.ToAsyncEnumerable());
 
         return mockTextCompletion;
     }
@@ -695,11 +783,17 @@ public class KernelTests
 
     private void AssertFilters(Kernel kernel1, Kernel kernel2)
     {
-        var functionFilters1 = kernel1.GetAllServices<IFunctionFilter>().ToArray();
-        var promptFilters1 = kernel1.GetAllServices<IPromptFilter>().ToArray();
+        var functionFilters1 = kernel1.GetAllServices<IFunctionFilter>().
+            ToArray();
 
-        var functionFilters2 = kernel2.GetAllServices<IFunctionFilter>().ToArray();
-        var promptFilters2 = kernel2.GetAllServices<IPromptFilter>().ToArray();
+        var promptFilters1 = kernel1.GetAllServices<IPromptFilter>().
+            ToArray();
+
+        var functionFilters2 = kernel2.GetAllServices<IFunctionFilter>().
+            ToArray();
+
+        var promptFilters2 = kernel2.GetAllServices<IPromptFilter>().
+            ToArray();
 
         Assert.Equal(functionFilters1.Length, functionFilters2.Length);
 
@@ -719,10 +813,12 @@ public class KernelTests
 
     public class MyPlugin
     {
+
         [KernelFunction, Description("Return any value.")]
         public virtual string GetAnyValue()
         {
-            return Guid.NewGuid().ToString();
+            return Guid.NewGuid().
+                ToString();
         }
 
 
@@ -739,11 +835,13 @@ public class KernelTests
             await Task.Delay(0);
             Assert.NotNull(kernel.Plugins);
         }
+
     }
 
 
     private sealed class MyFunctionFilter : IFunctionFilter
     {
+
         public void OnFunctionInvoked(FunctionInvokedContext context)
         {
         }
@@ -752,11 +850,13 @@ public class KernelTests
         public void OnFunctionInvoking(FunctionInvokingContext context)
         {
         }
+
     }
 
 
     private sealed class MyPromptFilter : IPromptFilter
     {
+
         public void OnPromptRendered(PromptRenderedContext context)
         {
         }
@@ -765,5 +865,7 @@ public class KernelTests
         public void OnPromptRendering(PromptRenderingContext context)
         {
         }
+
     }
+
 }

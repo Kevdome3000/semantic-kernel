@@ -16,13 +16,11 @@ using Xunit;
 using Xunit.Abstractions;
 
 
-public sealed class OpenAIToolsTests : BaseIntegrationTest, IDisposable
+public sealed class OpenAIToolsTests : BaseIntegrationTest
 {
 
     public OpenAIToolsTests(ITestOutputHelper output)
     {
-        this._testOutputHelper = new RedirectOutput(output);
-
         // Load configuration
         this._configuration = new ConfigurationBuilder().AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true).
             AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true).
@@ -210,11 +208,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest, IDisposable
     }
 
 
-    private readonly RedirectOutput _testOutputHelper;
-
     private readonly IConfigurationRoot _configuration;
-
-    public void Dispose() => this._testOutputHelper.Dispose();
 
 
     /// <summary>

@@ -16,25 +16,27 @@ using Xunit;
 using Xunit.Abstractions;
 
 
-public sealed class HandlebarsPlannerTests : IDisposable
+public sealed class HandlebarsPlannerTests
 {
+
     public HandlebarsPlannerTests(ITestOutputHelper output)
     {
-        this._testOutputHelper = new RedirectOutput(output);
-
         // Load configuration
-        this._configuration = new ConfigurationBuilder()
-            .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
-            .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
-            .AddEnvironmentVariables()
-            .AddUserSecrets<HandlebarsPlannerTests>()
-            .Build();
+        this._configuration = new ConfigurationBuilder().AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true).
+            AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true).
+            AddEnvironmentVariables().
+            AddUserSecrets<HandlebarsPlannerTests>().
+            Build();
     }
 
 
     [Theory]
     [InlineData(true, "Write a joke and send it in an e-mail to Kai.", "SendEmail", "test")]
-    public async Task CreatePlanFunctionFlowAsync(bool useChatModel, string goal, string expectedFunction, string expectedPlugin)
+    public async Task CreatePlanFunctionFlowAsync(
+        bool useChatModel,
+        string goal,
+        string expectedFunction,
+        string expectedPlugin)
     {
         // Arrange
         bool useEmbeddings = false;
@@ -128,10 +130,14 @@ public sealed class HandlebarsPlannerTests : IDisposable
 
     private Kernel InitializeKernel(bool useEmbeddings = false, bool useChatModel = true)
     {
-        AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
+        AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").
+            Get<AzureOpenAIConfiguration>();
+
         Assert.NotNull(azureOpenAIConfiguration);
 
-        AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
+        AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").
+            Get<AzureOpenAIConfiguration>();
+
         Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
 
         IKernelBuilder builder = Kernel.CreateBuilder();
@@ -166,7 +172,6 @@ public sealed class HandlebarsPlannerTests : IDisposable
     }
 
 
-    private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
 
     private static readonly HandlebarsPlannerOptions s_defaultPlannerOptions = new()
@@ -181,9 +186,12 @@ public sealed class HandlebarsPlannerTests : IDisposable
 
     private sealed class Foo
     {
+
         public sealed class Qux
         {
+
             public string Bar { get; set; } = string.Empty;
+
             public int Baz { get; set; }
 
 
@@ -192,16 +200,13 @@ public sealed class HandlebarsPlannerTests : IDisposable
                 this.Bar = bar;
                 this.Baz = baz;
             }
+
         }
 
 
         [KernelFunction, Description("Returns default Qux object.")]
         public Qux GetDefaultQux() => new("bar", 42);
+
     }
 
-
-    public void Dispose()
-    {
-        this._testOutputHelper.Dispose();
-    }
 }

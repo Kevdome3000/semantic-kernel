@@ -2,7 +2,6 @@
 
 namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -13,7 +12,7 @@ using Xunit;
 using Xunit.Abstractions;
 
 
-public sealed class OpenAITextEmbeddingTests : IDisposable
+public sealed class OpenAITextEmbeddingTests
 {
 
     private const int AdaVectorLength = 1536;
@@ -23,8 +22,6 @@ public sealed class OpenAITextEmbeddingTests : IDisposable
 
     public OpenAITextEmbeddingTests(ITestOutputHelper output)
     {
-        this._testOutputHelper = new RedirectOutput(output);
-
         // Load configuration
         this._configuration = new ConfigurationBuilder().AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true).
             AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true).
@@ -78,19 +75,5 @@ public sealed class OpenAITextEmbeddingTests : IDisposable
         Assert.Equal(AdaVectorLength, singleResult.Length);
         Assert.Equal(3, batchResult.Count);
     }
-
-
-    #region internals
-
-    private readonly RedirectOutput _testOutputHelper;
-
-
-    public void Dispose()
-    {
-        this._testOutputHelper.Dispose();
-    }
-
-    #endregion
-
 
 }

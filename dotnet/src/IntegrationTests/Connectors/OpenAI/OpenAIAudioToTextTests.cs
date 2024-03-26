@@ -14,18 +14,14 @@ using Xunit;
 using Xunit.Abstractions;
 
 
-public sealed class OpenAIAudioToTextTests : IDisposable
+public sealed class OpenAIAudioToTextTests
 {
-
-    private readonly RedirectOutput _testOutputHelper;
 
     private readonly IConfigurationRoot _configuration;
 
 
     public OpenAIAudioToTextTests(ITestOutputHelper output)
     {
-        this._testOutputHelper = new RedirectOutput(output);
-
         // Load configuration
         this._configuration = new ConfigurationBuilder().AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true).
             AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true).
@@ -91,12 +87,6 @@ public sealed class OpenAIAudioToTextTests : IDisposable
 
         // Assert
         Assert.Contains("The sun rises in the east and sets in the west.", result.Text, StringComparison.OrdinalIgnoreCase);
-    }
-
-
-    public void Dispose()
-    {
-        this._testOutputHelper.Dispose();
     }
 
 }

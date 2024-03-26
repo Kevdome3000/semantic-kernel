@@ -17,6 +17,7 @@ using Xunit;
 /// </summary>
 public sealed class ToolCallBehaviorTests
 {
+
     [Fact]
     public void EnableKernelFunctionsReturnsCorrectKernelFunctionsInstance()
     {
@@ -50,6 +51,7 @@ public sealed class ToolCallBehaviorTests
             new("Plugin", "Function", "description", [],
                 null)
         ];
+
         var behavior = ToolCallBehavior.EnableFunctions(functions);
 
         // Assert
@@ -90,7 +92,9 @@ public sealed class ToolCallBehaviorTests
         // Arrange
         var kernelFunctions = new KernelFunctions(autoInvoke: false);
         var chatCompletionsOptions = new ChatCompletionsOptions();
-        var kernel = Kernel.CreateBuilder().Build();
+
+        var kernel = Kernel.CreateBuilder().
+            Build();
 
         // Act
         kernelFunctions.ConfigureOptions(kernel, chatCompletionsOptions);
@@ -107,7 +111,9 @@ public sealed class ToolCallBehaviorTests
         // Arrange
         var kernelFunctions = new KernelFunctions(autoInvoke: false);
         var chatCompletionsOptions = new ChatCompletionsOptions();
-        var kernel = Kernel.CreateBuilder().Build();
+
+        var kernel = Kernel.CreateBuilder().
+            Build();
 
         var plugin = this.GetTestPlugin();
 
@@ -143,7 +149,10 @@ public sealed class ToolCallBehaviorTests
     public void EnabledFunctionsConfigureOptionsWithAutoInvokeAndNullKernelThrowsException()
     {
         // Arrange
-        var functions = this.GetTestPlugin().GetFunctionsMetadata().Select(function => function.ToOpenAIFunction());
+        var functions = this.GetTestPlugin().
+            GetFunctionsMetadata().
+            Select(function => function.ToOpenAIFunction());
+
         var enabledFunctions = new EnabledFunctions(functions, autoInvoke: true);
         var chatCompletionsOptions = new ChatCompletionsOptions();
 
@@ -157,10 +166,15 @@ public sealed class ToolCallBehaviorTests
     public void EnabledFunctionsConfigureOptionsWithAutoInvokeAndEmptyKernelThrowsException()
     {
         // Arrange
-        var functions = this.GetTestPlugin().GetFunctionsMetadata().Select(function => function.ToOpenAIFunction());
+        var functions = this.GetTestPlugin().
+            GetFunctionsMetadata().
+            Select(function => function.ToOpenAIFunction());
+
         var enabledFunctions = new EnabledFunctions(functions, autoInvoke: true);
         var chatCompletionsOptions = new ChatCompletionsOptions();
-        var kernel = Kernel.CreateBuilder().Build();
+
+        var kernel = Kernel.CreateBuilder().
+            Build();
 
         // Act & Assert
         var exception = Assert.Throws<KernelException>(() => enabledFunctions.ConfigureOptions(kernel, chatCompletionsOptions));
@@ -175,10 +189,15 @@ public sealed class ToolCallBehaviorTests
     {
         // Arrange
         var plugin = this.GetTestPlugin();
-        var functions = plugin.GetFunctionsMetadata().Select(function => function.ToOpenAIFunction());
+
+        var functions = plugin.GetFunctionsMetadata().
+            Select(function => function.ToOpenAIFunction());
+
         var enabledFunctions = new EnabledFunctions(functions, autoInvoke);
         var chatCompletionsOptions = new ChatCompletionsOptions();
-        var kernel = Kernel.CreateBuilder().Build();
+
+        var kernel = Kernel.CreateBuilder().
+            Build();
 
         kernel.Plugins.Add(plugin);
 
@@ -193,15 +212,60 @@ public sealed class ToolCallBehaviorTests
 
 
     [Fact]
+    public void RequiredFunctionsConfigureOptionsWithAutoInvokeAndNullKernelThrowsException()
+    {
+        // Arrange
+        var function = this.GetTestPlugin().
+            GetFunctionsMetadata().
+            Select(function => function.ToOpenAIFunction()).
+            First();
+
+        var requiredFunction = new RequiredFunction(function, autoInvoke: true);
+        var chatCompletionsOptions = new ChatCompletionsOptions();
+
+        // Act & Assert
+        var exception = Assert.Throws<KernelException>(() => requiredFunction.ConfigureOptions(null, chatCompletionsOptions));
+        Assert.Equal($"Auto-invocation with {nameof(RequiredFunction)} is not supported when no kernel is provided.", exception.Message);
+    }
+
+
+    [Fact]
+    public void RequiredFunctionsConfigureOptionsWithAutoInvokeAndEmptyKernelThrowsException()
+    {
+        // Arrange
+        var function = this.GetTestPlugin().
+            GetFunctionsMetadata().
+            Select(function => function.ToOpenAIFunction()).
+            First();
+
+        var requiredFunction = new RequiredFunction(function, autoInvoke: true);
+        var chatCompletionsOptions = new ChatCompletionsOptions();
+
+        var kernel = Kernel.CreateBuilder().
+            Build();
+
+        // Act & Assert
+        var exception = Assert.Throws<KernelException>(() => requiredFunction.ConfigureOptions(kernel, chatCompletionsOptions));
+        Assert.Equal($"The specified {nameof(RequiredFunction)} function MyPlugin-MyFunction is not available in the kernel.", exception.Message);
+    }
+
+
+    [Fact]
     public void RequiredFunctionConfigureOptionsAddsTools()
     {
         // Arrange
-        var function = this.GetTestPlugin().GetFunctionsMetadata()[0].ToOpenAIFunction();
+        var plugin = this.GetTestPlugin();
+
+        var function = plugin.GetFunctionsMetadata()[0].
+            ToOpenAIFunction();
+
         var chatCompletionsOptions = new ChatCompletionsOptions();
         var requiredFunction = new RequiredFunction(function, autoInvoke: true);
+        var kernel = new Kernel();
+        kernel.Plugins.Add(plugin);
 
         // Act
-        requiredFunction.ConfigureOptions(null, chatCompletionsOptions);
+        requiredFunction.ConfigureOptions(kernel, chatCompletionsOptions);
 
         // Assert
         Assert.NotNull(chatCompletionsOptions.ToolChoice);
@@ -235,4 +299,5 @@ public sealed class ToolCallBehaviorTests
         Assert.Equal("Test Function", tool.Description);
         Assert.Equal("{\"type\":\"object\",\"required\":[],\"properties\":{\"parameter1\":{\"type\":\"string\"},\"parameter2\":{\"type\":\"string\"}}}", tool.Parameters.ToString());
     }
+
 }

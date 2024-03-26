@@ -23,7 +23,6 @@ public sealed class PromptTests : IDisposable
     public PromptTests(ITestOutputHelper output)
     {
         this._logger = new XunitLogger<Kernel>(output);
-        this._testOutputHelper = new RedirectOutput(output);
 
         // Load configuration
         this._configuration = new ConfigurationBuilder().AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true).
@@ -77,13 +76,10 @@ public sealed class PromptTests : IDisposable
 
     private readonly XunitLogger<Kernel> _logger;
 
-    private readonly RedirectOutput _testOutputHelper;
-
 
     public void Dispose()
     {
         this._logger.Dispose();
-        this._testOutputHelper.Dispose();
     }
 
 
