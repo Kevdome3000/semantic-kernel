@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Extensions.Logging;
+using Extensions.Logging.Abstractions;
 using global::Google.Apis.CustomSearchAPI.v1;
 using global::Google.Apis.Services;
 
