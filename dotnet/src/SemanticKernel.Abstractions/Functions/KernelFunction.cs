@@ -22,22 +22,22 @@ public abstract class KernelFunction
 {
 
     /// <summary>The measurement tag name for the function name.</summary>
-    private protected const string MeasurementFunctionTagName = "semantic_kernel.function.name";
+    protected private const string MeasurementFunctionTagName = "semantic_kernel.function.name";
 
     /// <summary>The measurement tag name for the function error type.</summary>
-    private protected const string MeasurementErrorTagName = "error.type";
+    protected private const string MeasurementErrorTagName = "error.type";
 
     /// <summary><see cref="ActivitySource"/> for function-related activities.</summary>
     private static readonly ActivitySource s_activitySource = new("Microsoft.SemanticKernel");
 
     /// <summary><see cref="Meter"/> for function-related metrics.</summary>
-    private protected static readonly Meter s_meter = new("Microsoft.SemanticKernel");
+    protected private static readonly Meter s_meter = new("Microsoft.SemanticKernel");
 
     /// <summary><see cref="Histogram{T}"/> to record function invocation duration.</summary>
     private static readonly Histogram<double> s_invocationDuration = s_meter.CreateHistogram<double>(
-        name: "semantic_kernel.function.invocation.duration",
-        unit: "s",
-        description: "Measures the duration of a function’s execution");
+        "semantic_kernel.function.invocation.duration",
+        "s",
+        "Measures the duration of a function’s execution");
 
     /// <summary><see cref="Histogram{T}"/> to record function streaming duration.</summary>
     /// <remarks>
@@ -45,9 +45,9 @@ public abstract class KernelFunction
     /// spent in the consuming code between MoveNextAsync calls on the enumerator.
     /// </remarks>
     private static readonly Histogram<double> s_streamingDuration = s_meter.CreateHistogram<double>(
-        name: "semantic_kernel.function.streaming.duration",
-        unit: "s",
-        description: "Measures the duration of a function’s streaming execution");
+        "semantic_kernel.function.streaming.duration",
+        "s",
+        "Measures the duration of a function’s streaming execution");
 
     /// <summary>
     /// Gets the name of the function.
@@ -59,7 +59,7 @@ public abstract class KernelFunction
     /// </remarks>\
     [JsonPropertyName("name")]
     [JsonInclude]
-    public string Name => this.Metadata.Name;
+    public string Name => Metadata.Name;
 
     /// <summary>
     /// Gets the name of the plugin this function was added to.
@@ -68,7 +68,7 @@ public abstract class KernelFunction
     /// The plugin name will be null if the function has not been added to a plugin.
     /// When a function is added to a plugin it will be cloned and the plugin name will be set.
     /// </remarks>
-    public string? PluginName => this.Metadata.PluginName;
+    public string? PluginName => Metadata.PluginName;
 
     /// <summary>
     /// Gets a description of the function.
@@ -79,7 +79,7 @@ public abstract class KernelFunction
     /// </remarks>
     [JsonPropertyName("description")]
     [JsonInclude]
-    public string Description => this.Metadata.Description;
+    public string Description => Metadata.Description;
 
     /// <summary>
     /// Gets the metadata describing the function.
@@ -87,7 +87,7 @@ public abstract class KernelFunction
     /// <returns>An instance of <see cref="KernelFunctionMetadata"/> describing the function</returns>
     [JsonPropertyName("metadata")]
     [JsonInclude]
-    public KernelFunctionMetadata Metadata { get; init; }
+    public KernelFunctionMetadata Metadata { get; protected set; }
 
     /// <summary>
     /// Gets the prompt execution settings.
@@ -145,17 +145,17 @@ public abstract class KernelFunction
         Verify.NotNull(name);
         Verify.ParametersUniqueness(parameters);
 
-        this.Metadata = new KernelFunctionMetadata(name)
+        Metadata = new KernelFunctionMetadata(name)
         {
             PluginName = pluginName,
             Description = description,
             Parameters = parameters,
-            ReturnParameter = returnParameter ?? KernelReturnParameterMetadata.Empty,
+            ReturnParameter = returnParameter ?? KernelReturnParameterMetadata.Empty
         };
 
         if (executionSettings is not null)
         {
-            this.ExecutionSettings = executionSettings.ToDictionary(
+            ExecutionSettings = executionSettings.ToDictionary(
                 entry => entry.Key,
                 entry =>
                 {
@@ -184,15 +184,15 @@ public abstract class KernelFunction
     {
         Verify.NotNull(kernel);
 
-        using var activity = s_activitySource.StartActivity(this.Name);
-        ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name) ?? NullLogger.Instance;
+        using var activity = s_activitySource.StartActivity(Name);
+        ILogger logger = kernel.LoggerFactory.CreateLogger(Name) ?? NullLogger.Instance;
 
         // Ensure arguments are initialized.
         arguments ??= new KernelArguments();
-        logger.LogFunctionInvoking(this.Name);
+        logger.LogFunctionInvoking(Name);
         logger.LogFunctionArguments(arguments);
 
-        TagList tags = new() { { MeasurementFunctionTagName, this.Name } };
+        TagList tags = new() { { MeasurementFunctionTagName, Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
         FunctionResult? functionResult = null;
 
@@ -220,7 +220,7 @@ public abstract class KernelFunction
             }
 
             // Invoke the function.
-            functionResult = await this.InvokeCoreAsync(kernel, arguments, cancellationToken).
+            functionResult = await InvokeCoreAsync(kernel, arguments, cancellationToken).
                 ConfigureAwait(false);
 
             // Invoke the post-invocation event handler. If it requests cancellation, throw.
@@ -253,7 +253,7 @@ public abstract class KernelFunction
                 throw new OperationCanceledException("A function filter requested cancellation after function invocation.");
             }
 
-            logger.LogFunctionInvokedSuccess(this.Name);
+            logger.LogFunctionInvokedSuccess(Name);
             logger.LogFunctionResultValue(functionResult.Value);
 
             return functionResult;
@@ -291,7 +291,7 @@ public abstract class KernelFunction
         KernelArguments? arguments = null,
         CancellationToken cancellationToken = default)
     {
-        FunctionResult result = await this.InvokeAsync(kernel, arguments, cancellationToken).
+        FunctionResult result = await InvokeAsync(kernel, arguments, cancellationToken).
             ConfigureAwait(false);
 
         return result.GetValue<TResult>();
@@ -313,7 +313,7 @@ public abstract class KernelFunction
         Kernel kernel,
         KernelArguments? arguments = null,
         CancellationToken cancellationToken = default) =>
-        this.InvokeStreamingAsync<StreamingKernelContent>(kernel, arguments, cancellationToken);
+        InvokeStreamingAsync<StreamingKernelContent>(kernel, arguments, cancellationToken);
 
 
     /// <summary>
@@ -336,14 +336,14 @@ public abstract class KernelFunction
     {
         Verify.NotNull(kernel);
 
-        using var activity = s_activitySource.StartActivity(this.Name);
-        ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name) ?? NullLogger.Instance;
+        using var activity = s_activitySource.StartActivity(Name);
+        ILogger logger = kernel.LoggerFactory.CreateLogger(Name) ?? NullLogger.Instance;
 
         arguments ??= new KernelArguments();
-        logger.LogFunctionStreamingInvoking(this.Name);
+        logger.LogFunctionStreamingInvoking(Name);
         logger.LogFunctionArguments(arguments);
 
-        TagList tags = new() { { MeasurementFunctionTagName, this.Name } };
+        TagList tags = new() { { MeasurementFunctionTagName, Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
 
         try
@@ -374,7 +374,7 @@ public abstract class KernelFunction
                 }
 
                 // Invoke the function and get its streaming enumerator.
-                enumerator = this.InvokeStreamingCoreAsync<TResult>(kernel, arguments, cancellationToken).
+                enumerator = InvokeStreamingCoreAsync<TResult>(kernel, arguments, cancellationToken).
                     GetAsyncEnumerator(cancellationToken);
 
                 // yielding within a try/catch isn't currently supported, so we break out of the try block
@@ -384,7 +384,7 @@ public abstract class KernelFunction
             catch (Exception ex)
             {
                 HandleException(ex, logger, activity, this,
-                    kernel, arguments, result: null, ref tags);
+                    kernel, arguments, null, ref tags);
 
                 throw;
             }
@@ -406,7 +406,7 @@ public abstract class KernelFunction
                     catch (Exception ex)
                     {
                         HandleException(ex, logger, activity, this,
-                            kernel, arguments, result: null, ref tags);
+                            kernel, arguments, null, ref tags);
 
                         throw;
                     }
