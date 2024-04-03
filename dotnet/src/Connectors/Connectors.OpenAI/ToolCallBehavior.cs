@@ -47,7 +47,7 @@ public abstract class ToolCallBehavior
     /// <remarks>
     /// If no <see cref="Kernel"/> is available, no function information will be provided to the model.
     /// </remarks>
-    public static ToolCallBehavior EnableKernelFunctions { get; } = new KernelFunctions(autoInvoke: false);
+    public static ToolCallBehavior EnableKernelFunctions { get; } = new KernelFunctions(false);
 
     /// <summary>
     /// Gets an instance that will both provide all of the <see cref="Kernel"/>'s plugins' function information
@@ -58,7 +58,7 @@ public abstract class ToolCallBehavior
     /// handling invoking any requested functions and supplying the results back to the model.
     /// If no <see cref="Kernel"/> is available, no function information will be provided to the model.
     /// </remarks>
-    public static ToolCallBehavior AutoInvokeKernelFunctions { get; } = new KernelFunctions(autoInvoke: true);
+    public static ToolCallBehavior AutoInvokeKernelFunctions { get; } = new KernelFunctions(true);
 
 
     /// <summary>Gets an instance that will provide the specified list of functions to the model.</summary>
@@ -92,12 +92,9 @@ public abstract class ToolCallBehavior
 
 
     /// <summary>Initializes the instance; prevents external instantiation.</summary>
-    private ToolCallBehavior(bool autoInvoke)
-    {
-        this.MaximumAutoInvokeAttempts = autoInvoke
-            ? DefaultMaximumAutoInvokeAttempts
-            : 0;
-    }
+    private ToolCallBehavior(bool autoInvoke) => MaximumAutoInvokeAttempts = autoInvoke
+        ? DefaultMaximumAutoInvokeAttempts
+        : 0;
 
 
     /// <summary>
@@ -147,7 +144,7 @@ public abstract class ToolCallBehavior
         }
 
 
-        public override string ToString() => $"{nameof(KernelFunctions)}(autoInvoke:{this.MaximumAutoInvokeAttempts != 0})";
+        public override string ToString() => $"{nameof(KernelFunctions)}(autoInvoke:{MaximumAutoInvokeAttempts != 0})";
 
 
         internal override void ConfigureOptions(Kernel? kernel, ChatCompletionsOptions options)
@@ -191,32 +188,32 @@ public abstract class ToolCallBehavior
 
         public EnabledFunctions(IEnumerable<OpenAIFunction> functions, bool autoInvoke) : base(autoInvoke)
         {
-            this._openAIFunctions = functions.ToArray();
+            _openAIFunctions = functions.ToArray();
 
-            var defs = new ChatCompletionsFunctionToolDefinition[this._openAIFunctions.Length];
+            var defs = new ChatCompletionsFunctionToolDefinition[_openAIFunctions.Length];
 
             for (int i = 0; i < defs.Length; i++)
             {
-                defs[i] = new ChatCompletionsFunctionToolDefinition(this._openAIFunctions[i].
+                defs[i] = new ChatCompletionsFunctionToolDefinition(_openAIFunctions[i].
                     ToFunctionDefinition());
             }
 
-            this._functions = defs;
+            _functions = defs;
         }
 
 
-        public override string ToString() => $"{nameof(EnabledFunctions)}(autoInvoke:{this.MaximumAutoInvokeAttempts != 0}): {string.Join(", ", this._functions.Select(f => f.Name))}";
+        public override string ToString() => $"{nameof(EnabledFunctions)}(autoInvoke:{MaximumAutoInvokeAttempts != 0}): {string.Join(", ", _functions.Select(f => f.Name))}";
 
 
         internal override void ConfigureOptions(Kernel? kernel, ChatCompletionsOptions options)
         {
-            OpenAIFunction[] openAIFunctions = this._openAIFunctions;
-            ChatCompletionsFunctionToolDefinition[] functions = this._functions;
+            OpenAIFunction[] openAIFunctions = _openAIFunctions;
+            ChatCompletionsFunctionToolDefinition[] functions = _functions;
             Debug.Assert(openAIFunctions.Length == functions.Length);
 
             if (openAIFunctions.Length > 0)
             {
-                bool autoInvoke = base.MaximumAutoInvokeAttempts > 0;
+                bool autoInvoke = MaximumAutoInvokeAttempts > 0;
 
                 // If auto-invocation is specified, we need a kernel to be able to invoke the functions.
                 // Lack of a kernel is fatal: we don't want to tell the model we can handle the functions
@@ -266,18 +263,18 @@ public abstract class ToolCallBehavior
 
         public RequiredFunction(OpenAIFunction function, bool autoInvoke) : base(autoInvoke)
         {
-            this._function = function;
-            this._tool = new ChatCompletionsFunctionToolDefinition(function.ToFunctionDefinition());
-            this._choice = new ChatCompletionsToolChoice(this._tool);
+            _function = function;
+            _tool = new ChatCompletionsFunctionToolDefinition(function.ToFunctionDefinition());
+            _choice = new ChatCompletionsToolChoice(_tool);
         }
 
 
-        public override string ToString() => $"{nameof(RequiredFunction)}(autoInvoke:{this.MaximumAutoInvokeAttempts != 0}): {this._tool.Name}";
+        public override string ToString() => $"{nameof(RequiredFunction)}(autoInvoke:{MaximumAutoInvokeAttempts != 0}): {_tool.Name}";
 
 
         internal override void ConfigureOptions(Kernel? kernel, ChatCompletionsOptions options)
         {
-            bool autoInvoke = base.MaximumAutoInvokeAttempts > 0;
+            bool autoInvoke = MaximumAutoInvokeAttempts > 0;
 
             // If auto-invocation is specified, we need a kernel to be able to invoke the functions.
             // Lack of a kernel is fatal: we don't want to tell the model we can handle the functions
@@ -290,19 +287,19 @@ public abstract class ToolCallBehavior
             }
 
             // Make sure that if auto-invocation is specified, the required function can be found in the kernel.
-            if (autoInvoke && !kernel!.Plugins.TryGetFunction(this._function.PluginName, this._function.FunctionName, out _))
+            if (autoInvoke && !kernel!.Plugins.TryGetFunction(_function.PluginName, _function.FunctionName, out _))
             {
-                throw new KernelException($"The specified {nameof(RequiredFunction)} function {this._function.FullyQualifiedName} is not available in the kernel.");
+                throw new KernelException($"The specified {nameof(RequiredFunction)} function {_function.FullyQualifiedName} is not available in the kernel.");
             }
 
-            options.ToolChoice = this._choice;
-            options.Tools.Add(this._tool);
+            options.ToolChoice = _choice;
+            options.Tools.Add(_tool);
         }
 
 
         /// <summary>Gets how many requests are part of a single interaction should include this tool in the request.</summary>
         /// <remarks>
-        /// Unlike <see cref="EnabledFunctions"/> and <see cref="KernelFunctions"/>, this must use 1 as the maximum
+        /// Unlike <see cref="ToolCallBehavior.EnabledFunctions"/> and <see cref="ToolCallBehavior.KernelFunctions"/>, this must use 1 as the maximum
         /// use attempts. Otherwise, every call back to the model _requires_ it to invoke the function (as opposed
         /// to allows it), which means we end up doing the same work over and over and over until the maximum is reached.
         /// Thus for "requires", we must send the tool information only once.
