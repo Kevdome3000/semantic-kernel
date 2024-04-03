@@ -3,6 +3,7 @@
 namespace Microsoft.SemanticKernel;
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json.Serialization;
 using ChatCompletion;
@@ -16,10 +17,18 @@ using ChatCompletion;
 /// </remarks>
 public class StreamingChatMessageContent : StreamingKernelContent
 {
+
     /// <summary>
     /// Text associated to the message payload
     /// </summary>
     public string? Content { get; set; }
+
+    /// <summary>
+    /// Name of the author of the message
+    /// </summary>
+    [Experimental("SKEXP0001")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? AuthorName { get; set; }
 
     /// <summary>
     /// Role of the author of the message
@@ -44,7 +53,15 @@ public class StreamingChatMessageContent : StreamingKernelContent
     /// <param name="encoding">Encoding of the chat</param>
     /// <param name="metadata">Additional metadata</param>
     [JsonConstructor]
-    public StreamingChatMessageContent(AuthorRole? role, string? content, object? innerContent = null, int choiceIndex = 0, string? modelId = null, Encoding? encoding = null, IReadOnlyDictionary<string, object?>? metadata = null) : base(innerContent, choiceIndex, modelId, metadata)
+    public StreamingChatMessageContent(
+        AuthorRole? role,
+        string? content,
+        object? innerContent = null,
+        int choiceIndex = 0,
+        string? modelId = null,
+        Encoding? encoding = null,
+        IReadOnlyDictionary<string, object?>? metadata = null)
+        : base(innerContent, choiceIndex, modelId, metadata)
     {
         this.Role = role;
         this.Content = content;
@@ -58,4 +75,5 @@ public class StreamingChatMessageContent : StreamingKernelContent
 
     /// <inheritdoc/>
     public override byte[] ToByteArray() => this.Encoding.GetBytes(this.ToString());
+
 }

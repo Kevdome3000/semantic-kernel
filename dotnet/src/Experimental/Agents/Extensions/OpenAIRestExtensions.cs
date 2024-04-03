@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Connectors.OpenAI;
 using Exceptions;
 using Http;
 using Internal;
@@ -14,9 +15,11 @@ using Internal;
 internal static partial class OpenAIRestExtensions
 {
 
-    private const string HeaderNameOpenAIAssistant = "OpenAI-Beta";
-
     private const string HeaderNameAuthorization = "Authorization";
+
+    private const string HeaderNameAzureApiKey = "api-key";
+
+    private const string HeaderNameOpenAIAssistant = "OpenAI-Beta";
 
     private const string HeaderNameUserAgent = "User-Agent";
 
@@ -107,19 +110,20 @@ internal static partial class OpenAIRestExtensions
 
     private static void AddHeaders(this HttpRequestMessage request, OpenAIRestContext context)
     {
+        request.Headers.Add(HeaderNameOpenAIAssistant, HeaderOpenAIValueAssistant);
         request.Headers.Add(HeaderNameUserAgent, HttpHeaderConstant.Values.UserAgent);
+        request.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(OpenAIFileService)));
 
         if (context.HasVersion)
         {
-            // OpenAI
-            request.Headers.Add("api-key", context.ApiKey);
+            // Azure OpenAI
+            request.Headers.Add(HeaderNameAzureApiKey, context.ApiKey);
 
             return;
         }
 
-        // Azure OpenAI
+        // OpenAI
         request.Headers.Add(HeaderNameAuthorization, $"Bearer {context.ApiKey}");
-        request.Headers.Add(HeaderNameOpenAIAssistant, HeaderOpenAIValueAssistant);
     }
 
 

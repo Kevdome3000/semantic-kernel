@@ -69,6 +69,10 @@ public sealed class TestConfiguration
 
     public static MsGraphConfiguration MSGraph => LoadSection<MsGraphConfiguration>();
 
+    public static GoogleAIConfig GoogleAI => LoadSection<GoogleAIConfig>();
+
+    public static VertexAIConfig VertexAI => LoadSection<VertexAIConfig>();
+
 
     private static T LoadSection<T>([CallerMemberName] string? caller = null)
     {
@@ -296,6 +300,50 @@ public sealed class TestConfiguration
     {
 
         public string Token { get; set; }
+
+    }
+
+
+    public class GoogleAIConfig
+    {
+
+        public string ApiKey { get; set; }
+
+        public string EmbeddingModelId { get; set; }
+
+        public GeminiConfig Gemini { get; set; }
+
+
+        public class GeminiConfig
+        {
+
+            public string ModelId { get; set; }
+
+        }
+
+    }
+
+
+    public class VertexAIConfig
+    {
+
+        public string BearerKey { get; set; }
+
+        public string EmbeddingModelId { get; set; }
+
+        public string Location { get; set; }
+
+        public string ProjectId { get; set; }
+
+        public GeminiConfig Gemini { get; set; }
+
+
+        public class GeminiConfig
+        {
+
+            public string ModelId { get; set; }
+
+        }
 
     }
 

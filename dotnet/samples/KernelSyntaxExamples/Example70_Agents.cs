@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -9,7 +11,6 @@ using Resources;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Examples;
 
 /// <summary>
 /// Showcase Open AI Agent integration with semantic kernel:
@@ -17,11 +18,20 @@ namespace Examples;
 /// </summary>
 public class Example70_Agent : BaseTest
 {
+
     /// <summary>
     /// Specific model is required that supports agents and function calling.
     /// Currently this is limited to Open AI hosted services.
     /// </summary>
     private const string OpenAIFunctionEnabledModel = "gpt-3.5-turbo-1106";
+
+    /// <summary>
+    /// Flag to force usage of OpenAI configuration if both <see cref="TestConfiguration.OpenAI"/>
+    /// and <see cref="TestConfiguration.AzureOpenAI"/> are defined.
+    /// If 'false', Azure takes precedence.
+    /// </summary>
+    private const bool ForceOpenAI = false;
+
 
     /// <summary>
     /// Chat using the "Parrot" agent.
@@ -41,6 +51,7 @@ public class Example70_Agent : BaseTest
             "I came, I saw, I conquered.",
             "Practice makes perfect.");
     }
+
 
     /// <summary>
     /// Chat using the "Tool" agent and a method function.
@@ -64,6 +75,7 @@ public class Example70_Agent : BaseTest
             "Thank you!");
     }
 
+
     /// <summary>
     /// Chat using the "Tool" agent and a prompt function.
     /// Tools/functions: spellChecker prompt function
@@ -75,9 +87,9 @@ public class Example70_Agent : BaseTest
 
         // Create a prompt function.
         var function = KernelFunctionFactory.CreateFromPrompt(
-             "Correct any misspelling or gramatical errors provided in input: {{$input}}",
-              functionName: "spellChecker",
-              description: "Correct the spelling for the user input.");
+            "Correct any misspelling or gramatical errors provided in input: {{$input}}",
+            functionName: "spellChecker",
+            description: "Correct the spelling for the user input.");
 
         var plugin = KernelPluginFactory.CreateFromFunctions("spelling", "Spelling functions", new[] { function });
 
@@ -92,6 +104,7 @@ public class Example70_Agent : BaseTest
             "Thank you!");
     }
 
+
     /// <summary>
     /// Invoke agent just like any other <see cref="KernelFunction"/>.
     /// </summary>
@@ -102,15 +115,15 @@ public class Example70_Agent : BaseTest
 
         // Create parrot agent, same as the other cases.
         var agent =
-            await new AgentBuilder()
-                .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
-                .FromTemplate(EmbeddedResource.Read("Agents.ParrotAgent.yaml"))
-                .BuildAsync();
+            await new AgentBuilder().WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey).
+                FromTemplate(EmbeddedResource.Read("Agents.ParrotAgent.yaml")).
+                BuildAsync();
 
         try
         {
             // Invoke agent plugin.
-            var response = await agent.AsPlugin().InvokeAsync("Practice makes perfect.", new KernelArguments { { "count", 2 } });
+            var response = await agent.AsPlugin().
+                InvokeAsync("Practice makes perfect.", new KernelArguments { { "count", 2 } });
 
             // Display result.
             WriteLine(response ?? $"No response from agent: {agent.Id}");
@@ -121,6 +134,7 @@ public class Example70_Agent : BaseTest
             await agent.DeleteAsync();
         }
     }
+
 
     /// <summary>
     /// Common chat loop used for: RunSimpleChatAsync, RunWithMethodFunctionsAsync, and RunWithPromptFunctionsAsync.
@@ -141,14 +155,14 @@ public class Example70_Agent : BaseTest
 
         // Create agent
         var agent =
-            await new AgentBuilder()
-                .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
-                .FromTemplate(definition)
-                .WithPlugin(plugin)
-                .BuildAsync();
+            await CreateAgentBuilder().
+                FromTemplate(definition).
+                WithPlugin(plugin).
+                BuildAsync();
 
         // Create chat thread.  Note: Thread is not bound to a single agent.
         var thread = await agent.NewThreadAsync();
+
         try
         {
             // Display agent identifier.
@@ -173,7 +187,18 @@ public class Example70_Agent : BaseTest
         }
     }
 
+
+    private static AgentBuilder CreateAgentBuilder()
+    {
+        return
+            ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint)
+                ? new AgentBuilder().WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
+                : new AgentBuilder().WithAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.ApiKey);
+    }
+
+
     public Example70_Agent(ITestOutputHelper output) : base(output)
     {
     }
+
 }

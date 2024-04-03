@@ -265,10 +265,14 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         };
 
         // Act & Assert
-        await foreach (var chunk in service.GetStreamingTextContentsAsync("Prompt"))
-        {
-            Assert.Equal("Test chat streaming response", chunk.Text);
-        }
+        var enumerator = service.GetStreamingTextContentsAsync("Prompt").
+            GetAsyncEnumerator();
+
+        await enumerator.MoveNextAsync();
+        Assert.Equal("Test chat streaming response", enumerator.Current.Text);
+
+        await enumerator.MoveNextAsync();
+        Assert.Equal("stop", enumerator.Current.Metadata?["FinishReason"]);
     }
 
 
@@ -285,10 +289,14 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         };
 
         // Act & Assert
-        await foreach (var chunk in service.GetStreamingChatMessageContentsAsync([]))
-        {
-            Assert.Equal("Test chat streaming response", chunk.Content);
-        }
+        var enumerator = service.GetStreamingChatMessageContentsAsync([]).
+            GetAsyncEnumerator();
+
+        await enumerator.MoveNextAsync();
+        Assert.Equal("Test chat streaming response", enumerator.Current.Content);
+
+        await enumerator.MoveNextAsync();
+        Assert.Equal("stop", enumerator.Current.Metadata?["FinishReason"]);
     }
 
 

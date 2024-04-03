@@ -11,6 +11,7 @@ using Models;
 
 internal static class AssistantsKernelFunctionExtensions
 {
+
     /// <summary>
     /// Produce a fully qualified toolname.
     /// </summary>
@@ -30,6 +31,7 @@ internal static class AssistantsKernelFunctionExtensions
     {
         var metadata = function.Metadata;
         var required = new List<string>(metadata.Parameters.Count);
+
         var properties =
             metadata.Parameters.ToDictionary(
                 p => p.Name,
@@ -82,11 +84,22 @@ internal static class AssistantsKernelFunctionExtensions
             return "number";
         }
 
+        if (type == typeof(bool))
+        {
+            return "boolean";
+        }
+
         if (type.IsEnum)
         {
             return "enum";
         }
 
-        return type.Name;
+        if (type.IsArray)
+        {
+            return "array";
+        }
+
+        return "object";
     }
+
 }
