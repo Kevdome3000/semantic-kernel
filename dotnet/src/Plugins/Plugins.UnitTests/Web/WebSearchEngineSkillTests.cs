@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Plugins.UnitTests.Web;
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -8,23 +10,29 @@ using Microsoft.SemanticKernel.Plugins.Web;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Plugins.UnitTests.Web;
 
 public sealed class WebSearchEnginePluginTests
 {
+
     [Fact]
     public async Task SearchAsyncSucceedsAsync()
     {
         // Arrange
-        IEnumerable<string> expected = new[] { Guid.NewGuid().ToString() };
+        IEnumerable<string> expected = new[]
+        {
+            Guid.NewGuid().
+                ToString()
+        };
 
         Mock<IWebSearchEngineConnector> connectorMock = new();
-        connectorMock.Setup(c => c.SearchAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(expected);
+
+        connectorMock.Setup(c => c.SearchAsync<string>(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>())).
+            ReturnsAsync(expected);
 
         WebSearchEnginePlugin target = new(connectorMock.Object);
 
-        string anyQuery = Guid.NewGuid().ToString();
+        string anyQuery = Guid.NewGuid().
+            ToString();
 
         // Act
         await target.SearchAsync(anyQuery);
@@ -32,4 +40,29 @@ public sealed class WebSearchEnginePluginTests
         // Assert
         connectorMock.VerifyAll();
     }
+
+
+    [Fact]
+    public async Task GetSearchResultsSucceedsAsync()
+    {
+        // Arrange
+        IEnumerable<WebPage> expected = new List<WebPage>();
+
+        Mock<IWebSearchEngineConnector> connectorMock = new();
+
+        connectorMock.Setup(c => c.SearchAsync<WebPage>(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>())).
+            ReturnsAsync(expected);
+
+        WebSearchEnginePlugin target = new(connectorMock.Object);
+
+        string anyQuery = Guid.NewGuid().
+            ToString();
+
+        // Act
+        await target.GetSearchResultsAsync(anyQuery);
+
+        // Assert
+        connectorMock.VerifyAll();
+    }
+
 }
