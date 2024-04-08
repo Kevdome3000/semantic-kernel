@@ -4,6 +4,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Milvus;
 
 using System.Threading.Tasks;
 using global::Milvus.Client;
+using Testcontainers.Milvus;
 using Xunit;
 
 

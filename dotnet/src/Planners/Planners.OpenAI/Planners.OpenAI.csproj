@@ -36,4 +36,10 @@
     <ProjectReference Include="..\..\Functions\Functions.Yaml\Functions.Yaml.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.SemanticKernel.Abstractions">
+      <HintPath>..\..\SemanticKernel.Abstractions\bin\Debug\netstandard2.0\Microsoft.SemanticKernel.Abstractions.dll</HintPath>
+    </Reference>
+  </ItemGroup>
 </Project>

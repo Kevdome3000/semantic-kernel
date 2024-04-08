@@ -5,7 +5,6 @@ namespace Microsoft.SemanticKernel;
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Json.Schema;
 using Text;
 
 
@@ -13,9 +12,6 @@ using Text;
 [JsonConverter(typeof(KernelJsonSchema.JsonConverter))]
 public sealed class KernelJsonSchema
 {
-
-    /// <summary>Converter for serializing/deserializing JsonSchema instances.</summary>
-    private static readonly SchemaJsonConverter s_jsonSchemaConverter = new();
 
     /// <summary>Serialization settings for <see cref="JsonSerializer"/></summary>
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = new() { MaxDepth = 128 };
@@ -39,7 +35,7 @@ public sealed class KernelJsonSchema
     /// <exception cref="ArgumentException"><paramref name="jsonSchema"/> is null.</exception>
     /// <exception cref="JsonException">The JSON is invalid.</exception>
     public static KernelJsonSchema Parse(string jsonSchema) =>
-        new(JsonSerializer.SerializeToElement(JsonSchema.FromText(jsonSchema, s_jsonSerializerOptions), s_jsonSerializerOptions));
+        new(JsonSerializer.Deserialize<JsonElement>(jsonSchema, s_jsonSerializerOptions));
 
 
     /// <summary>Parses a JSON Schema for a parameter type.</summary>
@@ -47,7 +43,7 @@ public sealed class KernelJsonSchema
     /// <returns>A parsed <see cref="KernelJsonSchema"/>.</returns>
     /// <exception cref="JsonException">The JSON is invalid.</exception>
     public static KernelJsonSchema Parse(ReadOnlySpan<char> jsonSchema) =>
-        new(JsonSerializer.SerializeToElement(JsonSerializer.Deserialize<JsonSchema>(jsonSchema, s_jsonSerializerOptions), s_jsonSerializerOptions));
+        new(JsonSerializer.Deserialize<JsonElement>(jsonSchema, s_jsonSerializerOptions));
 
 
     /// <summary>Parses a JSON Schema for a parameter type.</summary>
@@ -55,7 +51,7 @@ public sealed class KernelJsonSchema
     /// <returns>A parsed <see cref="KernelJsonSchema"/>.</returns>
     /// <exception cref="JsonException">The JSON is invalid.</exception>
     public static KernelJsonSchema Parse(ReadOnlySpan<byte> utf8JsonSchema) =>
-        new(JsonSerializer.SerializeToElement(JsonSerializer.Deserialize<JsonSchema>(utf8JsonSchema, s_jsonSerializerOptions), s_jsonSerializerOptions));
+        new(JsonSerializer.Deserialize<JsonElement>(utf8JsonSchema, s_jsonSerializerOptions));
 
 
     /// <summary>Initializes a new instance from the specified <see cref="JsonElement"/>.</summary>
@@ -82,7 +78,7 @@ public sealed class KernelJsonSchema
 
         /// <inheritdoc/>
         public override KernelJsonSchema? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
-            new(JsonSerializer.SerializeToElement(s_jsonSchemaConverter.Read(ref reader, typeToConvert, options)));
+            new(JsonElement.ParseValue(ref reader));
 
 
         /// <inheritdoc/>

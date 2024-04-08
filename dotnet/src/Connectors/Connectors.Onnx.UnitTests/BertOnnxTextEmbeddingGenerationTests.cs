@@ -7,10 +7,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Numerics.Tensors;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Onnx;
+using Microsoft.SemanticKernel.Embeddings;
+using Xunit;
 
 
 public class BertOnnxTextEmbeddingGenerationServiceTests

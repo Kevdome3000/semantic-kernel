@@ -18,6 +18,7 @@ using Memory;
 /// </summary>
 internal static class ReadOnlyPluginCollectionPlannerExtensions
 {
+
     internal const string PlannerMemoryCollectionName = "Planning.KernelFunctionsManual";
 
 
@@ -31,6 +32,7 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
         return (pluginName, functionName) =>
         {
             plugins.TryGetFunction(pluginName, functionName, out var pluginFunction);
+
             return pluginFunction;
         };
     }
@@ -52,7 +54,8 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
         ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
-        IEnumerable<KernelFunctionMetadata> availableFunctions = await plugins.GetFunctionsAsync(plannerOptions, semanticQuery, logger, cancellationToken).ConfigureAwait(false);
+        IEnumerable<KernelFunctionMetadata> availableFunctions = await plugins.GetFunctionsAsync(plannerOptions, semanticQuery, logger, cancellationToken).
+            ConfigureAwait(false);
 
         return string.Join("\n\n", availableFunctions.Select(x => x.ToManualString()));
     }
@@ -78,8 +81,11 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
         string nameDelimiter = "-",
         CancellationToken cancellationToken = default)
     {
-        IEnumerable<KernelFunctionMetadata> availableFunctions = await plugins.GetFunctionsAsync(plannerOptions, semanticQuery, logger, cancellationToken).ConfigureAwait(false);
+        IEnumerable<KernelFunctionMetadata> availableFunctions = await plugins.GetFunctionsAsync(plannerOptions, semanticQuery, logger, cancellationToken).
+            ConfigureAwait(false);
+
         var manuals = availableFunctions.Select(x => x.ToJsonSchemaFunctionView(includeOutputSchema));
+
         return JsonSerializer.Serialize(manuals);
     }
 
@@ -101,8 +107,10 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
         CancellationToken cancellationToken)
     {
         return plannerOptions.GetAvailableFunctionsAsync is null
-            ? await plugins.GetAvailableFunctionsAsync(plannerOptions, semanticQuery, logger, cancellationToken).ConfigureAwait(false)
-            : await plannerOptions.GetAvailableFunctionsAsync(plannerOptions, semanticQuery, cancellationToken).ConfigureAwait(false);
+            ? await plugins.GetAvailableFunctionsAsync(plannerOptions, semanticQuery, logger, cancellationToken).
+                ConfigureAwait(false)
+            : await plannerOptions.GetAvailableFunctionsAsync(plannerOptions, semanticQuery, cancellationToken).
+                ConfigureAwait(false);
     }
 
 
@@ -124,10 +132,9 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
     {
         var functionsView = plugins.GetFunctionsMetadata();
 
-        var availableFunctions = functionsView
-            .Where(s => !plannerOptions.ExcludedPlugins.Contains(s.PluginName, StringComparer.OrdinalIgnoreCase)
-                        && !plannerOptions.ExcludedFunctions.Contains(s.Name, StringComparer.OrdinalIgnoreCase))
-            .ToList();
+        var availableFunctions = functionsView.Where(s => !plannerOptions.ExcludedPlugins.Contains(s.PluginName, StringComparer.OrdinalIgnoreCase)
+                                                          && !plannerOptions.ExcludedFunctions.Contains(s.Name, StringComparer.OrdinalIgnoreCase)).
+            ToList();
 
         List<KernelFunctionMetadata>? result = null;
         var semanticMemoryConfig = plannerOptions.SemanticMemoryConfig;
@@ -143,7 +150,8 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
             result = new List<KernelFunctionMetadata>();
 
             // Remember functions in memory so that they can be searched.
-            await RememberFunctionsAsync(semanticMemoryConfig.Memory, availableFunctions, cancellationToken).ConfigureAwait(false);
+            await RememberFunctionsAsync(semanticMemoryConfig.Memory, availableFunctions, cancellationToken).
+                ConfigureAwait(false);
 
             // Search for functions that match the semantic query.
             var memories = semanticMemoryConfig.Memory.SearchAsync(
@@ -154,19 +162,18 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
                 cancellationToken: cancellationToken);
 
             // Add functions that were found in the search results.
-            result.AddRange(await GetRelevantFunctionsAsync(availableFunctions, memories, logger ?? NullLogger.Instance, cancellationToken).ConfigureAwait(false));
+            result.AddRange(await GetRelevantFunctionsAsync(availableFunctions, memories, logger ?? NullLogger.Instance, cancellationToken).
+                ConfigureAwait(false));
 
             // Add any missing functions that were included but not found in the search results.
-            var missingFunctions = semanticMemoryConfig.IncludedFunctions
-                .Except(result.Select(x => (x.PluginName, x.Name))!)
-                .Join(availableFunctions, f => f, af => (af.PluginName, af.Name), (_, af) => af);
+            var missingFunctions = semanticMemoryConfig.IncludedFunctions.Except(result.Select(x => (x.PluginName, x.Name))!).
+                Join(availableFunctions, f => f, af => (af.PluginName, af.Name), (_, af) => af);
 
             result.AddRange(missingFunctions);
         }
 
-        return result
-            .OrderBy(x => x.PluginName)
-            .ThenBy(x => x.Name);
+        return result.OrderBy(x => x.PluginName).
+            ThenBy(x => x.Name);
     }
 
 
@@ -212,14 +219,17 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
         {
             var functionName = function.ToFullyQualifiedName();
             var key = functionName;
+
             var description = string.IsNullOrEmpty(function.Description)
                 ? functionName
                 : function.Description;
+
             var textToEmbed = function.ToEmbeddingString();
 
             // It'd be nice if there were a saveIfNotExists method on the memory interface
             var memoryEntry = await memory.GetAsync(collection: PlannerMemoryCollectionName, key: key, withEmbedding: false,
-                cancellationToken: cancellationToken).ConfigureAwait(false);
+                    cancellationToken: cancellationToken).
+                ConfigureAwait(false);
 
             if (memoryEntry == null)
             {
@@ -227,8 +237,10 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
                 // As folks may want to tune their functions to be more or less relevant.
                 // Memory now supports these such strategies.
                 await memory.SaveInformationAsync(collection: PlannerMemoryCollectionName, text: textToEmbed, id: key, description: description,
-                    additionalMetadata: string.Empty, cancellationToken: cancellationToken).ConfigureAwait(false);
+                        additionalMetadata: string.Empty, cancellationToken: cancellationToken).
+                    ConfigureAwait(false);
             }
         }
     }
+
 }

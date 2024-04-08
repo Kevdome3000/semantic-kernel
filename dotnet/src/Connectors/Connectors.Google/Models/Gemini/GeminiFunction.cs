@@ -6,8 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using Core;
-using Json.Schema;
-using Json.Schema.Generation;
 
 // NOTE: Since this space is evolving rapidly, in order to reduce the risk of needing to take breaking
 // changes as Gemini's APIs evolve, these types are not externally constructible. In the future, once
@@ -191,11 +189,7 @@ public sealed class GeminiFunction
         // If there's a description, incorporate it.
         if (!string.IsNullOrWhiteSpace(parameter.Description))
         {
-            return KernelJsonSchema.Parse(
-                JsonSerializer.Serialize(
-                    new JsonSchemaBuilder().FromType(parameter.ParameterType ?? typeof(string)).
-                        Description(parameter.Description).
-                        Build()));
+            return KernelJsonSchemaBuilder.Build(null, typeof(string), parameter.Description);
         }
 
         // Otherwise, we can use a cached schema for a string with no description.

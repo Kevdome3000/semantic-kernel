@@ -4,6 +4,8 @@ namespace Microsoft.SemanticKernel;
 
 using System.IO;
 using Connectors.Onnx;
+using Embeddings;
+using Extensions.DependencyInjection;
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
 

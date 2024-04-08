@@ -7,8 +7,14 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Numerics.Tensors;
 using System.Threading;
 using System.Threading.Tasks;
+using Embeddings;
+using Extensions.Logging;
+using FastBertTokenizer;
+using ML.OnnxRuntime;
 
 #pragma warning disable CA1849, VSTHRD103 // Call async methods when in an async method
 #pragma warning disable CA2000 // Dispose objects before losing scope

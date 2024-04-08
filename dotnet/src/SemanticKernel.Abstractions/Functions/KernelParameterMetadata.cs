@@ -4,9 +4,6 @@ namespace Microsoft.SemanticKernel;
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
-using Json.Schema;
-using Json.Schema.Generation;
 
 
 /// <summary>
@@ -14,6 +11,7 @@ using Json.Schema.Generation;
 /// </summary>
 public sealed class KernelParameterMetadata
 {
+
     /// <summary>The name of the parameter.</summary>
     private string _name = string.Empty;
 
@@ -76,6 +74,7 @@ public sealed class KernelParameterMetadata
             {
                 this._schema = null;
             }
+
             this._description = newDescription;
         }
     }
@@ -90,6 +89,7 @@ public sealed class KernelParameterMetadata
             {
                 this._schema = null;
             }
+
             this._defaultValue = value;
         }
     }
@@ -107,6 +107,7 @@ public sealed class KernelParameterMetadata
             {
                 this._schema = null;
             }
+
             this._parameterType = value;
         }
     }
@@ -115,7 +116,9 @@ public sealed class KernelParameterMetadata
     public KernelJsonSchema? Schema
     {
         get => (this._schema ??= InferSchema(this.ParameterType, this.DefaultValue, this.Description)).Schema;
-        init => this._schema = value is null ? null : new() { Inferred = false, Schema = value };
+        init => this._schema = value is null
+            ? null
+            : new() { Inferred = false, Schema = value };
     }
 
 
@@ -150,13 +153,7 @@ public sealed class KernelParameterMetadata
                         description += $"{(needsSpace ? " " : "")}(default value: {stringDefault})";
                     }
 
-                    var builder = new JsonSchemaBuilder().FromType(parameterType);
-
-                    if (!string.IsNullOrWhiteSpace(description))
-                    {
-                        builder = builder.Description(description!);
-                    }
-                    schema = new KernelJsonSchema(JsonSerializer.SerializeToElement(builder.Build()));
+                    schema = KernelJsonSchemaBuilder.Build(null, parameterType, description);
                 }
                 catch (ArgumentException)
                 {
@@ -178,10 +175,13 @@ public sealed class KernelParameterMetadata
     /// <summary>A wrapper for a <see cref="KernelJsonSchema"/> and whether it was inferred or set explicitly by the user.</summary>
     internal sealed class InitializedSchema
     {
+
         /// <summary>true if the <see cref="Schema"/> was inferred; false if it was set explicitly by the user.</summary>
         public bool Inferred { get; set; }
 
         /// <summary>The schema, if one exists.</summary>
         public KernelJsonSchema? Schema { get; set; }
+
     }
+
 }

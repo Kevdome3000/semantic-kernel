@@ -13,7 +13,6 @@ using ChatCompletion;
 using Connectors.OpenAI;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
-using Json.More;
 
 
 /// <summary>
@@ -61,7 +60,8 @@ public sealed class FunctionCallingStepwisePlanner
                     CancellationToken cancellationToken)
                 => plan.ExecuteCoreAsync(kernel, input?.Item1!, input?.Item2, cancellationToken),
             this, kernel, new Tuple<string?, ChatHistory?>(question, chatHistoryForSteps), logger,
-            cancellationToken);#pragma warning restore CS8604 // Possible null reference argument.
+            cancellationToken);
+#pragma warning restore CS8604 // Possible null reference argument.
     }
 
 
@@ -340,7 +340,7 @@ public sealed class FunctionCallingStepwisePlanner
             }
             else
             {
-                resultStr = valueElement.ToJsonString();
+                resultStr = JsonSerializer.Serialize(valueElement);
             }
         }
         else

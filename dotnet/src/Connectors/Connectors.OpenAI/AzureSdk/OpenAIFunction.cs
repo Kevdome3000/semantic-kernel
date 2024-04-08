@@ -4,10 +4,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 using System;
 using System.Collections.Generic;
-using System.Text.Json;
 using Azure.AI.OpenAI;
-using Json.Schema;
-using Json.Schema.Generation;
 
 // NOTE: Since this space is evolving rapidly, in order to reduce the risk of needing to take breaking
 // changes as OpenAI's APIs evolve, these types are not externally constructible. In the future, once
@@ -19,6 +16,7 @@ using Json.Schema.Generation;
 /// </summary>
 public sealed class OpenAIFunctionParameter
 {
+
     internal OpenAIFunctionParameter(
         string? name,
         string? description,
@@ -48,6 +46,7 @@ public sealed class OpenAIFunctionParameter
 
     /// <summary>Gets a JSON schema for the parameter, if known.</summary>
     public KernelJsonSchema? Schema { get; }
+
 }
 
 
@@ -56,6 +55,7 @@ public sealed class OpenAIFunctionParameter
 /// </summary>
 public sealed class OpenAIFunctionReturnParameter
 {
+
     internal OpenAIFunctionReturnParameter(string? description, Type? parameterType, KernelJsonSchema? schema)
     {
         this.Description = description ?? string.Empty;
@@ -72,6 +72,7 @@ public sealed class OpenAIFunctionReturnParameter
 
     /// <summary>Gets a JSON schema for the return parameter, if known.</summary>
     public KernelJsonSchema? Schema { get; }
+
 }
 
 
@@ -80,6 +81,7 @@ public sealed class OpenAIFunctionReturnParameter
 /// </summary>
 public sealed class OpenAIFunction
 {
+
     /// <summary>
     /// Cached <see cref="BinaryData"/> storing the JSON for a function with no parameters.
     /// </summary>
@@ -195,14 +197,11 @@ public sealed class OpenAIFunction
         // If there's a description, incorporate it.
         if (!string.IsNullOrWhiteSpace(description))
         {
-            return KernelJsonSchema.Parse(JsonSerializer.Serialize(
-                new JsonSchemaBuilder()
-                    .FromType(typeof(string))
-                    .Description(description!)
-                    .Build()));
+            return KernelJsonSchemaBuilder.Build(null, typeof(string), description);
         }
 
         // Otherwise, we can use a cached schema for a string with no description.
         return s_stringNoDescriptionSchema;
     }
+
 }
