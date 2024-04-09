@@ -14,6 +14,7 @@ using Memory;
 /// </summary>
 public static class PineconeDocumentExtensions
 {
+
     /// <summary>
     /// Maps <see cref="MemoryRecord"/> instance to <see cref="PineconeDocument"/>.
     /// </summary>
@@ -49,9 +50,8 @@ public static class PineconeDocumentExtensions
             }
         }
 
-        return PineconeDocument
-            .Create(key, memoryRecord.Embedding)
-            .WithMetadata(metadata);
+        return PineconeDocument.Create(key, memoryRecord.Embedding).
+            WithMetadata(metadata);
     }
 
 
@@ -60,17 +60,7 @@ public static class PineconeDocumentExtensions
     /// </summary>
     /// <param name="pineconeDocument">Instance of <see cref="PineconeDocument"/>.</param>
     /// <returns>Instance of <see cref="MemoryRecord"/>.</returns>
-    public static MemoryRecord ToMemoryRecord(this PineconeDocument pineconeDocument) =>
-        ToMemoryRecord(pineconeDocument, transferVectorOwnership: false);
-
-
-    /// <summary>
-    /// Maps <see cref="PineconeDocument"/> instance to <see cref="MemoryRecord"/>.
-    /// </summary>
-    /// <param name="pineconeDocument">Instance of <see cref="PineconeDocument"/>.</param>
-    /// <param name="transferVectorOwnership">Whether to allow the created embedding to store a reference to this instance.</param>
-    /// <returns>Instance of <see cref="MemoryRecord"/>.</returns>
-    internal static MemoryRecord ToMemoryRecord(this PineconeDocument pineconeDocument, bool transferVectorOwnership)
+    public static MemoryRecord ToMemoryRecord(this PineconeDocument pineconeDocument)
     {
         ReadOnlyMemory<float> embedding = pineconeDocument.Values;
 
@@ -91,4 +81,5 @@ public static class PineconeDocumentExtensions
 
         return MemoryRecord.FromMetadata(memoryRecordMetadata, embedding, pineconeDocument.Id, timestamp);
     }
+
 }

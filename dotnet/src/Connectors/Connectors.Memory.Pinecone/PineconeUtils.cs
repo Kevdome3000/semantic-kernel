@@ -10,6 +10,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 
 
 /// <summary>
@@ -17,6 +18,7 @@ using System.Text.Json.Serialization;
 /// </summary>
 public static class PineconeUtils
 {
+
     /// <summary>
     ///  The maximum size of the metadata associated with each vector.
     ///  See https://docs.pinecone.io/docs/metadata-filtering#supported-metadata-size
@@ -73,7 +75,7 @@ public static class PineconeUtils
     public static async IAsyncEnumerable<PineconeDocument> EnsureValidMetadataAsync(
         IAsyncEnumerable<PineconeDocument> documents)
     {
-        await foreach (PineconeDocument document in documents)
+        await foreach (PineconeDocument document in documents.ConfigureAwait(false))
         {
             if (document.Metadata == null || GetMetadataSize(document.Metadata) <= MaxMetadataSize)
             {
@@ -111,9 +113,10 @@ public static class PineconeUtils
                 textIndex += textSplitSize;
                 textSize -= Encoding.UTF8.GetByteCount(splitText);
 
-                PineconeDocument splitDocument = PineconeDocument.Create($"{document.Id}_{splitCounter}", document.Values)
-                    .WithMetadata(new Dictionary<string, object>(document.Metadata))
-                    .WithSparseValues(document.SparseValues);
+                PineconeDocument splitDocument = PineconeDocument.Create($"{document.Id}_{splitCounter}", document.Values).
+                    WithMetadata(new Dictionary<string, object>(document.Metadata)).
+                    WithSparseValues(document.SparseValues);
+
                 splitDocument.Metadata!["text"] = splitText;
 
                 yield return splitDocument;
@@ -141,7 +144,7 @@ public static class PineconeUtils
         List<PineconeDocument> currentBatch = new(batchSize);
         int batchCounter = 0;
 
-        await foreach (PineconeDocument record in data)
+        await foreach (PineconeDocument record in data.ConfigureAwait(false))
         {
             currentBatch.Add(record);
 
@@ -255,6 +258,7 @@ public static class PineconeUtils
     /// </summary>
     public sealed class PineconeOperator
     {
+
         /// <summary>
         /// Filtering operator (e.g. $eq, $ne), see https://docs.pinecone.io/docs/metadata-filtering#metadata-query-language.
         /// </summary>
@@ -290,5 +294,7 @@ public static class PineconeUtils
                 }
             };
         }
+
     }
+
 }

@@ -84,7 +84,8 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc/>
     public async IAsyncEnumerable<string> GetCollectionsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var collection in this._dbConnector.GetCollectionsAsync(this._dbConnection, cancellationToken))
+        await foreach (var collection in this._dbConnector.GetCollectionsAsync(this._dbConnection, cancellationToken).
+                           ConfigureAwait(false))
         {
             yield return collection;
         }
@@ -192,7 +193,8 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
         List<(MemoryRecord Record, double Score)> embeddings = new();
 
         await foreach (var dbEntry in this._dbConnector.GetNearestMatchesAsync(this._dbConnection, collectionName, embedding.ToArray(), limit,
-                           minRelevanceScore, cancellationToken))
+                               minRelevanceScore, cancellationToken).
+                           ConfigureAwait(false))
         {
             var entry = MemoryRecord.FromJsonMetadata(
                 json: dbEntry.MetadataString,

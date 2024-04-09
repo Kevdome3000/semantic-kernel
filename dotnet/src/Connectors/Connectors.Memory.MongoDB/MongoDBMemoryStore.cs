@@ -16,6 +16,7 @@ using Memory;
 /// </summary>
 public class MongoDBMemoryStore : IMemoryStore, IDisposable
 {
+
     /// <summary>
     /// Initializes a new instance of the <see cref="MongoDBMemoryStore"/> class.
     /// </summary>
@@ -50,9 +51,11 @@ public class MongoDBMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc/>
     public async IAsyncEnumerable<string> GetCollectionsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        using var cursor = await this._mongoDatabase.ListCollectionNamesAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+        using var cursor = await this._mongoDatabase.ListCollectionNamesAsync(cancellationToken: cancellationToken).
+            ConfigureAwait(false);
 
-        while (await cursor.MoveNextAsync(cancellationToken).ConfigureAwait(false))
+        while (await cursor.MoveNextAsync(cancellationToken).
+                   ConfigureAwait(false))
         {
             foreach (var name in cursor.Current)
             {
@@ -65,7 +68,8 @@ public class MongoDBMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc/>
     public async Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancellationToken = default)
     {
-        await foreach (var existingCollectionName in this.GetCollectionsAsync(cancellationToken))
+        await foreach (var existingCollectionName in this.GetCollectionsAsync(cancellationToken).
+                           ConfigureAwait(false))
         {
             if (existingCollectionName == collectionName)
             {
@@ -90,9 +94,9 @@ public class MongoDBMemoryStore : IMemoryStore, IDisposable
 
         var replaceOptions = new ReplaceOptions() { IsUpsert = true };
 
-        var result = await this._mongoDatabase.GetCollection<MongoDBMemoryEntry>(collectionName)
-            .ReplaceOneAsync(filter, new MongoDBMemoryEntry(record), replaceOptions, cancellationToken)
-            .ConfigureAwait(false);
+        var result = await this._mongoDatabase.GetCollection<MongoDBMemoryEntry>(collectionName).
+            ReplaceOneAsync(filter, new MongoDBMemoryEntry(record), replaceOptions, cancellationToken).
+            ConfigureAwait(false);
 
         return result.UpsertedId?.AsString ?? record.Key;
     }
@@ -106,22 +110,29 @@ public class MongoDBMemoryStore : IMemoryStore, IDisposable
     {
         foreach (var record in records)
         {
-            yield return await this.UpsertAsync(collectionName, record, cancellationToken).ConfigureAwait(false);
+            yield return await this.UpsertAsync(collectionName, record, cancellationToken).
+                ConfigureAwait(false);
         }
     }
 
 
     /// <inheritdoc/>
-    public async Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancellationToken = default)
+    public async Task<MemoryRecord?> GetAsync(
+        string collectionName,
+        string key,
+        bool withEmbedding = false,
+        CancellationToken cancellationToken = default)
     {
         using var cursor = await this.Find(
                 collectionName,
                 GetFilterById(key),
                 withEmbedding,
-                cancellationToken)
-            .ConfigureAwait(false);
+                cancellationToken).
+            ConfigureAwait(false);
 
-        var mongoDBMemoryEntry = await cursor.SingleOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+        var mongoDBMemoryEntry = await cursor.SingleOrDefaultAsync(cancellationToken).
+            ConfigureAwait(false);
+
         var result = mongoDBMemoryEntry?.ToMemoryRecord();
 
         return result;
@@ -129,16 +140,21 @@ public class MongoDBMemoryStore : IMemoryStore, IDisposable
 
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = false, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(
+        string collectionName,
+        IEnumerable<string> keys,
+        bool withEmbeddings = false,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         using var cursor = await this.Find(
                 collectionName,
                 GetFilterByIds(keys),
                 withEmbeddings,
-                cancellationToken)
-            .ConfigureAwait(false);
+                cancellationToken).
+            ConfigureAwait(false);
 
-        while (await cursor.MoveNextAsync(cancellationToken).ConfigureAwait(false))
+        while (await cursor.MoveNextAsync(cancellationToken).
+                   ConfigureAwait(false))
         {
             foreach (var memoryRecord in cursor.Current)
             {
@@ -150,20 +166,31 @@ public class MongoDBMemoryStore : IMemoryStore, IDisposable
 
     /// <inheritdoc/>
     public Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default) =>
-        this.GetCollection(collectionName).DeleteOneAsync(GetFilterById(key), cancellationToken);
+        this.GetCollection(collectionName).
+            DeleteOneAsync(GetFilterById(key), cancellationToken);
 
 
     /// <inheritdoc/>
     public Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default) =>
-        this.GetCollection(collectionName).DeleteManyAsync(GetFilterByIds(keys), cancellationToken);
+        this.GetCollection(collectionName).
+            DeleteManyAsync(GetFilterByIds(keys), cancellationToken);
 
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(string collectionName, ReadOnlyMemory<float> embedding, int limit, double minRelevanceScore = 0, bool withEmbeddings = false, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(
+        string collectionName,
+        ReadOnlyMemory<float> embedding,
+        int limit,
+        double minRelevanceScore = 0,
+        bool withEmbeddings = false,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        using var cursor = await this.VectorSearch(collectionName, embedding, limit, minRelevanceScore, withEmbeddings, cancellationToken).ConfigureAwait(false);
+        using var cursor = await this.VectorSearch(collectionName, embedding, limit, minRelevanceScore,
+                withEmbeddings, cancellationToken).
+            ConfigureAwait(false);
 
-        while (await cursor.MoveNextAsync(cancellationToken).ConfigureAwait(false))
+        while (await cursor.MoveNextAsync(cancellationToken).
+                   ConfigureAwait(false))
         {
             foreach (var memoryEntry in cursor.Current)
             {
@@ -174,11 +201,19 @@ public class MongoDBMemoryStore : IMemoryStore, IDisposable
 
 
     /// <inheritdoc/>
-    public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, ReadOnlyMemory<float> embedding, double minRelevanceScore = 0, bool withEmbedding = false, CancellationToken cancellationToken = default)
+    public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(
+        string collectionName,
+        ReadOnlyMemory<float> embedding,
+        double minRelevanceScore = 0,
+        bool withEmbedding = false,
+        CancellationToken cancellationToken = default)
     {
-        using var cursor = await this.VectorSearch(collectionName, embedding, 1, minRelevanceScore, withEmbedding, cancellationToken).ConfigureAwait(false);
+        using var cursor = await this.VectorSearch(collectionName, embedding, 1, minRelevanceScore,
+                withEmbedding, cancellationToken).
+            ConfigureAwait(false);
 
-        var result = await cursor.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+        var result = await cursor.FirstOrDefaultAsync(cancellationToken).
+            ConfigureAwait(false);
 
         return result?.ToMemoryRecordAndScore();
     }
@@ -212,7 +247,9 @@ public class MongoDBMemoryStore : IMemoryStore, IDisposable
     #region private ================================================================================
 
     private readonly string? _indexName;
+
     private readonly IMongoClient _mongoClient;
+
     private readonly IMongoDatabase _mongoDatabase;
 
 
@@ -227,7 +264,10 @@ public class MongoDBMemoryStore : IMemoryStore, IDisposable
         CancellationToken cancellationToken = default)
     {
         var collection = this._mongoDatabase.GetCollection<MongoDBMemoryEntry>(collectionName);
-        var findOptions = withEmbeddings ? null : new FindOptions<MongoDBMemoryEntry>() { Projection = Builders<MongoDBMemoryEntry>.Projection.Exclude(e => e.Embedding) };
+
+        var findOptions = withEmbeddings
+            ? null
+            : new FindOptions<MongoDBMemoryEntry>() { Projection = Builders<MongoDBMemoryEntry>.Projection.Exclude(e => e.Embedding) };
 
         return collection.FindAsync(filter, findOptions, cancellationToken);
     }
@@ -249,21 +289,19 @@ public class MongoDBMemoryStore : IMemoryStore, IDisposable
         bool withEmbedding = false,
         CancellationToken cancellationToken = default)
     {
-        var projectionDefinition = Builders<MongoDBMemoryEntry>
-            .Projection
-            .Meta(nameof(MongoDBMemoryEntry.Score), "vectorSearchScore")
-            .Include(e => e.Metadata)
-            .Include(e => e.Timestamp);
+        var projectionDefinition = Builders<MongoDBMemoryEntry>.Projection.Meta(nameof(MongoDBMemoryEntry.Score), "vectorSearchScore").
+            Include(e => e.Metadata).
+            Include(e => e.Timestamp);
 
         if (withEmbedding)
         {
             projectionDefinition = projectionDefinition.Include(e => e.Embedding);
         }
 
-        var aggregationPipeline = this.GetCollection(collectionName)
-            .Aggregate()
-            .VectorSearch(e => e.Embedding, embedding, limit)
-            .Project<MongoDBMemoryEntry>(projectionDefinition);
+        var aggregationPipeline = this.GetCollection(collectionName).
+            Aggregate().
+            VectorSearch(e => e.Embedding, embedding, limit).
+            Project<MongoDBMemoryEntry>(projectionDefinition);
 
         if (minRelevanceScore > 0)
         {

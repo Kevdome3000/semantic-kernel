@@ -148,7 +148,8 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
             withEmbeddings,
             cancellationToken);
 
-        await foreach ((MemoryRecord, double) result in results.WithCancellation(cancellationToken))
+        await foreach ((MemoryRecord, double) result in results.WithCancellation(cancellationToken).
+                           ConfigureAwait(false))
         {
             yield return MemoryQueryResult.FromMemoryRecord(result.Item1, result.Item2);
         }

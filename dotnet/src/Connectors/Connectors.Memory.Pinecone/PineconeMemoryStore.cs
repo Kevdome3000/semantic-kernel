@@ -25,6 +25,7 @@ using Memory;
 /// </remarks>
 public class PineconeMemoryStore : IPineconeMemoryStore
 {
+
     /// <summary>
     /// Initializes a new instance of the <see cref="PineconeMemoryStore"/> class.
     /// </summary>
@@ -64,7 +65,8 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// </remarks>
     public async Task CreateCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
-        if (!await this.DoesCollectionExistAsync(collectionName, cancellationToken).ConfigureAwait(false))
+        if (!await this.DoesCollectionExistAsync(collectionName, cancellationToken).
+                ConfigureAwait(false))
         {
             throw new KernelException("Index creation is not supported within memory store. " +
                                       $"It should be created manually or using {nameof(IPineconeClient.CreateIndexAsync)}. " +
@@ -77,7 +79,8 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <returns> a list of index names </returns>
     public async IAsyncEnumerable<string> GetCollectionsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var index in this._pineconeClient.ListIndexesAsync(cancellationToken).ConfigureAwait(false))
+        await foreach (var index in this._pineconeClient.ListIndexesAsync(cancellationToken).
+                           ConfigureAwait(false))
         {
             yield return index ?? "";
         }
@@ -89,7 +92,8 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <param name="cancellationToken"></param>
     public async Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancellationToken = default)
     {
-        return await this._pineconeClient.DoesIndexExistAsync(collectionName, cancellationToken).ConfigureAwait(false);
+        return await this._pineconeClient.DoesIndexExistAsync(collectionName, cancellationToken).
+            ConfigureAwait(false);
     }
 
 
@@ -98,9 +102,11 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <param name="cancellationToken"></param>
     public async Task DeleteCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
-        if (await this.DoesCollectionExistAsync(collectionName, cancellationToken).ConfigureAwait(false))
+        if (await this.DoesCollectionExistAsync(collectionName, cancellationToken).
+                ConfigureAwait(false))
         {
-            await this._pineconeClient.DeleteIndexAsync(collectionName, cancellationToken).ConfigureAwait(false);
+            await this._pineconeClient.DeleteIndexAsync(collectionName, cancellationToken).
+                ConfigureAwait(false);
         }
     }
 
@@ -111,14 +117,20 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <param name="cancellationToken"></param>
     public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default)
     {
-        return await this.UpsertToNamespaceAsync(collectionName, string.Empty, record, cancellationToken).ConfigureAwait(false);
+        return await this.UpsertToNamespaceAsync(collectionName, string.Empty, record, cancellationToken).
+            ConfigureAwait(false);
     }
 
 
     /// <inheritdoc />
-    public async Task<string> UpsertToNamespaceAsync(string indexName, string indexNamespace, MemoryRecord record, CancellationToken cancellationToken = default)
+    public async Task<string> UpsertToNamespaceAsync(
+        string indexName,
+        string indexNamespace,
+        MemoryRecord record,
+        CancellationToken cancellationToken = default)
     {
-        (PineconeDocument vectorData, OperationType operationType) = await this.EvaluateAndUpdateMemoryRecordAsync(indexName, record, indexNamespace, cancellationToken).ConfigureAwait(false);
+        (PineconeDocument vectorData, OperationType operationType) = await this.EvaluateAndUpdateMemoryRecordAsync(indexName, record, indexNamespace, cancellationToken).
+            ConfigureAwait(false);
 
         Task request = operationType switch
         {
@@ -135,6 +147,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         catch (HttpOperationException ex)
         {
             this._logger.LogError(ex, "Failed to upsert: {Message}", ex.Message);
+
             throw;
         }
 
@@ -151,7 +164,8 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         IEnumerable<MemoryRecord> records,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (string id in this.UpsertBatchToNamespaceAsync(collectionName, string.Empty, records, cancellationToken).ConfigureAwait(false))
+        await foreach (string id in this.UpsertBatchToNamespaceAsync(collectionName, string.Empty, records, cancellationToken).
+                           ConfigureAwait(false))
         {
             yield return id;
         }
@@ -171,21 +185,24 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         foreach (MemoryRecord? record in records)
         {
             (PineconeDocument document, OperationType operationType) = await this.EvaluateAndUpdateMemoryRecordAsync(
-                indexName,
-                record,
-                indexNamespace,
-                cancellationToken).ConfigureAwait(false);
+                    indexName,
+                    record,
+                    indexNamespace,
+                    cancellationToken).
+                ConfigureAwait(false);
 
             // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
             switch (operationType)
             {
                 case OperationType.Upsert:
                     upsertDocuments.Add(document);
+
                     break;
 
                 case OperationType.Update:
 
                     updateDocuments.Add(document);
+
                     break;
 
                 case OperationType.Skip:
@@ -205,20 +222,24 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         if (updateDocuments.Count > 0)
         {
             IEnumerable<Task> updates = updateDocuments.Select(async d
-                => await this._pineconeClient.UpdateAsync(indexName, d, indexNamespace, cancellationToken).ConfigureAwait(false));
+                => await this._pineconeClient.UpdateAsync(indexName, d, indexNamespace, cancellationToken).
+                    ConfigureAwait(false));
 
             tasks.AddRange(updates);
         }
 
-        PineconeDocument[] vectorData = upsertDocuments.Concat(updateDocuments).ToArray();
+        PineconeDocument[] vectorData = upsertDocuments.Concat(updateDocuments).
+            ToArray();
 
         try
         {
-            await Task.WhenAll(tasks).ConfigureAwait(false);
+            await Task.WhenAll(tasks).
+                ConfigureAwait(false);
         }
         catch (HttpOperationException ex)
         {
             this._logger.LogError(ex, "Failed to upsert batch: {Message}", ex.Message);
+
             throw;
         }
 
@@ -240,7 +261,9 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         bool withEmbedding = false,
         CancellationToken cancellationToken = default)
     {
-        return await this.GetFromNamespaceAsync(collectionName, string.Empty, key, withEmbedding, cancellationToken).ConfigureAwait(false);
+        return await this.GetFromNamespaceAsync(collectionName, string.Empty, key, withEmbedding,
+                cancellationToken).
+            ConfigureAwait(false);
     }
 
 
@@ -255,18 +278,20 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         try
         {
             await foreach (PineconeDocument? record in this._pineconeClient.FetchVectorsAsync(
-                               indexName,
-                               new[] { key },
-                               indexNamespace,
-                               withEmbedding,
-                               cancellationToken))
+                                   indexName,
+                                   new[] { key },
+                                   indexNamespace,
+                                   withEmbedding,
+                                   cancellationToken).
+                               ConfigureAwait(false))
             {
-                return record?.ToMemoryRecord(transferVectorOwnership: true);
+                return record?.ToMemoryRecord();
             }
         }
         catch (HttpOperationException ex)
         {
             this._logger.LogError(ex, "Failed to get vector data from Pinecone: {Message}", ex.Message);
+
             throw;
         }
 
@@ -285,7 +310,9 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (MemoryRecord? record in this.GetBatchFromNamespaceAsync(collectionName, string.Empty, keys, withEmbeddings, cancellationToken).ConfigureAwait(false))
+        await foreach (MemoryRecord? record in this.GetBatchFromNamespaceAsync(collectionName, string.Empty, keys, withEmbeddings,
+                               cancellationToken).
+                           ConfigureAwait(false))
         {
             yield return record;
         }
@@ -302,7 +329,9 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     {
         foreach (string? key in keys)
         {
-            MemoryRecord? record = await this.GetFromNamespaceAsync(indexName, indexNamespace, key, withEmbeddings, cancellationToken).ConfigureAwait(false);
+            MemoryRecord? record = await this.GetFromNamespaceAsync(indexName, indexNamespace, key, withEmbeddings,
+                    cancellationToken).
+                ConfigureAwait(false);
 
             if (record != null)
             {
@@ -331,7 +360,9 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         bool withEmbedding = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (MemoryRecord? record in this.GetWithDocumentIdBatchAsync(indexName, new[] { documentId }, limit, indexNamespace, withEmbedding, cancellationToken).ConfigureAwait(false))
+        await foreach (MemoryRecord? record in this.GetWithDocumentIdBatchAsync(indexName, new[] { documentId }, limit, indexNamespace,
+                               withEmbedding, cancellationToken).
+                           ConfigureAwait(false))
         {
             yield return record;
         }
@@ -358,9 +389,11 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     {
         foreach (IAsyncEnumerable<MemoryRecord?>? records
                  in documentIds.Select(
-                     documentId => this.GetWithDocumentIdAsync(indexName, documentId, limit, indexNamespace, withEmbeddings, cancellationToken)))
+                     documentId => this.GetWithDocumentIdAsync(indexName, documentId, limit, indexNamespace,
+                         withEmbeddings, cancellationToken)))
         {
-            await foreach (MemoryRecord? record in records.WithCancellation(cancellationToken))
+            await foreach (MemoryRecord? record in records.WithCancellation(cancellationToken).
+                               ConfigureAwait(false))
             {
                 yield return record;
             }
@@ -381,26 +414,26 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 
         try
         {
-            Query query = Query.Create(limit)
-                .InNamespace(indexNamespace)
-                .WithFilter(filter);
+            Query query = Query.Create(limit).
+                InNamespace(indexNamespace).
+                WithFilter(filter);
 
-            vectorDataList = await this._pineconeClient
-                .QueryAsync(indexName,
+            vectorDataList = await this._pineconeClient.QueryAsync(indexName,
                     query,
-                    cancellationToken: cancellationToken)
-                .ToListAsync(cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
+                    cancellationToken: cancellationToken).
+                ToListAsync(cancellationToken: cancellationToken).
+                ConfigureAwait(false);
         }
         catch (HttpOperationException ex)
         {
             this._logger.LogError(ex, "Error getting batch with filter from Pinecone: {Message}", ex.Message);
+
             throw;
         }
 
         foreach (PineconeDocument? record in vectorDataList)
         {
-            yield return record?.ToMemoryRecord(transferVectorOwnership: true);
+            yield return record?.ToMemoryRecord();
         }
     }
 
@@ -411,25 +444,32 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <param name="cancellationToken"></param>
     public async Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default)
     {
-        await this.RemoveFromNamespaceAsync(collectionName, string.Empty, key, cancellationToken).ConfigureAwait(false);
+        await this.RemoveFromNamespaceAsync(collectionName, string.Empty, key, cancellationToken).
+            ConfigureAwait(false);
     }
 
 
     /// <inheritdoc />
-    public async Task RemoveFromNamespaceAsync(string indexName, string indexNamespace, string key, CancellationToken cancellationToken = default)
+    public async Task RemoveFromNamespaceAsync(
+        string indexName,
+        string indexNamespace,
+        string key,
+        CancellationToken cancellationToken = default)
     {
         try
         {
             await this._pineconeClient.DeleteAsync(indexName, new[]
-                {
-                    key
-                },
-                indexNamespace,
-                cancellationToken: cancellationToken).ConfigureAwait(false);
+                    {
+                        key
+                    },
+                    indexNamespace,
+                    cancellationToken: cancellationToken).
+                ConfigureAwait(false);
         }
         catch (HttpOperationException ex)
         {
             this._logger.LogError(ex, "Failed to remove vector data from Pinecone: {Message}", ex.Message);
+
             throw;
         }
     }
@@ -441,14 +481,21 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <param name="cancellationToken"></param>
     public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
-        await this.RemoveBatchFromNamespaceAsync(collectionName, string.Empty, keys, cancellationToken).ConfigureAwait(false);
+        await this.RemoveBatchFromNamespaceAsync(collectionName, string.Empty, keys, cancellationToken).
+            ConfigureAwait(false);
     }
 
 
     /// <inheritdoc />
-    public async Task RemoveBatchFromNamespaceAsync(string indexName, string indexNamespace, IEnumerable<string> keys, CancellationToken cancellationToken = default)
+    public async Task RemoveBatchFromNamespaceAsync(
+        string indexName,
+        string indexNamespace,
+        IEnumerable<string> keys,
+        CancellationToken cancellationToken = default)
     {
-        await Task.WhenAll(keys.Select(async k => await this.RemoveFromNamespaceAsync(indexName, indexNamespace, k, cancellationToken).ConfigureAwait(false))).ConfigureAwait(false);
+        await Task.WhenAll(keys.Select(async k => await this.RemoveFromNamespaceAsync(indexName, indexNamespace, k, cancellationToken).
+                ConfigureAwait(false))).
+            ConfigureAwait(false);
     }
 
 
@@ -462,15 +509,17 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         try
         {
             await this._pineconeClient.DeleteAsync(
-                indexName,
-                default,
-                indexNamespace,
-                filter,
-                cancellationToken: cancellationToken).ConfigureAwait(false);
+                    indexName,
+                    default,
+                    indexNamespace,
+                    filter,
+                    cancellationToken: cancellationToken).
+                ConfigureAwait(false);
         }
         catch (HttpOperationException ex)
         {
             this._logger.LogError(ex, "Failed to remove vector data from Pinecone: {Message}", ex.Message);
+
             throw;
         }
     }
@@ -485,18 +534,24 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns></returns>
     /// <exception cref="KernelException"></exception>
-    public async Task RemoveWithDocumentIdAsync(string indexName, string documentId, string indexNamespace, CancellationToken cancellationToken = default)
+    public async Task RemoveWithDocumentIdAsync(
+        string indexName,
+        string documentId,
+        string indexNamespace,
+        CancellationToken cancellationToken = default)
     {
         try
         {
             await this._pineconeClient.DeleteAsync(indexName, null, indexNamespace, new Dictionary<string, object>()
-            {
-                { "document_Id", documentId }
-            }, cancellationToken: cancellationToken).ConfigureAwait(false);
+                {
+                    { "document_Id", documentId }
+                }, cancellationToken: cancellationToken).
+                ConfigureAwait(false);
         }
         catch (HttpOperationException ex)
         {
             this._logger.LogError(ex, "Failed to remove vector data from Pinecone: {Message}", ex.Message);
+
             throw;
         }
     }
@@ -520,14 +575,16 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         try
         {
             IEnumerable<Task> tasks = documentIds.Select(async id
-                => await this.RemoveWithDocumentIdAsync(indexName, id, indexNamespace, cancellationToken)
-                    .ConfigureAwait(false));
+                => await this.RemoveWithDocumentIdAsync(indexName, id, indexNamespace, cancellationToken).
+                    ConfigureAwait(false));
 
-            await Task.WhenAll(tasks).ConfigureAwait(false);
+            await Task.WhenAll(tasks).
+                ConfigureAwait(false);
         }
         catch (HttpOperationException ex)
         {
             this._logger.LogError(ex, "Error in batch removing data from Pinecone: {Message}", ex.Message);
+
             throw;
         }
     }
@@ -580,9 +637,10 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             default,
             cancellationToken);
 
-        await foreach ((PineconeDocument, double) result in results.WithCancellation(cancellationToken))
+        await foreach ((PineconeDocument, double) result in results.WithCancellation(cancellationToken).
+                           ConfigureAwait(false))
         {
-            yield return (result.Item1.ToMemoryRecord(transferVectorOwnership: true), result.Item2);
+            yield return (result.Item1.ToMemoryRecord(), result.Item2);
         }
     }
 
@@ -601,12 +659,13 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         CancellationToken cancellationToken = default)
     {
         return await this.GetNearestMatchFromNamespaceAsync(
-            collectionName,
-            string.Empty,
-            embedding,
-            minRelevanceScore,
-            withEmbedding,
-            cancellationToken).ConfigureAwait(false);
+                collectionName,
+                string.Empty,
+                embedding,
+                minRelevanceScore,
+                withEmbedding,
+                cancellationToken).
+            ConfigureAwait(false);
     }
 
 
@@ -628,7 +687,8 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             withEmbeddings: withEmbedding,
             cancellationToken: cancellationToken);
 
-        (MemoryRecord, double) record = await results.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+        (MemoryRecord, double) record = await results.FirstOrDefaultAsync(cancellationToken).
+            ConfigureAwait(false);
 
         return (record.Item1, record.Item2);
     }
@@ -656,9 +716,10 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             filter,
             cancellationToken);
 
-        await foreach ((PineconeDocument, double) result in results.WithCancellation(cancellationToken))
+        await foreach ((PineconeDocument, double) result in results.WithCancellation(cancellationToken).
+                           ConfigureAwait(false))
         {
-            yield return (result.Item1.ToMemoryRecord(transferVectorOwnership: true), result.Item2);
+            yield return (result.Item1.ToMemoryRecord(), result.Item2);
         }
     }
 
@@ -666,14 +727,17 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <inheritdoc />
     public async Task ClearNamespaceAsync(string indexName, string indexNamespace, CancellationToken cancellationToken = default)
     {
-        await this._pineconeClient.DeleteAsync(indexName, default, indexNamespace, null, true, cancellationToken).ConfigureAwait(false);
+        await this._pineconeClient.DeleteAsync(indexName, default, indexNamespace, null,
+                true, cancellationToken).
+            ConfigureAwait(false);
     }
 
 
     /// <inheritdoc />
     public async IAsyncEnumerable<string?> ListNamespacesAsync(string indexName, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        IndexStats? indexStats = await this._pineconeClient.DescribeIndexStatsAsync(indexName, default, cancellationToken).ConfigureAwait(false);
+        IndexStats? indexStats = await this._pineconeClient.DescribeIndexStatsAsync(indexName, default, cancellationToken).
+            ConfigureAwait(false);
 
         if (indexStats is null)
         {
@@ -690,6 +754,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     #region private ================================================================================
 
     private readonly IPineconeClient _pineconeClient;
+
     private readonly ILogger _logger;
 
 
@@ -705,8 +770,10 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 
         PineconeDocument vectorData = record.ToPineconeDocument();
 
-        PineconeDocument? existingRecord = await this._pineconeClient.FetchVectorsAsync(indexName, new[] { key }, indexNamespace, false, cancellationToken)
-            .FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+        PineconeDocument? existingRecord = await this._pineconeClient.FetchVectorsAsync(indexName, new[] { key }, indexNamespace, false,
+                cancellationToken).
+            FirstOrDefaultAsync(cancellationToken).
+            ConfigureAwait(false);
 
         if (existingRecord is null)
         {

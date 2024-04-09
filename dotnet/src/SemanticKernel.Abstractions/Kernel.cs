@@ -25,7 +25,7 @@ using Services;
 public sealed class Kernel
 {
 
-    /// <summary>Key used by KernelBuilder to store type information into the service provider.</summary>
+    /// <summary>Key used by <see cref="IKernelBuilder"/> to store type information into the service provider.</summary>
     internal const string KernelServiceTypeToKeyMappings = nameof(KernelServiceTypeToKeyMappings);
 
     /// <summary>Dictionary containing ambient data stored in the kernel, lazily-initialized on first access.</summary>

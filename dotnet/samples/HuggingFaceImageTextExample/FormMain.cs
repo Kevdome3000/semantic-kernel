@@ -2,7 +2,6 @@
 
 namespace HuggingFaceImageTextDemo;
 
-using System.Drawing.Imaging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ImageToText;
 
@@ -172,7 +171,7 @@ public partial class FormMain : Form
     private static ReadOnlyMemory<byte> ConvertImageToReadOnlyMemory(PictureBox pictureBox)
     {
         var image = pictureBox.Image;
-        var fileName = pictureBox.Tag.ToString()!;
+        var fileName = pictureBox.Tag!.ToString()!;
 
         using var memoryStream = new MemoryStream();
 

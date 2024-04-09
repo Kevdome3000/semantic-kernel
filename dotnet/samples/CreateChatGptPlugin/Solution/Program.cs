@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-// Create kernel
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 
+// Create kernel
 var builder = Kernel.CreateBuilder();
 // Add a text or chat completion service using either:
 // builder.Services.AddAzureOpenAIChatCompletion()
@@ -48,7 +48,7 @@ while (true)
     string fullMessage = "";
     var first = true;
 
-    await foreach (var content in result)
+    await foreach (var content in result.ConfigureAwait(false))
     {
         if (content.Role.HasValue && first)
         {

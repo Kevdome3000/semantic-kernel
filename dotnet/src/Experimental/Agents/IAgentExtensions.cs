@@ -5,6 +5,7 @@ namespace Microsoft.SemanticKernel.Experimental.Agents;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 
 
 /// <summary>
@@ -35,7 +36,8 @@ public static class IAgentExtensions
         try
         {
             await foreach (var message in thread.InvokeAsync(agent, input, arguments, fileIds,
-                               cancellationToken))
+                                   cancellationToken).
+                               ConfigureAwait(false))
             {
                 yield return message;
             }

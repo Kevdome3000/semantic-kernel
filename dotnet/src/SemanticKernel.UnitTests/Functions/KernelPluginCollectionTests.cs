@@ -14,6 +14,7 @@ using Xunit;
 
 public class KernelPluginCollectionTests
 {
+
     [Fact]
     public void ItHasExpectedDefaultValues()
     {
@@ -22,12 +23,16 @@ public class KernelPluginCollectionTests
         c = new();
         Assert.Equal(0, c.Count);
         Assert.NotNull(c.GetEnumerator());
-        Assert.False(c.GetEnumerator().MoveNext());
+
+        Assert.False(c.GetEnumerator().
+            MoveNext());
 
         c = new(Array.Empty<DefaultKernelPlugin>());
         Assert.Equal(0, c.Count);
         Assert.NotNull(c.GetEnumerator());
-        Assert.False(c.GetEnumerator().MoveNext());
+
+        Assert.False(c.GetEnumerator().
+            MoveNext());
 
         c = new(new[] { KernelPluginFactory.CreateFromFunctions("plugin1") });
         Assert.Equal(1, c.Count);
@@ -68,6 +73,7 @@ public class KernelPluginCollectionTests
             KernelFunctionFactory.CreateFromMethod(() => { }, "Function1"),
             KernelFunctionFactory.CreateFromMethod(() => { }, "Function2"),
         });
+
         DefaultKernelPlugin plugin2 = new("name2", "description2", new[]
         {
             KernelFunctionFactory.CreateFromMethod(() => { }, "Function3"),
@@ -94,7 +100,9 @@ public class KernelPluginCollectionTests
         Assert.True(c.Contains(plugin2.Name));
         Assert.True(c.Contains(plugin2.Name.ToUpperInvariant()));
         Assert.Equal(plugin2, c[plugin2.Name]);
-        Assert.Equal(new[] { plugin1, plugin2 }, c.OrderBy(f => f.Name, StringComparer.OrdinalIgnoreCase).ToArray());
+
+        Assert.Equal(new[] { plugin1, plugin2 }, c.OrderBy(f => f.Name, StringComparer.OrdinalIgnoreCase).
+            ToArray());
 
         Assert.True(c.Remove(plugin1));
         Assert.False(c.Remove(plugin1));
@@ -155,7 +163,9 @@ public class KernelPluginCollectionTests
             })
         };
 
-        IList<KernelFunctionMetadata> metadata = c.GetFunctionsMetadata().OrderBy(f => f.Name).ToList();
+        List<KernelFunctionMetadata> metadata = c.GetFunctionsMetadata().
+            OrderBy(f => f.Name).
+            ToList();
 
         Assert.Equal("plugin1", metadata[0].PluginName);
         Assert.Equal("Function1", metadata[0].Name);
@@ -179,6 +189,7 @@ public class KernelPluginCollectionTests
             KernelFunctionFactory.CreateFromMethod(() => { }, "Function1"),
             KernelFunctionFactory.CreateFromMethod(() => { }, "Function2"),
         });
+
         DefaultKernelPlugin plugin2 = new("name2", "description2", new[]
         {
             KernelFunctionFactory.CreateFromMethod(() => { }, "Function3"),
@@ -259,4 +270,5 @@ public class KernelPluginCollectionTests
         Assert.Throws<ArgumentException>(() => c.CopyTo(array, 3));
         Assert.Throws<ArgumentException>(() => c.CopyTo(array, 4));
     }
+
 }

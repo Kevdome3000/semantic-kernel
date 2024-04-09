@@ -16,6 +16,7 @@ using ChatCompletion;
 /// </summary>
 public static class TextGenerationExtensions
 {
+
     /// <summary>
     /// Get a single text generation result for the prompt and settings.
     /// </summary>
@@ -31,8 +32,8 @@ public static class TextGenerationExtensions
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => (await textGenerationService.GetTextContentsAsync(prompt, executionSettings, kernel, cancellationToken).ConfigureAwait(false))
-            .Single();
+        => (await textGenerationService.GetTextContentsAsync(prompt, executionSettings, kernel, cancellationToken).
+            ConfigureAwait(false)).Single();
 
 
     /// <summary>
@@ -54,12 +55,16 @@ public static class TextGenerationExtensions
         if (textGenerationService is IChatCompletionService chatCompletion
             && ChatPromptParser.TryParse(prompt, out var chatHistory))
         {
-            var chatMessage = await chatCompletion.GetChatMessageContentAsync(chatHistory, executionSettings, kernel, cancellationToken).ConfigureAwait(false);
-            return new TextContent(chatMessage.Content, chatMessage.ModelId, chatMessage.InnerContent, chatMessage.Encoding, chatMessage.Metadata);
+            var chatMessage = await chatCompletion.GetChatMessageContentAsync(chatHistory, executionSettings, kernel, cancellationToken).
+                ConfigureAwait(false);
+
+            return new TextContent(chatMessage.Content, chatMessage.ModelId, chatMessage.InnerContent, chatMessage.Encoding,
+                chatMessage.Metadata);
         }
 
         // When using against text generations, the prompt will be used as is.
-        return await textGenerationService.GetTextContentAsync(prompt, executionSettings, kernel, cancellationToken).ConfigureAwait(false);
+        return await textGenerationService.GetTextContentAsync(prompt, executionSettings, kernel, cancellationToken).
+            ConfigureAwait(false);
     }
 
 
@@ -87,18 +92,22 @@ public static class TextGenerationExtensions
         if (textGenerationService is IChatCompletionService chatCompletion
             && ChatPromptParser.TryParse(prompt, out var chatHistory))
         {
-            await foreach (var chatMessage in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken))
+            await foreach (var chatMessage in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken).
+                               ConfigureAwait(false))
             {
-                yield return new StreamingTextContent(chatMessage.Content, chatMessage.ChoiceIndex, chatMessage.ModelId, chatMessage, chatMessage.Encoding, chatMessage.Metadata);
+                yield return new StreamingTextContent(chatMessage.Content, chatMessage.ChoiceIndex, chatMessage.ModelId, chatMessage,
+                    chatMessage.Encoding, chatMessage.Metadata);
             }
 
             yield break;
         }
 
         // When using against text generations, the prompt will be used as is.
-        await foreach (var textChunk in textGenerationService.GetStreamingTextContentsAsync(prompt, executionSettings, kernel, cancellationToken))
+        await foreach (var textChunk in textGenerationService.GetStreamingTextContentsAsync(prompt, executionSettings, kernel, cancellationToken).
+                           ConfigureAwait(false))
         {
             yield return textChunk;
         }
     }
+
 }
