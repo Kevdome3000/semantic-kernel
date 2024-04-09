@@ -2,6 +2,7 @@
 
 namespace HuggingFaceImageTextDemo;
 
+using System.Drawing.Imaging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ImageToText;
 

@@ -6,6 +6,8 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
+using Xunit;
+using Xunit.Abstractions;
 
 
 public class Example80_FunctionCallingPlannerWithRAG : BaseTest
