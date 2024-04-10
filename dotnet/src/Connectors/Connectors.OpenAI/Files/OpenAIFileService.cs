@@ -4,7 +4,6 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -20,7 +19,6 @@ using Http;
 /// <summary>
 /// File service access for OpenAI: https://api.openai.com/v1/files
 /// </summary>
-[Experimental("SKEXP0010")]
 public sealed class OpenAIFileService
 {
 
@@ -74,12 +72,12 @@ public sealed class OpenAIFileService
     {
         Verify.NotNull(apiKey, nameof(apiKey));
 
-        this._apiKey = apiKey;
-        this._logger = loggerFactory?.CreateLogger(typeof(OpenAIFileService)) ?? NullLogger.Instance;
-        this._httpClient = HttpClientProvider.GetHttpClient(httpClient);
-        this._serviceUri = new Uri(this._httpClient.BaseAddress ?? endpoint, AzureOpenAIApiRouteFiles);
-        this._version = version ?? AzureOpenAIDefaultVersion;
-        this._organization = organization;
+        _apiKey = apiKey;
+        _logger = loggerFactory?.CreateLogger(typeof(OpenAIFileService)) ?? NullLogger.Instance;
+        _httpClient = HttpClientProvider.GetHttpClient(httpClient);
+        _serviceUri = new Uri(_httpClient.BaseAddress ?? endpoint, AzureOpenAIApiRouteFiles);
+        _version = version ?? AzureOpenAIDefaultVersion;
+        _organization = organization;
     }
 
 
@@ -98,11 +96,11 @@ public sealed class OpenAIFileService
     {
         Verify.NotNull(apiKey, nameof(apiKey));
 
-        this._apiKey = apiKey;
-        this._logger = loggerFactory?.CreateLogger(typeof(OpenAIFileService)) ?? NullLogger.Instance;
-        this._httpClient = HttpClientProvider.GetHttpClient(httpClient);
-        this._serviceUri = new Uri(this._httpClient.BaseAddress ?? new Uri(OpenAIApiEndpoint), OpenAIApiRouteFiles);
-        this._organization = organization;
+        _apiKey = apiKey;
+        _logger = loggerFactory?.CreateLogger(typeof(OpenAIFileService)) ?? NullLogger.Instance;
+        _httpClient = HttpClientProvider.GetHttpClient(httpClient);
+        _serviceUri = new Uri(_httpClient.BaseAddress ?? new Uri(OpenAIApiEndpoint), OpenAIApiRouteFiles);
+        _organization = organization;
     }
 
 
@@ -115,7 +113,7 @@ public sealed class OpenAIFileService
     {
         Verify.NotNull(id, nameof(id));
 
-        await this.ExecuteDeleteRequestAsync($"{this._serviceUri}/{id}", cancellationToken).
+        await ExecuteDeleteRequestAsync($"{_serviceUri}/{id}", cancellationToken).
             ConfigureAwait(false);
     }
 
@@ -133,7 +131,7 @@ public sealed class OpenAIFileService
     {
         Verify.NotNull(id, nameof(id));
 
-        return new BinaryContent(() => this.StreamGetRequestAsync($"{this._serviceUri}/{id}/content", cancellationToken));
+        return new BinaryContent(() => StreamGetRequestAsync($"{_serviceUri}/{id}/content", cancellationToken));
     }
 
 
@@ -147,10 +145,10 @@ public sealed class OpenAIFileService
     {
         Verify.NotNull(id, nameof(id));
 
-        var result = await this.ExecuteGetRequestAsync<FileInfo>($"{this._serviceUri}/{id}", cancellationToken).
+        var result = await ExecuteGetRequestAsync<FileInfo>($"{_serviceUri}/{id}", cancellationToken).
             ConfigureAwait(false);
 
-        return this.ConvertFileReference(result);
+        return ConvertFileReference(result);
     }
 
 
@@ -161,10 +159,10 @@ public sealed class OpenAIFileService
     /// <returns>The metadata of all uploaded files.</returns>
     public async Task<IEnumerable<OpenAIFileReference>> GetFilesAsync(CancellationToken cancellationToken = default)
     {
-        var result = await this.ExecuteGetRequestAsync<FileInfoList>(this._serviceUri.ToString(), cancellationToken).
+        var result = await ExecuteGetRequestAsync<FileInfoList>(_serviceUri.ToString(), cancellationToken).
             ConfigureAwait(false);
 
-        return result.Data.Select(r => this.ConvertFileReference(r)).
+        return result.Data.Select(r => ConvertFileReference(r)).
             ToArray();
     }
 
@@ -181,7 +179,7 @@ public sealed class OpenAIFileService
         Verify.NotNull(settings, nameof(settings));
 
         using var formData = new MultipartFormDataContent();
-        using var contentPurpose = new StringContent(this.ConvertPurpose(settings.Purpose));
+        using var contentPurpose = new StringContent(ConvertPurpose(settings.Purpose));
 
         using var contentStream = await fileContent.GetStreamAsync().
             ConfigureAwait(false);
@@ -190,29 +188,29 @@ public sealed class OpenAIFileService
         formData.Add(contentPurpose, "purpose");
         formData.Add(contentFile, "file", settings.FileName);
 
-        var result = await this.ExecutePostRequestAsync<FileInfo>(this._serviceUri.ToString(), formData, cancellationToken).
+        var result = await ExecutePostRequestAsync<FileInfo>(_serviceUri.ToString(), formData, cancellationToken).
             ConfigureAwait(false);
 
-        return this.ConvertFileReference(result);
+        return ConvertFileReference(result);
     }
 
 
     private async Task ExecuteDeleteRequestAsync(string url, CancellationToken cancellationToken)
     {
-        using var request = HttpRequest.CreateDeleteRequest(this.PrepareUrl(url));
-        this.AddRequestHeaders(request);
+        using var request = HttpRequest.CreateDeleteRequest(PrepareUrl(url));
+        AddRequestHeaders(request);
 
-        using var _ = await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).
+        using var _ = await _httpClient.SendWithSuccessCheckAsync(request, cancellationToken).
             ConfigureAwait(false);
     }
 
 
     private async Task<TModel> ExecuteGetRequestAsync<TModel>(string url, CancellationToken cancellationToken)
     {
-        using var request = HttpRequest.CreateGetRequest(this.PrepareUrl(url));
-        this.AddRequestHeaders(request);
+        using var request = HttpRequest.CreateGetRequest(PrepareUrl(url));
+        AddRequestHeaders(request);
 
-        using var response = await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).
+        using var response = await _httpClient.SendWithSuccessCheckAsync(request, cancellationToken).
             ConfigureAwait(false);
 
         var body = await response.Content.ReadAsStringWithExceptionMappingAsync().
@@ -224,17 +222,17 @@ public sealed class OpenAIFileService
             model ??
             throw new KernelException($"Unexpected response from {url}")
             {
-                Data = { { "ResponseData", body } },
+                Data = { { "ResponseData", body } }
             };
     }
 
 
     private async Task<Stream> StreamGetRequestAsync(string url, CancellationToken cancellationToken)
     {
-        using var request = HttpRequest.CreateGetRequest(this.PrepareUrl(url));
-        this.AddRequestHeaders(request);
+        using var request = HttpRequest.CreateGetRequest(PrepareUrl(url));
+        AddRequestHeaders(request);
 
-        var response = await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).
+        var response = await _httpClient.SendWithSuccessCheckAsync(request, cancellationToken).
             ConfigureAwait(false);
 
         try
@@ -256,10 +254,10 @@ public sealed class OpenAIFileService
 
     private async Task<TModel> ExecutePostRequestAsync<TModel>(string url, HttpContent payload, CancellationToken cancellationToken)
     {
-        using var request = new HttpRequestMessage(HttpMethod.Post, this.PrepareUrl(url)) { Content = payload };
-        this.AddRequestHeaders(request);
+        using var request = new HttpRequestMessage(HttpMethod.Post, PrepareUrl(url)) { Content = payload };
+        AddRequestHeaders(request);
 
-        using var response = await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).
+        using var response = await _httpClient.SendWithSuccessCheckAsync(request, cancellationToken).
             ConfigureAwait(false);
 
         var body = await response.Content.ReadAsStringWithExceptionMappingAsync().
@@ -271,19 +269,19 @@ public sealed class OpenAIFileService
             model ??
             throw new KernelException($"Unexpected response from {url}")
             {
-                Data = { { "ResponseData", body } },
+                Data = { { "ResponseData", body } }
             };
     }
 
 
     private string PrepareUrl(string url)
     {
-        if (string.IsNullOrWhiteSpace(this._version))
+        if (string.IsNullOrWhiteSpace(_version))
         {
             return url;
         }
 
-        return $"{url}?api-version={this._version}";
+        return $"{url}?api-version={_version}";
     }
 
 
@@ -293,37 +291,33 @@ public sealed class OpenAIFileService
         request.Headers.Add(HeaderNameUserAgent, HttpHeaderConstant.Values.UserAgent);
         request.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(OpenAIFileService)));
 
-        if (!string.IsNullOrWhiteSpace(this._version))
+        if (!string.IsNullOrWhiteSpace(_version))
         {
             // Azure OpenAI
-            request.Headers.Add(HeaderNameAzureApiKey, this._apiKey);
+            request.Headers.Add(HeaderNameAzureApiKey, _apiKey);
 
             return;
         }
 
         // OpenAI
-        request.Headers.Add(HeaderNameAuthorization, $"Bearer {this._apiKey}");
+        request.Headers.Add(HeaderNameAuthorization, $"Bearer {_apiKey}");
 
-        if (!string.IsNullOrEmpty(this._organization))
+        if (!string.IsNullOrEmpty(_organization))
         {
-            this._httpClient.DefaultRequestHeaders.Add(OpenAIClientCore.OrganizationKey, this._organization);
+            _httpClient.DefaultRequestHeaders.Add(OpenAIClientCore.OrganizationKey, _organization);
         }
     }
 
 
-    private OpenAIFileReference ConvertFileReference(FileInfo result)
+    private OpenAIFileReference ConvertFileReference(FileInfo result) => new()
     {
-        return
-            new OpenAIFileReference
-            {
-                Id = result.Id,
-                FileName = result.FileName,
-                CreatedTimestamp = DateTimeOffset.FromUnixTimeSeconds(result.CreatedAt).
-                    UtcDateTime,
-                SizeInBytes = result.Bytes ?? 0,
-                Purpose = this.ConvertPurpose(result.Purpose),
-            };
-    }
+        Id = result.Id,
+        FileName = result.FileName,
+        CreatedTimestamp = DateTimeOffset.FromUnixTimeSeconds(result.CreatedAt).
+            UtcDateTime,
+        SizeInBytes = result.Bytes ?? 0,
+        Purpose = ConvertPurpose(result.Purpose)
+    };
 
 
     private OpenAIFilePurpose ConvertPurpose(string purpose) =>
@@ -331,7 +325,7 @@ public sealed class OpenAIFileService
         {
             "ASSISTANTS" => OpenAIFilePurpose.Assistants,
             "FINE-TUNE" => OpenAIFilePurpose.FineTune,
-            _ => throw new KernelException($"Unknown {nameof(OpenAIFilePurpose)}: {purpose}."),
+            _ => throw new KernelException($"Unknown {nameof(OpenAIFilePurpose)}: {purpose}.")
         };
 
 
@@ -340,7 +334,7 @@ public sealed class OpenAIFileService
         {
             OpenAIFilePurpose.Assistants => "assistants",
             OpenAIFilePurpose.FineTune => "fine-tune",
-            _ => throw new KernelException($"Unknown {nameof(OpenAIFilePurpose)}: {purpose}."),
+            _ => throw new KernelException($"Unknown {nameof(OpenAIFilePurpose)}: {purpose}.")
         };
 
 

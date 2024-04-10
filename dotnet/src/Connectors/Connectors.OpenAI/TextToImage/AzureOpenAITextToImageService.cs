@@ -4,7 +4,6 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,7 +20,6 @@ using TextToImage;
 /// Azure OpenAI Image generation
 /// <see herf="https://learn.microsoft.com/en-us/azure/cognitive-services/openai/reference#image-generation" />
 /// </summary>
-[Experimental("SKEXP0010")]
 public sealed class AzureOpenAITextToImageService : ITextToImageService
 {
 
@@ -34,7 +32,7 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
     private readonly Dictionary<string, object?> _attributes = new();
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object?> Attributes => this._attributes;
+    public IReadOnlyDictionary<string, object?> Attributes => _attributes;
 
     /// <summary>
     /// Gets the key used to store the deployment name in the <see cref="IAIService.Attributes"/> dictionary.
@@ -64,16 +62,16 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
         Verify.NotNullOrWhiteSpace(apiKey);
         Verify.NotNullOrWhiteSpace(deploymentName);
 
-        this._deploymentName = deploymentName;
+        _deploymentName = deploymentName;
 
         if (modelId is not null)
         {
-            this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+            AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
         }
 
-        this.AddAttribute(DeploymentNameKey, deploymentName);
+        AddAttribute(DeploymentNameKey, deploymentName);
 
-        this._logger = loggerFactory?.CreateLogger(typeof(AzureOpenAITextToImageService)) ?? NullLogger.Instance;
+        _logger = loggerFactory?.CreateLogger(typeof(AzureOpenAITextToImageService)) ?? NullLogger.Instance;
 
         var connectorEndpoint = !string.IsNullOrWhiteSpace(endpoint)
             ? endpoint!
@@ -84,7 +82,7 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
             throw new ArgumentException($"The {nameof(httpClient)}.{nameof(HttpClient.BaseAddress)} and {nameof(endpoint)} are both null or empty. Please ensure at least one is provided.");
         }
 
-        this._client = new(new Uri(connectorEndpoint),
+        _client = new OpenAIClient(new Uri(connectorEndpoint),
             new AzureKeyCredential(apiKey),
             GetClientOptions(httpClient, apiVersion));
     }
@@ -112,16 +110,16 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
         Verify.NotNull(credential);
         Verify.NotNullOrWhiteSpace(deploymentName);
 
-        this._deploymentName = deploymentName;
+        _deploymentName = deploymentName;
 
         if (modelId is not null)
         {
-            this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+            AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
         }
 
-        this.AddAttribute(DeploymentNameKey, deploymentName);
+        AddAttribute(DeploymentNameKey, deploymentName);
 
-        this._logger = loggerFactory?.CreateLogger(typeof(AzureOpenAITextToImageService)) ?? NullLogger.Instance;
+        _logger = loggerFactory?.CreateLogger(typeof(AzureOpenAITextToImageService)) ?? NullLogger.Instance;
 
         var connectorEndpoint = !string.IsNullOrWhiteSpace(endpoint)
             ? endpoint!
@@ -132,7 +130,7 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
             throw new ArgumentException($"The {nameof(httpClient)}.{nameof(HttpClient.BaseAddress)} and {nameof(endpoint)} are both null or empty. Please ensure at least one is provided.");
         }
 
-        this._client = new(new Uri(connectorEndpoint),
+        _client = new OpenAIClient(new Uri(connectorEndpoint),
             credential,
             GetClientOptions(httpClient, apiVersion));
     }
@@ -154,18 +152,18 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
         Verify.NotNull(openAIClient);
         Verify.NotNullOrWhiteSpace(deploymentName);
 
-        this._deploymentName = deploymentName;
+        _deploymentName = deploymentName;
 
         if (modelId is not null)
         {
-            this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+            AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
         }
 
-        this.AddAttribute(DeploymentNameKey, deploymentName);
+        AddAttribute(DeploymentNameKey, deploymentName);
 
-        this._logger = loggerFactory?.CreateLogger(typeof(AzureOpenAITextToImageService)) ?? NullLogger.Instance;
+        _logger = loggerFactory?.CreateLogger(typeof(AzureOpenAITextToImageService)) ?? NullLogger.Instance;
 
-        this._client = openAIClient;
+        _client = openAIClient;
     }
 
 
@@ -191,12 +189,12 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
 
         try
         {
-            imageGenerations = await this._client.GetImageGenerationsAsync(
+            imageGenerations = await _client.GetImageGenerationsAsync(
                     new ImageGenerationOptions
                     {
-                        DeploymentName = this._deploymentName,
+                        DeploymentName = _deploymentName,
                         Prompt = description,
-                        Size = size,
+                        Size = size
                     }, cancellationToken).
                 ConfigureAwait(false);
         }
@@ -231,7 +229,7 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
     {
         if (!string.IsNullOrEmpty(value))
         {
-            this._attributes.Add(key, value);
+            _attributes.Add(key, value);
         }
     }
 

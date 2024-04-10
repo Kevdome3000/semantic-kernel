@@ -3,7 +3,6 @@
 namespace Microsoft.SemanticKernel;
 
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json.Serialization;
 using ChatCompletion;
@@ -26,7 +25,6 @@ public class StreamingChatMessageContent : StreamingKernelContent
     /// <summary>
     /// Name of the author of the message
     /// </summary>
-    [Experimental("SKEXP0001")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? AuthorName { get; set; }
 
@@ -63,17 +61,17 @@ public class StreamingChatMessageContent : StreamingKernelContent
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(innerContent, choiceIndex, modelId, metadata)
     {
-        this.Role = role;
-        this.Content = content;
-        this.Encoding = encoding ?? Encoding.UTF8;
+        Role = role;
+        Content = content;
+        Encoding = encoding ?? Encoding.UTF8;
     }
 
 
     /// <inheritdoc/>
-    public override string ToString() => this.Content ?? string.Empty;
+    public override string ToString() => Content ?? string.Empty;
 
 
     /// <inheritdoc/>
-    public override byte[] ToByteArray() => this.Encoding.GetBytes(this.ToString());
+    public override byte[] ToByteArray() => Encoding.GetBytes(ToString());
 
 }

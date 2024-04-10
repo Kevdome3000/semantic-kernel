@@ -5,7 +5,6 @@ namespace Microsoft.SemanticKernel.Text;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 
@@ -15,7 +14,6 @@ using System.Text;
 /// For plain text, split looking at new lines first, then periods, and so on.
 /// For markdown, split looking at punctuation first, and so on.
 /// </summary>
-[Experimental("SKEXP0050")]
 public static class TextChunker
 {
 
@@ -29,35 +27,32 @@ public static class TextChunker
         private readonly TokenCounter? _tokenCounter;
 
 
-        public StringListWithTokenCount(TokenCounter? tokenCounter)
-        {
-            this._tokenCounter = tokenCounter;
-        }
+        public StringListWithTokenCount(TokenCounter? tokenCounter) => _tokenCounter = tokenCounter;
 
 
-        public void Add(string value) => this.Values.Add((value, this._tokenCounter is null
+        public void Add(string value) => Values.Add((value, _tokenCounter is null
             ? GetDefaultTokenCount(value.Length)
-            : this._tokenCounter(value)));
+            : _tokenCounter(value)));
 
 
-        public void Add(string value, int tokenCount) => this.Values.Add((value, tokenCount));
+        public void Add(string value, int tokenCount) => Values.Add((value, tokenCount));
 
-        public void AddRange(StringListWithTokenCount range) => this.Values.AddRange(range.Values);
+        public void AddRange(StringListWithTokenCount range) => Values.AddRange(range.Values);
 
-        public void RemoveRange(int index, int count) => this.Values.RemoveRange(index, count);
+        public void RemoveRange(int index, int count) => Values.RemoveRange(index, count);
 
-        public int Count => this.Values.Count;
+        public int Count => Values.Count;
 
 
-        public List<string> ToStringList() => this.Values.Select(v => v.Value).
+        public List<string> ToStringList() => Values.Select(v => v.Value).
             ToList();
 
 
         private List<(string Value, int TokenCount)> Values { get; } = new();
 
-        public string ValueAt(int i) => this.Values[i].Value;
+        public string ValueAt(int i) => Values[i].Value;
 
-        public int TokenCountAt(int i) => this.Values[i].TokenCount;
+        public int TokenCountAt(int i) => Values[i].TokenCount;
 
     }
 
@@ -70,11 +65,11 @@ public static class TextChunker
     public delegate int TokenCounter(string input);
 
 
-    private static readonly char[] s_spaceChar = new[] { ' ' };
+    private static readonly char[] s_spaceChar = { ' ' };
 
-    private static readonly string?[] s_plaintextSplitOptions = new[] { "\n\r", ".。．", "?!", ";", ":", ",，、", ")]}", " ", "-", null };
+    private static readonly string?[] s_plaintextSplitOptions = { "\n\r", ".。．", "?!", ";", ":", ",，、", ")]}", " ", "-", null };
 
-    private static readonly string?[] s_markdownSplitOptions = new[] { ".。．", "?!", ";", ":", ",，、", ")]}", " ", "-", "\n\r", null };
+    private static readonly string?[] s_markdownSplitOptions = { ".。．", "?!", ";", ":", ",，、", ")]}", " ", "-", "\n\r", null };
 
 
     /// <summary>
@@ -85,7 +80,7 @@ public static class TextChunker
     /// <param name="tokenCounter">Function to count tokens in a string. If not supplied, the default counter will be used.</param>
     /// <returns>List of lines.</returns>
     public static List<string> SplitPlainTextLines(string text, int maxTokensPerLine, TokenCounter? tokenCounter = null) =>
-        InternalSplitLines(text, maxTokensPerLine, trim: true, s_plaintextSplitOptions,
+        InternalSplitLines(text, maxTokensPerLine, true, s_plaintextSplitOptions,
             tokenCounter);
 
 
@@ -97,7 +92,7 @@ public static class TextChunker
     /// <param name="tokenCounter">Function to count tokens in a string. If not supplied, the default counter will be used.</param>
     /// <returns>List of lines.</returns>
     public static List<string> SplitMarkDownLines(string text, int maxTokensPerLine, TokenCounter? tokenCounter = null) =>
-        InternalSplitLines(text, maxTokensPerLine, trim: true, s_markdownSplitOptions,
+        InternalSplitLines(text, maxTokensPerLine, true, s_markdownSplitOptions,
             tokenCounter);
 
 
@@ -117,7 +112,7 @@ public static class TextChunker
         string? chunkHeader = null,
         TokenCounter? tokenCounter = null) =>
         InternalSplitTextParagraphs(lines, maxTokensPerParagraph, overlapTokens, chunkHeader,
-            static (text, maxTokens, tokenCounter) => InternalSplitLines(text, maxTokens, trim: false, s_plaintextSplitOptions,
+            static (text, maxTokens, tokenCounter) => InternalSplitLines(text, maxTokens, false, s_plaintextSplitOptions,
                 tokenCounter), tokenCounter);
 
 
@@ -137,7 +132,7 @@ public static class TextChunker
         string? chunkHeader = null,
         TokenCounter? tokenCounter = null) =>
         InternalSplitTextParagraphs(lines, maxTokensPerParagraph, overlapTokens, chunkHeader,
-            static (text, maxTokens, tokenCounter) => InternalSplitLines(text, maxTokens, trim: false, s_markdownSplitOptions,
+            static (text, maxTokens, tokenCounter) => InternalSplitLines(text, maxTokens, false, s_markdownSplitOptions,
                 tokenCounter), tokenCounter);
 
 

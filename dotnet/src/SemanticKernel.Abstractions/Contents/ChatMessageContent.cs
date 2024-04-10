@@ -4,7 +4,6 @@ namespace Microsoft.SemanticKernel;
 
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -20,7 +19,6 @@ public class ChatMessageContent : KernelContent
     /// <summary>
     /// Name of the author of the message
     /// </summary>
-    [Experimental("SKEXP0001")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? AuthorName { get; set; }
 

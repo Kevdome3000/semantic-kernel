@@ -5,7 +5,6 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Azure.AI.OpenAI;
@@ -28,12 +27,12 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     [JsonPropertyName("temperature")]
     public double Temperature
     {
-        get => this._temperature;
+        get => _temperature;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._temperature = value;
+            ThrowIfFrozen();
+            _temperature = value;
         }
     }
 
@@ -45,12 +44,12 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     [JsonPropertyName("top_p")]
     public double TopP
     {
-        get => this._topP;
+        get => _topP;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._topP = value;
+            ThrowIfFrozen();
+            _topP = value;
         }
     }
 
@@ -62,12 +61,12 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     [JsonPropertyName("presence_penalty")]
     public double PresencePenalty
     {
-        get => this._presencePenalty;
+        get => _presencePenalty;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._presencePenalty = value;
+            ThrowIfFrozen();
+            _presencePenalty = value;
         }
     }
 
@@ -79,12 +78,12 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     [JsonPropertyName("frequency_penalty")]
     public double FrequencyPenalty
     {
-        get => this._frequencyPenalty;
+        get => _frequencyPenalty;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._frequencyPenalty = value;
+            ThrowIfFrozen();
+            _frequencyPenalty = value;
         }
     }
 
@@ -94,12 +93,12 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     [JsonPropertyName("max_tokens")]
     public int? MaxTokens
     {
-        get => this._maxTokens;
+        get => _maxTokens;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._maxTokens = value;
+            ThrowIfFrozen();
+            _maxTokens = value;
         }
     }
 
@@ -109,12 +108,12 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     [JsonPropertyName("stop_sequences")]
     public IList<string>? StopSequences
     {
-        get => this._stopSequences;
+        get => _stopSequences;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._stopSequences = value;
+            ThrowIfFrozen();
+            _stopSequences = value;
         }
     }
 
@@ -126,12 +125,12 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     [JsonPropertyName("results_per_prompt")]
     public int ResultsPerPrompt
     {
-        get => this._resultsPerPrompt;
+        get => _resultsPerPrompt;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._resultsPerPrompt = value;
+            ThrowIfFrozen();
+            _resultsPerPrompt = value;
         }
     }
 
@@ -139,16 +138,15 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// If specified, the system will make a best effort to sample deterministically such that repeated requests with the
     /// same seed and parameters should return the same result. Determinism is not guaranteed.
     /// </summary>
-    [Experimental("SKEXP0010")]
     [JsonPropertyName("seed")]
     public long? Seed
     {
-        get => this._seed;
+        get => _seed;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._seed = value;
+            ThrowIfFrozen();
+            _seed = value;
         }
     }
 
@@ -158,16 +156,15 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <remarks>
     /// Possible values are: "json_object", "text", <see cref="ChatCompletionsResponseFormat"/> object.
     /// </remarks>
-    [Experimental("SKEXP0010")]
     [JsonPropertyName("response_format")]
     public object? ResponseFormat
     {
-        get => this._responseFormat;
+        get => _responseFormat;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._responseFormat = value;
+            ThrowIfFrozen();
+            _responseFormat = value;
         }
     }
 
@@ -178,12 +175,12 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     [JsonPropertyName("chat_system_prompt")]
     public string? ChatSystemPrompt
     {
-        get => this._chatSystemPrompt;
+        get => _chatSystemPrompt;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._chatSystemPrompt = value;
+            ThrowIfFrozen();
+            _chatSystemPrompt = value;
         }
     }
 
@@ -193,12 +190,12 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     [JsonPropertyName("token_selection_biases")]
     public IDictionary<int, int>? TokenSelectionBiases
     {
-        get => this._tokenSelectionBiases;
+        get => _tokenSelectionBiases;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._tokenSelectionBiases = value;
+            ThrowIfFrozen();
+            _tokenSelectionBiases = value;
         }
     }
 
@@ -234,12 +231,12 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// </remarks>
     public ToolCallBehavior? ToolCallBehavior
     {
-        get => this._toolCallBehavior;
+        get => _toolCallBehavior;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._toolCallBehavior = value;
+            ThrowIfFrozen();
+            _toolCallBehavior = value;
         }
     }
 
@@ -248,12 +245,12 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// </summary>
     public string? User
     {
-        get => this._user;
+        get => _user;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._user = value;
+            ThrowIfFrozen();
+            _user = value;
         }
     }
 
@@ -261,53 +258,50 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <inheritdoc/>
     public override void Freeze()
     {
-        if (this.IsFrozen)
+        if (IsFrozen)
         {
             return;
         }
 
         base.Freeze();
 
-        if (this._stopSequences is not null)
+        if (_stopSequences is not null)
         {
-            this._stopSequences = new ReadOnlyCollection<string>(this._stopSequences);
+            _stopSequences = new ReadOnlyCollection<string>(_stopSequences);
         }
 
-        if (this._tokenSelectionBiases is not null)
+        if (_tokenSelectionBiases is not null)
         {
-            this._tokenSelectionBiases = new ReadOnlyDictionary<int, int>(this._tokenSelectionBiases);
+            _tokenSelectionBiases = new ReadOnlyDictionary<int, int>(_tokenSelectionBiases);
         }
     }
 
 
     /// <inheritdoc/>
-    public override PromptExecutionSettings Clone()
+    public override PromptExecutionSettings Clone() => new OpenAIPromptExecutionSettings
     {
-        return new OpenAIPromptExecutionSettings()
-        {
-            ModelId = this.ModelId,
-            ExtensionData = this.ExtensionData is not null
-                ? new Dictionary<string, object>(this.ExtensionData)
-                : null,
-            Temperature = this.Temperature,
-            TopP = this.TopP,
-            PresencePenalty = this.PresencePenalty,
-            FrequencyPenalty = this.FrequencyPenalty,
-            MaxTokens = this.MaxTokens,
-            StopSequences = this.StopSequences is not null
-                ? new List<string>(this.StopSequences)
-                : null,
-            ResultsPerPrompt = this.ResultsPerPrompt,
-            Seed = this.Seed,
-            ResponseFormat = this.ResponseFormat,
-            TokenSelectionBiases = this.TokenSelectionBiases is not null
-                ? new Dictionary<int, int>(this.TokenSelectionBiases)
-                : null,
-            ToolCallBehavior = this.ToolCallBehavior,
-            User = this.User,
-            ChatSystemPrompt = this.ChatSystemPrompt
-        };
-    }
+        ModelId = ModelId,
+        ExtensionData = ExtensionData is not null
+            ? new Dictionary<string, object>(ExtensionData)
+            : null,
+        Temperature = Temperature,
+        TopP = TopP,
+        PresencePenalty = PresencePenalty,
+        FrequencyPenalty = FrequencyPenalty,
+        MaxTokens = MaxTokens,
+        StopSequences = StopSequences is not null
+            ? new List<string>(StopSequences)
+            : null,
+        ResultsPerPrompt = ResultsPerPrompt,
+        Seed = Seed,
+        ResponseFormat = ResponseFormat,
+        TokenSelectionBiases = TokenSelectionBiases is not null
+            ? new Dictionary<int, int>(TokenSelectionBiases)
+            : null,
+        ToolCallBehavior = ToolCallBehavior,
+        User = User,
+        ChatSystemPrompt = ChatSystemPrompt
+    };
 
 
     /// <summary>
@@ -326,7 +320,7 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     {
         if (executionSettings is null)
         {
-            return new OpenAIPromptExecutionSettings()
+            return new OpenAIPromptExecutionSettings
             {
                 MaxTokens = defaultMaxTokens
             };
