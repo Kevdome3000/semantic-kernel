@@ -669,22 +669,12 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
                 );
         }
 
-        // All other synchronous return types T.
-
-        if (!returnType.IsGenericType || returnType.GetGenericTypeDefinition() == typeof(Nullable<>))
+        // Asynchronous return types
+        if (returnType.IsGenericType)
         {
-            return (returnType, (kernel, function, result) =>
-                    {
-                        return new ValueTask<FunctionResult>(new FunctionResult(function, result, kernel.Culture));
-                    }
-                );
-        }
-
-        // All other asynchronous return types
-
-        // Task<T>
-        if (returnType.GetGenericTypeDefinition() is Type genericTask &&
-            genericTask == typeof(Task<>) &&
+            // Task<T>
+            if (returnType.GetGenericTypeDefinition() is Type genericTask &&
+                genericTask == typeof(Task<>) &&
             returnType.GetProperty("Result", BindingFlags.Public | BindingFlags.Instance)?.
                 GetGetMethod() is MethodInfo taskResultGetter)
         {
@@ -699,10 +689,10 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
                 );
         }
 
-        // ValueTask<T>
-        if (returnType.GetGenericTypeDefinition() is Type genericValueTask &&
-            genericValueTask == typeof(ValueTask<>) &&
-            returnType.GetMethod("AsTask", BindingFlags.Public | BindingFlags.Instance) is MethodInfo valueTaskAsTask &&
+            // ValueTask<T>
+            if (returnType.GetGenericTypeDefinition() is Type genericValueTask &&
+                genericValueTask == typeof(ValueTask<>) &&
+                returnType.GetMethod("AsTask", BindingFlags.Public | BindingFlags.Instance) is MethodInfo valueTaskAsTask &&
             valueTaskAsTask.ReturnType.GetProperty("Result", BindingFlags.Public | BindingFlags.Instance)?.
                 GetGetMethod() is MethodInfo asTaskResultGetter)
         {
@@ -718,10 +708,10 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
                 );
         }
 
-        // IAsyncEnumerable<T>
-        if (returnType.GetGenericTypeDefinition() is Type genericAsyncEnumerable && genericAsyncEnumerable == typeof(IAsyncEnumerable<>))
-        {
-            Type elementType = returnType.GetGenericArguments()[0];
+            // IAsyncEnumerable<T>
+            if (returnType.GetGenericTypeDefinition() is Type genericAsyncEnumerable && genericAsyncEnumerable == typeof(IAsyncEnumerable<>))
+            {
+                Type elementType = returnType.GetGenericArguments()[0];
 
             MethodInfo? getAsyncEnumeratorMethod = typeof(IAsyncEnumerable<>).MakeGenericType(elementType).
                 GetMethod("GetAsyncEnumerator");
@@ -742,9 +732,14 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
                     );
             }
         }
+        }
 
-        // Unrecognized return type.
-        throw GetExceptionForInvalidSignature(method, $"Unknown return type {returnType}");
+        // For everything else, just use the result as-is.
+        return (returnType, (kernel, function, result) =>
+        {
+            return new ValueTask<FunctionResult>(new FunctionResult(function, result, kernel.Culture));
+        }
+        );
 
         // Throws an exception if a result is found to be null unexpectedly
         static object ThrowIfNullResult(object? result) =>

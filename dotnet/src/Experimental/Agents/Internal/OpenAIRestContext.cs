@@ -49,9 +49,7 @@ internal sealed class OpenAIRestContext
     /// </summary>
     public OpenAIRestContext(string endpoint, string apiKey, Func<HttpClient>? clientFactory = null)
         : this(endpoint, apiKey, version: null, clientFactory)
-    {
-        // Nothing to do...
-    }
+    { }
 
 
     /// <summary>
