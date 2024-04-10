@@ -1,15 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using ChannelQueue = System.Collections.Generic.Queue<System.Collections.Generic.IReadOnlyList<Microsoft.SemanticKernel.ChatMessageContent>>;
 
 namespace Microsoft.SemanticKernel.Agents.Internal;
 
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+
 /// <summary>
 /// Utility class used by <see cref="AgentChat"/> to manage the broadcast of
 /// conversation messages via the <see cref="AgentChannel"/>.
-/// (<see cref="AgentChannel.ReceiveAsync(IEnumerable{ChatMessageContent}, System.Threading.CancellationToken)"/>.)
+/// (<see cref="AgentChannel.ReceiveAsync(System.Collections.Generic.IEnumerable{Microsoft.SemanticKernel.ChatMessageContent}, System.Threading.CancellationToken)"/>.)
 /// </summary>
 /// <remarks>
 /// Maintains a set of channel specific queues, each with individual locks, in addition to a global state lock.
@@ -20,9 +22,13 @@ namespace Microsoft.SemanticKernel.Agents.Internal;
 /// </remarks>
 internal sealed class BroadcastQueue
 {
+
     private readonly Dictionary<string, QueueReference> _queues = new();
+
     private readonly Dictionary<string, Task> _tasks = new();
+
     private readonly Dictionary<string, Exception> _failures = new();
+
     private readonly object _stateLock = new(); // Synchronize access to object state.
 
     /// <summary>
@@ -30,6 +36,7 @@ internal sealed class BroadcastQueue
     /// to drain.
     /// </summary>
     public TimeSpan BlockDuration { get; set; } = TimeSpan.FromSeconds(0.1);
+
 
     /// <summary>
     /// Enqueue a set of messages for a given channel.
@@ -61,6 +68,7 @@ internal sealed class BroadcastQueue
         }
     }
 
+
     /// <summary>
     /// Blocks until a channel-queue is not in a receive state.
     /// </summary>
@@ -85,6 +93,7 @@ internal sealed class BroadcastQueue
 
         // Evaluate queue state
         bool isEmpty = true;
+
         do
         {
             // Queue state is only changed within acquired QueueLock.
@@ -100,6 +109,7 @@ internal sealed class BroadcastQueue
                 if (this._failures.TryGetValue(channelRef.Hash, out var failure))
                 {
                     this._failures.Remove(channelRef.Hash); // Clearing failure means re-invoking EnsureSynchronizedAsync will activate empty queue
+
                     throw new KernelException($"Unexpected failure broadcasting to channel: {channelRef.Channel.GetType().Name}", failure);
                 }
 
@@ -115,11 +125,12 @@ internal sealed class BroadcastQueue
 
             if (!isEmpty)
             {
-                await Task.Delay(this.BlockDuration).ConfigureAwait(false);
+                await Task.Delay(this.BlockDuration).
+                    ConfigureAwait(false);
             }
-        }
-        while (!isEmpty);
+        } while (!isEmpty);
     }
+
 
     /// <summary>
     /// Processes the specified queue with the provided channel, until queue is empty.
@@ -129,6 +140,7 @@ internal sealed class BroadcastQueue
         Exception? failure = null;
 
         bool isEmpty = true; // Default to fall-through state
+
         do
         {
             Task receiveTask;
@@ -167,6 +179,7 @@ internal sealed class BroadcastQueue
                 if (failure != null)
                 {
                     this._failures.Add(channelRef.Hash, failure);
+
                     break; // Skip dequeue
                 }
 
@@ -179,15 +192,16 @@ internal sealed class BroadcastQueue
                     isEmpty = queueRef.IsEmpty;
                 }
             }
-        }
-        while (!isEmpty);
+        } while (!isEmpty);
     }
+
 
     /// <summary>
     /// Utility class to associate a queue with its specific lock.
     /// </summary>
     private sealed class QueueReference
     {
+
         /// <summary>
         /// Queue specific lock to control queue access with finer granularity
         /// than the state-lock.
@@ -203,5 +217,7 @@ internal sealed class BroadcastQueue
         /// Convenience logic
         /// </summary>
         public bool IsEmpty => this.Queue.Count == 0;
+
     }
+
 }

@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+namespace Microsoft.SemanticKernel.Agents;
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
 /// Base abstraction for all Semantic Kernel agents.  An agent instance
@@ -17,6 +18,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// </remarks>
 public abstract class Agent
 {
+
     /// <summary>
     /// The description of the agent (optional)
     /// </summary>
@@ -28,12 +30,14 @@ public abstract class Agent
     /// <reamarks>
     /// Default to a random guid value, but may be overridden.
     /// </reamarks>
-    public string Id { get; init; } = Guid.NewGuid().ToString();
+    public string Id { get; init; } = Guid.NewGuid().
+        ToString();
 
     /// <summary>
     /// The name of the agent (optional)
     /// </summary>
     public string? Name { get; init; }
+
 
     /// <summary>
     /// Set of keys to establish channel affinity.  Minimum expected key-set:
@@ -49,6 +53,7 @@ public abstract class Agent
     /// </remarks>
     protected internal abstract IEnumerable<string> GetChannelKeys();
 
+
     /// <summary>
     /// Produce the an <see cref="AgentChannel"/> appropriate for the agent type.
     /// </summary>
@@ -59,4 +64,5 @@ public abstract class Agent
     /// objects according to the specific <see cref="Agent"/> type.
     /// </remarks>
     protected internal abstract Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken);
+
 }

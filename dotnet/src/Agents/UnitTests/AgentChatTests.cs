@@ -1,4 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+namespace SemanticKernel.Agents.UnitTests;
+
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -9,13 +11,13 @@ using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 
-namespace SemanticKernel.Agents.UnitTests;
 
 /// <summary>
 /// Unit testing of <see cref="AgentChat"/>.
 /// </summary>
 public class AgentChatTests
 {
+
     /// <summary>
     /// Verify behavior of <see cref="AgentChat"/> over the course of agent interactions.
     /// </summary>
@@ -39,7 +41,10 @@ public class AgentChatTests
 
         // Invoke with input & verify (agent joins chat)
         chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, "hi"));
-        await chat.InvokeAsync().ToArrayAsync();
+
+        await chat.InvokeAsync().
+            ToArrayAsync();
+
         Assert.Equal(1, chat.Agent.InvokeCount);
 
         // Verify updated history
@@ -47,13 +52,16 @@ public class AgentChatTests
         await this.VerifyHistoryAsync(expectedCount: 4, chat.GetChatMessagesAsync(chat.Agent)); // Agent history
 
         // Invoke without input & verify
-        await chat.InvokeAsync().ToArrayAsync();
+        await chat.InvokeAsync().
+            ToArrayAsync();
+
         Assert.Equal(2, chat.Agent.InvokeCount);
 
         // Verify final history
         await this.VerifyHistoryAsync(expectedCount: 5, chat.GetChatMessagesAsync()); // Primary history
         await this.VerifyHistoryAsync(expectedCount: 5, chat.GetChatMessagesAsync(chat.Agent)); // Agent history
     }
+
 
     private async Task VerifyHistoryAsync(int expectedCount, IAsyncEnumerable<ChatMessageContent> history)
     {
@@ -68,18 +76,25 @@ public class AgentChatTests
         }
     }
 
+
     private sealed class TestChat : AgentChat
     {
+
         public TestAgent Agent { get; } = new TestAgent();
+
 
         public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
             CancellationToken cancellationToken = default) =>
-                this.InvokeAgentAsync(this.Agent, cancellationToken);
+            this.InvokeAgentAsync(this.Agent, cancellationToken);
+
     }
+
 
     private sealed class TestAgent : ChatHistoryKernelAgent
     {
+
         public int InvokeCount { get; private set; }
+
 
         public override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(IReadOnlyList<ChatMessageContent> history, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
@@ -89,5 +104,7 @@ public class AgentChatTests
 
             yield return new ChatMessageContent(AuthorRole.Assistant, "sup");
         }
+
     }
+
 }

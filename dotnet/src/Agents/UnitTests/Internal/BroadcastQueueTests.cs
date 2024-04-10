@@ -1,4 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+namespace SemanticKernel.Agents.UnitTests.Internal;
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -9,13 +11,13 @@ using Microsoft.SemanticKernel.Agents.Internal;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 
-namespace SemanticKernel.Agents.UnitTests.Internal;
 
 /// <summary>
 /// Unit testing of <see cref="BroadcastQueue"/>.
 /// </summary>
 public class BroadcastQueueTests
 {
+
     /// <summary>
     /// Verify the default configuration.
     /// </summary>
@@ -26,6 +28,7 @@ public class BroadcastQueueTests
 
         Assert.True(queue.BlockDuration.TotalSeconds > 0);
     }
+
 
     /// <summary>
     /// Verify behavior of <see cref="BroadcastQueue"/> over the course of multiple interactions.
@@ -39,6 +42,7 @@ public class BroadcastQueueTests
             {
                 BlockDuration = TimeSpan.FromSeconds(0.08),
             };
+
         TestChannel channel = new();
         ChannelReference reference = new(channel, "test");
 
@@ -62,6 +66,7 @@ public class BroadcastQueueTests
         Assert.NotEmpty(channel.ReceivedMessages);
     }
 
+
     /// <summary>
     /// Verify behavior of <see cref="BroadcastQueue"/> over the course of multiple interactions.
     /// </summary>
@@ -74,6 +79,7 @@ public class BroadcastQueueTests
             {
                 BlockDuration = TimeSpan.FromSeconds(0.08),
             };
+
         BadChannel channel = new();
         ChannelReference reference = new(channel, "test");
 
@@ -84,6 +90,7 @@ public class BroadcastQueueTests
         await Assert.ThrowsAsync<KernelException>(() => queue.EnsureSynchronizedAsync(reference));
         await Assert.ThrowsAsync<KernelException>(() => queue.EnsureSynchronizedAsync(reference));
     }
+
 
     /// <summary>
     /// Verify behavior of <see cref="BroadcastQueue"/> with queuing of multiple channels.
@@ -97,6 +104,7 @@ public class BroadcastQueueTests
             {
                 BlockDuration = TimeSpan.FromSeconds(0.08),
             };
+
         TestChannel channel = new();
         ChannelReference reference = new(channel, "test");
 
@@ -117,29 +125,39 @@ public class BroadcastQueueTests
         Assert.Equal(10, channel.ReceivedMessages.Count);
     }
 
-    private static async Task VerifyReceivingStateAsync(int receiveCount, BroadcastQueue queue, TestChannel channel, string hash)
+
+    private static async Task VerifyReceivingStateAsync(
+        int receiveCount,
+        BroadcastQueue queue,
+        TestChannel channel,
+        string hash)
     {
         await queue.EnsureSynchronizedAsync(new ChannelReference(channel, hash));
         Assert.Equal(receiveCount, channel.ReceiveCount);
     }
 
+
     private sealed class TestChannel : AgentChannel
     {
+
         public TimeSpan ReceiveDuration { get; set; } = TimeSpan.FromSeconds(0.3);
 
         public int ReceiveCount { get; private set; }
 
         public List<ChatMessageContent> ReceivedMessages { get; } = new();
 
+
         protected internal override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
+
         protected internal override IAsyncEnumerable<ChatMessageContent> InvokeAsync(Agent agent, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
+
 
         protected internal override async Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken = default)
         {
@@ -148,21 +166,27 @@ public class BroadcastQueueTests
 
             await Task.Delay(this.ReceiveDuration, cancellationToken);
         }
+
     }
+
 
     private sealed class BadChannel : AgentChannel
     {
+
         public TimeSpan ReceiveDuration { get; set; } = TimeSpan.FromSeconds(0.1);
+
 
         protected internal override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
+
         protected internal override IAsyncEnumerable<ChatMessageContent> InvokeAsync(Agent agent, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
+
 
         protected internal override async Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken = default)
         {
@@ -170,5 +194,7 @@ public class BroadcastQueueTests
 
             throw new InvalidOperationException("Test");
         }
+
     }
+
 }

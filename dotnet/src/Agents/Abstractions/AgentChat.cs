@@ -1,27 +1,33 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+namespace Microsoft.SemanticKernel.Agents;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Agents.Extensions;
-using Microsoft.SemanticKernel.Agents.Internal;
-using Microsoft.SemanticKernel.ChatCompletion;
+using ChatCompletion;
+using Extensions;
+using Internal;
 
-namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
 /// Point of interaction for one or more agents.
 /// </summary>
 public abstract class AgentChat
 {
+
     private readonly BroadcastQueue _broadcastQueue;
+
     private readonly Dictionary<string, AgentChannel> _agentChannels;
+
     private readonly Dictionary<Agent, string> _channelMap;
+
     private readonly ChatHistory _history;
 
     private int _isActive;
+
 
     /// <summary>
     /// Retrieve the message history, either the primary history or
@@ -38,13 +44,16 @@ public abstract class AgentChat
         }
 
         var channelKey = this.GetAgentHash(agent);
+
         if (!this._agentChannels.TryGetValue(channelKey, out var channel))
         {
-            return Array.Empty<ChatMessageContent>().ToAsyncEnumerable();
+            return Array.Empty<ChatMessageContent>().
+                ToAsyncEnumerable();
         }
 
         return channel.GetHistoryAsync(cancellationToken);
     }
+
 
     /// <summary>
     /// Append messages to the conversation.
@@ -59,6 +68,7 @@ public abstract class AgentChat
     {
         this.AddChatMessages(new[] { message });
     }
+
 
     /// <summary>
     /// Append messages to the conversation.
@@ -87,6 +97,7 @@ public abstract class AgentChat
         this._broadcastQueue.Enqueue(channelRefs, messages);
     }
 
+
     /// <summary>
     /// Process a discrete incremental interaction between a single <see cref="Agent"/> an a <see cref="AgentChat"/>.
     /// </summary>
@@ -99,6 +110,7 @@ public abstract class AgentChat
     {
         // Verify only a single operation is active
         int wasActive = Interlocked.CompareExchange(ref this._isActive, 1, 0);
+
         if (wasActive > 0)
         {
             throw new KernelException("Unable to proceed while another agent is active.");
@@ -107,11 +119,14 @@ public abstract class AgentChat
         try
         {
             // Manifest the required channel.  Will throw if channel not in sync.
-            var channel = await this.GetChannelAsync(agent, cancellationToken).ConfigureAwait(false);
+            var channel = await this.GetChannelAsync(agent, cancellationToken).
+                ConfigureAwait(false);
 
             // Invoke agent & process response
             List<ChatMessageContent> messages = new();
-            await foreach (var message in channel.InvokeAsync(agent, cancellationToken).ConfigureAwait(false))
+
+            await foreach (var message in channel.InvokeAsync(agent, cancellationToken).
+                               ConfigureAwait(false))
             {
                 // Add to primary history
                 this._history.Add(message);
@@ -123,9 +138,9 @@ public abstract class AgentChat
 
             // Broadcast message to other channels (in parallel)
             var channelRefs =
-                this._agentChannels
-                    .Where(kvp => kvp.Value != channel)
-                    .Select(kvp => new ChannelReference(kvp.Value, kvp.Key));
+                this._agentChannels.Where(kvp => kvp.Value != channel).
+                    Select(kvp => new ChannelReference(kvp.Value, kvp.Key));
+
             this._broadcastQueue.Enqueue(channelRefs, messages);
         }
         finally
@@ -134,21 +149,25 @@ public abstract class AgentChat
         }
     }
 
+
     private async Task<AgentChannel> GetChannelAsync(Agent agent, CancellationToken cancellationToken)
     {
         var channelKey = this.GetAgentHash(agent);
 
         if (this._agentChannels.TryGetValue(channelKey, out var channel))
         {
-            await this._broadcastQueue.EnsureSynchronizedAsync(new ChannelReference(channel, channelKey)).ConfigureAwait(false);
+            await this._broadcastQueue.EnsureSynchronizedAsync(new ChannelReference(channel, channelKey)).
+                ConfigureAwait(false);
         }
         else
         {
-            channel = await agent.CreateChannelAsync(cancellationToken).ConfigureAwait(false);
+            channel = await agent.CreateChannelAsync(cancellationToken).
+                ConfigureAwait(false);
 
             if (this._history.Count > 0)
             {
-                await channel.ReceiveAsync(this._history, cancellationToken).ConfigureAwait(false);
+                await channel.ReceiveAsync(this._history, cancellationToken).
+                    ConfigureAwait(false);
             }
 
             this._agentChannels.Add(channelKey, channel);
@@ -156,6 +175,7 @@ public abstract class AgentChat
 
         return channel;
     }
+
 
     private string GetAgentHash(Agent agent)
     {
@@ -171,6 +191,7 @@ public abstract class AgentChat
         return hash;
     }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="AgentChat"/> class.
     /// </summary>
@@ -181,4 +202,5 @@ public abstract class AgentChat
         this._channelMap = new();
         this._history = new();
     }
+
 }

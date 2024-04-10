@@ -6,6 +6,7 @@ namespace Microsoft.SemanticKernel.Agents.Internal;
 /// </summary>
 internal readonly struct ChannelReference
 {
+
     /// <summary>
     /// The referenced channel.
     /// </summary>
@@ -16,6 +17,7 @@ internal readonly struct ChannelReference
     /// </summary>
     public string Hash { get; }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ChannelReference"/> class.
     /// </summary>
@@ -24,4 +26,5 @@ internal readonly struct ChannelReference
         this.Channel = channel;
         this.Hash = hash;
     }
+
 }

@@ -1,4 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+namespace Examples;
+
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,7 +12,6 @@ using Plugins;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Examples;
 
 /// <summary>
 /// Demonstrate creation of <see cref="ChatCompletionAgent"/> with a <see cref="KernelPlugin"/>,
@@ -18,8 +19,11 @@ namespace Examples;
 /// </summary>
 public class Example02_Plugins : BaseTest
 {
+
     private const string HostName = "Host";
+
     private const string HostInstructions = "Answer questions about the menu.";
+
 
     [Fact]
     public async Task RunAsync()
@@ -60,9 +64,12 @@ public class Example02_Plugins : BaseTest
         }
     }
 
+
     public Example02_Plugins(ITestOutputHelper output)
         : base(output)
-    { }
+    {
+    }
+
 
     /// <summary>
     ///
@@ -73,9 +80,12 @@ public class Example02_Plugins : BaseTest
     /// </remarks>
     private sealed class TestChat : AgentChat
     {
+
         public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
             Agent agent,
             CancellationToken cancellationToken = default) =>
-                base.InvokeAgentAsync(agent, cancellationToken);
+            base.InvokeAgentAsync(agent, cancellationToken);
+
     }
+
 }

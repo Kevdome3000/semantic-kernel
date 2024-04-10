@@ -1,19 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+namespace Microsoft.SemanticKernel.Agents;
+
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Agents.Extensions;
-using Microsoft.SemanticKernel.ChatCompletion;
+using ChatCompletion;
+using Extensions;
 
-namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
 /// A <see cref="AgentChannel"/> specialization for that acts upon a <see cref="IChatHistoryHandler"/>.
 /// </summary>
 public class ChatHistoryChannel : AgentChannel
 {
+
     private readonly ChatHistory _history;
+
 
     /// <inheritdoc/>
     protected internal sealed override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
@@ -33,6 +36,7 @@ public class ChatHistoryChannel : AgentChannel
         }
     }
 
+
     /// <inheritdoc/>
     protected internal sealed override Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken)
     {
@@ -41,11 +45,13 @@ public class ChatHistoryChannel : AgentChannel
         return Task.CompletedTask;
     }
 
+
     /// <inheritdoc/>
     protected internal sealed override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken)
     {
         return this._history.ToDescendingAsync();
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatHistoryChannel"/> class.
@@ -54,4 +60,5 @@ public class ChatHistoryChannel : AgentChannel
     {
         this._history = new();
     }
+
 }

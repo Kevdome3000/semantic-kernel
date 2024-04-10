@@ -1,4 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+namespace Examples;
+
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,7 +10,6 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Examples;
 
 /// <summary>
 /// Demonstrate creation of <see cref="ChatCompletionAgent"/> and
@@ -16,8 +17,11 @@ namespace Examples;
 /// </summary>
 public class Example01_Agent : BaseTest
 {
+
     private const string ParrotName = "Parrot";
+
     private const string ParrotInstructions = "Repeat the user message in the voice of a pirate and then end with a parrot sound.";
+
 
     [Fact]
     public async Task RunAsync()
@@ -53,9 +57,12 @@ public class Example01_Agent : BaseTest
         }
     }
 
+
     public Example01_Agent(ITestOutputHelper output)
         : base(output)
-    { }
+    {
+    }
+
 
     /// <summary>
     /// A simple chat for the agent example.
@@ -65,9 +72,12 @@ public class Example01_Agent : BaseTest
     /// </remarks>
     private sealed class TestChat : AgentChat
     {
+
         public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
             Agent agent,
             CancellationToken cancellationToken = default) =>
-                base.InvokeAgentAsync(agent, cancellationToken);
+            base.InvokeAgentAsync(agent, cancellationToken);
+
     }
+
 }

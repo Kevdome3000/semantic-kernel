@@ -675,71 +675,71 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             // Task<T>
             if (returnType.GetGenericTypeDefinition() is Type genericTask &&
                 genericTask == typeof(Task<>) &&
-            returnType.GetProperty("Result", BindingFlags.Public | BindingFlags.Instance)?.
-                GetGetMethod() is MethodInfo taskResultGetter)
-        {
-            return (taskResultGetter.ReturnType, async (kernel, function, result) =>
-                    {
-                        await ((Task)ThrowIfNullResult(result)).ConfigureAwait(false);
+                returnType.GetProperty("Result", BindingFlags.Public | BindingFlags.Instance)?.
+                    GetGetMethod() is MethodInfo taskResultGetter)
+            {
+                return (taskResultGetter.ReturnType, async (kernel, function, result) =>
+                        {
+                            await ((Task)ThrowIfNullResult(result)).ConfigureAwait(false);
 
-                        var taskResult = Invoke(taskResultGetter, result, Array.Empty<object>());
+                            var taskResult = Invoke(taskResultGetter, result, Array.Empty<object>());
 
-                        return new FunctionResult(function, taskResult, kernel.Culture);
-                    }
-                );
-        }
+                            return new FunctionResult(function, taskResult, kernel.Culture);
+                        }
+                    );
+            }
 
             // ValueTask<T>
             if (returnType.GetGenericTypeDefinition() is Type genericValueTask &&
                 genericValueTask == typeof(ValueTask<>) &&
                 returnType.GetMethod("AsTask", BindingFlags.Public | BindingFlags.Instance) is MethodInfo valueTaskAsTask &&
-            valueTaskAsTask.ReturnType.GetProperty("Result", BindingFlags.Public | BindingFlags.Instance)?.
-                GetGetMethod() is MethodInfo asTaskResultGetter)
-        {
-            return (asTaskResultGetter.ReturnType, async (kernel, function, result) =>
-                    {
-                        Task task = (Task)Invoke(valueTaskAsTask, ThrowIfNullResult(result), Array.Empty<object>())!;
-                        await task.ConfigureAwait(false);
+                valueTaskAsTask.ReturnType.GetProperty("Result", BindingFlags.Public | BindingFlags.Instance)?.
+                    GetGetMethod() is MethodInfo asTaskResultGetter)
+            {
+                return (asTaskResultGetter.ReturnType, async (kernel, function, result) =>
+                        {
+                            Task task = (Task)Invoke(valueTaskAsTask, ThrowIfNullResult(result), Array.Empty<object>())!;
+                            await task.ConfigureAwait(false);
 
-                        var taskResult = Invoke(asTaskResultGetter, task, Array.Empty<object>());
+                            var taskResult = Invoke(asTaskResultGetter, task, Array.Empty<object>());
 
-                        return new FunctionResult(function, taskResult, kernel.Culture);
-                    }
-                );
-        }
+                            return new FunctionResult(function, taskResult, kernel.Culture);
+                        }
+                    );
+            }
 
             // IAsyncEnumerable<T>
             if (returnType.GetGenericTypeDefinition() is Type genericAsyncEnumerable && genericAsyncEnumerable == typeof(IAsyncEnumerable<>))
             {
                 Type elementType = returnType.GetGenericArguments()[0];
 
-            MethodInfo? getAsyncEnumeratorMethod = typeof(IAsyncEnumerable<>).MakeGenericType(elementType).
-                GetMethod("GetAsyncEnumerator");
+                MethodInfo? getAsyncEnumeratorMethod = typeof(IAsyncEnumerable<>).MakeGenericType(elementType).
+                    GetMethod("GetAsyncEnumerator");
 
-            if (getAsyncEnumeratorMethod is not null)
-            {
-                return (returnType, (kernel, function, result) =>
-                        {
-                            var asyncEnumerator = Invoke(getAsyncEnumeratorMethod, result, s_cancellationTokenNoneArray);
-
-                            if (asyncEnumerator is not null)
+                if (getAsyncEnumeratorMethod is not null)
+                {
+                    return (returnType, (kernel, function, result) =>
                             {
-                                return new ValueTask<FunctionResult>(new FunctionResult(function, asyncEnumerator, kernel.Culture));
-                            }
+                                var asyncEnumerator = Invoke(getAsyncEnumeratorMethod, result, s_cancellationTokenNoneArray);
 
-                            return new ValueTask<FunctionResult>(new FunctionResult(function));
-                        }
-                    );
+                                if (asyncEnumerator is not null)
+                                {
+                                    return new ValueTask<FunctionResult>(new FunctionResult(function, asyncEnumerator, kernel.Culture));
+                                }
+
+                                return new ValueTask<FunctionResult>(new FunctionResult(function));
+                            }
+                        );
+                }
             }
-        }
         }
 
         // For everything else, just use the result as-is.
         return (returnType, (kernel, function, result) =>
-        {
-            return new ValueTask<FunctionResult>(new FunctionResult(function, result, kernel.Culture));
-        }
-        );
+                {
+                    return new ValueTask<FunctionResult>(new FunctionResult(function, result, kernel.Culture));
+                }
+            );
 
         // Throws an exception if a result is found to be null unexpectedly
         static object ThrowIfNullResult(object? result) =>

@@ -1,17 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+namespace SemanticKernel.Agents.UnitTests.Internal;
+
 using System;
 using System.Linq;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Internal;
 using Xunit;
 
-namespace SemanticKernel.Agents.UnitTests.Internal;
 
 /// <summary>
 /// Unit testing of <see cref="KeyEncoder"/>.
 /// </summary>
 public class KeyEncoderTests
 {
+
     /// <summary>
     /// Validate the production of unique and consistent hashes.
     /// </summary>
@@ -27,6 +29,7 @@ public class KeyEncoderTests
         Assert.Equal("Vdx37EnWT9BS+kkCkEgFCg9uHvHNw1+hXMA4sgNMKs4=", localHash);
     }
 
+
     private void VerifyHashEquivalancy(params string[] keys)
     {
         string hash1 = KeyEncoder.GenerateHash(keys);
@@ -36,4 +39,5 @@ public class KeyEncoderTests
         Assert.Equal(hash1, hash2);
         Assert.NotEqual(hash1, hash3);
     }
+
 }

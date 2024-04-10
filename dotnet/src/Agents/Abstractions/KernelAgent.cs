@@ -6,6 +6,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// </summary>
 public abstract class KernelAgent : Agent
 {
+
     /// <summary>
     /// The instructions of the agent (optional)
     /// </summary>
@@ -17,5 +18,7 @@ public abstract class KernelAgent : Agent
     /// <remarks>
     /// Defaults to empty Kernel, but may be overridden.
     /// </remarks>
-    public Kernel Kernel { get; init; } = Kernel.CreateBuilder().Build();
+    public Kernel Kernel { get; init; } = Kernel.CreateBuilder().
+        Build();
+
 }

@@ -1,14 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+namespace Microsoft.SemanticKernel.Agents;
+
 using System.Collections.Generic;
 using System.Threading;
 
-namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
 /// Contract for an agent that utilizes a <see cref="ChatHistoryChannel"/>.
 /// </summary>
 public interface IChatHistoryHandler
 {
+
     /// <summary>
     /// Entry point for calling into an agent from a a <see cref="ChatHistoryChannel"/>.
     /// </summary>
@@ -18,4 +20,5 @@ public interface IChatHistoryHandler
     IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         IReadOnlyList<ChatMessageContent> history,
         CancellationToken cancellationToken = default);
+
 }

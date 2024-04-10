@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using System.Reflection;
 using Configuration;
 using Microsoft.Extensions.Configuration;
@@ -8,10 +10,10 @@ using Microsoft.SemanticKernel;
 using RepoUtils;
 using Xunit.Abstractions;
 
-namespace Examples;
 
 public abstract class BaseTest
 {
+
     /// <summary>
     /// Flag to force usage of OpenAI configuration if both <see cref="TestConfiguration.OpenAI"/>
     /// and <see cref="TestConfiguration.AzureOpenAI"/> are defined.
@@ -23,6 +25,7 @@ public abstract class BaseTest
 
     protected ILoggerFactory LoggerFactory { get; }
 
+
     protected string GetApiKey()
     {
         if (string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) || this.ForceOpenAI)
@@ -32,6 +35,7 @@ public abstract class BaseTest
 
         return TestConfiguration.AzureOpenAI.ApiKey;
     }
+
 
     protected Kernel CreateKernelWithChatCompletion(KernelPlugin? plugin = null)
     {
@@ -59,19 +63,20 @@ public abstract class BaseTest
         return builder.Build();
     }
 
+
     protected BaseTest(ITestOutputHelper output)
     {
         this.Output = output;
         this.LoggerFactory = new XunitLogger(output);
 
-        IConfigurationRoot configRoot = new ConfigurationBuilder()
-            .AddJsonFile("appsettings.Development.json", true)
-            .AddEnvironmentVariables()
-            .AddUserSecrets(Assembly.GetExecutingAssembly())
-            .Build();
+        IConfigurationRoot configRoot = new ConfigurationBuilder().AddJsonFile("appsettings.Development.json", true).
+            AddEnvironmentVariables().
+            AddUserSecrets(Assembly.GetExecutingAssembly()).
+            Build();
 
         TestConfiguration.Initialize(configRoot);
     }
+
 
     /// <summary>
     /// This method can be substituted by Console.WriteLine when used in Console apps.
@@ -82,6 +87,7 @@ public abstract class BaseTest
         this.Output.WriteLine(target ?? string.Empty);
     }
 
+
     /// <summary>
     /// Current interface ITestOutputHelper does not have a Write method. This extension method adds it to make it analogous to Console.Write when used in Console apps.
     /// </summary>
@@ -90,4 +96,5 @@ public abstract class BaseTest
     {
         this.Output.WriteLine(target ?? string.Empty);
     }
+
 }

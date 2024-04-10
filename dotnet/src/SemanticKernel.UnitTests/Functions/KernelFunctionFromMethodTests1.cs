@@ -19,13 +19,17 @@ using Xunit;
 
 public sealed class KernelFunctionFromMethodTests1
 {
+
     private const string InputParameterName = "input";
+
     private static readonly KernelFunction s_nopFunction = KernelFunctionFactory.CreateFromMethod(() => { });
 
     private readonly Kernel _kernel;
+
     private readonly Mock<ILoggerFactory> _logger;
 
     private static string s_expected = string.Empty;
+
     private static string s_actual = string.Empty;
 
 
@@ -34,7 +38,8 @@ public sealed class KernelFunctionFromMethodTests1
         this._kernel = new Kernel();
         this._logger = new Mock<ILoggerFactory>();
 
-        s_expected = Guid.NewGuid().ToString("D");
+        s_expected = Guid.NewGuid().
+            ToString("D");
     }
 
 
@@ -65,6 +70,7 @@ public sealed class KernelFunctionFromMethodTests1
         static string Test()
         {
             s_actual = s_expected;
+
             return s_expected;
         }
 
@@ -88,6 +94,7 @@ public sealed class KernelFunctionFromMethodTests1
         static Task<string> Test()
         {
             s_actual = s_expected;
+
             return Task.FromResult(s_expected);
         }
 
@@ -112,6 +119,7 @@ public sealed class KernelFunctionFromMethodTests1
         {
             s_actual = s_expected;
             await Task.Delay(1);
+
             return s_expected;
         }
 
@@ -157,6 +165,7 @@ public sealed class KernelFunctionFromMethodTests1
         static string Test(string someVar)
         {
             s_actual = someVar;
+
             return "abc";
         }
 
@@ -186,6 +195,7 @@ public sealed class KernelFunctionFromMethodTests1
         {
             invocationCount++;
             s_actual = someVar;
+
             return "abc";
         }
 
@@ -276,6 +286,7 @@ public sealed class KernelFunctionFromMethodTests1
         string Test(string input)
         {
             invocationCount++;
+
             return input;
         }
 
@@ -304,6 +315,7 @@ public sealed class KernelFunctionFromMethodTests1
         Task<string> Test(string input)
         {
             invocationCount++;
+
             return Task.FromResult("hello there");
         }
 
@@ -359,6 +371,7 @@ public sealed class KernelFunctionFromMethodTests1
         static string Test(string input)
         {
             s_actual = input;
+
             return "new data";
         }
 
@@ -384,6 +397,7 @@ public sealed class KernelFunctionFromMethodTests1
         static Task<string> Test(string input)
         {
             s_actual = input;
+
             return Task.FromResult("new data");
         }
 
@@ -411,6 +425,7 @@ public sealed class KernelFunctionFromMethodTests1
         static ValueTask Test(string input)
         {
             s_actual = input + "abc";
+
             return new ValueTask();
         }
 
@@ -436,6 +451,7 @@ public sealed class KernelFunctionFromMethodTests1
         static Task TestAsync(string input)
         {
             s_actual = s_expected;
+
             return Task.CompletedTask;
         }
 
@@ -461,6 +477,7 @@ public sealed class KernelFunctionFromMethodTests1
         static ValueTask TestAsync(string input)
         {
             s_actual = s_expected;
+
             return default;
         }
 
@@ -488,6 +505,7 @@ public sealed class KernelFunctionFromMethodTests1
         static Task TestAsync()
         {
             s_actual = s_expected;
+
             return Task.CompletedTask;
         }
 
@@ -515,6 +533,7 @@ public sealed class KernelFunctionFromMethodTests1
         static Task TestAsync(string input)
         {
             s_actual = input;
+
             return Task.CompletedTask;
         }
 
@@ -540,6 +559,7 @@ public sealed class KernelFunctionFromMethodTests1
         static Task TestAsync()
         {
             s_actual = s_expected;
+
             return Task.CompletedTask;
         }
 
@@ -667,6 +687,7 @@ public sealed class KernelFunctionFromMethodTests1
         Task<FunctionResult> Test()
         {
             var functionResult = new FunctionResult(s_nopFunction, "fake-result", CultureInfo.InvariantCulture);
+
             return Task.FromResult(functionResult);
         }
 
@@ -690,6 +711,7 @@ public sealed class KernelFunctionFromMethodTests1
         ValueTask<FunctionResult> Test()
         {
             var functionResult = new FunctionResult(s_nopFunction, "fake-result", CultureInfo.InvariantCulture);
+
             return ValueTask.FromResult(functionResult);
         }
 
@@ -785,19 +807,23 @@ public sealed class KernelFunctionFromMethodTests1
     [TypeConverter(typeof(MyCustomTypeConverter))]
     private sealed class MyCustomType
     {
+
         public int Value { get; set; }
+
     }
 
 
 #pragma warning disable CA1812 // Instantiated by reflection
     private sealed class MyCustomTypeConverter : TypeConverter
     {
+
         public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType) =>
             sourceType == typeof(string);
 
 
         public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value) =>
             new MyCustomType { Value = int.Parse((string)value, culture) };
+
     }
 #pragma warning restore CA1812
 
@@ -929,7 +955,11 @@ public sealed class KernelFunctionFromMethodTests1
     {
         //Arrange
 
-        static void Test(int a, long b = 20, string c = "dv", char d = 'w')
+        static void Test(
+            int a,
+            long b = 20,
+            string c = "dv",
+            char d = 'w')
         {
             Assert.Equal(10, a);
             Assert.Equal(20, b);
@@ -1012,7 +1042,9 @@ public sealed class KernelFunctionFromMethodTests1
         result = await func.InvokeAsync(this._kernel, input);
         Assert.Equal(expected, result.Value);
 
-        func = KernelFunctionFactory.CreateFromMethod((List<string> val) => Enumerable.Range(1, 3).Select(i => i.ToString(CultureInfo.InvariantCulture)));
+        func = KernelFunctionFactory.CreateFromMethod((List<string> val) => Enumerable.Range(1, 3).
+            Select(i => i.ToString(CultureInfo.InvariantCulture)));
+
         result = await func.InvokeAsync(this._kernel, input);
         Assert.Equal(expected, result.Value);
 
@@ -1028,6 +1060,7 @@ public sealed class KernelFunctionFromMethodTests1
         result = await func.InvokeAsync(this._kernel, input);
         Assert.Equal(expected, ((IAsyncEnumerable<string>)result.Value!).ToEnumerable());
     }
+
 
     [Fact]
     public async Task ItSupportsNullableArgumentsAndReturnTypesAsync()
@@ -1046,10 +1079,11 @@ public sealed class KernelFunctionFromMethodTests1
         Assert.Equal(42, (await func.InvokeAsync(this._kernel, new() { ["arg"] = 42 })).Value);
         Assert.Null((await func.InvokeAsync(this._kernel, new() { ["arg"] = null })).Value);
 
-        func = KernelFunctionFactory.CreateFromMethod(IEnumerable<int?> (int? arg) => (IEnumerable<int?>)[arg]);
+        func = KernelFunctionFactory.CreateFromMethod(IEnumerable<int?> (int? arg) => (IEnumerable<int?>) [arg]);
         Assert.Equal(new int?[] { 42 }, (await func.InvokeAsync(this._kernel, new() { ["arg"] = 42 })).Value);
         Assert.Equal(new int?[] { null }, (await func.InvokeAsync(this._kernel, new() { ["arg"] = null })).Value);
     }
+
 
     [Fact]
     public async Task ItUsesContextCultureForParsingFormattingAsync()
@@ -1145,8 +1179,11 @@ public sealed class KernelFunctionFromMethodTests1
     {
         // Arrange
         static int TestInt(int number) => number;
+
         static double TestDouble(double number) => number;
+
         static string TestString(string str) => str;
+
         static bool TestBool(bool flag) => flag;
 
         var function1 = KernelFunctionFactory.CreateFromMethod(TestInt);
@@ -1193,7 +1230,10 @@ public sealed class KernelFunctionFromMethodTests1
 
         // Assert
         Assert.NotNull(actualInstance);
-        Assert.Equal(42, result.GetValue<MyCustomType>()?.Value);
+
+        Assert.Equal(42, result.GetValue<MyCustomType>()?.
+            Value);
+
         Assert.Equal(42, actualInstance.Value);
     }
 
@@ -1251,6 +1291,7 @@ public sealed class KernelFunctionFromMethodTests1
             for (int i = 0; i < 10; i++)
             {
                 await Task.Yield();
+
                 yield return i;
             }
         }
@@ -1272,6 +1313,7 @@ public sealed class KernelFunctionFromMethodTests1
             Assert.True(await enumerator.MoveNextAsync());
             Assert.Equal(i, enumerator.Current);
         }
+
         Assert.False(await enumerator.MoveNextAsync());
         await enumerator.DisposeAsync();
     }
@@ -1290,6 +1332,7 @@ public sealed class KernelFunctionFromMethodTests1
             for (int i = 0; i < 10; i++)
             {
                 await Task.Yield();
+
                 yield return new StreamingMethodContent(i);
             }
         }
@@ -1311,6 +1354,7 @@ public sealed class KernelFunctionFromMethodTests1
             Assert.True(await enumerator.MoveNextAsync());
             Assert.Equal(i, enumerator.Current.Content);
         }
+
         Assert.False(await enumerator.MoveNextAsync());
         await enumerator.DisposeAsync();
     }
@@ -1354,7 +1398,9 @@ public sealed class KernelFunctionFromMethodTests1
     public async Task ItCanDeserializeJsonElementAsync()
     {
         // Arrange
-        var element = JsonDocument.Parse(@"{""id"":28}").RootElement;
+        var element = JsonDocument.Parse(@"{""id"":28}").
+            RootElement;
+
         CustomTypeForJsonTests? actualArgValue = null;
 
         var func = KernelFunctionFactory.CreateFromMethod((CustomTypeForJsonTests param) => { actualArgValue = param; });
@@ -1444,13 +1490,16 @@ public sealed class KernelFunctionFromMethodTests1
     private sealed class CustomTypeForJsonTests
 #pragma warning restore CA1812 // Avoid uninstantiated internal classes
     {
+
         [JsonPropertyName("id")]
         public int Id { get; set; }
+
     }
 
 
     private sealed class ThirdPartyJsonPrimitive
     {
+
         private readonly string _jsonToReturn;
 
 
@@ -1464,5 +1513,7 @@ public sealed class KernelFunctionFromMethodTests1
         {
             return this._jsonToReturn;
         }
+
     }
+
 }

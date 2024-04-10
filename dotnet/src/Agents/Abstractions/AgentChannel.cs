@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+namespace Microsoft.SemanticKernel.Agents;
+
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
 /// Defines the communication protocol for a particular <see cref="Agent"/> type.
@@ -11,12 +12,14 @@ namespace Microsoft.SemanticKernel.Agents;
 /// </summary>
 public abstract class AgentChannel
 {
+
     /// <summary>
     /// Receive the conversation messages.  Used when joining a conversation and also during each agent interaction..
     /// </summary>
     /// <param name="history">The chat history at the point the channel is created.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     protected internal abstract Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Perform a discrete incremental interaction between a single <see cref="Agent"/> and <see cref="AgentChat"/>.
@@ -28,13 +31,16 @@ public abstract class AgentChannel
         Agent agent,
         CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Retrieve the message history specific to this channel.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
     protected internal abstract IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken = default);
+
 }
+
 
 /// <summary>
 /// Defines the communication protocol for a particular <see cref="Agent"/> type.
@@ -46,6 +52,7 @@ public abstract class AgentChannel
 /// </remarks>
 public abstract class AgentChannel<TAgent> : AgentChannel where TAgent : Agent
 {
+
     /// <summary>
     /// Process a discrete incremental interaction between a single <see cref="Agent"/> an a <see cref="AgentChat"/>.
     /// </summary>
@@ -55,6 +62,7 @@ public abstract class AgentChannel<TAgent> : AgentChannel where TAgent : Agent
     protected internal abstract IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         TAgent agent,
         CancellationToken cancellationToken = default);
+
 
     /// <inheritdoc/>
     protected internal override IAsyncEnumerable<ChatMessageContent> InvokeAsync(
@@ -68,4 +76,5 @@ public abstract class AgentChannel<TAgent> : AgentChannel where TAgent : Agent
 
         return this.InvokeAsync((TAgent)agent, cancellationToken);
     }
+
 }
