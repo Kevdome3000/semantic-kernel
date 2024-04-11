@@ -12,7 +12,6 @@ using System.Threading.Tasks;
 /// <summary>
 /// Implementation of <see cref="ISemanticTextMemory"/> that stores nothing.
 /// </summary>
-[Experimental("SKEXP0001")]
 public sealed class NullMemory : ISemanticTextMemory
 {
 
