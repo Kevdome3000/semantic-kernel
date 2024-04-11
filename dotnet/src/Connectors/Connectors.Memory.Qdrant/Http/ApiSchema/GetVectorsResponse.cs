@@ -9,8 +9,10 @@ using System.Text.Json.Serialization;
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes: Used for Json Deserialization
 internal sealed class GetVectorsResponse : QdrantResponse
 {
+
     internal sealed class Record
     {
+
         [JsonPropertyName("id")]
         public string Id { get; set; }
 
@@ -30,6 +32,7 @@ internal sealed class GetVectorsResponse : QdrantResponse
             this.Payload = payload;
             this.Vector = vector;
         }
+
     }
 
 
@@ -37,6 +40,7 @@ internal sealed class GetVectorsResponse : QdrantResponse
     /// Array of vectors and their associated metadata
     /// </summary>
     [JsonPropertyName("result")]
-    public IEnumerable<Record> Result { get; set; } = new List<Record>();
+    public IEnumerable<Record> Result { get; set; } = [];
+
 }
 #pragma warning restore CA1812 // Avoid uninstantiated internal classes

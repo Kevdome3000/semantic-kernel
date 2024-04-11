@@ -15,6 +15,7 @@ using Execution;
 /// </summary>
 public class FlowOrchestrator
 {
+
     private readonly IKernelBuilder _kernelBuilder;
 
     private readonly IFlowStatusProvider _flowStatusProvider;
@@ -45,7 +46,7 @@ public class FlowOrchestrator
 
         this._kernelBuilder = kernelBuilder;
         this._flowStatusProvider = flowStatusProvider;
-        this._globalPluginCollection = globalPluginCollection ?? new Dictionary<object, string?>();
+        this._globalPluginCollection = globalPluginCollection ?? [];
         this._flowValidator = validator ?? new FlowValidator();
         this._config = config;
     }
@@ -75,6 +76,9 @@ public class FlowOrchestrator
         }
 
         var executor = new FlowExecutor(this._kernelBuilder, this._flowStatusProvider, this._globalPluginCollection, this._config);
-        return await executor.ExecuteFlowAsync(flow, sessionId, input, kernelArguments ?? new KernelArguments(null)).ConfigureAwait(false);
+
+        return await executor.ExecuteFlowAsync(flow, sessionId, input, kernelArguments ?? new KernelArguments(null)).
+            ConfigureAwait(false);
     }
+
 }

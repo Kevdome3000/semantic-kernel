@@ -13,6 +13,7 @@ using Extensions.Logging;
 /// </summary>
 internal sealed class NamedArgBlock : Block, ITextRendering
 {
+
     /// <summary>
     /// Returns the <see cref="BlockTypes"/>.
     /// </summary>
@@ -36,11 +37,12 @@ internal sealed class NamedArgBlock : Block, ITextRendering
     /// <param name="logger">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <exception cref="KernelException"></exception>
     public NamedArgBlock(string? text, ILoggerFactory? logger = null)
-        : base(TrimWhitespace(text), logger)
+        : base(NamedArgBlock.TrimWhitespace(text), logger)
     {
         if (!TryGetNameAndValue(this.Content, out string argName, out string argValue))
         {
             this.Logger.LogError("Invalid named argument `{Text}`", text);
+
             throw new KernelException($"A function named argument must contain a name and value separated by a '{Symbols.NamedArgBlockSeparator}' character.");
         }
 
@@ -134,6 +136,7 @@ internal sealed class NamedArgBlock : Block, ITextRendering
         {
             errorMsg = "A named argument must have a name";
             this.Logger.LogError(errorMsg);
+
             return false;
         }
 
@@ -141,18 +144,21 @@ internal sealed class NamedArgBlock : Block, ITextRendering
         {
             errorMsg = $"There was an issue with the named argument value for '{this.Name}': {valErrorMsg}";
             this.Logger.LogError(errorMsg);
+
             return false;
         }
         else if (this.VarBlock != null && !this.VarBlock.IsValid(out var variableErrorMsg))
         {
             errorMsg = $"There was an issue with the named argument value for '{this.Name}': {variableErrorMsg}";
             this.Logger.LogError(errorMsg);
+
             return false;
         }
         else if (this._valBlock == null && this.VarBlock == null)
         {
             errorMsg = "A named argument must have a value";
             this.Logger.LogError(errorMsg);
+
             return false;
         }
 
@@ -161,6 +167,7 @@ internal sealed class NamedArgBlock : Block, ITextRendering
         {
             errorMsg = Regex.Replace(argNameErrorMsg, "a variable", "An argument", RegexOptions.IgnoreCase);
             errorMsg = Regex.Replace(errorMsg, "the variable", "The argument", RegexOptions.IgnoreCase);
+
             return false;
         }
 
@@ -172,6 +179,7 @@ internal sealed class NamedArgBlock : Block, ITextRendering
     #region private ================================================================================
 
     private readonly VarBlock _argNameAsVarBlock;
+
     private readonly ValBlock? _valBlock;
 
 
@@ -182,7 +190,8 @@ internal sealed class NamedArgBlock : Block, ITextRendering
             return text;
         }
 
-        string[] trimmedParts = GetTrimmedParts(text);
+        string[] trimmedParts = NamedArgBlock.GetTrimmedParts(text);
+
         return (trimmedParts?.Length) switch
         {
             1 => trimmedParts[0],
@@ -196,20 +205,22 @@ internal sealed class NamedArgBlock : Block, ITextRendering
     {
         if (text == null)
         {
-            return Array.Empty<string>();
+            return [];
         }
 
-        string[] parts = text.Split(new char[] { Symbols.NamedArgBlockSeparator }, 2);
+        string[] parts = text.Split([Symbols.NamedArgBlockSeparator], 2);
         string[] result = new string[parts.Length];
 
         if (parts.Length > 0)
         {
-            result[0] = parts[0].Trim();
+            result[0] = parts[0].
+                Trim();
         }
 
         if (parts.Length > 1)
         {
-            result[1] = parts[1].Trim();
+            result[1] = parts[1].
+                Trim();
         }
 
         return result;

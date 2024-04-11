@@ -16,7 +16,9 @@ using Xunit;
 
 public sealed class QdrantMemoryBuilderExtensionsTests : IDisposable
 {
+
     private readonly HttpMessageHandlerStub _messageHandlerStub;
+
     private readonly HttpClient _httpClient;
 
 
@@ -35,7 +37,7 @@ public sealed class QdrantMemoryBuilderExtensionsTests : IDisposable
         var embeddingGenerationMock = Mock.Of<ITextEmbeddingGenerationService>();
 
         this._httpClient.BaseAddress = new Uri("https://fake-random-qdrant-host");
-        this._messageHandlerStub.ResponseToReturn.Content = new StringContent("{\"result\":{\"collections\":[]}}", Encoding.UTF8, MediaTypeNames.Application.Json);
+        this._messageHandlerStub.ResponseToReturn.Content = new StringContent("""{"result":{"collections":[]}}""", Encoding.UTF8, MediaTypeNames.Application.Json);
 
         var builder = new MemoryBuilder();
         builder.WithQdrantMemoryStore(this._httpClient, 123);
@@ -55,4 +57,5 @@ public sealed class QdrantMemoryBuilderExtensionsTests : IDisposable
         this._httpClient.Dispose();
         this._messageHandlerStub.Dispose();
     }
+
 }

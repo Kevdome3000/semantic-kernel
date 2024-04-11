@@ -30,17 +30,17 @@ public class Example87_ChatHistorySerialization : BaseTest
 
         var message = new ChatMessageContent(AuthorRole.User, "Describe the factors contributing to climate change.");
 
-        message.Items = new ChatMessageContentItemCollection
-        {
+        message.Items =
+        [
             new TextContent("Discuss the potential long-term consequences for the Earth's ecosystem as well."),
             new ImageContent(new Uri("https://fake-random-test-host:123")),
             new BinaryContent(new BinaryData(data)),
 #pragma warning disable SKEXP0001
             new AudioContent(new BinaryData(data))
 #pragma warning restore SKEXP0001
-        };
+        ];
 
-        var chatHistory = new ChatHistory(new[] { message });
+        var chatHistory = new ChatHistory([message]);
 
         var chatHistoryJson = JsonSerializer.Serialize(chatHistory, s_options);
 
@@ -71,13 +71,13 @@ public class Example87_ChatHistorySerialization : BaseTest
     {
         var message = new ChatMessageContent(AuthorRole.User, "Describe the factors contributing to climate change.");
 
-        message.Items = new ChatMessageContentItemCollection
-        {
+        message.Items =
+        [
             new TextContent("Discuss the potential long-term consequences for the Earth's ecosystem as well."),
             new CustomContent("Some custom content"),
-        };
+        ];
 
-        var chatHistory = new ChatHistory(new[] { message });
+        var chatHistory = new ChatHistory([message]);
 
         // The custom resolver should be used to serialize and deserialize the chat history with custom .
         var options = new JsonSerializerOptions

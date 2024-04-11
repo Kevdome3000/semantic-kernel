@@ -7,34 +7,31 @@ using System.Diagnostics.CodeAnalysis;
 
 [SuppressMessage("Performance", "CA1812:Internal class that is apparently never instantiated",
     Justification = "Configuration classes are instantiated through IConfiguration.")]
-internal sealed class AzureOpenAIConfiguration
+internal sealed class AzureOpenAIConfiguration(
+    string serviceId,
+    string deploymentName,
+    string endpoint,
+    string apiKey,
+    string? chatDeploymentName = null,
+    string? modelId = null,
+    string? chatModelId = null,
+    string? embeddingModelId = null)
 {
-    public string ServiceId { get; set; }
 
-    public string DeploymentName { get; set; }
+    public string ServiceId { get; set; } = serviceId;
 
-    public string ModelId { get; set; }
+    public string DeploymentName { get; set; } = deploymentName;
 
-    public string? ChatDeploymentName { get; set; }
+    public string ModelId { get; set; } = modelId ?? deploymentName;
 
-    public string ChatModelId { get; set; }
+    public string? ChatDeploymentName { get; set; } = chatDeploymentName ?? deploymentName;
 
-    public string EmbeddingModelId { get; set; }
+    public string ChatModelId { get; set; } = chatModelId ?? deploymentName;
 
-    public string Endpoint { get; set; }
+    public string EmbeddingModelId { get; set; } = embeddingModelId ?? "text-embedding-ada-002";
 
-    public string ApiKey { get; set; }
+    public string Endpoint { get; set; } = endpoint;
 
+    public string ApiKey { get; set; } = apiKey;
 
-    public AzureOpenAIConfiguration(string serviceId, string deploymentName, string endpoint, string apiKey, string? chatDeploymentName = null, string? modelId = null, string? chatModelId = null, string? embeddingModelId = null)
-    {
-        this.ServiceId = serviceId;
-        this.DeploymentName = deploymentName;
-        this.ModelId = modelId ?? deploymentName;
-        this.ChatDeploymentName = deploymentName;
-        this.ChatModelId = chatModelId ?? deploymentName;
-        this.EmbeddingModelId = embeddingModelId ?? "text-embedding-ada-002";
-        this.Endpoint = endpoint;
-        this.ApiKey = apiKey;
-    }
 }

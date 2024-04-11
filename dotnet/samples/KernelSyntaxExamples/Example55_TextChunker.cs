@@ -202,7 +202,7 @@ public class Example55_TextChunker : BaseTest
 
         public int Count(string input)
         {
-            var tokens = this._tokenizer.Encode(input, new HashSet<string>());
+            var tokens = this._tokenizer.Encode(input, []);
 
             return tokens.Count;
         }

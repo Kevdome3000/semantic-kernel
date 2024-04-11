@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Experimental.Orchestration;
+
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
@@ -7,19 +9,20 @@ using System.Text.Json.Serialization;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
-namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 
 /// <summary>
 /// Serializer for <see cref="Flow"/>
 /// </summary>
 public static class FlowSerializer
 {
+
     /// <summary>Options for <see cref="DeserializeFromJson"/>.</summary>
     private static readonly JsonSerializerOptions s_deserializeOptions = new()
     {
         PropertyNameCaseInsensitive = true,
         Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
     };
+
 
     /// <summary>
     /// Deserialize flow from yaml
@@ -28,14 +31,14 @@ public static class FlowSerializer
     /// <returns>the <see cref="Flow"/> instance</returns>
     public static Flow DeserializeFromYaml(string yaml)
     {
-        var deserializer = new DeserializerBuilder()
-            .WithNamingConvention(CamelCaseNamingConvention.Instance)
-            .Build();
+        var deserializer = new DeserializerBuilder().WithNamingConvention(CamelCaseNamingConvention.Instance).
+            Build();
 
         var flow = deserializer.Deserialize<FlowModel>(new StringReader(yaml));
 
         return UpCast(flow);
     }
+
 
     /// <summary>
     /// Deserialize flow from json
@@ -45,10 +48,11 @@ public static class FlowSerializer
     public static Flow? DeserializeFromJson(string json)
     {
         var flow = JsonSerializer.Deserialize<FlowModel>(json, s_deserializeOptions) ??
-            throw new JsonException("Failed to deserialize flow");
+                   throw new JsonException("Failed to deserialize flow");
 
         return UpCast(flow);
     }
+
 
     private static Flow UpCast(FlowModel flow)
     {
@@ -64,9 +68,12 @@ public static class FlowSerializer
         return result;
     }
 
+
     private static FlowStep UpCast(FlowStepModel step)
     {
-        FlowStep result = string.IsNullOrEmpty(step.FlowName) ? new FlowStep(step.Goal) : new ReferenceFlowStep(step.FlowName!);
+        FlowStep result = string.IsNullOrEmpty(step.FlowName)
+            ? new FlowStep(step.Goal)
+            : new ReferenceFlowStep(step.FlowName!);
 
         result.CompletionType = step.CompletionType;
         result.StartingMessage = step.StartingMessage;
@@ -78,6 +85,7 @@ public static class FlowSerializer
         return result;
     }
 
+
     private static void PopulateVariables(FlowStep step, FlowStepModel model)
     {
         step.AddProvides(model.Provides.ToArray());
@@ -85,15 +93,17 @@ public static class FlowSerializer
         step.AddPassthrough(model.Passthrough.ToArray());
     }
 
+
     private class FlowStepModel
     {
+
         public string Goal { get; set; } = string.Empty;
 
-        public List<string> Requires { get; set; } = new();
+        public List<string> Requires { get; set; } = [];
 
-        public List<string> Provides { get; set; } = new();
+        public List<string> Provides { get; set; } = [];
 
-        public List<string> Passthrough { get; set; } = new();
+        public List<string> Passthrough { get; set; } = [];
 
         public CompletionType CompletionType { get; set; } = CompletionType.Once;
 
@@ -101,15 +111,20 @@ public static class FlowSerializer
 
         public string? TransitionMessage { get; set; }
 
-        public List<string> Plugins { get; set; } = new();
+        public List<string> Plugins { get; set; } = [];
 
         public string? FlowName { get; set; }
+
     }
+
 
     private class FlowModel : FlowStepModel
     {
+
         public string Name { get; set; } = string.Empty;
 
-        public List<FlowStepModel> Steps { get; set; } = new();
+        public List<FlowStepModel> Steps { get; set; } = [];
+
     }
+
 }

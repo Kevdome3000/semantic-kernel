@@ -10,8 +10,10 @@ using Text;
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes: Used for Json Deserialization
 internal sealed class SearchVectorsResponse : QdrantResponse
 {
+
     internal sealed class ScoredPoint
     {
+
         [JsonPropertyName("id")]
         [JsonConverter(typeof(NumberToStringConverter))]
         public string Id { get; }
@@ -31,13 +33,18 @@ internal sealed class SearchVectorsResponse : QdrantResponse
 
 
         [JsonConstructor]
-        public ScoredPoint(string id, double? score, Dictionary<string, object> payload, ReadOnlyMemory<float> vector)
+        public ScoredPoint(
+            string id,
+            double? score,
+            Dictionary<string, object> payload,
+            ReadOnlyMemory<float> vector)
         {
             this.Id = id;
             this.Score = score;
             this.Payload = payload;
             this.Vector = vector;
         }
+
     }
 
 
@@ -56,7 +63,7 @@ internal sealed class SearchVectorsResponse : QdrantResponse
 
     private SearchVectorsResponse()
     {
-        this.Results = new List<ScoredPoint>();
+        this.Results = [];
     }
 
     #endregion

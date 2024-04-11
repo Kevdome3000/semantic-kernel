@@ -1,17 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.Client;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 
-namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.Client;
 
 /// <summary>
 /// Graph API connector configuration model.
 /// </summary>
 public class MsGraphConfiguration
 {
+
     /// <summary>
     /// Gets or sets the client ID.
     /// </summary>
@@ -30,12 +31,13 @@ public class MsGraphConfiguration
     /// nested types not working with IConfigurationSection.Get.
     /// See https://github.com/dotnet/runtime/issues/77677
     /// </remarks>
-    public IEnumerable<string> Scopes { get; set; } = Enumerable.Empty<string>();
+    public IEnumerable<string> Scopes { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the redirect URI to use.
     /// </summary>
     public Uri RedirectUri { get; }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MsGraphConfiguration"/> class.
@@ -52,4 +54,5 @@ public class MsGraphConfiguration
         this.TenantId = tenantId;
         this.RedirectUri = redirectUri;
     }
+
 }

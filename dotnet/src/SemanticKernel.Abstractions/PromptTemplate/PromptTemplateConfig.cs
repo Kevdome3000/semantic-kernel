@@ -26,6 +26,7 @@ using Text;
 /// </remarks>
 public sealed class PromptTemplateConfig
 {
+
     /// <summary>The format of the prompt template.</summary>
     private string? _templateFormat;
 
@@ -169,7 +170,7 @@ public sealed class PromptTemplateConfig
     [JsonPropertyName("input_variables")]
     public List<InputVariable> InputVariables
     {
-        get => this._inputVariables ??= new();
+        get => this._inputVariables ??= [];
         set
         {
             Verify.NotNull(value);
@@ -192,7 +193,7 @@ public sealed class PromptTemplateConfig
     [JsonPropertyName("execution_settings")]
     public Dictionary<string, PromptExecutionSettings> ExecutionSettings
     {
-        get => this._executionSettings ??= new();
+        get => this._executionSettings ??= [];
         set
         {
             Verify.NotNull(value);
@@ -206,7 +207,9 @@ public sealed class PromptTemplateConfig
     /// <remarks>
     /// If no default is specified, this will return null.
     /// </remarks>
-    public PromptExecutionSettings? DefaultExecutionSettings => this._executionSettings?.TryGetValue(PromptExecutionSettings.DefaultServiceId, out PromptExecutionSettings? settings) is true ? settings : null;
+    public PromptExecutionSettings? DefaultExecutionSettings => this._executionSettings?.TryGetValue(PromptExecutionSettings.DefaultServiceId, out PromptExecutionSettings? settings) is true
+        ? settings
+        : null;
 
 
     /// <summary>
@@ -238,7 +241,7 @@ public sealed class PromptTemplateConfig
     /// </summary>
     public IReadOnlyList<KernelParameterMetadata> GetKernelParametersMetadata()
     {
-        KernelParameterMetadata[] result = Array.Empty<KernelParameterMetadata>();
+        KernelParameterMetadata[] result = [];
 
         if (this._inputVariables is List<InputVariable> inputVariables)
         {
@@ -247,13 +250,18 @@ public sealed class PromptTemplateConfig
             for (int i = 0; i < result.Length; i++)
             {
                 InputVariable p = inputVariables[i];
+
                 result[i] = new KernelParameterMetadata(p.Name)
                 {
                     Description = p.Description,
                     DefaultValue = p.Default,
                     IsRequired = p.IsRequired,
-                    ParameterType = !string.IsNullOrWhiteSpace(p.JsonSchema) ? null : p.Default?.GetType() ?? typeof(string),
-                    Schema = !string.IsNullOrWhiteSpace(p.JsonSchema) ? KernelJsonSchema.Parse(p.JsonSchema!) : null,
+                    ParameterType = !string.IsNullOrWhiteSpace(p.JsonSchema)
+                        ? null
+                        : p.Default?.GetType() ?? typeof(string),
+                    Schema = !string.IsNullOrWhiteSpace(p.JsonSchema)
+                        ? KernelJsonSchema.Parse(p.JsonSchema!)
+                        : null,
                 };
             }
         }
@@ -273,4 +281,5 @@ public sealed class PromptTemplateConfig
                 Schema = KernelJsonSchema.ParseOrNull(outputVariable.JsonSchema)
             }
             : null;
+
 }

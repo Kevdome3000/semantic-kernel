@@ -1,17 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Plugins.OpenApi;
+
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using Microsoft.SemanticKernel.Http;
+using Http;
 
-namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
 /// OpenAPI function execution parameters.
 /// </summary>
 public class OpenApiFunctionExecutionParameters
 {
+
     /// <summary>
     /// HttpClient to use for sending HTTP requests.
     /// </summary>
@@ -59,6 +61,7 @@ public class OpenApiFunctionExecutionParameters
     /// </summary>
     public IList<string> OperationsToExclude { get; set; }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenApiFunctionExecutionParameters"/> class.
     /// </summary>
@@ -91,6 +94,7 @@ public class OpenApiFunctionExecutionParameters
         this.IgnoreNonCompliantErrors = ignoreNonCompliantErrors;
         this.EnableDynamicPayload = enableDynamicOperationPayload;
         this.EnablePayloadNamespacing = enablePayloadNamespacing;
-        this.OperationsToExclude = operationsToExclude ?? new List<string>();
+        this.OperationsToExclude = operationsToExclude ?? [];
     }
+
 }

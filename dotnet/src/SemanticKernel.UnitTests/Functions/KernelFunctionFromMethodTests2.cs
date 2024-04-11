@@ -16,6 +16,7 @@ using Xunit;
 
 public sealed class KernelFunctionFromMethodTests2
 {
+
     private static readonly KernelFunction s_nopFunction = KernelFunctionFactory.CreateFromMethod(() => { });
 
 
@@ -24,12 +25,15 @@ public sealed class KernelFunctionFromMethodTests2
     {
         // Arrange
         var pluginInstance = new LocalExamplePlugin();
-        MethodInfo[] methods = pluginInstance.GetType()
-            .GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.InvokeMethod)
-            .Where(m => m.Name is not "GetType" and not "Equals" and not "GetHashCode" and not "ToString")
-            .ToArray();
 
-        KernelFunction[] functions = (from method in methods select KernelFunctionFactory.CreateFromMethod(method, pluginInstance, "plugin")).ToArray();
+        MethodInfo[] methods = pluginInstance.GetType().
+            GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.InvokeMethod).
+            Where(m => m.Name is not "GetType" and not "Equals" and not "GetHashCode" and not "ToString").
+            ToArray();
+
+        KernelFunction[] functions = (
+            from method in methods
+            select KernelFunctionFactory.CreateFromMethod(method, pluginInstance, "plugin")).ToArray();
 
         // Act
         Assert.Equal(methods.Length, functions.Length);
@@ -42,12 +46,13 @@ public sealed class KernelFunctionFromMethodTests2
     {
         // Arrange
         var pluginInstance = new LocalExamplePlugin();
-        MethodInfo[] methods = pluginInstance.GetType()
-            .GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.InvokeMethod)
-            .Where(m => m.Name is not "GetType" and not "Equals" and not "GetHashCode" and not "ToString")
-            .ToArray();
 
-        KernelFunction[] functions = KernelPluginFactory.CreateFromObject(pluginInstance).ToArray();
+        MethodInfo[] methods = pluginInstance.GetType().
+            GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.InvokeMethod).
+            Where(m => m.Name is not "GetType" and not "Equals" and not "GetHashCode" and not "ToString").
+            ToArray();
+
+        KernelFunction[] functions = [.. KernelPluginFactory.CreateFromObject(pluginInstance)];
 
         // Act
         Assert.Equal(methods.Length, functions.Length);
@@ -92,8 +97,10 @@ public sealed class KernelFunctionFromMethodTests2
     public async Task ItCanImportMethodFunctionsWithExternalReferencesAsync()
     {
         // Arrange
-        var arguments = new KernelArguments();
-        arguments["done"] = "NO";
+        var arguments = new KernelArguments
+        {
+            ["done"] = "NO"
+        };
 
         // Note: This is an important edge case that affects the function signature and how delegates
         //       are handled internally: the function references an external variable and cannot be static.
@@ -104,6 +111,7 @@ public sealed class KernelFunctionFromMethodTests2
         {
             string referenceToExternalVariable = variableOutsideTheFunction;
             await Task.Delay(0);
+
             return referenceToExternalVariable;
         }
 
@@ -128,11 +136,12 @@ public sealed class KernelFunctionFromMethodTests2
         builder.Services.AddLogging(c => c.SetMinimumLevel(LogLevel.Warning));
         Kernel kernel = builder.Build();
         kernel.Culture = new CultureInfo("fr-FR");
-        KernelArguments args = new();
+        KernelArguments args = [];
         using CancellationTokenSource cts = new();
 
         bool invoked = false;
         KernelFunction func = null!;
+
         func = KernelFunctionFactory.CreateFromMethod(
             (
                 Kernel kernelArg,
@@ -175,6 +184,7 @@ public sealed class KernelFunctionFromMethodTests2
         Kernel kernel = builder.Build();
 
         bool invoked = false;
+
         KernelFunction func = KernelFunctionFactory.CreateFromMethod(
             (
                 [FromKernelServices] IExampleService service1Arg,
@@ -218,16 +228,19 @@ public sealed class KernelFunctionFromMethodTests2
 
     private interface IExampleService
     {
+
     }
 
 
     private sealed class ExampleService : IExampleService
     {
+
     }
 
 
     private sealed class LocalExamplePlugin
     {
+
         [KernelFunction]
         public void Type01()
         {
@@ -252,6 +265,7 @@ public sealed class KernelFunctionFromMethodTests2
         public async Task<string> Type03Async()
         {
             await Task.Delay(0);
+
             return "";
         }
 
@@ -260,6 +274,7 @@ public sealed class KernelFunctionFromMethodTests2
         public async Task<string?> Type03NullableAsync()
         {
             await Task.Delay(0);
+
             return null;
         }
 
@@ -294,6 +309,7 @@ public sealed class KernelFunctionFromMethodTests2
         public async Task<string> Type06Async(string input)
         {
             await Task.Delay(0);
+
             return "";
         }
 
@@ -302,6 +318,7 @@ public sealed class KernelFunctionFromMethodTests2
         public async Task<string?> Type06NullableAsync(string? input)
         {
             await Task.Delay(0);
+
             return "";
         }
 
@@ -331,6 +348,7 @@ public sealed class KernelFunctionFromMethodTests2
         public async ValueTask<string> ReturnsValueTaskStringAsync()
         {
             await Task.Delay(0);
+
             return "hello world";
         }
 
@@ -346,6 +364,7 @@ public sealed class KernelFunctionFromMethodTests2
         public async Task<FunctionResult> ReturnsTaskFunctionResultAsync()
         {
             await Task.Delay(0);
+
             return new FunctionResult(s_nopFunction, "fake-result", CultureInfo.InvariantCulture);
         }
 
@@ -354,6 +373,7 @@ public sealed class KernelFunctionFromMethodTests2
         public async ValueTask<FunctionResult> ReturnsValueTaskFunctionResultAsync()
         {
             await Task.Delay(0);
+
             return new FunctionResult(s_nopFunction, "fake-result", CultureInfo.InvariantCulture);
         }
 
@@ -401,5 +421,7 @@ public sealed class KernelFunctionFromMethodTests2
         {
             return string.Empty;
         }
+
     }
+
 }

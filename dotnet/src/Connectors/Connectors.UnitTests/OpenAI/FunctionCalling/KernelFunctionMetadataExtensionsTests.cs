@@ -14,6 +14,7 @@ using Xunit;
 
 public sealed class KernelFunctionMetadataExtensionsTests
 {
+
     [Fact]
     public void ItCanConvertToOpenAIFunctionNoParameters()
     {
@@ -25,7 +26,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
             ReturnParameter = new KernelReturnParameterMetadata
             {
                 Description = "retDesc",
-                Schema = KernelJsonSchema.Parse("{\"type\": \"object\" }"),
+                Schema = KernelJsonSchema.Parse("""{"type": "object" }"""),
             }
         };
 
@@ -40,7 +41,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
 
         Assert.NotNull(result.ReturnParameter);
         Assert.Equal("retDesc", result.ReturnParameter.Description);
-        Assert.Equivalent(KernelJsonSchema.Parse("{\"type\": \"object\" }"), result.ReturnParameter.Schema);
+        Assert.Equivalent(KernelJsonSchema.Parse("""{"type": "object" }"""), result.ReturnParameter.Schema);
         Assert.Null(result.ReturnParameter.ParameterType);
     }
 
@@ -56,7 +57,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
             ReturnParameter = new KernelReturnParameterMetadata
             {
                 Description = "retDesc",
-                Schema = KernelJsonSchema.Parse("{\"type\": \"object\" }"),
+                Schema = KernelJsonSchema.Parse("""{"type": "object" }"""),
             }
         };
 
@@ -71,7 +72,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
 
         Assert.NotNull(result.ReturnParameter);
         Assert.Equal("retDesc", result.ReturnParameter.Description);
-        Assert.Equivalent(KernelJsonSchema.Parse("{\"type\": \"object\" }"), result.ReturnParameter.Schema);
+        Assert.Equivalent(KernelJsonSchema.Parse("""{"type": "object" }"""), result.ReturnParameter.Schema);
         Assert.Null(result.ReturnParameter.ParameterType);
     }
 
@@ -89,7 +90,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
             ParameterType = typeof(int),
             IsRequired = false,
             Schema = withSchema
-                ? KernelJsonSchema.Parse("{\"type\":\"integer\"}")
+                ? KernelJsonSchema.Parse("""{"type":"integer"}""")
                 : null,
         };
 
@@ -101,7 +102,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
             ReturnParameter = new KernelReturnParameterMetadata
             {
                 Description = "retDesc",
-                Schema = KernelJsonSchema.Parse("{\"type\": \"object\" }"),
+                Schema = KernelJsonSchema.Parse("""{"type": "object" }"""),
             }
         };
 
@@ -114,11 +115,13 @@ public sealed class KernelFunctionMetadataExtensionsTests
         Assert.Equal("This is param1 (default value: 1)", outputParam.Description);
         Assert.Equal(param1.IsRequired, outputParam.IsRequired);
         Assert.NotNull(outputParam.Schema);
-        Assert.Equal("integer", outputParam.Schema.RootElement.GetProperty("type").GetString());
+
+        Assert.Equal("integer", outputParam.Schema.RootElement.GetProperty("type").
+            GetString());
 
         Assert.NotNull(result.ReturnParameter);
         Assert.Equal("retDesc", result.ReturnParameter.Description);
-        Assert.Equivalent(KernelJsonSchema.Parse("{\"type\": \"object\" }"), result.ReturnParameter.Schema);
+        Assert.Equivalent(KernelJsonSchema.Parse("""{"type": "object" }"""), result.ReturnParameter.Schema);
         Assert.Null(result.ReturnParameter.ParameterType);
     }
 
@@ -137,7 +140,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
             ReturnParameter = new KernelReturnParameterMetadata
             {
                 Description = "retDesc",
-                Schema = KernelJsonSchema.Parse("{\"type\": \"object\" }"),
+                Schema = KernelJsonSchema.Parse("""{"type": "object" }"""),
             }
         };
 
@@ -152,7 +155,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
 
         Assert.NotNull(result.ReturnParameter);
         Assert.Equal("retDesc", result.ReturnParameter.Description);
-        Assert.Equivalent(KernelJsonSchema.Parse("{\"type\": \"object\" }"), result.ReturnParameter.Schema);
+        Assert.Equivalent(KernelJsonSchema.Parse("""{"type": "object" }"""), result.ReturnParameter.Schema);
         Assert.Null(result.ReturnParameter.ParameterType);
     }
 
@@ -183,7 +186,9 @@ public sealed class KernelFunctionMetadataExtensionsTests
         Assert.Equal(param1.Description, outputParam.Description);
         Assert.Equal(param1.IsRequired, outputParam.IsRequired);
         Assert.NotNull(outputParam.Schema);
-        Assert.Equal("integer", outputParam.Schema.RootElement.GetProperty("type").GetString());
+
+        Assert.Equal("integer", outputParam.Schema.RootElement.GetProperty("type").
+            GetString());
     }
 
 
@@ -194,7 +199,9 @@ public sealed class KernelFunctionMetadataExtensionsTests
         var kernel = new Kernel();
         kernel.Plugins.AddFromType<MyPlugin>("MyPlugin");
 
-        var functionMetadata = kernel.Plugins["MyPlugin"].First().Metadata;
+        var functionMetadata = kernel.Plugins["MyPlugin"].
+            First().
+            Metadata;
 
         var sut = functionMetadata.ToOpenAIFunction();
 
@@ -203,8 +210,9 @@ public sealed class KernelFunctionMetadataExtensionsTests
 
         // Assert
         Assert.NotNull(result);
+
         Assert.Equal(
-            "{\"type\":\"object\",\"required\":[\"parameter1\",\"parameter2\",\"parameter3\"],\"properties\":{\"parameter1\":{\"type\":\"string\",\"description\":\"String parameter\"},\"parameter2\":{\"enum\":[\"Value1\",\"Value2\"],\"description\":\"Enum parameter\"},\"parameter3\":{\"type\":\"string\",\"format\":\"date-time\",\"description\":\"DateTime parameter\"}}}",
+            """{"type":"object","required":["parameter1","parameter2","parameter3"],"properties":{"parameter1":{"type":"string","description":"String parameter"},"parameter2":{"enum":["Value1","Value2"],"description":"Enum parameter"},"parameter3":{"type":"string","format":"date-time","description":"DateTime parameter"}}}""",
             result.Parameters.ToString()
         );
     }
@@ -218,18 +226,21 @@ public sealed class KernelFunctionMetadataExtensionsTests
         {
             Description = "My sample function."
         };
+
         promptTemplateConfig.InputVariables.Add(new InputVariable
         {
             Name = "parameter1",
             Description = "String parameter",
-            JsonSchema = "{\"type\":\"string\",\"description\":\"String parameter\"}"
+            JsonSchema = """{"type":"string","description":"String parameter"}"""
         });
+
         promptTemplateConfig.InputVariables.Add(new InputVariable
         {
             Name = "parameter2",
             Description = "Enum parameter",
-            JsonSchema = "{\"enum\":[\"Value1\",\"Value2\"],\"description\":\"Enum parameter\"}"
+            JsonSchema = """{"enum":["Value1","Value2"],"description":"Enum parameter"}"""
         });
+
         var function = KernelFunctionFactory.CreateFromPrompt(promptTemplateConfig);
         var functionMetadata = function.Metadata;
         var sut = functionMetadata.ToOpenAIFunction();
@@ -239,8 +250,9 @@ public sealed class KernelFunctionMetadataExtensionsTests
 
         // Assert
         Assert.NotNull(result);
+
         Assert.Equal(
-            "{\"type\":\"object\",\"required\":[\"parameter1\",\"parameter2\"],\"properties\":{\"parameter1\":{\"type\":\"string\",\"description\":\"String parameter\"},\"parameter2\":{\"enum\":[\"Value1\",\"Value2\"],\"description\":\"Enum parameter\"}}}",
+            """{"type":"object","required":["parameter1","parameter2"],"properties":{"parameter1":{"type":"string","description":"String parameter"},"parameter2":{"enum":["Value1","Value2"],"description":"Enum parameter"}}}""",
             result.Parameters.ToString()
         );
     }
@@ -248,13 +260,17 @@ public sealed class KernelFunctionMetadataExtensionsTests
 
     private enum MyEnum
     {
+
         Value1,
+
         Value2
+
     }
 
 
     private sealed class MyPlugin
     {
+
         [KernelFunction, Description("My sample function.")]
         public string MyFunction(
             [Description("String parameter")] string parameter1,
@@ -264,5 +280,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         {
             return "return";
         }
+
     }
+
 }

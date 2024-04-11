@@ -11,6 +11,7 @@ using System.Text.Json.Serialization;
 /// </summary>
 internal sealed class JsonSchemaFunctionParameters
 {
+
     /// <summary>
     /// The type of schema which is always "object" when describing function parameters.
     /// </summary>
@@ -21,11 +22,12 @@ internal sealed class JsonSchemaFunctionParameters
     /// The list of required properties.
     /// </summary>
     [JsonPropertyName("required")]
-    public List<string> Required { get; set; } = new List<string>();
+    public List<string> Required { get; set; } = [];
 
     /// <summary>
     /// A dictionary of properties name => JSON Schema.
     /// </summary>
     [JsonPropertyName("properties")]
-    public Dictionary<string, KernelJsonSchema> Properties { get; set; } = new Dictionary<string, KernelJsonSchema>();
+    public Dictionary<string, KernelJsonSchema> Properties { get; set; } = [];
+
 }

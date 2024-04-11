@@ -13,6 +13,7 @@ using Xunit;
 
 public class KernelFunctionMetadataTests
 {
+
     private readonly Mock<ILoggerFactory> _logger;
 
 
@@ -55,7 +56,7 @@ public class KernelFunctionMetadataTests
         {
             Description = "ReturnParameterA",
             ParameterType = typeof(string),
-            Schema = KernelJsonSchema.Parse("{\"type\": \"object\" }"),
+            Schema = KernelJsonSchema.Parse("""{"type": "object" }"""),
         };
 
         // Act
@@ -66,7 +67,7 @@ public class KernelFunctionMetadataTests
 
         Assert.Equal("ReturnParameterA", funcViewA.ReturnParameter.Description);
         Assert.Equal(typeof(string), funcViewA.ReturnParameter.ParameterType);
-        Assert.Equivalent(KernelJsonSchema.Parse("{\"type\": \"object\" }"), funcViewA.ReturnParameter.Schema);
+        Assert.Equivalent(KernelJsonSchema.Parse("""{"type": "object" }"""), funcViewA.ReturnParameter.Schema);
     }
 
 
@@ -205,4 +206,5 @@ public class KernelFunctionMetadataTests
         var function = KernelFunctionFactory.CreateFromMethod(ValidFunctionName);
         var result = await function.InvokeAsync(new());
     }
+
 }

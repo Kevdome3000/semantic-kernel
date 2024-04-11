@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Plugins.OpenApi;
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -9,13 +11,10 @@ using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Http;
-
-namespace Microsoft.SemanticKernel.Plugins.OpenApi;
-
+using Extensions.DependencyInjection;
+using Extensions.Logging;
 using Extensions.Logging.Abstractions;
+using Http;
 
 
 /// <summary>
@@ -23,7 +22,9 @@ using Extensions.Logging.Abstractions;
 /// </summary>
 public static class OpenApiKernelExtensions
 {
+
     // TODO: Revise XML comments
+
 
     /// <summary>
     /// Creates a plugin from an OpenAPI v3 endpoint and adds it to the kernel's plugins collection.
@@ -41,10 +42,14 @@ public static class OpenApiKernelExtensions
         OpenApiFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
-        KernelPlugin plugin = await kernel.CreatePluginFromOpenApiAsync(pluginName, filePath, executionParameters, cancellationToken).ConfigureAwait(false);
+        KernelPlugin plugin = await kernel.CreatePluginFromOpenApiAsync(pluginName, filePath, executionParameters, cancellationToken).
+            ConfigureAwait(false);
+
         kernel.Plugins.Add(plugin);
+
         return plugin;
     }
+
 
     /// <summary>
     /// Creates a plugin from an OpenAPI v3 endpoint and adds it to the kernel's plugins collection.
@@ -62,10 +67,14 @@ public static class OpenApiKernelExtensions
         OpenApiFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
-        KernelPlugin plugin = await kernel.CreatePluginFromOpenApiAsync(pluginName, uri, executionParameters, cancellationToken).ConfigureAwait(false);
+        KernelPlugin plugin = await kernel.CreatePluginFromOpenApiAsync(pluginName, uri, executionParameters, cancellationToken).
+            ConfigureAwait(false);
+
         kernel.Plugins.Add(plugin);
+
         return plugin;
     }
+
 
     /// <summary>
     /// Creates a plugin from an OpenAPI v3 endpoint and adds it to the kernel's plugins collection.
@@ -83,10 +92,14 @@ public static class OpenApiKernelExtensions
         OpenApiFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
-        KernelPlugin plugin = await kernel.CreatePluginFromOpenApiAsync(pluginName, stream, executionParameters, cancellationToken).ConfigureAwait(false);
+        KernelPlugin plugin = await kernel.CreatePluginFromOpenApiAsync(pluginName, stream, executionParameters, cancellationToken).
+            ConfigureAwait(false);
+
         kernel.Plugins.Add(plugin);
+
         return plugin;
     }
+
 
     /// <summary>
     /// Creates a plugin from an OpenAPI v3 endpoint.
@@ -112,18 +125,21 @@ public static class OpenApiKernelExtensions
 #pragma warning restore CA2000
 
         var openApiSpec = await DocumentLoader.LoadDocumentFromFilePathAsync(
-            filePath,
-            kernel.LoggerFactory.CreateLogger(typeof(OpenApiKernelExtensions)) ?? NullLogger.Instance,
-            cancellationToken).ConfigureAwait(false);
+                filePath,
+                kernel.LoggerFactory.CreateLogger(typeof(OpenApiKernelExtensions)) ?? NullLogger.Instance,
+                cancellationToken).
+            ConfigureAwait(false);
 
         return await CreateOpenApiPluginAsync(
-            kernel,
-            pluginName,
-            executionParameters,
-            httpClient,
-            openApiSpec,
-            cancellationToken: cancellationToken).ConfigureAwait(false);
+                kernel,
+                pluginName,
+                executionParameters,
+                httpClient,
+                openApiSpec,
+                cancellationToken: cancellationToken).
+            ConfigureAwait(false);
     }
+
 
     /// <summary>
     /// Creates a plugin from an OpenAPI v3 endpoint.
@@ -149,22 +165,25 @@ public static class OpenApiKernelExtensions
 #pragma warning restore CA2000
 
         var openApiSpec = await DocumentLoader.LoadDocumentFromUriAsync(
-            uri,
-            kernel.LoggerFactory.CreateLogger(typeof(OpenApiKernelExtensions)) ?? NullLogger.Instance,
-            httpClient,
-            executionParameters?.AuthCallback,
-            executionParameters?.UserAgent,
-            cancellationToken).ConfigureAwait(false);
+                uri,
+                kernel.LoggerFactory.CreateLogger(typeof(OpenApiKernelExtensions)) ?? NullLogger.Instance,
+                httpClient,
+                executionParameters?.AuthCallback,
+                executionParameters?.UserAgent,
+                cancellationToken).
+            ConfigureAwait(false);
 
         return await CreateOpenApiPluginAsync(
-            kernel,
-            pluginName,
-            executionParameters,
-            httpClient,
-            openApiSpec,
-            uri,
-            cancellationToken: cancellationToken).ConfigureAwait(false);
+                kernel,
+                pluginName,
+                executionParameters,
+                httpClient,
+                openApiSpec,
+                uri,
+                cancellationToken: cancellationToken).
+            ConfigureAwait(false);
     }
+
 
     /// <summary>
     /// Creates a plugin from an OpenAPI v3 endpoint.
@@ -189,16 +208,19 @@ public static class OpenApiKernelExtensions
         var httpClient = HttpClientProvider.GetHttpClient(executionParameters?.HttpClient ?? kernel.Services.GetService<HttpClient>());
 #pragma warning restore CA2000
 
-        var openApiSpec = await DocumentLoader.LoadDocumentFromStreamAsync(stream).ConfigureAwait(false);
+        var openApiSpec = await DocumentLoader.LoadDocumentFromStreamAsync(stream).
+            ConfigureAwait(false);
 
         return await CreateOpenApiPluginAsync(
-            kernel,
-            pluginName,
-            executionParameters,
-            httpClient,
-            openApiSpec,
-            cancellationToken: cancellationToken).ConfigureAwait(false);
+                kernel,
+                pluginName,
+                executionParameters,
+                httpClient,
+                openApiSpec,
+                cancellationToken: cancellationToken).
+            ConfigureAwait(false);
     }
+
 
     #region private
 
@@ -218,10 +240,11 @@ public static class OpenApiKernelExtensions
         var parser = new OpenApiDocumentParser(loggerFactory);
 
         var operations = await parser.ParseAsync(
-            documentStream,
-            executionParameters?.IgnoreNonCompliantErrors ?? false,
-            executionParameters?.OperationsToExclude,
-            cancellationToken).ConfigureAwait(false);
+                documentStream,
+                executionParameters?.IgnoreNonCompliantErrors ?? false,
+                executionParameters?.OperationsToExclude,
+                cancellationToken).
+            ConfigureAwait(false);
 
         var runner = new RestApiOperationRunner(
             httpClient,
@@ -232,12 +255,15 @@ public static class OpenApiKernelExtensions
 
         var functions = new List<KernelFunction>();
         ILogger logger = loggerFactory.CreateLogger(typeof(OpenApiKernelExtensions)) ?? NullLogger.Instance;
+
         foreach (var operation in operations)
         {
             try
             {
                 logger.LogTrace("Registering Rest function {0}.{1}", pluginName, operation.Id);
-                functions.Add(CreateRestApiFunction(pluginName, runner, operation, executionParameters, documentUri, loggerFactory));
+
+                functions.Add(CreateRestApiFunction(pluginName, runner, operation, executionParameters,
+                    documentUri, loggerFactory));
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
@@ -249,6 +275,7 @@ public static class OpenApiKernelExtensions
 
         return KernelPluginFactory.CreateFromFunctions(pluginName, null, functions);
     }
+
 
     /// <summary>
     /// Registers KernelFunctionFactory for a REST API operation.
@@ -281,6 +308,7 @@ public static class OpenApiKernelExtensions
             {
                 // Extract function arguments from context
                 var arguments = new KernelArguments();
+
                 foreach (var parameter in restOperationParameters)
                 {
                     // A try to resolve argument by alternative parameter name
@@ -289,6 +317,7 @@ public static class OpenApiKernelExtensions
                         value is not null)
                     {
                         arguments.Add(parameter.Name, value);
+
                         continue;
                     }
 
@@ -297,6 +326,7 @@ public static class OpenApiKernelExtensions
                         value is not null)
                     {
                         arguments.Add(parameter.Name, value);
+
                         continue;
                     }
 
@@ -310,28 +340,34 @@ public static class OpenApiKernelExtensions
                 var options = new RestApiOperationRunOptions
                 {
                     ServerUrlOverride = executionParameters?.ServerUrlOverride,
-                    ApiHostUrl = documentUri is not null ? new Uri(documentUri.GetLeftPart(UriPartial.Authority)) : null
+                    ApiHostUrl = documentUri is not null
+                        ? new Uri(documentUri.GetLeftPart(UriPartial.Authority))
+                        : null
                 };
 
-                return await runner.RunAsync(operation, arguments, options, cancellationToken).ConfigureAwait(false);
+                return await runner.RunAsync(operation, arguments, options, cancellationToken).
+                    ConfigureAwait(false);
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
-                logger!.LogError(ex, "RestAPI function {Plugin}.{Name} execution failed with error {Error}", pluginName, operation.Id, ex.Message);
+                logger!.LogError(ex, "RestAPI function {Plugin}.{Name} execution failed with error {Error}", pluginName, operation.Id,
+                    ex.Message);
+
                 throw;
             }
         }
 
-        var parameters = restOperationParameters
-            .Select(p => new KernelParameterMetadata(p.AlternativeName ?? p.Name)
+        var parameters = restOperationParameters.Select(p => new KernelParameterMetadata(p.AlternativeName ?? p.Name)
             {
                 Description = $"{p.Description ?? p.Name}",
                 DefaultValue = p.DefaultValue ?? string.Empty,
                 IsRequired = p.IsRequired,
                 ParameterType = p.Type switch { "string" => typeof(string), "boolean" => typeof(bool), _ => null },
-                Schema = p.Schema ?? (p.Type is null ? null : KernelJsonSchema.Parse($"{{\"type\":\"{p.Type}\"}}")),
-            })
-            .ToList();
+                Schema = p.Schema ?? (p.Type is null
+                    ? null
+                    : KernelJsonSchema.Parse($$"""{"type":"{{p.Type}}"}""")),
+            }).
+            ToList();
 
         var returnParameter = operation.GetDefaultReturnParameter();
 
@@ -343,6 +379,7 @@ public static class OpenApiKernelExtensions
             functionName: ConvertOperationIdToValidFunctionName(operation.Id, logger),
             loggerFactory: loggerFactory);
     }
+
 
     /// <summary>
     /// Converts operation id to valid SK Function name.
@@ -356,6 +393,7 @@ public static class OpenApiKernelExtensions
         try
         {
             Verify.ValidFunctionName(operationId);
+
             return operationId;
         }
         catch (ArgumentException)
@@ -376,10 +414,11 @@ public static class OpenApiKernelExtensions
             result += CultureInfo.CurrentCulture.TextInfo.ToTitleCase(formattedToken.ToLower(CultureInfo.CurrentCulture));
         }
 
-        logger.LogInformation("Operation name \"{0}\" converted to \"{1}\" to comply with SK Function name requirements. Use \"{2}\" when invoking function.", operationId, result, result);
+        logger.LogInformation("""Operation name "{0}" converted to "{1}" to comply with SK Function name requirements. Use "{2}" when invoking function.""", operationId, result, result);
 
         return result;
     }
+
 
     /// <summary>
     /// Used to convert operationId to SK function names.
@@ -387,4 +426,6 @@ public static class OpenApiKernelExtensions
     private static readonly Regex s_removeInvalidCharsRegex = new("[^0-9A-Za-z_]");
 
     #endregion
+
+
 }

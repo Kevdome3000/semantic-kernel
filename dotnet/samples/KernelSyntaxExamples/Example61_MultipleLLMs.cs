@@ -11,24 +11,25 @@ using Xunit.Abstractions;
 
 public class Example61_MultipleLLMs : BaseTest
 {
+
     /// <summary>
     /// Show how to run a prompt function and specify a specific service to use.
     /// </summary>
     [RetryFact(typeof(HttpOperationException))]
     public async Task RunAsync()
     {
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddAzureOpenAIChatCompletion(
+        Kernel kernel = Kernel.CreateBuilder().
+            AddAzureOpenAIChatCompletion(
                 deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 endpoint: TestConfiguration.AzureOpenAI.Endpoint,
                 apiKey: TestConfiguration.AzureOpenAI.ApiKey,
                 serviceId: "AzureOpenAIChat",
-                modelId: TestConfiguration.AzureOpenAI.ChatModelId)
-            .AddOpenAIChatCompletion(
+                modelId: TestConfiguration.AzureOpenAI.ChatModelId).
+            AddOpenAIChatCompletion(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey,
-                serviceId: "OpenAIChat")
-            .Build();
+                serviceId: "OpenAIChat").
+            Build();
 
         await RunByServiceIdAsync(kernel, "AzureOpenAIChat");
         await RunByModelIdAsync(kernel, TestConfiguration.OpenAI.ChatModelId);
@@ -42,11 +43,13 @@ public class Example61_MultipleLLMs : BaseTest
 
         var prompt = "Hello AI, what can you do for me?";
 
-        KernelArguments arguments = new();
+        KernelArguments arguments = [];
+
         arguments.ExecutionSettings = new Dictionary<string, PromptExecutionSettings>()
         {
             { serviceId, new PromptExecutionSettings() }
         };
+
         var result = await kernel.InvokePromptAsync(prompt, arguments);
         WriteLine(result.GetValue<string>());
     }
@@ -64,6 +67,7 @@ public class Example61_MultipleLLMs : BaseTest
             {
                 ModelId = modelId
             }));
+
         WriteLine(result.GetValue<string>());
     }
 
@@ -80,6 +84,7 @@ public class Example61_MultipleLLMs : BaseTest
         {
             modelSettings.Add(modelId, new PromptExecutionSettings() { ModelId = modelId });
         }
+
         var promptConfig = new PromptTemplateConfig(prompt) { Name = "HelloAI", ExecutionSettings = modelSettings };
 
         var function = kernel.CreateFunctionFromPrompt(promptConfig);
@@ -92,4 +97,5 @@ public class Example61_MultipleLLMs : BaseTest
     public Example61_MultipleLLMs(ITestOutputHelper output) : base(output)
     {
     }
+
 }

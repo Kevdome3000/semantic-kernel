@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Plugins.OpenApi;
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -7,13 +9,10 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Http;
-
-namespace Microsoft.SemanticKernel.Plugins.OpenApi;
-
-using System.Text.Json.Nodes;
+using Http;
 
 
 /// <summary>
@@ -21,10 +20,13 @@ using System.Text.Json.Nodes;
 /// </summary>
 internal sealed class RestApiOperationRunner
 {
+
     private const string MediaTypeApplicationJson = "application/json";
+
     private const string MediaTypeTextPlain = "text/plain";
 
     private const string DefaultResponseKey = "default";
+
     private const string WildcardResponseKeyFormat = "{0}XX";
 
     /// <summary>
@@ -37,10 +39,22 @@ internal sealed class RestApiOperationRunner
     /// </summary>
     private static readonly Dictionary<string, HttpResponseContentSerializer> s_serializerByContentType = new()
     {
-        { "image", async (content) => await content.ReadAsByteArrayAndTranslateExceptionAsync().ConfigureAwait(false) },
-        { "text", async (content) => await content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false) },
-        { "application/json", async (content) => await content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false)},
-        { "application/xml", async (content) => await content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false)}
+        {
+            "image", async (content) => await content.ReadAsByteArrayAndTranslateExceptionAsync().
+                ConfigureAwait(false)
+        },
+        {
+            "text", async (content) => await content.ReadAsStringWithExceptionMappingAsync().
+                ConfigureAwait(false)
+        },
+        {
+            "application/json", async (content) => await content.ReadAsStringWithExceptionMappingAsync().
+                ConfigureAwait(false)
+        },
+        {
+            "application/xml", async (content) => await content.ReadAsStringWithExceptionMappingAsync().
+                ConfigureAwait(false)
+        }
     };
 
     /// <summary>
@@ -69,6 +83,7 @@ internal sealed class RestApiOperationRunner
     /// full name (parameter name prefixed with the parent property name).
     /// </summary>
     private readonly bool _enablePayloadNamespacing;
+
 
     /// <summary>
     /// Creates an instance of the <see cref="RestApiOperationRunner"/> class.
@@ -110,6 +125,7 @@ internal sealed class RestApiOperationRunner
         };
     }
 
+
     /// <summary>
     /// Executes the specified <paramref name="operation"/> asynchronously, using the provided <paramref name="arguments"/>.
     /// </summary>
@@ -130,8 +146,10 @@ internal sealed class RestApiOperationRunner
 
         var payload = this.BuildOperationPayload(operation, arguments);
 
-        return this.SendAsync(url, operation.Method, headers, payload, operation.Responses.ToDictionary(item => item.Key, item => item.Value.Schema), cancellationToken);
+        return this.SendAsync(url, operation.Method, headers, payload,
+            operation.Responses.ToDictionary(item => item.Key, item => item.Value.Schema), cancellationToken);
     }
+
 
     #region private
 
@@ -155,7 +173,8 @@ internal sealed class RestApiOperationRunner
     {
         using var requestMessage = new HttpRequestMessage(method, url);
 
-        await this._authCallback(requestMessage, cancellationToken).ConfigureAwait(false);
+        await this._authCallback(requestMessage, cancellationToken).
+            ConfigureAwait(false);
 
         if (payload != null)
         {
@@ -165,6 +184,7 @@ internal sealed class RestApiOperationRunner
         requestMessage.Headers.Add("User-Agent", !string.IsNullOrWhiteSpace(this._userAgent)
             ? this._userAgent
             : HttpHeaderConstant.Values.UserAgent);
+
         requestMessage.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(RestApiOperationRunner)));
 
         if (headers != null)
@@ -175,14 +195,17 @@ internal sealed class RestApiOperationRunner
             }
         }
 
-        using var responseMessage = await this._httpClient.SendWithSuccessCheckAsync(requestMessage, cancellationToken).ConfigureAwait(false);
+        using var responseMessage = await this._httpClient.SendWithSuccessCheckAsync(requestMessage, cancellationToken).
+            ConfigureAwait(false);
 
-        var response = await SerializeResponseContentAsync(responseMessage.Content).ConfigureAwait(false);
+        var response = await SerializeResponseContentAsync(responseMessage.Content).
+            ConfigureAwait(false);
 
         response.ExpectedSchema ??= GetExpectedSchema(expectedSchemas, responseMessage.StatusCode);
 
         return response;
     }
+
 
     /// <summary>
     /// Serializes the response content of an HTTP request.
@@ -200,6 +223,7 @@ internal sealed class RestApiOperationRunner
         {
             // Split the media type into a primary-type and a sub-type
             var mediaTypeParts = mediaType.Split('/');
+
             if (mediaTypeParts.Length != 2)
             {
                 throw new KernelException($"The string `{mediaType}` is not a valid media type.");
@@ -215,10 +239,12 @@ internal sealed class RestApiOperationRunner
         }
 
         // Serialize response content and return it
-        var serializedContent = await serializer.Invoke(content).ConfigureAwait(false);
+        var serializedContent = await serializer.Invoke(content).
+            ConfigureAwait(false);
 
         return new RestApiOperationResponse(serializedContent, contentType!.ToString());
     }
+
 
     /// <summary>
     /// Builds operation payload.
@@ -234,6 +260,7 @@ internal sealed class RestApiOperationRunner
         }
 
         var mediaType = operation.Payload?.MediaType;
+
         if (string.IsNullOrEmpty(mediaType))
         {
             if (!arguments.TryGetValue(RestApiOperation.ContentTypeArgumentName, out object? fallback) || fallback is not string mediaTypeFallback)
@@ -251,6 +278,7 @@ internal sealed class RestApiOperationRunner
 
         return payloadFactory.Invoke(operation.Payload, arguments);
     }
+
 
     /// <summary>
     /// Builds "application/json" payload.
@@ -282,6 +310,7 @@ internal sealed class RestApiOperationRunner
         return new StringContent(content, Encoding.UTF8, MediaTypeApplicationJson);
     }
 
+
     /// <summary>
     /// Builds a JSON object from a list of RestAPI operation payload properties.
     /// </summary>
@@ -301,12 +330,14 @@ internal sealed class RestApiOperationRunner
             {
                 var node = this.BuildJsonObject(propertyMetadata.Properties, arguments, argumentName);
                 result.Add(propertyMetadata.Name, node);
+
                 continue;
             }
 
             if (arguments.TryGetValue(argumentName, out object? propertyValue) && propertyValue is not null)
             {
                 result.Add(propertyMetadata.Name, OpenApiTypeConverter.Convert(propertyMetadata.Name, propertyMetadata.Type, propertyValue));
+
                 continue;
             }
 
@@ -319,6 +350,7 @@ internal sealed class RestApiOperationRunner
         return result;
     }
 
+
     /// <summary>
     /// Gets the expected schema for the specified status code.
     /// </summary>
@@ -328,22 +360,27 @@ internal sealed class RestApiOperationRunner
     private static KernelJsonSchema? GetExpectedSchema(IDictionary<string, KernelJsonSchema?>? expectedSchemas, HttpStatusCode statusCode)
     {
         KernelJsonSchema? matchingResponse = null;
+
         if (expectedSchemas is not null)
         {
             var statusCodeKey = $"{(int)statusCode}";
 
             // Exact Match
-            matchingResponse = expectedSchemas.FirstOrDefault(r => r.Key == statusCodeKey).Value;
+            matchingResponse = expectedSchemas.FirstOrDefault(r => r.Key == statusCodeKey).
+                Value;
 
             // Wildcard match e.g. 2XX
-            matchingResponse ??= expectedSchemas.FirstOrDefault(r => r.Key == string.Format(CultureInfo.InvariantCulture, WildcardResponseKeyFormat, statusCodeKey.Substring(0, 1))).Value;
+            matchingResponse ??= expectedSchemas.FirstOrDefault(r => r.Key == string.Format(CultureInfo.InvariantCulture, WildcardResponseKeyFormat, statusCodeKey.Substring(0, 1))).
+                Value;
 
             // Default
-            matchingResponse ??= expectedSchemas.FirstOrDefault(r => r.Key == DefaultResponseKey).Value;
+            matchingResponse ??= expectedSchemas.FirstOrDefault(r => r.Key == DefaultResponseKey).
+                Value;
         }
 
         return matchingResponse;
     }
+
 
     /// <summary>
     /// Builds "text/plain" payload.
@@ -361,6 +398,7 @@ internal sealed class RestApiOperationRunner
         return new StringContent(payload, Encoding.UTF8, MediaTypeTextPlain);
     }
 
+
     /// <summary>
     /// Retrieves the argument name for a payload property.
     /// </summary>
@@ -374,8 +412,11 @@ internal sealed class RestApiOperationRunner
             return propertyName;
         }
 
-        return string.IsNullOrEmpty(propertyNamespace) ? propertyName : $"{propertyNamespace}.{propertyName}";
+        return string.IsNullOrEmpty(propertyNamespace)
+            ? propertyName
+            : $"{propertyNamespace}.{propertyName}";
     }
+
 
     /// <summary>
     /// Builds operation Url.
@@ -385,16 +426,18 @@ internal sealed class RestApiOperationRunner
     /// <param name="serverUrlOverride">Override for REST API operation server url.</param>
     /// <param name="apiHostUrl">The URL of REST API host.</param>
     /// <returns>The operation Url.</returns>
-    private Uri BuildsOperationUrl(RestApiOperation operation, IDictionary<string, object?> arguments, Uri? serverUrlOverride = null, Uri? apiHostUrl = null)
+    private Uri BuildsOperationUrl(
+        RestApiOperation operation,
+        IDictionary<string, object?> arguments,
+        Uri? serverUrlOverride = null,
+        Uri? apiHostUrl = null)
     {
         var url = operation.BuildOperationUrl(arguments, serverUrlOverride, apiHostUrl);
 
-        var urlBuilder = new UriBuilder(url);
-
-        urlBuilder.Query = operation.BuildQueryString(arguments);
-
-        return urlBuilder.Uri;
+        return new UriBuilder(url) { Query = operation.BuildQueryString(arguments) }.Uri;
     }
 
     #endregion
+
+
 }

@@ -45,13 +45,13 @@ public sealed class AzureAISearchMemoryStoreTests
     public async Task GetCollectionsReturnsIndexNamesAsync()
     {
         // Arrange
-        Page<SearchIndex> page = Page<SearchIndex>.FromValues(new[]
-        {
+        Page<SearchIndex> page = Page<SearchIndex>.FromValues(
+        [
             new SearchIndex("index-1"),
             new SearchIndex("index-2"),
-        }, null, Mock.Of<Response>());
+        ], null, Mock.Of<Response>());
 
-        var pageable = AsyncPageable<SearchIndex>.FromPages(new[] { page });
+        var pageable = AsyncPageable<SearchIndex>.FromPages([page]);
 
         this._mockSearchIndexClient.Setup(x => x.GetIndexesAsync(It.IsAny<CancellationToken>())).
             Returns(pageable);
@@ -99,13 +99,13 @@ public sealed class AzureAISearchMemoryStoreTests
     public async Task DoesCollectionExistReturnsValidResultAsync(string collectionName, bool expectedResult)
     {
         // Arrange
-        Page<SearchIndex> page = Page<SearchIndex>.FromValues(new[]
-        {
+        Page<SearchIndex> page = Page<SearchIndex>.FromValues(
+        [
             new SearchIndex("index-1"),
             new SearchIndex("index-2"),
-        }, null, Mock.Of<Response>());
+        ], null, Mock.Of<Response>());
 
-        var pageable = AsyncPageable<SearchIndex>.FromPages(new[] { page });
+        var pageable = AsyncPageable<SearchIndex>.FromPages([page]);
 
         this._mockSearchIndexClient.Setup(x => x.GetIndexesAsync(It.IsAny<CancellationToken>())).
             Returns(pageable);
@@ -170,7 +170,7 @@ public sealed class AzureAISearchMemoryStoreTests
     {
         // Arrange
         var indexingResult = SearchModelFactory.IndexingResult("record-id", null, true, 200);
-        var results = SearchModelFactory.IndexDocumentsResult(new[] { indexingResult });
+        var results = SearchModelFactory.IndexDocumentsResult([indexingResult]);
 
         this._mockSearchClient.Setup(x => x.IndexDocumentsAsync<AzureAISearchMemoryRecord>(
                 It.IsAny<IndexDocumentsBatch<AzureAISearchMemoryRecord>>(),
@@ -210,7 +210,7 @@ public sealed class AzureAISearchMemoryStoreTests
     {
         // Arrange
         var indexingResult = SearchModelFactory.IndexingResult("record-id", null, true, 200);
-        var results = SearchModelFactory.IndexDocumentsResult(new[] { indexingResult });
+        var results = SearchModelFactory.IndexDocumentsResult([indexingResult]);
 
         this._mockSearchClient.SetupSequence(x => x.IndexDocumentsAsync<AzureAISearchMemoryRecord>(
                 It.IsAny<IndexDocumentsBatch<AzureAISearchMemoryRecord>>(),
@@ -340,7 +340,7 @@ public sealed class AzureAISearchMemoryStoreTests
     {
         // Arrange
         var indexingResult = SearchModelFactory.IndexingResult("record-id", null, true, 200);
-        var results = SearchModelFactory.IndexDocumentsResult(new[] { indexingResult });
+        var results = SearchModelFactory.IndexDocumentsResult([indexingResult]);
 
         this._mockSearchClient.Setup(x => x.DeleteDocumentsAsync<AzureAISearchMemoryRecord>(
                 It.IsAny<IEnumerable<AzureAISearchMemoryRecord>>(),

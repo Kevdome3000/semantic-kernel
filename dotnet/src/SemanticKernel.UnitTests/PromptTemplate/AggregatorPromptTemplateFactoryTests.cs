@@ -13,6 +13,7 @@ using Xunit;
 
 public sealed class AggregatorPromptTemplateFactoryTests
 {
+
     [Fact]
     public void ItCreatesMyPromptTemplates()
     {
@@ -87,69 +88,69 @@ public sealed class AggregatorPromptTemplateFactoryTests
 
     private sealed class MyPromptTemplateFactory1 : IPromptTemplateFactory
     {
+
         public bool TryCreate(PromptTemplateConfig templateConfig, out IPromptTemplate? result)
         {
             if (templateConfig.TemplateFormat.Equals("my-format-1", StringComparison.Ordinal))
             {
                 result = new MyPromptTemplate1(templateConfig);
+
                 return true;
             }
 
             result = null;
+
             return false;
         }
+
     }
 
 
-    private sealed class MyPromptTemplate1 : IPromptTemplate
+    private sealed class MyPromptTemplate1(PromptTemplateConfig promptConfig) : IPromptTemplate
     {
-        private readonly PromptTemplateConfig _promptModel;
 
-
-        public MyPromptTemplate1(PromptTemplateConfig promptConfig)
-        {
-            this._promptModel = promptConfig;
-        }
+        private readonly PromptTemplateConfig _promptModel = promptConfig;
 
 
         public Task<string> RenderAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(this._promptModel.Template);
         }
+
     }
 
 
     private sealed class MyPromptTemplateFactory2 : IPromptTemplateFactory
     {
+
         public bool TryCreate(PromptTemplateConfig templateConfig, out IPromptTemplate? result)
         {
             if (templateConfig.TemplateFormat.Equals("my-format-2", StringComparison.Ordinal))
             {
                 result = new MyPromptTemplate2(templateConfig);
+
                 return true;
             }
 
             result = null;
+
             return false;
         }
+
     }
 
 
-    private sealed class MyPromptTemplate2 : IPromptTemplate
+    private sealed class MyPromptTemplate2(PromptTemplateConfig promptConfig) : IPromptTemplate
     {
-        private readonly PromptTemplateConfig _promptModel;
 
-
-        public MyPromptTemplate2(PromptTemplateConfig promptConfig)
-        {
-            this._promptModel = promptConfig;
-        }
+        private readonly PromptTemplateConfig _promptModel = promptConfig;
 
 
         public Task<string> RenderAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(this._promptModel.Template);
         }
+
     }
 
     #endregion

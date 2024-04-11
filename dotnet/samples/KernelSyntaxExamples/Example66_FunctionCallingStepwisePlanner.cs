@@ -12,15 +12,16 @@ using Xunit.Abstractions;
 
 public class Example66_FunctionCallingStepwisePlanner : BaseTest
 {
+
     [Fact]
     public async Task RunAsync()
     {
         string[] questions =
-        {
+        [
             "What is the current hour number, plus 5?",
             "What is 387 minus 22? Email the solution to John and Mary.",
             "Write a limerick, translate it to Spanish, and send it to Jane",
-        };
+        ];
 
         var kernel = InitializeKernel();
 
@@ -29,6 +30,7 @@ public class Example66_FunctionCallingStepwisePlanner : BaseTest
             MaxIterations = 15,
             MaxTokens = 4000,
         };
+
         var planner = new FunctionCallingStepwisePlanner(options);
 
         foreach (var question in questions)
@@ -48,11 +50,11 @@ public class Example66_FunctionCallingStepwisePlanner : BaseTest
     /// <returns>A kernel instance</returns>
     private static Kernel InitializeKernel()
     {
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(
+        Kernel kernel = Kernel.CreateBuilder().
+            AddOpenAIChatCompletion(
                 apiKey: TestConfiguration.OpenAI.ApiKey,
-                modelId: "gpt-3.5-turbo-1106")
-            .Build();
+                modelId: "gpt-3.5-turbo-1106").
+            Build();
 
         kernel.ImportPluginFromType<Plugins.EmailPlugin>();
         kernel.ImportPluginFromType<MathPlugin>();
@@ -65,4 +67,5 @@ public class Example66_FunctionCallingStepwisePlanner : BaseTest
     public Example66_FunctionCallingStepwisePlanner(ITestOutputHelper output) : base(output)
     {
     }
+
 }

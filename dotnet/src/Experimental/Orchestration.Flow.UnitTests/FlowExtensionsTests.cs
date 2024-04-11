@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace SemanticKernel.Experimental.Orchestration.Flow.UnitTests;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,10 +10,10 @@ using Microsoft.SemanticKernel.Experimental.Orchestration;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
 using Xunit;
 
-namespace SemanticKernel.Experimental.Orchestration.Flow.UnitTests;
 
 public class FlowExtensionsTests
 {
+
     [Fact]
     public async Task TestBuildReferenceStepAsync()
     {
@@ -27,19 +29,23 @@ public class FlowExtensionsTests
         flow2.AddStep(step5);
 
         // Act
-        var catalog = new InMemoryFlowCatalog(new List<Microsoft.SemanticKernel.Experimental.Orchestration.Flow> { flow1, flow2 });
+        var catalog = new InMemoryFlowCatalog([flow1, flow2]);
         var flow1InCatalog = await catalog.GetFlowAsync("flow1");
         Assert.NotNull(flow1InCatalog);
 
         // Assert
         Assert.DoesNotContain(flow1InCatalog.Steps, step => step is ReferenceFlowStep);
-        var flow2Step = flow1InCatalog.Steps.OfType<Microsoft.SemanticKernel.Experimental.Orchestration.Flow>().SingleOrDefault();
+
+        var flow2Step = flow1InCatalog.Steps.OfType<Microsoft.SemanticKernel.Experimental.Orchestration.Flow>().
+            SingleOrDefault();
+
         Assert.NotNull(flow2Step);
         Assert.Equal("flow2", flow2Step.Name);
         Assert.Equal(CompletionType.Optional, flow2Step.CompletionType);
         Assert.Equal("a", flow2Step.Requires.SingleOrDefault());
         Assert.Equal("b", flow2Step.Provides.SingleOrDefault());
     }
+
 
     [Fact]
     public void TestBuildNonExistReferenceStep()
@@ -54,8 +60,9 @@ public class FlowExtensionsTests
         flow2.AddStep(step5);
 
         // Act and assert
-        Assert.Throws<AggregateException>(() => new InMemoryFlowCatalog(new List<Microsoft.SemanticKernel.Experimental.Orchestration.Flow> { flow1, flow2 }));
+        Assert.Throws<AggregateException>(() => new InMemoryFlowCatalog([flow1, flow2]));
     }
+
 
     private static Microsoft.SemanticKernel.Experimental.Orchestration.Flow CreateFlowWithReferenceStep(string referenceFlowName)
     {
@@ -68,10 +75,12 @@ public class FlowExtensionsTests
         var step3 = new FlowStep("step3");
         step3.AddRequires("a", "b");
         step3.AddProvides("c");
+
         var step4 = new ReferenceFlowStep(referenceFlowName)
         {
             CompletionType = CompletionType.Optional
         };
+
         flow.AddStep(step1);
         flow.AddStep(step2);
         flow.AddStep(step3);
@@ -80,13 +89,17 @@ public class FlowExtensionsTests
         return flow;
     }
 
+
     private sealed class InMemoryFlowCatalog : IFlowCatalog
     {
-        private readonly Dictionary<string, Microsoft.SemanticKernel.Experimental.Orchestration.Flow> _flows = new();
+
+        private readonly Dictionary<string, Microsoft.SemanticKernel.Experimental.Orchestration.Flow> _flows = [];
+
 
         internal InMemoryFlowCatalog()
         {
         }
+
 
         internal InMemoryFlowCatalog(IReadOnlyList<Microsoft.SemanticKernel.Experimental.Orchestration.Flow> flows)
         {
@@ -100,20 +113,26 @@ public class FlowExtensionsTests
             foreach (var flow in flows)
             {
 #pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
-                flow.BuildReferenceAsync(this).Wait();
+                flow.BuildReferenceAsync(this).
+                    Wait();
 #pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
             }
         }
+
 
         public Task<IEnumerable<Microsoft.SemanticKernel.Experimental.Orchestration.Flow>> GetFlowsAsync()
         {
             return Task.FromResult(this._flows.Select(_ => _.Value));
         }
 
+
         public Task<Microsoft.SemanticKernel.Experimental.Orchestration.Flow?> GetFlowAsync(string flowName)
         {
-            return Task.FromResult(this._flows.TryGetValue(flowName, out var flow) ? flow : null);
+            return Task.FromResult(this._flows.TryGetValue(flowName, out var flow)
+                ? flow
+                : null);
         }
+
 
         public Task<bool> RegisterFlowAsync(Microsoft.SemanticKernel.Experimental.Orchestration.Flow flow)
         {
@@ -121,5 +140,7 @@ public class FlowExtensionsTests
 
             return Task.FromResult(true);
         }
+
     }
+
 }

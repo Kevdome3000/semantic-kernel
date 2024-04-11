@@ -148,7 +148,7 @@ public sealed class Kernel
     /// </summary>
     public KernelPluginCollection Plugins =>
         _plugins ??
-        Interlocked.CompareExchange(ref _plugins, new KernelPluginCollection(), null) ??
+        Interlocked.CompareExchange(ref _plugins, [], null) ??
         _plugins;
 
     /// <summary>
@@ -157,7 +157,7 @@ public sealed class Kernel
 
     public IList<IFunctionFilter> FunctionFilters =>
         _functionFilters ??
-        Interlocked.CompareExchange(ref _functionFilters, new NonNullCollection<IFunctionFilter>(), null) ??
+        Interlocked.CompareExchange(ref _functionFilters, [], null) ??
         _functionFilters;
 
     /// <summary>
@@ -166,7 +166,7 @@ public sealed class Kernel
 
     public IList<IPromptFilter> PromptFilters =>
         _promptFilters ??
-        Interlocked.CompareExchange(ref _promptFilters, new NonNullCollection<IPromptFilter>(), null) ??
+        Interlocked.CompareExchange(ref _promptFilters, [], null) ??
         _promptFilters;
 
     /// <summary>
@@ -216,7 +216,7 @@ public sealed class Kernel
     /// </remarks>
     public IDictionary<string, object?> Data =>
         _data ??
-        Interlocked.CompareExchange(ref _data, new Dictionary<string, object?>(), null) ??
+        Interlocked.CompareExchange(ref _data, [], null) ??
         _data;
 
 
@@ -289,7 +289,7 @@ public sealed class Kernel
                     return keys.SelectMany(key => Services.GetKeyedServices<T>(key));
                 }
 
-                return Enumerable.Empty<T>();
+                return [];
             }
         }
 

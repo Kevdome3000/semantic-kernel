@@ -1,27 +1,30 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Experimental.Orchestration;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
+using Execution;
 
-namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 
 /// <summary>
 /// Step within a <see cref="Flow"/> which defines the step goal, available plugins, required and provided variables.
 /// </summary>
 public class FlowStep
 {
-    private readonly List<string> _requires = new();
 
-    private readonly List<string> _provides = new();
+    private readonly List<string> _requires = [];
 
-    private readonly List<string> _passthrough = new();
+    private readonly List<string> _provides = [];
 
-    private Dictionary<string, Type?> _pluginTypes = new();
+    private readonly List<string> _passthrough = [];
+
+    private Dictionary<string, Type?> _pluginTypes = [];
 
     private Func<Kernel, Dictionary<object, string?>, IEnumerable<object>>? _pluginsFactory;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FlowStep"/> class.
@@ -33,6 +36,7 @@ public class FlowStep
         this.Goal = goal;
         this._pluginsFactory = pluginsFactory;
     }
+
 
     /// <summary>
     /// Goal of the step
@@ -84,50 +88,60 @@ public class FlowStep
         }
     }
 
+
     private List<object> GetPlugins(Dictionary<object, string?> globalPlugins, Kernel kernel)
     {
         return this._pluginTypes.Select(kvp =>
-        {
-            var pluginName = kvp.Key;
-            var globalPlugin = globalPlugins.FirstOrDefault(_ => _.Key.GetType().Name.Contains(pluginName)).Key;
-            if (globalPlugin != null)
             {
-                return globalPlugin;
-            }
+                var pluginName = kvp.Key;
 
-            var type = kvp.Value;
-            if (type != null)
-            {
-                try
+                var globalPlugin = globalPlugins.FirstOrDefault(_ => _.Key.GetType().
+                        Name.Contains(pluginName)).
+                    Key;
+
+                if (globalPlugin != null)
                 {
-                    return Activator.CreateInstance(type, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, new object[] { kernel }, null);
+                    return globalPlugin;
                 }
-                catch (MissingMethodException)
+
+                var type = kvp.Value;
+
+                if (type != null)
                 {
                     try
                     {
-                        return Activator.CreateInstance(type, true);
+                        return Activator.CreateInstance(type, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, [kernel],
+                            null);
                     }
                     catch (MissingMethodException)
                     {
+                        try
+                        {
+                            return Activator.CreateInstance(type, true);
+                        }
+                        catch (MissingMethodException)
+                        {
+                        }
                     }
                 }
-            }
 
-            return null;
-        }).Where(plugin => plugin != null).ToList()!;
+                return null;
+            }).
+            Where(plugin => plugin != null).
+            ToList()!;
     }
+
 
     private static Dictionary<string, Type?> GetPluginTypes(List<string>? value)
     {
-        Dictionary<string, Type?> plugins = new();
+        Dictionary<string, Type?> plugins = [];
 
         if (value is not null)
         {
-            var types = AppDomain.CurrentDomain.GetAssemblies()
-                .Where(a => !a.IsDynamic)
-                .SelectMany(a => a.GetTypes())
-                .ToList();
+            var types = AppDomain.CurrentDomain.GetAssemblies().
+                Where(a => !a.IsDynamic).
+                SelectMany(a => a.GetTypes()).
+                ToList();
 
             foreach (var pluginName in value)
             {
@@ -137,6 +151,7 @@ public class FlowStep
                 }
 
                 var type = types.FirstOrDefault(predicate: t => t.FullName?.Equals(pluginName, StringComparison.OrdinalIgnoreCase) ?? false);
+
                 if (type is null)
                 {
                     type = types.FirstOrDefault(t => t.FullName?.Contains(pluginName) ?? false);
@@ -145,6 +160,7 @@ public class FlowStep
                     {
                         // If not found, assume the plugin would be loaded separately.
                         plugins.Add(pluginName, null);
+
                         continue;
                     }
                 }
@@ -156,6 +172,7 @@ public class FlowStep
         return plugins;
     }
 
+
     /// <summary>
     /// Register the required arguments for the step
     /// </summary>
@@ -166,6 +183,7 @@ public class FlowStep
         this._requires.AddRange(requiredArguments);
     }
 
+
     /// <summary>
     /// Register the arguments provided by the step
     /// </summary>
@@ -175,6 +193,7 @@ public class FlowStep
         this.ValidateArguments(providedArguments);
         this._provides.AddRange(providedArguments);
     }
+
 
     /// <summary>
     /// Register the arguments passed through by the step
@@ -196,6 +215,7 @@ public class FlowStep
         this._passthrough.AddRange(passthroughArguments);
     }
 
+
     /// <summary>
     /// Get the plugin instances registered with the step
     /// </summary>
@@ -209,8 +229,9 @@ public class FlowStep
             return this._pluginsFactory(kernel, globalPlugins);
         }
 
-        return Enumerable.Empty<object>();
+        return [];
     }
+
 
     /// <summary>
     /// Check if the step depends on another step
@@ -219,16 +240,20 @@ public class FlowStep
     /// <returns>true if the step depends on the other step, false otherwise</returns>
     public bool DependsOn(FlowStep otherStep)
     {
-        return this.Requires.Intersect(otherStep.Provides).Any();
+        return this.Requires.Intersect(otherStep.Provides).
+            Any();
     }
+
 
     private void ValidateArguments(string[] arguments)
     {
-        var invalidArguments = arguments.Intersect(Constants.ActionVariableNames.All).ToArray();
+        var invalidArguments = arguments.Intersect(Constants.ActionVariableNames.All).
+            ToArray();
 
         if (invalidArguments.Length != 0)
         {
             throw new ArgumentException($"Invalid arguments: {string.Join(",", invalidArguments)}");
         }
     }
+
 }

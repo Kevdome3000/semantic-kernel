@@ -32,7 +32,7 @@ internal sealed class AzureOpenAITextToAudioClient
     /// <summary>
     /// Storage for AI service attributes.
     /// </summary>
-    internal Dictionary<string, object?> Attributes { get; } = new();
+    internal Dictionary<string, object?> Attributes { get; } = [];
 
 
     /// <summary>
@@ -86,7 +86,7 @@ internal sealed class AzureOpenAITextToAudioClient
         var data = await response.Content.ReadAsByteArrayAndTranslateExceptionAsync().
             ConfigureAwait(false);
 
-        return new List<AudioContent> { new(data, modelId) };
+        return [new(data, modelId)];
     }
 
 

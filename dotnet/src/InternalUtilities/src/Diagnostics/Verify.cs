@@ -24,7 +24,7 @@ internal static class Verify
     /// Equivalent of ArgumentNullException.ThrowIfNull
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void NotNull([NotNull] object? obj, [CallerArgumentExpression("obj")] string? paramName = null)
+    internal static void NotNull([NotNull] object? obj, [CallerArgumentExpression(nameof(obj))] string? paramName = null)
     {
         if (obj is null)
         {
@@ -34,7 +34,7 @@ internal static class Verify
 
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void NotNullOrWhiteSpace([NotNull] string? str, [CallerArgumentExpression("str")] string? paramName = null)
+    internal static void NotNullOrWhiteSpace([NotNull] string? str, [CallerArgumentExpression(nameof(str))] string? paramName = null)
     {
         NotNull(str, paramName);
 
@@ -45,7 +45,7 @@ internal static class Verify
     }
 
 
-    internal static void NotNullOrEmpty<T>(IList<T> list, [CallerArgumentExpression("list")] string? paramName = null)
+    internal static void NotNullOrEmpty<T>(IList<T> list, [CallerArgumentExpression(nameof(list))] string? paramName = null)
     {
         NotNull(list, paramName);
 
@@ -56,7 +56,7 @@ internal static class Verify
     }
 
 
-    public static void True(bool condition, string message, [CallerArgumentExpression("condition")] string? paramName = null)
+    public static void True(bool condition, string message, [CallerArgumentExpression(nameof(condition))] string? paramName = null)
     {
         if (!condition)
         {
@@ -65,7 +65,7 @@ internal static class Verify
     }
 
 
-    internal static void ValidPluginName([NotNull] string? pluginName, IReadOnlyKernelPluginCollection? plugins = null, [CallerArgumentExpression("pluginName")] string? paramName = null)
+    internal static void ValidPluginName([NotNull] string? pluginName, IReadOnlyKernelPluginCollection? plugins = null, [CallerArgumentExpression(nameof(pluginName))] string? paramName = null)
     {
         NotNullOrWhiteSpace(pluginName);
 
@@ -81,7 +81,7 @@ internal static class Verify
     }
 
 
-    internal static void ValidFunctionName([NotNull] string? functionName, [CallerArgumentExpression("functionName")] string? paramName = null)
+    internal static void ValidFunctionName([NotNull] string? functionName, [CallerArgumentExpression(nameof(functionName))] string? paramName = null)
     {
         NotNullOrWhiteSpace(functionName);
 
@@ -92,7 +92,7 @@ internal static class Verify
     }
 
 
-    internal static void ValidFilename([NotNull] string? filename, [CallerArgumentExpression("filename")] string? paramName = null)
+    internal static void ValidFilename([NotNull] string? filename, [CallerArgumentExpression(nameof(filename))] string? paramName = null)
     {
         NotNullOrWhiteSpace(filename);
 
@@ -103,7 +103,7 @@ internal static class Verify
     }
 
 
-    public static void ValidateUrl(string url, bool allowQuery = false, [CallerArgumentExpression("url")] string? paramName = null)
+    public static void ValidateUrl(string url, bool allowQuery = false, [CallerArgumentExpression(nameof(url))] string? paramName = null)
     {
         NotNullOrWhiteSpace(url, paramName);
 
@@ -128,7 +128,8 @@ internal static class Verify
         string text,
         string prefix,
         string message,
-        [CallerArgumentExpression("text")] string? textParamName = null)
+        [CallerArgumentExpression(nameof(text))]
+        string? textParamName = null)
     {
         Debug.Assert(prefix is not null);
 

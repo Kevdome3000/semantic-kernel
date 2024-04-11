@@ -10,6 +10,7 @@ using System.Collections.Generic;
 /// </summary>
 public sealed class ExecutionState
 {
+
     /// <summary>
     /// Index of current step
     /// </summary>
@@ -18,12 +19,12 @@ public sealed class ExecutionState
     /// <summary>
     /// Execution state described by variables.
     /// </summary>
-    public Dictionary<string, string> Variables { get; set; } = new Dictionary<string, string>();
+    public Dictionary<string, string> Variables { get; set; } = [];
 
     /// <summary>
     /// Execution state of each step
     /// </summary>
-    public Dictionary<string, StepExecutionState> StepStates { get; set; } = new Dictionary<string, StepExecutionState>();
+    public Dictionary<string, StepExecutionState> StepStates { get; set; } = [];
 
 
     /// <summary>
@@ -31,6 +32,7 @@ public sealed class ExecutionState
     /// </summary>
     public class StepExecutionState
     {
+
         /// <summary>
         /// The status of step execution
         /// </summary>
@@ -44,7 +46,7 @@ public sealed class ExecutionState
         /// <summary>
         /// The output variables provided by the step
         /// </summary>
-        public Dictionary<string, List<string>> Output { get; set; } = new Dictionary<string, List<string>>();
+        public Dictionary<string, List<string>> Output { get; set; } = [];
 
 
         /// <summary>
@@ -57,7 +59,7 @@ public sealed class ExecutionState
         {
             if (!this.Output.TryGetValue(key, out List<string>? output))
             {
-                this.Output[key] = output = new();
+                this.Output[key] = output = [];
             }
 
             if (output!.Count <= executionIndex)
@@ -69,6 +71,7 @@ public sealed class ExecutionState
                 output[executionIndex] = value;
             }
         }
+
     }
 
 
@@ -77,6 +80,7 @@ public sealed class ExecutionState
     /// </summary>
     public enum Status
     {
+
         /// <summary>
         /// Not started
         /// </summary>
@@ -91,5 +95,7 @@ public sealed class ExecutionState
         /// Completed
         /// </summary>
         Completed
+
     }
+
 }

@@ -16,6 +16,7 @@ using Helpers;
 /// </summary>
 internal sealed class HandlebarsPromptTemplate : IPromptTemplate
 {
+
     /// <summary>
     /// Default options for built-in Handlebars helpers.
     /// </summary>
@@ -51,14 +52,18 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
         this.RegisterHelpers(handlebarsInstance, kernel, arguments, cancellationToken);
 
         var template = handlebarsInstance.Compile(this._promptModel.Template);
-        return System.Net.WebUtility.HtmlDecode(template(arguments).Trim());
+
+        return System.Net.WebUtility.HtmlDecode(template(arguments).
+            Trim());
     }
 
 
     #region private
 
     private readonly ILoggerFactory _loggerFactory;
+
     private readonly ILogger _logger;
+
     private readonly PromptTemplateConfig _promptModel;
 
 
@@ -84,7 +89,8 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
         });
 
         // Add helpers for kernel functions
-        KernelFunctionHelpers.Register(handlebarsInstance, kernel, arguments, this._options.PrefixSeparator, cancellationToken);
+        KernelFunctionHelpers.Register(handlebarsInstance, kernel, arguments, this._options.PrefixSeparator,
+            cancellationToken);
 
         // Add any custom helpers
         this._options.RegisterCustomHelpers?.Invoke(
@@ -100,7 +106,7 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
     /// </summary>
     private KernelArguments GetVariables(KernelArguments? arguments)
     {
-        KernelArguments result = new();
+        KernelArguments result = [];
 
         foreach (var p in this._promptModel.InputVariables)
         {

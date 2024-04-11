@@ -13,12 +13,15 @@ using System.Diagnostics;
 /// <typeparam name="T">Data type.</typeparam>
 internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 {
+
     private const int DefaultCapacity = 7;
+
     private const int MinCapacity = 0;
 
-    private static readonly T[] s_emptyBuffer = Array.Empty<T>();
+    private static readonly T[] s_emptyBuffer = [];
 
     private T[] _items;
+
     private int _count;
 
 
@@ -119,6 +122,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
         T[] buf = this._items;
         this._items = s_emptyBuffer;
         this._count = 0;
+
         return buf;
     }
 
@@ -197,6 +201,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
         T item = this._items[1];
         this._items[1] = this._items[this._count--];
         this.DownHeap(1);
+
         return item;
     }
 
@@ -253,7 +258,8 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
         T item = items[i];
         int parent = i >> 1; //i / 2;
 
-        while (parent > 0 && items[parent].CompareTo(item) > 0)
+        while (parent > 0 && items[parent].
+                   CompareTo(item) > 0)
         {
             // Child > parent. Exchange with parent, thus moving the child up the queue
             items[i] = items[parent];
@@ -282,7 +288,8 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
             //
             // First, find the smaller child
             //
-            if (child < count && items[child].CompareTo(items[child + 1]) > 0)
+            if (child < count && items[child].
+                    CompareTo(items[child + 1]) > 0)
             {
                 child++;
             }
@@ -359,4 +366,5 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     {
         Array.Sort(this._items, 1, this._count, comparer);
     }
+
 }

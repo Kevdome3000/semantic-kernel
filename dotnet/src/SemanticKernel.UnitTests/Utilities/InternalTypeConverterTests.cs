@@ -11,6 +11,7 @@ using Xunit;
 
 public class InternalTypeConverterTests
 {
+
     [Theory]
     [InlineData(123.456, "123,456", "fr-FR")]
     [InlineData(123.456, "123.456", "en-US")]
@@ -118,8 +119,7 @@ public class InternalTypeConverterTests
     public void ItCallsCustomConverterSpecifiedByTypeConverterAttribute()
     {
         // Arrange
-        var customType = new MyCustomType();
-        customType.Value = 4;
+        var customType = new MyCustomType { Value = 4 };
 
         // Act
         var result = InternalTypeConverter.ConvertToString(customType, CultureInfo.InvariantCulture);
@@ -132,19 +132,28 @@ public class InternalTypeConverterTests
 #pragma warning disable CA1812 // Instantiated by reflection
     private sealed class MyCustomTypeConverter : TypeConverter
     {
+
         public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType)
             => destinationType == typeof(string);
 
 
-        public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
+        public override object? ConvertTo(
+            ITypeDescriptorContext? context,
+            CultureInfo? culture,
+            object? value,
+            Type destinationType)
             => ((MyCustomType)value!).Value.ToString(culture);
+
     }
 
 
     [TypeConverter(typeof(MyCustomTypeConverter))]
     private sealed class MyCustomType
     {
+
         public int Value { get; set; }
+
     }
 #pragma warning restore CA1812
+
 }

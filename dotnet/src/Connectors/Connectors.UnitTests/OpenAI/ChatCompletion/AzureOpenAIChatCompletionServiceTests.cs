@@ -193,7 +193,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
 
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("User Message");
-        chatHistory.AddUserMessage(new ChatMessageContentItemCollection { new ImageContent(new Uri("https://image")), new TextContent("User Message") });
+        chatHistory.AddUserMessage([new ImageContent(new Uri("https://image")), new TextContent("User Message")]);
         chatHistory.AddSystemMessage("System Message");
         chatHistory.AddAssistantMessage("Assistant Message");
 
@@ -824,11 +824,11 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         chatHistory.AddUserMessage(Prompt);
         chatHistory.AddAssistantMessage(AssistantMessage);
 
-        chatHistory.AddUserMessage(new ChatMessageContentItemCollection()
-        {
+        chatHistory.AddUserMessage(
+        [
             new TextContent(CollectionItemPrompt),
             new ImageContent(new Uri("https://image"))
-        });
+        ]);
 
         // Act
         var result = await service.GetChatMessageContentsAsync(chatHistory, settings);

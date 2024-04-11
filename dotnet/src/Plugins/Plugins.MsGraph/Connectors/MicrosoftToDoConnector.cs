@@ -19,6 +19,7 @@ using TaskStatus = Graph.TaskStatus;
 /// </summary>
 public class MicrosoftToDoConnector : ITaskManagementConnector
 {
+
     private readonly GraphServiceClient _graphServiceClient;
 
 
@@ -38,15 +39,17 @@ public class MicrosoftToDoConnector : ITaskManagementConnector
         // .Filter("wellknownListName eq 'defaultList'") does not work as expected so we grab all the lists locally and filter them by name.
         // GH issue: https://github.com/microsoftgraph/microsoft-graph-docs/issues/17694
 
-        ITodoListsCollectionPage lists = await this._graphServiceClient.Me
-            .Todo.Lists
-            .Request().GetAsync(cancellationToken).ConfigureAwait(false);
+        ITodoListsCollectionPage lists = await this._graphServiceClient.Me.Todo.Lists.Request().
+            GetAsync(cancellationToken).
+            ConfigureAwait(false);
 
         TodoTaskList? result = lists.SingleOrDefault(list => list.WellknownListName == WellknownListName.DefaultList);
 
         while (result == null && lists.Count != 0 && lists.NextPageRequest != null)
         {
-            lists = await lists.NextPageRequest.GetAsync(cancellationToken).ConfigureAwait(false);
+            lists = await lists.NextPageRequest.GetAsync(cancellationToken).
+                ConfigureAwait(false);
+
             result = lists.SingleOrDefault(list => list.WellknownListName == WellknownListName.DefaultList);
         }
 
@@ -62,15 +65,17 @@ public class MicrosoftToDoConnector : ITaskManagementConnector
     /// <inheritdoc/>
     public async Task<IEnumerable<TaskManagementTaskList>> GetTaskListsAsync(CancellationToken cancellationToken = default)
     {
-        ITodoListsCollectionPage lists = await this._graphServiceClient.Me
-            .Todo.Lists
-            .Request().GetAsync(cancellationToken).ConfigureAwait(false);
+        ITodoListsCollectionPage lists = await this._graphServiceClient.Me.Todo.Lists.Request().
+            GetAsync(cancellationToken).
+            ConfigureAwait(false);
 
-        List<TodoTaskList> taskLists = lists.ToList();
+        List<TodoTaskList> taskLists = [.. lists];
 
         while (lists.Count != 0 && lists.NextPageRequest != null)
         {
-            lists = await lists.NextPageRequest.GetAsync(cancellationToken).ConfigureAwait(false);
+            lists = await lists.NextPageRequest.GetAsync(cancellationToken).
+                ConfigureAwait(false);
+
             taskLists.AddRange(lists.ToList());
         }
 
@@ -92,15 +97,19 @@ public class MicrosoftToDoConnector : ITaskManagementConnector
             filterValue = "status ne 'completed'";
         }
 
-        ITodoTaskListTasksCollectionPage tasksPage = await this._graphServiceClient.Me
-            .Todo.Lists[listId]
-            .Tasks.Request().Filter(filterValue).GetAsync(cancellationToken).ConfigureAwait(false);
+        ITodoTaskListTasksCollectionPage tasksPage = await this._graphServiceClient.Me.Todo.Lists[listId].
+            Tasks.Request().
+            Filter(filterValue).
+            GetAsync(cancellationToken).
+            ConfigureAwait(false);
 
-        List<TodoTask> tasks = tasksPage.ToList();
+        List<TodoTask> tasks = [.. tasksPage];
 
         while (tasksPage.Count != 0 && tasksPage.NextPageRequest != null)
         {
-            tasksPage = await tasksPage.NextPageRequest.GetAsync(cancellationToken).ConfigureAwait(false);
+            tasksPage = await tasksPage.NextPageRequest.GetAsync(cancellationToken).
+                ConfigureAwait(false);
+
             tasks.AddRange(tasksPage.ToList());
         }
 
@@ -119,10 +128,10 @@ public class MicrosoftToDoConnector : ITaskManagementConnector
         Ensure.NotNullOrWhitespace(listId, nameof(listId));
         Ensure.NotNull(task, nameof(task));
 
-        return ToTaskListTask(await this._graphServiceClient.Me
-            .Todo.Lists[listId]
-            .Tasks
-            .Request().AddAsync(FromTaskListTask(task), cancellationToken).ConfigureAwait(false));
+        return ToTaskListTask(await this._graphServiceClient.Me.Todo.Lists[listId].
+            Tasks.Request().
+            AddAsync(FromTaskListTask(task), cancellationToken).
+            ConfigureAwait(false));
     }
 
 
@@ -132,10 +141,10 @@ public class MicrosoftToDoConnector : ITaskManagementConnector
         Ensure.NotNullOrWhitespace(listId, nameof(listId));
         Ensure.NotNullOrWhitespace(taskId, nameof(taskId));
 
-        return this._graphServiceClient.Me
-            .Todo.Lists[listId]
-            .Tasks[taskId]
-            .Request().DeleteAsync(cancellationToken);
+        return this._graphServiceClient.Me.Todo.Lists[listId].
+            Tasks[taskId].
+            Request().
+            DeleteAsync(cancellationToken);
     }
 
 
@@ -152,7 +161,9 @@ public class MicrosoftToDoConnector : ITaskManagementConnector
             DueDateTime = task.Due == null
                 ? null
                 : DateTimeTimeZone.FromDateTimeOffset(DateTimeOffset.Parse(task.Due, CultureInfo.InvariantCulture.DateTimeFormat)),
-            Status = task.IsCompleted ? TaskStatus.Completed : TaskStatus.NotStarted
+            Status = task.IsCompleted
+                ? TaskStatus.Completed
+                : TaskStatus.NotStarted
         };
     }
 
@@ -168,4 +179,5 @@ public class MicrosoftToDoConnector : ITaskManagementConnector
             due: task.DueDateTime?.DateTime,
             isCompleted: task.Status == TaskStatus.Completed);
     }
+
 }

@@ -33,7 +33,7 @@ public static class EmbeddingGenerationExtensions
     {
         Verify.NotNull(generator);
 
-        return (await generator.GenerateEmbeddingsAsync(new[] { value }, kernel, cancellationToken).
+        return (await generator.GenerateEmbeddingsAsync([value], kernel, cancellationToken).
             ConfigureAwait(false)).FirstOrDefault();
     }
 

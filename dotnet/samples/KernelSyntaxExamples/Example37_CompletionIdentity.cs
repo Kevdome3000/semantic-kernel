@@ -79,21 +79,20 @@ public class Example37_CompletionIdentity : BaseTest
     private static ChatHistory CreateHistory(bool withName)
     {
         return
-            new ChatHistory()
+        [
+            new ChatMessageContent(AuthorRole.System, "Write one paragraph in response to the user that rhymes")
             {
-                new ChatMessageContent(AuthorRole.System, "Write one paragraph in response to the user that rhymes")
-                {
-                    AuthorName = withName
-                        ? "Echo"
-                        : null
-                },
-                new ChatMessageContent(AuthorRole.User, "Why is AI awesome")
-                {
-                    AuthorName = withName
-                        ? "Ralph"
-                        : null
-                },
-            };
+                AuthorName = withName
+                    ? "Echo"
+                    : null
+            },
+            new ChatMessageContent(AuthorRole.User, "Why is AI awesome")
+            {
+                AuthorName = withName
+                    ? "Ralph"
+                    : null
+            },
+        ];
     }
 
 

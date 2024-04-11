@@ -9,6 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 /// <summary>Provides extension methods for working with <see cref="KernelPlugin"/>s and collections of them.</summary>
 public static class KernelPluginExtensions
 {
+
     /// <summary>Gets whether the plugins collection contains a plugin with the specified name.</summary>
     /// <param name="plugins">The plugins collections.</param>
     /// <param name="pluginName">The name of the plugin.</param>
@@ -51,7 +52,11 @@ public static class KernelPluginExtensions
     /// If <paramref name="pluginName"/> is null or entirely whitespace, all plugins are searched for a function with the specified name,
     /// and the first one found is returned.
     /// </remarks>
-    public static bool TryGetFunction(this IReadOnlyKernelPluginCollection plugins, string? pluginName, string functionName, [NotNullWhen(true)] out KernelFunction? func)
+    public static bool TryGetFunction(
+        this IReadOnlyKernelPluginCollection plugins,
+        string? pluginName,
+        string functionName,
+        [NotNullWhen(true)] out KernelFunction? func)
     {
         Verify.NotNull(plugins);
         Verify.NotNull(functionName);
@@ -76,6 +81,7 @@ public static class KernelPluginExtensions
         }
 
         func = null;
+
         return false;
     }
 
@@ -87,7 +93,7 @@ public static class KernelPluginExtensions
     {
         Verify.NotNull(plugins);
 
-        List<KernelFunctionMetadata> metadata = new();
+        List<KernelFunctionMetadata> metadata = [];
 
         foreach (KernelPlugin plugin in plugins)
         {
@@ -96,4 +102,5 @@ public static class KernelPluginExtensions
 
         return metadata;
     }
+
 }

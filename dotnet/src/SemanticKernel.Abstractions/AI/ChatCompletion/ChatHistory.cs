@@ -16,6 +16,7 @@ using System.Text;
 /// </summary>
 public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageContent>
 {
+
     /// <summary>The messages.</summary>
     private readonly List<ChatMessageContent> _messages;
 
@@ -26,7 +27,7 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// </summary>
     public ChatHistory()
     {
-        this._messages = new();
+        this._messages = [];
     }
 
 
@@ -38,7 +39,7 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     {
         Verify.NotNullOrWhiteSpace(systemMessage);
 
-        this._messages = new();
+        this._messages = [];
         this.AddSystemMessage(systemMessage);
     }
 
@@ -63,8 +64,13 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// <param name="encoding">Encoding of the message content</param>
     /// <param name="metadata">Dictionary for any additional metadata</param>
     /// </summary>
-    public void AddMessage(AuthorRole authorRole, string content, Encoding? encoding = null, IReadOnlyDictionary<string, object?>? metadata = null) =>
-        this.Add(new ChatMessageContent(authorRole, content, null, null, encoding, metadata));
+    public void AddMessage(
+        AuthorRole authorRole,
+        string content,
+        Encoding? encoding = null,
+        IReadOnlyDictionary<string, object?>? metadata = null) =>
+        this.Add(new ChatMessageContent(authorRole, content, null, null,
+            encoding, metadata));
 
 
     /// <summary>
@@ -73,8 +79,13 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// <param name="encoding">Encoding of the message content</param>
     /// <param name="metadata">Dictionary for any additional metadata</param>
     /// </summary>
-    public void AddMessage(AuthorRole authorRole, ChatMessageContentItemCollection contentItems, Encoding? encoding = null, IReadOnlyDictionary<string, object?>? metadata = null) =>
-        this.Add(new ChatMessageContent(authorRole, contentItems, null, null, encoding, metadata));
+    public void AddMessage(
+        AuthorRole authorRole,
+        ChatMessageContentItemCollection contentItems,
+        Encoding? encoding = null,
+        IReadOnlyDictionary<string, object?>? metadata = null) =>
+        this.Add(new ChatMessageContent(authorRole, contentItems, null, null,
+            encoding, metadata));
 
 
     /// <summary>
@@ -178,6 +189,7 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     public bool Contains(ChatMessageContent item)
     {
         Verify.NotNull(item);
+
         return this._messages.Contains(item);
     }
 
@@ -189,6 +201,7 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     public int IndexOf(ChatMessageContent item)
     {
         Verify.NotNull(item);
+
         return this._messages.IndexOf(item);
     }
 
@@ -206,6 +219,7 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     public bool Remove(ChatMessageContent item)
     {
         Verify.NotNull(item);
+
         return this._messages.Remove(item);
     }
 
@@ -234,4 +248,5 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
 
     /// <inheritdoc/>
     IEnumerator IEnumerable.GetEnumerator() => this._messages.GetEnumerator();
+
 }

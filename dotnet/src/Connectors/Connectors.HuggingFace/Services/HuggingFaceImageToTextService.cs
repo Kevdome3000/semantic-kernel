@@ -20,7 +20,7 @@ using Services;
 public sealed class HuggingFaceImageToTextService : IImageToTextService
 {
 
-    private readonly Dictionary<string, object?> _attributesInternal = new();
+    private readonly Dictionary<string, object?> _attributesInternal = [];
 
     private readonly HuggingFaceClient _client;
 

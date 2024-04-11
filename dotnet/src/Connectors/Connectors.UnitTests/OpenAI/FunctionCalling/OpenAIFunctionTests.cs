@@ -14,13 +14,19 @@ using Xunit;
 
 public sealed class OpenAIFunctionTests
 {
+
     [Theory]
     [InlineData(null, null, "", "")]
     [InlineData("name", "description", "name", "description")]
-    public void ItInitializesOpenAIFunctionParameterCorrectly(string? name, string? description, string expectedName, string expectedDescription)
+    public void ItInitializesOpenAIFunctionParameterCorrectly(
+        string? name,
+        string? description,
+        string expectedName,
+        string expectedDescription)
     {
         // Arrange & Act
         var schema = KernelJsonSchema.Parse("{\"type\": \"object\" }");
+
         var functionParameter = new OpenAIFunctionParameter(name, description, true, typeof(string),
             schema);
 
@@ -53,7 +59,8 @@ public sealed class OpenAIFunctionTests
     public void ItCanConvertToFunctionDefinitionWithNoPluginName()
     {
         // Arrange
-        OpenAIFunction sut = KernelFunctionFactory.CreateFromMethod(() => { }, "myfunc", "This is a description of the function.").Metadata.ToOpenAIFunction();
+        OpenAIFunction sut = KernelFunctionFactory.CreateFromMethod(() => { }, "myfunc", "This is a description of the function.").
+            Metadata.ToOpenAIFunction();
 
         // Act
         FunctionDefinition result = sut.ToFunctionDefinition();
@@ -84,9 +91,11 @@ public sealed class OpenAIFunctionTests
     {
         // Arrange
         OpenAIFunction sut = KernelPluginFactory.CreateFromFunctions("myplugin", new[]
-        {
-            KernelFunctionFactory.CreateFromMethod(() => { }, "myfunc", "This is a description of the function.")
-        }).GetFunctionsMetadata()[0].ToOpenAIFunction();
+            {
+                KernelFunctionFactory.CreateFromMethod(() => { }, "myfunc", "This is a description of the function.")
+            }).
+            GetFunctionsMetadata()[0].
+            ToOpenAIFunction();
 
         // Act
         FunctionDefinition result = sut.ToFunctionDefinition();
@@ -100,7 +109,7 @@ public sealed class OpenAIFunctionTests
     [Fact]
     public void ItCanConvertToFunctionDefinitionsWithParameterTypesAndReturnParameterType()
     {
-        string expectedParameterSchema = "{   \"type\": \"object\",   \"required\": [\"param1\", \"param2\"],   \"properties\": {     \"param1\": { \"type\": \"string\", \"description\": \"String param 1\" },     \"param2\": { \"type\": \"integer\", \"description\": \"Int param 2\" }   } } ";
+        string expectedParameterSchema = """{   "type": "object",   "required": ["param1", "param2"],   "properties": {     "param1": { "type": "string", "description": "String param 1" },     "param2": { "type": "integer", "description": "Int param 2" }   } } """;
 
         KernelPlugin plugin = KernelPluginFactory.CreateFromFunctions("Tests", new[]
         {
@@ -111,7 +120,8 @@ public sealed class OpenAIFunctionTests
                 "My test function")
         });
 
-        OpenAIFunction sut = plugin.GetFunctionsMetadata()[0].ToOpenAIFunction();
+        OpenAIFunction sut = plugin.GetFunctionsMetadata()[0].
+            ToOpenAIFunction();
 
         FunctionDefinition functionDefinition = sut.ToFunctionDefinition();
 
@@ -128,7 +138,7 @@ public sealed class OpenAIFunctionTests
     [Fact]
     public void ItCanConvertToFunctionDefinitionsWithParameterTypesAndNoReturnParameterType()
     {
-        string expectedParameterSchema = "{   \"type\": \"object\",   \"required\": [\"param1\", \"param2\"],   \"properties\": {     \"param1\": { \"type\": \"string\", \"description\": \"String param 1\" },     \"param2\": { \"type\": \"integer\", \"description\": \"Int param 2\" }   } } ";
+        string expectedParameterSchema = """{   "type": "object",   "required": ["param1", "param2"],   "properties": {     "param1": { "type": "string", "description": "String param 1" },     "param2": { "type": "integer", "description": "Int param 2" }   } } """;
 
         KernelPlugin plugin = KernelPluginFactory.CreateFromFunctions("Tests", new[]
         {
@@ -139,7 +149,8 @@ public sealed class OpenAIFunctionTests
                 "My test function")
         });
 
-        OpenAIFunction sut = plugin.GetFunctionsMetadata()[0].ToOpenAIFunction();
+        OpenAIFunction sut = plugin.GetFunctionsMetadata()[0].
+            ToOpenAIFunction();
 
         FunctionDefinition functionDefinition = sut.ToFunctionDefinition();
 
@@ -155,8 +166,9 @@ public sealed class OpenAIFunctionTests
     {
         // Arrange
         OpenAIFunction f = KernelFunctionFactory.CreateFromMethod(
-            () => { },
-            parameters: new[] { new KernelParameterMetadata("param1") }).Metadata.ToOpenAIFunction();
+                () => { },
+                parameters: new[] { new KernelParameterMetadata("param1") }).
+            Metadata.ToOpenAIFunction();
 
         // Act
         FunctionDefinition result = f.ToFunctionDefinition();
@@ -165,9 +177,11 @@ public sealed class OpenAIFunctionTests
         // Assert
         Assert.NotNull(pd.properties);
         Assert.Single(pd.properties);
+
         Assert.Equal(
-            JsonSerializer.Serialize(KernelJsonSchema.Parse("{ \"type\":\"string\" }")),
-            JsonSerializer.Serialize(pd.properties.First().Value.RootElement));
+            JsonSerializer.Serialize(KernelJsonSchema.Parse("""{ "type":"string" }""")),
+            JsonSerializer.Serialize(pd.properties.First().
+                Value.RootElement));
     }
 
 
@@ -176,8 +190,9 @@ public sealed class OpenAIFunctionTests
     {
         // Arrange
         OpenAIFunction f = KernelFunctionFactory.CreateFromMethod(
-            () => { },
-            parameters: new[] { new KernelParameterMetadata("param1") { Description = "something neat" } }).Metadata.ToOpenAIFunction();
+                () => { },
+                parameters: new[] { new KernelParameterMetadata("param1") { Description = "something neat" } }).
+            Metadata.ToOpenAIFunction();
 
         // Act
         FunctionDefinition result = f.ToFunctionDefinition();
@@ -186,18 +201,25 @@ public sealed class OpenAIFunctionTests
         // Assert
         Assert.NotNull(pd.properties);
         Assert.Single(pd.properties);
+
         Assert.Equal(
-            JsonSerializer.Serialize(KernelJsonSchema.Parse("{ \"type\":\"string\", \"description\":\"something neat\" }")),
-            JsonSerializer.Serialize(pd.properties.First().Value.RootElement));
+            JsonSerializer.Serialize(KernelJsonSchema.Parse("""{ "type":"string", "description":"something neat" }""")),
+            JsonSerializer.Serialize(pd.properties.First().
+                Value.RootElement));
     }
 
 
 #pragma warning disable CA1812 // uninstantiated internal class
     private sealed class ParametersData
     {
+
         public string? type { get; set; }
+
         public string[]? required { get; set; }
+
         public Dictionary<string, KernelJsonSchema>? properties { get; set; }
+
     }
 #pragma warning restore CA1812
+
 }

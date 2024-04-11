@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 
 internal sealed class HttpMessageHandlerStub : DelegatingHandler
 {
+
     public HttpRequestHeaders? RequestHeaders { get; private set; }
 
     public HttpContentHeaders? ContentHeaders { get; private set; }
@@ -27,8 +28,10 @@ internal sealed class HttpMessageHandlerStub : DelegatingHandler
 
     public HttpMessageHandlerStub()
     {
-        this.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
-        this.ResponseToReturn.Content = new StringContent("{}", Encoding.UTF8, "application/json");
+        this.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent("{}", Encoding.UTF8, "application/json")
+        };
     }
 
 
@@ -44,8 +47,10 @@ internal sealed class HttpMessageHandlerStub : DelegatingHandler
             this.RequestContent = await request.Content.ReadAsByteArrayAsync();
 #pragma warning restore CA2016
         }
+
         this.ContentHeaders = request.Content?.Headers;
 
         return await Task.FromResult(this.ResponseToReturn);
     }
+
 }

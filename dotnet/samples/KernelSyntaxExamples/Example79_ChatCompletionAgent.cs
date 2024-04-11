@@ -46,7 +46,7 @@ public class Example79_ChatCompletionAgent : BaseTest
         );
 
         var prompt = PrintPrompt("I need help with my investment portfolio. Please guide me.");
-        PrintConversation(await agent.InvokeAsync(new[] { new ChatMessageContent(AuthorRole.User, prompt) }));
+        PrintConversation(await agent.InvokeAsync([new ChatMessageContent(AuthorRole.User, prompt)]));
     }
 
 
@@ -94,7 +94,7 @@ public class Example79_ChatCompletionAgent : BaseTest
             settings
         );
 
-        var chat = new TurnBasedChat(new[] { fitnessTrainer, stressManagementExpert }, (chatHistory, replies, turn) =>
+        var chat = new TurnBasedChat([fitnessTrainer, stressManagementExpert], (chatHistory, replies, turn) =>
             turn >= 10 || // Limit the number of turns to 10    
             replies.Any(
                 message => message.Role == AuthorRole.Assistant &&
@@ -141,7 +141,7 @@ public class Example79_ChatCompletionAgent : BaseTest
             var chat = new ChatHistory();
             chat.AddUserMessage(message);
 
-            IReadOnlyList<ChatMessageContent> result = new List<ChatMessageContent>();
+            IReadOnlyList<ChatMessageContent> result;
 
             var turn = 0;
 

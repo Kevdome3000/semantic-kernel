@@ -4,6 +4,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
@@ -15,6 +16,7 @@ using TextToImage;
 /// <summary>
 /// OpenAI text to image service.
 /// </summary>
+[Experimental("SKEXP0010")]
 public sealed class OpenAITextToImageService : ITextToImageService
 {
 
@@ -50,26 +52,26 @@ public sealed class OpenAITextToImageService : ITextToImageService
         ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNullOrWhiteSpace(apiKey);
-        _authorizationHeaderValue = $"Bearer {apiKey}";
-        _organizationHeaderValue = organization;
+        this._authorizationHeaderValue = $"Bearer {apiKey}";
+        this._organizationHeaderValue = organization;
 
-        _core = new OpenAITextToImageClientCore(httpClient, loggerFactory?.CreateLogger(GetType()));
-        _core.AddAttribute(OpenAIClientCore.OrganizationKey, organization);
+        this._core = new(httpClient, loggerFactory?.CreateLogger(this.GetType()));
+        this._core.AddAttribute(OpenAIClientCore.OrganizationKey, organization);
 
-        _core.RequestCreated += (_, request) =>
+        this._core.RequestCreated += (_, request) =>
         {
-            request.Headers.Add("Authorization", _authorizationHeaderValue);
+            request.Headers.Add("Authorization", this._authorizationHeaderValue);
 
-            if (!string.IsNullOrEmpty(_organizationHeaderValue))
+            if (!string.IsNullOrEmpty(this._organizationHeaderValue))
             {
-                request.Headers.Add("OpenAI-Organization", _organizationHeaderValue);
+                request.Headers.Add("OpenAI-Organization", this._organizationHeaderValue);
             }
         };
     }
 
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object?> Attributes => _core.Attributes;
+    public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
 
 
     /// <inheritdoc/>
@@ -82,12 +84,12 @@ public sealed class OpenAITextToImageService : ITextToImageService
     {
         Verify.NotNull(description);
 
-        if (width != height || width != 256 && width != 512 && width != 1024)
+        if (width != height || (width != 256 && width != 512 && width != 1024))
         {
             throw new ArgumentOutOfRangeException(nameof(width), width, "OpenAI can generate only square images of size 256x256, 512x512, or 1024x1024.");
         }
 
-        return GenerateImageAsync(description, width, height, "url",
+        return this.GenerateImageAsync(description, width, height, "url",
             x => x.Url, cancellationToken);
     }
 
@@ -107,10 +109,10 @@ public sealed class OpenAITextToImageService : ITextToImageService
             Prompt = description,
             Size = $"{width}x{height}",
             Count = 1,
-            Format = format
+            Format = format,
         });
 
-        var list = await _core.ExecuteImageGenerationRequestAsync(OpenAIEndpoint, requestBody, extractResponse!, cancellationToken).
+        var list = await this._core.ExecuteImageGenerationRequestAsync(OpenAIEndpoint, requestBody, extractResponse!, cancellationToken).
             ConfigureAwait(false);
 
         return list[0];

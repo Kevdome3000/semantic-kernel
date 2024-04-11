@@ -48,10 +48,10 @@ public sealed class GeminiRequestTests
 
         var executionSettings = new GeminiPromptExecutionSettings
         {
-            SafetySettings = new List<GeminiSafetySetting>
-            {
+            SafetySettings =
+            [
                 new(GeminiSafetyCategory.Derogatory, GeminiSafetyThreshold.BlockNone)
-            }
+            ]
         };
 
         // Act
@@ -117,10 +117,10 @@ public sealed class GeminiRequestTests
 
         var executionSettings = new GeminiPromptExecutionSettings
         {
-            SafetySettings = new List<GeminiSafetySetting>
-            {
+            SafetySettings =
+            [
                 new(GeminiSafetyCategory.Derogatory, GeminiSafetyThreshold.BlockNone)
-            }
+            ]
         };
 
         // Act

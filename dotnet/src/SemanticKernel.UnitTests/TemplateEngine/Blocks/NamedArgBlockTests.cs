@@ -9,6 +9,7 @@ using Xunit;
 
 public class NamedArgBlockTests
 {
+
     [Fact]
     public void ItHasTheCorrectType()
     {
@@ -243,6 +244,7 @@ public class NamedArgBlockTests
     {
         // Arrange
         var target = new NamedArgBlock("a=$var");
+
         var arguments = new KernelArguments()
         {
             ["var"] = (double)28.2,
@@ -264,7 +266,7 @@ public class NamedArgBlockTests
         var target = new NamedArgBlock("a=$var");
 
         // Act
-        var result = target.GetValue(new KernelArguments());
+        var result = target.GetValue([]);
 
         // Assert
         Assert.Null(result);
@@ -276,6 +278,7 @@ public class NamedArgBlockTests
     {
         // Arrange
         var target = new NamedArgBlock("a=$var");
+
         var arguments = new KernelArguments()
         {
             ["var"] = null
@@ -287,4 +290,5 @@ public class NamedArgBlockTests
         // Assert
         Assert.Null(result);
     }
+
 }

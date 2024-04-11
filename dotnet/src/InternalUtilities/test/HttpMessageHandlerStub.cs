@@ -28,8 +28,10 @@ internal sealed class HttpMessageHandlerStub : DelegatingHandler
 
     public HttpMessageHandlerStub()
     {
-        this.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
-        this.ResponseToReturn.Content = new StringContent("{}", Encoding.UTF8, MediaTypeNames.Application.Json);
+        this.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent("{}", Encoding.UTF8, MediaTypeNames.Application.Json)
+        };
     }
 
 

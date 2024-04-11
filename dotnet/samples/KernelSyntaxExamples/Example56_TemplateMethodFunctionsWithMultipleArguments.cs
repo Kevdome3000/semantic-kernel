@@ -14,6 +14,7 @@ using Xunit.Abstractions;
 
 public class Example56_TemplateMethodFunctionsWithMultipleArguments : BaseTest
 {
+
     /// <summary>
     /// Show how to invoke a Method Function written in C# with multiple arguments
     /// from a Prompt Function written in natural language
@@ -32,21 +33,26 @@ public class Example56_TemplateMethodFunctionsWithMultipleArguments : BaseTest
         if (apiKey == null || deploymentName == null || modelId == null || endpoint == null)
         {
             WriteLine("AzureOpenAI modelId, endpoint, apiKey, or deploymentName not found. Skipping example.");
+
             return;
         }
 
         IKernelBuilder builder = Kernel.CreateBuilder();
         builder.Services.AddLogging(c => c.AddConsole());
+
         builder.AddAzureOpenAIChatCompletion(
             deploymentName: deploymentName,
             endpoint: endpoint,
             serviceId: serviceId,
             apiKey: apiKey,
             modelId: modelId);
+
         Kernel kernel = builder.Build();
 
-        var arguments = new KernelArguments();
-        arguments["word2"] = " Potter";
+        var arguments = new KernelArguments
+        {
+            ["word2"] = " Potter"
+        };
 
         // Load native plugin into the kernel function collection, sharing its functions with prompt templates
         // Functions loaded here are available as "text.*"
@@ -89,4 +95,5 @@ Harry Potter's tale.
     public Example56_TemplateMethodFunctionsWithMultipleArguments(ITestOutputHelper output) : base(output)
     {
     }
+
 }

@@ -13,6 +13,7 @@ using System.Xml;
 /// </summary>
 internal static class XmlPromptParser
 {
+
     /// <summary>
     /// Parses text prompt and sets output as collection of <see cref="PromptNode"/> instances.
     /// </summary>
@@ -54,7 +55,7 @@ internal static class XmlPromptParser
         {
             if (GetPromptNode(node) is { } childPromptNode)
             {
-                (result ??= new()).Add(childPromptNode);
+                (result ??= []).Add(childPromptNode);
             }
         }
 
@@ -102,4 +103,5 @@ internal static class XmlPromptParser
 
         return promptNode;
     }
+
 }

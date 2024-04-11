@@ -12,7 +12,7 @@ public abstract class BaseTest
 
     protected ITestOutputHelper Output { get; }
 
-    protected List<string> SimulatedInputText = new();
+    protected List<string> SimulatedInputText = [];
 
     protected int SimulatedInputTextIndex = 0;
 

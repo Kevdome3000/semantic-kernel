@@ -169,8 +169,10 @@ public sealed class KernelFunctionFromMethodTests1
             return "abc";
         }
 
-        var arguments = new KernelArguments();
-        arguments["someVar"] = s_expected;
+        var arguments = new KernelArguments
+        {
+            ["someVar"] = s_expected
+        };
 
         // Act
         var function = KernelFunctionFactory.CreateFromMethod(Test, loggerFactory: this._logger.Object);
@@ -199,8 +201,10 @@ public sealed class KernelFunctionFromMethodTests1
             return "abc";
         }
 
-        var arguments = new KernelArguments();
-        arguments["someVar"] = s_expected;
+        var arguments = new KernelArguments
+        {
+            ["someVar"] = s_expected
+        };
 
         // Act
         Func<string, string?> method = Test;
@@ -230,8 +234,10 @@ public sealed class KernelFunctionFromMethodTests1
             s_actual = canary;
         }
 
-        var arguments = new KernelArguments();
-        arguments["canary"] = s_expected;
+        var arguments = new KernelArguments
+        {
+            ["canary"] = s_expected
+        };
 
         // Act
         Func<string, Task> method = TestAsync;
@@ -665,7 +671,7 @@ public sealed class KernelFunctionFromMethodTests1
     [Fact]
     public async Task ItSupportFunctionResultAsync()
     {
-        FunctionResult Test() => new(s_nopFunction, "fake-result", CultureInfo.InvariantCulture);
+        static FunctionResult Test() => new(s_nopFunction, "fake-result", CultureInfo.InvariantCulture);
 
         // Act
         var function = KernelFunctionFactory.CreateFromMethod(Test);
@@ -684,7 +690,7 @@ public sealed class KernelFunctionFromMethodTests1
     public async Task ItSupportFunctionResultTaskAsync()
     {
         // Arrange
-        Task<FunctionResult> Test()
+        static Task<FunctionResult> Test()
         {
             var functionResult = new FunctionResult(s_nopFunction, "fake-result", CultureInfo.InvariantCulture);
 
@@ -708,7 +714,7 @@ public sealed class KernelFunctionFromMethodTests1
     public async Task ItSupportFunctionResultValueTaskAsync()
     {
         // Arrange
-        ValueTask<FunctionResult> Test()
+        static ValueTask<FunctionResult> Test()
         {
             var functionResult = new FunctionResult(s_nopFunction, "fake-result", CultureInfo.InvariantCulture);
 
@@ -740,13 +746,15 @@ public sealed class KernelFunctionFromMethodTests1
             DayOfWeek? f) =>
             $"{a} {b} {c} {d} {e:R} {f}";
 
-        var arguments = new KernelArguments();
-        arguments["a"] = "1";
-        arguments["b"] = -2;
-        arguments["c"] = "1234";
-        arguments["d"] = Guid.Parse("7e08cc00-1d71-4558-81ed-69929499dea1");
-        arguments["e"] = "Thu, 25 May 2023 20:17:30 GMT";
-        arguments["f"] = DayOfWeek.Monday;
+        var arguments = new KernelArguments
+        {
+            ["a"] = "1",
+            ["b"] = -2,
+            ["c"] = "1234",
+            ["d"] = Guid.Parse("7e08cc00-1d71-4558-81ed-69929499dea1"),
+            ["e"] = "Thu, 25 May 2023 20:17:30 GMT",
+            ["f"] = DayOfWeek.Monday
+        };
 
         // Act
         var function = KernelFunctionFactory.CreateFromMethod(Test);
@@ -765,8 +773,10 @@ public sealed class KernelFunctionFromMethodTests1
     {
         static int Test(MyCustomType mct) => mct.Value * 2;
 
-        var arguments = new KernelArguments();
-        arguments["mct"] = "42";
+        var arguments = new KernelArguments
+        {
+            ["mct"] = "42"
+        };
 
         // Act
         var function = KernelFunctionFactory.CreateFromMethod(Test);
@@ -1124,8 +1134,10 @@ public sealed class KernelFunctionFromMethodTests1
     {
         static string Test(Guid g) => g.ToString();
 
-        var arguments = new KernelArguments();
-        arguments["g"] = "7e08cc00-1d71-4558-81ed-69929499dxyz";
+        var arguments = new KernelArguments
+        {
+            ["g"] = "7e08cc00-1d71-4558-81ed-69929499dxyz"
+        };
 
         // Act
         var function = KernelFunctionFactory.CreateFromMethod(Test);
@@ -1218,8 +1230,10 @@ public sealed class KernelFunctionFromMethodTests1
         // Arrange
         static MyCustomType TestCustomType(MyCustomType instance) => instance;
 
-        var arguments = new KernelArguments();
-        arguments["instance"] = "42";
+        var arguments = new KernelArguments
+        {
+            ["instance"] = "42"
+        };
 
         var function = KernelFunctionFactory.CreateFromMethod(TestCustomType);
 
@@ -1258,7 +1272,7 @@ public sealed class KernelFunctionFromMethodTests1
         var function = KernelFunctionFactory.CreateFromMethod(TestAsyncEnumerableTypeAsync);
 
         // Act
-        FunctionResult result = await function.InvokeAsync(this._kernel, new KernelArguments());
+        FunctionResult result = await function.InvokeAsync(this._kernel, []);
 
         // Assert
         Assert.NotNull(result);

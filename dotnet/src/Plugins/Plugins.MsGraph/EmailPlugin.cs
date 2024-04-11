@@ -20,7 +20,9 @@ using Models;
 /// </summary>
 public sealed class EmailPlugin
 {
+
     private readonly IEmailConnector _connector;
+
     private readonly ILogger _logger;
 
     private static readonly JsonSerializerOptions s_options = new()
@@ -29,7 +31,7 @@ public sealed class EmailPlugin
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     };
 
-    private static readonly char[] s_separator = { ',', ';' };
+    private static readonly char[] s_separator = [',', ';'];
 
 
     /// <summary>
@@ -51,7 +53,8 @@ public sealed class EmailPlugin
     /// </summary>
     [KernelFunction, Description("Gets the email address for me.")]
     public async Task<string> GetMyEmailAddressAsync()
-        => await this._connector.GetMyEmailAddressAsync().ConfigureAwait(false);
+        => await this._connector.GetMyEmailAddressAsync().
+            ConfigureAwait(false);
 
 
     /// <summary>
@@ -78,7 +81,9 @@ public sealed class EmailPlugin
         // Sensitive data, logging as trace, disabled by default
         this._logger.LogTrace("Sending email to '{0}' with subject '{1}'", recipients, subject);
         string[] recipientList = recipients.Split(s_separator, StringSplitOptions.RemoveEmptyEntries);
-        await this._connector.SendEmailAsync(subject, content, recipientList, cancellationToken).ConfigureAwait(false);
+
+        await this._connector.SendEmailAsync(subject, content, recipientList, cancellationToken).
+            ConfigureAwait(false);
     }
 
 
@@ -101,9 +106,10 @@ public sealed class EmailPlugin
                 top: maxResults,
                 skip: skip,
                 select: SelectString,
-                cancellationToken)
-            .ConfigureAwait(false);
+                cancellationToken).
+            ConfigureAwait(false);
 
         return JsonSerializer.Serialize(value: messages, options: s_options);
     }
+
 }

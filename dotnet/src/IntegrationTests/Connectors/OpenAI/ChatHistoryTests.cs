@@ -56,7 +56,7 @@ public sealed class ChatHistoryTests : IDisposable
         var kernel = builder.Build();
 
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
-        ChatHistory history = new();
+        ChatHistory history = [];
 
         // Act
         history.AddUserMessage("Make me a special poem");
@@ -88,7 +88,7 @@ public sealed class ChatHistoryTests : IDisposable
         string systemPrompt = "You are batman. If asked who you are, say 'I am Batman!'";
 
         OpenAIPromptExecutionSettings settings = new() { ChatSystemPrompt = systemPrompt };
-        ChatHistory history = new();
+        ChatHistory history = [];
 
         // Act
         history.AddUserMessage("Who are you?");

@@ -20,7 +20,7 @@ using Xunit.Abstractions;
 /// </remarks>
 [Trait("Category", "Integration Tests")]
 [Trait("Feature", "Agent")]
-public sealed class ThreadHarness
+public sealed class ThreadHarness(ITestOutputHelper output)
 {
 
 #if DISABLEHOST
@@ -29,16 +29,7 @@ public sealed class ThreadHarness
     private const string SkipReason = null;
 #endif
 
-    private readonly ITestOutputHelper _output;
-
-
-    /// <summary>
-    /// Test constructor.
-    /// </summary>
-    public ThreadHarness(ITestOutputHelper output)
-    {
-        this._output = output;
-    }
+    private readonly ITestOutputHelper _output = output;
 
 
     /// <summary>

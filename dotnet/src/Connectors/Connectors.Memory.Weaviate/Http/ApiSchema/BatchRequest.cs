@@ -9,18 +9,19 @@ using Memory;
 
 internal sealed class BatchRequest
 {
+
     private readonly string _class;
 
 
     private BatchRequest(string @class)
     {
         this._class = @class;
-        this.Objects = new();
+        this.Objects = [];
     }
 
 
     // ReSharper disable once UnusedMember.Global
-    public string[] Fields { get; } = { "ALL" };
+    public string[] Fields { get; } = ["ALL"];
 
     // ReSharper disable once MemberCanBePrivate.Global
     // ReSharper disable once CollectionNeverQueried.Global
@@ -68,4 +69,5 @@ internal sealed class BatchRequest
             "batch/objects",
             this);
     }
+
 }

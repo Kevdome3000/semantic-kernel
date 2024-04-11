@@ -17,13 +17,8 @@ using Xunit;
 using Xunit.Abstractions;
 
 
-public sealed class KernelFunctionExtensionsTests : IDisposable
+public sealed class KernelFunctionExtensionsTests(ITestOutputHelper output) : IDisposable
 {
-    public KernelFunctionExtensionsTests(ITestOutputHelper output)
-    {
-        this._logger = new RedirectOutput(output);
-    }
-
 
     [Fact]
     public async Task ItSupportsFunctionCallsAsync()
@@ -107,7 +102,7 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
     }
 
 
-    private readonly RedirectOutput _logger;
+    private readonly RedirectOutput _logger = new(output);
 
 
     public void Dispose()
@@ -118,20 +113,31 @@ public sealed class KernelFunctionExtensionsTests : IDisposable
 
     private sealed class RedirectTextGenerationService : ITextGenerationService
     {
+
         public string? ModelId => null;
 
         public IReadOnlyDictionary<string, object?> Attributes => new Dictionary<string, object?>();
 
 
-        public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings, Kernel? kernel, CancellationToken cancellationToken)
+        public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(
+            string prompt,
+            PromptExecutionSettings? executionSettings,
+            Kernel? kernel,
+            CancellationToken cancellationToken)
         {
-            return Task.FromResult<IReadOnlyList<TextContent>>(new List<TextContent> { new(prompt) });
+            return Task.FromResult<IReadOnlyList<TextContent>>([new(prompt)]);
         }
 
 
-        public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(
+            string prompt,
+            PromptExecutionSettings? executionSettings = null,
+            Kernel? kernel = null,
+            CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
+
     }
+
 }

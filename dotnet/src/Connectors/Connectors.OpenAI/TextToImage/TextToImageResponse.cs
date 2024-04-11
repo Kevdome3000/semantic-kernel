@@ -12,11 +12,13 @@ using System.Text.Json.Serialization;
 /// </summary>
 internal class TextToImageResponse
 {
+
     /// <summary>
     /// OpenAI Image response
     /// </summary>
     public sealed class Image
     {
+
         /// <summary>
         /// URL to the image created
         /// </summary>
@@ -29,6 +31,7 @@ internal class TextToImageResponse
         /// </summary>
         [JsonPropertyName("b64_json")]
         public string AsBase64 { get; set; } = string.Empty;
+
     }
 
 
@@ -36,11 +39,12 @@ internal class TextToImageResponse
     /// List of possible images
     /// </summary>
     [JsonPropertyName("data")]
-    public IList<Image> Images { get; set; } = new List<Image>();
+    public IList<Image> Images { get; set; } = [];
 
     /// <summary>
     /// Creation time
     /// </summary>
     [JsonPropertyName("created")]
     public int CreatedTime { get; set; }
+
 }

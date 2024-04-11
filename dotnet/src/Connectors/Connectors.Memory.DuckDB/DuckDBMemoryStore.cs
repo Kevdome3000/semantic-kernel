@@ -190,7 +190,7 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
             yield break;
         }
 
-        List<(MemoryRecord Record, double Score)> embeddings = new();
+        List<(MemoryRecord Record, double Score)> embeddings = [];
 
         await foreach (var dbEntry in this._dbConnector.GetNearestMatchesAsync(this._dbConnection, collectionName, embedding.ToArray(), limit,
                                minRelevanceScore, cancellationToken).
@@ -200,7 +200,7 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
                 json: dbEntry.MetadataString,
                 withEmbeddings
                     ? dbEntry.Embedding
-                    : Array.Empty<float>(),
+                    : [],
                 dbEntry.Key,
                 ParseTimestamp(dbEntry.Timestamp));
 

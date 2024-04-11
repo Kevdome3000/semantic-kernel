@@ -96,7 +96,7 @@ public sealed class BingConnector : IWebSearchEngineConnector
 
         WebSearchResponse? data = JsonSerializer.Deserialize<WebSearchResponse>(json);
 
-        List<T>? returnValues = new();
+        List<T>? returnValues = [];
 
         if (data?.WebPages?.Value != null)
         {
@@ -109,13 +109,7 @@ public sealed class BingConnector : IWebSearchEngineConnector
             }
             else if (typeof(T) == typeof(WebPage))
             {
-                List<WebPage>? webPages = new();
-
-                foreach (var webPage in data.WebPages.Value)
-
-                {
-                    webPages.Add(webPage);
-                }
+                List<WebPage>? webPages = [.. data.WebPages.Value];
 
                 returnValues = webPages.Take(count).
                     ToList() as List<T>;

@@ -10,7 +10,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 
 
 /// <summary>Provides a collection of <see cref="KernelPlugin"/>s.</summary>
@@ -22,6 +21,7 @@ using System.Linq;
 [DebuggerTypeProxy(typeof(TypeProxy))]
 public sealed class KernelPluginCollection : ICollection<KernelPlugin>, IReadOnlyKernelPluginCollection
 {
+
     /// <summary>The underlying dictionary of plugins.</summary>
     private readonly Dictionary<string, KernelPlugin> _plugins;
 
@@ -44,7 +44,10 @@ public sealed class KernelPluginCollection : ICollection<KernelPlugin>, IReadOnl
         }
         else
         {
-            this._plugins = new(plugins is ICollection<KernelPlugin> c ? c.Count : 0, StringComparer.OrdinalIgnoreCase);
+            this._plugins = new(plugins is ICollection<KernelPlugin> c
+                ? c.Count
+                : 0, StringComparer.OrdinalIgnoreCase);
+
             this.AddRange(plugins);
         }
     }
@@ -159,11 +162,14 @@ public sealed class KernelPluginCollection : ICollection<KernelPlugin>, IReadOnl
     /// <summary>Debugger type proxy for nicer interaction with the collection in a debugger.</summary>
     private sealed class TypeProxy
     {
+
         private readonly KernelPluginCollection _collection;
 
         public TypeProxy(KernelPluginCollection collection) => this._collection = collection;
 
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-        public KernelPlugin[] Plugins => this._collection._plugins.Values.ToArray();
+        public KernelPlugin[] Plugins => [.. this._collection._plugins.Values];
+
     }
+
 }

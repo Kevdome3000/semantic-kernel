@@ -9,6 +9,7 @@ using System.Text.Json.Serialization;
 
 internal sealed class HandlebarsParameterTypeMetadata
 {
+
     [JsonPropertyName("name")]
     public string Name { get; set; } = string.Empty;
 
@@ -19,7 +20,7 @@ internal sealed class HandlebarsParameterTypeMetadata
     /// If this is a complex type, this will contain the properties of the complex type.
     /// </summary>
     [JsonPropertyName("properties")]
-    public List<KernelParameterMetadata> Properties { get; set; } = new();
+    public List<KernelParameterMetadata> Properties { get; set; } = [];
 
 
     // Override the Equals method to compare the property values
@@ -54,7 +55,8 @@ internal sealed class HandlebarsParameterTypeMetadata
         // Compare the elements of the lists by comparing the Name and ParameterType properties
         for (int i = 0; i < list1.Count; i++)
         {
-            if (!list1[i].Name.Equals(list2[i].Name, System.StringComparison.Ordinal) || !list1[i].ParameterType!.Equals(list2[i].ParameterType))
+            if (!list1[i].
+                    Name.Equals(list2[i].Name, System.StringComparison.Ordinal) || !list1[i].ParameterType!.Equals(list2[i].ParameterType))
             {
                 return false;
             }
@@ -82,4 +84,5 @@ internal sealed class HandlebarsParameterTypeMetadata
 
         return hash.ToHashCode();
     }
+
 }

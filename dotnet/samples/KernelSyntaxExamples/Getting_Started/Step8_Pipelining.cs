@@ -18,6 +18,7 @@ using Xunit.Abstractions;
 
 public sealed class Step8_Pipelining : BaseTest
 {
+
     /// <summary>
     /// Provides an example of combining multiple functions into a single function that invokes
     /// them in a sequence, passing the output from one as input to the next.
@@ -26,23 +27,30 @@ public sealed class Step8_Pipelining : BaseTest
     public async Task RunAsync()
     {
         IKernelBuilder builder = Kernel.CreateBuilder();
+
         builder.AddOpenAIChatCompletion(
             TestConfiguration.OpenAI.ChatModelId,
             TestConfiguration.OpenAI.ApiKey);
-        builder.Services.AddLogging(c => c.AddConsole().SetMinimumLevel(LogLevel.Trace));
+
+        builder.Services.AddLogging(c => c.AddConsole().
+            SetMinimumLevel(LogLevel.Trace));
+
         Kernel kernel = builder.Build();
 
         WriteLine("================ PIPELINE ================");
+
         {
             // Create a pipeline of functions that will parse a string into an int, multiply it by a double, truncate it to an int, and then humanize it.
             KernelFunction parseInt32 = KernelFunctionFactory.CreateFromMethod((string s) => double.Parse(s, CultureInfo.InvariantCulture), "parseInt32");
             KernelFunction multiplyByN = KernelFunctionFactory.CreateFromMethod((double i, double n) => i * n, "multiplyByN");
             KernelFunction truncate = KernelFunctionFactory.CreateFromMethod((double d) => (int)d, "truncate");
+
             KernelFunction humanize = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig()
             {
                 Template = "Spell out this number in English: {{$number}}",
-                InputVariables = new() { new() { Name = "number" } },
+                InputVariables = [new() { Name = "number" }],
             });
+
             KernelFunction pipeline = KernelFunctionCombinators.Pipe(new[] { parseInt32, multiplyByN, truncate, humanize }, "pipeline");
 
             KernelArguments args = new()
@@ -58,6 +66,7 @@ public sealed class Step8_Pipelining : BaseTest
         }
 
         WriteLine("================ GRAPH ================");
+
         {
             KernelFunction rand = KernelFunctionFactory.CreateFromMethod(() => Random.Shared.Next(), "GetRandomInt32");
             KernelFunction mult = KernelFunctionFactory.CreateFromMethod((int i, int j) => i * j, "Multiply");
@@ -80,11 +89,13 @@ public sealed class Step8_Pipelining : BaseTest
     public Step8_Pipelining(ITestOutputHelper output) : base(output)
     {
     }
+
 }
 
 
 public static class KernelFunctionCombinators
 {
+
     /// <summary>
     /// Invokes a pipeline of functions, running each in order and passing the output from one as the first argument to the next.
     /// </summary>
@@ -98,7 +109,8 @@ public static class KernelFunctionCombinators
         Kernel kernel,
         KernelArguments arguments,
         CancellationToken cancellationToken) =>
-        Pipe(functions).InvokeAsync(kernel, arguments, cancellationToken);
+        Pipe(functions).
+            InvokeAsync(kernel, arguments, cancellationToken);
 
 
     /// <summary>
@@ -114,7 +126,8 @@ public static class KernelFunctionCombinators
         Kernel kernel,
         KernelArguments arguments,
         CancellationToken cancellationToken) =>
-        Pipe(functions).InvokeAsync(kernel, arguments, cancellationToken);
+        Pipe(functions).
+            InvokeAsync(kernel, arguments, cancellationToken);
 
 
     /// <summary>
@@ -178,6 +191,7 @@ public static class KernelFunctionCombinators
         ArgumentNullException.ThrowIfNull(functions);
 
         (KernelFunction Function, string OutputVariable)[] arr = functions.ToArray();
+
         Array.ForEach(arr, f =>
         {
             ArgumentNullException.ThrowIfNull(f.Function);
@@ -190,7 +204,9 @@ public static class KernelFunctionCombinators
 
             for (int i = 0; i < arr.Length; i++)
             {
-                result = await arr[i].Function.InvokeAsync(kernel, arguments).ConfigureAwait(false);
+                result = await arr[i].
+                    Function.InvokeAsync(kernel, arguments).
+                    ConfigureAwait(false);
 
                 if (i < arr.Length - 1)
                 {
@@ -201,4 +217,5 @@ public static class KernelFunctionCombinators
             return result;
         }, functionName, description);
     }
+
 }

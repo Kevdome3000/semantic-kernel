@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+
+
 // ReSharper disable StringLiteralTypo
 
 namespace SemanticKernel.UnitTests.Functions;
@@ -75,9 +77,6 @@ public class KernelFunctionFromPromptTests
         builder.Services.AddKeyedSingleton("x", mockTextGeneration.Object);
         Kernel kernel = builder.Build();
 
-        var promptConfig = new PromptTemplateConfig();
-        promptConfig.Template = "template";
-
         var openAIExecutionSettings = providedSystemChatPrompt is null
             ? new OpenAIPromptExecutionSettings()
             : new OpenAIPromptExecutionSettings
@@ -85,6 +84,7 @@ public class KernelFunctionFromPromptTests
                 ChatSystemPrompt = providedSystemChatPrompt
             };
 
+        var promptConfig = new PromptTemplateConfig("template");
         promptConfig.AddExecutionSettings(openAIExecutionSettings);
         var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
@@ -115,8 +115,7 @@ public class KernelFunctionFromPromptTests
         builder.Services.AddKeyedSingleton("service2", mockTextGeneration2.Object);
         Kernel kernel = builder.Build();
 
-        var promptConfig = new PromptTemplateConfig();
-        promptConfig.Template = "template";
+        var promptConfig = new PromptTemplateConfig("template");
         promptConfig.AddExecutionSettings(new PromptExecutionSettings(), "service1");
         var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
@@ -141,8 +140,7 @@ public class KernelFunctionFromPromptTests
         builder.Services.AddKeyedSingleton("service2", mockTextGeneration2.Object);
         Kernel kernel = builder.Build();
 
-        var promptConfig = new PromptTemplateConfig();
-        promptConfig.Template = "template";
+        var promptConfig = new PromptTemplateConfig("template");
         promptConfig.AddExecutionSettings(new PromptExecutionSettings(), "service3");
         var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
@@ -551,7 +549,7 @@ public class KernelFunctionFromPromptTests
         KernelFunction function = KernelFunctionFactory.CreateFromPrompt("Prompt");
 
         // Act
-        KernelArguments arguments1 = new();
+        KernelArguments arguments1 = [];
 
         arguments1.ExecutionSettings = new Dictionary<string, PromptExecutionSettings>()
         {
@@ -560,7 +558,7 @@ public class KernelFunctionFromPromptTests
 
         var result1 = await kernel.InvokeAsync(function, arguments1);
 
-        KernelArguments arguments2 = new();
+        KernelArguments arguments2 = [];
 
         arguments2.ExecutionSettings = new Dictionary<string, PromptExecutionSettings>()
         {
@@ -602,7 +600,7 @@ public class KernelFunctionFromPromptTests
         KernelFunction function2 = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig { Template = "Prompt2", ExecutionSettings = new() { ["service2"] = new OpenAIPromptExecutionSettings { MaxTokens = 2000 } } });
 
         // Act
-        KernelArguments arguments1 = new();
+        KernelArguments arguments1 = [];
 
         arguments1.ExecutionSettings = new Dictionary<string, PromptExecutionSettings>()
         {
@@ -611,7 +609,7 @@ public class KernelFunctionFromPromptTests
 
         var result1 = await kernel.InvokeAsync(function1, arguments1);
 
-        KernelArguments arguments2 = new();
+        KernelArguments arguments2 = [];
 
         arguments2.ExecutionSettings = new Dictionary<string, PromptExecutionSettings>()
         {
@@ -675,7 +673,7 @@ public class KernelFunctionFromPromptTests
             ReturnsAsync(new List<TextContent> { mockTextContent });
 
 #pragma warning disable CS0618 // Events are deprecated
-        void MyRenderedHandler(object? sender, PromptRenderedEventArgs e)
+        static void MyRenderedHandler(object? sender, PromptRenderedEventArgs e)
         {
             e.RenderedPrompt += " USE SHORT, CLEAR, COMPLETE SENTENCES.";
         }

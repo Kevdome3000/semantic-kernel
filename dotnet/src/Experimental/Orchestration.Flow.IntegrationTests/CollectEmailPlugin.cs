@@ -2,7 +2,6 @@
 
 namespace SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests;
 
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -14,6 +13,7 @@ using Microsoft.SemanticKernel.Experimental.Orchestration;
 
 public sealed class CollectEmailPlugin
 {
+
     private const string Goal = "Collect email from user";
 
     private const string EmailRegex = @"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$";
@@ -36,10 +36,11 @@ Do not expose the regex unless asked.
     public CollectEmailPlugin(Kernel kernel)
     {
         this._chat = kernel.GetRequiredService<IChatCompletionService>();
+
         this._chatRequestSettings = new OpenAIPromptExecutionSettings
         {
             MaxTokens = this.MaxTokens,
-            StopSequences = new List<string>() { "Observation:" },
+            StopSequences = ["Observation:"],
             Temperature = 0
         };
     }
@@ -74,7 +75,8 @@ Do not expose the regex unless asked.
         arguments["email_address"] = string.Empty;
         arguments.PromptInput();
 
-        var response = await this._chat.GetChatMessageContentAsync(chat).ConfigureAwait(false);
+        var response = await this._chat.GetChatMessageContentAsync(chat).
+            ConfigureAwait(false);
 
         return response.Content ?? string.Empty;
     }
@@ -84,6 +86,8 @@ Do not expose the regex unless asked.
     {
         // check using regex
         var regex = new Regex(EmailRegex);
+
         return regex.IsMatch(email);
     }
+
 }

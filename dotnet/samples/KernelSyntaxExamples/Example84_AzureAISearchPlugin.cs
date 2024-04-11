@@ -131,7 +131,7 @@ public class Example84_AzureAISearchPlugin : BaseTest
     private sealed class AzureAISearchService : IAzureAISearchService
     {
 
-        private readonly List<string> _defaultVectorFields = new() { "vector" };
+        private readonly List<string> _defaultVectorFields = ["vector"];
 
         private readonly SearchIndexClient _indexClient;
 
@@ -165,7 +165,7 @@ public class Example84_AzureAISearchPlugin : BaseTest
             // Perform search request
             Response<SearchResults<IndexSchema>> response = await searchClient.SearchAsync<IndexSchema>(searchOptions, cancellationToken);
 
-            List<IndexSchema> results = new();
+            List<IndexSchema> results = [];
 
             // Collect search results
             await foreach (SearchResult<IndexSchema> result in response.Value.GetResultsAsync())

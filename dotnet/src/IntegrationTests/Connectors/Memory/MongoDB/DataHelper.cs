@@ -10,18 +10,19 @@ using Microsoft.SemanticKernel.Memory;
 
 internal static class DataHelper
 {
+
     public static MemoryRecord[] VectorSearchExpectedResults { get; }
+
     public static MemoryRecord[] VectorSearchTestRecords { get; }
+
     public static float[] VectorSearchTestEmbedding { get; }
 
 
     static DataHelper()
     {
         VectorSearchTestRecords = CreateBatchRecords(8);
-        VectorSearchTestEmbedding = new[] { 1, 0.699f, 0.701f };
-        VectorSearchExpectedResults = VectorSearchTestRecords
-            .OrderByDescending(r => TensorPrimitives.CosineSimilarity(r.Embedding.Span, VectorSearchTestEmbedding))
-            .ToArray();
+        VectorSearchTestEmbedding = [1, 0.699f, 0.701f];
+        VectorSearchExpectedResults = [.. VectorSearchTestRecords.OrderByDescending(r => TensorPrimitives.CosineSimilarity(r.Embedding.Span, VectorSearchTestEmbedding))];
     }
 
 
@@ -35,17 +36,17 @@ internal static class DataHelper
 
 
     public static MemoryRecord[] CreateBatchRecords(int count) =>
-        Enumerable
-            .Range(0, count)
-            .Select(i => MemoryRecord.LocalRecord(
+        Enumerable.Range(0, count).
+            Select(i => MemoryRecord.LocalRecord(
                 id: $"test_{i}",
                 text: $"text_{i}",
                 description: $"description_{i}",
                 embedding: new[] { 1, (float)Math.Cos(Math.PI * i / count), (float)Math.Sin(Math.PI * i / count) },
-                timestamp: GetDateTime()))
-            .ToArray();
+                timestamp: GetDateTime())).
+            ToArray();
 
 
     private static DateTime GetDateTime() =>
         new(TimeSpan.TicksPerMillisecond * (DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond), DateTimeKind.Local);
+
 }

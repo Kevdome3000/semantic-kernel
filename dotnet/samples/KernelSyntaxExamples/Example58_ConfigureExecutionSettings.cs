@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -7,10 +9,10 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Examples;
 
 public sealed class Example58_ConfigureExecutionSettings : BaseTest
 {
+
     /// <summary>
     /// Show how to configure model execution settings
     /// </summary>
@@ -28,17 +30,18 @@ public sealed class Example58_ConfigureExecutionSettings : BaseTest
         if (apiKey == null || chatDeploymentName == null || endpoint == null)
         {
             this.WriteLine("AzureOpenAI endpoint, apiKey, or deploymentName not found. Skipping example.");
+
             return;
         }
 
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddAzureOpenAIChatCompletion(
+        Kernel kernel = Kernel.CreateBuilder().
+            AddAzureOpenAIChatCompletion(
                 deploymentName: chatDeploymentName,
                 endpoint: endpoint,
                 serviceId: serviceId,
                 apiKey: apiKey,
-                modelId: chatModelId)
-            .Build();
+                modelId: chatModelId).
+            Build();
 
         var prompt = "Hello AI, what can you do for me?";
 
@@ -51,25 +54,29 @@ public sealed class Example58_ConfigureExecutionSettings : BaseTest
                 MaxTokens = 60,
                 Temperature = 0.7
             }));
+
         this.WriteLine(result.GetValue<string>());
 
         // Option 2:
         // Load prompt template configuration including the execution settings from a JSON payload
         // Create the prompt functions using the prompt template and the configuration (loaded in the previous step)
         // Invoke the prompt function using the implicitly set execution settings
-        string configPayload = @"{
-          ""schema"": 1,
-          ""name"": ""HelloAI"",
-          ""description"": ""Say hello to an AI"",
-          ""type"": ""completion"",
-          ""completion"": {
-            ""max_tokens"": 256,
-            ""temperature"": 0.5,
-            ""top_p"": 0.0,
-            ""presence_penalty"": 0.0,
-            ""frequency_penalty"": 0.0
-          }
-        }";
+        string configPayload = """
+                               {
+                                   "schema": 1,
+                                   "name": "HelloAI",
+                                   "description": "Say hello to an AI",
+                                   "type": "completion",
+                                   "completion": {
+                                   "max_tokens": 256,
+                                   "temperature": 0.5,
+                                   "top_p": 0.0,
+                                   "presence_penalty": 0.0,
+                                   "frequency_penalty": 0.0
+                                   }
+                               }
+                               """;
+
         var promptConfig = JsonSerializer.Deserialize<PromptTemplateConfig>(configPayload)!;
         promptConfig.Template = prompt;
         var func = kernel.CreateFunctionFromPrompt(promptConfig);
@@ -99,7 +106,9 @@ Hello! As an AI language model, I can help you with a variety of tasks, includin
          */
     }
 
+
     public Example58_ConfigureExecutionSettings(ITestOutputHelper output) : base(output)
     {
     }
+
 }

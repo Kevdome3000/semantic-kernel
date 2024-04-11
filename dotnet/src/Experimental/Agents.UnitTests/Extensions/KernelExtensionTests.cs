@@ -12,6 +12,7 @@ using Xunit;
 [Trait("Feature", "Agent")]
 public sealed class KernelExtensionTests
 {
+
     private const string TwoPartToolName = "Fake-Bogus";
 
 
@@ -22,7 +23,7 @@ public sealed class KernelExtensionTests
         var function = KernelFunctionFactory.CreateFromMethod(() => { }, functionName: "Bogus");
 
         var kernel = new Kernel();
-        kernel.ImportPluginFromFunctions("Fake", new[] { function });
+        kernel.ImportPluginFromFunctions("Fake", [function]);
 
         //Act
         var tool = kernel.GetAssistantTool(TwoPartToolName);
@@ -44,4 +45,5 @@ public sealed class KernelExtensionTests
         //Act & Assert
         Assert.Throws<AgentException>(() => kernel.GetAssistantTool(toolName));
     }
+
 }

@@ -15,6 +15,7 @@ using Text;
 /// </summary>
 public class PineconeDocument
 {
+
     /// <summary>
     /// The unique ID of a Document
     /// </summary>
@@ -53,7 +54,9 @@ public class PineconeDocument
     ///  The text of the document, if the document was created from text.
     /// </summary>
     [JsonIgnore]
-    public string? Text => this.Metadata?.TryGetValue("text", out var text) == true ? text.ToString() : null;
+    public string? Text => this.Metadata?.TryGetValue("text", out var text) == true
+        ? text.ToString()
+        : null;
 
     /// <summary>
     /// The document ID, used to identify the source text this document was created from
@@ -64,7 +67,9 @@ public class PineconeDocument
     ///  to identify the document itself.
     /// </remarks>
     [JsonIgnore]
-    public string? DocumentId => this.Metadata?.TryGetValue("document_Id", out var docId) == true ? docId.ToString() : null;
+    public string? DocumentId => this.Metadata?.TryGetValue("document_Id", out var docId) == true
+        ? docId.ToString()
+        : null;
 
     /// <summary>
     /// The source ID, used to identify the source text this document was created from.
@@ -74,13 +79,17 @@ public class PineconeDocument
     ///  may be Medium, Twitter, etc. while the source ID would be the ID of the Medium post, Twitter tweet, etc.
     /// </remarks>
     [JsonIgnore]
-    public string? SourceId => this.Metadata?.TryGetValue("source_Id", out var sourceId) == true ? sourceId.ToString() : null;
+    public string? SourceId => this.Metadata?.TryGetValue("source_Id", out var sourceId) == true
+        ? sourceId.ToString()
+        : null;
 
     /// <summary>
     /// The timestamp, used to identify when document was created.
     /// </summary>
     [JsonIgnore]
-    public string? CreatedAt => this.Metadata?.TryGetValue("created_at", out var createdAt) == true ? createdAt.ToString() : null;
+    public string? CreatedAt => this.Metadata?.TryGetValue("created_at", out var createdAt) == true
+        ? createdAt.ToString()
+        : null;
 
 
     /// <summary>
@@ -99,9 +108,11 @@ public class PineconeDocument
         SparseVectorData? sparseValues = null,
         float? score = null)
     {
-        this.Id = id ?? Guid.NewGuid().ToString();
+        this.Id = id ?? Guid.NewGuid().
+            ToString();
+
         this.Values = values;
-        this.Metadata = metadata ?? new Dictionary<string, object>();
+        this.Metadata = metadata ?? [];
         this.SparseValues = sparseValues;
         this.Score = score;
     }
@@ -125,6 +136,7 @@ public class PineconeDocument
     public PineconeDocument WithSparseValues(SparseVectorData? sparseValues)
     {
         this.SparseValues = sparseValues;
+
         return this;
     }
 
@@ -136,6 +148,7 @@ public class PineconeDocument
     public PineconeDocument WithMetadata(Dictionary<string, object>? metadata)
     {
         this.Metadata = metadata;
+
         return this;
     }
 
@@ -154,9 +167,8 @@ public class PineconeDocument
 
         var propertiesToSkip = new HashSet<string>() { "text", "document_Id", "source_Id", "created_at" };
 
-        var distinctMetadata = this.Metadata
-            .Where(x => !propertiesToSkip.Contains(x.Key))
-            .ToDictionary(x => x.Key, x => x.Value);
+        var distinctMetadata = this.Metadata.Where(x => !propertiesToSkip.Contains(x.Key)).
+            ToDictionary(x => x.Key, x => x.Value);
 
         return JsonSerializer.Serialize(distinctMetadata, JsonOptionsCache.Default);
     }
@@ -166,4 +178,5 @@ public class PineconeDocument
     {
         return UpdateVectorRequest.FromPineconeDocument(this);
     }
+
 }

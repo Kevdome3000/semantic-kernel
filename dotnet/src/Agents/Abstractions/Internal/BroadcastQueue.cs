@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 /// <summary>
 /// Utility class used by <see cref="AgentChat"/> to manage the broadcast of
 /// conversation messages via the <see cref="AgentChannel"/>.
-/// (<see cref="AgentChannel.ReceiveAsync(System.Collections.Generic.IEnumerable{Microsoft.SemanticKernel.ChatMessageContent}, System.Threading.CancellationToken)"/>.)
+/// (<see cref="AgentChannel.ReceiveAsync"/>.)
 /// </summary>
 /// <remarks>
 /// Maintains a set of channel specific queues, each with individual locks, in addition to a global state lock.

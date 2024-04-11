@@ -115,18 +115,14 @@ public class QdrantMemoryStore : IMemoryStore
     public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default)
     {
         var vectorData = await this.ConvertFromMemoryRecordAsync(collectionName, record, cancellationToken).
-            ConfigureAwait(false);
-
-        if (vectorData == null)
-        {
-            throw new KernelException("Failed to convert memory record to Qdrant vector record");
-        }
+                             ConfigureAwait(false) ??
+                         throw new KernelException("Failed to convert memory record to Qdrant vector record");
 
         try
         {
             await this._qdrantClient.UpsertVectorsAsync(
                     collectionName,
-                    new[] { vectorData },
+                    [vectorData],
                     cancellationToken).
                 ConfigureAwait(false);
         }
@@ -239,7 +235,7 @@ public class QdrantMemoryStore : IMemoryStore
     {
         try
         {
-            var vectorDataList = this._qdrantClient.GetVectorsByIdAsync(collectionName, new[] { pointId }, withEmbedding, cancellationToken);
+            var vectorDataList = this._qdrantClient.GetVectorsByIdAsync(collectionName, [pointId], withEmbedding, cancellationToken);
 
             var vectorData = await vectorDataList.FirstOrDefaultAsync(cancellationToken).
                 ConfigureAwait(false);
@@ -322,7 +318,7 @@ public class QdrantMemoryStore : IMemoryStore
     {
         try
         {
-            await this._qdrantClient.DeleteVectorsByIdAsync(collectionName, new[] { pointId }, cancellationToken).
+            await this._qdrantClient.DeleteVectorsByIdAsync(collectionName, [pointId], cancellationToken).
                 ConfigureAwait(false);
         }
         catch (HttpOperationException ex)
@@ -476,24 +472,18 @@ public class QdrantMemoryStore : IMemoryStore
                     pointId = Guid.NewGuid().
                         ToString();
 
-                    existingRecord = await this._qdrantClient.GetVectorsByIdAsync(collectionName, new[] { pointId }, cancellationToken: cancellationToken).
+                    existingRecord = await this._qdrantClient.GetVectorsByIdAsync(collectionName, [pointId], cancellationToken: cancellationToken).
                         FirstOrDefaultAsync(cancellationToken).
                         ConfigureAwait(false);
                 } while (existingRecord != null);
             }
         }
 
-        var vectorData = QdrantVectorRecord.FromJsonMetadata(
-            pointId: pointId,
-            embedding: record.Embedding,
-            json: record.GetSerializedMetadata());
-
-        if (vectorData == null)
-        {
-            throw new KernelException("Failed to convert memory record to Qdrant vector record");
-        }
-
-        return vectorData;
+        return QdrantVectorRecord.FromJsonMetadata(
+                   pointId: pointId,
+                   embedding: record.Embedding,
+                   json: record.GetSerializedMetadata()) ??
+               throw new KernelException("Failed to convert memory record to Qdrant vector record");
     }
 
     #endregion

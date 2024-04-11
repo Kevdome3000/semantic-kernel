@@ -254,8 +254,6 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
             lastTextContent = textContent;
         }
 
-        ;
-
         // Assert
         Assert.NotNull(lastTextContent!.ModelId);
         Assert.Equal("fake-model", lastTextContent.ModelId);

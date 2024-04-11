@@ -2,7 +2,6 @@
 
 namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -45,7 +44,7 @@ public sealed class OpenAITextEmbeddingTests
 
         // Act
         var singleResult = await embeddingGenerator.GenerateEmbeddingAsync(testInputString);
-        var batchResult = await embeddingGenerator.GenerateEmbeddingsAsync(new List<string> { testInputString, testInputString, testInputString });
+        var batchResult = await embeddingGenerator.GenerateEmbeddingsAsync([testInputString, testInputString, testInputString]);
 
         // Assert
         Assert.Equal(AdaVectorLength, singleResult.Length);
@@ -69,7 +68,7 @@ public sealed class OpenAITextEmbeddingTests
 
         // Act
         var singleResult = await embeddingGenerator.GenerateEmbeddingAsync(testInputString);
-        var batchResult = await embeddingGenerator.GenerateEmbeddingsAsync(new List<string> { testInputString, testInputString, testInputString });
+        var batchResult = await embeddingGenerator.GenerateEmbeddingsAsync([testInputString, testInputString, testInputString]);
 
         // Assert
         Assert.Equal(AdaVectorLength, singleResult.Length);

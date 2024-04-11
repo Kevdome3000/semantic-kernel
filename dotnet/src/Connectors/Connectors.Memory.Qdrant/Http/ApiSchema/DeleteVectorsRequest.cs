@@ -9,6 +9,7 @@ using System.Text.Json.Serialization;
 
 internal sealed class DeleteVectorsRequest
 {
+
     [JsonPropertyName("points")]
     public List<string> Ids { get; set; }
 
@@ -23,6 +24,7 @@ internal sealed class DeleteVectorsRequest
     {
         Verify.NotNull(qdrantPointId, "The point ID is NULL");
         this.Ids.Add(qdrantPointId);
+
         return this;
     }
 
@@ -31,6 +33,7 @@ internal sealed class DeleteVectorsRequest
     {
         Verify.NotNull(qdrantPointIds, "The point ID collection is NULL");
         this.Ids.AddRange(qdrantPointIds);
+
         return this;
     }
 
@@ -53,7 +56,7 @@ internal sealed class DeleteVectorsRequest
 
     private DeleteVectorsRequest(string collectionName)
     {
-        this.Ids = new List<string>();
+        this.Ids = [];
         this._collectionName = collectionName;
     }
 

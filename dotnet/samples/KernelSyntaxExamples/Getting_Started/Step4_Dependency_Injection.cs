@@ -19,6 +19,7 @@ using Xunit.Abstractions;
 /// </summary>
 public sealed class Step4_Dependency_Injection : BaseTest
 {
+
     /// <summary>
     /// Show how to create a <see cref="Kernel"/> that participates in Dependency Injection.
     /// </summary>
@@ -60,15 +61,10 @@ public sealed class Step4_Dependency_Injection : BaseTest
     /// <summary>
     /// A plugin that returns the current time.
     /// </summary>
-    public class TimeInformation
+    public class TimeInformation(ILoggerFactory loggerFactory)
     {
-        private readonly ILogger _logger;
 
-
-        public TimeInformation(ILoggerFactory loggerFactory)
-        {
-            this._logger = loggerFactory.CreateLogger(typeof(TimeInformation));
-        }
+        private readonly ILogger _logger = loggerFactory.CreateLogger(typeof(TimeInformation));
 
 
         [KernelFunction]
@@ -77,12 +73,15 @@ public sealed class Step4_Dependency_Injection : BaseTest
         {
             var utcNow = DateTime.UtcNow.ToString("R");
             this._logger.LogInformation("Returning current time {0}", utcNow);
+
             return utcNow;
         }
+
     }
 
 
     public Step4_Dependency_Injection(ITestOutputHelper output) : base(output)
     {
     }
+
 }

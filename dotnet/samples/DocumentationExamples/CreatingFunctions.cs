@@ -52,7 +52,7 @@ public class CreatingFunctions : BaseTest
         // </RunningNativeFunction>
 
         // Create chat history
-        ChatHistory history = new();
+        ChatHistory history = [];
 
         // <Chat>
 

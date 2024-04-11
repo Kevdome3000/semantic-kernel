@@ -33,6 +33,7 @@ using Extensions.Logging.Abstractions;
 /// </summary>
 internal sealed class TemplateTokenizer
 {
+
     /// <summary>
     /// Create a new instance of SK tokenizer
     /// </summary>
@@ -59,13 +60,13 @@ internal sealed class TemplateTokenizer
         // Render NULL to ""
         if (string.IsNullOrEmpty(text))
         {
-            return new List<Block> { new TextBlock(string.Empty, this._loggerFactory) };
+            return [new TextBlock(string.Empty, this._loggerFactory)];
         }
 
         // If the template is "empty" return the content as a text block
         if (text!.Length < MinCodeBlockLength)
         {
-            return new List<Block> { new TextBlock(text, this._loggerFactory) };
+            return [new TextBlock(text, this._loggerFactory)];
         }
 
         var blocks = new List<Block>();
@@ -91,6 +92,7 @@ internal sealed class TemplateTokenizer
             if (skipNextChar)
             {
                 skipNextChar = false;
+
                 continue;
             }
 
@@ -112,6 +114,7 @@ internal sealed class TemplateTokenizer
                     if (currentChar == Symbols.EscapeChar && CanBeEscaped(nextChar))
                     {
                         skipNextChar = true;
+
                         continue;
                     }
 
@@ -141,9 +144,8 @@ internal sealed class TemplateTokenizer
                         var contentWithDelimiters = SubStr(text, blockStartPos, cursor + 1);
 
                         // Remove "{{" and "}}" delimiters and trim empty chars
-                        var contentWithoutDelimiters = contentWithDelimiters
-                            .Substring(2, contentWithDelimiters.Length - EmptyCodeBlockLength)
-                            .Trim();
+                        var contentWithoutDelimiters = contentWithDelimiters.Substring(2, contentWithDelimiters.Length - EmptyCodeBlockLength).
+                            Trim();
 
                         if (contentWithoutDelimiters.Length == 0)
                         {
@@ -163,6 +165,7 @@ internal sealed class TemplateTokenizer
                                     }
 
                                     blocks.Add(codeBlocks[0]);
+
                                     break;
 
                                 case BlockTypes.Value:
@@ -172,10 +175,12 @@ internal sealed class TemplateTokenizer
                                     }
 
                                     blocks.Add(codeBlocks[0]);
+
                                     break;
 
                                 case BlockTypes.FunctionId:
                                     blocks.Add(new CodeBlock(codeBlocks, contentWithoutDelimiters, this._loggerFactory));
+
                                     break;
 
                                 case BlockTypes.Code:
@@ -207,6 +212,7 @@ internal sealed class TemplateTokenizer
     #region private ================================================================================
 
     private readonly ILoggerFactory _loggerFactory;
+
     private readonly CodeTokenizer _codeTokenizer;
 
 

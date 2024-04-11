@@ -18,6 +18,7 @@ using Xunit;
 
 public class RestApiOperationTests
 {
+
     [Fact]
     public void ItShouldUseHostUrlIfNoOverrideProvided()
     {
@@ -28,7 +29,7 @@ public class RestApiOperationTests
             "/",
             HttpMethod.Get,
             "fake_description",
-            new List<RestApiOperationParameter>()
+            []
         );
 
         var arguments = new Dictionary<string, object?>();
@@ -51,7 +52,7 @@ public class RestApiOperationTests
             "/",
             HttpMethod.Get,
             "fake_description",
-            new List<RestApiOperationParameter>()
+            []
         );
 
         var fakeHostUrlOverride = "https://fake-random-test-host-override";
@@ -184,7 +185,8 @@ public class RestApiOperationTests
             { "fake_header_two", "fake_header_two_value" }
         };
 
-        var sut = new RestApiOperation("fake_id", new Uri("http://fake_url"), "fake_path", HttpMethod.Get, "fake_description", parameters);
+        var sut = new RestApiOperation("fake_id", new Uri("http://fake_url"), "fake_path", HttpMethod.Get,
+            "fake_description", parameters);
 
         // Act
         var headers = sut.BuildHeaders(arguments);
@@ -206,11 +208,14 @@ public class RestApiOperationTests
         // Arrange
         var metadata = new List<RestApiOperationParameter>
         {
-            new(name: "fake_header_one", type: "string", isRequired: true, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple),
-            new(name: "fake_header_two", type: "string", isRequired: false, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple)
+            new(name: "fake_header_one", type: "string", isRequired: true, expand: false,
+                location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple),
+            new(name: "fake_header_two", type: "string", isRequired: false, expand: false,
+                location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple)
         };
 
-        var sut = new RestApiOperation("fake_id", new Uri("http://fake_url"), "fake_path", HttpMethod.Get, "fake_description", metadata);
+        var sut = new RestApiOperation("fake_id", new Uri("http://fake_url"), "fake_path", HttpMethod.Get,
+            "fake_description", metadata);
 
         // Act
         void Act() => sut.BuildHeaders(new Dictionary<string, object?>());
@@ -226,8 +231,10 @@ public class RestApiOperationTests
         // Arrange
         var metadata = new List<RestApiOperationParameter>
         {
-            new(name: "fake_header_one", type: "string", isRequired: true, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple),
-            new(name: "fake_header_two", type: "string", isRequired: false, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple)
+            new(name: "fake_header_one", type: "string", isRequired: true, expand: false,
+                location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple),
+            new(name: "fake_header_two", type: "string", isRequired: false, expand: false,
+                location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple)
         };
 
         var arguments = new Dictionary<string, object?>
@@ -235,7 +242,8 @@ public class RestApiOperationTests
             ["fake_header_one"] = "fake_header_one_value"
         };
 
-        var sut = new RestApiOperation("fake_id", new Uri("http://fake_url"), "fake_path", HttpMethod.Get, "fake_description", metadata);
+        var sut = new RestApiOperation("fake_id", new Uri("http://fake_url"), "fake_path", HttpMethod.Get,
+            "fake_description", metadata);
 
         // Act
         var headers = sut.BuildHeaders(arguments);
@@ -254,8 +262,10 @@ public class RestApiOperationTests
         // Arrange
         var metadata = new List<RestApiOperationParameter>
         {
-            new(name: "h1", type: "array", isRequired: false, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple, arrayItemType: "string"),
-            new(name: "h2", type: "array", isRequired: false, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple, arrayItemType: "integer")
+            new(name: "h1", type: "array", isRequired: false, expand: false,
+                location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple, arrayItemType: "string"),
+            new(name: "h2", type: "array", isRequired: false, expand: false,
+                location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple, arrayItemType: "integer")
         };
 
         var arguments = new Dictionary<string, object?>
@@ -264,7 +274,8 @@ public class RestApiOperationTests
             ["h2"] = "[1,2,3]"
         };
 
-        var sut = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata);
+        var sut = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get,
+            "fake_description", metadata);
 
         // Act
         var headers = sut.BuildHeaders(arguments);
@@ -284,8 +295,10 @@ public class RestApiOperationTests
         // Arrange
         var metadata = new List<RestApiOperationParameter>
         {
-            new(name: "h1", type: "string", isRequired: false, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple),
-            new(name: "h2", type: "boolean", isRequired: false, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple)
+            new(name: "h1", type: "string", isRequired: false, expand: false,
+                location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple),
+            new(name: "h2", type: "boolean", isRequired: false, expand: false,
+                location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple)
         };
 
         var arguments = new Dictionary<string, object?>
@@ -294,7 +307,8 @@ public class RestApiOperationTests
             ["h2"] = true
         };
 
-        var sut = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata);
+        var sut = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get,
+            "fake_description", metadata);
 
         // Act
         var headers = sut.BuildHeaders(arguments);
@@ -314,8 +328,10 @@ public class RestApiOperationTests
         // Arrange
         var metadata = new List<RestApiOperationParameter>
         {
-            new(name: "h1", type: "array", isRequired: true, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple),
-            new(name: "h2", type: "boolean", isRequired: true, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple),
+            new(name: "h1", type: "array", isRequired: true, expand: false,
+                location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple),
+            new(name: "h2", type: "boolean", isRequired: true, expand: false,
+                location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple),
         };
 
         var arguments = new Dictionary<string, object?>
@@ -324,7 +340,8 @@ public class RestApiOperationTests
             ["h2"] = "false"
         };
 
-        var sut = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata);
+        var sut = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get,
+            "fake_description", metadata);
 
         // Act
         var headers = sut.BuildHeaders(arguments);
@@ -369,7 +386,9 @@ public class RestApiOperationTests
     [Fact]
     public void ItDefaultsDataToAnEmptyDictionary()
     {
-        Kernel kernel = Kernel.CreateBuilder().Build();
+        Kernel kernel = Kernel.CreateBuilder().
+            Build();
+
         Assert.Empty(kernel.Data);
     }
 
@@ -377,7 +396,9 @@ public class RestApiOperationTests
     [Fact]
     public void ItDefaultsServiceSelectorToSingleton()
     {
-        Kernel kernel = Kernel.CreateBuilder().Build();
+        Kernel kernel = Kernel.CreateBuilder().
+            Build();
+
         Assert.Null(kernel.Services.GetService<IAIServiceSelector>());
         Assert.NotNull(kernel.ServiceSelector);
         Assert.Same(kernel.ServiceSelector, kernel.ServiceSelector);
@@ -402,6 +423,7 @@ public class RestApiOperationTests
 
     private sealed class NopServiceSelector : IAIServiceSelector
     {
+
 #pragma warning disable CS8769 // Nullability of reference types in type of parameter doesn't match implemented member (possibly because of nullability attributes).
         bool IAIServiceSelector.TrySelectAIService<T>(
 #pragma warning restore CS8769
@@ -411,6 +433,7 @@ public class RestApiOperationTests
             out T? service,
             out PromptExecutionSettings? serviceSettings) where T : class =>
             throw new NotImplementedException();
+
     }
 
 
@@ -441,9 +464,10 @@ public class RestApiOperationTests
     [Fact]
     public void ItBuildsServicesIntoKernel()
     {
-        var builder = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(modelId: "abcd", apiKey: "efg", serviceId: "openai")
-            .AddAzureOpenAITextGeneration(deploymentName: "hijk", modelId: "qrs", endpoint: "https://lmnop", apiKey: "tuv", serviceId: "azureopenai");
+        var builder = Kernel.CreateBuilder().
+            AddOpenAIChatCompletion(modelId: "abcd", apiKey: "efg", serviceId: "openai").
+            AddAzureOpenAITextGeneration(deploymentName: "hijk", modelId: "qrs", endpoint: "https://lmnop", apiKey: "tuv",
+                serviceId: "azureopenai");
 
         builder.Services.AddSingleton<IFormatProvider>(CultureInfo.InvariantCulture);
         builder.Services.AddSingleton<IFormatProvider>(CultureInfo.CurrentCulture);
@@ -454,45 +478,59 @@ public class RestApiOperationTests
         Assert.IsType<OpenAIChatCompletionService>(kernel.GetRequiredService<IChatCompletionService>("openai"));
         Assert.IsType<AzureOpenAITextGenerationService>(kernel.GetRequiredService<ITextGenerationService>("azureopenai"));
 
-        Assert.Equal(2, kernel.GetAllServices<ITextGenerationService>().Count());
+        Assert.Equal(2, kernel.GetAllServices<ITextGenerationService>().
+            Count());
+
         Assert.Single(kernel.GetAllServices<IChatCompletionService>());
 
-        Assert.Equal(3, kernel.GetAllServices<IFormatProvider>().Count());
+        Assert.Equal(3, kernel.GetAllServices<IFormatProvider>().
+            Count());
     }
 
 
     [Fact]
     public void ItSupportsMultipleEqualNamedServices()
     {
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(modelId: "abcd", apiKey: "efg", serviceId: "openai")
-            .AddOpenAIChatCompletion(modelId: "abcd", apiKey: "efg", serviceId: "openai")
-            .AddOpenAIChatCompletion(modelId: "abcd", apiKey: "efg", serviceId: "openai")
-            .AddOpenAIChatCompletion(modelId: "abcd", apiKey: "efg", serviceId: "openai")
-            .AddAzureOpenAIChatCompletion(deploymentName: "hijk", modelId: "lmnop", endpoint: "https://qrs", apiKey: "tuv", serviceId: "openai")
-            .AddAzureOpenAIChatCompletion(deploymentName: "hijk", modelId: "lmnop", endpoint: "https://qrs", apiKey: "tuv", serviceId: "openai")
-            .AddAzureOpenAIChatCompletion(deploymentName: "hijk", modelId: "lmnop", endpoint: "https://qrs", apiKey: "tuv", serviceId: "openai")
-            .AddAzureOpenAIChatCompletion(deploymentName: "hijk", modelId: "lmnop", endpoint: "https://qrs", apiKey: "tuv", serviceId: "openai")
-            .Build();
+        Kernel kernel = Kernel.CreateBuilder().
+            AddOpenAIChatCompletion(modelId: "abcd", apiKey: "efg", serviceId: "openai").
+            AddOpenAIChatCompletion(modelId: "abcd", apiKey: "efg", serviceId: "openai").
+            AddOpenAIChatCompletion(modelId: "abcd", apiKey: "efg", serviceId: "openai").
+            AddOpenAIChatCompletion(modelId: "abcd", apiKey: "efg", serviceId: "openai").
+            AddAzureOpenAIChatCompletion(deploymentName: "hijk", modelId: "lmnop", endpoint: "https://qrs", apiKey: "tuv",
+                serviceId: "openai").
+            AddAzureOpenAIChatCompletion(deploymentName: "hijk", modelId: "lmnop", endpoint: "https://qrs", apiKey: "tuv",
+                serviceId: "openai").
+            AddAzureOpenAIChatCompletion(deploymentName: "hijk", modelId: "lmnop", endpoint: "https://qrs", apiKey: "tuv",
+                serviceId: "openai").
+            AddAzureOpenAIChatCompletion(deploymentName: "hijk", modelId: "lmnop", endpoint: "https://qrs", apiKey: "tuv",
+                serviceId: "openai").
+            Build();
 
-        Assert.Equal(8, kernel.GetAllServices<IChatCompletionService>().Count());
+        Assert.Equal(8, kernel.GetAllServices<IChatCompletionService>().
+            Count());
     }
 
 
     [Fact]
     public void ItIsntNeededInDIContexts()
     {
-        KernelPluginCollection plugins = new() { KernelPluginFactory.CreateFromFunctions("plugin1") };
+        KernelPluginCollection plugins = [KernelPluginFactory.CreateFromFunctions("plugin1")];
 
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddAzureOpenAIChatCompletion(deploymentName: "abcd", modelId: "efg", endpoint: "https://hijk", apiKey: "lmnop");
         serviceCollection.AddAzureOpenAIChatCompletion(deploymentName: "abcd", modelId: "efg", endpoint: "https://hijk", apiKey: "lmnop");
-        serviceCollection.AddAzureOpenAIChatCompletion(deploymentName: "abcd", modelId: "efg", endpoint: "https://hijk", apiKey: "lmnop", serviceId: "azureopenai1");
-        serviceCollection.AddAzureOpenAIChatCompletion(deploymentName: "abcd", modelId: "efg", endpoint: "https://hijk", apiKey: "lmnop", serviceId: "azureopenai2");
+
+        serviceCollection.AddAzureOpenAIChatCompletion(deploymentName: "abcd", modelId: "efg", endpoint: "https://hijk", apiKey: "lmnop",
+            serviceId: "azureopenai1");
+
+        serviceCollection.AddAzureOpenAIChatCompletion(deploymentName: "abcd", modelId: "efg", endpoint: "https://hijk", apiKey: "lmnop",
+            serviceId: "azureopenai2");
+
         serviceCollection.AddSingleton(plugins);
         serviceCollection.AddSingleton<Kernel>();
 
-        Kernel k = serviceCollection.BuildServiceProvider().GetService<Kernel>()!;
+        Kernel k = serviceCollection.BuildServiceProvider().
+            GetService<Kernel>()!;
 
         Assert.NotNull(k);
         Assert.Same(plugins, k.Plugins);
@@ -504,27 +542,33 @@ public class RestApiOperationTests
         // but when just using DI directly, it will only find unnamed services. Once that issue is fixed and SK
         // brings in the new version, it can update the GetAllServices implementation to remove the workaround,
         // and then this test should be updated accordingly.
-        Assert.Equal(2, k.GetAllServices<IChatCompletionService>().Count());
+        Assert.Equal(2, k.GetAllServices<IChatCompletionService>().
+            Count());
 
         // It's possible to explicitly use the same workaround outside of KernelBuilder to get all services,
         // but it's not recommended.
 
         //** WORKAROUND
-        Dictionary<Type, HashSet<object?>> mapping = new();
+        Dictionary<Type, HashSet<object?>> mapping = [];
 
         foreach (var descriptor in serviceCollection)
         {
             if (!mapping.TryGetValue(descriptor.ServiceType, out HashSet<object?>? keys))
             {
-                mapping[descriptor.ServiceType] = keys = new HashSet<object?>();
+                mapping[descriptor.ServiceType] = keys = [];
             }
+
             keys.Add(descriptor.ServiceKey);
         }
+
         serviceCollection.AddKeyedSingleton<Dictionary<Type, HashSet<object?>>>("KernelServiceTypeToKeyMappings", mapping);
         //**
 
-        k = serviceCollection.BuildServiceProvider().GetService<Kernel>()!;
-        Assert.Equal(4, k.GetAllServices<IChatCompletionService>().Count()); // now this is 4 as expected
+        k = serviceCollection.BuildServiceProvider().
+            GetService<Kernel>()!;
+
+        Assert.Equal(4, k.GetAllServices<IChatCompletionService>().
+            Count()); // now this is 4 as expected
     }
 
 
@@ -553,7 +597,7 @@ public class RestApiOperationTests
         KernelPlugin plugin3 = KernelPluginFactory.CreateFromFunctions("plugin3");
 
         IKernelBuilder builder = Kernel.CreateBuilder();
-        builder.Services.AddTransient<KernelPluginCollection>(_ => new(new[] { plugin1, plugin2, plugin3 }));
+        builder.Services.AddTransient<KernelPluginCollection>(_ => new([plugin1, plugin2, plugin3]));
 
         Kernel kernel1 = builder.Build();
         Assert.Equal(3, kernel1.Plugins.Count);
@@ -574,7 +618,7 @@ public class RestApiOperationTests
         Assert.NotNull(builder);
         Assert.Throws<InvalidOperationException>(() => builder.Build());
 
-        builder.Services.AddSingleton<Dictionary<string, string>>(new Dictionary<string, string>());
+        builder.Services.AddSingleton<Dictionary<string, string>>([]);
 
         IServiceProvider provider = sc.BuildServiceProvider();
 
@@ -582,4 +626,5 @@ public class RestApiOperationTests
         Assert.NotNull(provider.GetService<KernelPluginCollection>());
         Assert.NotNull(provider.GetService<Kernel>());
     }
+
 }

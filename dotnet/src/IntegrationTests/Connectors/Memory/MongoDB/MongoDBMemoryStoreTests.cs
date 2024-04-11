@@ -13,18 +13,13 @@ using Xunit;
 /// <summary>
 /// Integration tests of <see cref="MongoDBMemoryStore"/>.
 /// </summary>
-public class MongoDBMemoryStoreTests : IClassFixture<MongoDBMemoryStoreTestsFixture>
+public class MongoDBMemoryStoreTests(MongoDBMemoryStoreTestsFixture fixture) : IClassFixture<MongoDBMemoryStoreTestsFixture>
 {
+
     // If null, all tests will be enabled
     private const string? SkipReason = "MongoDB Atlas cluster is required";
 
-    private readonly MongoDBMemoryStoreTestsFixture _fixture;
-
-
-    public MongoDBMemoryStoreTests(MongoDBMemoryStoreTestsFixture fixture)
-    {
-        this._fixture = fixture;
-    }
+    private readonly MongoDBMemoryStoreTestsFixture _fixture = fixture;
 
 
     [Fact(Skip = SkipReason)]
@@ -155,8 +150,12 @@ public class MongoDBMemoryStoreTests : IClassFixture<MongoDBMemoryStoreTestsFixt
 
         // Act
         await memoryStore.CreateCollectionAsync(collectionName);
-        var keys = await memoryStore.UpsertBatchAsync(collectionName, records).ToListAsync();
-        var actualRecords = await memoryStore.GetBatchAsync(collectionName, keys, withEmbeddings: withEmbeddings).ToListAsync();
+
+        var keys = await memoryStore.UpsertBatchAsync(collectionName, records).
+            ToListAsync();
+
+        var actualRecords = await memoryStore.GetBatchAsync(collectionName, keys, withEmbeddings: withEmbeddings).
+            ToListAsync();
 
         // Assert
         Assert.NotNull(keys);
@@ -164,7 +163,8 @@ public class MongoDBMemoryStoreTests : IClassFixture<MongoDBMemoryStoreTestsFixt
         Assert.Equal(Count, keys.Count);
         Assert.Equal(Count, actualRecords.Count);
 
-        var actualRecordsOrdered = actualRecords.OrderBy(r => r.Key).ToArray();
+        var actualRecordsOrdered = actualRecords.OrderBy(r => r.Key).
+            ToArray();
 
         for (int i = 0; i < Count; i++)
         {
@@ -186,6 +186,7 @@ public class MongoDBMemoryStoreTests : IClassFixture<MongoDBMemoryStoreTestsFixt
             text: "text1",
             description: "description",
             embedding: new float[] { 1, 2, 3 });
+
         var testRecord2 = MemoryRecord.LocalRecord(
             id: Id,
             text: "text2",
@@ -257,11 +258,16 @@ public class MongoDBMemoryStoreTests : IClassFixture<MongoDBMemoryStoreTestsFixt
 
         // Act
         await memoryStore.CreateCollectionAsync(collectionName);
-        var ids = await memoryStore.UpsertBatchAsync(collectionName, testRecords).ToListAsync();
+
+        var ids = await memoryStore.UpsertBatchAsync(collectionName, testRecords).
+            ToListAsync();
+
         await memoryStore.RemoveBatchAsync(collectionName, ids);
 
         // Assert
-        var actual = await memoryStore.GetBatchAsync(collectionName, ids).ToListAsync();
+        var actual = await memoryStore.GetBatchAsync(collectionName, ids).
+            ToListAsync();
+
         Assert.Empty(actual);
     }
 
@@ -279,7 +285,9 @@ public class MongoDBMemoryStoreTests : IClassFixture<MongoDBMemoryStoreTestsFixt
         await memoryStore.RemoveBatchAsync(collectionName, ids);
 
         // Assert
-        var actual = await memoryStore.GetBatchAsync(collectionName, ids).ToListAsync();
+        var actual = await memoryStore.GetBatchAsync(collectionName, ids).
+            ToListAsync();
+
         Assert.Empty(actual);
     }
 
@@ -291,14 +299,19 @@ public class MongoDBMemoryStoreTests : IClassFixture<MongoDBMemoryStoreTestsFixt
         var collectionName = GetRandomName();
         var memoryStore = this._fixture.MemoryStore;
         var testRecords = DataHelper.CreateBatchRecords(10);
-        var ids = testRecords.Select(t => t.Metadata.Id).Concat(new[] { "a", "b", "c" }).ToArray();
+
+        var ids = testRecords.Select(t => t.Metadata.Id).
+            Concat(["a", "b", "c"]).
+            ToArray();
 
         // Act
         await memoryStore.CreateCollectionAsync(collectionName);
         await memoryStore.RemoveBatchAsync(collectionName, ids);
 
         // Assert
-        var actual = await memoryStore.GetBatchAsync(collectionName, ids).ToListAsync();
+        var actual = await memoryStore.GetBatchAsync(collectionName, ids).
+            ToListAsync();
+
         Assert.Empty(actual);
     }
 
@@ -316,7 +329,9 @@ public class MongoDBMemoryStoreTests : IClassFixture<MongoDBMemoryStoreTestsFixt
         }
 
         // Act
-        var actualCollections = await memoryStore.GetCollectionsAsync().ToListAsync();
+        var actualCollections = await memoryStore.GetCollectionsAsync().
+            ToListAsync();
+
         actualCollections?.Sort();
 
         // Assert
@@ -372,8 +387,8 @@ public class MongoDBMemoryStoreTests : IClassFixture<MongoDBMemoryStoreTestsFixt
                 collectionName,
                 searchEmbedding,
                 limit,
-                withEmbeddings: withEmbeddings)
-            .ToListAsync();
+                withEmbeddings: withEmbeddings).
+            ToListAsync();
 
         // Assert
         Assert.NotNull(nearestMatchesActual);
@@ -405,8 +420,8 @@ public class MongoDBMemoryStoreTests : IClassFixture<MongoDBMemoryStoreTestsFixt
                 searchEmbedding,
                 100,
                 minScore,
-                withEmbeddings: withEmbeddings)
-            .ToListAsync();
+                withEmbeddings: withEmbeddings).
+            ToListAsync();
 
         // Assert
         Assert.NotNull(nearestMatchesActual);

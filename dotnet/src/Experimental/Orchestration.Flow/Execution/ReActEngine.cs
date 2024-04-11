@@ -18,6 +18,7 @@ using Microsoft.Extensions.Logging;
 /// </summary>
 internal sealed class ReActEngine
 {
+
     /// <summary>
     /// The logger
     /// </summary>
@@ -101,6 +102,7 @@ internal sealed class ReActEngine
             if (!string.IsNullOrEmpty(modelId))
             {
                 var modelConfigString = EmbeddedResource.Read($"Plugins.ReActEngine.{modelId}.yaml", false);
+
                 promptConfigString = string.IsNullOrEmpty(modelConfigString)
                     ? promptConfigString
                     : modelConfigString!;
@@ -111,6 +113,7 @@ internal sealed class ReActEngine
             if (!string.IsNullOrEmpty(modelId))
             {
                 var modelConfigString = EmbeddedResource.Read($"Plugins.ReActEngine.{modelId}.yaml", false);
+
                 promptConfigString = string.IsNullOrEmpty(modelConfigString)
                     ? promptConfigString
                     : modelConfigString!;
@@ -121,13 +124,18 @@ internal sealed class ReActEngine
     }
 
 
-    internal async Task<ReActStep?> GetNextStepAsync(Kernel kernel, KernelArguments arguments, string question, List<ReActStep> previousSteps)
+    internal async Task<ReActStep?> GetNextStepAsync(
+        Kernel kernel,
+        KernelArguments arguments,
+        string question,
+        List<ReActStep> previousSteps)
     {
         arguments["question"] = question;
         var scratchPad = this.CreateScratchPad(previousSteps);
         arguments["agentScratchPad"] = scratchPad;
 
-        var availableFunctions = this.GetAvailableFunctions(kernel).ToArray();
+        var availableFunctions = this.GetAvailableFunctions(kernel).
+            ToArray();
 
         if (availableFunctions.Length == 1)
         {
@@ -159,7 +167,8 @@ internal sealed class ReActEngine
             this._logger?.LogInformation("Scratchpad: {ScratchPad}", scratchPad);
         }
 
-        var llmResponse = await this._reActFunction.InvokeAsync(kernel, arguments).ConfigureAwait(false);
+        var llmResponse = await this._reActFunction.InvokeAsync(kernel, arguments).
+            ConfigureAwait(false);
 
         string llmResponseText = llmResponse.GetValue<string>()!.Trim();
 
@@ -179,6 +188,7 @@ internal sealed class ReActEngine
         actionStep.Observation = "Failed to parse valid action step, missing action or final answer.";
         this._logger?.LogWarning("Failed to parse valid action step from llm response={LLMResponseText}", llmResponseText);
         this._logger?.LogWarning("Scratchpad={ScratchPad}", scratchPad);
+
         return actionStep;
     }
 
@@ -190,7 +200,7 @@ internal sealed class ReActEngine
         Kernel kernel,
         KernelArguments contextVariables)
     {
-        var variables = actionStep.ActionVariables ?? new Dictionary<string, string>();
+        var variables = actionStep.ActionVariables ?? [];
 
         variables[Constants.ActionVariableNames.ChatInput] = chatInput;
         variables[Constants.ActionVariableNames.ChatHistory] = ChatHistorySerializer.Serialize(chatHistory);
@@ -217,7 +227,8 @@ internal sealed class ReActEngine
 
         try
         {
-            var result = await function.InvokeAsync(kernel, actionContextVariables).ConfigureAwait(false);
+            var result = await function.InvokeAsync(kernel, actionContextVariables).
+                ConfigureAwait(false);
 
             foreach (var variable in actionContextVariables)
             {
@@ -235,6 +246,7 @@ internal sealed class ReActEngine
         {
             this._logger?.LogError(e, "Something went wrong in action step: {0}.{1}. Error: {2}", targetFunction.PluginName, targetFunction.Name,
                 e.Message);
+
             return $"Something went wrong in action step: {targetFunction.PluginName}.{targetFunction.Name}. Error: {e.Message} {e.InnerException?.Message}";
         }
     }
@@ -293,8 +305,10 @@ internal sealed class ReActEngine
             if (!string.IsNullOrEmpty(s.Action))
             {
                 // ignore the built-in context variables
-                var variablesToPrint = s.ActionVariables?.Where(v => !Constants.ActionVariableNames.All.Contains(v.Key)).ToDictionary(_ => _.Key, _ => _.Value);
-                scratchPadLines.Insert(insertPoint, $"{Action} {{\"action\": \"{s.Action}\",\"action_variables\": {JsonSerializer.Serialize(variablesToPrint)}}}");
+                var variablesToPrint = s.ActionVariables?.Where(v => !Constants.ActionVariableNames.All.Contains(v.Key)).
+                    ToDictionary(_ => _.Key, _ => _.Value);
+
+                scratchPadLines.Insert(insertPoint, $$"""{{Action}} {"action": "{{s.Action}}","action_variables": {{JsonSerializer.Serialize(variablesToPrint)}}}""");
             }
 
             if (i != 0)
@@ -303,7 +317,8 @@ internal sealed class ReActEngine
             }
         }
 
-        return string.Join("\n", scratchPadLines).Trim();
+        return string.Join("\n", scratchPadLines).
+            Trim();
     }
 
 
@@ -319,7 +334,8 @@ internal sealed class ReActEngine
 
         if (finalAnswerMatch.Success)
         {
-            result.FinalAnswer = finalAnswerMatch.Groups[1].Value.Trim();
+            result.FinalAnswer = finalAnswerMatch.Groups[1].
+                Value.Trim();
         }
 
         // Extract thought
@@ -338,7 +354,8 @@ internal sealed class ReActEngine
             throw new InvalidOperationException("Unexpected input format");
         }
 
-        result.Thought = result.Thought.Replace(Thought, string.Empty).Trim();
+        result.Thought = result.Thought.Replace(Thought, string.Empty).
+            Trim();
 
         // Extract action
         string actionStepJson = input;
@@ -346,7 +363,8 @@ internal sealed class ReActEngine
 
         if (actionMatch.Success)
         {
-            actionStepJson = actionMatch.Groups[1].Value.Trim();
+            actionStepJson = actionMatch.Groups[1].
+                Value.Trim();
         }
         else
         {
@@ -354,7 +372,8 @@ internal sealed class ReActEngine
 
             if (finalActionMatch.Success)
             {
-                actionStepJson = finalActionMatch.Groups[1].Value.Trim();
+                actionStepJson = finalActionMatch.Groups[1].
+                    Value.Trim();
             }
         }
 
@@ -396,14 +415,13 @@ internal sealed class ReActEngine
     {
         var functionViews = kernel.Plugins.GetFunctionsMetadata();
 
-        var excludedPlugins = this._config.ExcludedPlugins ?? new HashSet<string>();
-        var excludedFunctions = this._config.ExcludedFunctions ?? new HashSet<string>();
+        var excludedPlugins = this._config.ExcludedPlugins ?? [];
+        var excludedFunctions = this._config.ExcludedFunctions ?? [];
 
         var availableFunctions =
-            functionViews
-                .Where(s => !excludedPlugins.Contains(s.PluginName!) && !excludedFunctions.Contains(s.Name))
-                .OrderBy(x => x.PluginName)
-                .ThenBy(x => x.Name);
+            functionViews.Where(s => !excludedPlugins.Contains(s.PluginName!) && !excludedFunctions.Contains(s.Name)).
+                OrderBy(x => x.PluginName).
+                ThenBy(x => x.Name);
 
         return this._config.EnableAutoTermination
             ? availableFunctions.Append(GetStopAndPromptUserFunction())
@@ -417,14 +435,14 @@ internal sealed class ReActEngine
         {
             Description = "The message to be shown to the user.",
             ParameterType = typeof(string),
-            Schema = KernelJsonSchema.Parse("{\"type\":\"string\"}"),
+            Schema = KernelJsonSchema.Parse("""{"type":"string"}"""),
         };
 
         return new KernelFunctionMetadata(Constants.StopAndPromptFunctionName)
         {
             PluginName = "_REACT_ENGINE_",
             Description = "Terminate the session, only used when previous attempts failed with FATAL error and need notify user",
-            Parameters = new[] { promptParameter }
+            Parameters = [promptParameter]
         };
     }
 
@@ -436,6 +454,7 @@ internal sealed class ReActEngine
             var defaultValueString = parameter.DefaultValue is not string value || string.IsNullOrEmpty(value)
                 ? string.Empty
                 : $"(default='{parameter.DefaultValue}')";
+
             return $"  - {parameter.Name}: {parameter.Description} {defaultValueString}";
         }));
 
@@ -454,4 +473,5 @@ internal sealed class ReActEngine
     {
         return $"{function.PluginName}.{function.Name}";
     }
+
 }

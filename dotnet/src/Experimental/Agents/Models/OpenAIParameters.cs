@@ -12,6 +12,7 @@ using System.Text.Json.Serialization;
 /// </summary>
 internal sealed class OpenAIParameters
 {
+
     /// <summary>
     /// Empty parameter set.
     /// </summary>
@@ -27,7 +28,7 @@ internal sealed class OpenAIParameters
     /// Set of parameters.
     /// </summary>
     [JsonPropertyName("properties")]
-    public Dictionary<string, OpenAIParameter> Properties { get; set; } = new();
+    public Dictionary<string, OpenAIParameter> Properties { get; set; } = [];
 
     /// <summary>
     /// Set of parameters.
@@ -35,6 +36,7 @@ internal sealed class OpenAIParameters
     [JsonPropertyName("required")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public List<string>? Required { get; set; }
+
 }
 
 
@@ -43,6 +45,7 @@ internal sealed class OpenAIParameters
 /// </summary>
 internal sealed class OpenAIParameter
 {
+
     /// <summary>
     /// The parameter type.
     /// </summary>
@@ -55,4 +58,5 @@ internal sealed class OpenAIParameter
     [JsonPropertyName("description")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Description { get; set; }
+
 }

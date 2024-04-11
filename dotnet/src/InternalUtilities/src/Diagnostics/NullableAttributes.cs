@@ -14,6 +14,7 @@ namespace System.Diagnostics.CodeAnalysis;
 [AttributeUsage(AttributeTargets.Field | AttributeTargets.Parameter | AttributeTargets.Property, Inherited = false)]
 internal sealed class AllowNullAttribute : Attribute
 {
+
 }
 
 
@@ -21,6 +22,7 @@ internal sealed class AllowNullAttribute : Attribute
 [AttributeUsage(AttributeTargets.Field | AttributeTargets.Parameter | AttributeTargets.Property, Inherited = false)]
 internal sealed class DisallowNullAttribute : Attribute
 {
+
 }
 
 
@@ -28,6 +30,7 @@ internal sealed class DisallowNullAttribute : Attribute
 [AttributeUsage(AttributeTargets.Field | AttributeTargets.Parameter | AttributeTargets.Property | AttributeTargets.ReturnValue, Inherited = false)]
 internal sealed class MaybeNullAttribute : Attribute
 {
+
 }
 
 
@@ -35,6 +38,7 @@ internal sealed class MaybeNullAttribute : Attribute
 [AttributeUsage(AttributeTargets.Field | AttributeTargets.Parameter | AttributeTargets.Property | AttributeTargets.ReturnValue, Inherited = false)]
 internal sealed class NotNullAttribute : Attribute
 {
+
 }
 
 
@@ -43,6 +47,7 @@ internal sealed class NotNullAttribute : Attribute
 [AttributeUsage(AttributeTargets.Parameter, Inherited = false)]
 internal sealed class MaybeNullWhenAttribute : Attribute
 {
+
     /// <summary>Initializes the attribute with the specified return value condition.</summary>
     /// <param name="returnValue">
     /// The return value condition. If the method returns this value, the associated parameter may be null.
@@ -52,6 +57,7 @@ internal sealed class MaybeNullWhenAttribute : Attribute
 
     /// <summary>Gets the return value condition.</summary>
     public bool ReturnValue { get; }
+
 }
 
 
@@ -60,6 +66,7 @@ internal sealed class MaybeNullWhenAttribute : Attribute
 [AttributeUsage(AttributeTargets.Parameter, Inherited = false)]
 internal sealed class NotNullWhenAttribute : Attribute
 {
+
     /// <summary>Initializes the attribute with the specified return value condition.</summary>
     /// <param name="returnValue">
     /// The return value condition. If the method returns this value, the associated parameter will not be null.
@@ -69,6 +76,7 @@ internal sealed class NotNullWhenAttribute : Attribute
 
     /// <summary>Gets the return value condition.</summary>
     public bool ReturnValue { get; }
+
 }
 
 
@@ -77,6 +85,7 @@ internal sealed class NotNullWhenAttribute : Attribute
 [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property | AttributeTargets.ReturnValue, AllowMultiple = true, Inherited = false)]
 internal sealed class NotNullIfNotNullAttribute : Attribute
 {
+
     /// <summary>Initializes the attribute with the associated parameter name.</summary>
     /// <param name="parameterName">
     /// The associated parameter name.  The output will be non-null if the argument to the parameter specified is non-null.
@@ -86,6 +95,7 @@ internal sealed class NotNullIfNotNullAttribute : Attribute
 
     /// <summary>Gets the associated parameter name.</summary>
     public string ParameterName { get; }
+
 }
 
 
@@ -93,6 +103,7 @@ internal sealed class NotNullIfNotNullAttribute : Attribute
 [AttributeUsage(AttributeTargets.Method, Inherited = false)]
 internal sealed class DoesNotReturnAttribute : Attribute
 {
+
 }
 
 
@@ -101,6 +112,7 @@ internal sealed class DoesNotReturnAttribute : Attribute
 [AttributeUsage(AttributeTargets.Parameter, Inherited = false)]
 internal sealed class DoesNotReturnIfAttribute : Attribute
 {
+
     /// <summary>Initializes the attribute with the specified parameter value.</summary>
     /// <param name="parameterValue">
     /// The condition parameter value. Code after the method will be considered unreachable by diagnostics if the argument to
@@ -111,6 +123,7 @@ internal sealed class DoesNotReturnIfAttribute : Attribute
 
     /// <summary>Gets the condition parameter value.</summary>
     public bool ParameterValue { get; }
+
 }
 
 
@@ -122,12 +135,13 @@ internal sealed class DoesNotReturnIfAttribute : Attribute
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Property, Inherited = false, AllowMultiple = true)]
 internal sealed class MemberNotNullAttribute : Attribute
 {
+
     /// <summary>Initializes the attribute with a field or property member.</summary>
     /// <param name="member">
     /// The field or property member that is promised to be not-null.
     /// </param>
     [SuppressMessage("Design", "CA1019:Define accessors for attribute arguments")]
-    public MemberNotNullAttribute(string member) => this.Members = new[] { member };
+    public MemberNotNullAttribute(string member) => this.Members = [member];
 
 
     /// <summary>Initializes the attribute with the list of field and property members.</summary>
@@ -139,6 +153,7 @@ internal sealed class MemberNotNullAttribute : Attribute
 
     /// <summary>Gets field or property member names.</summary>
     public string[] Members { get; }
+
 }
 
 
@@ -147,6 +162,7 @@ internal sealed class MemberNotNullAttribute : Attribute
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Property, Inherited = false, AllowMultiple = true)]
 internal sealed class MemberNotNullWhenAttribute : Attribute
 {
+
     /// <summary>Initializes the attribute with the specified return value condition and a field or property member.</summary>
     /// <param name="returnValue">
     /// The return value condition. If the method returns this value, the associated parameter will not be null.
@@ -158,7 +174,7 @@ internal sealed class MemberNotNullWhenAttribute : Attribute
     public MemberNotNullWhenAttribute(bool returnValue, string member)
     {
         this.ReturnValue = returnValue;
-        this.Members = new[] { member };
+        this.Members = [member];
     }
 
 
@@ -181,6 +197,7 @@ internal sealed class MemberNotNullWhenAttribute : Attribute
 
     /// <summary>Gets field or property member names.</summary>
     public string[] Members { get; }
+
 }
 
 #endif

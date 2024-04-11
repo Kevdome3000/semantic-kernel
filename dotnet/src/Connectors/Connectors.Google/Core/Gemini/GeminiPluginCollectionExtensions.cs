@@ -34,7 +34,7 @@ internal static class GeminiPluginCollectionExtensions
 
             if (functionToolCall.Arguments is not null)
             {
-                arguments = new KernelArguments();
+                arguments = [];
 
                 foreach (var parameter in functionToolCall.Arguments)
                 {

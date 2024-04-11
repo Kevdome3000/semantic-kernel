@@ -38,7 +38,7 @@ public sealed class Example75_AgentTools : BaseTest
     private const bool ForceOpenAI = true;
 
     // Track agents for clean-up
-    private readonly List<IAgent> _agents = new();
+    private readonly List<IAgent> _agents = [];
 
 
     /// <summary>
@@ -149,7 +149,7 @@ public sealed class Example75_AgentTools : BaseTest
 
         if (fileId != null)
         {
-            fileIds = new string[] { fileId };
+            fileIds = [fileId];
         }
 
         foreach (var question in questions)

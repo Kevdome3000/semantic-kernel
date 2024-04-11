@@ -4,6 +4,7 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 
 internal static class Constants
 {
+
     /// <summary>
     /// The function name to indicate stop execution and prompt user
     /// </summary>
@@ -17,6 +18,7 @@ internal static class Constants
 
     internal static class ActionVariableNames
     {
+
         /// <summary>
         /// Variable name for the chat history
         /// </summary>
@@ -30,12 +32,14 @@ internal static class Constants
         /// <summary>
         /// All reserved variable names
         /// </summary>
-        public static readonly string[] All = new[] { ChatHistory, ChatInput };
+        public static readonly string[] All = [ChatHistory, ChatInput];
+
     }
 
 
     internal static class ChatPluginVariables
     {
+
         /// <summary>
         /// Variable name to prompt input
         /// </summary>
@@ -64,6 +68,8 @@ internal static class Constants
         /// <summary>
         /// The variables that change the default flow
         /// </summary>
-        public static readonly string[] ControlVariables = new[] { PromptInputName, ExitLoopName, ContinueLoopName, StopFlowName };
+        public static readonly string[] ControlVariables = [PromptInputName, ExitLoopName, ContinueLoopName, StopFlowName];
+
     }
+
 }

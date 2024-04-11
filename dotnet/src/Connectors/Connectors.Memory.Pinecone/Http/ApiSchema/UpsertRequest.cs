@@ -13,6 +13,7 @@ using System.Text.Json.Serialization;
 /// </summary>
 internal sealed class UpsertRequest
 {
+
     /// <summary>
     /// The vectors to upsert
     /// </summary>
@@ -39,6 +40,7 @@ internal sealed class UpsertRequest
     public UpsertRequest ToNamespace(string? indexNamespace)
     {
         this.Namespace = indexNamespace;
+
         return this;
     }
 
@@ -61,7 +63,7 @@ internal sealed class UpsertRequest
     [JsonConstructor]
     private UpsertRequest()
     {
-        this.Vectors = new List<PineconeDocument>();
+        this.Vectors = [];
     }
 
     #endregion

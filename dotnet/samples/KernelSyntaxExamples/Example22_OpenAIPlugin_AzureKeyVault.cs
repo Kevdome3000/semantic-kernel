@@ -21,7 +21,9 @@ using Xunit.Abstractions;
 
 public class Example22_OpenAIPlugin_AzureKeyVault : BaseTest
 {
+
     private const string SecretName = "Foo";
+
     private const string SecretValue = "Bar";
 
 
@@ -70,6 +72,7 @@ public class Example22_OpenAIPlugin_AzureKeyVault : BaseTest
 
         // Import Open AI Plugin
         var openAIManifest = EmbeddedResource.ReadStream("22-ai-plugin.json");
+
         var plugin = await kernel.ImportPluginFromOpenAIAsync(
             "AzureKeyVaultPlugin",
             openAIManifest!,
@@ -109,9 +112,11 @@ public class Example22_OpenAIPlugin_AzureKeyVault : BaseTest
     private static async Task GetSecretFromAzureKeyVaultWithRetryAsync(Kernel kernel, KernelPlugin plugin)
     {
         // Add arguments for required parameters, arguments for optional ones can be skipped.
-        var arguments = new KernelArguments();
-        arguments["secret-name"] = SecretName;
-        arguments["api-version"] = "7.0";
+        var arguments = new KernelArguments
+        {
+            ["secret-name"] = SecretName,
+            ["api-version"] = "7.0"
+        };
 
         // Run
         var functionResult = await kernel.InvokeAsync(plugin["GetSecret"], arguments);
@@ -125,6 +130,7 @@ public class Example22_OpenAIPlugin_AzureKeyVault : BaseTest
     public Example22_OpenAIPlugin_AzureKeyVault(ITestOutputHelper output) : base(output)
     {
     }
+
 }
 
 
@@ -135,7 +141,9 @@ public class Example22_OpenAIPlugin_AzureKeyVault : BaseTest
 /// </summary>
 internal sealed class OpenAIAuthenticationProvider
 {
+
     private readonly Dictionary<string, Dictionary<string, string>> _oAuthValues;
+
     private readonly Dictionary<string, string> _credentials;
 
 
@@ -146,8 +154,8 @@ internal sealed class OpenAIAuthenticationProvider
     /// <param name="credentials">A dictionary containing credentials for each authentication scheme.</param>
     public OpenAIAuthenticationProvider(Dictionary<string, Dictionary<string, string>>? oAuthValues = null, Dictionary<string, string>? credentials = null)
     {
-        this._oAuthValues = oAuthValues ?? new();
-        this._credentials = credentials ?? new();
+        this._oAuthValues = oAuthValues ?? [];
+        this._credentials = credentials ?? [];
     }
 
 
@@ -158,7 +166,11 @@ internal sealed class OpenAIAuthenticationProvider
     /// <param name="pluginName">Name of the plugin</param>
     /// <param name="openAIAuthConfig ">The <see cref="OpenAIAuthenticationConfig"/> used to authenticate.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    public async Task AuthenticateRequestAsync(HttpRequestMessage request, string pluginName, OpenAIAuthenticationConfig openAIAuthConfig, CancellationToken cancellationToken = default)
+    public async Task AuthenticateRequestAsync(
+        HttpRequestMessage request,
+        string pluginName,
+        OpenAIAuthenticationConfig openAIAuthConfig,
+        CancellationToken cancellationToken = default)
     {
         if (openAIAuthConfig.Type == OpenAIAuthenticationType.None)
         {
@@ -188,12 +200,16 @@ internal sealed class OpenAIAuthenticationProvider
             // Request the token
             using var client = new HttpClient();
             using var authRequest = new HttpRequestMessage(HttpMethod.Post, openAIAuthConfig.AuthorizationUrl) { Content = requestContent };
-            var response = await client.SendAsync(authRequest, cancellationToken).ConfigureAwait(false);
+
+            var response = await client.SendAsync(authRequest, cancellationToken).
+                ConfigureAwait(false);
 
             response.EnsureSuccessStatusCode();
 
             // Read the token
-            var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).
+                ConfigureAwait(false);
+
             OAuthTokenResponse? tokenResponse;
 
             try
@@ -220,6 +236,7 @@ internal sealed class OpenAIAuthenticationProvider
 
         request.Headers.Authorization = new AuthenticationHeaderValue(scheme, credential);
     }
+
 }
 
 
@@ -228,6 +245,7 @@ internal sealed class OpenAIAuthenticationProvider
 /// </summary>
 internal sealed class OAuthTokenResponse
 {
+
     /// <summary>
     /// The type of access token.
     /// </summary>
@@ -239,11 +257,13 @@ internal sealed class OAuthTokenResponse
     /// </summary>
     [JsonPropertyName("access_token")]
     public string AccessToken { get; set; } = "";
+
 }
 
 
 internal sealed class HttpMessageHandlerStub : DelegatingHandler
 {
+
     public HttpResponseMessage ResponseToReturn { get; set; }
 
 
@@ -264,6 +284,7 @@ internal sealed class HttpMessageHandlerStub : DelegatingHandler
         }
 
         using var httpClient = new HttpClient();
+
         using var newRequest = new HttpRequestMessage() // construct a new request because the same one cannot be sent twice
         {
             Content = request.Content,
@@ -275,8 +296,11 @@ internal sealed class HttpMessageHandlerStub : DelegatingHandler
         {
             newRequest.Headers.Add(header.Key, header.Value);
         }
-        return await httpClient.SendAsync(newRequest, cancellationToken).ConfigureAwait(false);
+
+        return await httpClient.SendAsync(newRequest, cancellationToken).
+            ConfigureAwait(false);
     }
+
 }
 
 #endregion

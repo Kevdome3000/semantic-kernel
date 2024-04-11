@@ -35,7 +35,7 @@ internal sealed class CreateGraphRequest
                          $"limit:{this.Limit}){{{(this.WithVector ? "_additional{vector}" : string.Empty)} " +
                          "_additional{id distance} sk_timestamp sk_id sk_description sk_text sk_additional_metadata}}}";
 
-        string queryJson = $"{{\"query\":\"{payload}\"}}";
+        string queryJson = $$"""{"query":"{{payload}}"}""";
 
         return HttpRequest.CreatePostRequest(
             "graphql",

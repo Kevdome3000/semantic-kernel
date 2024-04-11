@@ -20,7 +20,7 @@ using Services;
 public sealed class VertexAIGeminiChatCompletionService : IChatCompletionService
 {
 
-    private readonly Dictionary<string, object?> _attributesInternal = new();
+    private readonly Dictionary<string, object?> _attributesInternal = [];
 
     private readonly GeminiChatCompletionClient _chatCompletionClient;
 

@@ -8,6 +8,7 @@ using Xunit;
 
 public class KernelParameterMetadataExtensionsTests
 {
+
     [Fact]
     public void ReturnsTrueForPrimitiveOrStringTypes()
     {
@@ -64,13 +65,27 @@ public class KernelParameterMetadataExtensionsTests
 
         // Assert
         Assert.Single(result);
-        Assert.Equal("SimpleClass", result.First().Name);
-        Assert.True(result.First().IsComplex);
-        Assert.Equal(2, result.First().Properties.Count);
-        Assert.Equal("Id", result.First().Properties[0].Name);
-        Assert.Equal(typeof(int), result.First().Properties[0].ParameterType);
-        Assert.Equal("Name", result.First().Properties[1].Name);
-        Assert.Equal(typeof(string), result.First().Properties[1].ParameterType);
+
+        Assert.Equal("SimpleClass", result.First().
+            Name);
+
+        Assert.True(result.First().
+            IsComplex);
+
+        Assert.Equal(2, result.First().
+            Properties.Count);
+
+        Assert.Equal("Id", result.First().
+            Properties[0].Name);
+
+        Assert.Equal(typeof(int), result.First().
+            Properties[0].ParameterType);
+
+        Assert.Equal("Name", result.First().
+            Properties[1].Name);
+
+        Assert.Equal(typeof(string), result.First().
+            Properties[1].ParameterType);
     }
 
 
@@ -85,13 +100,27 @@ public class KernelParameterMetadataExtensionsTests
 
         // Assert
         Assert.Single(result);
-        Assert.Equal(nameof(RecursiveClass), result.First().Name);
-        Assert.True(result.First().IsComplex);
-        Assert.Equal(2, result.First().Properties.Count);
-        Assert.Equal(nameof(RecursiveClass.Name), result.First().Properties[0].Name);
-        Assert.Equal(typeof(string), result.First().Properties[0].ParameterType);
-        Assert.Equal(nameof(RecursiveClass.Next), result.First().Properties[1].Name);
-        Assert.Equal(typeof(RecursiveClass), result.First().Properties[1].ParameterType);
+
+        Assert.Equal(nameof(RecursiveClass), result.First().
+            Name);
+
+        Assert.True(result.First().
+            IsComplex);
+
+        Assert.Equal(2, result.First().
+            Properties.Count);
+
+        Assert.Equal(nameof(RecursiveClass.Name), result.First().
+            Properties[0].Name);
+
+        Assert.Equal(typeof(string), result.First().
+            Properties[0].ParameterType);
+
+        Assert.Equal(nameof(RecursiveClass.Next), result.First().
+            Properties[1].Name);
+
+        Assert.Equal(typeof(RecursiveClass), result.First().
+            Properties[1].ParameterType);
     }
 
 
@@ -154,13 +183,27 @@ public class KernelParameterMetadataExtensionsTests
 
         // Assert
         Assert.Single(result);
-        Assert.Equal("SimpleClass", result.First().Name);
-        Assert.True(result.First().IsComplex);
-        Assert.Equal(2, result.First().Properties.Count);
-        Assert.Equal("Id", result.First().Properties[0].Name);
-        Assert.Equal(typeof(int), result.First().Properties[0].ParameterType);
-        Assert.Equal("Name", result.First().Properties[1].Name);
-        Assert.Equal(typeof(string), result.First().Properties[1].ParameterType);
+
+        Assert.Equal("SimpleClass", result.First().
+            Name);
+
+        Assert.True(result.First().
+            IsComplex);
+
+        Assert.Equal(2, result.First().
+            Properties.Count);
+
+        Assert.Equal("Id", result.First().
+            Properties[0].Name);
+
+        Assert.Equal(typeof(int), result.First().
+            Properties[0].ParameterType);
+
+        Assert.Equal("Name", result.First().
+            Properties[1].Name);
+
+        Assert.Equal(typeof(string), result.First().
+            Properties[1].ParameterType);
     }
 
 
@@ -224,7 +267,7 @@ public class KernelParameterMetadataExtensionsTests
 
         foreach (var pair in schemaTypeMap)
         {
-            var schema = KernelJsonSchema.Parse($"{{\"type\": \"{pair.Key}\"}}");
+            var schema = KernelJsonSchema.Parse($$"""{"type": "{{pair.Key}}"}""");
             var parameter = new KernelParameterMetadata("test") { Schema = schema };
 
             // Act
@@ -240,7 +283,7 @@ public class KernelParameterMetadataExtensionsTests
     public void ReturnsParameterWithSchemaForNonPrimitiveOrStringSchemaType()
     {
         // Arrange
-        var schema = KernelJsonSchema.Parse("{\"type\": \"object\", \"properties\": {\"name\": {\"type\": \"string\"}}}");
+        var schema = KernelJsonSchema.Parse("""{"type": "object", "properties": {"name": {"type": "string"}}}""");
         var parameter = new KernelParameterMetadata("test") { Schema = schema };
 
         // Act
@@ -256,7 +299,8 @@ public class KernelParameterMetadataExtensionsTests
     public void ReturnsIndentedJsonStringForJsonElement()
     {
         // Arrange
-        var jsonProperties = KernelJsonSchema.Parse("{\"name\": \"Alice\", \"age\": 25}").RootElement;
+        var jsonProperties = KernelJsonSchema.Parse("""{"name": "Alice", "age": 25}""").
+            RootElement;
 
         // Act
         var result = jsonProperties.ToJsonString();
@@ -274,7 +318,7 @@ public class KernelParameterMetadataExtensionsTests
     public void ReturnsParameterNameAndSchemaType()
     {
         // Arrange
-        var schema = KernelJsonSchema.Parse("{\"type\": \"object\", \"properties\": {\"name\": {\"type\": \"string\"}}}");
+        var schema = KernelJsonSchema.Parse("""{"type": "object", "properties": {"name": {"type": "string"}}}""");
         var parameter = new KernelParameterMetadata("test") { Schema = schema };
 
         // Act
@@ -289,7 +333,7 @@ public class KernelParameterMetadataExtensionsTests
     public void ConvertsReturnParameterMetadataToParameterMetadata()
     {
         // Arrange
-        var schema = KernelJsonSchema.Parse("{\"type\": \"object\", \"properties\": {\"name\": {\"type\": \"string\"}}}");
+        var schema = KernelJsonSchema.Parse("""{"type": "object", "properties": {"name": {"type": "string"}}}""");
         var returnParameter = new KernelReturnParameterMetadata() { Description = "test", ParameterType = typeof(object), Schema = schema };
 
         // Act
@@ -308,7 +352,7 @@ public class KernelParameterMetadataExtensionsTests
     public void ConvertsParameterMetadataToReturnParameterMetadata()
     {
         // Arrange
-        var schema = KernelJsonSchema.Parse("{\"type\": \"object\", \"properties\": {\"name\": {\"type\": \"string\"}}}");
+        var schema = KernelJsonSchema.Parse("""{"type": "object", "properties": {"name": {"type": "string"}}}""");
         var parameter = new KernelParameterMetadata("test") { Description = "test", ParameterType = typeof(object), Schema = schema };
 
         // Act
@@ -325,30 +369,41 @@ public class KernelParameterMetadataExtensionsTests
 
     private sealed class SimpleClass
     {
+
         public int Id { get; set; }
+
         public string Name { get; set; } = string.Empty;
+
     }
 
 
     private sealed class AnotherClass
     {
+
         public double Value { get; set; }
+
     }
 
 
     private static class NestedClass
     {
+
         public static int Id { get; set; }
+
         public static SimpleClass Simple { get; set; } = new SimpleClass();
+
         public static AnotherClass Another { get; set; } = new AnotherClass();
+
     }
 
 
     private sealed class RecursiveClass
     {
+
         public string Name { get; set; } = "";
 
         public RecursiveClass Next { get; set; } = new();
+
     }
 
     #endregion

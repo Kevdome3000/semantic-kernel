@@ -88,7 +88,7 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
         var results = await search.ExecuteAsync(cancellationToken).
             ConfigureAwait(false);
 
-        List<T>? returnValues = new();
+        List<T>? returnValues = [];
 
         if (results.Items != null)
         {
@@ -99,7 +99,7 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
             }
             else if (typeof(T) == typeof(WebPage))
             {
-                List<WebPage> webPages = new();
+                List<WebPage> webPages = [];
 
                 foreach (var item in results.Items)
                 {

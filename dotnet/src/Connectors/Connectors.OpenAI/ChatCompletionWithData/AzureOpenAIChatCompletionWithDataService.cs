@@ -4,6 +4,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -26,6 +27,7 @@ using TextGeneration;
 /// Azure OpenAI Chat Completion with data service.
 /// More information: <see href="https://learn.microsoft.com/en-us/azure/ai-services/openai/use-your-data-quickstart"/>
 /// </summary>
+[Experimental("SKEXP0010")]
 public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionService, ITextGenerationService
 {
 
@@ -40,18 +42,18 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        ValidateConfig(config);
+        this.ValidateConfig(config);
 
-        _config = config;
+        this._config = config;
 
-        _httpClient = HttpClientProvider.GetHttpClient(httpClient);
-        _logger = loggerFactory?.CreateLogger(GetType()) ?? NullLogger.Instance;
-        _attributes.Add(AIServiceExtensions.ModelIdKey, config.CompletionModelId);
+        this._httpClient = HttpClientProvider.GetHttpClient(httpClient);
+        this._logger = loggerFactory?.CreateLogger(this.GetType()) ?? NullLogger.Instance;
+        this._attributes.Add(AIServiceExtensions.ModelIdKey, config.CompletionModelId);
     }
 
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object?> Attributes => _attributes;
+    public IReadOnlyDictionary<string, object?> Attributes => this._attributes;
 
 
     /// <inheritdoc/>
@@ -60,7 +62,7 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => InternalGetChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
+        => this.InternalGetChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
 
 
     /// <inheritdoc/>
@@ -69,7 +71,7 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => InternalGetChatStreamingContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
+        => this.InternalGetChatStreamingContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
 
 
     /// <inheritdoc/>
@@ -93,7 +95,7 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
         Kernel? kernel = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var streamingChatContent in InternalGetChatStreamingContentsAsync(new ChatHistory(prompt), executionSettings, kernel, cancellationToken).
+        await foreach (var streamingChatContent in this.InternalGetChatStreamingContentsAsync(new ChatHistory(prompt), executionSettings, kernel, cancellationToken).
                            ConfigureAwait(false))
         {
             yield return new StreamingTextContent(streamingChatContent.Content, streamingChatContent.ChoiceIndex, streamingChatContent.ModelId, streamingChatContent,
@@ -112,7 +114,7 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
 
     private readonly ILogger _logger;
 
-    private readonly Dictionary<string, object?> _attributes = new();
+    private readonly Dictionary<string, object?> _attributes = [];
 
 
     private void ValidateConfig(AzureOpenAIChatCompletionWithDataConfig config)
@@ -136,15 +138,15 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
     {
         var openAIExecutionSettings = OpenAIPromptExecutionSettings.FromExecutionSettingsWithData(executionSettings, OpenAIPromptExecutionSettings.DefaultTextMaxTokens);
 
-        using var request = GetRequest(chat, openAIExecutionSettings, false);
+        using var request = this.GetRequest(chat, openAIExecutionSettings, isStreamEnabled: false);
 
-        using var response = await SendRequestAsync(request, cancellationToken).
+        using var response = await this.SendRequestAsync(request, cancellationToken).
             ConfigureAwait(false);
 
         var body = await response.Content.ReadAsStringWithExceptionMappingAsync().
             ConfigureAwait(false);
 
-        var chatWithDataResponse = DeserializeResponse<ChatWithDataResponse>(body);
+        var chatWithDataResponse = this.DeserializeResponse<ChatWithDataResponse>(body);
         IReadOnlyDictionary<string, object?> metadata = GetResponseMetadata(chatWithDataResponse);
 
         return chatWithDataResponse.Choices.Select(choice => new AzureOpenAIWithDataChatMessageContent(choice, this.GetModelId(), metadata)).
@@ -152,23 +154,29 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
     }
 
 
-    private static Dictionary<string, object?> GetResponseMetadata(ChatWithDataResponse chatResponse) => new(5)
+    private static Dictionary<string, object?> GetResponseMetadata(ChatWithDataResponse chatResponse)
     {
-        { nameof(chatResponse.Id), chatResponse.Id },
-        { nameof(chatResponse.Model), chatResponse.Model },
-        { nameof(chatResponse.Created), chatResponse.Created },
-        { nameof(chatResponse.Object), chatResponse.Object },
-        { nameof(chatResponse.Usage), chatResponse.Usage }
-    };
+        return new Dictionary<string, object?>(5)
+        {
+            { nameof(chatResponse.Id), chatResponse.Id },
+            { nameof(chatResponse.Model), chatResponse.Model },
+            { nameof(chatResponse.Created), chatResponse.Created },
+            { nameof(chatResponse.Object), chatResponse.Object },
+            { nameof(chatResponse.Usage), chatResponse.Usage },
+        };
+    }
 
 
-    private static Dictionary<string, object?> GetResponseMetadata(ChatWithDataStreamingResponse chatResponse) => new(4)
+    private static Dictionary<string, object?> GetResponseMetadata(ChatWithDataStreamingResponse chatResponse)
     {
-        { nameof(chatResponse.Id), chatResponse.Id },
-        { nameof(chatResponse.Model), chatResponse.Model },
-        { nameof(chatResponse.Created), chatResponse.Created },
-        { nameof(chatResponse.Object), chatResponse.Object }
-    };
+        return new Dictionary<string, object?>(4)
+        {
+            { nameof(chatResponse.Id), chatResponse.Id },
+            { nameof(chatResponse.Model), chatResponse.Model },
+            { nameof(chatResponse.Created), chatResponse.Created },
+            { nameof(chatResponse.Object), chatResponse.Object },
+        };
+    }
 
 
     private async Task<HttpResponseMessage> SendRequestAsync(
@@ -176,17 +184,17 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
         CancellationToken cancellationToken = default)
     {
         request.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
-        request.Headers.Add("Api-Key", _config.CompletionApiKey);
+        request.Headers.Add("Api-Key", this._config.CompletionApiKey);
         request.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(AzureOpenAIChatCompletionWithDataService)));
 
         try
         {
-            return await _httpClient.SendWithSuccessCheckAsync(request, cancellationToken).
+            return await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).
                 ConfigureAwait(false);
         }
         catch (HttpOperationException ex)
         {
-            _logger.LogError(
+            this._logger.LogError(
                 "Error occurred on chat completion with data request execution: {ExceptionMessage}", ex.Message);
 
             throw;
@@ -202,9 +210,9 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
     {
         OpenAIPromptExecutionSettings chatRequestSettings = OpenAIPromptExecutionSettings.FromExecutionSettingsWithData(executionSettings);
 
-        using var request = GetRequest(chatHistory, chatRequestSettings, true);
+        using var request = this.GetRequest(chatHistory, chatRequestSettings, isStreamEnabled: true);
 
-        using var response = await SendRequestAsync(request, cancellationToken).
+        using var response = await this.SendRequestAsync(request, cancellationToken).
             ConfigureAwait(false);
 
         const string ServerEventPayloadPrefix = "data:";
@@ -229,7 +237,7 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
                 body = body.Substring(ServerEventPayloadPrefix.Length);
             }
 
-            var chatWithDataResponse = DeserializeResponse<ChatWithDataStreamingResponse>(body);
+            var chatWithDataResponse = this.DeserializeResponse<ChatWithDataStreamingResponse>(body);
             IReadOnlyDictionary<string, object?> metadata = GetResponseMetadata(chatWithDataResponse);
 
             foreach (var choice in chatWithDataResponse.Choices)
@@ -248,7 +256,7 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
         {
             const string ErrorMessage = "Error occurred on chat completion with data response deserialization";
 
-            _logger.LogError(ErrorMessage);
+            this._logger.LogError(ErrorMessage);
 
             throw new KernelException(ErrorMessage);
         }
@@ -272,26 +280,29 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
             PresencePenalty = executionSettings.PresencePenalty,
             FrequencyPenalty = executionSettings.FrequencyPenalty,
             TokenSelectionBiases = executionSettings.TokenSelectionBiases ?? new Dictionary<int, int>(),
-            DataSources = GetDataSources(),
-            Messages = GetMessages(chat)
+            DataSources = this.GetDataSources(),
+            Messages = this.GetMessages(chat)
         };
 
-        return HttpRequest.CreatePostRequest(GetRequestUri(), payload);
+        return HttpRequest.CreatePostRequest(this.GetRequestUri(), payload);
     }
 
 
-    private List<ChatWithDataSource> GetDataSources() => new()
+    private List<ChatWithDataSource> GetDataSources()
     {
-        new()
-        {
-            Parameters = new ChatWithDataSourceParameters
+        return
+        [
+            new()
             {
-                Endpoint = _config.DataSourceEndpoint,
-                ApiKey = _config.DataSourceApiKey,
-                IndexName = _config.DataSourceIndex
+                Parameters = new ChatWithDataSourceParameters
+                {
+                    Endpoint = this._config.DataSourceEndpoint,
+                    ApiKey = this._config.DataSourceApiKey,
+                    IndexName = this._config.DataSourceIndex
+                }
             }
-        }
-    };
+        ];
+    }
 
 
     private List<ChatWithDataMessage> GetMessages(ChatHistory chat)
@@ -317,7 +328,7 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
     {
         const string EndpointUriFormat = "{0}/openai/deployments/{1}/extensions/chat/completions?api-version={2}";
 
-        var apiVersion = _config.CompletionApiVersion;
+        var apiVersion = this._config.CompletionApiVersion;
 
         if (string.IsNullOrWhiteSpace(apiVersion))
         {
@@ -327,8 +338,8 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
         return string.Format(
             CultureInfo.InvariantCulture,
             EndpointUriFormat,
-            _config.CompletionEndpoint.TrimEnd('/'),
-            _config.CompletionModelId,
+            this._config.CompletionEndpoint.TrimEnd('/'),
+            this._config.CompletionModelId,
             apiVersion);
     }
 

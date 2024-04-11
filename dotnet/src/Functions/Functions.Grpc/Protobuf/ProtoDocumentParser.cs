@@ -16,6 +16,7 @@ using ProtoBuf;
 /// </summary>
 internal sealed class ProtoDocumentParser
 {
+
     /// <summary>
     /// Parses .proto document.
     /// </summary>
@@ -61,10 +62,10 @@ internal sealed class ProtoDocumentParser
 
                 var responseContract = this.CreateDataContract(model.MessageTypes, method.OutputType, model.Package, method.Name);
 
-                var operation = new GrpcOperation(service.Name, method.Name, requestContract, responseContract);
-                operation.Package = model.Package;
-
-                operations.Add(operation);
+                operations.Add(new GrpcOperation(service.Name, method.Name, requestContract, responseContract)
+                {
+                    Package = model.Package
+                });
             }
         }
 
@@ -80,7 +81,11 @@ internal sealed class ProtoDocumentParser
     /// <param name="package">The .proto file 'package' specifier.</param>
     /// <param name="methodName">The method to create data contract for.</param>
     /// <returns>The operation data contract.</returns>
-    private GrpcOperationDataContractType CreateDataContract(IList<DescriptorProto> allMessageTypes, string messageTypeName, string package, string methodName)
+    private GrpcOperationDataContractType CreateDataContract(
+        IList<DescriptorProto> allMessageTypes,
+        string messageTypeName,
+        string package,
+        string methodName)
     {
         var fullTypeName = messageTypeName.TrimStart('.');
 
@@ -91,12 +96,8 @@ internal sealed class ProtoDocumentParser
             typeName = fullTypeName.Replace($"{package}.", "");
         }
 
-        var messageType = allMessageTypes.SingleOrDefault(mt => mt.Name == fullTypeName || mt.Name == typeName);
-
-        if (messageType == null)
-        {
-            throw new KernelException($"No '{fullTypeName}' message type is found while resolving data contracts for the '{methodName}' method.");
-        }
+        var messageType = allMessageTypes.SingleOrDefault(mt => mt.Name == fullTypeName || mt.Name == typeName) ??
+                          throw new KernelException($"No '{fullTypeName}' message type is found while resolving data contracts for the '{methodName}' method.");
 
         var fields = this.GetDataContractFields(messageType.Fields);
 
@@ -146,4 +147,5 @@ internal sealed class ProtoDocumentParser
 
         throw new KernelException($"Impossible to find protobuf type name corresponding to '{type}' type.");
     }
+
 }

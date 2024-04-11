@@ -15,6 +15,7 @@ using System.Diagnostics.CodeAnalysis;
 [SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "This class is an internal utility.")]
 internal sealed class NonNullCollection<T> : IList<T>, IReadOnlyList<T>
 {
+
     /// <summary>
     /// The underlying list of items.
     /// </summary>
@@ -24,7 +25,7 @@ internal sealed class NonNullCollection<T> : IList<T>, IReadOnlyList<T>
     /// <summary>
     /// Initializes a new instance of the <see cref="NonNullCollection{T}"/> class.
     /// </summary>
-    public NonNullCollection() => this._items = new();
+    public NonNullCollection() => this._items = [];
 
 
     /// <summary>
@@ -88,6 +89,7 @@ internal sealed class NonNullCollection<T> : IList<T>, IReadOnlyList<T>
     public bool Contains(T item)
     {
         Verify.NotNull(item);
+
         return this._items.Contains(item);
     }
 
@@ -111,6 +113,7 @@ internal sealed class NonNullCollection<T> : IList<T>, IReadOnlyList<T>
     public int IndexOf(T item)
     {
         Verify.NotNull(item);
+
         return this._items.IndexOf(item);
     }
 
@@ -137,6 +140,7 @@ internal sealed class NonNullCollection<T> : IList<T>, IReadOnlyList<T>
     public bool Remove(T item)
     {
         Verify.NotNull(item);
+
         return this._items.Remove(item);
     }
 
@@ -153,4 +157,5 @@ internal sealed class NonNullCollection<T> : IList<T>, IReadOnlyList<T>
     IEnumerator IEnumerable.GetEnumerator() => this._items.GetEnumerator();
 
     IEnumerator<T> IEnumerable<T>.GetEnumerator() => this._items.GetEnumerator();
+
 }

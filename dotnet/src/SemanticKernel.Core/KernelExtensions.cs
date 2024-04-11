@@ -44,7 +44,8 @@ public static class KernelExtensions
         Verify.NotNull(kernel);
         Verify.NotNull(method);
 
-        return KernelFunctionFactory.CreateFromMethod(method.Method, method.Target, functionName, description, parameters, returnParameter, kernel.LoggerFactory);
+        return KernelFunctionFactory.CreateFromMethod(method.Method, method.Target, functionName, description,
+            parameters, returnParameter, kernel.LoggerFactory);
     }
 
 
@@ -72,7 +73,8 @@ public static class KernelExtensions
         Verify.NotNull(kernel);
         Verify.NotNull(method);
 
-        return KernelFunctionFactory.CreateFromMethod(method, target, functionName, description, parameters, returnParameter, kernel.LoggerFactory);
+        return KernelFunctionFactory.CreateFromMethod(method, target, functionName, description,
+            parameters, returnParameter, kernel.LoggerFactory);
     }
 
     #endregion
@@ -210,7 +212,11 @@ public static class KernelExtensions
     /// <exception cref="ArgumentException"><paramref name="pluginName"/> is an invalid plugin name.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
     /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
-    public static KernelPlugin CreatePluginFromFunctions(this Kernel kernel, string pluginName, string? description = null, IEnumerable<KernelFunction>? functions = null)
+    public static KernelPlugin CreatePluginFromFunctions(
+        this Kernel kernel,
+        string pluginName,
+        string? description = null,
+        IEnumerable<KernelFunction>? functions = null)
     {
         Verify.NotNull(kernel);
 
@@ -236,6 +242,7 @@ public static class KernelExtensions
     {
         KernelPlugin plugin = CreatePluginFromType<T>(kernel, pluginName);
         kernel.Plugins.Add(plugin);
+
         return plugin;
     }
 
@@ -257,6 +264,7 @@ public static class KernelExtensions
 
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<T>(pluginName, serviceProvider);
         plugins.Add(plugin);
+
         return plugin;
     }
 
@@ -314,6 +322,7 @@ public static class KernelExtensions
     {
         KernelPlugin plugin = CreatePluginFromObject(kernel, target, pluginName);
         kernel.Plugins.Add(plugin);
+
         return plugin;
     }
 
@@ -329,12 +338,17 @@ public static class KernelExtensions
     /// <remarks>
     /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
     /// </remarks>
-    public static KernelPlugin AddFromObject(this ICollection<KernelPlugin> plugins, object target, string? pluginName = null, IServiceProvider? serviceProvider = null)
+    public static KernelPlugin AddFromObject(
+        this ICollection<KernelPlugin> plugins,
+        object target,
+        string? pluginName = null,
+        IServiceProvider? serviceProvider = null)
     {
         Verify.NotNull(plugins);
 
         KernelPlugin plugin = KernelPluginFactory.CreateFromObject(target, pluginName, serviceProvider?.GetService<ILoggerFactory>());
         plugins.Add(plugin);
+
         return plugin;
     }
 
@@ -386,10 +400,15 @@ public static class KernelExtensions
     /// <exception cref="ArgumentException"><paramref name="pluginName"/> is an invalid plugin name.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
     /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
-    public static KernelPlugin ImportPluginFromFunctions(this Kernel kernel, string pluginName, string? description = null, IEnumerable<KernelFunction>? functions = null)
+    public static KernelPlugin ImportPluginFromFunctions(
+        this Kernel kernel,
+        string pluginName,
+        string? description = null,
+        IEnumerable<KernelFunction>? functions = null)
     {
         KernelPlugin plugin = CreatePluginFromFunctions(kernel, pluginName, description, functions);
         kernel.Plugins.Add(plugin);
+
         return plugin;
     }
 
@@ -417,12 +436,17 @@ public static class KernelExtensions
     /// <exception cref="ArgumentException"><paramref name="pluginName"/> is an invalid plugin name.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
     /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
-    public static KernelPlugin AddFromFunctions(this ICollection<KernelPlugin> plugins, string pluginName, string? description = null, IEnumerable<KernelFunction>? functions = null)
+    public static KernelPlugin AddFromFunctions(
+        this ICollection<KernelPlugin> plugins,
+        string pluginName,
+        string? description = null,
+        IEnumerable<KernelFunction>? functions = null)
     {
         Verify.NotNull(plugins);
 
         var plugin = new DefaultKernelPlugin(pluginName, description, functions);
         plugins.Add(plugin);
+
         return plugin;
     }
 
@@ -450,7 +474,11 @@ public static class KernelExtensions
     /// <exception cref="ArgumentException"><paramref name="pluginName"/> is an invalid plugin name.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
     /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
-    public static IKernelBuilderPlugins AddFromFunctions(this IKernelBuilderPlugins plugins, string pluginName, string? description = null, IEnumerable<KernelFunction>? functions = null)
+    public static IKernelBuilderPlugins AddFromFunctions(
+        this IKernelBuilderPlugins plugins,
+        string pluginName,
+        string? description = null,
+        IEnumerable<KernelFunction>? functions = null)
     {
         Verify.NotNull(plugins);
 
@@ -544,7 +572,11 @@ public static class KernelExtensions
 
             // Load prompt configuration. Note: the configuration is optional.
             var configPath = Path.Combine(functionDirectory, ConfigFile);
-            var promptConfig = File.Exists(configPath) ? PromptTemplateConfig.FromJson(File.ReadAllText(configPath)) : new PromptTemplateConfig();
+
+            var promptConfig = File.Exists(configPath)
+                ? PromptTemplateConfig.FromJson(File.ReadAllText(configPath))
+                : new PromptTemplateConfig();
+
             promptConfig.Name = functionName;
 
             if (logger.IsEnabled(LogLevel.Trace))
@@ -617,6 +649,7 @@ public static class KernelExtensions
     {
         KernelPlugin plugin = CreatePluginFromPromptDirectory(kernel, pluginDirectory, pluginName, promptTemplateFactory);
         kernel.Plugins.Add(plugin);
+
         return plugin;
     }
 
@@ -676,6 +709,7 @@ public static class KernelExtensions
 
 
     #region InvokePromptAsync
+
     /// <summary>
     /// Invokes a prompt specified via a prompt template.
     /// </summary>
@@ -713,6 +747,7 @@ public static class KernelExtensions
 
         return kernel.InvokeAsync(function, arguments, cancellationToken);
     }
+
 
     /// <summary>
     /// Invokes a prompt specified via a prompt template and returns the results of type <typeparamref name="T"/>.
@@ -752,6 +787,7 @@ public static class KernelExtensions
         return kernel.InvokeAsync<T>(function, arguments, cancellationToken);
     }
 
+
     /// <summary>
     /// Invokes a prompt specified via a prompt template and returns the results of type <typeparamref name="T"/>.
     /// </summary>
@@ -785,6 +821,7 @@ public static class KernelExtensions
             promptTemplateFactory,
             CancellationToken.None);
     }
+
     #endregion
 
 
@@ -906,17 +943,18 @@ public static class KernelExtensions
             // that such functionality will work when KernelBuilder is used to build the kernel but not when the IServiceProvider
             // is created via other means, such as if Kernel is directly created by DI. However, it allows us to create the APIs
             // the way we want them for the longer term and then subsequently fix the implementation when M.E.DI is fixed.
-            Dictionary<Type, HashSet<object?>> typeToKeyMappings = new();
+            Dictionary<Type, HashSet<object?>> typeToKeyMappings = [];
 
             foreach (ServiceDescriptor serviceDescriptor in services)
             {
                 if (!typeToKeyMappings.TryGetValue(serviceDescriptor.ServiceType, out HashSet<object?>? keys))
                 {
-                    typeToKeyMappings[serviceDescriptor.ServiceType] = keys = new();
+                    typeToKeyMappings[serviceDescriptor.ServiceType] = keys = [];
                 }
 
                 keys.Add(serviceDescriptor.ServiceKey);
             }
+
             services.AddKeyedSingleton(Kernel.KernelServiceTypeToKeyMappings, typeToKeyMappings);
 
             serviceProvider = services.BuildServiceProvider();

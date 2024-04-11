@@ -13,6 +13,7 @@ using YamlDotNet.Serialization.NamingConventions;
 /// </summary>
 public static class KernelFunctionYaml
 {
+
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt function using the specified markdown text.
     /// </summary>
@@ -37,7 +38,7 @@ public static class KernelFunctionYaml
         // dealing with the different deserialization outputs of JSON/YAML prompt configurations is being evaluated.
         foreach (var inputVariable in promptTemplateConfig.InputVariables)
         {
-            if (inputVariable.Default is not null && inputVariable.Default is not string)
+            if (inputVariable.Default is not null and not string)
             {
                 throw new NotSupportedException($"Default value for input variable '{inputVariable.Name}' must be a string. " +
                                                 $"This is a temporary limitation; future updates are expected to remove this constraint. Prompt function - '{promptTemplateConfig.Name ?? promptTemplateConfig.Description}'.");
@@ -57,11 +58,11 @@ public static class KernelFunctionYaml
     /// <param name="text">YAML representation of the <see cref="PromptTemplateConfig"/> to use to create the prompt function.</param>
     public static PromptTemplateConfig ToPromptTemplateConfig(string text)
     {
-        var deserializer = new DeserializerBuilder()
-            .WithNamingConvention(UnderscoredNamingConvention.Instance)
-            .WithNodeDeserializer(new PromptExecutionSettingsNodeDeserializer())
-            .Build();
+        var deserializer = new DeserializerBuilder().WithNamingConvention(UnderscoredNamingConvention.Instance).
+            WithNodeDeserializer(new PromptExecutionSettingsNodeDeserializer()).
+            Build();
 
         return deserializer.Deserialize<PromptTemplateConfig>(text);
     }
+
 }

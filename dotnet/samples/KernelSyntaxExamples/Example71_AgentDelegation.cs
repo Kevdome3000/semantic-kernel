@@ -18,6 +18,7 @@ using Xunit.Abstractions;
 /// </summary>
 public class Example71_AgentDelegation : BaseTest
 {
+
     /// <summary>
     /// Specific model is required that supports agents and function calling.
     /// Currently this is limited to Open AI hosted services.
@@ -25,7 +26,7 @@ public class Example71_AgentDelegation : BaseTest
     private const string OpenAIFunctionEnabledModel = "gpt-3.5-turbo-1106";
 
     // Track agents for clean-up
-    private static readonly List<IAgent> s_agents = new();
+    private static readonly List<IAgent> s_agents = [];
 
 
     /// <summary>
@@ -39,6 +40,7 @@ public class Example71_AgentDelegation : BaseTest
         if (TestConfiguration.OpenAI.ApiKey == null)
         {
             WriteLine("OpenAI apiKey not found. Skipping example.");
+
             return;
         }
 
@@ -47,30 +49,28 @@ public class Example71_AgentDelegation : BaseTest
         try
         {
             var plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
+
             var menuAgent =
                 Track(
-                    await new AgentBuilder()
-                        .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
-                        .FromTemplate(EmbeddedResource.Read("Agents.ToolAgent.yaml"))
-                        .WithDescription("Answer questions about how the menu uses the tool.")
-                        .WithPlugin(plugin)
-                        .BuildAsync());
+                    await new AgentBuilder().WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey).
+                        FromTemplate(EmbeddedResource.Read("Agents.ToolAgent.yaml")).
+                        WithDescription("Answer questions about how the menu uses the tool.").
+                        WithPlugin(plugin).
+                        BuildAsync());
 
             var parrotAgent =
                 Track(
-                    await new AgentBuilder()
-                        .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
-                        .FromTemplate(EmbeddedResource.Read("Agents.ParrotAgent.yaml"))
-                        .BuildAsync());
+                    await new AgentBuilder().WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey).
+                        FromTemplate(EmbeddedResource.Read("Agents.ParrotAgent.yaml")).
+                        BuildAsync());
 
             var toolAgent =
                 Track(
-                    await new AgentBuilder()
-                        .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
-                        .FromTemplate(EmbeddedResource.Read("Agents.ToolAgent.yaml"))
-                        .WithPlugin(parrotAgent.AsPlugin())
-                        .WithPlugin(menuAgent.AsPlugin())
-                        .BuildAsync());
+                    await new AgentBuilder().WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey).
+                        FromTemplate(EmbeddedResource.Read("Agents.ToolAgent.yaml")).
+                        WithPlugin(parrotAgent.AsPlugin()).
+                        WithPlugin(menuAgent.AsPlugin()).
+                        BuildAsync());
 
             var messages = new string[]
             {
@@ -111,4 +111,5 @@ public class Example71_AgentDelegation : BaseTest
     public Example71_AgentDelegation(ITestOutputHelper output) : base(output)
     {
     }
+
 }

@@ -17,11 +17,17 @@ using Xunit;
 
 public sealed class KernelFunctionHelpersTests
 {
+
     public KernelFunctionHelpersTests()
     {
         this._factory = new();
         this._kernel = new();
-        this._arguments = new() { ["input"] = Guid.NewGuid().ToString("X") };
+
+        this._arguments = new()
+        {
+            ["input"] = Guid.NewGuid().
+                ToString("X")
+        };
     }
 
 
@@ -53,7 +59,7 @@ public sealed class KernelFunctionHelpersTests
     public async Task ItRendersFunctionHelpersWithPositionalArgumentsAsync()
     {
         // Arrange and Act
-        var template = "{{Foo-Combine \"Bar\" \"Baz\"}}"; // Use positional arguments instead of hashed arguments
+        var template = """{{Foo-Combine "Bar" "Baz"}}"""; // Use positional arguments instead of hashed arguments
         var result = await this.RenderPromptTemplateAsync(template);
 
         // Assert
@@ -91,7 +97,7 @@ public sealed class KernelFunctionHelpersTests
     public async Task ItRendersFunctionHelpersWitHashArgumentsAsync()
     {
         // Arrange and Act
-        var template = "{{Foo-Combine x=\"Bar\" y=\"Baz\"}}"; // Use positional arguments instead of hashed arguments
+        var template = """{{Foo-Combine x="Bar" y="Baz"}}"""; // Use positional arguments instead of hashed arguments
         var result = await this.RenderPromptTemplateAsync(template);
 
         // Assert
@@ -103,7 +109,7 @@ public sealed class KernelFunctionHelpersTests
     public async Task ShouldThrowExceptionWhenMissingRequiredParameterAsync()
     {
         // Arrange and Act
-        var template = "{{Foo-Combine x=\"Bar\"}}";
+        var template = """{{Foo-Combine x="Bar"}}""";
 
         // Assert
         var exception = await Assert.ThrowsAsync<KernelException>(() => this.RenderPromptTemplateAsync(template));
@@ -127,7 +133,7 @@ public sealed class KernelFunctionHelpersTests
     public async Task ShouldThrowExceptionWhenFunctionHelperHasInvalidParameterTypeAsync()
     {
         // Arrange and Act
-        var template = "{{Foo-StringifyInt x=\"twelve\"}}";
+        var template = """{{Foo-StringifyInt x="twelve"}}""";
 
         // Assert
         var exception = await Assert.ThrowsAsync<KernelException>(() => this.RenderPromptTemplateAsync(template));
@@ -139,7 +145,7 @@ public sealed class KernelFunctionHelpersTests
     public async Task ShouldThrowExceptionWhenFunctionHelperIsNotDefinedAsync()
     {
         // Arrange and Act
-        var template = "{{Foo-Random x=\"random\"}}";
+        var template = """{{Foo-Random x="random"}}""";
 
         // Assert
         var exception = await Assert.ThrowsAsync<HandlebarsRuntimeException>(() => this.RenderPromptTemplateAsync(template));
@@ -189,7 +195,9 @@ public sealed class KernelFunctionHelpersTests
 
 
     private readonly HandlebarsPromptTemplateFactory _factory;
+
     private readonly Kernel _kernel;
+
     private readonly KernelArguments _arguments;
 
 
@@ -209,6 +217,7 @@ public sealed class KernelFunctionHelpersTests
 
     private sealed class Foo
     {
+
         [KernelFunction, Description("Return Bar")]
         public string Bar() => "Bar";
 
@@ -217,6 +226,7 @@ public sealed class KernelFunctionHelpersTests
         public async Task<string> BazAsync()
         {
             await Task.Delay(1000);
+
             return await Task.FromResult("Baz");
         }
 
@@ -239,11 +249,13 @@ public sealed class KernelFunctionHelpersTests
 
         [KernelFunction, Description("Return CustomReturnType")]
         public CustomReturnType CustomReturnType(string textProperty) => new(textProperty);
+
     }
 
 
     private sealed class CustomReturnType
     {
+
         public CustomReturnType(string textProperty)
         {
             this.TextProperty = textProperty;
@@ -253,5 +265,7 @@ public sealed class KernelFunctionHelpersTests
         public string TextProperty { get; set; }
 
         public override string ToString() => this.TextProperty;
+
     }
+
 }

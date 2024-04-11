@@ -20,18 +20,19 @@ using Extensions.Logging;
 /// </remarks>
 public class MsGraphClientLoggingHandler : DelegatingHandler
 {
+
     /// <summary>
     /// From https://learn.microsoft.com/graph/best-practices-concept#reliability-and-support
     /// </summary>
     private const string ClientRequestIdHeaderName = "client-request-id";
 
-    private readonly List<string> _headerNamesToLog = new()
-    {
+    private readonly List<string> _headerNamesToLog =
+    [
         ClientRequestIdHeaderName,
         "request-id",
         "x-ms-ags-diagnostic",
         "Date"
-    };
+    ];
 
     private readonly ILogger _logger;
 
@@ -54,10 +55,16 @@ public class MsGraphClientLoggingHandler : DelegatingHandler
     /// <returns>The task object representing the asynchronous operation.</returns>
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        request.Headers.Add(ClientRequestIdHeaderName, Guid.NewGuid().ToString());
+        request.Headers.Add(ClientRequestIdHeaderName, Guid.NewGuid().
+            ToString());
+
         this.LogHttpMessage(request.Headers, request.RequestUri, "REQUEST");
-        HttpResponseMessage response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+
+        HttpResponseMessage response = await base.SendAsync(request, cancellationToken).
+            ConfigureAwait(false);
+
         this.LogHttpMessage(response.Headers, response.RequestMessage?.RequestUri, "RESPONSE");
+
         return response;
     }
 
@@ -83,4 +90,5 @@ public class MsGraphClientLoggingHandler : DelegatingHandler
             this._logger.LogDebug("{0}", message);
         }
     }
+
 }

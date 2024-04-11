@@ -20,9 +20,9 @@ namespace System.Reflection
 
         private const string CompilerServicesNameSpace = "System.Runtime.CompilerServices";
 
-        private readonly Dictionary<Module, NotAnnotatedStatus> _publicOnlyModules = new();
+        private readonly Dictionary<Module, NotAnnotatedStatus> _publicOnlyModules = [];
 
-        private readonly Dictionary<MemberInfo, NullabilityState> _context = new();
+        private readonly Dictionary<MemberInfo, NullabilityState> _context = [];
 
         internal static bool IsSupported { get; } =
             AppContext.TryGetSwitch("System.Reflection.NullabilityInfoContext.IsSupported", out bool isSupported)
@@ -405,7 +405,7 @@ namespace System.Reflection
         {
             NullabilityState state = NullabilityState.Unknown;
             NullabilityInfo? elementState = null;
-            NullabilityInfo[] genericArgumentsState = Array.Empty<NullabilityInfo>();
+            NullabilityInfo[] genericArgumentsState = [];
             Type underlyingType = type;
 
             if (underlyingType.IsByRef || underlyingType.IsPointer)

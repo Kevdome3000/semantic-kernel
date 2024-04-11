@@ -20,7 +20,7 @@ using Services;
 public sealed class VertexAITextEmbeddingGenerationService : ITextEmbeddingGenerationService
 {
 
-    private readonly Dictionary<string, object?> _attributesInternal = new();
+    private readonly Dictionary<string, object?> _attributesInternal = [];
 
     private readonly VertexAIEmbeddingClient _embeddingClient;
 

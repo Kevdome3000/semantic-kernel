@@ -20,6 +20,7 @@ using Xunit.Abstractions;
 // This example shows how to use OpenAI's tool calling capability via the chat completions interface.
 public class Example59_OpenAIFunctionCalling : BaseTest
 {
+
     [Fact]
     public async Task RunAsync()
     {
@@ -30,12 +31,14 @@ public class Example59_OpenAIFunctionCalling : BaseTest
         // i.e. gpt-3.5-turbo-1106 or gpt-4-1106-preview
         builder.AddOpenAIChatCompletion("gpt-3.5-turbo-1106", TestConfiguration.OpenAI.ApiKey);
 
-        builder.Services.AddLogging(services => services.AddConsole().SetMinimumLevel(LogLevel.Trace));
+        builder.Services.AddLogging(services => services.AddConsole().
+            SetMinimumLevel(LogLevel.Trace));
+
         Kernel kernel = builder.Build();
 
         // Add a plugin with some helper functions we want to allow the model to utilize.
-        kernel.ImportPluginFromFunctions("HelperFunctions", new[]
-        {
+        kernel.ImportPluginFromFunctions("HelperFunctions",
+        [
             kernel.CreateFunctionFromMethod(() => DateTime.UtcNow.ToString("R"), "GetCurrentUtcTime", "Retrieves the current time in UTC."),
             kernel.CreateFunctionFromMethod((string cityName) =>
                 cityName switch
@@ -49,9 +52,10 @@ public class Example59_OpenAIFunctionCalling : BaseTest
                     "Tel Aviv" => "80 and sunny",
                     _ => "31 and snowing",
                 }, "Get_Weather_For_City", "Gets the current weather for the specified city"),
-        });
+        ]);
 
         WriteLine("======== Example 1: Use automated function calling with a non-streaming prompt ========");
+
         {
             OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
             WriteLine(await kernel.InvokePromptAsync("Given the current time of day and weather, what is the likely color of the sky in Boston?", new(settings)));
@@ -59,6 +63,7 @@ public class Example59_OpenAIFunctionCalling : BaseTest
         }
 
         WriteLine("======== Example 2: Use automated function calling with a streaming prompt ========");
+
         {
             OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
@@ -66,10 +71,12 @@ public class Example59_OpenAIFunctionCalling : BaseTest
             {
                 Write(update);
             }
+
             WriteLine();
         }
 
         WriteLine("======== Example 3: Use manual function calling with a non-streaming prompt ========");
+
         {
             var chat = kernel.GetRequiredService<IChatCompletionService>();
             var chatHistory = new ChatHistory();
@@ -86,7 +93,8 @@ public class Example59_OpenAIFunctionCalling : BaseTest
                     Write(result.Content);
                 }
 
-                List<ChatCompletionsFunctionToolCall> toolCalls = result.ToolCalls.OfType<ChatCompletionsFunctionToolCall>().ToList();
+                List<ChatCompletionsFunctionToolCall> toolCalls = result.ToolCalls.OfType<ChatCompletionsFunctionToolCall>().
+                    ToList();
 
                 if (toolCalls.Count == 0)
                 {
@@ -97,7 +105,9 @@ public class Example59_OpenAIFunctionCalling : BaseTest
 
                 foreach (var toolCall in toolCalls)
                 {
-                    string content = kernel.Plugins.TryGetFunctionAndArguments(toolCall, out KernelFunction? function, out KernelArguments? arguments) ? JsonSerializer.Serialize((await function.InvokeAsync(kernel, arguments)).GetValue<object>()) : "Unable to find function. Please try again!";
+                    string content = kernel.Plugins.TryGetFunctionAndArguments(toolCall, out KernelFunction? function, out KernelArguments? arguments)
+                        ? JsonSerializer.Serialize((await function.InvokeAsync(kernel, arguments)).GetValue<object>())
+                        : "Unable to find function. Please try again!";
 
                     chatHistory.Add(new ChatMessageContent(
                         AuthorRole.Tool,
@@ -147,4 +157,5 @@ public class Example59_OpenAIFunctionCalling : BaseTest
     public Example59_OpenAIFunctionCalling(ITestOutputHelper output) : base(output)
     {
     }
+
 }

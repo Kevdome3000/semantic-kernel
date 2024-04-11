@@ -92,11 +92,10 @@ public sealed class FunctionCallingStepwisePlannerTests : BaseIntegrationTest, I
         kernel.Plugins.Add(
             KernelPluginFactory.CreateFromFunctions(
                 "Email",
-                new[]
-                {
+                [
                     KernelFunctionFactory.CreateFromMethod(emailPluginFake.WritePoemAsync),
                     KernelFunctionFactory.CreateFromMethod(emailPluginFake.SendEmailAsync),
-                }));
+                ]));
 
         var planner = new FunctionCallingStepwisePlanner(
             new FunctionCallingStepwisePlannerOptions() { MaxIterations = 5 });
@@ -126,11 +125,10 @@ public sealed class FunctionCallingStepwisePlannerTests : BaseIntegrationTest, I
         kernel.Plugins.Add(
             KernelPluginFactory.CreateFromFunctions(
                 "Email",
-                new[]
-                {
+                [
                     KernelFunctionFactory.CreateFromMethod(emailPluginFake.WriteJokeAsync),
                     KernelFunctionFactory.CreateFromMethod(emailPluginFake.SendEmailAsync),
-                }));
+                ]));
 
         var planner = new FunctionCallingStepwisePlanner(
             new FunctionCallingStepwisePlannerOptions() { MaxIterations = 5 });
@@ -155,7 +153,7 @@ public sealed class FunctionCallingStepwisePlannerTests : BaseIntegrationTest, I
         kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions(
             "NewsProvider",
             "Delivers up-to-date news content.",
-            new[] { promptFunction }));
+            [promptFunction]));
 
         var planner = new FunctionCallingStepwisePlanner(
             new FunctionCallingStepwisePlannerOptions() { MaxIterations = 2 });

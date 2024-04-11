@@ -33,25 +33,26 @@ using Extensions.Logging.Abstractions;
 /// [letter]         ::= "a" | "b" ... | "z" | "A" | "B" ... | "Z"
 /// [digit]          ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
 /// </summary>
-internal sealed class CodeTokenizer
+internal sealed class CodeTokenizer(ILoggerFactory? loggerFactory = null)
 {
+
     private enum TokenTypes
     {
+
         None = 0,
+
         Value = 1,
+
         Variable = 2,
+
         FunctionId = 3,
+
         NamedArg = 4,
+
     }
 
 
-    private readonly ILoggerFactory _loggerFactory;
-
-
-    public CodeTokenizer(ILoggerFactory? loggerFactory = null)
-    {
-        this._loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
-    }
+    private readonly ILoggerFactory _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
 
 
     /// <summary>
@@ -65,7 +66,7 @@ internal sealed class CodeTokenizer
         text = text?.Trim();
 
         // Render NULL to ""
-        if (string.IsNullOrEmpty(text)) { return new List<Block>(); }
+        if (string.IsNullOrEmpty(text)) { return []; }
 
         // Track what type of token we're reading
         TokenTypes currentTokenType = TokenTypes.None;
@@ -109,6 +110,7 @@ internal sealed class CodeTokenizer
             if (skipNextChar)
             {
                 skipNextChar = false;
+
                 continue;
             }
 
@@ -130,6 +132,7 @@ internal sealed class CodeTokenizer
                 }
 
                 currentTokenContent.Append(currentChar);
+
                 continue;
             }
 
@@ -144,6 +147,7 @@ internal sealed class CodeTokenizer
                 {
                     currentTokenContent.Append(nextChar);
                     skipNextChar = true;
+
                     continue;
                 }
 
@@ -186,7 +190,7 @@ internal sealed class CodeTokenizer
 
                     // This isn't an expected block at this point but the TemplateTokenizer should throw an error when
                     // a named arg is used without a function call
-                    if (IsValidNamedArg(tokenContent))
+                    if (CodeTokenizer.IsValidNamedArg(tokenContent))
                     {
                         blocks.Add(new NamedArgBlock(tokenContent, this._loggerFactory));
                     }
@@ -194,6 +198,7 @@ internal sealed class CodeTokenizer
                     {
                         blocks.Add(new FunctionIdBlock(tokenContent, this._loggerFactory));
                     }
+
                     currentTokenContent.Clear();
                     currentTokenType = TokenTypes.None;
                 }
@@ -230,7 +235,9 @@ internal sealed class CodeTokenizer
                         throw new KernelException($"Named argument values need to be prefixed with a quote or {Symbols.VarPrefix}.");
                     }
                 }
+
                 currentTokenContent.Append(currentChar);
+
                 continue;
             }
 
@@ -275,10 +282,12 @@ internal sealed class CodeTokenizer
         {
             case TokenTypes.Value:
                 blocks.Add(new ValBlock(currentTokenContent.ToString(), this._loggerFactory));
+
                 break;
 
             case TokenTypes.Variable:
                 blocks.Add(new VarBlock(currentTokenContent.ToString(), this._loggerFactory));
+
                 break;
 
             case TokenTypes.FunctionId:
@@ -286,7 +295,7 @@ internal sealed class CodeTokenizer
 
                 // This isn't an expected block at this point but the TemplateTokenizer should throw an error when
                 // a named arg is used without a function call
-                if (IsValidNamedArg(tokenContent))
+                if (CodeTokenizer.IsValidNamedArg(tokenContent))
                 {
                     blocks.Add(new NamedArgBlock(tokenContent, this._loggerFactory));
                 }
@@ -294,10 +303,12 @@ internal sealed class CodeTokenizer
                 {
                     blocks.Add(new FunctionIdBlock(currentTokenContent.ToString(), this._loggerFactory));
                 }
+
                 break;
 
             case TokenTypes.NamedArg:
                 blocks.Add(new NamedArgBlock(currentTokenContent.ToString(), this._loggerFactory));
+
                 break;
 
             case TokenTypes.None:
@@ -345,4 +356,5 @@ internal sealed class CodeTokenizer
 
         return false;
     }
+
 }

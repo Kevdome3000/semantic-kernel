@@ -13,9 +13,13 @@ using System.Linq;
 /// </summary>
 internal static class ChatPromptParser
 {
+
     private const string MessageTagName = "message";
+
     private const string RoleAttributeName = "role";
+
     private const string ImageTagName = "image";
+
     private const string TextTagName = "text";
 
 
@@ -41,6 +45,7 @@ internal static class ChatPromptParser
         }
 
         chatHistory = null;
+
         return false;
     }
 
@@ -57,7 +62,7 @@ internal static class ChatPromptParser
 
         foreach (var node in nodes.Where(IsValidChatMessage))
         {
-            (chatHistory ??= new()).Add(ParseChatNode(node));
+            (chatHistory ??= []).Add(ParseChatNode(node));
         }
 
         return chatHistory is not null;
@@ -71,7 +76,7 @@ internal static class ChatPromptParser
     /// <returns><see cref="ChatMessageContent"/> object.</returns>
     private static ChatMessageContent ParseChatNode(PromptNode node)
     {
-        ChatMessageContentItemCollection items = new();
+        ChatMessageContentItemCollection items = [];
 
         foreach (var childNode in node.ChildNodes.Where(childNode => childNode.Content is not null))
         {
@@ -122,6 +127,8 @@ internal static class ChatPromptParser
     private static bool IsValidChildNodes(PromptNode node)
     {
         var textTagsCount = node.ChildNodes.Count(n => n.TagName.Equals(TextTagName, StringComparison.OrdinalIgnoreCase));
+
         return textTagsCount == 1 || (textTagsCount == 0 && node.Content is not null);
     }
+
 }

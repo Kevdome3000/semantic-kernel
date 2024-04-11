@@ -13,6 +13,7 @@ using HandlebarsDotNet.Helpers.Options;
 /// </summary>
 public sealed class HandlebarsPromptTemplateOptions : HandlebarsHelpersOptions
 {
+
     // TODO [@teresaqhoang]: Issue #3947 Add Categories filter for KernelSystemHelpers (i.e., KernelHelperCategories)
 
 
@@ -59,10 +60,12 @@ public sealed class HandlebarsPromptTemplateOptions : HandlebarsHelpersOptions
     public HandlebarsPromptTemplateOptions()
     {
         this.PrefixSeparator = "-";
-        this.Categories = new Category[]
-        {
+
+        this.Categories =
+        [
             Category.Math, // Enables basic math operations (https://github.com/Handlebars-Net/Handlebars.Net.Helpers/wiki/Math)
             Category.String // Enables string manipulation (https://github.com/Handlebars-Net/Handlebars.Net.Helpers/wiki/String)
-        };
+        ];
     }
+
 }

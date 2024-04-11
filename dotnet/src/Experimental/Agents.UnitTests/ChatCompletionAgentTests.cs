@@ -2,7 +2,6 @@
 
 namespace SemanticKernel.Experimental.Agents.UnitTests;
 
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -37,7 +36,7 @@ public class ChatCompletionAgentTests
         var agent = new ChatCompletionAgent(this._kernelBuilder.Build(), "fake-instructions");
 
         // Act
-        var result = await agent.InvokeAsync(new List<ChatMessageContent>());
+        var result = await agent.InvokeAsync([]);
 
         // Assert
         mockChatCompletionService.Verify(x =>
@@ -61,7 +60,7 @@ public class ChatCompletionAgentTests
         var agent = new ChatCompletionAgent(this._kernelBuilder.Build(), "fake-instructions");
 
         // Act
-        var result = await agent.InvokeAsync(new List<ChatMessageContent>() { new(AuthorRole.User, "fake-user-message") });
+        var result = await agent.InvokeAsync([new(AuthorRole.User, "fake-user-message")]);
 
         // Assert
         mockChatCompletionService.Verify(
@@ -83,18 +82,17 @@ public class ChatCompletionAgentTests
         var mockChatCompletionService = new Mock<IChatCompletionService>();
 
         mockChatCompletionService.Setup(ccs => ccs.GetChatMessageContentsAsync(It.IsAny<ChatHistory>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).
-            ReturnsAsync(new List<ChatMessageContent>
-            {
+            ReturnsAsync([
                 new(AuthorRole.Assistant, "fake-assistant-message-1"),
                 new(AuthorRole.Assistant, "fake-assistant-message-2")
-            });
+            ]);
 
         this._kernelBuilder.Services.AddSingleton<IChatCompletionService>(mockChatCompletionService.Object);
 
         var agent = new ChatCompletionAgent(this._kernelBuilder.Build(), "fake-instructions");
 
         // Act
-        var result = await agent.InvokeAsync(new List<ChatMessageContent>());
+        var result = await agent.InvokeAsync([]);
 
         // Assert
         Assert.Equal(2, result.Count);

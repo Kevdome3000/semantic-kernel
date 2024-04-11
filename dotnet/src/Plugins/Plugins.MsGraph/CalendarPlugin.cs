@@ -21,7 +21,9 @@ using Models;
 /// </summary>
 public sealed class CalendarPlugin
 {
+
     private readonly ICalendarConnector _connector;
+
     private readonly ILogger _logger;
 
     private static readonly JsonSerializerOptions s_options = new()
@@ -30,7 +32,7 @@ public sealed class CalendarPlugin
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     };
 
-    private static readonly char[] s_separator = { ',', ';' };
+    private static readonly char[] s_separator = [',', ';'];
 
 
     /// <summary>
@@ -76,12 +78,16 @@ public sealed class CalendarPlugin
             End = end,
             Location = location,
             Content = content,
-            Attendees = attendees is not null ? attendees.Split(s_separator, StringSplitOptions.RemoveEmptyEntries) : Enumerable.Empty<string>(),
+            Attendees = attendees is not null
+                ? attendees.Split(s_separator, StringSplitOptions.RemoveEmptyEntries)
+                : Enumerable.Empty<string>(),
         };
 
         // Sensitive data, logging as trace, disabled by default
         this._logger.LogTrace("Adding calendar event '{0}'", calendarEvent.Subject);
-        await this._connector.AddEventAsync(calendarEvent).ConfigureAwait(false);
+
+        await this._connector.AddEventAsync(calendarEvent).
+            ConfigureAwait(false);
     }
 
 
@@ -101,12 +107,14 @@ public sealed class CalendarPlugin
         const string SelectString = "start,subject,organizer,location";
 
         IEnumerable<CalendarEvent> events = await this._connector.GetEventsAsync(
-            top: maxResults,
-            skip: skip,
-            select: SelectString,
-            cancellationToken
-        ).ConfigureAwait(false);
+                top: maxResults,
+                skip: skip,
+                select: SelectString,
+                cancellationToken
+            ).
+            ConfigureAwait(false);
 
         return JsonSerializer.Serialize(value: events, options: s_options);
     }
+
 }

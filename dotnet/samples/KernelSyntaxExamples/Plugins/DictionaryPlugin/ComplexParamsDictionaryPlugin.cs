@@ -17,16 +17,17 @@ using Microsoft.SemanticKernel;
 /// </summary>
 public sealed class ComplexParamsDictionaryPlugin
 {
+
     public const string PluginName = nameof(ComplexParamsDictionaryPlugin);
 
-    private readonly List<DictionaryEntry> _dictionary = new()
-    {
+    private readonly List<DictionaryEntry> _dictionary =
+    [
         new DictionaryEntry("apple", "a round fruit with red, green, or yellow skin and a white flesh"),
         new DictionaryEntry("book", "a set of printed or written pages bound together along one edge"),
         new DictionaryEntry("cat", "a small furry animal with whiskers and a long tail that is often kept as a pet"),
         new DictionaryEntry("dog", "a domesticated animal with four legs, a tail, and a keen sense of smell that is often used for hunting or companionship"),
         new DictionaryEntry("elephant", "a large gray mammal with a long trunk, tusks, and ears that lives in Africa and Asia")
-    };
+    ];
 
 
     [KernelFunction, Description("Gets a random word from a dictionary of common words and their definitions.")]
@@ -44,7 +45,8 @@ public sealed class ComplexParamsDictionaryPlugin
     public string GetWord([Description("Word to get definition for.")] DictionaryEntry entry)
     {
         // Return the definition or a default message
-        return this._dictionary.FirstOrDefault(e => e.Word == entry.Word)?.Word ?? "Entry not found";
+        return this._dictionary.FirstOrDefault(e => e.Word == entry.Word)?.
+            Word ?? "Entry not found";
     }
 
 
@@ -52,8 +54,10 @@ public sealed class ComplexParamsDictionaryPlugin
     public string GetDefinition([Description("Word to get definition for.")] string word)
     {
         // Return the definition or a default message
-        return this._dictionary.FirstOrDefault(e => e.Word == word)?.Definition ?? "Word not found";
+        return this._dictionary.FirstOrDefault(e => e.Word == word)?.
+            Definition ?? "Word not found";
     }
+
 }
 
 
@@ -67,17 +71,13 @@ public sealed class ComplexParamsDictionaryPlugin
 /// It's possible to choose any format (e.g. XML, JSON, YAML) to represent your object.
 /// </remarks>
 [TypeConverter(typeof(DictionaryEntryConverter))]
-public sealed class DictionaryEntry
+public sealed class DictionaryEntry(string word, string definition)
 {
-    public string Word { get; set; } = string.Empty;
-    public string Definition { get; set; } = string.Empty;
 
+    public string Word { get; set; } = word;
 
-    public DictionaryEntry(string word, string definition)
-    {
-        this.Word = word;
-        this.Definition = definition;
-    }
+    public string Definition { get; set; } = definition;
+
 }
 
 
@@ -88,6 +88,7 @@ public sealed class DictionaryEntry
 /// </summary>
 public sealed class DictionaryEntryConverter : TypeConverter
 {
+
     public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType) => true;
 
 
@@ -105,8 +106,13 @@ public sealed class DictionaryEntryConverter : TypeConverter
     /// This method is used to convert actual type to string representation, so it can be passed to AI
     /// for further processing.
     /// </summary>
-    public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
+    public override object? ConvertTo(
+        ITypeDescriptorContext? context,
+        CultureInfo? culture,
+        object? value,
+        Type destinationType)
     {
         return JsonSerializer.Serialize(value);
     }
+
 }

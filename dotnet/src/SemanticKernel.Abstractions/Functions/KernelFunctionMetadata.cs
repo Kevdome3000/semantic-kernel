@@ -12,6 +12,7 @@ using System.Diagnostics.CodeAnalysis;
 /// </summary>
 public sealed class KernelFunctionMetadata
 {
+
     /// <summary>The name of the function.</summary>
     private string _name = string.Empty;
 
@@ -19,7 +20,7 @@ public sealed class KernelFunctionMetadata
     private string _description = string.Empty;
 
     /// <summary>The function's parameters.</summary>
-    private IReadOnlyList<KernelParameterMetadata> _parameters = Array.Empty<KernelParameterMetadata>();
+    private IReadOnlyList<KernelParameterMetadata> _parameters = [];
 
     /// <summary>The function's return parameter.</summary>
     private KernelReturnParameterMetadata? _returnParameter;
@@ -98,4 +99,5 @@ public sealed class KernelFunctionMetadata
             this._returnParameter = value;
         }
     }
+
 }

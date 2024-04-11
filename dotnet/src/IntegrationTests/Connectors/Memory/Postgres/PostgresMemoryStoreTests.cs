@@ -19,6 +19,7 @@ using Xunit;
 /// </summary>
 public class PostgresMemoryStoreTests : IAsyncLifetime
 {
+
     // If null, all tests will be enabled
     private const string? SkipReason = "Required postgres with pgvector extension";
 
@@ -26,12 +27,11 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
     public async Task InitializeAsync()
     {
         // Load configuration
-        var configuration = new ConfigurationBuilder()
-            .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
-            .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
-            .AddEnvironmentVariables()
-            .AddUserSecrets<PostgresMemoryStoreTests>()
-            .Build();
+        var configuration = new ConfigurationBuilder().AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true).
+            AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true).
+            AddEnvironmentVariables().
+            AddUserSecrets<PostgresMemoryStoreTests>().
+            Build();
 
         var connectionString = configuration["Postgres:ConnectionString"];
 
@@ -43,8 +43,10 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         this._connectionString = connectionString;
         this._databaseName = $"sk_it_{Guid.NewGuid():N}";
 
-        NpgsqlConnectionStringBuilder connectionStringBuilder = new(this._connectionString);
-        connectionStringBuilder.Database = this._databaseName;
+        NpgsqlConnectionStringBuilder connectionStringBuilder = new(this._connectionString)
+        {
+            Database = this._databaseName
+        };
 
         NpgsqlDataSourceBuilder dataSourceBuilder = new(connectionStringBuilder.ToString());
         dataSourceBuilder.UseVector();
@@ -127,6 +129,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
     {
         // Arrange
         using PostgresMemoryStore memoryStore = this.CreateMemoryStore();
+
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test",
             text: "text",
@@ -134,6 +137,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
             embedding: new float[] { 1, 2, 3 },
             key: null,
             timestamp: null);
+
         string collection = "test_collection";
 
         // Act
@@ -155,13 +159,15 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
     {
         // Arrange
         using PostgresMemoryStore memoryStore = this.CreateMemoryStore();
+
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test",
             text: "text",
             description: "description",
-            embedding: new ReadOnlyMemory<float>(new float[] { 1, 2, 3 }),
+            embedding: new ReadOnlyMemory<float>([1, 2, 3]),
             key: null,
             timestamp: null);
+
         string collection = "test_collection";
 
         // Act
@@ -186,6 +192,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
     {
         // Arrange
         using PostgresMemoryStore memoryStore = this.CreateMemoryStore();
+
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test",
             text: "text",
@@ -193,6 +200,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
             embedding: new float[] { 1, 2, 3 },
             key: null,
             timestamp: DateTimeOffset.FromUnixTimeMilliseconds(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()));
+
         string collection = "test_collection";
 
         // Act
@@ -219,16 +227,19 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         // Arrange
         using PostgresMemoryStore memoryStore = this.CreateMemoryStore();
         string commonId = "test";
+
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: commonId,
             text: "text",
             description: "description",
             embedding: new float[] { 1, 2, 3 });
+
         MemoryRecord testRecord2 = MemoryRecord.LocalRecord(
             id: commonId,
             text: "text2",
             description: "description2",
             embedding: new float[] { 1, 2, 4 });
+
         string collection = "test_collection";
 
         // Act
@@ -253,11 +264,13 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
     {
         // Arrange
         using PostgresMemoryStore memoryStore = this.CreateMemoryStore();
+
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test",
             text: "text",
             description: "description",
             embedding: new float[] { 1, 2, 3 });
+
         string collection = "test_collection";
 
         // Act
@@ -295,13 +308,14 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
     {
         // Arrange
         using PostgresMemoryStore memoryStore = this.CreateMemoryStore();
-        string[] testCollections = { "random_collection1", "random_collection2", "random_collection3" };
+        string[] testCollections = ["random_collection1", "random_collection2", "random_collection3"];
         await memoryStore.CreateCollectionAsync(testCollections[0]);
         await memoryStore.CreateCollectionAsync(testCollections[1]);
         await memoryStore.CreateCollectionAsync(testCollections[2]);
 
         // Act
-        var collections = await memoryStore.GetCollectionsAsync().ToListAsync();
+        var collections = await memoryStore.GetCollectionsAsync().
+            ToListAsync();
 
         // Assert
         foreach (var collection in testCollections)
@@ -312,10 +326,13 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         Assert.NotNull(collections);
         Assert.NotEmpty(collections);
         Assert.Equal(testCollections.Length, collections.Count);
+
         Assert.True(collections.Contains(testCollections[0]),
             $"Collections does not contain the newly-created collection {testCollections[0]}");
+
         Assert.True(collections.Contains(testCollections[1]),
             $"Collections does not contain the newly-created collection {testCollections[1]}");
+
         Assert.True(collections.Contains(testCollections[2]),
             $"Collections does not contain the newly-created collection {testCollections[2]}");
     }
@@ -331,55 +348,70 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         string collection = "test_collection";
         await memoryStore.CreateCollectionAsync(collection);
         int i = 0;
+
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { 1, 1, 1 });
+
         _ = await memoryStore.UpsertAsync(collection, testRecord);
 
         i++;
+
         testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { -1, -1, -1 });
+
         _ = await memoryStore.UpsertAsync(collection, testRecord);
 
         i++;
+
         testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { 1, 2, 3 });
+
         _ = await memoryStore.UpsertAsync(collection, testRecord);
 
         i++;
+
         testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { -1, -2, -3 });
+
         _ = await memoryStore.UpsertAsync(collection, testRecord);
 
         i++;
+
         testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { 1, -1, -2 });
+
         _ = await memoryStore.UpsertAsync(collection, testRecord);
 
         // Act
         double threshold = -1;
-        var topNResults = memoryStore.GetNearestMatchesAsync(collection, compareEmbedding, limit: topN, minRelevanceScore: threshold).ToEnumerable().ToArray();
+
+        var topNResults = memoryStore.GetNearestMatchesAsync(collection, compareEmbedding, limit: topN, minRelevanceScore: threshold).
+            ToEnumerable().
+            ToArray();
 
         // Assert
         Assert.Equal(topN, topNResults.Length);
 
         for (int j = 0; j < topN - 1; j++)
         {
-            int compare = topNResults[j].Item2.CompareTo(topNResults[j + 1].Item2);
+            int compare = topNResults[j].
+                Item2.CompareTo(topNResults[j + 1].Item2);
+
             Assert.True(compare >= 0);
         }
     }
@@ -394,43 +426,53 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         string collection = "test_collection";
         await memoryStore.CreateCollectionAsync(collection);
         int i = 0;
+
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { 1, 1, 1 });
+
         _ = await memoryStore.UpsertAsync(collection, testRecord);
 
         i++;
+
         testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { -1, -1, -1 });
+
         _ = await memoryStore.UpsertAsync(collection, testRecord);
 
         i++;
+
         testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { 1, 2, 3 });
+
         _ = await memoryStore.UpsertAsync(collection, testRecord);
 
         i++;
+
         testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { -1, -2, -3 });
+
         _ = await memoryStore.UpsertAsync(collection, testRecord);
 
         i++;
+
         testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { 1, -1, -2 });
+
         _ = await memoryStore.UpsertAsync(collection, testRecord);
 
         // Act
@@ -455,43 +497,53 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         string collection = "test_collection";
         await memoryStore.CreateCollectionAsync(collection);
         int i = 0;
+
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { 1, 1, 1 });
+
         _ = await memoryStore.UpsertAsync(collection, testRecord);
 
         i++;
+
         testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { -1, -1, -1 });
+
         _ = await memoryStore.UpsertAsync(collection, testRecord);
 
         i++;
+
         testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { 1, 2, 3 });
+
         _ = await memoryStore.UpsertAsync(collection, testRecord);
 
         i++;
+
         testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { -1, -2, -3 });
+
         _ = await memoryStore.UpsertAsync(collection, testRecord);
 
         i++;
+
         testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { 1, -1, -2 });
+
         _ = await memoryStore.UpsertAsync(collection, testRecord);
 
         // Act
@@ -522,12 +574,17 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
                 text: "text" + i,
                 description: "description" + i,
                 embedding: new float[] { 1, 1, 1 });
+
             _ = await memoryStore.UpsertAsync(collection, testRecord);
         }
 
         // Act
-        var topNResults = memoryStore.GetNearestMatchesAsync(collection, compareEmbedding, limit: topN, minRelevanceScore: 0.75).ToEnumerable().ToArray();
-        IEnumerable<string> topNKeys = topNResults.Select(x => x.Item1.Key).ToImmutableSortedSet();
+        var topNResults = memoryStore.GetNearestMatchesAsync(collection, compareEmbedding, limit: topN, minRelevanceScore: 0.75).
+            ToEnumerable().
+            ToArray();
+
+        IEnumerable<string> topNKeys = topNResults.Select(x => x.Item1.Key).
+            ToImmutableSortedSet();
 
         // Assert
         Assert.Equal(topN, topNResults.Length);
@@ -535,7 +592,9 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
 
         for (int i = 0; i < topNResults.Length; i++)
         {
-            int compare = topNResults[i].Item2.CompareTo(0.75);
+            int compare = topNResults[i].
+                Item2.CompareTo(0.75);
+
             Assert.True(compare >= 0);
         }
     }
@@ -557,8 +616,12 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
 
         // Assert
         Assert.NotNull(keys);
-        Assert.Equal(numRecords, keys.ToEnumerable().Count());
-        Assert.Equal(numRecords, resultRecords.ToEnumerable().Count());
+
+        Assert.Equal(numRecords, keys.ToEnumerable().
+            Count());
+
+        Assert.Equal(numRecords, resultRecords.ToEnumerable().
+            Count());
     }
 
 
@@ -579,7 +642,9 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         // Assert
         Assert.NotNull(keys);
         Assert.NotNull(results);
-        Assert.Equal(numRecords, results.ToEnumerable().Count());
+
+        Assert.Equal(numRecords, results.ToEnumerable().
+            Count());
     }
 
 
@@ -593,7 +658,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
         await memoryStore.CreateCollectionAsync(collection);
 
-        List<string> keys = new();
+        List<string> keys = [];
 
         // Act
         await foreach (var key in memoryStore.UpsertBatchAsync(collection, records))
@@ -634,7 +699,10 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
 
         // Act
         await memoryStore.CreateCollectionAsync(collection);
-        var keys = await memoryStore.UpsertBatchAsync(collection, records).ToListAsync();
+
+        var keys = await memoryStore.UpsertBatchAsync(collection, records).
+            ToListAsync();
+
         keys.Insert(0, "not-exist-key-0");
         keys.Insert(5, "not-exist-key-5");
         keys.Add("not-exist-key-n");
@@ -643,14 +711,18 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         // Assert
         Assert.NotNull(keys);
         Assert.Equal(numRecords, keys.Count - 3);
-        Assert.Equal(numRecords, resultRecords.ToEnumerable().Count());
+
+        Assert.Equal(numRecords, resultRecords.ToEnumerable().
+            Count());
     }
 
 
     #region private ================================================================================
 
     private string _connectionString = null!;
+
     private string _databaseName = null!;
+
     private NpgsqlDataSource _dataSource = null!;
 
 
@@ -661,10 +733,8 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
 
         await using (NpgsqlConnection conn = await dataSource.OpenConnectionAsync())
         {
-            await using (NpgsqlCommand command = new($"CREATE DATABASE \"{this._databaseName}\"", conn))
-            {
-                await command.ExecuteNonQueryAsync();
-            }
+            await using NpgsqlCommand command = new($"CREATE DATABASE \"{this._databaseName}\"", conn);
+            await command.ExecuteNonQueryAsync();
         }
 
         await using (NpgsqlConnection conn = await this._dataSource.OpenConnectionAsync())
@@ -673,6 +743,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
             {
                 await command.ExecuteNonQueryAsync();
             }
+
             await conn.ReloadTypesAsync();
         }
     }
@@ -682,14 +753,9 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
     private async Task DropDatabaseAsync()
     {
         using NpgsqlDataSource dataSource = NpgsqlDataSource.Create(this._connectionString);
-
-        await using (NpgsqlConnection conn = await dataSource.OpenConnectionAsync())
-        {
-            await using (NpgsqlCommand command = new($"DROP DATABASE IF EXISTS \"{this._databaseName}\"", conn))
-            {
-                await command.ExecuteNonQueryAsync();
-            }
-        }
+        await using NpgsqlConnection conn = await dataSource.OpenConnectionAsync();
+        await using NpgsqlCommand command = new($"DROP DATABASE IF EXISTS \"{this._databaseName}\"", conn);
+        await command.ExecuteNonQueryAsync();
     }
 
 
@@ -713,6 +779,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
                 text: "text" + i,
                 description: "description" + i,
                 embedding: new float[] { 1, 1, 1 });
+
             records = records.Append(testRecord);
         }
 
@@ -723,6 +790,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
                 sourceName: "sourceName" + i,
                 description: "description" + i,
                 embedding: new float[] { 1, 2, 3 });
+
             records = records.Append(testRecord);
         }
 

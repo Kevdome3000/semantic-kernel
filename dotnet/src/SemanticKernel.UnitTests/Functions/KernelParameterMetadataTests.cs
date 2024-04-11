@@ -44,7 +44,7 @@ public class KernelParameterMetadataTests
         Assert.Equal("v", m.DefaultValue);
         Assert.True(m.IsRequired);
         Assert.Equal(typeof(int), m.ParameterType);
-        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("{ \"type\":\"object\" }")), JsonSerializer.Serialize(m.Schema));
+        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("""{ "type":"object" }""")), JsonSerializer.Serialize(m.Schema));
     }
 
 
@@ -73,7 +73,7 @@ public class KernelParameterMetadataTests
     public void ItIncludesDescriptionInSchema()
     {
         var m = new KernelParameterMetadata("p") { Description = "something neat", ParameterType = typeof(int) };
-        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("{ \"type\":\"integer\", \"description\":\"something neat\" }")), JsonSerializer.Serialize(m.Schema));
+        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("""{ "type":"integer", "description":"something neat" }""")), JsonSerializer.Serialize(m.Schema));
     }
 
 
@@ -81,7 +81,7 @@ public class KernelParameterMetadataTests
     public void ItIncludesDefaultValueInSchema()
     {
         var m = new KernelParameterMetadata("p") { DefaultValue = "42", ParameterType = typeof(int) };
-        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("{ \"type\":\"integer\", \"description\":\"(default value: 42)\" }")), JsonSerializer.Serialize(m.Schema));
+        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("""{ "type":"integer", "description":"(default value: 42)" }""")), JsonSerializer.Serialize(m.Schema));
     }
 
 
@@ -89,7 +89,7 @@ public class KernelParameterMetadataTests
     public void ItIncludesDescriptionAndDefaultValueInSchema()
     {
         var m = new KernelParameterMetadata("p") { Description = "something neat", DefaultValue = "42", ParameterType = typeof(int) };
-        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("{ \"type\":\"integer\", \"description\":\"something neat (default value: 42)\" }")), JsonSerializer.Serialize(m.Schema));
+        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("""{ "type":"integer", "description":"something neat (default value: 42)" }""")), JsonSerializer.Serialize(m.Schema));
     }
 
 

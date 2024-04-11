@@ -2,7 +2,6 @@
 
 namespace Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 
-using System;
 using System.Linq;
 using System.Text.Json;
 using ChatCompletion;
@@ -10,6 +9,7 @@ using ChatCompletion;
 
 internal static class ChatHistorySerializer
 {
+
     internal static ChatHistory? Deserialize(string input)
     {
         if (string.IsNullOrEmpty(input))
@@ -17,8 +17,8 @@ internal static class ChatHistorySerializer
             return null;
         }
 
-        var messages = JsonSerializer.Deserialize<SerializableChatMessage[]>(input) ?? Array.Empty<SerializableChatMessage>();
-        ChatHistory history = new();
+        var messages = JsonSerializer.Deserialize<SerializableChatMessage[]>(input) ?? [];
+        ChatHistory history = [];
 
         foreach (var message in messages)
         {
@@ -48,8 +48,11 @@ internal static class ChatHistorySerializer
 
     private class SerializableChatMessage
     {
+
         public string? Role { get; set; }
 
         public string? Content { get; set; }
+
     }
+
 }

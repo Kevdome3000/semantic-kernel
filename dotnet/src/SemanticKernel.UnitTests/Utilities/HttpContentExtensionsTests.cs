@@ -14,6 +14,7 @@ using Xunit;
 
 public sealed class HttpContentExtensionsTests : IDisposable
 {
+
     /// <summary>
     /// An instance of HttpMessageHandlerStub class used to get access to various properties of HttpRequestMessage sent by HTTP client.
     /// </summary>
@@ -40,7 +41,7 @@ public sealed class HttpContentExtensionsTests : IDisposable
     public async Task ShouldReturnHttpContentAsStringAsync()
     {
         //Arrange
-        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("{\"details\": \"fake-response-content\"}", Encoding.UTF8, "application/json");
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("""{"details": "fake-response-content"}""", Encoding.UTF8, "application/json");
 
         using var requestMessage = new HttpRequestMessage(HttpMethod.Get, "https://fake-random-test-host");
 
@@ -52,7 +53,7 @@ public sealed class HttpContentExtensionsTests : IDisposable
         //Assert
         Assert.False(string.IsNullOrEmpty(result));
 
-        Assert.Equal("{\"details\": \"fake-response-content\"}", result);
+        Assert.Equal("""{"details": "fake-response-content"}""", result);
     }
 
 
@@ -60,7 +61,7 @@ public sealed class HttpContentExtensionsTests : IDisposable
     public async Task ShouldReturnHttpContentAsStreamAsync()
     {
         //Arrange
-        using var expectedStream = new MemoryStream(Encoding.Default.GetBytes("{\"details\": \"fake-response-content\"}"));
+        using var expectedStream = new MemoryStream(Encoding.Default.GetBytes("""{"details": "fake-response-content"}"""));
 
         this._httpMessageHandlerStub.ResponseToReturn.Content = new StreamContent(expectedStream);
 
@@ -76,7 +77,7 @@ public sealed class HttpContentExtensionsTests : IDisposable
 
         using var streamReader = new StreamReader(actualStream);
         var content = await streamReader.ReadToEndAsync();
-        Assert.Equal("{\"details\": \"fake-response-content\"}", content);
+        Assert.Equal("""{"details": "fake-response-content"}""", content);
     }
 
 
@@ -84,7 +85,7 @@ public sealed class HttpContentExtensionsTests : IDisposable
     public async Task ShouldReturnHttpContentAsByteArrayAsync()
     {
         //Arrange
-        this._httpMessageHandlerStub.ResponseToReturn.Content = new ByteArrayContent(new byte[] { 1, 2, 3 });
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new ByteArrayContent([1, 2, 3]);
 
         using var requestMessage = new HttpRequestMessage(HttpMethod.Get, "https://fake-random-test-host");
 
@@ -109,4 +110,5 @@ public sealed class HttpContentExtensionsTests : IDisposable
 
         this._httpClient.Dispose();
     }
+
 }

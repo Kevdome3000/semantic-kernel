@@ -20,7 +20,7 @@ using Services;
 public sealed class GoogleAITextEmbeddingGenerationService : ITextEmbeddingGenerationService
 {
 
-    private readonly Dictionary<string, object?> _attributesInternal = new();
+    private readonly Dictionary<string, object?> _attributesInternal = [];
 
     private readonly GoogleAIEmbeddingClient _embeddingClient;
 

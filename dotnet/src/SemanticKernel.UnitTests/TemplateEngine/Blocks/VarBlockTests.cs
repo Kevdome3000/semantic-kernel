@@ -10,6 +10,7 @@ using Xunit;
 
 public class VarBlockTests
 {
+
     [Fact]
     public void ItHasTheCorrectType()
     {
@@ -47,7 +48,7 @@ public class VarBlockTests
         var target = new VarBlock("$var");
 
         // Act
-        var result = target.Render(new KernelArguments());
+        var result = target.Render([]);
 
         // Assert
         Assert.Null(result);
@@ -59,6 +60,7 @@ public class VarBlockTests
     {
         // Arrange
         var target = new VarBlock("$var");
+
         var arguments = new KernelArguments()
         {
             ["$var"] = null
@@ -77,6 +79,7 @@ public class VarBlockTests
     {
         // Arrange
         var target = new VarBlock("  $var \n ");
+
         var arguments = new KernelArguments()
         {
             ["foo"] = "bar",
@@ -96,6 +99,7 @@ public class VarBlockTests
     {
         // Arrange
         var target = new VarBlock(" $var ");
+
         var arguments = new KernelArguments()
         {
             ["var"] = DayOfWeek.Tuesday,
@@ -119,6 +123,7 @@ public class VarBlockTests
             ["foo"] = "bar",
             ["var"] = "able",
         };
+
         var target = new VarBlock(" $ ");
 
         // Act + Assert
@@ -185,4 +190,5 @@ public class VarBlockTests
 
         if (isValid) { Assert.Equal("value", result); }
     }
+
 }

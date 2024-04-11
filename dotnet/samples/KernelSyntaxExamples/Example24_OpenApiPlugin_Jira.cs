@@ -20,6 +20,7 @@ using Xunit.Abstractions;
 
 public class Example24_OpenApiPlugin_Jira : BaseTest
 {
+
     private static readonly JsonSerializerOptions s_jsonOptionsCache = new()
     {
         WriteIndented = true
@@ -52,9 +53,11 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
         string serverUrl = $"https://{TestConfiguration.Jira.Domain}.atlassian.net/rest/api/latest/";
 
         KernelPlugin jiraFunctions;
+
         var tokenProvider = new BasicAuthenticationProvider(() =>
         {
             string s = $"{TestConfiguration.Jira.Email}:{TestConfiguration.Jira.ApiKey}";
+
             return Task.FromResult(s);
         });
 
@@ -66,6 +69,7 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
         if (useLocalFile)
         {
             var apiPluginFile = "./../../../Plugins/JiraPlugin/openapi.json";
+
             jiraFunctions = await kernel.ImportPluginFromOpenApiAsync(
                 "jiraPlugin",
                 apiPluginFile,
@@ -78,6 +82,7 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
         else
         {
             var apiPluginRawFileURL = new Uri("https://raw.githubusercontent.com/microsoft/PowerPlatformConnectors/dev/certified-connectors/JIRA/apiDefinition.swagger.json");
+
             jiraFunctions = await kernel.ImportPluginFromOpenApiAsync(
                 "jiraPlugin",
                 apiPluginRawFileURL,
@@ -88,24 +93,27 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
             );
         }
 
-        var arguments = new KernelArguments();
-
-        // GetIssue Function
-        // Set Properties for the Get Issue operation in the openAPI.swagger.json
-        // Make sure the issue exists in your Jira instance or it will return a 404
-        arguments["issueKey"] = "TEST-1";
+        var arguments = new KernelArguments
+        {
+            // GetIssue Function
+            // Set Properties for the Get Issue operation in the openAPI.swagger.json
+            // Make sure the issue exists in your Jira instance or it will return a 404
+            ["issueKey"] = "TEST-1"
+        };
 
         // Run operation via the semantic kernel
         var result = await kernel.InvokeAsync(jiraFunctions["GetIssue"], arguments);
 
         WriteLine("\n\n\n");
+
         var formattedContent = JsonSerializer.Serialize(
             result.GetValue<RestApiOperationResponse>(), s_jsonOptionsCache);
+
         WriteLine($"GetIssue jiraPlugin response: \n{formattedContent}");
 
         // AddComment Function
         arguments["issueKey"] = "TEST-2";
-        arguments[RestApiOperation.PayloadArgumentName] = "{\"body\": \"Here is a rad comment\"}";
+        arguments[RestApiOperation.PayloadArgumentName] = """{"body": "Here is a rad comment"}""";
 
         // Run operation via the semantic kernel
         result = await kernel.InvokeAsync(jiraFunctions["AddComment"], arguments);
@@ -125,6 +133,7 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
     /// </summary>
     public class BasicAuthenticationProvider
     {
+
         private readonly Func<Task<string>> _credentials;
 
 
@@ -146,9 +155,12 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
         public async Task AuthenticateRequestAsync(HttpRequestMessage request, CancellationToken cancellationToken = default)
         {
             // Base64 encode
-            string encodedContent = Convert.ToBase64String(Encoding.UTF8.GetBytes(await this._credentials().ConfigureAwait(false)));
+            string encodedContent = Convert.ToBase64String(Encoding.UTF8.GetBytes(await this._credentials().
+                ConfigureAwait(false)));
+
             request.Headers.Authorization = new AuthenticationHeaderValue("Basic", encodedContent);
         }
+
     }
 
 
@@ -158,6 +170,7 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
     /// </summary>
     public class BearerAuthenticationProvider
     {
+
         private readonly Func<Task<string>> _bearerToken;
 
 
@@ -177,9 +190,12 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
         /// <param name="request">The HTTP request message.</param>
         public async Task AuthenticateRequestAsync(HttpRequestMessage request)
         {
-            var token = await this._bearerToken().ConfigureAwait(false);
+            var token = await this._bearerToken().
+                ConfigureAwait(false);
+
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }
+
     }
 
 
@@ -188,6 +204,7 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
     /// </summary>
     public class InteractiveMsalAuthenticationProvider : BearerAuthenticationProvider
     {
+
         /// <summary>
         /// Creates an instance of the <see cref="InteractiveMsalAuthenticationProvider"/> class.
         /// </summary>
@@ -195,7 +212,11 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
         /// <param name="tenantId">Tenant ID of the target resource.</param>
         /// <param name="scopes">Requested scopes.</param>
         /// <param name="redirectUri">Redirect URI.</param>
-        public InteractiveMsalAuthenticationProvider(string clientId, string tenantId, string[] scopes, Uri redirectUri)
+        public InteractiveMsalAuthenticationProvider(
+            string clientId,
+            string tenantId,
+            string[] scopes,
+            Uri redirectUri)
             : base(() => GetTokenAsync(clientId, tenantId, scopes, redirectUri))
         {
         }
@@ -209,31 +230,40 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
         /// <param name="scopes">Requested scopes.</param>
         /// <param name="redirectUri">Redirect URI.</param>
         /// <returns>Access token.</returns>
-        private static async Task<string> GetTokenAsync(string clientId, string tenantId, string[] scopes, Uri redirectUri)
+        private static async Task<string> GetTokenAsync(
+            string clientId,
+            string tenantId,
+            string[] scopes,
+            Uri redirectUri)
         {
-            IPublicClientApplication app = PublicClientApplicationBuilder.Create(clientId)
-                .WithRedirectUri(redirectUri.ToString())
-                .WithTenantId(tenantId)
-                .Build();
+            IPublicClientApplication app = PublicClientApplicationBuilder.Create(clientId).
+                WithRedirectUri(redirectUri.ToString()).
+                WithTenantId(tenantId).
+                Build();
 
-            IEnumerable<IAccount> accounts = await app.GetAccountsAsync().ConfigureAwait(false);
+            IEnumerable<IAccount> accounts = await app.GetAccountsAsync().
+                ConfigureAwait(false);
+
             AuthenticationResult result;
 
             try
             {
-                result = await app.AcquireTokenSilent(scopes, accounts.FirstOrDefault())
-                    .ExecuteAsync().ConfigureAwait(false);
+                result = await app.AcquireTokenSilent(scopes, accounts.FirstOrDefault()).
+                    ExecuteAsync().
+                    ConfigureAwait(false);
             }
             catch (MsalUiRequiredException)
             {
                 // A MsalUiRequiredException happened on AcquireTokenSilent.
                 // This indicates you need to call AcquireTokenInteractive to acquire a token
-                result = await app.AcquireTokenInteractive(scopes)
-                    .ExecuteAsync().ConfigureAwait(false);
+                result = await app.AcquireTokenInteractive(scopes).
+                    ExecuteAsync().
+                    ConfigureAwait(false);
             }
 
             return result.AccessToken;
         }
+
     }
 
 
@@ -242,7 +272,9 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
     /// </summary>
     public sealed class CustomAuthenticationProvider
     {
+
         private readonly Func<Task<string>> _header;
+
         private readonly Func<Task<string>> _value;
 
 
@@ -264,10 +296,15 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
         /// <param name="request">The HTTP request message.</param>
         public async Task AuthenticateRequestAsync(HttpRequestMessage request)
         {
-            var header = await this._header().ConfigureAwait(false);
-            var value = await this._value().ConfigureAwait(false);
+            var header = await this._header().
+                ConfigureAwait(false);
+
+            var value = await this._value().
+                ConfigureAwait(false);
+
             request.Headers.Add(header, value);
         }
+
     }
 
     #endregion
@@ -276,4 +313,5 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
     public Example24_OpenApiPlugin_Jira(ITestOutputHelper output) : base(output)
     {
     }
+
 }

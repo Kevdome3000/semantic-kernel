@@ -15,6 +15,7 @@ using Azure.AI.OpenAI;
 /// </summary>
 public sealed class OpenAIFunctionToolCall
 {
+
     private string? _fullyQualifiedFunctionName;
 
 
@@ -33,8 +34,13 @@ public sealed class OpenAIFunctionToolCall
 
         if (separatorPos >= 0)
         {
-            pluginName = fullyQualifiedFunctionName.AsSpan(0, separatorPos).Trim().ToString();
-            functionName = fullyQualifiedFunctionName.AsSpan(separatorPos + OpenAIFunction.NameSeparator.Length).Trim().ToString();
+            pluginName = fullyQualifiedFunctionName.AsSpan(0, separatorPos).
+                Trim().
+                ToString();
+
+            functionName = fullyQualifiedFunctionName.AsSpan(separatorPos + OpenAIFunction.NameSeparator.Length).
+                Trim().
+                ToString();
         }
 
         this.Id = functionToolCall.Id;
@@ -87,10 +93,15 @@ public sealed class OpenAIFunctionToolCall
 
             foreach (var arg in this.Arguments)
             {
-                sb.Append(separator).Append(arg.Key).Append(':').Append(arg.Value);
+                sb.Append(separator).
+                    Append(arg.Key).
+                    Append(':').
+                    Append(arg.Value);
+
                 separator = ", ";
             }
         }
+
         sb.Append(')');
 
         return sb.ToString();
@@ -120,7 +131,7 @@ public sealed class OpenAIFunctionToolCall
         // we want to keep track of it so we can send back an error.
         if (update.Id is string id)
         {
-            (toolCallIdsByIndex ??= new())[update.ToolCallIndex] = id;
+            (toolCallIdsByIndex ??= [])[update.ToolCallIndex] = id;
         }
 
         if (update is StreamingFunctionToolCallUpdate ftc)
@@ -128,13 +139,13 @@ public sealed class OpenAIFunctionToolCall
             // Ensure we're tracking the function's name.
             if (ftc.Name is string name)
             {
-                (functionNamesByIndex ??= new())[ftc.ToolCallIndex] = name;
+                (functionNamesByIndex ??= [])[ftc.ToolCallIndex] = name;
             }
 
             // Ensure we're tracking the function's arguments.
             if (ftc.ArgumentsUpdate is string argumentsUpdate)
             {
-                if (!(functionArgumentBuildersByIndex ??= new()).TryGetValue(ftc.ToolCallIndex, out StringBuilder? arguments))
+                if (!(functionArgumentBuildersByIndex ??= []).TryGetValue(ftc.ToolCallIndex, out StringBuilder? arguments))
                 {
                     functionArgumentBuildersByIndex[ftc.ToolCallIndex] = arguments = new();
                 }
@@ -156,7 +167,7 @@ public sealed class OpenAIFunctionToolCall
         ref Dictionary<int, string>? functionNamesByIndex,
         ref Dictionary<int, StringBuilder>? functionArgumentBuildersByIndex)
     {
-        ChatCompletionsFunctionToolCall[] toolCalls = Array.Empty<ChatCompletionsFunctionToolCall>();
+        ChatCompletionsFunctionToolCall[] toolCalls = [];
 
         if (toolCallIdsByIndex is { Count: > 0 })
         {
@@ -181,4 +192,5 @@ public sealed class OpenAIFunctionToolCall
 
         return toolCalls;
     }
+
 }

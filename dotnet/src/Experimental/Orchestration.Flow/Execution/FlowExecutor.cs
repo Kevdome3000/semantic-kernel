@@ -29,6 +29,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 /// </remarks>
 internal class FlowExecutor : IFlowExecutor
 {
+
     /// <summary>
     /// The kernel builder
     /// </summary>
@@ -108,7 +109,11 @@ internal class FlowExecutor : IFlowExecutor
     private readonly KernelFunction _executeStepFunction;
 
 
-    internal FlowExecutor(IKernelBuilder kernelBuilder, IFlowStatusProvider statusProvider, Dictionary<object, string?> globalPluginCollection, FlowOrchestratorConfig? config = null)
+    internal FlowExecutor(
+        IKernelBuilder kernelBuilder,
+        IFlowStatusProvider statusProvider,
+        Dictionary<object, string?> globalPluginCollection,
+        FlowOrchestratorConfig? config = null)
     {
         this._kernelBuilder = kernelBuilder;
         this._systemKernel = kernelBuilder.Build();
@@ -152,7 +157,11 @@ internal class FlowExecutor : IFlowExecutor
     }
 
 
-    public async Task<FunctionResult> ExecuteFlowAsync(Flow flow, string sessionId, string input, KernelArguments kernelArguments)
+    public async Task<FunctionResult> ExecuteFlowAsync(
+        Flow flow,
+        string sessionId,
+        string input,
+        KernelArguments kernelArguments)
     {
         Verify.NotNull(flow, nameof(flow));
 
@@ -166,8 +175,10 @@ internal class FlowExecutor : IFlowExecutor
         var rootContext = new KernelArguments(kernelArguments);
 
         // populate persisted state arguments
-        ExecutionState executionState = await this._flowStatusProvider.GetExecutionStateAsync(sessionId).ConfigureAwait(false);
-        List<string> outputs = new();
+        ExecutionState executionState = await this._flowStatusProvider.GetExecutionStateAsync(sessionId).
+            ConfigureAwait(false);
+
+        List<string> outputs = [];
 
         while (executionState.CurrentStepIndex < sortedSteps.Count)
         {
@@ -201,25 +212,32 @@ internal class FlowExecutor : IFlowExecutor
                 if (step.CompletionType is CompletionType.Optional or CompletionType.ZeroOrMore && stepState.Status == ExecutionState.Status.NotStarted)
                 {
                     RepeatOrStartStepResult? startStep = await this.CheckStartStepAsync(rootContext, step, sessionId, stepId,
-                        input).ConfigureAwait(false);
+                            input).
+                        ConfigureAwait(false);
 
                     if (startStep is null)
                     {
                         // Unknown error, try again
                         this._logger?.LogWarning("Unexpected error when checking whether to start the step, try again");
+
                         continue;
                     }
                     else if (startStep.Execute is null)
                     {
                         // Unconfirmed, prompt user
                         outputs.Add(startStep.Prompt!);
-                        await this._flowStatusProvider.SaveExecutionStateAsync(sessionId, executionState).ConfigureAwait(false);
+
+                        await this._flowStatusProvider.SaveExecutionStateAsync(sessionId, executionState).
+                            ConfigureAwait(false);
+
                         break;
                     }
                     else if (startStep.Execute.Value)
                     {
                         stepState.Status = ExecutionState.Status.InProgress;
-                        await this._flowStatusProvider.SaveExecutionStateAsync(sessionId, executionState).ConfigureAwait(false);
+
+                        await this._flowStatusProvider.SaveExecutionStateAsync(sessionId, executionState).
+                            ConfigureAwait(false);
 
                         if (this._logger?.IsEnabled(LogLevel.Information) ?? false)
                         {
@@ -235,7 +253,8 @@ internal class FlowExecutor : IFlowExecutor
                         }
 
                         await this.CompleteStepAsync(rootContext, sessionId, executionState, step,
-                            stepState).ConfigureAwait(false);
+                                stepState).
+                            ConfigureAwait(false);
 
                         if (this._logger?.IsEnabled(LogLevel.Information) ?? false)
                         {
@@ -274,7 +293,8 @@ internal class FlowExecutor : IFlowExecutor
 
                 if (step is Flow flowStep)
                 {
-                    stepResult = await this.ExecuteFlowAsync(flowStep, $"{sessionId}_{stepId}", input, stepArguments).ConfigureAwait(false);
+                    stepResult = await this.ExecuteFlowAsync(flowStep, $"{sessionId}_{stepId}", input, stepArguments).
+                        ConfigureAwait(false);
                 }
                 else
                 {
@@ -282,11 +302,13 @@ internal class FlowExecutor : IFlowExecutor
 
                     foreach (var plugin in stepPlugins)
                     {
-                        stepKernel.ImportPluginFromObject(plugin, plugin.GetType().Name);
+                        stepKernel.ImportPluginFromObject(plugin, plugin.GetType().
+                            Name);
                     }
 
                     stepResult = await this.ExecuteStepAsync(step, sessionId, stepId, input,
-                        stepKernel, stepArguments).ConfigureAwait(false);
+                            stepKernel, stepArguments).
+                        ConfigureAwait(false);
                 }
 
                 if (!string.IsNullOrEmpty(stepResult.ToString()) && (stepResult.IsPromptInput() || stepResult.IsTerminateFlow()))
@@ -381,10 +403,12 @@ internal class FlowExecutor : IFlowExecutor
                 if (step.CompletionType is CompletionType.AtLeastOnce or CompletionType.ZeroOrMore && stepState.Status != ExecutionState.Status.Completed)
                 {
                     var nextStepId = $"{stepKey}_{stepState.ExecutionCount + 1}";
+
                     var repeatStep = continueLoop
                         ? new RepeatOrStartStepResult(true, null)
                         : await this.CheckRepeatStepAsync(rootContext, step, sessionId, nextStepId,
-                            input).ConfigureAwait(false);
+                                input).
+                            ConfigureAwait(false);
 
                     if (repeatStep is null)
                     {
@@ -401,7 +425,9 @@ internal class FlowExecutor : IFlowExecutor
                             this._logger.LogInformation("Unclear intention, need follow up to check whether to repeat the step");
                         }
 
-                        await this._flowStatusProvider.SaveExecutionStateAsync(sessionId, executionState).ConfigureAwait(false);
+                        await this._flowStatusProvider.SaveExecutionStateAsync(sessionId, executionState).
+                            ConfigureAwait(false);
+
                         break;
                     }
                     else if (repeatStep.Execute.Value)
@@ -413,7 +439,9 @@ internal class FlowExecutor : IFlowExecutor
                         }
 
                         stepState.ExecutionCount++;
-                        await this._flowStatusProvider.SaveExecutionStateAsync(sessionId, executionState).ConfigureAwait(false);
+
+                        await this._flowStatusProvider.SaveExecutionStateAsync(sessionId, executionState).
+                            ConfigureAwait(false);
 
                         if (this._logger?.IsEnabled(LogLevel.Information) ?? false)
                         {
@@ -424,7 +452,8 @@ internal class FlowExecutor : IFlowExecutor
                     {
                         // completed
                         await this.CompleteStepAsync(rootContext, sessionId, executionState, step,
-                            stepState).ConfigureAwait(false);
+                                stepState).
+                            ConfigureAwait(false);
 
                         if (this._logger?.IsEnabled(LogLevel.Information) ?? false)
                         {
@@ -435,12 +464,15 @@ internal class FlowExecutor : IFlowExecutor
                 else
                 {
                     await this.CompleteStepAsync(rootContext, sessionId, executionState, step,
-                        stepState).ConfigureAwait(false);
+                            stepState).
+                        ConfigureAwait(false);
                 }
             }
             else
             {
-                await this._flowStatusProvider.SaveExecutionStateAsync(sessionId, executionState).ConfigureAwait(false);
+                await this._flowStatusProvider.SaveExecutionStateAsync(sessionId, executionState).
+                    ConfigureAwait(false);
+
                 break;
             }
         }
@@ -485,7 +517,8 @@ internal class FlowExecutor : IFlowExecutor
             else
             {
                 // kvp.Value may contain empty strings when the loop was exited and the arguments the step provides weren't set
-                state.Variables[kvp.Key] = JsonSerializer.Serialize(kvp.Value.Where(x => !string.IsNullOrWhiteSpace(x)).ToList());
+                state.Variables[kvp.Key] = JsonSerializer.Serialize(kvp.Value.Where(x => !string.IsNullOrWhiteSpace(x)).
+                    ToList());
             }
         }
 
@@ -494,7 +527,8 @@ internal class FlowExecutor : IFlowExecutor
             context[variable] = state.Variables[variable];
         }
 
-        await this._flowStatusProvider.SaveExecutionStateAsync(sessionId, state).ConfigureAwait(false);
+        await this._flowStatusProvider.SaveExecutionStateAsync(sessionId, state).
+            ConfigureAwait(false);
     }
 
 
@@ -519,8 +553,10 @@ internal class FlowExecutor : IFlowExecutor
             ["goal"] = step.Goal,
             ["message"] = step.StartingMessage
         };
+
         return await this.CheckRepeatOrStartStepAsync(context, this._checkStartStepFunction, sessionId, $"{stepId}_CheckStartStep",
-            input).ConfigureAwait(false);
+                input).
+            ConfigureAwait(false);
     }
 
 
@@ -536,8 +572,10 @@ internal class FlowExecutor : IFlowExecutor
             ["goal"] = step.Goal,
             ["transitionMessage"] = step.TransitionMessage
         };
+
         return await this.CheckRepeatOrStartStepAsync(context, this._checkRepeatStepFunction, sessionId, $"{nextStepId}_CheckRepeatStep",
-            input).ConfigureAwait(false);
+                input).
+            ConfigureAwait(false);
     }
 
 
@@ -548,7 +586,8 @@ internal class FlowExecutor : IFlowExecutor
         string checkRepeatOrStartStepId,
         string input)
     {
-        var chatHistory = await this._flowStatusProvider.GetChatHistoryAsync(sessionId, checkRepeatOrStartStepId).ConfigureAwait(false);
+        var chatHistory = await this._flowStatusProvider.GetChatHistoryAsync(sessionId, checkRepeatOrStartStepId).
+            ConfigureAwait(false);
 
         if (chatHistory != null)
         {
@@ -556,7 +595,7 @@ internal class FlowExecutor : IFlowExecutor
         }
         else
         {
-            chatHistory = new ChatHistory();
+            chatHistory = [];
         }
 
         var scratchPad = this.CreateRepeatOrStartStepScratchPad(chatHistory);
@@ -567,9 +606,11 @@ internal class FlowExecutor : IFlowExecutor
             this._logger.LogInformation("Scratchpad: {ScratchPad}", scratchPad);
         }
 
-        var llmResponse = await this._systemKernel.InvokeAsync(function, context).ConfigureAwait(false);
+        var llmResponse = await this._systemKernel.InvokeAsync(function, context).
+            ConfigureAwait(false);
 
-        string llmResponseText = llmResponse.GetValue<string>()?.Trim() ?? string.Empty;
+        string llmResponseText = llmResponse.GetValue<string>()?.
+            Trim() ?? string.Empty;
 
         if (this._logger.IsEnabled(LogLevel.Information))
         {
@@ -580,11 +621,14 @@ internal class FlowExecutor : IFlowExecutor
 
         if (finalAnswerMatch.Success)
         {
-            string resultString = finalAnswerMatch.Groups[1].Value.Trim();
+            string resultString = finalAnswerMatch.Groups[1].
+                Value.Trim();
 
             if (bool.TryParse(resultString, out bool result))
             {
-                await this._flowStatusProvider.SaveChatHistoryAsync(sessionId, checkRepeatOrStartStepId, chatHistory).ConfigureAwait(false);
+                await this._flowStatusProvider.SaveChatHistoryAsync(sessionId, checkRepeatOrStartStepId, chatHistory).
+                    ConfigureAwait(false);
+
                 return new RepeatOrStartStepResult(result);
             }
         }
@@ -594,7 +638,9 @@ internal class FlowExecutor : IFlowExecutor
 
         if (thoughtMatch.Success)
         {
-            string thoughtString = thoughtMatch.Groups[1].Value.Trim();
+            string thoughtString = thoughtMatch.Groups[1].
+                Value.Trim();
+
             chatHistory.AddSystemMessage(thoughtString);
         }
 
@@ -602,16 +648,23 @@ internal class FlowExecutor : IFlowExecutor
 
         if (questionMatch.Success)
         {
-            string prompt = questionMatch.Groups[1].Value.Trim();
+            string prompt = questionMatch.Groups[1].
+                Value.Trim();
+
             chatHistory.AddAssistantMessage(prompt);
-            await this._flowStatusProvider.SaveChatHistoryAsync(sessionId, checkRepeatOrStartStepId, chatHistory).ConfigureAwait(false);
+
+            await this._flowStatusProvider.SaveChatHistoryAsync(sessionId, checkRepeatOrStartStepId, chatHistory).
+                ConfigureAwait(false);
 
             return new RepeatOrStartStepResult(null, prompt);
         }
 
         this._logger.LogWarning("Missing result tag from {Function} : {ActionText}", "CheckRepeatOrStartStep", llmResponseText);
         chatHistory.AddSystemMessage(llmResponseText + "\nI should provide either [QUESTION] or [FINAL_ANSWER].");
-        await this._flowStatusProvider.SaveChatHistoryAsync(sessionId, checkRepeatOrStartStepId, chatHistory).ConfigureAwait(false);
+
+        await this._flowStatusProvider.SaveChatHistoryAsync(sessionId, checkRepeatOrStartStepId, chatHistory).
+            ConfigureAwait(false);
+
         return null;
     }
 
@@ -638,7 +691,8 @@ internal class FlowExecutor : IFlowExecutor
             scratchPadLines.Add(message.Content!);
         }
 
-        return string.Join("\n", scratchPadLines).Trim();
+        return string.Join("\n", scratchPadLines).
+            Trim();
     }
 
 
@@ -650,13 +704,17 @@ internal class FlowExecutor : IFlowExecutor
         Kernel kernel,
         KernelArguments arguments)
     {
-        var stepsTaken = await this._flowStatusProvider.GetReActStepsAsync(sessionId, stepId).ConfigureAwait(false);
+        var stepsTaken = await this._flowStatusProvider.GetReActStepsAsync(sessionId, stepId).
+            ConfigureAwait(false);
+
         var lastStep = stepsTaken.LastOrDefault();
 
         if (lastStep != null)
         {
             lastStep.Observation += $"{AuthorRole.User.Label}: {input}\n";
-            await this._flowStatusProvider.SaveReActStepsAsync(sessionId, stepId, stepsTaken).ConfigureAwait(false);
+
+            await this._flowStatusProvider.SaveReActStepsAsync(sessionId, stepId, stepsTaken).
+                ConfigureAwait(false);
         }
 
         var question = step.Goal;
@@ -671,11 +729,13 @@ internal class FlowExecutor : IFlowExecutor
 
         for (int i = stepsTaken.Count; i < this._config.MaxStepIterations; i++)
         {
-            var actionStep = await this._reActEngine.GetNextStepAsync(kernel, arguments, question, stepsTaken).ConfigureAwait(false);
+            var actionStep = await this._reActEngine.GetNextStepAsync(kernel, arguments, question, stepsTaken).
+                ConfigureAwait(false);
 
             if (actionStep is null)
             {
                 this._logger?.LogWarning("Failed to get action step given input=\"{Input}\"", input);
+
                 continue;
             }
 
@@ -691,6 +751,7 @@ internal class FlowExecutor : IFlowExecutor
                 if (step.Provides.Count() == 1)
                 {
                     arguments[step.Provides.Single()] = actionStep.FinalAnswer;
+
                     return new FunctionResult(this._executeStepFunction, actionStep.FinalAnswer, metadata: arguments);
                 }
             }
@@ -715,11 +776,12 @@ internal class FlowExecutor : IFlowExecutor
                 }
 
                 // get chat history
-                var chatHistory = await this._flowStatusProvider.GetChatHistoryAsync(sessionId, stepId).ConfigureAwait(false);
+                var chatHistory = await this._flowStatusProvider.GetChatHistoryAsync(sessionId, stepId).
+                    ConfigureAwait(false);
 
                 if (chatHistory is null)
                 {
-                    chatHistory = new ChatHistory();
+                    chatHistory = [];
                 }
                 else
                 {
@@ -730,9 +792,12 @@ internal class FlowExecutor : IFlowExecutor
 
                 try
                 {
-                    await Task.Delay(this._config.MinIterationTimeMs).ConfigureAwait(false);
+                    await Task.Delay(this._config.MinIterationTimeMs).
+                        ConfigureAwait(false);
+
                     actionResult = await this._reActEngine.InvokeActionAsync(actionStep, input, chatHistory, kernel,
-                        actionContextVariables).ConfigureAwait(false);
+                            actionContextVariables).
+                        ConfigureAwait(false);
 
                     if (string.IsNullOrEmpty(actionResult))
                     {
@@ -742,7 +807,9 @@ internal class FlowExecutor : IFlowExecutor
                     {
                         actionStep.Observation = $"{AuthorRole.Assistant.Label}: {actionResult}\n";
                         chatHistory.AddAssistantMessage(actionResult);
-                        await this._flowStatusProvider.SaveChatHistoryAsync(sessionId, stepId, chatHistory).ConfigureAwait(false);
+
+                        await this._flowStatusProvider.SaveChatHistoryAsync(sessionId, stepId, chatHistory).
+                            ConfigureAwait(false);
 
                         foreach (var passthroughParam in step.Passthrough)
                         {
@@ -790,7 +857,8 @@ internal class FlowExecutor : IFlowExecutor
                     this._logger.LogInformation("Observation: {Observation}", actionStep.Observation);
                 }
 
-                await this._flowStatusProvider.SaveReActStepsAsync(sessionId, stepId, stepsTaken).ConfigureAwait(false);
+                await this._flowStatusProvider.SaveReActStepsAsync(sessionId, stepId, stepsTaken).
+                    ConfigureAwait(false);
 
                 if (!string.IsNullOrEmpty(actionResult))
                 {
@@ -810,7 +878,9 @@ internal class FlowExecutor : IFlowExecutor
                         }
                     }
 
-                    if (!step.Provides.Except(arguments.Where(v => !string.IsNullOrEmpty((string)v.Value!)).Select(_ => _.Key)).Any())
+                    if (!step.Provides.Except(arguments.Where(v => !string.IsNullOrEmpty((string)v.Value!)).
+                                Select(_ => _.Key)).
+                            Any())
                     {
                         // step is complete
                         return new FunctionResult(this._executeStepFunction, actionResult, metadata: arguments);
@@ -829,7 +899,8 @@ internal class FlowExecutor : IFlowExecutor
             }
 
             // continue to next iteration
-            await Task.Delay(this._config.MinIterationTimeMs).ConfigureAwait(false);
+            await Task.Delay(this._config.MinIterationTimeMs).
+                ConfigureAwait(false);
         }
 
         throw new KernelException($"Failed to complete step {stepId} for session {sessionId}.");
@@ -838,6 +909,7 @@ internal class FlowExecutor : IFlowExecutor
 
     private class RepeatOrStartStepResult
     {
+
         public RepeatOrStartStepResult(bool? execute, string? prompt = null)
         {
             this.Prompt = prompt;
@@ -848,5 +920,7 @@ internal class FlowExecutor : IFlowExecutor
         public bool? Execute { get; }
 
         public string? Prompt { get; }
+
     }
+
 }

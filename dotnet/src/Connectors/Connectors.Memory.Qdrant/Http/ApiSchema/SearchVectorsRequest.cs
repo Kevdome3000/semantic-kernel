@@ -10,6 +10,7 @@ using System.Text.Json.Serialization;
 
 internal sealed class SearchVectorsRequest
 {
+
     [JsonPropertyName("vector")]
     public ReadOnlyMemory<float> StartingVector { get; set; }
 
@@ -47,6 +48,7 @@ internal sealed class SearchVectorsRequest
     public SearchVectorsRequest SimilarTo(ReadOnlyMemory<float> vector)
     {
         this.StartingVector = vector;
+
         return this;
     }
 
@@ -55,6 +57,7 @@ internal sealed class SearchVectorsRequest
     {
         Verify.NotNull(id, "External ID is NULL");
         this.Filters.ValueMustMatch("id", id);
+
         return this;
     }
 
@@ -78,6 +81,7 @@ internal sealed class SearchVectorsRequest
     public SearchVectorsRequest WithScoreThreshold(double threshold)
     {
         this.ScoreThreshold = threshold;
+
         return this;
     }
 
@@ -85,6 +89,7 @@ internal sealed class SearchVectorsRequest
     public SearchVectorsRequest IncludePayLoad()
     {
         this.WithPayload = true;
+
         return this;
     }
 
@@ -92,6 +97,7 @@ internal sealed class SearchVectorsRequest
     public SearchVectorsRequest IncludeVectorData(bool withVector)
     {
         this.WithVector = withVector;
+
         return this;
     }
 
@@ -99,6 +105,7 @@ internal sealed class SearchVectorsRequest
     public SearchVectorsRequest FromPosition(int offset)
     {
         this.Offset = offset;
+
         return this;
     }
 
@@ -106,13 +113,15 @@ internal sealed class SearchVectorsRequest
     public SearchVectorsRequest Take(int count)
     {
         this.Limit = count;
+
         return this;
     }
 
 
     public SearchVectorsRequest TakeFirst()
     {
-        return this.FromPosition(0).Take(1);
+        return this.FromPosition(0).
+            Take(1);
     }
 
 
@@ -131,8 +140,10 @@ internal sealed class SearchVectorsRequest
 
     internal sealed class Filter
     {
+
         internal sealed class Match
         {
+
             [JsonPropertyName("value")]
             public object Value { get; set; }
 
@@ -141,11 +152,13 @@ internal sealed class SearchVectorsRequest
             {
                 this.Value = string.Empty;
             }
+
         }
 
 
         internal sealed class Must
         {
+
             [JsonPropertyName("key")]
             public string Key { get; set; }
 
@@ -172,6 +185,7 @@ internal sealed class SearchVectorsRequest
                 Verify.NotNull(this.Key, "The filter key is NULL");
                 Verify.NotNull(this.Match, "The filter match is NULL");
             }
+
         }
 
 
@@ -181,13 +195,14 @@ internal sealed class SearchVectorsRequest
 
         internal Filter()
         {
-            this.Conditions = new();
+            this.Conditions = [];
         }
 
 
         internal Filter ValueMustMatch(string key, object value)
         {
             this.Conditions.Add(new Must(key, value));
+
             return this;
         }
 
@@ -201,6 +216,7 @@ internal sealed class SearchVectorsRequest
                 x.Validate();
             }
         }
+
     }
 
 
@@ -217,7 +233,8 @@ internal sealed class SearchVectorsRequest
         this.WithVector = false;
 
         // By default take the closest vector only
-        this.FromPosition(0).Take(1);
+        this.FromPosition(0).
+            Take(1);
     }
 
     #endregion

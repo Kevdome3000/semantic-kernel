@@ -105,7 +105,7 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         bool withEmbedding = false,
         CancellationToken cancellationToken = default)
     {
-        var result = this.GetBatchAsync(collectionName, new[] { key }, withEmbedding, cancellationToken);
+        var result = this.GetBatchAsync(collectionName, [key], withEmbedding, cancellationToken);
 
         return await result.FirstOrDefaultAsync(cancellationToken).
             ConfigureAwait(false);
@@ -262,7 +262,7 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
 
     /// <inheritdoc/>
     public Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default)
-        => this.RemoveBatchAsync(collectionName, new[] { key }, cancellationToken);
+        => this.RemoveBatchAsync(collectionName, [key], cancellationToken);
 
 
     /// <inheritdoc/>
@@ -285,7 +285,7 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc/>
     public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default)
     {
-        var result = this.UpsertBatchAsync(collectionName, new[] { record }, cancellationToken);
+        var result = this.UpsertBatchAsync(collectionName, [record], cancellationToken);
 
         return await result.FirstOrDefaultAsync(cancellationToken).
             ConfigureAwait(false) ?? string.Empty;
@@ -393,13 +393,13 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
 
     private static readonly ColumnSchema s_timestampColumn = new("Timestamp", typeof(DateTime).FullName);
 
-    private static readonly ColumnSchema[] s_collectionColumns = new ColumnSchema[]
-    {
+    private static readonly ColumnSchema[] s_collectionColumns =
+    [
         s_keyColumn,
         s_metadataColumn,
         s_embeddingColumn,
         s_timestampColumn
-    };
+    ];
 
 
     /// <summary>

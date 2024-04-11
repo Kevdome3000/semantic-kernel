@@ -10,6 +10,7 @@ using System.Text.Json.Serialization;
 
 internal sealed class UpsertVectorRequest
 {
+
     public static UpsertVectorRequest Create(string collectionName)
     {
         return new UpsertVectorRequest(collectionName);
@@ -21,6 +22,7 @@ internal sealed class UpsertVectorRequest
         this.Batch.Ids.Add(vectorRecord.PointId);
         this.Batch.Vectors.Add(vectorRecord.Embedding);
         this.Batch.Payloads.Add(vectorRecord.Payload);
+
         return this;
     }
 
@@ -53,6 +55,7 @@ internal sealed class UpsertVectorRequest
 
     internal sealed class BatchRequest
     {
+
         [JsonPropertyName("ids")]
         public IList<string> Ids { get; set; }
 
@@ -65,10 +68,11 @@ internal sealed class UpsertVectorRequest
 
         internal BatchRequest()
         {
-            this.Ids = new List<string>();
-            this.Vectors = new List<ReadOnlyMemory<float>>();
-            this.Payloads = new List<Dictionary<string, object>>();
+            this.Ids = [];
+            this.Vectors = [];
+            this.Payloads = [];
         }
+
     }
 
 

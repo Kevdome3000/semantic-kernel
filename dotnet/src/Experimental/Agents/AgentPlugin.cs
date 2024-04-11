@@ -13,6 +13,7 @@ using Internal;
 /// </summary>
 public abstract class AgentPlugin : KernelPlugin
 {
+
     /// <inheritdoc/>
     protected AgentPlugin(string name, string? description = null)
         : base(name, description)
@@ -32,7 +33,8 @@ public abstract class AgentPlugin : KernelPlugin
     /// <returns>The agent response</returns>
     public async Task<string> InvokeAsync(string input, CancellationToken cancellationToken = default)
     {
-        return await this.InvokeAsync(input, arguments: null, cancellationToken).ConfigureAwait(false);
+        return await this.InvokeAsync(input, arguments: null, cancellationToken).
+            ConfigureAwait(false);
     }
 
 
@@ -45,13 +47,17 @@ public abstract class AgentPlugin : KernelPlugin
     /// <returns>The agent response</returns>
     public async Task<string> InvokeAsync(string input, KernelArguments? arguments, CancellationToken cancellationToken = default)
     {
-        arguments ??= new KernelArguments();
+        arguments ??= [];
 
         arguments["input"] = input;
 
-        var result = await this.First().InvokeAsync(this.Agent.Kernel, arguments, cancellationToken).ConfigureAwait(false);
+        var result = await this.First().
+            InvokeAsync(this.Agent.Kernel, arguments, cancellationToken).
+            ConfigureAwait(false);
+
         var response = result.GetValue<AgentResponse>()!;
 
         return response.Message;
     }
+
 }

@@ -11,13 +11,14 @@ using Xunit;
 
 public class FunctionInvokedEventArgsTests
 {
+
     [Fact]
     public void ResultValuePropertyShouldBeInitializedByOriginalOne()
     {
         //Arrange
         var originalResults = new FunctionResult(KernelFunctionFactory.CreateFromMethod(() => { }), 36, CultureInfo.InvariantCulture);
 
-        var sut = new FunctionInvokedEventArgs(KernelFunctionFactory.CreateFromMethod(() => { }), new KernelArguments(), originalResults);
+        var sut = new FunctionInvokedEventArgs(KernelFunctionFactory.CreateFromMethod(() => { }), [], originalResults);
 
         //Assert
         Assert.Equal(36, sut.ResultValue);
@@ -30,7 +31,7 @@ public class FunctionInvokedEventArgsTests
         //Arrange
         var originalResults = new FunctionResult(KernelFunctionFactory.CreateFromMethod(() => { }), 36, CultureInfo.InvariantCulture);
 
-        var sut = new FunctionInvokedEventArgs(KernelFunctionFactory.CreateFromMethod(() => { }), new KernelArguments(), originalResults);
+        var sut = new FunctionInvokedEventArgs(KernelFunctionFactory.CreateFromMethod(() => { }), [], originalResults);
 
         //Act
         sut.SetResultValue(72);
@@ -38,4 +39,5 @@ public class FunctionInvokedEventArgsTests
         //Assert
         Assert.Equal(72, sut.ResultValue);
     }
+
 }

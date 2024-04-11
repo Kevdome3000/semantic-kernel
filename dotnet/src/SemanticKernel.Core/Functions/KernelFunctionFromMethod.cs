@@ -167,7 +167,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         CancellationToken cancellationToken);
 
 
-    private static readonly object[] s_cancellationTokenNoneArray = new object[] { CancellationToken.None };
+    private static readonly object[] s_cancellationTokenNoneArray = [CancellationToken.None];
 
     private readonly ImplementationFunc _function;
 
@@ -239,7 +239,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         // Build up a list of KernelParameterMetadata for the parameters we expect to be populated
         // from arguments. Some arguments are populated specially, not from arguments, and thus
         // we don't want to advertize their metadata, e.g. CultureInfo, ILoggerFactory, etc.
-        List<KernelParameterMetadata> argParameterViews = new();
+        List<KernelParameterMetadata> argParameterViews = [];
 
         // Get marshaling funcs for parameters and build up the parameter metadata.
         var parameters = method.GetParameters();
@@ -278,7 +278,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             // Create the arguments.
             object?[] args = parameterFuncs.Length != 0
                 ? new object?[parameterFuncs.Length]
-                : Array.Empty<object?>();
+                : [];
 
             for (int i = 0; i < args.Length; i++)
             {
@@ -537,7 +537,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
                 JsonDocument document => document.Deserialize(targetType),
                 JsonNode node => node.Deserialize(targetType),
                 JsonElement element => element.Deserialize(targetType),
-                // The JSON can be represented by other data types from various libraries. For example, JObject, JToken, and JValue from the Newtonsoft.Json library.
+                // The JSON can be represented by other data types from various libraries. For example, JObject, JToken, and JValue from the Newtonsoft.Json library.  
                 // Since we don't take dependencies on these libraries and don't have access to the types here,
                 // the only way to deserialize those types is to convert them to a string first by calling the 'ToString' method.
                 // Attempting to use the 'JsonSerializer.Serialize' method, instead of calling the 'ToString' directly on those types, can lead to unpredictable outcomes.
@@ -682,7 +682,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
                         {
                             await ((Task)ThrowIfNullResult(result)).ConfigureAwait(false);
 
-                            var taskResult = Invoke(taskResultGetter, result, Array.Empty<object>());
+                            var taskResult = Invoke(taskResultGetter, result, []);
 
                             return new FunctionResult(function, taskResult, kernel.Culture);
                         }
@@ -698,10 +698,10 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             {
                 return (asTaskResultGetter.ReturnType, async (kernel, function, result) =>
                         {
-                            Task task = (Task)Invoke(valueTaskAsTask, ThrowIfNullResult(result), Array.Empty<object>())!;
+                            Task task = (Task)Invoke(valueTaskAsTask, ThrowIfNullResult(result), [])!;
                             await task.ConfigureAwait(false);
 
-                            var taskResult = Invoke(asTaskResultGetter, task, Array.Empty<object>());
+                            var taskResult = Invoke(asTaskResultGetter, task, []);
 
                             return new FunctionResult(function, taskResult, kernel.Culture);
                         }
@@ -828,7 +828,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
                     {
                         if (input?.GetType() is Type type && converter.CanConvertFrom(type))
                         {
-                            // This line performs string to type conversion
+                            // This line performs string to type conversion 
                             return converter.ConvertFrom(context: null, culture, input);
                         }
 

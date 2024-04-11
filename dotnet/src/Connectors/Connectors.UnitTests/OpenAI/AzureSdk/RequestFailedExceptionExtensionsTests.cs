@@ -18,6 +18,7 @@ using Xunit;
 /// </summary>
 public sealed class RequestFailedExceptionExtensionsTests
 {
+
     [Theory]
     [InlineData(0, null)]
     [InlineData(500, HttpStatusCode.InternalServerError)]
@@ -59,12 +60,17 @@ public sealed class RequestFailedExceptionExtensionsTests
 
     private sealed class FakeResponse(string responseContent, int status) : Response
     {
+
         private readonly string _responseContent = responseContent;
+
         private readonly int _status = status;
-        private readonly IEnumerable<HttpHeader> _headers = new List<HttpHeader>();
+
+        private readonly IEnumerable<HttpHeader> _headers = [];
 
         public override BinaryData Content => BinaryData.FromString(this._responseContent);
+
         public override int Status => this._status;
+
         public override string ReasonPhrase => "Reason Phrase";
 
         public override Stream? ContentStream
@@ -86,11 +92,14 @@ public sealed class RequestFailedExceptionExtensionsTests
 
 
         protected override bool ContainsHeader(string name) => throw new NotImplementedException();
+
         protected override IEnumerable<HttpHeader> EnumerateHeaders() => this._headers;
 #pragma warning disable CS8765 // Nullability of type of parameter doesn't match overridden member (possibly because of nullability attributes).
         protected override bool TryGetHeader(string name, out string? value) => throw new NotImplementedException();
+
         protected override bool TryGetHeaderValues(string name, out IEnumerable<string>? values) => throw new NotImplementedException();
 #pragma warning restore CS8765 // Nullability of type of parameter doesn't match overridden member (possibly because of nullability attributes).
+
     }
 
     #endregion

@@ -14,6 +14,7 @@ using Xunit;
 
 public class VolatileMemoryStoreTests
 {
+
     private readonly VolatileMemoryStore _db;
 
 
@@ -40,6 +41,7 @@ public class VolatileMemoryStoreTests
                 text: "text" + i,
                 description: "description" + i,
                 embedding: new float[] { 1, 1, 1 });
+
             records = records.Append(testRecord);
         }
 
@@ -50,6 +52,7 @@ public class VolatileMemoryStoreTests
                 sourceName: "sourceName" + i,
                 description: "description" + i,
                 embedding: new float[] { 1, 2, 3 });
+
             records = records.Append(testRecord);
         }
 
@@ -104,6 +107,7 @@ public class VolatileMemoryStoreTests
             embedding: new float[] { 1, 2, 3 },
             key: null,
             timestamp: null);
+
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
 
@@ -123,6 +127,7 @@ public class VolatileMemoryStoreTests
             embedding: new float[] { 1, 2, 3 },
             key: null,
             timestamp: null);
+
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
 
@@ -153,6 +158,7 @@ public class VolatileMemoryStoreTests
             embedding: new float[] { 1, 2, 3 },
             key: null,
             timestamp: null);
+
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
 
@@ -178,6 +184,7 @@ public class VolatileMemoryStoreTests
             embedding: new float[] { 1, 2, 3 },
             key: null,
             timestamp: DateTimeOffset.UtcNow);
+
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
 
@@ -197,16 +204,19 @@ public class VolatileMemoryStoreTests
     {
         // Arrange
         string commonId = "test";
+
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: commonId,
             text: "text",
             description: "description",
             embedding: new float[] { 1, 2, 3 });
+
         MemoryRecord testRecord2 = MemoryRecord.LocalRecord(
             id: commonId,
             text: "text2",
             description: "description2",
             embedding: new float[] { 1, 2, 4 });
+
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
 
@@ -233,6 +243,7 @@ public class VolatileMemoryStoreTests
             text: "text",
             description: "description",
             embedding: new float[] { 1, 2, 3 });
+
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
 
@@ -267,24 +278,28 @@ public class VolatileMemoryStoreTests
     public async Task ItCanListAllDatabaseCollectionsAsync()
     {
         // Arrange
-        string[] testCollections = { "test_collection5", "test_collection6", "test_collection7" };
+        string[] testCollections = ["test_collection5", "test_collection6", "test_collection7"];
         this._collectionNum += 3;
         await this._db.CreateCollectionAsync(testCollections[0]);
         await this._db.CreateCollectionAsync(testCollections[1]);
         await this._db.CreateCollectionAsync(testCollections[2]);
 
         // Act
-        var collections = this._db.GetCollectionsAsync().ToEnumerable();
+        var collections = this._db.GetCollectionsAsync().
+            ToEnumerable();
 
 #pragma warning disable CA1851 // Possible multiple enumerations of 'IEnumerable' collection
         // Assert
         Assert.NotNull(collections);
         Assert.True(collections.Any(), "Collections is empty");
         Assert.Equal(3, collections.Count());
+
         Assert.True(collections.Contains(testCollections[0]),
             $"Collections does not contain the newly-created collection {testCollections[0]}");
+
         Assert.True(collections.Contains(testCollections[1]),
             $"Collections does not contain the newly-created collection {testCollections[1]}");
+
         Assert.True(collections.Contains(testCollections[2]),
             $"Collections does not contain the newly-created collection {testCollections[2]}");
     }
@@ -301,55 +316,70 @@ public class VolatileMemoryStoreTests
         this._collectionNum++;
         await this._db.CreateCollectionAsync(collection);
         int i = 0;
+
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { 1, 1, 1 });
+
         _ = await this._db.UpsertAsync(collection, testRecord);
 
         i++;
+
         testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { -1, -1, -1 });
+
         _ = await this._db.UpsertAsync(collection, testRecord);
 
         i++;
+
         testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { 1, 2, 3 });
+
         _ = await this._db.UpsertAsync(collection, testRecord);
 
         i++;
+
         testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { -1, -2, -3 });
+
         _ = await this._db.UpsertAsync(collection, testRecord);
 
         i++;
+
         testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { 1, -1, -2 });
+
         _ = await this._db.UpsertAsync(collection, testRecord);
 
         // Act
         double threshold = -1;
-        var topNResults = this._db.GetNearestMatchesAsync(collection, compareEmbedding, limit: topN, minRelevanceScore: threshold).ToEnumerable().ToArray();
+
+        var topNResults = this._db.GetNearestMatchesAsync(collection, compareEmbedding, limit: topN, minRelevanceScore: threshold).
+            ToEnumerable().
+            ToArray();
 
         // Assert
         Assert.Equal(topN, topNResults.Length);
 
         for (int j = 0; j < topN - 1; j++)
         {
-            int compare = topNResults[j].Item2.CompareTo(topNResults[j + 1].Item2);
+            int compare = topNResults[j].
+                Item2.CompareTo(topNResults[j + 1].Item2);
+
             Assert.True(compare >= 0);
         }
     }
@@ -364,43 +394,53 @@ public class VolatileMemoryStoreTests
         this._collectionNum++;
         await this._db.CreateCollectionAsync(collection);
         int i = 0;
+
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { 1, 1, 1 });
+
         _ = await this._db.UpsertAsync(collection, testRecord);
 
         i++;
+
         testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { -1, -1, -1 });
+
         _ = await this._db.UpsertAsync(collection, testRecord);
 
         i++;
+
         testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { 1, 2, 3 });
+
         _ = await this._db.UpsertAsync(collection, testRecord);
 
         i++;
+
         testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { -1, -2, -3 });
+
         _ = await this._db.UpsertAsync(collection, testRecord);
 
         i++;
+
         testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { 1, -1, -2 });
+
         _ = await this._db.UpsertAsync(collection, testRecord);
 
         // Act
@@ -425,43 +465,53 @@ public class VolatileMemoryStoreTests
         this._collectionNum++;
         await this._db.CreateCollectionAsync(collection);
         int i = 0;
+
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { 1, 1, 1 });
+
         _ = await this._db.UpsertAsync(collection, testRecord);
 
         i++;
+
         testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { -1, -1, -1 });
+
         _ = await this._db.UpsertAsync(collection, testRecord);
 
         i++;
+
         testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { 1, 2, 3 });
+
         _ = await this._db.UpsertAsync(collection, testRecord);
 
         i++;
+
         testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { -1, -2, -3 });
+
         _ = await this._db.UpsertAsync(collection, testRecord);
 
         i++;
+
         testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { 1, -1, -2 });
+
         _ = await this._db.UpsertAsync(collection, testRecord);
 
         // Act
@@ -492,12 +542,17 @@ public class VolatileMemoryStoreTests
                 text: "text" + i,
                 description: "description" + i,
                 embedding: new float[] { 1, 1, 1 });
+
             _ = await this._db.UpsertAsync(collection, testRecord);
         }
 
         // Act
-        var topNResults = this._db.GetNearestMatchesAsync(collection, compareEmbedding, limit: topN, minRelevanceScore: 0.75).ToEnumerable().ToArray();
-        IEnumerable<string> topNKeys = topNResults.Select(x => x.Item1.Key).ToImmutableSortedSet();
+        var topNResults = this._db.GetNearestMatchesAsync(collection, compareEmbedding, limit: topN, minRelevanceScore: 0.75).
+            ToEnumerable().
+            ToArray();
+
+        IEnumerable<string> topNKeys = topNResults.Select(x => x.Item1.Key).
+            ToImmutableSortedSet();
 
         // Assert
         Assert.Equal(topN, topNResults.Length);
@@ -505,7 +560,9 @@ public class VolatileMemoryStoreTests
 
         for (int i = 0; i < topNResults.Length; i++)
         {
-            int compare = topNResults[i].Item2.CompareTo(0.75);
+            int compare = topNResults[i].
+                Item2.CompareTo(0.75);
+
             Assert.True(compare >= 0);
         }
     }
@@ -527,8 +584,12 @@ public class VolatileMemoryStoreTests
 
         // Assert
         Assert.NotNull(keys);
-        Assert.Equal(numRecords, keys.ToEnumerable().Count());
-        Assert.Equal(numRecords, resultRecords.ToEnumerable().Count());
+
+        Assert.Equal(numRecords, keys.ToEnumerable().
+            Count());
+
+        Assert.Equal(numRecords, resultRecords.ToEnumerable().
+            Count());
     }
 
 
@@ -549,7 +610,9 @@ public class VolatileMemoryStoreTests
         // Assert
         Assert.NotNull(keys);
         Assert.NotNull(results);
-        Assert.Equal(numRecords, results.ToEnumerable().Count());
+
+        Assert.Equal(numRecords, results.ToEnumerable().
+            Count());
     }
 
 
@@ -563,7 +626,7 @@ public class VolatileMemoryStoreTests
         await this._db.CreateCollectionAsync(collection);
         IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
 
-        List<string> keys = new();
+        List<string> keys = [];
 
         await foreach (var key in this._db.UpsertBatchAsync(collection, records))
         {
@@ -585,7 +648,8 @@ public class VolatileMemoryStoreTests
     public async Task CollectionsCanBeDeletedAsync()
     {
         // Arrange
-        var collections = this._db.GetCollectionsAsync().ToEnumerable();
+        var collections = this._db.GetCollectionsAsync().
+            ToEnumerable();
 #pragma warning disable CA1851 // Possible multiple enumerations of 'IEnumerable' collection
         int numCollections = collections.Count();
         Assert.True(numCollections == this._collectionNum);
@@ -597,9 +661,11 @@ public class VolatileMemoryStoreTests
         }
 
         // Assert
-        collections = this._db.GetCollectionsAsync().ToEnumerable();
+        collections = this._db.GetCollectionsAsync().
+            ToEnumerable();
+
         numCollections = collections.Count();
-        Assert.True(numCollections == 0);
+        Assert.Equal(0, numCollections);
         this._collectionNum = 0;
     }
 #pragma warning restore CA1851 // Possible multiple enumerations of 'IEnumerable' collection
@@ -615,4 +681,5 @@ public class VolatileMemoryStoreTests
         // Act
         await Assert.ThrowsAsync<KernelException>(() => this._db.DeleteCollectionAsync(collection));
     }
+
 }

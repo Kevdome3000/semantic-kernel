@@ -15,6 +15,7 @@ using System.Text.Json.Serialization;
 /// </summary>
 internal sealed class DeleteRequest
 {
+
     /// <summary>
     /// The ids of the vectors to delete
     /// </summary>
@@ -67,6 +68,7 @@ internal sealed class DeleteRequest
     public DeleteRequest FilterBy(Dictionary<string, object>? filter)
     {
         this.Filter = filter;
+
         return this;
     }
 
@@ -74,6 +76,7 @@ internal sealed class DeleteRequest
     public DeleteRequest FromNamespace(string? indexNamespace)
     {
         this.Namespace = indexNamespace;
+
         return this;
     }
 
@@ -81,6 +84,7 @@ internal sealed class DeleteRequest
     public DeleteRequest Clear(bool deleteAll)
     {
         this.DeleteAll = deleteAll;
+
         return this;
     }
 
@@ -144,13 +148,13 @@ internal sealed class DeleteRequest
 
     private DeleteRequest(IEnumerable<string>? ids)
     {
-        this.Ids = ids ?? new List<string>();
+        this.Ids = ids ?? [];
     }
 
 
     private DeleteRequest(bool clear)
     {
-        this.Ids = new List<string>();
+        this.Ids = [];
         this.DeleteAll = clear;
     }
 

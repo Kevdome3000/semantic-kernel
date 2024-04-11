@@ -5,7 +5,6 @@ namespace Microsoft.SemanticKernel.Plugins.Grpc;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Nodes;
 using System.Threading;
@@ -23,6 +22,7 @@ using Protobuf;
 /// </summary>
 public static class GrpcKernelExtensions
 {
+
     // TODO: Revise XML comments and validate shape of methods is as desired
 
 
@@ -40,6 +40,7 @@ public static class GrpcKernelExtensions
     {
         KernelPlugin plugin = CreatePluginFromGrpcDirectory(kernel, parentDirectory, pluginDirectoryName);
         kernel.Plugins.Add(plugin);
+
         return plugin;
     }
 
@@ -58,6 +59,7 @@ public static class GrpcKernelExtensions
     {
         KernelPlugin plugin = CreatePluginFromGrpcFile(kernel, filePath, pluginName);
         kernel.Plugins.Add(plugin);
+
         return plugin;
     }
 
@@ -76,6 +78,7 @@ public static class GrpcKernelExtensions
     {
         KernelPlugin plugin = CreatePluginFromGrpc(kernel, documentStream, pluginName);
         kernel.Plugins.Add(plugin);
+
         return plugin;
     }
 
@@ -210,24 +213,24 @@ public static class GrpcKernelExtensions
         GrpcOperation operation,
         ILoggerFactory loggerFactory)
     {
-        var operationParameters = operation.GetParameters();
-
         async Task<JsonObject> ExecuteAsync(KernelArguments arguments, CancellationToken cancellationToken)
         {
             try
             {
-                return await runner.RunAsync(operation, arguments, cancellationToken).ConfigureAwait(false);
+                return await runner.RunAsync(operation, arguments, cancellationToken).
+                    ConfigureAwait(false);
             }
             catch (Exception ex) when (!ex.IsCriticalException() && loggerFactory.CreateLogger(typeof(GrpcKernelExtensions)) is ILogger logger && logger.IsEnabled(LogLevel.Warning))
             {
                 logger.LogWarning(ex, "Something went wrong while rendering the gRPC function. Function: {0}. Error: {1}", operation.Name, ex.Message);
+
                 throw;
             }
         }
 
         return KernelFunctionFactory.CreateFromMethod(
             method: ExecuteAsync,
-            parameters: operationParameters.ToList(),
+            parameters: GrpcOperation.CreateParameters(),
             description: operation.Name,
             functionName: operation.Name,
             loggerFactory: loggerFactory);

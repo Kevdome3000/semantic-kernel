@@ -29,7 +29,7 @@ public class Example72_AgentCollaboration : BaseTest
     private const bool UseOpenAI = false;
 
     // Track agents for clean-up
-    private static readonly List<IAgent> s_agents = new();
+    private static readonly List<IAgent> s_agents = [];
 
 
     /// <summary>
@@ -144,7 +144,7 @@ public class Example72_AgentCollaboration : BaseTest
     }
 
 
-    private async static Task<IAgent> CreateArtDirectorAsync()
+    private static async Task<IAgent> CreateArtDirectorAsync()
     {
         return
             Track(

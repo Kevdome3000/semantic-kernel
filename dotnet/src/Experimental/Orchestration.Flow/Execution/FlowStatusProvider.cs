@@ -18,6 +18,7 @@ using Memory;
 /// </summary>
 public sealed class FlowStatusProvider : IFlowStatusProvider
 {
+
     private readonly IMemoryStore _memoryStore;
 
     private readonly string _collectionName;
@@ -29,7 +30,9 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
     public static async Task<FlowStatusProvider> ConnectAsync(IMemoryStore memoryStore, string? collectionName = null)
     {
         var provider = new FlowStatusProvider(memoryStore, collectionName);
-        return await InitializeProviderStoreAsync(provider).ConfigureAwait(false);
+
+        return await InitializeProviderStoreAsync(provider).
+            ConfigureAwait(false);
     }
 
 
@@ -74,8 +77,9 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
     public async Task SaveExecutionStateAsync(string sessionId, ExecutionState state)
     {
         var json = JsonSerializer.Serialize(state);
-        await this._memoryStore.UpsertAsync(this._collectionName, this.CreateMemoryRecord(this.GetExecutionStateStorageKey(sessionId), json))
-            .ConfigureAwait(false);
+
+        await this._memoryStore.UpsertAsync(this._collectionName, this.CreateMemoryRecord(this.GetExecutionStateStorageKey(sessionId), json)).
+            ConfigureAwait(false);
     }
 
 
@@ -88,7 +92,9 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
     /// <inheritdoc/>
     public async Task<ChatHistory?> GetChatHistoryAsync(string sessionId, string stepId)
     {
-        var result = await this._memoryStore.GetAsync(this._collectionName, this.GetChatHistoryStorageKey(sessionId, stepId)).ConfigureAwait(false);
+        var result = await this._memoryStore.GetAsync(this._collectionName, this.GetChatHistoryStorageKey(sessionId, stepId)).
+            ConfigureAwait(false);
+
         var text = result?.Metadata.Text ?? string.Empty;
 
         if (!string.IsNullOrEmpty(text))
@@ -114,8 +120,9 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
     public async Task SaveChatHistoryAsync(string sessionId, string stepId, ChatHistory history)
     {
         var json = ChatHistorySerializer.Serialize(history);
-        await this._memoryStore.UpsertAsync(this._collectionName, this.CreateMemoryRecord(this.GetChatHistoryStorageKey(sessionId, stepId), json))
-            .ConfigureAwait(false);
+
+        await this._memoryStore.UpsertAsync(this._collectionName, this.CreateMemoryRecord(this.GetChatHistoryStorageKey(sessionId, stepId), json)).
+            ConfigureAwait(false);
     }
 
 
@@ -128,14 +135,16 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
     /// <inheritdoc/>
     public async Task<List<ReActStep>> GetReActStepsAsync(string sessionId, string stepId)
     {
-        var result = await this._memoryStore.GetAsync(this._collectionName, this.GetStepsStorageKey(sessionId, stepId)).ConfigureAwait(false);
+        var result = await this._memoryStore.GetAsync(this._collectionName, this.GetStepsStorageKey(sessionId, stepId)).
+            ConfigureAwait(false);
+
         var text = result?.Metadata.Text ?? string.Empty;
 
         if (!string.IsNullOrEmpty(text))
         {
             try
             {
-                return JsonSerializer.Deserialize<List<ReActStep>>(text) ?? new List<ReActStep>();
+                return JsonSerializer.Deserialize<List<ReActStep>>(text) ?? [];
             }
             catch
             {
@@ -144,7 +153,7 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
             }
         }
 
-        return new List<ReActStep>();
+        return [];
     }
 
 
@@ -152,16 +161,19 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
     public async Task SaveReActStepsAsync(string sessionId, string stepId, List<ReActStep> steps)
     {
         var json = JsonSerializer.Serialize(steps);
-        await this._memoryStore.UpsertAsync(this._collectionName, this.CreateMemoryRecord(this.GetStepsStorageKey(sessionId, stepId), json))
-            .ConfigureAwait(false);
+
+        await this._memoryStore.UpsertAsync(this._collectionName, this.CreateMemoryRecord(this.GetStepsStorageKey(sessionId, stepId), json)).
+            ConfigureAwait(false);
     }
 
 
     private static async Task<FlowStatusProvider> InitializeProviderStoreAsync(FlowStatusProvider flowProvider, CancellationToken cancellationToken = default)
     {
-        if (!await flowProvider._memoryStore.DoesCollectionExistAsync(flowProvider._collectionName, cancellationToken).ConfigureAwait(false))
+        if (!await flowProvider._memoryStore.DoesCollectionExistAsync(flowProvider._collectionName, cancellationToken).
+                ConfigureAwait(false))
         {
-            await flowProvider._memoryStore.CreateCollectionAsync(flowProvider._collectionName, cancellationToken).ConfigureAwait(false);
+            await flowProvider._memoryStore.CreateCollectionAsync(flowProvider._collectionName, cancellationToken).
+                ConfigureAwait(false);
         }
 
         return flowProvider;
@@ -178,4 +190,5 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
     {
         return MemoryRecord.LocalRecord(key, text, null, ReadOnlyMemory<float>.Empty);
     }
+
 }

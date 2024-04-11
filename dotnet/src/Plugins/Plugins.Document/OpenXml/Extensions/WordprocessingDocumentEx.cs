@@ -14,13 +14,14 @@ using DocumentFormat.OpenXml.Wordprocessing;
 /// </summary>
 internal static class WordprocessingDocumentEx
 {
+
     internal static void Initialize(this WordprocessingDocument wordprocessingDocument)
     {
         // Add a main document part.
         MainDocumentPart mainPart = wordprocessingDocument.AddMainDocumentPart();
 
         // Create the document structure.
-        mainPart.Document = new Document();
+        mainPart.Document = new DocumentFormat.OpenXml.Wordprocessing.Document();
         mainPart.Document.AppendChild(new Body());
     }
 
@@ -29,19 +30,8 @@ internal static class WordprocessingDocumentEx
     {
         StringBuilder sb = new();
 
-        var mainPart = wordprocessingDocument.MainDocumentPart;
-
-        if (mainPart is null)
-        {
-            throw new InvalidOperationException("The main document part is missing.");
-        }
-
-        var body = mainPart.Document.Body;
-
-        if (body is null)
-        {
-            throw new InvalidOperationException("The document body is missing.");
-        }
+        var mainPart = wordprocessingDocument.MainDocumentPart ?? throw new InvalidOperationException("The main document part is missing.");
+        var body = mainPart.Document.Body ?? throw new InvalidOperationException("The document body is missing.");
 
         var paras = body.Descendants<Paragraph>();
 
@@ -64,22 +54,12 @@ internal static class WordprocessingDocumentEx
             throw new ArgumentNullException(nameof(text));
         }
 
-        MainDocumentPart? mainPart = wordprocessingDocument.MainDocumentPart;
-
-        if (mainPart is null)
-        {
-            throw new InvalidOperationException("The main document part is missing.");
-        }
-
-        Body? body = mainPart.Document.Body;
-
-        if (body is null)
-        {
-            throw new InvalidOperationException("The document body is missing.");
-        }
+        MainDocumentPart mainPart = wordprocessingDocument.MainDocumentPart ?? throw new InvalidOperationException("The main document part is missing.");
+        Body body = mainPart.Document.Body ?? throw new InvalidOperationException("The document body is missing.");
 
         Paragraph para = body.AppendChild(new Paragraph());
         Run run = para.AppendChild(new Run());
-        run.AppendChild(new Text(text));
+        run.AppendChild(new DocumentFormat.OpenXml.Wordprocessing.Text(text));
     }
+
 }

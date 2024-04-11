@@ -11,6 +11,7 @@ using Azure.AI.OpenAI;
 /// </summary>
 public static class OpenAIPluginCollectionExtensions
 {
+
     /// <summary>
     /// Given an <see cref="OpenAIFunctionToolCall"/> object, tries to retrieve the corresponding <see cref="KernelFunction"/> and populate <see cref="KernelArguments"/> with its parameters.
     /// </summary>
@@ -48,7 +49,7 @@ public static class OpenAIPluginCollectionExtensions
 
             if (functionToolCall.Arguments is not null)
             {
-                arguments = new KernelArguments();
+                arguments = [];
 
                 foreach (var parameter in functionToolCall.Arguments)
                 {
@@ -61,6 +62,8 @@ public static class OpenAIPluginCollectionExtensions
 
         // Function not found in collection
         arguments = null;
+
         return false;
     }
+
 }

@@ -8,6 +8,7 @@ using System.Resources;
 
 internal static class ResourcePluginsProvider
 {
+
     /// <summary>
     /// Loads .proto file from assembly resource.
     /// </summary>
@@ -17,13 +18,8 @@ internal static class ResourcePluginsProvider
     {
         var type = typeof(ResourcePluginsProvider);
 
-        var stream = type.Assembly.GetManifestResourceStream(type, resourceName);
-
-        if (stream == null)
-        {
-            throw new MissingManifestResourceException($"Unable to load gRPC plugin from assembly resource '{resourceName}'.");
-        }
-
-        return stream;
+        return type.Assembly.GetManifestResourceStream(type, resourceName) ??
+               throw new MissingManifestResourceException($"Unable to load gRPC plugin from assembly resource '{resourceName}'.");
     }
+
 }

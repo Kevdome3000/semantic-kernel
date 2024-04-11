@@ -16,11 +16,17 @@ using XunitHelpers;
 
 public sealed class KernelPromptTemplateTests
 {
+
     private const string InputParameterName = "input";
+
     private const string DateFormat = "M/d/yyyy";
+
     private readonly KernelPromptTemplateFactory _factory;
+
     private readonly KernelArguments _arguments;
+
     private readonly ITestOutputHelper _logger;
+
     private readonly Kernel _kernel;
 
 
@@ -28,7 +34,13 @@ public sealed class KernelPromptTemplateTests
     {
         this._logger = testOutputHelper;
         this._factory = new KernelPromptTemplateFactory(TestConsoleLogger.LoggerFactory);
-        this._arguments = new KernelArguments() { [InputParameterName] = Guid.NewGuid().ToString("X") };
+
+        this._arguments = new KernelArguments()
+        {
+            [InputParameterName] = Guid.NewGuid().
+                ToString("X")
+        };
+
         this._kernel = new Kernel();
     }
 
@@ -37,7 +49,7 @@ public sealed class KernelPromptTemplateTests
     public void ItAddsMissingVariables()
     {
         // Arrange
-        var template = "This {{$x11}} {{$a}}{{$missing}} test template {{p.bar $b}} and {{p.foo c='literal \"c\"' d = $d}} and {{p.baz ename=$e}}";
+        var template = """This {{$x11}} {{$a}}{{$missing}} test template {{p.bar $b}} and {{p.foo c='literal "c"' d = $d}} and {{p.baz ename=$e}}""";
         var promptTemplateConfig = new PromptTemplateConfig(template);
 
         // Act
@@ -111,7 +123,7 @@ public sealed class KernelPromptTemplateTests
     public async Task ItRendersVariablesValuesAndFunctionsAsync()
     {
         // Arrange
-        var template = "This {{$x11}} {{$a}}{{$missing}} test template {{p.bar $b}} and {{p.food c='literal \"c\"' d = $d}}";
+        var template = """This {{$x11}} {{$a}}{{$missing}} test template {{p.bar $b}} and {{p.food c='literal "c"' d = $d}}""";
 
         this._kernel.ImportPluginFromFunctions("p", new[]
         {
@@ -131,7 +143,7 @@ public sealed class KernelPromptTemplateTests
         var renderedPrompt = await target.RenderAsync(this._kernel, this._arguments);
 
         // Assert
-        Assert.Equal("This is a test template with function that accepts the positional argument 'input' and another one with literal \"c\" and 'd'", renderedPrompt);
+        Assert.Equal("""This is a test template with function that accepts the positional argument 'input' and another one with literal "c" and 'd'""", renderedPrompt);
     }
 
 
@@ -302,6 +314,7 @@ public sealed class KernelPromptTemplateTests
         string MyFunctionAsync(string input)
         {
             this._logger.WriteLine("MyFunction call received, input: {0}", input);
+
             return $"F({input})";
         }
 
@@ -329,6 +342,7 @@ public sealed class KernelPromptTemplateTests
         string MyFunctionAsync(string input)
         {
             this._logger.WriteLine("MyFunction call received, input: {0}", input);
+
             return $"F({input})";
         }
 
@@ -359,7 +373,10 @@ public sealed class KernelPromptTemplateTests
             [Description("Date")] DateTime date)
         {
             var dateStr = date.ToString(DateFormat, CultureInfo.InvariantCulture);
-            this._logger.WriteLine("MyFunction call received, name: {0}, age: {1}, slogan: {2}, date: {3}", input, age, slogan, date);
+
+            this._logger.WriteLine("MyFunction call received, name: {0}, age: {1}, slogan: {2}, date: {3}", input, age, slogan,
+                date);
+
             return $"[{dateStr}] {input} ({age}): \"{slogan}\"";
         }
 
@@ -377,7 +394,7 @@ public sealed class KernelPromptTemplateTests
         var result = await target.RenderAsync(this._kernel, this._arguments);
 
         // Assert
-        Assert.Equal("foo-[8/25/2023] Mario (42): \"Let's-a go!\"-baz", result);
+        Assert.Equal("""foo-[8/25/2023] Mario (42): "Let's-a go!"-baz""", result);
     }
 
 
@@ -407,8 +424,11 @@ public sealed class KernelPromptTemplateTests
             [Description("Slogan")] string slogan,
             [Description("Date")] DateTime date)
         {
-            this._logger.WriteLine("MyFunction call received, name: {0}, age: {1}, slogan: {2}, date: {3}", input, age, slogan, date);
+            this._logger.WriteLine("MyFunction call received, name: {0}, age: {1}, slogan: {2}, date: {3}", input, age, slogan,
+                date);
+
             var dateStr = date.ToString(DateFormat, CultureInfo.InvariantCulture);
+
             return $"[{dateStr}] {input} ({age}): \"{slogan}\"";
         }
 
@@ -426,7 +446,7 @@ public sealed class KernelPromptTemplateTests
         var result = await target.RenderAsync(this._kernel, this._arguments);
 
         // Assert
-        Assert.Equal("foo-[8/25/2023] Mario (42): \"Let's-a go!\"-baz", result);
+        Assert.Equal("""foo-[8/25/2023] Mario (42): "Let's-a go!"-baz""", result);
     }
 
 
@@ -479,6 +499,7 @@ public sealed class KernelPromptTemplateTests
         {
             // Input value should be "BAR" because the variable $myVar is passed in
             this._logger.WriteLine("MyFunction call received, input: {0}", input);
+
             return Task.FromResult(input);
         }
 
@@ -541,4 +562,5 @@ public sealed class KernelPromptTemplateTests
         // Assert
         Assert.Equal("int:42, double:36,6, string:test, Guid:7ac656b1-c917-41c8-9ff5-e8f0eb51fbac, DateTime:05/12/2023 17:52, enum:Monday", result);
     }
+
 }

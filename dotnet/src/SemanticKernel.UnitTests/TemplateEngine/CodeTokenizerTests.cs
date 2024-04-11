@@ -9,6 +9,7 @@ using Xunit;
 
 public class CodeTokenizerTests
 {
+
     private readonly CodeTokenizer _target;
 
 
@@ -127,8 +128,11 @@ public class CodeTokenizerTests
     {
         // Arrange
         var template1 = "x.y first=$foo second='bar'";
-        var arguments = new KernelArguments();
-        arguments["foo"] = "fooValue";
+
+        var arguments = new KernelArguments
+        {
+            ["foo"] = "fooValue"
+        };
 
         // Act
         var blocks1 = this._target.Tokenize(template1);
@@ -230,4 +234,5 @@ public class CodeTokenizerTests
         var exception = Assert.Throws<KernelException>(() => this._target.Tokenize(template));
         Assert.Equal("A function named argument must contain a name and value separated by a '=' character.", exception.Message);
     }
+
 }

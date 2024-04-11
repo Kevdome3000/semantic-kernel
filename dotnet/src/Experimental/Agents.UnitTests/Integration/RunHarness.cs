@@ -24,7 +24,7 @@ using Xunit.Abstractions;
 /// </remarks>
 [Trait("Category", "Integration Tests")]
 [Trait("Feature", "Agent")]
-public sealed class RunHarness
+public sealed class RunHarness(ITestOutputHelper output)
 {
 
 #if DISABLEHOST
@@ -33,16 +33,7 @@ public sealed class RunHarness
     private const string SkipReason = null;
 #endif
 
-    private readonly ITestOutputHelper _output;
-
-
-    /// <summary>
-    /// Test constructor.
-    /// </summary>
-    public RunHarness(ITestOutputHelper output)
-    {
-        this._output = output;
-    }
+    private readonly ITestOutputHelper _output = output;
 
 
     /// <summary>

@@ -10,7 +10,9 @@ using System.Collections.Generic;
 /// </summary>
 internal sealed class PromptNode
 {
+
     private Dictionary<string, string>? _attributes;
+
     private List<PromptNode>? _childNodes;
 
     /// <summary>
@@ -28,7 +30,7 @@ internal sealed class PromptNode
     /// </summary>
     public Dictionary<string, string> Attributes
     {
-        get => this._attributes ??= new();
+        get => this._attributes ??= [];
         set => this._attributes = value;
     }
 
@@ -37,7 +39,7 @@ internal sealed class PromptNode
     /// </summary>
     public List<PromptNode> ChildNodes
     {
-        get => this._childNodes ??= new();
+        get => this._childNodes ??= [];
         set => this._childNodes = value;
     }
 
@@ -50,4 +52,5 @@ internal sealed class PromptNode
     {
         this.TagName = tagName;
     }
+
 }

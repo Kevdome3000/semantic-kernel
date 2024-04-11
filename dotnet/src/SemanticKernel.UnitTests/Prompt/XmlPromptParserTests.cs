@@ -13,6 +13,7 @@ using Xunit;
 /// </summary>
 public class XmlPromptParserTests
 {
+
     [Theory]
     [InlineData("This is plain prompt")]
     [InlineData("<message This is invalid chat prompt>")]
@@ -61,7 +62,7 @@ Second line.
             new("message")
             {
                 Attributes = { { "role", "user" } },
-                ChildNodes = new List<PromptNode> { new("audio") { Attributes = { { "src", "https://fake-link-to-audio" } } } }
+                ChildNodes = [new("audio") { Attributes = { { "src", "https://fake-link-to-audio" } } }]
             },
         };
 
@@ -97,4 +98,5 @@ Second line.
             this.AssertPromptNode(expectedNode.ChildNodes[i], actualNode.ChildNodes[i]);
         }
     }
+
 }

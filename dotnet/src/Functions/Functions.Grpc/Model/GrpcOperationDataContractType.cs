@@ -10,6 +10,7 @@ using System.Collections.Generic;
 /// </summary>
 internal sealed class GrpcOperationDataContractType
 {
+
     /// <summary>
     /// Creates an instance of a <see cref="GrpcOperationDataContractType"/> class.
     /// </summary>
@@ -28,5 +29,6 @@ internal sealed class GrpcOperationDataContractType
     /// <summary>
     /// List of fields
     /// </summary>
-    public IList<GrpcOperationDataContractTypeFiled> Fields { get; } = new List<GrpcOperationDataContractTypeFiled>();
+    public IList<GrpcOperationDataContractTypeFiled> Fields { get; } = [];
+
 }

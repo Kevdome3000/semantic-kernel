@@ -15,11 +15,17 @@ using Xunit;
 
 public sealed class KernelSystemHelpersTests
 {
+
     public KernelSystemHelpersTests()
     {
         this._factory = new();
         this._kernel = new();
-        this._arguments = new() { ["input"] = Guid.NewGuid().ToString("X") };
+
+        this._arguments = new()
+        {
+            ["input"] = Guid.NewGuid().
+                ToString("X")
+        };
     }
 
 
@@ -27,7 +33,7 @@ public sealed class KernelSystemHelpersTests
     public async Task ItRendersTemplateWithMessageHelperAsync()
     {
         // Arrange
-        var template = "{{#message role=\"title\"}}Hello World!{{/message}}";
+        var template = """{{#message role="title"}}Hello World!{{/message}}""";
 
         // Act
         var result = await this.RenderPromptTemplateAsync(template);
@@ -59,6 +65,7 @@ public sealed class KernelSystemHelpersTests
     {
         // Arrange
         var template = "{{json person}}";
+
         var arguments = new KernelArguments
         {
             { "person", json }
@@ -68,7 +75,7 @@ public sealed class KernelSystemHelpersTests
         var result = await this.RenderPromptTemplateAsync(template, arguments);
 
         // Assert
-        Assert.Equal("{\"name\":\"Alice\",\"age\":25}", result);
+        Assert.Equal("""{"name":"Alice","age":25}""", result);
     }
 
 
@@ -91,6 +98,7 @@ public sealed class KernelSystemHelpersTests
     {
         // Arrange
         var template = "{{person}}";
+
         var arguments = new KernelArguments
         {
             { "person", new { name = "Alice", age = 25 } }
@@ -109,6 +117,7 @@ public sealed class KernelSystemHelpersTests
     {
         // Arrange
         var template = "{{person.name}}";
+
         var arguments = new KernelArguments
         {
             { "person", new { name = "Alice", age = 25 } }
@@ -127,6 +136,7 @@ public sealed class KernelSystemHelpersTests
     {
         // Arrange  
         var template = "{{person.Address}}";
+
         var arguments = new KernelArguments
         {
             { "person", new { Name = "Alice", Age = 25, Address = new { City = "New York", Country = "USA" } } }
@@ -158,7 +168,8 @@ public sealed class KernelSystemHelpersTests
     public async Task ItRendersTemplateWithArrayHelperAndVariableReferenceAsync()
     {
         // Arrange
-        var template = @"{{array ""hi"" "" "" name ""!"" ""Welcome to"" "" "" Address.City}}";
+        var template = """{{array "hi" " " name "!" "Welcome to" " " Address.City}}""";
+
         var arguments = new KernelArguments
         {
             { "name", "Alice" },
@@ -205,7 +216,8 @@ public sealed class KernelSystemHelpersTests
     public async Task ItRendersTemplateWithConcatHelperAsync()
     {
         // Arrange
-        var template = "{{concat \"Hello\" \" \" name \"!\"}}";
+        var template = """{{concat "Hello" " " name "!"}}""";
+
         var arguments = new KernelArguments
         {
             { "name", "Alice" }
@@ -223,7 +235,7 @@ public sealed class KernelSystemHelpersTests
     public async Task ItRendersTemplateWithdSetAndConcatHelpersAsync()
     {
         // Arrange
-        var template = "{{set name=\"name\" value=\"Alice\"}}{{concat \"Hello\" \" \" name \"!\"}}";
+        var template = """{{set name="name" value="Alice"}}{{concat "Hello" " " name "!"}}""";
 
         // Act
         var result = await this.RenderPromptTemplateAsync(template);
@@ -299,7 +311,9 @@ public sealed class KernelSystemHelpersTests
     #region private
 
     private readonly HandlebarsPromptTemplateFactory _factory;
+
     private readonly Kernel _kernel;
+
     private readonly KernelArguments _arguments;
 
 

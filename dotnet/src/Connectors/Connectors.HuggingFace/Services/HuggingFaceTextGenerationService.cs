@@ -21,7 +21,7 @@ using Services;
 public sealed class HuggingFaceTextGenerationService : ITextGenerationService
 {
 
-    private Dictionary<string, object?> AttributesInternal { get; } = new();
+    private Dictionary<string, object?> AttributesInternal { get; } = [];
 
     private HuggingFaceClient Client { get; }
 

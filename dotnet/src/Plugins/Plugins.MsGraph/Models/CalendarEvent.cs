@@ -1,16 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Plugins.MsGraph.Models;
+
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
-namespace Microsoft.SemanticKernel.Plugins.MsGraph.Models;
 
 /// <summary>
 /// Model for a calendar event.
 /// </summary>
 public class CalendarEvent
 {
+
     /// <summary>
     /// Subject/title of the event.
     /// </summary>
@@ -39,5 +40,6 @@ public class CalendarEvent
     /// <summary>
     /// Attendees of the event.
     /// </summary>
-    public IEnumerable<string>? Attendees { get; set; } = Enumerable.Empty<string>();
+    public IEnumerable<string>? Attendees { get; set; } = [];
+
 }

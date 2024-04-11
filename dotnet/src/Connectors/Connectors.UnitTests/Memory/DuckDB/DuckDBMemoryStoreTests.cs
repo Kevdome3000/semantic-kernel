@@ -19,6 +19,7 @@ using Xunit;
 [Collection("Sequential")]
 public class DuckDBMemoryStoreTests
 {
+
     private int _collectionNum = 0;
 
 
@@ -42,6 +43,7 @@ public class DuckDBMemoryStoreTests
                 text: "text" + i,
                 description: "description" + i,
                 embedding: new float[] { 1, 1, 1 });
+
             records = records.Append(testRecord);
         }
 
@@ -52,6 +54,7 @@ public class DuckDBMemoryStoreTests
                 sourceName: "sourceName" + i,
                 description: "description" + i,
                 embedding: new float[] { 1, 2, 3 });
+
             records = records.Append(testRecord);
         }
 
@@ -127,7 +130,10 @@ public class DuckDBMemoryStoreTests
         string collection = this.GetTestCollectionName();
 
         await db.CreateCollectionAsync(collection);
-        var collections = await db.GetCollectionsAsync().ToListAsync();
+
+        var collections = await db.GetCollectionsAsync().
+            ToListAsync();
+
         Assert.True(collections.Count > 0);
 
         // Act
@@ -138,7 +144,7 @@ public class DuckDBMemoryStoreTests
 
         // Assert
         var collections2 = db.GetCollectionsAsync();
-        Assert.True(await collections2.CountAsync() == 0);
+        Assert.Equal(0, await collections2.CountAsync());
     }
 
 
@@ -147,6 +153,7 @@ public class DuckDBMemoryStoreTests
     {
         // Arrange
         using var db = await DuckDBMemoryStore.ConnectAsync();
+
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test",
             text: "text",
@@ -176,6 +183,7 @@ public class DuckDBMemoryStoreTests
     {
         // Arrange
         using var db = await DuckDBMemoryStore.ConnectAsync();
+
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test",
             text: "text",
@@ -183,6 +191,7 @@ public class DuckDBMemoryStoreTests
             embedding: new float[] { 1, 2, 3 },
             key: null,
             timestamp: null);
+
         string collection = this.GetTestCollectionName();
 
         // Act
@@ -204,6 +213,7 @@ public class DuckDBMemoryStoreTests
     {
         // Arrange
         using var db = await DuckDBMemoryStore.ConnectAsync();
+
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test",
             text: "text",
@@ -211,6 +221,7 @@ public class DuckDBMemoryStoreTests
             embedding: new float[] { 1, 2, 3 },
             key: null,
             timestamp: null);
+
         string collection = this.GetTestCollectionName();
 
         // Act
@@ -235,6 +246,7 @@ public class DuckDBMemoryStoreTests
     {
         // Arrange
         using var db = await DuckDBMemoryStore.ConnectAsync();
+
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test",
             text: "text",
@@ -242,6 +254,7 @@ public class DuckDBMemoryStoreTests
             embedding: new float[] { 1, 2, 3 },
             key: null,
             timestamp: DateTimeOffset.UtcNow);
+
         string collection = this.GetTestCollectionName();
 
         // Act
@@ -267,16 +280,19 @@ public class DuckDBMemoryStoreTests
         // Arrange
         using var db = await DuckDBMemoryStore.ConnectAsync();
         string commonId = "test";
+
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: commonId,
             text: "text",
             description: "description",
             embedding: new float[] { 1, 2, 3 });
+
         MemoryRecord testRecord2 = MemoryRecord.LocalRecord(
             id: commonId,
             text: "text2",
             description: "description2",
             embedding: new float[] { 1, 2, 4 });
+
         string collection = this.GetTestCollectionName();
 
         // Act
@@ -301,11 +317,13 @@ public class DuckDBMemoryStoreTests
     {
         // Arrange
         using var db = await DuckDBMemoryStore.ConnectAsync();
+
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test",
             text: "text",
             description: "description",
             embedding: new float[] { 1, 2, 3 });
+
         string collection = this.GetTestCollectionName();
 
         // Act
@@ -348,7 +366,8 @@ public class DuckDBMemoryStoreTests
         await db.CreateCollectionAsync(testCollections[2]);
 
         // Act
-        var collections = await db.GetCollectionsAsync().ToListAsync();
+        var collections = await db.GetCollectionsAsync().
+            ToListAsync();
 
         // Assert
         foreach (var collection in testCollections)
@@ -359,10 +378,13 @@ public class DuckDBMemoryStoreTests
         Assert.NotNull(collections);
         Assert.NotEmpty(collections);
         Assert.Equal(testCollections.Length, collections.Count);
+
         Assert.True(collections.Contains(testCollections[0]),
             $"Collections does not contain the newly-created collection {testCollections[0]}");
+
         Assert.True(collections.Contains(testCollections[1]),
             $"Collections does not contain the newly-created collection {testCollections[1]}");
+
         Assert.True(collections.Contains(testCollections[2]),
             $"Collections does not contain the newly-created collection {testCollections[2]}");
     }
@@ -379,55 +401,70 @@ public class DuckDBMemoryStoreTests
 
         await db.CreateCollectionAsync(collection);
         int i = 0;
+
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { 1, 1, 1 });
+
         _ = await db.UpsertAsync(collection, testRecord);
 
         i++;
+
         testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { -1, -1, -1 });
+
         _ = await db.UpsertAsync(collection, testRecord);
 
         i++;
+
         testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { 1, 2, 3 });
+
         _ = await db.UpsertAsync(collection, testRecord);
 
         i++;
+
         testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { -1, -2, -3 });
+
         _ = await db.UpsertAsync(collection, testRecord);
 
         i++;
+
         testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { 1, -1, -2 });
+
         _ = await db.UpsertAsync(collection, testRecord);
 
         // Act
         double threshold = -1;
-        var topNResults = db.GetNearestMatchesAsync(collection, compareEmbedding, limit: topN, minRelevanceScore: threshold).ToEnumerable().ToArray();
+
+        var topNResults = db.GetNearestMatchesAsync(collection, compareEmbedding, limit: topN, minRelevanceScore: threshold).
+            ToEnumerable().
+            ToArray();
 
         // Assert
         Assert.Equal(topN, topNResults.Length);
 
         for (int j = 0; j < topN - 1; j++)
         {
-            int compare = topNResults[j].Item2.CompareTo(topNResults[j + 1].Item2);
+            int compare = topNResults[j].
+                Item2.CompareTo(topNResults[j + 1].Item2);
+
             Assert.True(compare >= 0);
         }
     }
@@ -443,43 +480,53 @@ public class DuckDBMemoryStoreTests
 
         await db.CreateCollectionAsync(collection);
         int i = 0;
+
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { 1, 1, 1 });
+
         _ = await db.UpsertAsync(collection, testRecord);
 
         i++;
+
         testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { -1, -1, -1 });
+
         _ = await db.UpsertAsync(collection, testRecord);
 
         i++;
+
         testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { 1, 2, 3 });
+
         _ = await db.UpsertAsync(collection, testRecord);
 
         i++;
+
         testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { -1, -2, -3 });
+
         _ = await db.UpsertAsync(collection, testRecord);
 
         i++;
+
         testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { 1, -1, -2 });
+
         _ = await db.UpsertAsync(collection, testRecord);
 
         // Act
@@ -505,43 +552,53 @@ public class DuckDBMemoryStoreTests
 
         await db.CreateCollectionAsync(collection);
         int i = 0;
+
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { 1, 1, 1 });
+
         _ = await db.UpsertAsync(collection, testRecord);
 
         i++;
+
         testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { -1, -1, -1 });
+
         _ = await db.UpsertAsync(collection, testRecord);
 
         i++;
+
         testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { 1, 2, 3 });
+
         _ = await db.UpsertAsync(collection, testRecord);
 
         i++;
+
         testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { -1, -2, -3 });
+
         _ = await db.UpsertAsync(collection, testRecord);
 
         i++;
+
         testRecord = MemoryRecord.LocalRecord(
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
             embedding: new float[] { 1, -1, -2 });
+
         _ = await db.UpsertAsync(collection, testRecord);
 
         // Act
@@ -573,12 +630,17 @@ public class DuckDBMemoryStoreTests
                 text: "text" + i,
                 description: "description" + i,
                 embedding: new float[] { 1, 1, 1 });
+
             _ = await db.UpsertAsync(collection, testRecord);
         }
 
         // Act
-        var topNResults = db.GetNearestMatchesAsync(collection, compareEmbedding, limit: topN, minRelevanceScore: 0.75).ToEnumerable().ToArray();
-        IEnumerable<string> topNKeys = topNResults.Select(x => x.Item1.Key).ToImmutableSortedSet();
+        var topNResults = db.GetNearestMatchesAsync(collection, compareEmbedding, limit: topN, minRelevanceScore: 0.75).
+            ToEnumerable().
+            ToArray();
+
+        IEnumerable<string> topNKeys = topNResults.Select(x => x.Item1.Key).
+            ToImmutableSortedSet();
 
         // Assert
         Assert.Equal(topN, topNResults.Length);
@@ -586,7 +648,9 @@ public class DuckDBMemoryStoreTests
 
         for (int i = 0; i < topNResults.Length; i++)
         {
-            int compare = topNResults[i].Item2.CompareTo(0.75);
+            int compare = topNResults[i].
+                Item2.CompareTo(0.75);
+
             Assert.True(compare >= 0);
         }
     }
@@ -609,8 +673,12 @@ public class DuckDBMemoryStoreTests
 
         // Assert
         Assert.NotNull(keys);
-        Assert.Equal(numRecords, keys.ToEnumerable().Count());
-        Assert.Equal(numRecords, resultRecords.ToEnumerable().Count());
+
+        Assert.Equal(numRecords, keys.ToEnumerable().
+            Count());
+
+        Assert.Equal(numRecords, resultRecords.ToEnumerable().
+            Count());
     }
 
 
@@ -632,7 +700,9 @@ public class DuckDBMemoryStoreTests
         // Assert
         Assert.NotNull(keys);
         Assert.NotNull(results);
-        Assert.Equal(numRecords, results.ToEnumerable().Count());
+
+        Assert.Equal(numRecords, results.ToEnumerable().
+            Count());
     }
 
 
@@ -647,7 +717,7 @@ public class DuckDBMemoryStoreTests
         IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
         await db.CreateCollectionAsync(collection);
 
-        List<string> keys = new();
+        List<string> keys = [];
 
         // Act
         await foreach (var key in db.UpsertBatchAsync(collection, records))
@@ -675,4 +745,5 @@ public class DuckDBMemoryStoreTests
         // Act
         await db.DeleteCollectionAsync(collection);
     }
+
 }

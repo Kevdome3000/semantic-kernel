@@ -9,21 +9,17 @@ using Azure.Core.Pipeline;
 /// <summary>
 /// Helper class to inject headers into Azure SDK HTTP pipeline
 /// </summary>
-internal sealed class AddHeaderRequestPolicy : HttpPipelineSynchronousPolicy
+internal sealed class AddHeaderRequestPolicy(string headerName, string headerValue) : HttpPipelineSynchronousPolicy
 {
-    private readonly string _headerName;
-    private readonly string _headerValue;
 
+    private readonly string _headerName = headerName;
 
-    public AddHeaderRequestPolicy(string headerName, string headerValue)
-    {
-        this._headerName = headerName;
-        this._headerValue = headerValue;
-    }
+    private readonly string _headerValue = headerValue;
 
 
     public override void OnSendingRequest(HttpMessage message)
     {
         message.Request.Headers.Add(this._headerName, this._headerValue);
     }
+
 }

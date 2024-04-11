@@ -4,6 +4,7 @@ namespace Microsoft.SemanticKernel;
 
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -19,6 +20,7 @@ public class ChatMessageContent : KernelContent
     /// <summary>
     /// Name of the author of the message
     /// </summary>
+    [Experimental("SKEXP0001")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? AuthorName { get; set; }
 
@@ -36,7 +38,7 @@ public class ChatMessageContent : KernelContent
     {
         get
         {
-            var textContent = Items.OfType<TextContent>().
+            var textContent = this.Items.OfType<TextContent>().
                 FirstOrDefault();
 
             return textContent?.Text;
@@ -48,24 +50,24 @@ public class ChatMessageContent : KernelContent
                 return;
             }
 
-            var textContent = Items.OfType<TextContent>().
+            var textContent = this.Items.OfType<TextContent>().
                 FirstOrDefault();
 
             if (textContent is not null)
             {
                 textContent.Text = value;
-                textContent.Encoding = Encoding;
+                textContent.Encoding = this.Encoding;
             }
             else
             {
-                Items.Add(new TextContent(
-                        value,
-                        ModelId,
-                        InnerContent,
-                        Encoding,
-                        Metadata
+                this.Items.Add(new TextContent(
+                        text: value,
+                        modelId: this.ModelId,
+                        innerContent: this.InnerContent,
+                        encoding: this.Encoding,
+                        metadata: this.Metadata
                     )
-                    { MimeType = MimeType });
+                    { MimeType = this.MimeType });
             }
         }
     }
@@ -75,8 +77,8 @@ public class ChatMessageContent : KernelContent
     /// </summary>
     public ChatMessageContentItemCollection Items
     {
-        get => _items ??= new ChatMessageContentItemCollection();
-        set => _items = value;
+        get => this._items ??= [];
+        set => this._items = value;
     }
 
     /// <summary>
@@ -87,7 +89,7 @@ public class ChatMessageContent : KernelContent
     {
         get
         {
-            var textContent = Items.OfType<TextContent>().
+            var textContent = this.Items.OfType<TextContent>().
                 FirstOrDefault();
 
             if (textContent is not null)
@@ -95,13 +97,13 @@ public class ChatMessageContent : KernelContent
                 return textContent.Encoding;
             }
 
-            return _encoding;
+            return this._encoding;
         }
         set
         {
-            _encoding = value;
+            this._encoding = value;
 
-            var textContent = Items.OfType<TextContent>().
+            var textContent = this.Items.OfType<TextContent>().
                 FirstOrDefault();
 
             if (textContent is not null)
@@ -118,7 +120,7 @@ public class ChatMessageContent : KernelContent
     /// The source is corresponds to the entity that generated this message.
     /// The property is intended to be used by agents to associate themselves with the messages they generate.
     /// </remarks>
-
+    [Experimental("SKEXP0101")]
     [JsonIgnore]
     public object? Source { get; set; }
 
@@ -127,7 +129,10 @@ public class ChatMessageContent : KernelContent
     /// Creates a new instance of the <see cref="ChatMessageContent"/> class
     /// </summary>
     [JsonConstructor]
-    public ChatMessageContent() => _encoding = Encoding.UTF8;
+    public ChatMessageContent()
+    {
+        this._encoding = Encoding.UTF8;
+    }
 
 
     /// <summary>
@@ -148,9 +153,9 @@ public class ChatMessageContent : KernelContent
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(innerContent, modelId, metadata)
     {
-        Role = role;
-        _encoding = encoding ?? Encoding.UTF8;
-        Content = content;
+        this.Role = role;
+        this._encoding = encoding ?? Encoding.UTF8;
+        this.Content = content;
     }
 
 
@@ -172,14 +177,17 @@ public class ChatMessageContent : KernelContent
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(innerContent, modelId, metadata)
     {
-        Role = role;
-        _encoding = encoding ?? Encoding.UTF8;
-        _items = items;
+        this.Role = role;
+        this._encoding = encoding ?? Encoding.UTF8;
+        this._items = items;
     }
 
 
     /// <inheritdoc/>
-    public override string ToString() => Content ?? string.Empty;
+    public override string ToString()
+    {
+        return this.Content ?? string.Empty;
+    }
 
 
     private ChatMessageContentItemCollection? _items;

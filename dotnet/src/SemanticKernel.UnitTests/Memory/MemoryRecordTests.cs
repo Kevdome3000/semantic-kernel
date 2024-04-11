@@ -10,13 +10,20 @@ using Xunit;
 
 public class MemoryRecordTests
 {
+
     private readonly bool _isReference = false;
+
     private readonly string _id = "Id";
+
     private readonly string _text = "text";
+
     private readonly string _description = "description";
+
     private readonly string _externalSourceName = "externalSourceName";
+
     private readonly string _additionalMetadata = "value";
-    private readonly ReadOnlyMemory<float> _embedding = new(new float[] { 1, 2, 3 });
+
+    private readonly ReadOnlyMemory<float> _embedding = new([1, 2, 3]);
 
 
     [Fact]
@@ -88,14 +95,16 @@ public class MemoryRecordTests
     public void ItCanBeCreatedFromSerializedMetadata()
     {
         // Arrange
-        string jsonString = @"{
-            ""is_reference"": false,
-            ""id"": ""Id"",
-            ""text"": ""text"",
-            ""description"": ""description"",
-            ""external_source_name"": ""externalSourceName"",
-            ""additional_metadata"": ""value""
-        }";
+        string jsonString = """
+                            {
+                                "is_reference": false,
+                                "id": "Id",
+                                "text": "text",
+                                "description": "description",
+                                "external_source_name": "externalSourceName",
+                                "additional_metadata": "value"
+                            }
+                            """;
 
         // Act
         var memoryRecord = MemoryRecord.FromJsonMetadata(jsonString, this._embedding);
@@ -115,22 +124,24 @@ public class MemoryRecordTests
     public void ItCanBeDeserializedFromJson()
     {
         // Arrange
-        string jsonString = @"{
-            ""metadata"": {
-                ""is_reference"": false,
-                ""id"": ""Id"",
-                ""text"": ""text"",
-                ""description"": ""description"",
-                ""external_source_name"": ""externalSourceName"",
-                ""additional_metadata"": ""value""
-            },
-            ""embedding"":
-            [
-                1,
-                2,
-                3
-            ]
-        }";
+        string jsonString = """
+                            {
+                                "metadata": {
+                                    "is_reference": false,
+                                    "id": "Id",
+                                    "text": "text",
+                                    "description": "description",
+                                    "external_source_name": "externalSourceName",
+                                    "additional_metadata": "value"
+                                },
+                                "embedding":
+                                [
+                                    1,
+                                    2,
+                                    3
+                                ]
+                            }
+                            """;
 
         // Act
         var memoryRecord = JsonSerializer.Deserialize<MemoryRecord>(jsonString);
@@ -151,24 +162,27 @@ public class MemoryRecordTests
     public void ItCanBeSerialized()
     {
         // Arrange
-        string jsonString = @"{
-            ""embedding"":
-            [
-                1,
-                2,
-                3
-            ],
-            ""metadata"": {
-                ""is_reference"": false,
-                ""external_source_name"": ""externalSourceName"",
-                ""id"": ""Id"",
-                ""description"": ""description"",
-                ""text"": ""text"",
-                ""additional_metadata"": ""value""
-            },
-            ""key"": ""key"",
-            ""timestamp"": null
-        }";
+        string jsonString = """
+                            {
+                                "embedding":
+                                [
+                                    1,
+                                    2,
+                                    3
+                                ],
+                                "metadata": {
+                                    "is_reference": false,
+                                    "external_source_name": "externalSourceName",
+                                    "id": "Id",
+                                    "description": "description",
+                                    "text": "text",
+                                    "additional_metadata": "value"
+                                },
+                                "key": "key",
+                                "timestamp": null
+                            }
+                            """;
+
         var metadata = new MemoryRecordMetadata(
             isReference: this._isReference,
             id: this._id,
@@ -176,6 +190,7 @@ public class MemoryRecordTests
             description: this._description,
             externalSourceName: this._externalSourceName,
             additionalMetadata: this._additionalMetadata);
+
         var memoryRecord = new MemoryRecord(metadata, this._embedding, "key");
 
         // Act
@@ -194,14 +209,16 @@ public class MemoryRecordTests
     public void ItsMetadataCanBeSerialized()
     {
         // Arrange
-        string jsonString = @"{
-                ""is_reference"": false,
-                ""external_source_name"": ""externalSourceName"",
-                ""id"": ""Id"",
-                ""description"": ""description"",
-                ""text"": ""text"",
-                ""additional_metadata"": ""value""
-            }";
+        string jsonString = """
+                            {
+                                "is_reference": false,
+                                "external_source_name": "externalSourceName",
+                                "id": "Id",
+                                "description": "description",
+                                "text": "text",
+                                "additional_metadata": "value"
+                            }
+                            """;
 
         var metadata = new MemoryRecordMetadata(
             isReference: this._isReference,
@@ -210,6 +227,7 @@ public class MemoryRecordTests
             description: this._description,
             externalSourceName: this._externalSourceName,
             additionalMetadata: this._additionalMetadata);
+
         var memoryRecord = new MemoryRecord(metadata, this._embedding, "key");
 
         // Act
@@ -222,4 +240,5 @@ public class MemoryRecordTests
         // Assert
         Assert.Equal(jsonString, serializedMetadata);
     }
+
 }

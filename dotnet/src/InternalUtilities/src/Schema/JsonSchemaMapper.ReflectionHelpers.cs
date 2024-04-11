@@ -116,7 +116,7 @@ internal
             {
                 var namingPolicy = (JsonNamingPolicy?)namingPolicyField!.GetValue(converter)!;
                 string[] names = Enum.GetNames(typeInfo.Type);
-                values = new JsonArray();
+                values = [];
 
                 foreach (string name in names)
                 {

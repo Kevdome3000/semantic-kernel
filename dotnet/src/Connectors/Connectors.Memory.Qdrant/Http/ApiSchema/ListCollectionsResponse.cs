@@ -8,15 +8,19 @@ using System.Text.Json.Serialization;
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes: Used for Json Deserialization
 internal sealed class ListCollectionsResponse : QdrantResponse
 {
+
     internal sealed class CollectionResult
     {
+
         internal sealed class CollectionDescription
         {
+
             /// <summary>
             /// The name of a collection
             /// </summary>
             [JsonPropertyName("name")]
             public string Name { get; set; } = string.Empty;
+
         }
 
 
@@ -24,7 +28,8 @@ internal sealed class ListCollectionsResponse : QdrantResponse
         /// List of the collection names that the qdrant database contains.
         /// </summary>
         [JsonPropertyName("collections")]
-        public IList<CollectionDescription> Collections { get; set; } = new List<CollectionDescription>();
+        public IList<CollectionDescription> Collections { get; set; } = [];
+
     }
 
 
@@ -33,5 +38,6 @@ internal sealed class ListCollectionsResponse : QdrantResponse
     /// </summary>
     [JsonPropertyName("result")]
     public CollectionResult? Result { get; set; }
+
 }
 #pragma warning restore CA1812 // Avoid uninstantiated internal classes

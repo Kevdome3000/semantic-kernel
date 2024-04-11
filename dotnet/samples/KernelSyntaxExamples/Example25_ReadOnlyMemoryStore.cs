@@ -25,12 +25,13 @@ using Xunit.Abstractions;
 /// </summary>
 public class Example25_ReadOnlyMemoryStore : BaseTest
 {
+
     [Fact]
     public async Task RunAsync()
     {
         var store = new ReadOnlyMemoryStore(s_jsonVectorEntries);
 
-        var embedding = new ReadOnlyMemory<float>(new float[] { 22, 4, 6 });
+        var embedding = new ReadOnlyMemory<float>([22, 4, 6]);
 
         WriteLine("Reading data from custom read-only memory store");
         var memoryRecord = await store.GetAsync("collection", "key3");
@@ -52,7 +53,9 @@ public class Example25_ReadOnlyMemoryStore : BaseTest
 
     private sealed class ReadOnlyMemoryStore : IMemoryStore
     {
+
         private readonly MemoryRecord[]? _memoryRecords = null;
+
         private readonly int _vectorSize = 3;
 
 
@@ -87,14 +90,22 @@ public class Example25_ReadOnlyMemoryStore : BaseTest
         }
 
 
-        public Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancellationToken = default)
+        public Task<MemoryRecord?> GetAsync(
+            string collectionName,
+            string key,
+            bool withEmbedding = false,
+            CancellationToken cancellationToken = default)
         {
             // Note: with this simple implementation, the MemoryRecord will always contain the embedding.
             return Task.FromResult(this._memoryRecords?.FirstOrDefault(x => x.Key == key));
         }
 
 
-        public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = false, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(
+            string collectionName,
+            IEnumerable<string> keys,
+            bool withEmbeddings = false,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             // Note: with this simple implementation, the MemoryRecord will always contain the embedding.
             if (this._memoryRecords is not null)
@@ -125,12 +136,13 @@ public class Example25_ReadOnlyMemoryStore : BaseTest
         {
             // Note: with this simple implementation, the MemoryRecord will always contain the embedding.
             await foreach (var item in this.GetNearestMatchesAsync(
-                               collectionName: collectionName,
-                               embedding: embedding,
-                               limit: 1,
-                               minRelevanceScore: minRelevanceScore,
-                               withEmbeddings: withEmbedding,
-                               cancellationToken: cancellationToken).ConfigureAwait(false))
+                                   collectionName: collectionName,
+                                   embedding: embedding,
+                                   limit: 1,
+                                   minRelevanceScore: minRelevanceScore,
+                                   withEmbeddings: withEmbedding,
+                                   cancellationToken: cancellationToken).
+                               ConfigureAwait(false))
             {
                 return item;
             }
@@ -158,7 +170,7 @@ public class Example25_ReadOnlyMemoryStore : BaseTest
                 throw new Exception($"Embedding vector size {embedding.Length} does not match expected size of {this._vectorSize}");
             }
 
-            List<(MemoryRecord Record, double Score)> embeddings = new();
+            List<(MemoryRecord Record, double Score)> embeddings = [];
 
             foreach (var item in this._memoryRecords)
             {
@@ -170,7 +182,8 @@ public class Example25_ReadOnlyMemoryStore : BaseTest
                 }
             }
 
-            foreach (var item in embeddings.OrderByDescending(l => l.Score).Take(limit))
+            foreach (var item in embeddings.OrderByDescending(l => l.Score).
+                         Take(limit))
             {
                 yield return (item.Record, item.Score);
             }
@@ -199,6 +212,7 @@ public class Example25_ReadOnlyMemoryStore : BaseTest
         {
             throw new System.NotImplementedException();
         }
+
     }
 
 
@@ -274,4 +288,5 @@ public class Example25_ReadOnlyMemoryStore : BaseTest
     public Example25_ReadOnlyMemoryStore(ITestOutputHelper output) : base(output)
     {
     }
+
 }

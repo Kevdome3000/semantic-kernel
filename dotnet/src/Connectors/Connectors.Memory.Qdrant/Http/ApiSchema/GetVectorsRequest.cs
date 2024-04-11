@@ -10,6 +10,7 @@ using System.Text.Json.Serialization;
 
 internal sealed class GetVectorsRequest
 {
+
     /// <summary>
     /// Name of the collection to request vectors from
     /// </summary>
@@ -26,7 +27,7 @@ internal sealed class GetVectorsRequest
     /// Array of vector IDs to retrieve
     /// </summary>
     [JsonPropertyName("ids")]
-    public IEnumerable<string> PointIds { get; set; } = new List<string>();
+    public IEnumerable<string> PointIds { get; set; } = [];
 
     /// <summary>
     /// Select which payload to return with the response. Default: All
@@ -54,6 +55,7 @@ internal sealed class GetVectorsRequest
     public GetVectorsRequest WithPointId(string pointId)
     {
         this.PointIds = this.PointIds.Append(pointId);
+
         return this;
     }
 
@@ -61,6 +63,7 @@ internal sealed class GetVectorsRequest
     public GetVectorsRequest WithPointIDs(IEnumerable<string> pointIds)
     {
         this.PointIds = pointIds;
+
         return this;
     }
 
@@ -68,6 +71,7 @@ internal sealed class GetVectorsRequest
     public GetVectorsRequest WithPayloads(bool withPayloads)
     {
         this.WithPayload = withPayloads;
+
         return this;
     }
 
@@ -75,6 +79,7 @@ internal sealed class GetVectorsRequest
     public GetVectorsRequest WithVectors(bool withEmbeddings)
     {
         this.WithVector = withEmbeddings;
+
         return this;
     }
 

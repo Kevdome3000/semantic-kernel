@@ -18,11 +18,11 @@ public sealed class WebSearchEnginePluginTests
     public async Task SearchAsyncSucceedsAsync()
     {
         // Arrange
-        IEnumerable<string> expected = new[]
-        {
+        IEnumerable<string> expected =
+        [
             Guid.NewGuid().
                 ToString()
-        };
+        ];
 
         Mock<IWebSearchEngineConnector> connectorMock = new();
 
@@ -46,7 +46,7 @@ public sealed class WebSearchEnginePluginTests
     public async Task GetSearchResultsSucceedsAsync()
     {
         // Arrange
-        IEnumerable<WebPage> expected = new List<WebPage>();
+        IEnumerable<WebPage> expected = [];
 
         Mock<IWebSearchEngineConnector> connectorMock = new();
 

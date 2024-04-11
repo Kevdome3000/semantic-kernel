@@ -1,18 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Plugins.OpenApi;
+
 using System;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Http;
+using Extensions.Logging;
+using Http;
 
-namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 internal static class DocumentLoader
 {
+
     internal static async Task<string> LoadDocumentFromUriAsync(
         Uri uri,
         ILogger logger,
@@ -26,20 +28,27 @@ internal static class DocumentLoader
 
         if (authCallback is not null)
         {
-            await authCallback(request, cancellationToken).ConfigureAwait(false);
+            await authCallback(request, cancellationToken).
+                ConfigureAwait(false);
         }
 
         logger.LogTrace("Importing document from {0}", uri);
 
-        using var response = await httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
-        return await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
+        using var response = await httpClient.SendWithSuccessCheckAsync(request, cancellationToken).
+            ConfigureAwait(false);
+
+        return await response.Content.ReadAsStringWithExceptionMappingAsync().
+            ConfigureAwait(false);
     }
+
 
     internal static async Task<string> LoadDocumentFromFilePathAsync(
         string filePath,
         ILogger logger,
         CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         var pluginJson = string.Empty;
 
         if (!File.Exists(filePath))
@@ -49,15 +58,19 @@ internal static class DocumentLoader
 
         logger.LogTrace("Importing document from {0}", filePath);
 
-        using (var sr = File.OpenText(filePath))
-        {
-            return await sr.ReadToEndAsync().ConfigureAwait(false); // must await here to avoid stream reader being disposed before the string is read
-        }
+        using var sr = File.OpenText(filePath);
+
+        return await sr.ReadToEndAsync().
+            ConfigureAwait(false); // must await here to avoid stream reader being disposed before the string is read
     }
+
 
     internal static async Task<string> LoadDocumentFromStreamAsync(Stream stream)
     {
         using StreamReader reader = new(stream);
-        return await reader.ReadToEndAsync().ConfigureAwait(false);
+
+        return await reader.ReadToEndAsync().
+            ConfigureAwait(false);
     }
+
 }

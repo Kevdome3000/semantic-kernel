@@ -12,6 +12,7 @@ using Xunit;
 
 public class KernelExtensionsTests
 {
+
     [Theory]
     [ClassData(typeof(ComplexObjectTestData))]
     public async Task InvokeAsyncOfTShouldMatchFunctionResultValueAsync(object? expectedValue)
@@ -31,17 +32,20 @@ public class KernelExtensionsTests
 
     public class ComplexObjectTestData : IEnumerable<object[]>
     {
-        private readonly List<object?[]> _data = new()
-        {
-            new object?[] { null },
-            new object?[] { 1 },
-            new object?[] { "Bogus" },
-            new object?[] { DateTime.Now },
-            new object?[] { new { Id = 2, Name = "Object2" } }
-        };
+
+        private readonly List<object?[]> _data =
+        [
+            [null],
+            [1],
+            ["Bogus"],
+            [DateTime.Now],
+            [new { Id = 2, Name = "Object2" }]
+        ];
 
         public IEnumerator<object[]> GetEnumerator() => this._data.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
+
     }
+
 }

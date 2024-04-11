@@ -6,6 +6,7 @@ using System.Reflection;
 
 internal static class RepoFiles
 {
+
     /// <summary>
     /// Scan the local folders from the repo, looking for "samples/plugins" folder.
     /// </summary>
@@ -15,9 +16,11 @@ internal static class RepoFiles
         const string Parent = "samples";
         const string Folder = "plugins";
 
-        bool SearchPath(string pathToFind, out string result, int maxAttempts = 10)
+        static bool SearchPath(string pathToFind, out string result, int maxAttempts = 10)
         {
-            var currDir = Path.GetFullPath(Assembly.GetExecutingAssembly().Location);
+            var currDir = Path.GetFullPath(Assembly.GetExecutingAssembly().
+                Location);
+
             bool found;
 
             do
@@ -38,4 +41,5 @@ internal static class RepoFiles
 
         return path;
     }
+
 }

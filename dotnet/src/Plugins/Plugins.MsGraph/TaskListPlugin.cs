@@ -19,7 +19,9 @@ using Models;
 /// </summary>
 public sealed class TaskListPlugin
 {
+
     private readonly ITaskManagementConnector _connector;
+
     private readonly ILogger _logger;
 
 
@@ -67,22 +69,21 @@ public sealed class TaskListPlugin
         string? reminder = null,
         CancellationToken cancellationToken = default)
     {
-        TaskManagementTaskList? defaultTaskList = await this._connector.GetDefaultTaskListAsync(cancellationToken).ConfigureAwait(false);
-
-        if (defaultTaskList == null)
-        {
-            throw new InvalidOperationException("No default task list found.");
-        }
+        TaskManagementTaskList defaultTaskList = await this._connector.GetDefaultTaskListAsync(cancellationToken).
+                                                     ConfigureAwait(false) ??
+                                                 throw new InvalidOperationException("No default task list found.");
 
         TaskManagementTask task = new(
-            id: Guid.NewGuid().ToString(),
+            id: Guid.NewGuid().
+                ToString(),
             title: title,
             reminder: reminder);
 
         // Sensitive data, logging as trace, disabled by default
         this._logger.LogTrace("Adding task '{0}' to task list '{1}'", task.Title, defaultTaskList.Name);
 
-        await this._connector.AddTaskAsync(defaultTaskList.Id, task, cancellationToken).ConfigureAwait(false);
+        await this._connector.AddTaskAsync(defaultTaskList.Id, task, cancellationToken).
+            ConfigureAwait(false);
     }
 
 
@@ -95,19 +96,19 @@ public sealed class TaskListPlugin
         string includeCompleted = "false",
         CancellationToken cancellationToken = default)
     {
-        TaskManagementTaskList? defaultTaskList = await this._connector.GetDefaultTaskListAsync(cancellationToken).ConfigureAwait(false);
-
-        if (defaultTaskList == null)
-        {
-            throw new InvalidOperationException("No default task list found.");
-        }
+        TaskManagementTaskList defaultTaskList = await this._connector.GetDefaultTaskListAsync(cancellationToken).
+                                                     ConfigureAwait(false) ??
+                                                 throw new InvalidOperationException("No default task list found.");
 
         if (!bool.TryParse(includeCompleted, out bool includeCompletedValue))
         {
             this._logger.LogWarning("Invalid value for '{0}' variable: '{1}'", nameof(includeCompleted), includeCompleted);
         }
 
-        IEnumerable<TaskManagementTask> tasks = await this._connector.GetTasksAsync(defaultTaskList.Id, includeCompletedValue, cancellationToken).ConfigureAwait(false);
+        IEnumerable<TaskManagementTask> tasks = await this._connector.GetTasksAsync(defaultTaskList.Id, includeCompletedValue, cancellationToken).
+            ConfigureAwait(false);
+
         return JsonSerializer.Serialize(tasks);
     }
+
 }

@@ -146,7 +146,7 @@ public sealed class HandlebarsPlannerTests
         {
             builder.Services.AddAzureOpenAIChatCompletion(
                 deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
-                modelId: azureOpenAIConfiguration.ChatModelId!,
+                modelId: azureOpenAIConfiguration.ChatModelId,
                 endpoint: azureOpenAIConfiguration.Endpoint,
                 apiKey: azureOpenAIConfiguration.ApiKey);
         }
@@ -163,7 +163,7 @@ public sealed class HandlebarsPlannerTests
         {
             builder.Services.AddAzureOpenAITextEmbeddingGeneration(
                 deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
-                modelId: azureOpenAIEmbeddingsConfiguration.EmbeddingModelId!,
+                modelId: azureOpenAIEmbeddingsConfiguration.EmbeddingModelId,
                 endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
                 apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
         }

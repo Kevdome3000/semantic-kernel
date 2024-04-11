@@ -8,6 +8,7 @@ using System.Resources;
 
 internal static class ResourceResponseProvider
 {
+
     /// <summary>
     /// Loads OpenAPI response schema and content from assembly resource.
     /// </summary>
@@ -17,14 +18,12 @@ internal static class ResourceResponseProvider
     {
         var type = typeof(ResourceResponseProvider);
 
-        var stream = type.Assembly.GetManifestResourceStream(type, resourceName);
-
-        if (stream == null)
-        {
-            throw new MissingManifestResourceException($"Unable to load OpenAPI response from assembly resource '{resourceName}'.");
-        }
+        var stream = type.Assembly.GetManifestResourceStream(type, resourceName) ??
+                     throw new MissingManifestResourceException($"Unable to load OpenAPI response from assembly resource '{resourceName}'.");
 
         using var reader = new StreamReader(stream);
+
         return reader.ReadToEnd();
     }
+
 }

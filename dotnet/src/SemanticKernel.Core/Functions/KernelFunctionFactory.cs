@@ -37,7 +37,8 @@ public static class KernelFunctionFactory
         IEnumerable<KernelParameterMetadata>? parameters = null,
         KernelReturnParameterMetadata? returnParameter = null,
         ILoggerFactory? loggerFactory = null) =>
-        CreateFromMethod(method.Method, method.Target, functionName, description, parameters, returnParameter, loggerFactory);
+        CreateFromMethod(method.Method, method.Target, functionName, description,
+            parameters, returnParameter, loggerFactory);
 
 
     /// <summary>
@@ -60,7 +61,8 @@ public static class KernelFunctionFactory
         IEnumerable<KernelParameterMetadata>? parameters = null,
         KernelReturnParameterMetadata? returnParameter = null,
         ILoggerFactory? loggerFactory = null) =>
-        KernelFunctionFromMethod.Create(method, target, functionName, description, parameters, returnParameter, loggerFactory);
+        KernelFunctionFromMethod.Create(method, target, functionName, description,
+            parameters, returnParameter, loggerFactory);
 
     #endregion
 
@@ -89,7 +91,8 @@ public static class KernelFunctionFactory
         string? templateFormat = null,
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null) =>
-        KernelFunctionFromPrompt.Create(promptTemplate, CreateSettingsDictionary(executionSettings), functionName, description, templateFormat, promptTemplateFactory, loggerFactory);
+        KernelFunctionFromPrompt.Create(promptTemplate, CreateSettingsDictionary(executionSettings), functionName, description,
+            templateFormat, promptTemplateFactory, loggerFactory);
 
 
     /// <summary>
@@ -126,7 +129,7 @@ public static class KernelFunctionFactory
     /// <summary>
     /// Wraps the specified settings into a dictionary with the default service ID as the key.
     /// </summary>
-    [return: NotNullIfNotNull("settings")]
+    [return: NotNullIfNotNull(nameof(settings))]
     private static Dictionary<string, PromptExecutionSettings>? CreateSettingsDictionary(PromptExecutionSettings? settings) =>
         settings is null
             ? null
@@ -134,4 +137,5 @@ public static class KernelFunctionFactory
             {
                 { PromptExecutionSettings.DefaultServiceId, settings },
             };
+
 }
