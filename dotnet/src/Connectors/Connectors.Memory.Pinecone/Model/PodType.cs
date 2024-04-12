@@ -121,7 +121,7 @@ internal sealed class PodTypeJsonConverter : JsonConverter<PodType>
         object? enumValue = Enum.GetValues(typeToConvert).
             Cast<object?>().
             FirstOrDefault(value => value != null && typeToConvert.GetMember(value.ToString()!)[0].
-                GetCustomAttribute(typeof(EnumMemberAttribute)) is EnumMemberAttribute enumMemberAttr && enumMemberAttr.Value == stringValue);
+                GetCustomAttribute<EnumMemberAttribute>() is { } enumMemberAttr && enumMemberAttr.Value == stringValue);
 
         if (enumValue != null)
         {
@@ -136,7 +136,7 @@ internal sealed class PodTypeJsonConverter : JsonConverter<PodType>
     {
         if (value.GetType().
                 GetMember(value.ToString())[0].
-                GetCustomAttribute(typeof(EnumMemberAttribute)) is not EnumMemberAttribute enumMemberAttr)
+                GetCustomAttribute<EnumMemberAttribute>() is not { } enumMemberAttr)
         {
             throw new JsonException($"Unable to find EnumMember attribute for PodType '{value}'.");
         }
