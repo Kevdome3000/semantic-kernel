@@ -5,7 +5,6 @@ namespace Microsoft.SemanticKernel.Text;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 
@@ -22,16 +21,10 @@ public static class TextChunker
     /// Represents a list of strings with token count.
     /// Used to reduce the number of calls to the tokenizer.
     /// </summary>
-    private class StringListWithTokenCount
+    private class StringListWithTokenCount(TextChunker.TokenCounter? tokenCounter)
     {
 
-        private readonly TokenCounter? _tokenCounter;
-
-
-        public StringListWithTokenCount(TokenCounter? tokenCounter)
-        {
-            this._tokenCounter = tokenCounter;
-        }
+        private readonly TokenCounter? _tokenCounter = tokenCounter;
 
 
         public void Add(string value) => this.Values.Add((value, this._tokenCounter is null

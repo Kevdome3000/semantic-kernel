@@ -4,13 +4,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#if !NETCOREAPP
 #pragma warning disable IDE0005 // Using directive is unnecessary.
 
 namespace System.Runtime.CompilerServices;
 
 using Diagnostics.CodeAnalysis;
-
-#if !NETCOREAPP
 
 
 [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = false)]

@@ -11,19 +11,21 @@ using Xunit.Abstractions;
 
 
 // These examples show how to use HttpClient and HttpClientFactory within SK SDK.
-public class Example41_HttpClientUsage : BaseTest
+public class Example41_HttpClientUsage(ITestOutputHelper output) : BaseTest(output)
 {
+
     /// <summary>
     /// Demonstrates the usage of the default HttpClient provided by the SK SDK.
     /// </summary>
     [Fact]
     public void UseDefaultHttpClient()
     {
-        var kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(
+        var kernel = Kernel.CreateBuilder().
+            AddOpenAIChatCompletion(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey) // If you need to use the default HttpClient from the SK SDK, simply omit the argument for the httpMessageInvoker parameter.
-            .Build();
+            .
+            Build();
     }
 
 
@@ -36,12 +38,12 @@ public class Example41_HttpClientUsage : BaseTest
         using var httpClient = new HttpClient();
 
         // If you need to use a custom HttpClient, simply pass it as an argument for the httpClient parameter.
-        var kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(
+        var kernel = Kernel.CreateBuilder().
+            AddOpenAIChatCompletion(
                 modelId: TestConfiguration.OpenAI.ModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey,
-                httpClient: httpClient)
-            .Build();
+                httpClient: httpClient).
+            Build();
     }
 
 
@@ -59,12 +61,12 @@ public class Example41_HttpClientUsage : BaseTest
         {
             var factory = sp.GetRequiredService<IHttpClientFactory>();
 
-            return Kernel.CreateBuilder()
-                .AddOpenAIChatCompletion(
+            return Kernel.CreateBuilder().
+                AddOpenAIChatCompletion(
                     modelId: TestConfiguration.OpenAI.ChatModelId,
                     apiKey: TestConfiguration.OpenAI.ApiKey,
-                    httpClient: factory.CreateClient())
-                .Build();
+                    httpClient: factory.CreateClient()).
+                Build();
         });
     }
 
@@ -90,17 +92,13 @@ public class Example41_HttpClientUsage : BaseTest
         {
             var factory = sp.GetRequiredService<IHttpClientFactory>();
 
-            return Kernel.CreateBuilder()
-                .AddOpenAIChatCompletion(
+            return Kernel.CreateBuilder().
+                AddOpenAIChatCompletion(
                     modelId: TestConfiguration.OpenAI.ChatModelId,
                     apiKey: TestConfiguration.OpenAI.ApiKey,
-                    httpClient: factory.CreateClient("test-client"))
-                .Build();
+                    httpClient: factory.CreateClient("test-client")).
+                Build();
         });
     }
 
-
-    public Example41_HttpClientUsage(ITestOutputHelper output) : base(output)
-    {
-    }
 }

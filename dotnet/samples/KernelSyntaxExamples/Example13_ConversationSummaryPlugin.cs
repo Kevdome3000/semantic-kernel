@@ -9,7 +9,7 @@ using xRetry;
 using Xunit.Abstractions;
 
 
-public class Example13_ConversationSummaryPlugin : BaseTest
+public class Example13_ConversationSummaryPlugin(ITestOutputHelper output) : BaseTest(output)
 {
 
     private const string ChatTranscript =
@@ -186,11 +186,6 @@ Jane: Goodbye!
             Build();
 
         return kernel;
-    }
-
-
-    public Example13_ConversationSummaryPlugin(ITestOutputHelper output) : base(output)
-    {
     }
 
 }

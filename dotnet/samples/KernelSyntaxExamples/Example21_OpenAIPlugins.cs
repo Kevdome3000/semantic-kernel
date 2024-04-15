@@ -11,7 +11,7 @@ using Xunit;
 using Xunit.Abstractions;
 
 
-public class Example21_OpenAIPlugins : BaseTest
+public class Example21_OpenAIPlugins(ITestOutputHelper output) : BaseTest(output)
 {
 
     /// <summary>
@@ -61,11 +61,6 @@ public class Example21_OpenAIPlugins : BaseTest
         var result = functionResult.GetValue<RestApiOperationResponse>();
 
         WriteLine($"Function execution result: {result?.Content}");
-    }
-
-
-    public Example21_OpenAIPlugins(ITestOutputHelper output) : base(output)
-    {
     }
 
 }

@@ -13,8 +13,9 @@ using Xunit;
 using Xunit.Abstractions;
 
 
-public class Example10_DescribeAllPluginsAndFunctions : BaseTest
+public class Example10_DescribeAllPluginsAndFunctions(ITestOutputHelper output) : BaseTest(output)
 {
+
     /// <summary>
     /// Print a list of all the functions imported into the kernel, including function descriptions,
     /// list of parameters, parameters descriptions, etc.
@@ -23,11 +24,11 @@ public class Example10_DescribeAllPluginsAndFunctions : BaseTest
     [Fact]
     public Task RunAsync()
     {
-        var kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(
+        var kernel = Kernel.CreateBuilder().
+            AddOpenAIChatCompletion(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
-                apiKey: TestConfiguration.OpenAI.ApiKey)
-            .Build();
+                apiKey: TestConfiguration.OpenAI.ApiKey).
+            Build();
 
         // Import a native plugin
         kernel.ImportPluginFromType<StaticTextPlugin>();
@@ -84,10 +85,6 @@ public class Example10_DescribeAllPluginsAndFunctions : BaseTest
         WriteLine();
     }
 
-
-    public Example10_DescribeAllPluginsAndFunctions(ITestOutputHelper output) : base(output)
-    {
-    }
 }
 
 /** Sample output:

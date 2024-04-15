@@ -11,8 +11,9 @@ using Xunit.Abstractions;
 
 
 // This example shows how to use multiple prompt template formats.
-public class Example64_MultiplePromptTemplates : BaseTest
+public class Example64_MultiplePromptTemplates(ITestOutputHelper output) : BaseTest(output)
 {
+
     /// <summary>
     /// Show how to combine multiple prompt template factories.
     /// </summary>
@@ -23,14 +24,14 @@ public class Example64_MultiplePromptTemplates : BaseTest
     {
         WriteLine("======== Example64_MultiplePromptTemplates ========");
 
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddAzureOpenAIChatCompletion(
+        Kernel kernel = Kernel.CreateBuilder().
+            AddAzureOpenAIChatCompletion(
                 deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 endpoint: TestConfiguration.AzureOpenAI.Endpoint,
                 serviceId: "AzureOpenAIChat",
                 apiKey: TestConfiguration.AzureOpenAI.ApiKey,
-                modelId: TestConfiguration.AzureOpenAI.ChatModelId)
-            .Build();
+                modelId: TestConfiguration.AzureOpenAI.ChatModelId).
+            Build();
 
         var promptTemplateFactory = new AggregatorPromptTemplateFactory(
             new KernelPromptTemplateFactory(),
@@ -40,7 +41,11 @@ public class Example64_MultiplePromptTemplates : BaseTest
     }
 
 
-    private async Task RunPromptAsync(Kernel kernel, string prompt, string templateFormat, IPromptTemplateFactory promptTemplateFactory)
+    private async Task RunPromptAsync(
+        Kernel kernel,
+        string prompt,
+        string templateFormat,
+        IPromptTemplateFactory promptTemplateFactory)
     {
         WriteLine($"======== {templateFormat} : {prompt} ========");
 
@@ -63,8 +68,4 @@ public class Example64_MultiplePromptTemplates : BaseTest
         WriteLine(result.GetValue<string>());
     }
 
-
-    public Example64_MultiplePromptTemplates(ITestOutputHelper output) : base(output)
-    {
-    }
 }

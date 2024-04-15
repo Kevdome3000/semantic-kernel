@@ -10,8 +10,9 @@ using Xunit.Abstractions;
 
 
 // This example shows how to use multiple prompt template formats.
-public class Example67_KernelStreaming : BaseTest
+public class Example67_KernelStreaming(ITestOutputHelper output) : BaseTest(output)
 {
+
     /// <summary>
     /// Show how to combine multiple prompt template factories.
     /// </summary>
@@ -26,17 +27,18 @@ public class Example67_KernelStreaming : BaseTest
         if (apiKey == null || chatDeploymentName == null || chatModelId == null || endpoint == null)
         {
             WriteLine("Azure endpoint, apiKey, deploymentName or modelId not found. Skipping example.");
+
             return;
         }
 
-        var kernel = Kernel.CreateBuilder()
-            .AddAzureOpenAIChatCompletion(
+        var kernel = Kernel.CreateBuilder().
+            AddAzureOpenAIChatCompletion(
                 deploymentName: chatDeploymentName,
                 endpoint: endpoint,
                 serviceId: "AzureOpenAIChat",
                 apiKey: apiKey,
-                modelId: chatModelId)
-            .Build();
+                modelId: chatModelId).
+            Build();
 
         var funnyParagraphFunction = kernel.CreateFunctionFromPrompt("Write a funny paragraph about streaming", new OpenAIPromptExecutionSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
@@ -68,8 +70,4 @@ public class Example67_KernelStreaming : BaseTest
         WriteLine(fullContent);
     }
 
-
-    public Example67_KernelStreaming(ITestOutputHelper output) : base(output)
-    {
-    }
 }

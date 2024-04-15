@@ -12,7 +12,7 @@ using Xunit;
 using Xunit.Abstractions;
 
 
-public sealed class Example98_GeminiFunctionCalling : BaseTest
+public sealed class Example98_GeminiFunctionCalling(ITestOutputHelper output) : BaseTest(output)
 {
 
     [RetryFact]
@@ -230,11 +230,6 @@ public sealed class Example98_GeminiFunctionCalling : BaseTest
             }
         }
         */
-    }
-
-
-    public Example98_GeminiFunctionCalling(ITestOutputHelper output) : base(output)
-    {
     }
 
 }

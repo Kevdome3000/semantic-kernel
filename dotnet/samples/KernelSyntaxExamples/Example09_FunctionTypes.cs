@@ -16,16 +16,20 @@ using RepoUtils;
 using Xunit;
 using Xunit.Abstractions;
 
-public class Example09_FunctionTypes : BaseTest
+public class Example09_FunctionTypes(ITestOutputHelper output) : BaseTest(output)
 {
+
     [Fact]
     public async Task RunAsync()
     {
         this.WriteLine("======== Method Function types ========");
 
-        var builder = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
-        builder.Services.AddLogging(services => services.AddConsole().SetMinimumLevel(LogLevel.Warning));
+        var builder = Kernel.CreateBuilder().
+            AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
+
+        builder.Services.AddLogging(services => services.AddConsole().
+            SetMinimumLevel(LogLevel.Warning));
+
         builder.Services.AddSingleton(this.Output);
         var kernel = builder.Build();
         kernel.Culture = new CultureInfo("pt-BR");
@@ -55,6 +59,7 @@ public class Example09_FunctionTypes : BaseTest
         await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.TaskInjectingCultureInfoOrIFormatProviderWithStringResult)]);
         await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.TaskInjectingCancellationTokenWithStringResult)]);
         await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.TaskInjectingServiceSelectorWithStringResult)]);
+
         await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.TaskInjectingKernelWithInputTextAndStringResult)],
             new()
             {
@@ -67,24 +72,15 @@ public class Example09_FunctionTypes : BaseTest
         await kernel.InvokeAsync(kernel.Plugins["Examples"][nameof(LocalExamplePlugin.NoInputWithVoidResult)]);
     }
 
-
-    public Example09_FunctionTypes(ITestOutputHelper output) : base(output)
-    {
-    }
 }
 // Task functions when are imported as plugins loose the "Async" suffix if present.
 #pragma warning disable IDE1006 // Naming Styles
 
 
-public class LocalExamplePlugin
+public class LocalExamplePlugin(ITestOutputHelper output)
 {
-    private readonly ITestOutputHelper _output;
 
-
-    public LocalExamplePlugin(ITestOutputHelper output)
-    {
-        this._output = output;
-    }
+    private readonly ITestOutputHelper _output = output;
 
 
     /// <summary>
@@ -104,6 +100,7 @@ public class LocalExamplePlugin
     public Task NoInputTaskWithVoidResult()
     {
         this._output.WriteLine($"Running {nameof(this.NoInputTaskWithVoidResult)} -> No input");
+
         return Task.CompletedTask;
     }
 
@@ -116,6 +113,7 @@ public class LocalExamplePlugin
     {
         var result = currentDate.ToString(CultureInfo.InvariantCulture);
         this._output.WriteLine($"Running {nameof(this.InputDateTimeWithStringResult)} -> [currentDate = {currentDate}] -> result: {result}");
+
         return result;
     }
 
@@ -128,6 +126,7 @@ public class LocalExamplePlugin
     {
         var result = "string result";
         this._output.WriteLine($"Running {nameof(this.NoInputTaskWithStringResult)} -> No input -> result: {result}");
+
         return Task.FromResult(result);
     }
 
@@ -148,8 +147,11 @@ public class LocalExamplePlugin
     [KernelFunction]
     public string ComplexInputWithStringResult(object complexObject)
     {
-        var result = complexObject.GetType().Name;
+        var result = complexObject.GetType().
+            Name;
+
         this._output.WriteLine($"Running {nameof(this.ComplexInputWithStringResult)} -> input: [complexObject = {complexObject}] -> result: {result}");
+
         return result;
     }
 
@@ -161,6 +163,7 @@ public class LocalExamplePlugin
     public Task<string> InputStringTaskWithStringResult(string echoInput)
     {
         this._output.WriteLine($"Running {nameof(this.InputStringTaskWithStringResult)} -> input: [echoInput = {echoInput}] -> result: {echoInput}");
+
         return Task.FromResult(echoInput);
     }
 
@@ -172,6 +175,7 @@ public class LocalExamplePlugin
     public Task InputStringTaskWithVoidResult(string x)
     {
         this._output.WriteLine($"Running {nameof(this.InputStringTaskWithVoidResult)} -> input: [x = {x}]");
+
         return Task.CompletedTask;
     }
 
@@ -185,6 +189,7 @@ public class LocalExamplePlugin
         var myInternalFunction = KernelFunctionFactory.CreateFromMethod(() => { });
         var result = new FunctionResult(myInternalFunction);
         this._output.WriteLine($"Running {nameof(this.NoInputWithFunctionResult)} -> No input -> result: {result.GetType().Name}");
+
         return result;
     }
 
@@ -197,6 +202,7 @@ public class LocalExamplePlugin
     {
         var result = await kernel.InvokeAsync(kernel.Plugins["Examples"][nameof(this.NoInputWithVoidResult)]);
         this._output.WriteLine($"Running {nameof(this.NoInputTaskWithFunctionResult)} -> Injected kernel -> result: {result.GetType().Name}");
+
         return result;
     }
 
@@ -210,6 +216,7 @@ public class LocalExamplePlugin
     {
         var summary = await kernel.InvokeAsync<string>(kernel.Plugins["SummarizePlugin"]["Summarize"], new() { ["input"] = textToSummarize });
         this._output.WriteLine($"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected kernel + input: [textToSummarize: {textToSummarize[..15]}...{textToSummarize[^15..]}] -> result: {summary}");
+
         return summary!;
     }
 
@@ -222,6 +229,7 @@ public class LocalExamplePlugin
     {
         var result = $"Name: {executingFunction.Name}, Description: {executingFunction.Description}";
         this._output.WriteLine($"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected Function -> result: {result}");
+
         return result;
     }
 
@@ -234,6 +242,7 @@ public class LocalExamplePlugin
     {
         logger.LogWarning("Running {FunctionName} -> Injected Logger", nameof(this.TaskInjectingLoggerWithNoResult));
         this._output.WriteLine($"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected Logger");
+
         return Task.CompletedTask;
     }
 
@@ -244,11 +253,11 @@ public class LocalExamplePlugin
     [KernelFunction]
     public Task TaskInjectingLoggerFactoryWithNoResult(ILoggerFactory loggerFactory)
     {
-        loggerFactory
-            .CreateLogger<LocalExamplePlugin>()
-            .LogWarning("Running {FunctionName} -> Injected Logger", nameof(this.TaskInjectingLoggerWithNoResult));
+        loggerFactory.CreateLogger<LocalExamplePlugin>().
+            LogWarning("Running {FunctionName} -> Injected Logger", nameof(this.TaskInjectingLoggerWithNoResult));
 
         this._output.WriteLine($"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected Logger");
+
         return Task.CompletedTask;
     }
 
@@ -257,17 +266,23 @@ public class LocalExamplePlugin
     /// Example how to inject a service selector in your function and use a specific service
     /// </summary>
     [KernelFunction]
-    public async Task<string> TaskInjectingServiceSelectorWithStringResult(Kernel kernel, KernelFunction function, KernelArguments arguments, IAIServiceSelector serviceSelector)
+    public async Task<string> TaskInjectingServiceSelectorWithStringResult(
+        Kernel kernel,
+        KernelFunction function,
+        KernelArguments arguments,
+        IAIServiceSelector serviceSelector)
     {
         ChatMessageContent? chatMessageContent = null;
 
-        if (serviceSelector.TrySelectAIService<IChatCompletionService>(kernel, function, arguments, out var chatCompletion, out var executionSettings))
+        if (serviceSelector.TrySelectAIService<IChatCompletionService>(kernel, function, arguments, out var chatCompletion,
+                out var executionSettings))
         {
             chatMessageContent = await chatCompletion.GetChatMessageContentAsync(new ChatHistory("How much is 5 + 5 ?"), executionSettings);
         }
 
         var result = chatMessageContent?.Content;
         this._output.WriteLine($"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected Kernel, KernelFunction, KernelArguments, Service Selector -> result: {result}");
+
         return result ?? string.Empty;
     }
 
@@ -280,6 +295,7 @@ public class LocalExamplePlugin
     {
         var result = $"Culture Name: {cultureInfo.Name}, FormatProvider Equals CultureInfo?: {formatProvider.Equals(cultureInfo)}";
         this._output.WriteLine($"Running {nameof(this.TaskInjectingCultureInfoOrIFormatProviderWithStringResult)} -> Injected CultureInfo, IFormatProvider -> result: {result}");
+
         return result;
     }
 
@@ -292,6 +308,7 @@ public class LocalExamplePlugin
     {
         var result = $"Cancellation resquested: {cancellationToken.IsCancellationRequested}";
         this._output.WriteLine($"Running {nameof(this.TaskInjectingCultureInfoOrIFormatProviderWithStringResult)} -> Injected Cancellation Token -> result: {result}");
+
         return result;
     }
 
@@ -300,5 +317,6 @@ public class LocalExamplePlugin
     {
         return "Complex type result ToString override";
     }
+
 }
 #pragma warning restore IDE1006 // Naming Styles

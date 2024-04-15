@@ -11,29 +11,18 @@ using System.Diagnostics.CodeAnalysis;
 /// Structure for storing data which can be scored.
 /// </summary>
 /// <typeparam name="T">Data type.</typeparam>
-public readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<ScoredValue<T>>
+public readonly struct ScoredValue<T>(T item, double score) : IComparable<ScoredValue<T>>, IEquatable<ScoredValue<T>>
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ScoredValue{T}"/> struct.
-    /// </summary>
-    /// <param name="item">The item to be scored.</param>
-    /// <param name="score">The score of the item.</param>
-    public ScoredValue(T item, double score)
-    {
-        this.Value = item;
-        this.Score = score;
-    }
-
 
     /// <summary>
     /// Gets the value of the scored item.
     /// </summary>
-    public T Value { get; }
+    public T Value { get; } = item;
 
     /// <summary>
     /// Gets the score of the item.
     /// </summary>
-    public double Score { get; }
+    public double Score { get; } = score;
 
 
     /// <summary>
@@ -174,4 +163,5 @@ public readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<
     {
         return new ScoredValue<T>(default!, double.MinValue);
     }
+
 }

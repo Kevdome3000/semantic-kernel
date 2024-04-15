@@ -10,8 +10,9 @@ using Xunit;
 using Xunit.Abstractions;
 
 
-public class Example06_TemplateLanguage : BaseTest
+public class Example06_TemplateLanguage(ITestOutputHelper output) : BaseTest(output)
 {
+
     /// <summary>
     /// Show how to invoke a Method Function written in C#
     /// from a Prompt Function written in natural language
@@ -27,14 +28,15 @@ public class Example06_TemplateLanguage : BaseTest
         if (openAIModelId == null || openAIApiKey == null)
         {
             this.WriteLine("OpenAI credentials not found. Skipping example.");
+
             return;
         }
 
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(
+        Kernel kernel = Kernel.CreateBuilder().
+            AddOpenAIChatCompletion(
                 modelId: openAIModelId,
-                apiKey: openAIApiKey)
-            .Build();
+                apiKey: openAIApiKey).
+            Build();
 
         // Load native plugin into the kernel function collection, sharing its functions with prompt templates
         // Functions loaded here are available as "time.*"
@@ -87,8 +89,4 @@ Is it weekend time (weekend/not weekend)?
          */
     }
 
-
-    public Example06_TemplateLanguage(ITestOutputHelper output) : base(output)
-    {
-    }
 }

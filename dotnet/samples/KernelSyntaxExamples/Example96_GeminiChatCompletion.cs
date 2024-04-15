@@ -12,7 +12,7 @@ using Xunit;
 using Xunit.Abstractions;
 
 
-public sealed class Example96_GeminiChatCompletion : BaseTest
+public sealed class Example96_GeminiChatCompletion(ITestOutputHelper output) : BaseTest(output)
 {
 
     [Fact]
@@ -188,11 +188,6 @@ public sealed class Example96_GeminiChatCompletion : BaseTest
         this.WriteLine("------------------------");
 
         return new ChatMessageContent(AuthorRole.Assistant, messageBuilder.ToString());
-    }
-
-
-    public Example96_GeminiChatCompletion(ITestOutputHelper output) : base(output)
-    {
     }
 
 }

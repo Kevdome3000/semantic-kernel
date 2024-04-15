@@ -24,30 +24,18 @@ using Xunit.Abstractions;
 #pragma warning disable xUnit1004 // Contains test methods used in manual verification. Disable warning for this file only.
 
 
-public sealed class OpenAICompletionTests : IDisposable
+public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposable
 {
 
     private const string InputParameterName = "input";
 
-    private readonly IKernelBuilder _kernelBuilder;
+    private readonly IKernelBuilder _kernelBuilder = Kernel.CreateBuilder();
 
-    private readonly IConfigurationRoot _configuration;
-
-
-    public OpenAICompletionTests(ITestOutputHelper output)
-    {
-        this._logger = new XunitLogger<Kernel>(output);
-        this._testOutputHelper = new RedirectOutput(output);
-
-        // Load configuration
-        this._configuration = new ConfigurationBuilder().AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true).
-            AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true).
-            AddEnvironmentVariables().
-            AddUserSecrets<OpenAICompletionTests>().
-            Build();
-
-        this._kernelBuilder = Kernel.CreateBuilder();
-    }
+    private readonly IConfigurationRoot _configuration = new ConfigurationBuilder().AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true).
+        AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true).
+        AddEnvironmentVariables().
+        AddUserSecrets<OpenAICompletionTests>().
+        Build();
 
 
     [Theory(Skip = "OpenAI will often throttle requests. This test is for manual verification.")]
@@ -563,9 +551,9 @@ public sealed class OpenAICompletionTests : IDisposable
 
     #region internals
 
-    private readonly XunitLogger<Kernel> _logger;
+    private readonly XunitLogger<Kernel> _logger = new(output);
 
-    private readonly RedirectOutput _testOutputHelper;
+    private readonly RedirectOutput _testOutputHelper = new(output);
 
     private readonly Dictionary<AIServiceType, Action<Kernel>> _serviceConfiguration = [];
 
@@ -652,16 +640,10 @@ public sealed class OpenAICompletionTests : IDisposable
     }
 
 
-    private sealed class HttpHeaderHandler : DelegatingHandler
+    private sealed class HttpHeaderHandler(HttpMessageHandler innerHandler) : DelegatingHandler(innerHandler)
     {
 
         public System.Net.Http.Headers.HttpRequestHeaders? RequestHeaders { get; private set; }
-
-
-        public HttpHeaderHandler(HttpMessageHandler innerHandler)
-            : base(innerHandler)
-        {
-        }
 
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)

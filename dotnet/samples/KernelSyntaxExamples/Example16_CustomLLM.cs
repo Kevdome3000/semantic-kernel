@@ -29,7 +29,7 @@ using Xunit.Abstractions;
  *
  * Refer to example 33 for streaming chat completion.
  */
-public class Example16_CustomLLM : BaseTest
+public class Example16_CustomLLM(ITestOutputHelper output) : BaseTest(output)
 {
 
     [Fact]
@@ -134,11 +134,6 @@ providing personalized recommendations, entertainment, and assistance. AI is awe
             ]);
         }
 
-    }
-
-
-    public Example16_CustomLLM(ITestOutputHelper output) : base(output)
-    {
     }
 
 }

@@ -51,12 +51,12 @@ public class BroadcastQueueTests
         Assert.Empty(channel.ReceivedMessages);
 
         // Verify empty invocation with no channels.
-        queue.Enqueue(Array.Empty<ChannelReference>(), Array.Empty<ChatMessageContent>());
+        queue.Enqueue([], []);
         await VerifyReceivingStateAsync(receiveCount: 0, queue, channel, "test");
         Assert.Empty(channel.ReceivedMessages);
 
         // Verify empty invocation of channel.
-        queue.Enqueue([reference], Array.Empty<ChatMessageContent>());
+        queue.Enqueue([reference], []);
         await VerifyReceivingStateAsync(receiveCount: 1, queue, channel, "test");
         Assert.Empty(channel.ReceivedMessages);
 
@@ -144,7 +144,7 @@ public class BroadcastQueueTests
 
         public int ReceiveCount { get; private set; }
 
-        public List<ChatMessageContent> ReceivedMessages { get; } = new();
+        public List<ChatMessageContent> ReceivedMessages { get; } = [];
 
 
         protected internal override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken)
@@ -162,7 +162,7 @@ public class BroadcastQueueTests
         protected internal override async Task ReceiveAsync(IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
         {
             this.ReceivedMessages.AddRange(history);
-            this.ReceiveCount += 1;
+            this.ReceiveCount++;
 
             await Task.Delay(this.ReceiveDuration, cancellationToken);
         }

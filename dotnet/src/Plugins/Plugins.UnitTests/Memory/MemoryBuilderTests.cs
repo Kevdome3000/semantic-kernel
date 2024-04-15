@@ -16,6 +16,7 @@ using Xunit;
 /// </summary>
 public sealed class MemoryBuilderTests
 {
+
     [Fact]
     public void ItThrowsExceptionWhenMemoryStoreIsNotProvided()
     {
@@ -23,7 +24,7 @@ public sealed class MemoryBuilderTests
         var builder = new MemoryBuilder();
 
         // Act
-        var exception = Assert.Throws<KernelException>(() => builder.Build());
+        var exception = Assert.Throws<KernelException>(builder.Build);
 
         // Assert
         Assert.Equal("IMemoryStore dependency was not provided. Use WithMemoryStore method.", exception.Message);
@@ -34,11 +35,10 @@ public sealed class MemoryBuilderTests
     public void ItThrowsExceptionWhenEmbeddingGenerationIsNotProvided()
     {
         // Arrange
-        var builder = new MemoryBuilder()
-            .WithMemoryStore(Mock.Of<IMemoryStore>());
+        var builder = new MemoryBuilder().WithMemoryStore(Mock.Of<IMemoryStore>());
 
         // Act
-        var exception = Assert.Throws<KernelException>(() => builder.Build());
+        var exception = Assert.Throws<KernelException>(builder.Build);
 
         // Assert
         Assert.Equal("ITextEmbeddingGenerationService dependency was not provided. Use WithTextEmbeddingGeneration method.", exception.Message);
@@ -49,9 +49,8 @@ public sealed class MemoryBuilderTests
     public void ItInitializesMemoryWhenRequiredDependenciesAreProvided()
     {
         // Arrange
-        var builder = new MemoryBuilder()
-            .WithMemoryStore(Mock.Of<IMemoryStore>())
-            .WithTextEmbeddingGeneration(Mock.Of<ITextEmbeddingGenerationService>());
+        var builder = new MemoryBuilder().WithMemoryStore(Mock.Of<IMemoryStore>()).
+            WithTextEmbeddingGeneration(Mock.Of<ITextEmbeddingGenerationService>());
 
         // Act
         var memory = builder.Build();
@@ -69,23 +68,22 @@ public sealed class MemoryBuilderTests
         var loggerFactoryUnused = Mock.Of<ILoggerFactory>();
 
         // Act & Assert
-        var builder = new MemoryBuilder()
-            .WithLoggerFactory(loggerFactoryUsed)
-            .WithMemoryStore((loggerFactory) =>
+        var builder = new MemoryBuilder().WithLoggerFactory(loggerFactoryUsed).
+            WithMemoryStore((loggerFactory) =>
             {
                 Assert.Same(loggerFactoryUsed, loggerFactory);
                 Assert.NotSame(loggerFactoryUnused, loggerFactory);
 
                 return Mock.Of<IMemoryStore>();
-            })
-            .WithTextEmbeddingGeneration((loggerFactory, httpClient) =>
+            }).
+            WithTextEmbeddingGeneration((loggerFactory, httpClient) =>
             {
                 Assert.Same(loggerFactoryUsed, loggerFactory);
                 Assert.NotSame(loggerFactoryUnused, loggerFactory);
 
                 return Mock.Of<ITextEmbeddingGenerationService>();
-            })
-            .Build();
+            }).
+            Build();
     }
 
 
@@ -97,22 +95,22 @@ public sealed class MemoryBuilderTests
         using var httpClientUnused = new HttpClient();
 
         // Act & Assert
-        var builder = new MemoryBuilder()
-            .WithHttpClient(httpClientUsed)
-            .WithMemoryStore((loggerFactory, httpClient) =>
+        var builder = new MemoryBuilder().WithHttpClient(httpClientUsed).
+            WithMemoryStore((loggerFactory, httpClient) =>
             {
                 Assert.Same(httpClientUsed, httpClient);
                 Assert.NotSame(httpClientUnused, httpClient);
 
                 return Mock.Of<IMemoryStore>();
-            })
-            .WithTextEmbeddingGeneration((loggerFactory, httpClient) =>
+            }).
+            WithTextEmbeddingGeneration((loggerFactory, httpClient) =>
             {
                 Assert.Same(httpClientUsed, httpClient);
                 Assert.NotSame(httpClientUnused, httpClient);
 
                 return Mock.Of<ITextEmbeddingGenerationService>();
-            })
-            .Build();
+            }).
+            Build();
     }
+
 }

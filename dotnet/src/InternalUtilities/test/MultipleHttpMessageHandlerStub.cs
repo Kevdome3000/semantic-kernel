@@ -34,9 +34,10 @@ internal sealed class MultipleHttpMessageHandlerStub : DelegatingHandler
 
     internal void AddJsonResponse(string json)
     {
-        var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
-        response.Content = new StringContent(json, Encoding.UTF8, MediaTypeNames.Application.Json);
-        this.ResponsesToReturn.Add(response);
+        this.ResponsesToReturn.Add(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, MediaTypeNames.Application.Json)
+        });
     }
 
 

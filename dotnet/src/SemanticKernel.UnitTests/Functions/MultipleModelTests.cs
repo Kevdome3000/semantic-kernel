@@ -24,10 +24,10 @@ public class MultipleModelTests
         var fakeTextContent = new TextContent("llmResult");
 
         mockTextGeneration1.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).
-            ReturnsAsync(new[] { fakeTextContent });
+            ReturnsAsync([fakeTextContent]);
 
         mockTextGeneration2.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).
-            ReturnsAsync(new[] { fakeTextContent });
+            ReturnsAsync([fakeTextContent]);
 
         IKernelBuilder builder = Kernel.CreateBuilder();
         builder.Services.AddKeyedSingleton("service1", mockTextGeneration1.Object);
@@ -83,13 +83,13 @@ public class MultipleModelTests
         var fakeTextContent = new TextContent("llmResult");
 
         mockTextGeneration1.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).
-            ReturnsAsync(new[] { fakeTextContent });
+            ReturnsAsync([fakeTextContent]);
 
         mockTextGeneration2.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).
-            ReturnsAsync(new[] { fakeTextContent });
+            ReturnsAsync([fakeTextContent]);
 
         mockTextGeneration3.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).
-            ReturnsAsync(new[] { fakeTextContent });
+            ReturnsAsync([fakeTextContent]);
 
         IKernelBuilder builder = Kernel.CreateBuilder();
         builder.Services.AddKeyedSingleton("service1", mockTextGeneration1.Object);
@@ -126,13 +126,13 @@ public class MultipleModelTests
         var fakeTextContent = new TextContent("llmResult");
 
         mockTextGeneration1.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).
-            ReturnsAsync(new[] { fakeTextContent });
+            ReturnsAsync([fakeTextContent]);
 
         mockTextGeneration2.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).
-            ReturnsAsync(new[] { fakeTextContent });
+            ReturnsAsync([fakeTextContent]);
 
         mockTextGeneration3.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).
-            ReturnsAsync(new[] { fakeTextContent });
+            ReturnsAsync([fakeTextContent]);
 
         IKernelBuilder builder = Kernel.CreateBuilder();
         builder.Services.AddKeyedSingleton("service1", mockTextGeneration1.Object);

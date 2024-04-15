@@ -614,7 +614,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         GeminiPart? part = candidate.Content?.Parts?[0];
 
         GeminiPart.FunctionCallPart[]? toolCalls = part?.FunctionCall is { } function
-            ? new[] { function }
+            ? [function]
             : null;
 
         return new GeminiChatMessageContent(

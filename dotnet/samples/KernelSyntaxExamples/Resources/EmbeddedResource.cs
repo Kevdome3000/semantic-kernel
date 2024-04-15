@@ -62,7 +62,7 @@ internal static class EmbeddedResource
     }
 
 
-    internal async static Task<ReadOnlyMemory<byte>> ReadAllAsync(string fileName)
+    internal static async Task<ReadOnlyMemory<byte>> ReadAllAsync(string fileName)
     {
         await using Stream? resourceStream = ReadStream(fileName);
         using var memoryStream = new MemoryStream();

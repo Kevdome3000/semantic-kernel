@@ -16,7 +16,7 @@ using Xunit;
 using Xunit.Abstractions;
 
 
-public sealed class Step8_Pipelining : BaseTest
+public sealed class Step8_Pipelining(ITestOutputHelper output) : BaseTest(output)
 {
 
     /// <summary>
@@ -51,7 +51,7 @@ public sealed class Step8_Pipelining : BaseTest
                 InputVariables = [new() { Name = "number" }],
             });
 
-            KernelFunction pipeline = KernelFunctionCombinators.Pipe(new[] { parseInt32, multiplyByN, truncate, humanize }, "pipeline");
+            KernelFunction pipeline = KernelFunctionCombinators.Pipe([parseInt32, multiplyByN, truncate, humanize], "pipeline");
 
             KernelArguments args = new()
             {
@@ -83,11 +83,6 @@ public sealed class Step8_Pipelining : BaseTest
 
             WriteLine(await graph.InvokeAsync(kernel));
         }
-    }
-
-
-    public Step8_Pipelining(ITestOutputHelper output) : base(output)
-    {
     }
 
 }

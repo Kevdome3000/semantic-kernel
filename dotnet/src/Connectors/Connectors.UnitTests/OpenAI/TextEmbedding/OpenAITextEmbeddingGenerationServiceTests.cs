@@ -19,8 +19,11 @@ using Xunit;
 /// </summary>
 public sealed class OpenAITextEmbeddingGenerationServiceTests : IDisposable
 {
+
     private readonly HttpMessageHandlerStub _messageHandlerStub;
+
     private readonly HttpClient _httpClient;
+
     private readonly Mock<ILoggerFactory> _mockLoggerFactory;
 
 
@@ -55,6 +58,7 @@ public sealed class OpenAITextEmbeddingGenerationServiceTests : IDisposable
     {
         // Arrange & Act
         var client = new OpenAIClient("key");
+
         var service = includeLoggerFactory
             ? new OpenAITextEmbeddingGenerationService("model-id", client, loggerFactory: this._mockLoggerFactory.Object)
             : new OpenAITextEmbeddingGenerationService("model-id", client);
@@ -84,13 +88,16 @@ public sealed class OpenAITextEmbeddingGenerationServiceTests : IDisposable
     {
         // Arrange
         var service = new OpenAITextEmbeddingGenerationService("model-id", "api-key", "organization", this._httpClient);
+
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         {
-            Content = new StringContent(@"{
-                                            ""object"": ""list"",
-                                            ""data"": [],
-                                            ""model"": ""model-id""
-                                        }", Encoding.UTF8, "application/json")
+            Content = new StringContent("""
+                                        {
+                                            "object": "list",
+                                            "data": [],
+                                            "model": "model-id"
+                                        }
+                                        """, Encoding.UTF8, "application/json")
         };
 
         // Act & Assert
@@ -104,22 +111,25 @@ public sealed class OpenAITextEmbeddingGenerationServiceTests : IDisposable
     {
         // Arrange
         var service = new OpenAITextEmbeddingGenerationService("model-id", "api-key", "organization", this._httpClient);
+
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         {
-            Content = new StringContent(@"{
-                                            ""object"": ""list"",
-                                            ""data"": [
+            Content = new StringContent("""
+                                        {
+                                            "object": "list",
+                                            "data": [
                                                 {
-                                                    ""object"": ""embedding"",
-                                                    ""embedding"": [
+                                                    "object": "embedding",
+                                                    "embedding": [
                                                         0.018990106880664825,
                                                         -0.0073809814639389515
                                                     ],
-                                                    ""index"": 0
+                                                    "index": 0
                                                 }
                                             ],
-                                            ""model"": ""model-id""
-                                        }", Encoding.UTF8, "application/json")
+                                            "model": "model-id"
+                                        }
+                                        """, Encoding.UTF8, "application/json")
         };
 
         // Act
@@ -140,4 +150,5 @@ public sealed class OpenAITextEmbeddingGenerationServiceTests : IDisposable
         this._httpClient.Dispose();
         this._messageHandlerStub.Dispose();
     }
+
 }

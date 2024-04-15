@@ -64,40 +64,41 @@ public class PromptTemplateConfigTests
     public void DeserializingExpectMultipleModels()
     {
         // Arrange
-        string configPayload = @"
-{
-  ""schema"": 1,
-  ""description"": """",
-  ""execution_settings"": 
-  {
-    ""service1"": {
-      ""model_id"": ""gpt-4"",
-      ""max_tokens"": 200,
-      ""temperature"": 0.2,
-      ""top_p"": 0.0,
-      ""presence_penalty"": 0.0,
-      ""frequency_penalty"": 0.0,
-      ""stop_sequences"": 
-      [
-        ""Human"",
-        ""AI""
-      ]
-    },
-    ""service2"": {
-      ""model_id"": ""gpt-3.5_turbo"",
-      ""max_tokens"": 256,
-      ""temperature"": 0.3,
-      ""top_p"": 0.0,
-      ""presence_penalty"": 0.0,
-      ""frequency_penalty"": 0.0,
-      ""stop_sequences"": 
-      [
-        ""Human"",
-        ""AI""
-      ]
-    }
-  }
-}";
+        string configPayload = """
+                               {
+                                 "schema": 1,
+                                 "description": "",
+                                 "execution_settings":
+                                 {
+                                   "service1": {
+                                     "model_id": "gpt-4",
+                                     "max_tokens": 200,
+                                     "temperature": 0.2,
+                                     "top_p": 0.0,
+                                     "presence_penalty": 0.0,
+                                     "frequency_penalty": 0.0,
+                                     "stop_sequences":
+                                     [
+                                       "Human",
+                                       "AI"
+                                     ]
+                                   },
+                                   "service2": {
+                                     "model_id": "gpt-3.5_turbo",
+                                     "max_tokens": 256,
+                                     "temperature": 0.3,
+                                     "top_p": 0.0,
+                                     "presence_penalty": 0.0,
+                                     "frequency_penalty": 0.0,
+                                     "stop_sequences":
+                                     [
+                                       "Human",
+                                       "AI"
+                                     ]
+                                   }
+                                 }
+                               }
+                               """;
 
         // Act
         var promptTemplateConfig = JsonSerializer.Deserialize<PromptTemplateConfig>(configPayload);
@@ -113,27 +114,28 @@ public class PromptTemplateConfigTests
     public void DeserializingExpectCompletion()
     {
         // Arrange
-        string configPayload = @"
-{
-  ""schema"": 1,
-  ""description"": """",
-  ""execution_settings"": 
-  {
-    ""default"": {
-      ""model_id"": ""gpt-4"",
-      ""max_tokens"": 200,
-      ""temperature"": 0.2,
-      ""top_p"": 0.0,
-      ""presence_penalty"": 0.0,
-      ""frequency_penalty"": 0.0,
-      ""stop_sequences"": 
-      [
-        ""Human"",
-        ""AI""
-      ]
-    }
-  }
-}";
+        string configPayload = """
+                               {
+                                 "schema": 1,
+                                 "description": "",
+                                 "execution_settings":
+                                 {
+                                   "default": {
+                                     "model_id": "gpt-4",
+                                     "max_tokens": 200,
+                                     "temperature": 0.2,
+                                     "top_p": 0.0,
+                                     "presence_penalty": 0.0,
+                                     "frequency_penalty": 0.0,
+                                     "stop_sequences":
+                                     [
+                                       "Human",
+                                       "AI"
+                                     ]
+                                   }
+                                 }
+                               }
+                               """;
 
         // Act
         var promptTemplateConfig = JsonSerializer.Deserialize<PromptTemplateConfig>(configPayload);
@@ -149,19 +151,20 @@ public class PromptTemplateConfigTests
     public void DeserializingExpectInputVariables()
     {
         // Arrange
-        string configPayload = @"
-{
-  ""description"": ""function description"",
-  ""input_variables"":
-    [
-        {
-            ""name"": ""input variable name"",
-            ""description"": ""input variable description"",
-            ""default"": ""default value"",
-            ""is_required"": true
-        }
-    ]
-}";
+        string configPayload = """
+                               {
+                                 "description": "function description",
+                                 "input_variables":
+                                   [
+                                       {
+                                           "name": "input variable name",
+                                           "description": "input variable description",
+                                           "default": "default value",
+                                           "is_required": true
+                                       }
+                                   ]
+                               }
+                               """;
 
         // Act
         var promptTemplateConfig = JsonSerializer.Deserialize<PromptTemplateConfig>(configPayload);
@@ -184,14 +187,15 @@ public class PromptTemplateConfigTests
     public void DeserializingExpectOutputVariable()
     {
         // Arrange
-        string configPayload = @"
-{
-  ""description"": ""function description"",
-  ""output_variable"": 
-    {
-        ""description"": ""output variable description""
-    }
-}";
+        string configPayload = """
+                               {
+                                 "description": "function description",
+                                 "output_variable":
+                                   {
+                                       "description": "output variable description"
+                                   }
+                               }
+                               """;
 
         // Act
         var promptTemplateConfig = JsonSerializer.Deserialize<PromptTemplateConfig>(configPayload);

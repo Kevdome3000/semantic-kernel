@@ -11,7 +11,7 @@ using Xunit;
 using Xunit.Abstractions;
 
 
-public sealed class Example97_GeminiVision : BaseTest
+public sealed class Example97_GeminiVision(ITestOutputHelper output) : BaseTest(output)
 {
 
     [Fact]
@@ -128,11 +128,6 @@ public sealed class Example97_GeminiVision : BaseTest
         var reply = await chatCompletionService.GetChatMessageContentAsync(chatHistory);
 
         WriteLine(reply.Content);
-    }
-
-
-    public Example97_GeminiVision(ITestOutputHelper output) : base(output)
-    {
     }
 
 }

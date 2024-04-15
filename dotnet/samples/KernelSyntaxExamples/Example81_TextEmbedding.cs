@@ -12,7 +12,7 @@ using Xunit;
 using Xunit.Abstractions;
 
 
-public class Example81_TextEmbedding : BaseTest
+public class Example81_TextEmbedding(ITestOutputHelper output) : BaseTest(output)
 {
 
     [Fact]
@@ -66,11 +66,6 @@ public class Example81_TextEmbedding : BaseTest
         var tokens = encoding.Encode(text);
 
         return tokens.Count;
-    }
-
-
-    public Example81_TextEmbedding(ITestOutputHelper output) : base(output)
-    {
     }
 
 

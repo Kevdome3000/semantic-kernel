@@ -17,7 +17,7 @@ using Xunit.Abstractions;
 /// <summary>
 /// This example shows how to using Dependency Injection with the Semantic Kernel
 /// </summary>
-public sealed class Step4_Dependency_Injection : BaseTest
+public sealed class Step4_Dependency_Injection(ITestOutputHelper output) : BaseTest(output)
 {
 
     /// <summary>
@@ -77,11 +77,6 @@ public sealed class Step4_Dependency_Injection : BaseTest
             return utcNow;
         }
 
-    }
-
-
-    public Step4_Dependency_Injection(ITestOutputHelper output) : base(output)
-    {
     }
 
 }

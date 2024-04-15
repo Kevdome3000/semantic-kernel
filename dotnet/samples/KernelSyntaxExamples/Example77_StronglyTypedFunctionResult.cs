@@ -15,18 +15,19 @@ using Xunit.Abstractions;
 // The following example shows how to receive the results from the kernel in a strongly typed object
 // which stores the usage in tokens and converts the JSON result to a strongly typed object, where a validation can also
 // be performed
-public class Example77_StronglyTypedFunctionResult : BaseTest
+public class Example77_StronglyTypedFunctionResult(ITestOutputHelper output) : BaseTest(output)
 {
+
     [Fact]
     public async Task RunAsync()
     {
         this.WriteLine("======== Extended function result ========");
 
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(
+        Kernel kernel = Kernel.CreateBuilder().
+            AddOpenAIChatCompletion(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
-                apiKey: TestConfiguration.OpenAI.ApiKey)
-            .Build();
+                apiKey: TestConfiguration.OpenAI.ApiKey).
+            Build();
 
         var promptTestDataGeneration = "Return a JSON with an array of 3 JSON objects with the following fields: " +
                                        "First, an id field with a random GUID, next a name field with a random company name and last a description field with a random short company description. " +
@@ -49,11 +50,6 @@ public class Example77_StronglyTypedFunctionResult : BaseTest
     }
 
 
-    public Example77_StronglyTypedFunctionResult(ITestOutputHelper output) : base(output)
-    {
-    }
-
-
     /// <summary>
     /// Helper classes for the example,
     /// put in the same file for simplicity
@@ -61,15 +57,21 @@ public class Example77_StronglyTypedFunctionResult : BaseTest
     /// <remarks>The structure to put the JSON result in a strongly typed object</remarks>
     private sealed class RootObject
     {
+
         public List<TestCompany> TestCompanies { get; set; }
+
     }
 
 
     private sealed class TestCompany
     {
+
         public string Id { get; set; }
+
         public string Name { get; set; }
+
         public string Description { get; set; }
+
     }
 
 
@@ -78,6 +80,7 @@ public class Example77_StronglyTypedFunctionResult : BaseTest
     /// </summary>
     private sealed class FunctionResultTestDataGen : FunctionResultExtended
     {
+
         public List<TestCompany> TestCompanies { get; set; }
 
         public long ExecutionTimeInMilliseconds { get; init; }
@@ -117,22 +120,19 @@ public class Example77_StronglyTypedFunctionResult : BaseTest
 
             return companies;
         }
+
     }
 
 
-    private sealed class TokenCounts
+    private sealed class TokenCounts(int completionTokens, int promptTokens, int totalTokens)
     {
-        public int CompletionTokens { get; init; }
-        public int PromptTokens { get; init; }
-        public int TotalTokens { get; init; }
 
+        public int CompletionTokens { get; init; } = completionTokens;
 
-        public TokenCounts(int completionTokens, int promptTokens, int totalTokens)
-        {
-            CompletionTokens = completionTokens;
-            PromptTokens = promptTokens;
-            TotalTokens = totalTokens;
-        }
+        public int PromptTokens { get; init; } = promptTokens;
+
+        public int TotalTokens { get; init; } = totalTokens;
+
     }
 
 
@@ -141,7 +141,9 @@ public class Example77_StronglyTypedFunctionResult : BaseTest
     /// </summary>
     private class FunctionResultExtended
     {
+
         public string Result { get; init; }
+
         public TokenCounts? TokenCounts { get; set; }
 
         public FunctionResult FunctionResult { get; init; }
@@ -158,5 +160,7 @@ public class Example77_StronglyTypedFunctionResult : BaseTest
         {
             return this.FunctionResult.GetValue<string>() ?? string.Empty;
         }
+
     }
+
 }

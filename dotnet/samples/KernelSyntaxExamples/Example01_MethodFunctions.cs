@@ -8,8 +8,9 @@ using Xunit;
 using Xunit.Abstractions;
 
 
-public class Example01_MethodFunctions : BaseTest
+public class Example01_MethodFunctions(ITestOutputHelper output) : BaseTest(output)
 {
+
     [Fact]
     public Task RunAsync()
     {
@@ -26,8 +27,4 @@ public class Example01_MethodFunctions : BaseTest
         return Task.CompletedTask;
     }
 
-
-    public Example01_MethodFunctions(ITestOutputHelper output) : base(output)
-    {
-    }
 }

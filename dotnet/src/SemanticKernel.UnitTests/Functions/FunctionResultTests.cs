@@ -14,6 +14,7 @@ using Xunit;
 /// </summary>
 public class FunctionResultTests
 {
+
     private static readonly KernelFunction s_nopFunction = KernelFunctionFactory.CreateFromMethod(() => { });
 
 
@@ -50,7 +51,9 @@ public class FunctionResultTests
     public void GetValueReturnsValueWhenValueIsNotNull()
     {
         // Arrange
-        string value = Guid.NewGuid().ToString();
+        string value = Guid.NewGuid().
+            ToString();
+
         FunctionResult target = new(s_nopFunction, value, CultureInfo.InvariantCulture);
 
         // Act,Assert
@@ -77,7 +80,7 @@ public class FunctionResultTests
         FunctionResult target = new(s_nopFunction, value, CultureInfo.InvariantCulture);
 
         // Act,Assert
-        Assert.Throws<InvalidCastException>(() => target.GetValue<string>());
+        Assert.Throws<InvalidCastException>(target.GetValue<string>);
     }
 
 
@@ -96,8 +99,11 @@ public class FunctionResultTests
     public void ConstructorSetsPropertiesAndValue()
     {
         // Arrange
-        string functionName = Guid.NewGuid().ToString();
-        string value = Guid.NewGuid().ToString();
+        string functionName = Guid.NewGuid().
+            ToString();
+
+        string value = Guid.NewGuid().
+            ToString();
 
         // Act
         FunctionResult target = new(s_nopFunction, value, CultureInfo.InvariantCulture);
@@ -112,7 +118,9 @@ public class FunctionResultTests
     public void ToStringWorksCorrectly()
     {
         // Arrange
-        string value = Guid.NewGuid().ToString();
+        string value = Guid.NewGuid().
+            ToString();
+
         FunctionResult target = new(s_nopFunction, value, CultureInfo.InvariantCulture);
 
         // Act and Assert
@@ -124,7 +132,9 @@ public class FunctionResultTests
     public void GetValueWhenValueIsKernelContentGenericStringShouldReturnContentBaseToString()
     {
         // Arrange
-        string expectedValue = Guid.NewGuid().ToString();
+        string expectedValue = Guid.NewGuid().
+            ToString();
+
         FunctionResult target = new(s_nopFunction, new TextContent(expectedValue));
 
         // Act and Assert
@@ -136,7 +146,9 @@ public class FunctionResultTests
     public void GetValueWhenValueIsKernelContentGenericTypeMatchShouldReturn()
     {
         // Arrange
-        string expectedValue = Guid.NewGuid().ToString();
+        string expectedValue = Guid.NewGuid().
+            ToString();
+
         var valueType = new TextContent(expectedValue);
         FunctionResult target = new(s_nopFunction, valueType);
 
@@ -145,4 +157,5 @@ public class FunctionResultTests
         Assert.Equal(valueType, target.GetValue<TextContent>());
         Assert.Equal(valueType, target.GetValue<KernelContent>());
     }
+
 }

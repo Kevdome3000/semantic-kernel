@@ -14,22 +14,28 @@ using Xunit.Abstractions;
 
 
 // This example shows how to use a retry handler within a Semantic Kernel
-public class Example08_RetryHandler : BaseTest
+public class Example08_RetryHandler(ITestOutputHelper output) : BaseTest(output)
 {
+
     [Fact]
     public async Task RunAsync()
     {
         // Create a Kernel with the HttpClient
         IKernelBuilder builder = Kernel.CreateBuilder();
-        builder.Services.AddLogging(c => c.AddConsole().SetMinimumLevel(LogLevel.Information));
+
+        builder.Services.AddLogging(c => c.AddConsole().
+            SetMinimumLevel(LogLevel.Information));
+
         builder.Services.ConfigureHttpClientDefaults(c =>
         {
             // Use a standard resiliency policy, augmented to retry on 401 Unauthorized for this example
-            c.AddStandardResilienceHandler().Configure(o =>
-            {
-                o.Retry.ShouldHandle = args => ValueTask.FromResult(args.Outcome.Result?.StatusCode is HttpStatusCode.Unauthorized);
-            });
+            c.AddStandardResilienceHandler().
+                Configure(o =>
+                {
+                    o.Retry.ShouldHandle = args => ValueTask.FromResult(args.Outcome.Result?.StatusCode is HttpStatusCode.Unauthorized);
+                });
         });
+
         builder.Services.AddOpenAIChatCompletion("gpt-4", "BAD_KEY"); // OpenAI settings - you can set the OpenAI.ApiKey to an invalid value to see the retry policy in play
         Kernel kernel = builder.Build();
 
@@ -56,8 +62,4 @@ public class Example08_RetryHandler : BaseTest
         }
     }
 
-
-    public Example08_RetryHandler(ITestOutputHelper output) : base(output)
-    {
-    }
 }

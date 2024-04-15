@@ -15,7 +15,7 @@ using Xunit.Abstractions;
 /// Demonstrate creation of <see cref="ChatCompletionAgent"/> and
 /// eliciting its response to three explicit user messages.
 /// </summary>
-public class Example01_Agent : BaseTest
+public class Example01_Agent(ITestOutputHelper output) : BaseTest(output)
 {
 
     private const string ParrotName = "Parrot";
@@ -55,12 +55,6 @@ public class Example01_Agent : BaseTest
                 this.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
             }
         }
-    }
-
-
-    public Example01_Agent(ITestOutputHelper output)
-        : base(output)
-    {
     }
 
 

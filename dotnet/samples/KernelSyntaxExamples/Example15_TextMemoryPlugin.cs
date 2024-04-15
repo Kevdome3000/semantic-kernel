@@ -25,8 +25,9 @@ using Xunit;
 using Xunit.Abstractions;
 
 
-public class Example15_TextMemoryPlugin : BaseTest
+public class Example15_TextMemoryPlugin(ITestOutputHelper output) : BaseTest(output)
 {
+
     private const string MemoryCollectionName = "aboutMe";
 
 
@@ -35,22 +36,16 @@ public class Example15_TextMemoryPlugin : BaseTest
     [InlineData("AzureAISearch")]
     public async Task RunAsync(string provider)
     {
-        IMemoryStore store;
-
-        ///////////////////////////////////////////////////////////////////////////////////////////
-        // INSTRUCTIONS: uncomment one of the following lines to select the memory store to use. //
-        ///////////////////////////////////////////////////////////////////////////////////////////
-
         // Volatile Memory Store - an in-memory store that is not persisted
-        switch (provider)
+        IMemoryStore store = provider switch
         {
-            case "AzureAISearch":
-                store = CreateSampleAzureAISearchMemoryStore();
-                break;
-            default:
-                store = new VolatileMemoryStore();
-                break;
-        }
+            "AzureAISearch" => CreateSampleAzureAISearchMemoryStore(),
+            _ => new VolatileMemoryStore(),
+        };
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////////
+        // INSTRUCTIONS: uncomment one of the following lines to select a different memory store to use. //
+        ///////////////////////////////////////////////////////////////////////////////////////////////////
 
         // Sqlite Memory Store - a file-based store that persists data in a Sqlite database
         // store = await CreateSampleSqliteMemoryStoreAsync();
@@ -92,6 +87,7 @@ public class Example15_TextMemoryPlugin : BaseTest
     private async Task<IMemoryStore> CreateSampleSqliteMemoryStoreAsync()
     {
         IMemoryStore store = await SqliteMemoryStore.ConnectAsync("memories.sqlite");
+
         return store;
     }
 
@@ -99,6 +95,7 @@ public class Example15_TextMemoryPlugin : BaseTest
     private async Task<IMemoryStore> CreateSampleDuckDbMemoryStoreAsync()
     {
         IMemoryStore store = await DuckDBMemoryStore.ConnectAsync("memories.duckdb");
+
         return store;
     }
 
@@ -106,6 +103,7 @@ public class Example15_TextMemoryPlugin : BaseTest
     private IMemoryStore CreateSampleMongoDBMemoryStore()
     {
         IMemoryStore store = new MongoDBMemoryStore(TestConfiguration.MongoDB.ConnectionString, "memoryPluginExample");
+
         return store;
     }
 
@@ -113,6 +111,7 @@ public class Example15_TextMemoryPlugin : BaseTest
     private IMemoryStore CreateSampleAzureAISearchMemoryStore()
     {
         IMemoryStore store = new AzureAISearchMemoryStore(TestConfiguration.AzureAISearch.Endpoint, TestConfiguration.AzureAISearch.ApiKey);
+
         return store;
     }
 
@@ -120,6 +119,7 @@ public class Example15_TextMemoryPlugin : BaseTest
     private IMemoryStore CreateSampleChromaMemoryStore()
     {
         IMemoryStore store = new ChromaMemoryStore(TestConfiguration.Chroma.Endpoint, ConsoleLogger.LoggerFactory);
+
         return store;
     }
 
@@ -127,6 +127,7 @@ public class Example15_TextMemoryPlugin : BaseTest
     private IMemoryStore CreateSampleQdrantMemoryStore()
     {
         IMemoryStore store = new QdrantMemoryStore(TestConfiguration.Qdrant.Endpoint, 1536, ConsoleLogger.LoggerFactory);
+
         return store;
     }
 
@@ -134,6 +135,7 @@ public class Example15_TextMemoryPlugin : BaseTest
     private IMemoryStore CreateSamplePineconeMemoryStore()
     {
         IMemoryStore store = new PineconeMemoryStore(TestConfiguration.Pinecone.Environment, TestConfiguration.Pinecone.ApiKey, ConsoleLogger.LoggerFactory);
+
         return store;
     }
 
@@ -141,6 +143,7 @@ public class Example15_TextMemoryPlugin : BaseTest
     private IMemoryStore CreateSampleWeaviateMemoryStore()
     {
         IMemoryStore store = new WeaviateMemoryStore(TestConfiguration.Weaviate.Endpoint, TestConfiguration.Weaviate.ApiKey);
+
         return store;
     }
 
@@ -151,6 +154,7 @@ public class Example15_TextMemoryPlugin : BaseTest
         ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configuration);
         IDatabase database = connectionMultiplexer.GetDatabase();
         IMemoryStore store = new RedisMemoryStore(database, vectorSize: 1536);
+
         return store;
     }
 
@@ -161,6 +165,7 @@ public class Example15_TextMemoryPlugin : BaseTest
         dataSourceBuilder.UseVector();
         NpgsqlDataSource dataSource = dataSourceBuilder.Build();
         IMemoryStore store = new PostgresMemoryStore(dataSource, vectorSize: 1536, schema: "public");
+
         return store;
     }
 
@@ -169,16 +174,17 @@ public class Example15_TextMemoryPlugin : BaseTest
     {
         var connectionString = new Kusto.Data.KustoConnectionStringBuilder(TestConfiguration.Kusto.ConnectionString).WithAadUserPromptAuthentication();
         IMemoryStore store = new KustoMemoryStore(connectionString, "MyDatabase");
+
         return store;
     }
 
 
     private async Task RunWithStoreAsync(IMemoryStore memoryStore)
     {
-        var kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
-            .AddOpenAITextEmbeddingGeneration(TestConfiguration.OpenAI.EmbeddingModelId, TestConfiguration.OpenAI.ApiKey)
-            .Build();
+        var kernel = Kernel.CreateBuilder().
+            AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey).
+            AddOpenAITextEmbeddingGeneration(TestConfiguration.OpenAI.EmbeddingModelId, TestConfiguration.OpenAI.ApiKey).
+            Build();
 
         // Create an embedding generator to use for semantic memory.
         var embeddingGenerator = new OpenAITextEmbeddingGenerationService(TestConfiguration.OpenAI.EmbeddingModelId, TestConfiguration.OpenAI.ApiKey);
@@ -225,6 +231,7 @@ public class Example15_TextMemoryPlugin : BaseTest
 
         // Save a memory with the Kernel
         WriteLine("Saving memory with key 'info5': \"My family is from New York\"");
+
         await kernel.InvokeAsync(memoryPlugin["Save"], new()
         {
             [TextMemoryPlugin.InputParam] = "My family is from New York",
@@ -234,6 +241,7 @@ public class Example15_TextMemoryPlugin : BaseTest
 
         // Retrieve a specific memory with the Kernel
         WriteLine("== PART 2b: Retrieving Memories through the Kernel with TextMemoryPlugin and the 'Retrieve' function ==");
+
         var result = await kernel.InvokeAsync(memoryPlugin["Retrieve"], new KernelArguments()
         {
             [TextMemoryPlugin.CollectionParam] = MemoryCollectionName,
@@ -345,6 +353,7 @@ Answer:
         {
             WriteLine(collection);
         }
+
         WriteLine();
 
         WriteLine($"Removing Collection {MemoryCollectionName}");
@@ -360,8 +369,4 @@ Answer:
         }
     }
 
-
-    public Example15_TextMemoryPlugin(ITestOutputHelper output) : base(output)
-    {
-    }
 }

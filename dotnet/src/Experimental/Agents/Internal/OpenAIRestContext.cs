@@ -9,7 +9,7 @@ using System.Net.Http;
 /// <summary>
 /// Placeholder context.
 /// </summary>
-internal sealed class OpenAIRestContext
+internal sealed class OpenAIRestContext(string endpoint, string apiKey, string? version, Func<HttpClient>? clientFactory = null)
 {
 
     private static readonly HttpClient s_defaultOpenAIClient = new();
@@ -17,22 +17,22 @@ internal sealed class OpenAIRestContext
     /// <summary>
     /// The service API key.
     /// </summary>
-    public string ApiKey { get; }
+    public string ApiKey { get; } = apiKey;
 
     /// <summary>
     /// The service endpoint.
     /// </summary>
-    public string Endpoint { get; }
+    public string Endpoint { get; } = endpoint;
 
     /// <summary>
     /// Is the version defined?
     /// </summary>
-    public bool HasVersion { get; }
+    public bool HasVersion { get; } = !string.IsNullOrEmpty(version);
 
     /// <summary>
     /// The optional API version.
     /// </summary>
-    public string? Version { get; }
+    public string? Version { get; } = version;
 
 
     /// <summary>
@@ -41,7 +41,7 @@ internal sealed class OpenAIRestContext
     public HttpClient GetHttpClient() => this._clientFactory.Invoke();
 
 
-    private readonly Func<HttpClient> _clientFactory;
+    private readonly Func<HttpClient> _clientFactory = clientFactory ??= () => s_defaultOpenAIClient;
 
 
     /// <summary>
@@ -50,24 +50,6 @@ internal sealed class OpenAIRestContext
     public OpenAIRestContext(string endpoint, string apiKey, Func<HttpClient>? clientFactory = null)
         : this(endpoint, apiKey, version: null, clientFactory)
     {
-    }
-
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="OpenAIRestContext"/> class.
-    /// </summary>
-    public OpenAIRestContext(
-        string endpoint,
-        string apiKey,
-        string? version,
-        Func<HttpClient>? clientFactory = null)
-    {
-        this._clientFactory = clientFactory ??= () => s_defaultOpenAIClient;
-
-        this.ApiKey = apiKey;
-        this.Endpoint = endpoint;
-        this.HasVersion = !string.IsNullOrEmpty(version);
-        this.Version = version;
     }
 
 }

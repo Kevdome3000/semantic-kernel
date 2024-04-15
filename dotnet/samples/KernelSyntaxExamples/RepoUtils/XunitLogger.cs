@@ -10,17 +10,8 @@ using Xunit.Abstractions;
 /// <summary>
 /// A logger that writes to the Xunit test output
 /// </summary>
-internal sealed class XunitLogger : ILoggerFactory, ILogger, IDisposable
+internal sealed class XunitLogger(ITestOutputHelper output) : ILoggerFactory, ILogger, IDisposable
 {
-
-    private readonly ITestOutputHelper _output;
-
-
-    public XunitLogger(ITestOutputHelper output)
-    {
-        this._output = output;
-    }
-
 
     /// <inheritdoc/>
     public void Log<TState>(
@@ -29,9 +20,7 @@ internal sealed class XunitLogger : ILoggerFactory, ILogger, IDisposable
         TState state,
         Exception? exception,
         Func<TState, Exception?, string> formatter)
-    {
-        this._output.WriteLine(state?.ToString());
-    }
+        => output.WriteLine(state?.ToString());
 
 
     /// <inheritdoc/>

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using Syste
+namespace GettingStarted;
 
 using System;
 using System.ComponentModel;
@@ -9,14 +8,17 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Examples;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Xunit;
 using Xunit.Abstractions;
 
 
-// <summary>
-//// This example shows how to load a <see cref="KernelPlugin"/> instances./// </summary>
-public sealed class Step2_Add_Plugins : BaseTest
+/// <summary>
+/// This example shows how to load a <see cref="KernelPlugin"/> instances.
+/// </summary>
+public sealed class Step2_Add_Plugins(ITestOutputHelper output) : BaseTest(output)
 {
+
     /// <summary>
     /// Shows different ways to load a <see cref="KernelPlugin"/> instances.
     /// </summary>
@@ -25,9 +27,11 @@ public sealed class Step2_Add_Plugins : BaseTest
     {
         // Create a kernel with OpenAI chat completion
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
+
         kernelBuilder.AddOpenAIChatCompletion(
-                modelId: TestConfiguration.OpenAI.ChatModelId,
-                apiKey: TestConfiguration.OpenAI.ApiKey);
+            modelId: TestConfiguration.OpenAI.ChatModelId,
+            apiKey: TestConfiguration.OpenAI.ApiKey);
+
         kernelBuilder.Plugins.AddFromType<TimeInformation>();
         kernelBuilder.Plugins.AddFromType<WidgetFactory>();
         Kernel kernel = kernelBuilder.Build();
@@ -47,21 +51,26 @@ public sealed class Step2_Add_Plugins : BaseTest
         WriteLine(await kernel.InvokePromptAsync("Create a beautiful scarlet colored widget for me.", new(settings)));
     }
 
+
     /// <summary>
     /// A plugin that returns the current time.
     /// </summary>
     public class TimeInformation
     {
+
         [KernelFunction]
         [Description("Retrieves the current time in UTC.")]
         public string GetCurrentUtcTime() => DateTime.UtcNow.ToString("R");
+
     }
+
 
     /// <summary>
     /// A plugin that returns the current time.
     /// </summary>
     public class WidgetFactory
     {
+
         [KernelFunction]
         [Description("Creates a new widget of the specified type and color")]
         public WidgetDetails CreateWidget([Description("The type of widget to be created")] WidgetType widgetType, [Description("The color of the widget to be created")] WidgetColor widgetColor)
@@ -73,21 +82,27 @@ public sealed class Step2_Add_Plugins : BaseTest
                 Color = widgetColor
             };
         }
+
     }
+
 
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum WidgetType
     {
+
         [Description("A widget that is useful.")]
         Useful,
 
         [Description("A widget that is decorative.")]
         Decorative
+
     }
+
 
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum WidgetColor
     {
+
         [Description("Use when creating a red widget.")]
         Red,
 
@@ -96,16 +111,19 @@ public sealed class Step2_Add_Plugins : BaseTest
 
         [Description("Use when creating a blue widget.")]
         Blue
+
     }
+
 
     public class WidgetDetails
     {
+
         public string SerialNumber { get; init; }
+
         public WidgetType Type { get; init; }
+
         public WidgetColor Color { get; init; }
+
     }
 
-    public Step2_Add_Plugins(ITestOutputHelper output) : base(output)
-    {
-    }
 }

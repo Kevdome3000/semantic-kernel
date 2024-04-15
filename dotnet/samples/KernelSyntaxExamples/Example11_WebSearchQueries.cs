@@ -9,8 +9,9 @@ using Xunit;
 using Xunit.Abstractions;
 
 
-public class Example11_WebSearchQueries : BaseTest
+public class Example11_WebSearchQueries(ITestOutputHelper output) : BaseTest(output)
 {
+
     [Fact]
     public async Task RunAsync()
     {
@@ -37,8 +38,4 @@ public class Example11_WebSearchQueries : BaseTest
          */
     }
 
-
-    public Example11_WebSearchQueries(ITestOutputHelper output) : base(output)
-    {
-    }
 }

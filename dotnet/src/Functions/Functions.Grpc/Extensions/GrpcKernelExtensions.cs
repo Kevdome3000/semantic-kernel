@@ -174,7 +174,7 @@ public static class GrpcKernelExtensions
 
         ILoggerFactory loggerFactory = kernel.LoggerFactory;
 
-        var client = HttpClientProvider.GetHttpClient(kernel.Services.GetService<HttpClient>());
+        using var client = HttpClientProvider.GetHttpClient(kernel.Services.GetService<HttpClient>());
 
         var runner = new GrpcOperationRunner(client);
 

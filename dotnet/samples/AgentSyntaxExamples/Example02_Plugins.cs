@@ -17,7 +17,7 @@ using Xunit.Abstractions;
 /// Demonstrate creation of <see cref="ChatCompletionAgent"/> with a <see cref="KernelPlugin"/>,
 /// and then eliciting its response to explicit user messages.
 /// </summary>
-public class Example02_Plugins : BaseTest
+public class Example02_Plugins(ITestOutputHelper output) : BaseTest(output)
 {
 
     private const string HostName = "Host";
@@ -62,12 +62,6 @@ public class Example02_Plugins : BaseTest
                 this.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
             }
         }
-    }
-
-
-    public Example02_Plugins(ITestOutputHelper output)
-        : base(output)
-    {
     }
 
 

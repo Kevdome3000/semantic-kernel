@@ -21,11 +21,15 @@ using Xunit;
 /// </summary>
 public sealed class ChromaMemoryStoreTests : IDisposable
 {
+
     private const string CollectionId = "fake-collection-id";
+
     private const string CollectionName = "fake-collection-name";
 
     private readonly HttpMessageHandlerStub _messageHandlerStub;
+
     private readonly HttpClient _httpClient;
+
     private readonly Mock<IChromaClient> _chromaClientMock;
 
 
@@ -35,9 +39,8 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         this._httpClient = this.GetHttpClientStub();
         this._chromaClientMock = new Mock<IChromaClient>();
 
-        this._chromaClientMock
-            .Setup(client => client.GetCollectionAsync(CollectionName, CancellationToken.None))
-            .ReturnsAsync(new ChromaCollectionModel { Id = CollectionId, Name = CollectionName });
+        this._chromaClientMock.Setup(client => client.GetCollectionAsync(CollectionName, CancellationToken.None)).
+            ReturnsAsync(new ChromaCollectionModel { Id = CollectionId, Name = CollectionName });
     }
 
 
@@ -111,9 +114,8 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         const string CollectionDoesNotExistErrorMessage = $"Collection {CollectionName} does not exist";
         const string ExpectedExceptionMessage = $"Cannot delete non-existent collection {CollectionName}";
 
-        this._chromaClientMock
-            .Setup(client => client.DeleteCollectionAsync(CollectionName, CancellationToken.None))
-            .Throws(new HttpOperationException { ResponseContent = CollectionDoesNotExistErrorMessage });
+        this._chromaClientMock.Setup(client => client.DeleteCollectionAsync(CollectionName, CancellationToken.None)).
+            Throws(new HttpOperationException { ResponseContent = CollectionDoesNotExistErrorMessage });
 
         var store = new ChromaMemoryStore(this._chromaClientMock.Object);
 
@@ -147,9 +149,8 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         const string CollectionName = "non-existent-collection";
         const string CollectionDoesNotExistErrorMessage = $"Collection {CollectionName} does not exist";
 
-        this._chromaClientMock
-            .Setup(client => client.GetCollectionAsync(CollectionName, CancellationToken.None))
-            .Throws(new HttpOperationException { ResponseContent = CollectionDoesNotExistErrorMessage });
+        this._chromaClientMock.Setup(client => client.GetCollectionAsync(CollectionName, CancellationToken.None)).
+            Throws(new HttpOperationException { ResponseContent = CollectionDoesNotExistErrorMessage });
 
         var store = new ChromaMemoryStore(this._chromaClientMock.Object);
 
@@ -168,9 +169,8 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         var expectedMemoryRecord = this.GetRandomMemoryRecord();
         var embeddingsModel = this.GetEmbeddingsModelFromMemoryRecord(expectedMemoryRecord);
 
-        this._chromaClientMock
-            .Setup(client => client.GetEmbeddingsAsync(CollectionId, new[] { expectedMemoryRecord.Key }, It.IsAny<string[]>(), CancellationToken.None))
-            .ReturnsAsync(embeddingsModel);
+        this._chromaClientMock.Setup(client => client.GetEmbeddingsAsync(CollectionId, new[] { expectedMemoryRecord.Key }, It.IsAny<string[]>(), CancellationToken.None)).
+            ReturnsAsync(embeddingsModel);
 
         var store = new ChromaMemoryStore(this._chromaClientMock.Object);
 
@@ -189,9 +189,8 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         // Arrange
         const string MemoryRecordKey = "fake-record-key";
 
-        this._chromaClientMock
-            .Setup(client => client.GetEmbeddingsAsync(CollectionId, new[] { MemoryRecordKey }, It.IsAny<string[]>(), CancellationToken.None))
-            .ReturnsAsync(new ChromaEmbeddingsModel());
+        this._chromaClientMock.Setup(client => client.GetEmbeddingsAsync(CollectionId, new[] { MemoryRecordKey }, It.IsAny<string[]>(), CancellationToken.None)).
+            ReturnsAsync(new ChromaEmbeddingsModel());
 
         var store = new ChromaMemoryStore(this._chromaClientMock.Object);
 
@@ -211,9 +210,8 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         const string MemoryRecordKey = "fake-record-key";
         const string CollectionDoesNotExistErrorMessage = $"Collection {CollectionName} does not exist";
 
-        this._chromaClientMock
-            .Setup(client => client.GetCollectionAsync(CollectionName, CancellationToken.None))
-            .Throws(new KernelException(CollectionDoesNotExistErrorMessage));
+        this._chromaClientMock.Setup(client => client.GetCollectionAsync(CollectionName, CancellationToken.None)).
+            Throws(new KernelException(CollectionDoesNotExistErrorMessage));
 
         var store = new ChromaMemoryStore(this._chromaClientMock.Object);
 
@@ -234,19 +232,21 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         var memoryRecord2 = this.GetRandomMemoryRecord();
         var memoryRecord3 = this.GetRandomMemoryRecord();
 
-        var expectedMemoryRecords = new[] { memoryRecord1, memoryRecord2, memoryRecord3 };
-        var memoryRecordKeys = expectedMemoryRecords.Select(l => l.Key).ToArray();
+        MemoryRecord[] expectedMemoryRecords = [memoryRecord1, memoryRecord2, memoryRecord3];
+
+        var memoryRecordKeys = expectedMemoryRecords.Select(l => l.Key).
+            ToArray();
 
         var embeddingsModel = this.GetEmbeddingsModelFromMemoryRecords(expectedMemoryRecords);
 
-        this._chromaClientMock
-            .Setup(client => client.GetEmbeddingsAsync(CollectionId, memoryRecordKeys, It.IsAny<string[]>(), CancellationToken.None))
-            .ReturnsAsync(embeddingsModel);
+        this._chromaClientMock.Setup(client => client.GetEmbeddingsAsync(CollectionId, memoryRecordKeys, It.IsAny<string[]>(), CancellationToken.None)).
+            ReturnsAsync(embeddingsModel);
 
         var store = new ChromaMemoryStore(this._chromaClientMock.Object);
 
         // Act
-        var actualMemoryRecords = await store.GetBatchAsync(CollectionName, memoryRecordKeys, withEmbeddings: true).ToListAsync();
+        var actualMemoryRecords = await store.GetBatchAsync(CollectionName, memoryRecordKeys, withEmbeddings: true).
+            ToListAsync();
 
         // Assert
         Assert.Equal(expectedMemoryRecords.Length, actualMemoryRecords.Count);
@@ -264,14 +264,14 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         // Arrange
         var expectedCollections = new List<string> { "fake-collection-1", "fake-collection-2", "fake-collection-3" };
 
-        this._chromaClientMock
-            .Setup(client => client.ListCollectionsAsync(CancellationToken.None))
-            .Returns(expectedCollections.ToAsyncEnumerable());
+        this._chromaClientMock.Setup(client => client.ListCollectionsAsync(CancellationToken.None)).
+            Returns(expectedCollections.ToAsyncEnumerable());
 
         var store = new ChromaMemoryStore(this._chromaClientMock.Object);
 
         // Act
-        var actualCollections = await store.GetCollectionsAsync().ToListAsync();
+        var actualCollections = await store.GetCollectionsAsync().
+            ToListAsync();
 
         // Assert
         Assert.Equal(expectedCollections.Count, actualCollections.Count);
@@ -313,15 +313,20 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 
     private MemoryRecord GetRandomMemoryRecord(ReadOnlyMemory<float>? embedding = null)
     {
-        var id = Guid.NewGuid().ToString();
+        var id = Guid.NewGuid().
+            ToString();
+
         var memoryEmbedding = embedding ?? new[] { 1f, 3f, 5f };
 
         return MemoryRecord.LocalRecord(
             id: id,
-            text: "text-" + Guid.NewGuid().ToString(),
-            description: "description-" + Guid.NewGuid().ToString(),
+            text: "text-" + Guid.NewGuid().
+                ToString(),
+            description: "description-" + Guid.NewGuid().
+                ToString(),
             embedding: memoryEmbedding,
-            additionalMetadata: "metadata-" + Guid.NewGuid().ToString(),
+            additionalMetadata: "metadata-" + Guid.NewGuid().
+                ToString(),
             key: id);
     }
 
@@ -329,6 +334,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
     private Dictionary<string, object> GetEmbeddingMetadataFromMemoryRecord(MemoryRecord memoryRecord)
     {
         var serialized = JsonSerializer.Serialize(memoryRecord.Metadata);
+
         return JsonSerializer.Deserialize<Dictionary<string, object>>(serialized)!;
     }
 
@@ -347,7 +353,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 
     private ChromaEmbeddingsModel GetEmbeddingsModelFromMemoryRecord(MemoryRecord memoryRecord)
     {
-        return this.GetEmbeddingsModelFromMemoryRecords(new[] { memoryRecord });
+        return this.GetEmbeddingsModelFromMemoryRecords([memoryRecord]);
     }
 
     #endregion

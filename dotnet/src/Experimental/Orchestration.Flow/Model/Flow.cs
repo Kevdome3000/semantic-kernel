@@ -18,9 +18,6 @@ using System.Linq;
 public sealed class Flow : FlowStep
 {
 
-    private List<FlowStep> _steps;
-
-
     /// <summary>
     /// Initializes a new instance of the <see cref="Flow"/> class.
     /// </summary>
@@ -29,18 +26,14 @@ public sealed class Flow : FlowStep
     public Flow(string name, string goal) : base(goal, null)
     {
         this.Name = name;
-        this._steps = [];
+        this.Steps = [];
     }
 
 
     /// <summary>
     /// Steps of the flow
     /// </summary>
-    public List<FlowStep> Steps
-    {
-        get => this._steps;
-        set => this._steps = value;
-    }
+    public List<FlowStep> Steps { get; set; }
 
     /// <summary>
     /// Friendly name and identifier of the flow
@@ -54,7 +47,7 @@ public sealed class Flow : FlowStep
     /// <param name="step">the <see cref="FlowStep"/> instance</param>
     public void AddStep(FlowStep step)
     {
-        this._steps.Add(step);
+        this.Steps.Add(step);
     }
 
 
@@ -64,7 +57,7 @@ public sealed class Flow : FlowStep
     /// <param name="steps">the array of <see cref="FlowStep"/> instance to be add</param>
     public void AddSteps(params FlowStep[] steps)
     {
-        this._steps.AddRange(steps);
+        this.Steps.AddRange(steps);
     }
 
 
@@ -75,12 +68,12 @@ public sealed class Flow : FlowStep
         {
             var requires = new List<string>();
 
-            foreach (var step in this._steps)
+            foreach (var step in this.Steps)
             {
                 requires.AddRange(step.Requires);
             }
 
-            foreach (var step in this._steps)
+            foreach (var step in this.Steps)
             {
                 requires.RemoveAll(r => step.Provides.Contains(r));
             }

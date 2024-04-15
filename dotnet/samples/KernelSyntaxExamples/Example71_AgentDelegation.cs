@@ -16,7 +16,7 @@ using Xunit.Abstractions;
 /// <summary>
 /// Showcase complex Open AI Agent interactions using semantic kernel.
 /// </summary>
-public class Example71_AgentDelegation : BaseTest
+public class Example71_AgentDelegation(ITestOutputHelper output) : BaseTest(output)
 {
 
     /// <summary>
@@ -105,11 +105,6 @@ public class Example71_AgentDelegation : BaseTest
         s_agents.Add(agent);
 
         return agent;
-    }
-
-
-    public Example71_AgentDelegation(ITestOutputHelper output) : base(output)
-    {
     }
 
 }

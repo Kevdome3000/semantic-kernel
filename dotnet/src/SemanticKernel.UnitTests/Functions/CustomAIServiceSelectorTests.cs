@@ -11,6 +11,7 @@ using Xunit;
 
 public class CustomAIServiceSelectorTests
 {
+
     [Fact]
     public void ItGetsAIServiceUsingArbitraryAttributes()
     {
@@ -23,7 +24,7 @@ public class CustomAIServiceSelectorTests
         var serviceSelector = new CustomAIServiceSelector();
 
         // Act
-        (var aiService, var defaultExecutionSettings) = serviceSelector.SelectAIService<IAIService>(kernel, function, new KernelArguments());
+        (var aiService, var defaultExecutionSettings) = serviceSelector.SelectAIService<IAIService>(kernel, function, []);
 
         // Assert
         Assert.NotNull(aiService);
@@ -34,6 +35,7 @@ public class CustomAIServiceSelectorTests
 
     private sealed class CustomAIServiceSelector : IAIServiceSelector
     {
+
 #pragma warning disable CS8769 // Nullability of reference types in value doesn't match target type. Cannot use [NotNullWhen] because of access to internals from abstractions.
         bool IAIServiceSelector.TrySelectAIService<T>(
             Kernel kernel,
@@ -48,30 +50,39 @@ public class CustomAIServiceSelectorTests
             {
                 service = null;
                 serviceSettings = null;
+
                 return false;
             }
 
             service = keyedService.Attributes.ContainsKey("Key1")
                 ? keyedService as T
                 : null;
+
             serviceSettings = null;
+
             return true;
         }
+
     }
 
 
     private sealed class AIService : IAIService
     {
+
         public IReadOnlyDictionary<string, object?> Attributes => this._attributes;
 
 
         public AIService()
         {
-            this._attributes = new Dictionary<string, object?>();
-            this._attributes.Add("Key1", "Value1");
+            this._attributes = new Dictionary<string, object?>
+            {
+                { "Key1", "Value1" }
+            };
         }
 
 
         private readonly Dictionary<string, object?> _attributes;
+
     }
+
 }

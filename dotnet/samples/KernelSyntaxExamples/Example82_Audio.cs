@@ -16,7 +16,7 @@ using Xunit.Abstractions;
 /// <summary>
 /// Represents a class that demonstrates audio processing functionality.
 /// </summary>
-public sealed class Example82_Audio : BaseTest
+public sealed class Example82_Audio(ITestOutputHelper output) : BaseTest(output)
 {
 
     private const string TextToAudioModel = "tts-1";
@@ -93,11 +93,6 @@ public sealed class Example82_Audio : BaseTest
 
         // Output the transcribed text
         this.WriteLine(textContent.Text);
-    }
-
-
-    public Example82_Audio(ITestOutputHelper output) : base(output)
-    {
     }
 
 }

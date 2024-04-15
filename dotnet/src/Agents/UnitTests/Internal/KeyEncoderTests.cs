@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 namespace SemanticKernel.Agents.UnitTests.Internal;
 
-using System;
 using System.Linq;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Internal;
@@ -20,12 +19,12 @@ public class KeyEncoderTests
     [Fact]
     public void VerifyKeyEncoderUniqueness()
     {
-        this.VerifyHashEquivalancy(Array.Empty<string>());
+        this.VerifyHashEquivalancy([]);
         this.VerifyHashEquivalancy(nameof(KeyEncoderTests));
         this.VerifyHashEquivalancy(nameof(KeyEncoderTests), "http://localhost", "zoo");
 
         // Verify "well-known" value
-        string localHash = KeyEncoder.GenerateHash(new[] { typeof(ChatHistoryChannel).FullName! });
+        string localHash = KeyEncoder.GenerateHash([typeof(ChatHistoryChannel).FullName!]);
         Assert.Equal("Vdx37EnWT9BS+kkCkEgFCg9uHvHNw1+hXMA4sgNMKs4=", localHash);
     }
 

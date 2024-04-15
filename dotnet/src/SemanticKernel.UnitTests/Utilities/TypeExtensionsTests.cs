@@ -15,6 +15,7 @@ using Xunit;
 /// </summary>
 public sealed class TypeExtensionsTests
 {
+
     [Theory]
     [InlineData(null, typeof(object), false)]
     [InlineData(typeof(TestType), typeof(object), false)]
@@ -36,7 +37,6 @@ public sealed class TypeExtensionsTests
     }
 
 
-    private struct TestType
-    {
-    }
+    private struct TestType;
+
 }

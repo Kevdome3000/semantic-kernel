@@ -173,7 +173,7 @@ public class MongoDBMemoryStoreTests
     public async Task ItCanGetCollectionsAsync()
     {
         // Arrange
-        var collections = new[] { "collection1", "collection2", "collection3" };
+        string[] collections = ["collection1", "collection2", "collection3"];
         using var memoryStore = new MongoDBMemoryStore(this._mongoClientMock.Object, DatabaseName);
         using var cursorMock = new AsyncCursorMock<string>(collections);
 
@@ -203,7 +203,7 @@ public class MongoDBMemoryStoreTests
         this._mongoCollectionMock.Setup(c => c.AggregateAsync<MongoDBMemoryEntry>(It.IsAny<PipelineDefinition<MongoDBMemoryEntry, MongoDBMemoryEntry>>(), It.IsAny<AggregateOptions>(), default)).
             ReturnsAsync(cursorMock);
 
-        var match = await memoryStore.GetNearestMatchAsync(CollectionName, new(new[] { 1f }));
+        var match = await memoryStore.GetNearestMatchAsync(CollectionName, new[] { 1f });
 
         // Assert
         AssertMemoryRecordEqual(memoryRecord, match.Value.Item1);
@@ -227,7 +227,7 @@ public class MongoDBMemoryStoreTests
         this._mongoCollectionMock.Setup(c => c.AggregateAsync<MongoDBMemoryEntry>(It.IsAny<PipelineDefinition<MongoDBMemoryEntry, MongoDBMemoryEntry>>(), It.IsAny<AggregateOptions>(), default)).
             ReturnsAsync(cursorMock);
 
-        var matches = await memoryStore.GetNearestMatchesAsync(CollectionName, new(new[] { 1f }), 100).
+        var matches = await memoryStore.GetNearestMatchesAsync(CollectionName, new[] { 1f }, 100).
             ToListAsync();
 
         // Assert
@@ -394,7 +394,7 @@ public class MongoDBMemoryStoreTests
             Select(i => $"{i}").
             ToArray();
 
-        var memoryRecords = keys.Select(k => CreateRecord(k)).
+        var memoryRecords = keys.Select(CreateRecord).
             ToArray();
 
         return (memoryRecords, keys);

@@ -63,13 +63,11 @@ public sealed class RequestFailedExceptionExtensionsTests
 
         private readonly string _responseContent = responseContent;
 
-        private readonly int _status = status;
-
         private readonly IEnumerable<HttpHeader> _headers = [];
 
         public override BinaryData Content => BinaryData.FromString(this._responseContent);
 
-        public override int Status => this._status;
+        public override int Status { get; } = status;
 
         public override string ReasonPhrase => "Reason Phrase";
 

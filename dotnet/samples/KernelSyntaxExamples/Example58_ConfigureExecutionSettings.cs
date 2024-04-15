@@ -10,7 +10,7 @@ using Xunit;
 using Xunit.Abstractions;
 
 
-public sealed class Example58_ConfigureExecutionSettings : BaseTest
+public sealed class Example58_ConfigureExecutionSettings(ITestOutputHelper output) : BaseTest(output)
 {
 
     /// <summary>
@@ -104,11 +104,6 @@ Hello! As an AI language model, I can help you with a variety of tasks, includin
 3. Assisting with problem-solving and brainstorming ideas.
 4. Providing explanations and
          */
-    }
-
-
-    public Example58_ConfigureExecutionSettings(ITestOutputHelper output) : base(output)
-    {
     }
 
 }

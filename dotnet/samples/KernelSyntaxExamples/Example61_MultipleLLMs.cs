@@ -9,7 +9,7 @@ using xRetry;
 using Xunit.Abstractions;
 
 
-public class Example61_MultipleLLMs : BaseTest
+public class Example61_MultipleLLMs(ITestOutputHelper output) : BaseTest(output)
 {
 
     /// <summary>
@@ -91,11 +91,6 @@ public class Example61_MultipleLLMs : BaseTest
 
         var result = await kernel.InvokeAsync(function);
         WriteLine(result.GetValue<string>());
-    }
-
-
-    public Example61_MultipleLLMs(ITestOutputHelper output) : base(output)
-    {
     }
 
 }

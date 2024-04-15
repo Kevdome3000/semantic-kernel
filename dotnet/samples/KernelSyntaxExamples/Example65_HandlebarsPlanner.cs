@@ -20,7 +20,7 @@ using Xunit.Abstractions;
 
 
 // This example shows how to use the Handlebars sequential planner.
-public class Example65_HandlebarsPlanner : BaseTest
+public class Example65_HandlebarsPlanner(ITestOutputHelper output) : BaseTest(output)
 {
 
     private static int s_sampleIndex;
@@ -498,11 +498,6 @@ public class Example65_HandlebarsPlanner : BaseTest
         // For a simpler example, see `ItOverridesPromptAsync` in the dotnet\src\Planners\Planners.Handlebars.UnitTests\Handlebars\HandlebarsPlannerTests.cs file.
         return RunSampleAsync(goal, plannerOptions, null, shouldPrintPrompt,
             shouldInvokePlan: false, "WriterPlugin");
-    }
-
-
-    public Example65_HandlebarsPlanner(ITestOutputHelper output) : base(output)
-    {
     }
 
 }

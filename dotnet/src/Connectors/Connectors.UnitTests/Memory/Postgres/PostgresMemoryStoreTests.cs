@@ -18,6 +18,7 @@ using Xunit;
 /// </summary>
 public class PostgresMemoryStoreTests
 {
+
     private const string CollectionName = "fake-collection-name";
 
     private readonly Mock<IPostgresDbClient> _postgresDbClientMock;
@@ -26,9 +27,9 @@ public class PostgresMemoryStoreTests
     public PostgresMemoryStoreTests()
     {
         this._postgresDbClientMock = new Mock<IPostgresDbClient>();
-        this._postgresDbClientMock
-            .Setup(client => client.DoesTableExistsAsync(CollectionName, CancellationToken.None))
-            .ReturnsAsync(true);
+
+        this._postgresDbClientMock.Setup(client => client.DoesTableExistsAsync(CollectionName, CancellationToken.None)).
+            ReturnsAsync(true);
     }
 
 
@@ -80,9 +81,8 @@ public class PostgresMemoryStoreTests
         // Arrange
         const string CollectionName = "non-existent-collection";
 
-        this._postgresDbClientMock
-            .Setup(client => client.DoesTableExistsAsync(CollectionName, CancellationToken.None))
-            .ReturnsAsync(false);
+        this._postgresDbClientMock.Setup(client => client.DoesTableExistsAsync(CollectionName, CancellationToken.None)).
+            ReturnsAsync(false);
 
         using var store = new PostgresMemoryStore(this._postgresDbClientMock.Object);
 
@@ -107,7 +107,9 @@ public class PostgresMemoryStoreTests
         var actualMemoryRecordKey = await store.UpsertAsync(CollectionName, expectedMemoryRecord);
 
         // Assert
-        this._postgresDbClientMock.Verify(client => client.UpsertAsync(CollectionName, postgresMemoryEntry.Key, postgresMemoryEntry.MetadataString, It.Is<Pgvector.Vector>(x => x.ToArray().SequenceEqual(postgresMemoryEntry.Embedding!.ToArray())), postgresMemoryEntry.Timestamp, CancellationToken.None), Times.Once());
+        this._postgresDbClientMock.Verify(client => client.UpsertAsync(CollectionName, postgresMemoryEntry.Key, postgresMemoryEntry.MetadataString, It.Is<Pgvector.Vector>(x => x.ToArray().
+            SequenceEqual(postgresMemoryEntry.Embedding!.ToArray())), postgresMemoryEntry.Timestamp, CancellationToken.None), Times.Once());
+
         Assert.Equal(expectedMemoryRecord.Key, actualMemoryRecordKey);
     }
 
@@ -120,19 +122,24 @@ public class PostgresMemoryStoreTests
         var memoryRecord2 = this.GetRandomMemoryRecord();
         var memoryRecord3 = this.GetRandomMemoryRecord();
 
-        var batchUpsertMemoryRecords = new[] { memoryRecord1, memoryRecord2, memoryRecord3 };
-        var expectedMemoryRecordKeys = batchUpsertMemoryRecords.Select(l => l.Key).ToList();
+        MemoryRecord[] batchUpsertMemoryRecords = [memoryRecord1, memoryRecord2, memoryRecord3];
+
+        var expectedMemoryRecordKeys = batchUpsertMemoryRecords.Select(l => l.Key).
+            ToList();
 
         using var store = new PostgresMemoryStore(this._postgresDbClientMock.Object);
 
         // Act
-        var actualMemoryRecordKeys = await store.UpsertBatchAsync(CollectionName, batchUpsertMemoryRecords).ToListAsync();
+        var actualMemoryRecordKeys = await store.UpsertBatchAsync(CollectionName, batchUpsertMemoryRecords).
+            ToListAsync();
 
         // Assert
         foreach (var memoryRecord in batchUpsertMemoryRecords)
         {
             var postgresMemoryEntry = this.GetPostgresMemoryEntryFromMemoryRecord(memoryRecord)!;
-            this._postgresDbClientMock.Verify(client => client.UpsertAsync(CollectionName, postgresMemoryEntry.Key, postgresMemoryEntry.MetadataString, It.Is<Pgvector.Vector>(x => x.ToArray().SequenceEqual(postgresMemoryEntry.Embedding!.ToArray())), postgresMemoryEntry.Timestamp, CancellationToken.None), Times.Once());
+
+            this._postgresDbClientMock.Verify(client => client.UpsertAsync(CollectionName, postgresMemoryEntry.Key, postgresMemoryEntry.MetadataString, It.Is<Pgvector.Vector>(x => x.ToArray().
+                SequenceEqual(postgresMemoryEntry.Embedding!.ToArray())), postgresMemoryEntry.Timestamp, CancellationToken.None), Times.Once());
         }
 
         for (int i = 0; i < expectedMemoryRecordKeys.Count; i++)
@@ -149,9 +156,8 @@ public class PostgresMemoryStoreTests
         var expectedMemoryRecord = this.GetRandomMemoryRecord();
         var postgresMemoryEntry = this.GetPostgresMemoryEntryFromMemoryRecord(expectedMemoryRecord);
 
-        this._postgresDbClientMock
-            .Setup(client => client.ReadAsync(CollectionName, expectedMemoryRecord.Key, true, CancellationToken.None))
-            .ReturnsAsync(postgresMemoryEntry);
+        this._postgresDbClientMock.Setup(client => client.ReadAsync(CollectionName, expectedMemoryRecord.Key, true, CancellationToken.None)).
+            ReturnsAsync(postgresMemoryEntry);
 
         using var store = new PostgresMemoryStore(this._postgresDbClientMock.Object);
 
@@ -170,9 +176,8 @@ public class PostgresMemoryStoreTests
         // Arrange
         const string MemoryRecordKey = "fake-record-key";
 
-        this._postgresDbClientMock
-            .Setup(client => client.ReadAsync(CollectionName, MemoryRecordKey, true, CancellationToken.None))
-            .ReturnsAsync((PostgresMemoryEntry?)null);
+        this._postgresDbClientMock.Setup(client => client.ReadAsync(CollectionName, MemoryRecordKey, true, CancellationToken.None)).
+            ReturnsAsync((PostgresMemoryEntry?)null);
 
         using var store = new PostgresMemoryStore(this._postgresDbClientMock.Object);
 
@@ -192,28 +197,30 @@ public class PostgresMemoryStoreTests
         var memoryRecord2 = this.GetRandomMemoryRecord();
         var memoryRecord3 = this.GetRandomMemoryRecord();
 
-        var expectedMemoryRecords = new[] { memoryRecord1, memoryRecord2, memoryRecord3 };
-        var memoryRecordKeys = expectedMemoryRecords.Select(l => l.Key).ToList();
+        MemoryRecord[] expectedMemoryRecords = [memoryRecord1, memoryRecord2, memoryRecord3];
+
+        var memoryRecordKeys = expectedMemoryRecords.Select(l => l.Key).
+            ToList();
 
         foreach (var memoryRecord in expectedMemoryRecords)
         {
-            this._postgresDbClientMock
-                .Setup(client => client.ReadAsync(CollectionName, memoryRecord.Key, true, CancellationToken.None))
-                .ReturnsAsync(this.GetPostgresMemoryEntryFromMemoryRecord(memoryRecord));
+            this._postgresDbClientMock.Setup(client => client.ReadAsync(CollectionName, memoryRecord.Key, true, CancellationToken.None)).
+                ReturnsAsync(this.GetPostgresMemoryEntryFromMemoryRecord(memoryRecord));
         }
 
         memoryRecordKeys.Insert(0, "non-existent-record-key-1");
         memoryRecordKeys.Insert(2, "non-existent-record-key-2");
         memoryRecordKeys.Add("non-existent-record-key-3");
 
-        this._postgresDbClientMock
-            .Setup(client => client.ReadBatchAsync(CollectionName, memoryRecordKeys, true, CancellationToken.None))
-            .Returns(expectedMemoryRecords.Select(memoryRecord => this.GetPostgresMemoryEntryFromMemoryRecord(memoryRecord)).ToAsyncEnumerable());
+        this._postgresDbClientMock.Setup(client => client.ReadBatchAsync(CollectionName, memoryRecordKeys, true, CancellationToken.None)).
+            Returns(expectedMemoryRecords.Select(this.GetPostgresMemoryEntryFromMemoryRecord).
+                ToAsyncEnumerable());
 
         using var store = new PostgresMemoryStore(this._postgresDbClientMock.Object);
 
         // Act
-        var actualMemoryRecords = await store.GetBatchAsync(CollectionName, memoryRecordKeys, withEmbeddings: true).ToListAsync();
+        var actualMemoryRecords = await store.GetBatchAsync(CollectionName, memoryRecordKeys, withEmbeddings: true).
+            ToListAsync();
 
         // Assert
         this._postgresDbClientMock.Verify(client => client.ReadBatchAsync(CollectionName, memoryRecordKeys, true, CancellationToken.None), Times.Once());
@@ -232,14 +239,14 @@ public class PostgresMemoryStoreTests
         // Arrange
         var expectedCollections = new List<string> { "fake-collection-1", "fake-collection-2", "fake-collection-3" };
 
-        this._postgresDbClientMock
-            .Setup(client => client.GetTablesAsync(CancellationToken.None))
-            .Returns(expectedCollections.ToAsyncEnumerable());
+        this._postgresDbClientMock.Setup(client => client.GetTablesAsync(CancellationToken.None)).
+            Returns(expectedCollections.ToAsyncEnumerable());
 
         using var store = new PostgresMemoryStore(this._postgresDbClientMock.Object);
 
         // Act
-        var actualCollections = await store.GetCollectionsAsync().ToListAsync();
+        var actualCollections = await store.GetCollectionsAsync().
+            ToListAsync();
 
         // Assert
         Assert.Equal(expectedCollections.Count, actualCollections.Count);
@@ -298,15 +305,20 @@ public class PostgresMemoryStoreTests
 
     private MemoryRecord GetRandomMemoryRecord(ReadOnlyMemory<float>? embedding = null)
     {
-        var id = Guid.NewGuid().ToString();
+        var id = Guid.NewGuid().
+            ToString();
+
         var memoryEmbedding = embedding ?? new[] { 1f, 3f, 5f };
 
         return MemoryRecord.LocalRecord(
             id: id,
-            text: "text-" + Guid.NewGuid().ToString(),
-            description: "description-" + Guid.NewGuid().ToString(),
+            text: "text-" + Guid.NewGuid().
+                ToString(),
+            description: "description-" + Guid.NewGuid().
+                ToString(),
             embedding: memoryEmbedding,
-            additionalMetadata: "metadata-" + Guid.NewGuid().ToString(),
+            additionalMetadata: "metadata-" + Guid.NewGuid().
+                ToString(),
             key: id,
             timestamp: DateTimeOffset.Now);
     }

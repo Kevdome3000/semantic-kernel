@@ -19,12 +19,13 @@ public sealed class CollectEmailPlugin
     private const string EmailRegex = @"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$";
 
     private const string SystemPrompt =
-        $@"I am AI assistant and will only answer questions related to collect email.
-The email should conform the regex: {EmailRegex}
+        $"""
+         I am AI assistant and will only answer questions related to collect email.
+         The email should conform to the regex: {EmailRegex}
 
-If I cannot answer, say that I don't know.
-Do not expose the regex unless asked.
-";
+         If I cannot answer, say that I don't know.
+         Do not expose the regex unless asked.
+         """;
 
     private readonly IChatCompletionService _chat;
 
@@ -66,7 +67,7 @@ Do not expose the regex unless asked.
             chat.AddRange(chatHistory);
         }
 
-        if (!string.IsNullOrEmpty(email_address) && IsValidEmail(email_address))
+        if (!string.IsNullOrEmpty(email_address) && Regex.IsMatch(email_address, EmailRegex))
         {
             return "Thanks for providing the info, the following email would be used in subsequent steps: " + email_address;
         }
@@ -79,15 +80,6 @@ Do not expose the regex unless asked.
             ConfigureAwait(false);
 
         return response.Content ?? string.Empty;
-    }
-
-
-    private static bool IsValidEmail(string email)
-    {
-        // check using regex
-        var regex = new Regex(EmailRegex);
-
-        return regex.IsMatch(email);
     }
 
 }

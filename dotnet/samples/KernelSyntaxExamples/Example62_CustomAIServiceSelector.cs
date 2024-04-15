@@ -13,8 +13,9 @@ using Xunit;
 using Xunit.Abstractions;
 
 
-public class Example62_CustomAIServiceSelector : BaseTest
+public class Example62_CustomAIServiceSelector(ITestOutputHelper output) : BaseTest(output)
 {
+
     /// <summary>
     /// Show how to use a custom AI service selector to select a specific model
     /// </summary>
@@ -24,17 +25,18 @@ public class Example62_CustomAIServiceSelector : BaseTest
         WriteLine("======== Example62_CustomAIServiceSelector ========");
 
         // Build a kernel with multiple chat completion services
-        var builder = Kernel.CreateBuilder()
-            .AddAzureOpenAIChatCompletion(
+        var builder = Kernel.CreateBuilder().
+            AddAzureOpenAIChatCompletion(
                 deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 endpoint: TestConfiguration.AzureOpenAI.Endpoint,
                 apiKey: TestConfiguration.AzureOpenAI.ApiKey,
                 serviceId: "AzureOpenAIChat",
-                modelId: TestConfiguration.AzureOpenAI.ChatModelId)
-            .AddOpenAIChatCompletion(
+                modelId: TestConfiguration.AzureOpenAI.ChatModelId).
+            AddOpenAIChatCompletion(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey,
                 serviceId: "OpenAIChat");
+
         builder.Services.AddSingleton<IAIServiceSelector>(new GptAIServiceSelector(this.Output)); // Use the custom AI service selector to select the GPT model
         Kernel kernel = builder.Build();
 
@@ -51,15 +53,10 @@ public class Example62_CustomAIServiceSelector : BaseTest
     /// a completion model whose name starts with "gpt". But this logic could
     /// be as elaborate as needed to apply your own selection criteria.
     /// </summary>
-    private sealed class GptAIServiceSelector : IAIServiceSelector
+    private sealed class GptAIServiceSelector(ITestOutputHelper output) : IAIServiceSelector
     {
-        private readonly ITestOutputHelper _output;
 
-
-        public GptAIServiceSelector(ITestOutputHelper output)
-        {
-            this._output = output;
-        }
+        private readonly ITestOutputHelper _output = output;
 
 
         public bool TrySelectAIService<T>(
@@ -80,18 +77,17 @@ public class Example62_CustomAIServiceSelector : BaseTest
                     this._output.WriteLine($"Selected model: {serviceModelId} {endpoint}");
                     service = serviceToCheck;
                     serviceSettings = new OpenAIPromptExecutionSettings();
+
                     return true;
                 }
             }
 
             service = null;
             serviceSettings = null;
+
             return false;
         }
+
     }
 
-
-    public Example62_CustomAIServiceSelector(ITestOutputHelper output) : base(output)
-    {
-    }
 }

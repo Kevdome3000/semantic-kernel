@@ -13,7 +13,7 @@ using Xunit.Abstractions;
 
 
 // This example shows different ways how to define and execute method functions using custom and primitive types.
-public class Example60_AdvancedMethodFunctions : BaseTest
+public class Example60_AdvancedMethodFunctions(ITestOutputHelper output) : BaseTest(output)
 {
 
 
@@ -43,6 +43,7 @@ public class Example60_AdvancedMethodFunctions : BaseTest
     /// </summary>
     private sealed class FunctionsChainingPlugin
     {
+
         private const string PluginName = nameof(FunctionsChainingPlugin);
 
 
@@ -69,6 +70,7 @@ public class Example60_AdvancedMethodFunctions : BaseTest
                 Text = "From Function2"
             };
         }
+
     }
 
     #endregion
@@ -88,9 +90,11 @@ public class Example60_AdvancedMethodFunctions : BaseTest
     [TypeConverter(typeof(MyCustomTypeConverter))]
     private sealed class MyCustomType
     {
+
         public int Number { get; set; }
 
         public string? Text { get; set; }
+
     }
 
 
@@ -101,6 +105,7 @@ public class Example60_AdvancedMethodFunctions : BaseTest
     /// </summary>
     private sealed class MyCustomTypeConverter : TypeConverter
     {
+
         public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType) => true;
 
 
@@ -118,16 +123,18 @@ public class Example60_AdvancedMethodFunctions : BaseTest
         /// This method is used to convert actual type to string representation, so it can be passed to AI
         /// for further processing.
         /// </summary>
-        public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
+        public override object? ConvertTo(
+            ITypeDescriptorContext? context,
+            CultureInfo? culture,
+            object? value,
+            Type destinationType)
         {
             return JsonSerializer.Serialize(value);
         }
+
     }
 
     #endregion
 
 
-    public Example60_AdvancedMethodFunctions(ITestOutputHelper output) : base(output)
-    {
-    }
 }

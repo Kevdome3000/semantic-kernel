@@ -8,7 +8,7 @@ using System.Collections.Generic;
 /// <summary>
 /// Class that contains information about node in prompt.
 /// </summary>
-internal sealed class PromptNode
+internal sealed class PromptNode(string tagName)
 {
 
     private Dictionary<string, string>? _attributes;
@@ -18,7 +18,7 @@ internal sealed class PromptNode
     /// <summary>
     /// Node tag name.
     /// </summary>
-    public string TagName { get; set; }
+    public string TagName { get; set; } = tagName;
 
     /// <summary>
     /// Node content.
@@ -41,16 +41,6 @@ internal sealed class PromptNode
     {
         get => this._childNodes ??= [];
         set => this._childNodes = value;
-    }
-
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="PromptNode"/> class.
-    /// </summary>
-    /// <param name="tagName">Node tag name.</param>
-    public PromptNode(string tagName)
-    {
-        this.TagName = tagName;
     }
 
 }

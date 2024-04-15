@@ -29,8 +29,9 @@ using Xunit.Abstractions;
 /// <para> dotnet user-secrets set "AzureAISearch:ApiKey" "{Key from your Search service resource}"</para>
 /// <para> dotnet user-secrets set "AzureAISearch:IndexName" "..."</para>
 /// </value>
-public class Example54_AzureChatCompletionWithData : BaseTest
+public class Example54_AzureChatCompletionWithData(ITestOutputHelper output) : BaseTest(output)
 {
+
     [RetryFact(typeof(HttpOperationException))]
     public async Task ExampleWithChatCompletionAsync()
     {
@@ -90,9 +91,9 @@ public class Example54_AzureChatCompletionWithData : BaseTest
 
         var completionWithDataConfig = GetCompletionWithDataConfig();
 
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddAzureOpenAIChatCompletion(config: completionWithDataConfig)
-            .Build();
+        Kernel kernel = Kernel.CreateBuilder().
+            AddAzureOpenAIChatCompletion(config: completionWithDataConfig).
+            Build();
 
         var function = kernel.CreateFunctionFromPrompt("Question: {{$input}}");
 
@@ -136,8 +137,4 @@ public class Example54_AzureChatCompletionWithData : BaseTest
         };
     }
 
-
-    public Example54_AzureChatCompletionWithData(ITestOutputHelper output) : base(output)
-    {
-    }
 }

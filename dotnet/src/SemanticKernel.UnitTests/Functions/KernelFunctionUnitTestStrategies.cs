@@ -2,7 +2,6 @@
 
 namespace SemanticKernel.UnitTests.Functions;
 
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -44,7 +43,7 @@ public sealed class KernelFunctionUnitTestStrategies
         object FunctionDelegate() => expected;
 
         var function = KernelFunctionFactory.CreateFromMethod(FunctionDelegate, "MyFunction");
-        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", new[] { function });
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function]);
         kernel.Plugins.Add(plugin);
 
         // Act
@@ -91,7 +90,7 @@ public sealed class KernelFunctionUnitTestStrategies
         var mockService = new Mock<IChatCompletionService>();
 
         var mockResult = mockService.Setup(s => s.GetChatMessageContentsAsync(It.IsAny<ChatHistory>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).
-            ReturnsAsync(new List<ChatMessageContent>() { new(AuthorRole.User, "Expected response") });
+            ReturnsAsync([new(AuthorRole.User, "Expected response")]);
 
         KernelBuilder builder = new();
         builder.Services.AddTransient<IChatCompletionService>((sp) => mockService.Object);

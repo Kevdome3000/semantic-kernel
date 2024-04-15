@@ -13,7 +13,7 @@ using Xunit.Abstractions;
 
 
 // The following example shows how to use Semantic Kernel with HuggingFace API.
-public class Example20_HuggingFace : BaseTest
+public class Example20_HuggingFace(ITestOutputHelper output) : BaseTest(output)
 {
 
     /// <summary>
@@ -116,11 +116,6 @@ public class Example20_HuggingFace : BaseTest
         var result = await kernel.InvokeAsync(questionAnswerFunction, new() { ["input"] = "What is New York?" });
 
         WriteLine(result.GetValue<string>());
-    }
-
-
-    public Example20_HuggingFace(ITestOutputHelper output) : base(output)
-    {
     }
 
 }

@@ -167,7 +167,7 @@ public sealed class OpenAIFunctionTests
         // Arrange
         OpenAIFunction f = KernelFunctionFactory.CreateFromMethod(
                 () => { },
-                parameters: new[] { new KernelParameterMetadata("param1") }).
+                parameters: [new KernelParameterMetadata("param1")]).
             Metadata.ToOpenAIFunction();
 
         // Act
@@ -191,7 +191,7 @@ public sealed class OpenAIFunctionTests
         // Arrange
         OpenAIFunction f = KernelFunctionFactory.CreateFromMethod(
                 () => { },
-                parameters: new[] { new KernelParameterMetadata("param1") { Description = "something neat" } }).
+                parameters: [new KernelParameterMetadata("param1") { Description = "something neat" }]).
             Metadata.ToOpenAIFunction();
 
         // Act

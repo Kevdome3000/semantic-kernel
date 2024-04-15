@@ -15,7 +15,7 @@ using Xunit;
 using Xunit.Abstractions;
 
 
-public sealed class Example52_CustomOpenAIClient : BaseTest
+public sealed class Example52_CustomOpenAIClient(ITestOutputHelper output) : BaseTest(output)
 {
 
     [Fact]
@@ -64,11 +64,6 @@ public sealed class Example52_CustomOpenAIClient : BaseTest
         this.WriteLine(result.GetValue<string>());
 
         httpClient.Dispose();
-    }
-
-
-    public Example52_CustomOpenAIClient(ITestOutputHelper output) : base(output)
-    {
     }
 
 }

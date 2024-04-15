@@ -9,18 +9,12 @@ using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 
 
-public sealed class RedirectOutput : TextWriter, ILogger, ILoggerFactory
+public sealed class RedirectOutput(ITestOutputHelper output) : TextWriter, ILogger, ILoggerFactory
 {
-    private readonly ITestOutputHelper _output;
-    private readonly StringBuilder _logs;
 
+    private readonly ITestOutputHelper _output = output;
 
-    public RedirectOutput(ITestOutputHelper output)
-    {
-        this._output = output;
-        this._logs = new StringBuilder();
-    }
-
+    private readonly StringBuilder _logs = new();
 
     public override Encoding Encoding { get; } = Encoding.UTF8;
 
@@ -50,7 +44,12 @@ public sealed class RedirectOutput : TextWriter, ILogger, ILoggerFactory
     }
 
 
-    void ILogger.Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+    void ILogger.Log<TState>(
+        LogLevel logLevel,
+        EventId eventId,
+        TState state,
+        Exception? exception,
+        Func<TState, Exception?, string> formatter)
     {
         var message = formatter(state, exception);
         this._output?.WriteLine(message);
@@ -61,4 +60,5 @@ public sealed class RedirectOutput : TextWriter, ILogger, ILoggerFactory
     ILogger ILoggerFactory.CreateLogger(string categoryName) => this;
 
     void ILoggerFactory.AddProvider(ILoggerProvider provider) => throw new NotSupportedException();
+
 }

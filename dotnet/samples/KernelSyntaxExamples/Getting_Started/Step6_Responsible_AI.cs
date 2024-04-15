@@ -10,7 +10,7 @@ using Xunit;
 using Xunit.Abstractions;
 
 
-public sealed class Step6_Responsible_AI : BaseTest
+public sealed class Step6_Responsible_AI(ITestOutputHelper output) : BaseTest(output)
 {
 
     /// <summary>
@@ -40,21 +40,10 @@ public sealed class Step6_Responsible_AI : BaseTest
     }
 
 
-    public Step6_Responsible_AI(ITestOutputHelper output) : base(output)
-    {
-    }
-
-
-    private sealed class PromptFilter : IPromptFilter
+    private sealed class PromptFilter(ITestOutputHelper output) : IPromptFilter
     {
 
-        private readonly ITestOutputHelper _output;
-
-
-        public PromptFilter(ITestOutputHelper output)
-        {
-            this._output = output;
-        }
+        private readonly ITestOutputHelper _output = output;
 
 
         /// <summary>

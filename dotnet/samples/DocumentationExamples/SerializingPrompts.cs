@@ -49,7 +49,7 @@ public class SerializingPrompts : BaseTest
 
         // Load prompt from YAML
         using StreamReader reader = new(Assembly.GetExecutingAssembly().
-            GetManifestResourceStream("Resources." + "getIntent.prompt.yaml")!);
+            GetManifestResourceStream("Resources.getIntent.prompt.yaml")!);
 
         KernelFunction getIntent = kernel.CreateFunctionFromPromptYaml(
             await reader.ReadToEndAsync(),

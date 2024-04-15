@@ -25,7 +25,7 @@ using Xunit.Abstractions;
 
 
 // This example shows how to use FlowOrchestrator to execute a given flow with interaction with client.
-public class Example74_FlowOrchestrator : BaseTest
+public class Example74_FlowOrchestrator(ITestOutputHelper output) : BaseTest(output)
 {
 
     private static readonly Flow s_flow = FlowSerializer.DeserializeFromYaml(@"
@@ -207,7 +207,7 @@ Do not expose the regex in your response.
                 chat.AddRange(chatHistory);
             }
 
-            if (!string.IsNullOrEmpty(email_addresses) && IsValidEmail(email_addresses))
+            if (!string.IsNullOrEmpty(email_addresses) && Regex.IsMatch(email_addresses, EmailRegex))
             {
                 return "Thanks for providing the info, the following email would be used in subsequent steps: " + email_addresses;
             }
@@ -219,15 +219,6 @@ Do not expose the regex in your response.
                 ConfigureAwait(false);
 
             return response.Content ?? string.Empty;
-        }
-
-
-        private static bool IsValidEmail(string email)
-        {
-            // check using regex
-            var regex = new Regex(EmailRegex);
-
-            return regex.IsMatch(email);
         }
 
     }
@@ -271,11 +262,6 @@ Do not expose the regex in your response.
 
         }
 
-    }
-
-
-    public Example74_FlowOrchestrator(ITestOutputHelper output) : base(output)
-    {
     }
 
 }

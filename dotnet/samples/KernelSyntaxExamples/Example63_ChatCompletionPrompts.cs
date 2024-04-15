@@ -9,21 +9,22 @@ using Xunit.Abstractions;
 
 
 // This example shows how to use chat completion standardized prompts.
-public class Example63_ChatCompletionPrompts : BaseTest
+public class Example63_ChatCompletionPrompts(ITestOutputHelper output) : BaseTest(output)
 {
+
     [Fact]
     public async Task RunAsync()
     {
-        const string ChatPrompt = @"
-            <message role=""user"">What is Seattle?</message>
-            <message role=""system"">Respond with JSON.</message>
-        ";
+        const string ChatPrompt = """
+                                  <message role="user">What is Seattle?</message>
+                                  <message role="system">Respond with JSON.</message>
+                                  """;
 
-        var kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(
+        var kernel = Kernel.CreateBuilder().
+            AddOpenAIChatCompletion(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
-                apiKey: TestConfiguration.OpenAI.ApiKey)
-            .Build();
+                apiKey: TestConfiguration.OpenAI.ApiKey).
+            Build();
 
         var chatSemanticFunction = kernel.CreateFunctionFromPrompt(ChatPrompt);
         var chatPromptResult = await kernel.InvokeAsync(chatSemanticFunction);
@@ -62,8 +63,4 @@ public class Example63_ChatCompletionPrompts : BaseTest
         */
     }
 
-
-    public Example63_ChatCompletionPrompts(ITestOutputHelper output) : base(output)
-    {
-    }
 }

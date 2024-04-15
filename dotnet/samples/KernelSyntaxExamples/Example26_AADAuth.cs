@@ -22,8 +22,9 @@ using Xunit.Abstractions;
 /// -Shared tokens
 /// -etc.
 /// </summary>
-public class Example26_AADAuth : BaseTest
+public class Example26_AADAuth(ITestOutputHelper output) : BaseTest(output)
 {
+
     [Fact(Skip = "Setup credentials")]
     public async Task RunAsync()
     {
@@ -46,11 +47,12 @@ public class Example26_AADAuth : BaseTest
 
         Kernel kernel = Kernel.CreateBuilder()
             // Add Azure OpenAI chat completion service using DefaultAzureCredential AAD auth
-            .AddAzureOpenAIChatCompletion(
+            .
+            AddAzureOpenAIChatCompletion(
                 deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 endpoint: TestConfiguration.AzureOpenAI.Endpoint,
-                credentials: new DefaultAzureCredential(authOptions))
-            .Build();
+                credentials: new DefaultAzureCredential(authOptions)).
+            Build();
 
         IChatCompletionService chatGPT = kernel.GetRequiredService<IChatCompletionService>();
         var chatHistory = new ChatHistory();
@@ -65,8 +67,4 @@ public class Example26_AADAuth : BaseTest
         /* Output: Why did the hourglass go to the doctor? Because it was feeling a little run down! */
     }
 
-
-    public Example26_AADAuth(ITestOutputHelper output) : base(output)
-    {
-    }
 }

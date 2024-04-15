@@ -9,7 +9,7 @@ using Xunit;
 using Xunit.Abstractions;
 
 
-public sealed class EmbeddingGenerationTests : TestsBase
+public sealed class EmbeddingGenerationTests(ITestOutputHelper output) : TestsBase(output)
 {
 
     [RetryTheory]
@@ -27,11 +27,6 @@ public sealed class EmbeddingGenerationTests : TestsBase
         // Assert
         this.Output.WriteLine($"Count of returned embeddings: {response.Length}");
         Assert.Equal(768, response.Length);
-    }
-
-
-    public EmbeddingGenerationTests(ITestOutputHelper output) : base(output)
-    {
     }
 
 }

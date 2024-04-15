@@ -10,8 +10,9 @@ using Xunit;
 using Xunit.Abstractions;
 
 
-public class Example05_InlineFunctionDefinition : BaseTest
+public class Example05_InlineFunctionDefinition(ITestOutputHelper output) : BaseTest(output)
 {
+
     [Fact]
     public async Task RunAsync()
     {
@@ -23,6 +24,7 @@ public class Example05_InlineFunctionDefinition : BaseTest
         if (openAIModelId is null || openAIApiKey is null)
         {
             this.WriteLine("OpenAI credentials not found. Skipping example.");
+
             return;
         }
 
@@ -32,11 +34,11 @@ public class Example05_InlineFunctionDefinition : BaseTest
          *          function inline if you like.
          */
 
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(
+        Kernel kernel = Kernel.CreateBuilder().
+            AddOpenAIChatCompletion(
                 modelId: openAIModelId,
-                apiKey: openAIApiKey)
-            .Build();
+                apiKey: openAIApiKey).
+            Build();
 
         // Function defined using few-shot design pattern
         string promptTemplate = @"
@@ -66,8 +68,4 @@ Event: {{$input}}
         this.WriteLine(result.GetValue<string>());
     }
 
-
-    public Example05_InlineFunctionDefinition(ITestOutputHelper output) : base(output)
-    {
-    }
 }

@@ -13,22 +13,10 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Planners.Stepwise;
 using TestSettings;
 using Xunit;
-using Xunit.Abstractions;
 
 
 public sealed class OpenAIToolsTests : BaseIntegrationTest
 {
-
-    public OpenAIToolsTests(ITestOutputHelper output)
-    {
-        // Load configuration
-        this._configuration = new ConfigurationBuilder().AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true).
-            AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true).
-            AddEnvironmentVariables().
-            AddUserSecrets<FunctionCallingStepwisePlannerTests>().
-            Build();
-    }
-
 
     [Fact(Skip = "OpenAI is throttling requests. Switch this test to use Azure OpenAI.")]
     public async Task CanAutoInvokeKernelFunctionsAsync()
@@ -208,7 +196,11 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
     }
 
 
-    private readonly IConfigurationRoot _configuration;
+    private readonly IConfigurationRoot _configuration = new ConfigurationBuilder().AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true).
+        AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true).
+        AddEnvironmentVariables().
+        AddUserSecrets<FunctionCallingStepwisePlannerTests>().
+        Build();
 
 
     /// <summary>

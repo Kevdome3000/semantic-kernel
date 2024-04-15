@@ -20,7 +20,7 @@ using Xunit.Abstractions;
  * Semantic Memory allows to store your data like traditional DBs,
  * adding the ability to query it using natural language.
  */
-public class Example14_SemanticMemory : BaseTest
+public class Example14_SemanticMemory(ITestOutputHelper output) : BaseTest(output)
 {
 
     private const string MemoryCollectionName = "SKGitHub";
@@ -178,11 +178,6 @@ public class Example14_SemanticMemory : BaseTest
             ["https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/Plugins/Plugins.Memory/VolatileMemoryStore.cs"]
                 = "C# class that defines a volatile embedding store",
         };
-    }
-
-
-    public Example14_SemanticMemory(ITestOutputHelper output) : base(output)
-    {
     }
 
 }

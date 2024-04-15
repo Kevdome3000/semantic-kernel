@@ -12,8 +12,9 @@ using Xunit.Abstractions;
 
 
 // This example shows how to use kernel arguments when invoking functions.
-public class Example03_Arguments : BaseTest
+public class Example03_Arguments(ITestOutputHelper output) : BaseTest(output)
 {
+
     [Fact]
     public async Task RunAsync()
     {
@@ -45,8 +46,4 @@ public class Example03_Arguments : BaseTest
         this.WriteLine($"FunctionResult.ToString() -> {functionResult}");
     }
 
-
-    public Example03_Arguments(ITestOutputHelper output) : base(output)
-    {
-    }
 }

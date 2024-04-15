@@ -133,7 +133,7 @@ public sealed class GeminiToolCallBehaviorTests
         // Arrange
         var functions = GetTestPlugin().
             GetFunctionsMetadata().
-            Select(function => GeminiKernelFunctionMetadataExtensions.ToGeminiFunction(function));
+            Select(function => function.ToGeminiFunction());
 
         var enabledFunctions = new GeminiToolCallBehavior.EnabledFunctions(functions, autoInvoke: true);
         var geminiRequest = new GeminiRequest();

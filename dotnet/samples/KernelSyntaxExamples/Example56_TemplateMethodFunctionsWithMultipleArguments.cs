@@ -12,7 +12,7 @@ using Xunit;
 using Xunit.Abstractions;
 
 
-public class Example56_TemplateMethodFunctionsWithMultipleArguments : BaseTest
+public class Example56_TemplateMethodFunctionsWithMultipleArguments(ITestOutputHelper output) : BaseTest(output)
 {
 
     /// <summary>
@@ -89,11 +89,6 @@ A boy with a scar,
 Wizarding world he explores,
 Harry Potter's tale.
          */
-    }
-
-
-    public Example56_TemplateMethodFunctionsWithMultipleArguments(ITestOutputHelper output) : base(output)
-    {
     }
 
 }

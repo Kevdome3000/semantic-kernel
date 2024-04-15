@@ -13,7 +13,7 @@ using Xunit.Abstractions;
 
 
 // The following example shows how to use Semantic Kernel with identity associated with each chat message.
-public class Example37_CompletionIdentity : BaseTest
+public class Example37_CompletionIdentity(ITestOutputHelper output) : BaseTest(output)
 {
 
     /// <summary>
@@ -135,11 +135,6 @@ public class Example37_CompletionIdentity : BaseTest
                     endpoint: TestConfiguration.AzureOpenAI.Endpoint,
                     apiKey: TestConfiguration.AzureOpenAI.ApiKey,
                     modelId: TestConfiguration.AzureOpenAI.ChatModelId);
-    }
-
-
-    public Example37_CompletionIdentity(ITestOutputHelper output) : base(output)
-    {
     }
 
 }

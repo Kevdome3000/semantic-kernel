@@ -11,6 +11,7 @@ using Xunit;
 
 public class TemplateTokenizerTests
 {
+
     private readonly TemplateTokenizer _target;
 
 
@@ -195,7 +196,9 @@ public class TemplateTokenizerTests
         // Assert
         Assert.Single(blocks);
         Assert.Equal(BlockTypes.Code, blocks[0].Type);
-        Assert.Equal(template.Substring(2, template.Length - 4).Trim(), blocks[0].Content);
+
+        Assert.Equal(template[2..^2].
+            Trim(), blocks[0].Content);
     }
 
 
@@ -270,6 +273,7 @@ public class TemplateTokenizerTests
             // Act
             this._target.Tokenize(template);
         });
+
         Assert.Equal("Code tokenizer returned an incorrect first token type NamedArg", ex.Message);
     }
 
@@ -389,7 +393,9 @@ public class TemplateTokenizerTests
     private static List<Block> RenderBlocks(IList<Block> blocks, KernelArguments? arguments = null)
     {
         return blocks.Select(block => block.Type != BlockTypes.Variable
-            ? block
-            : new TextBlock((string?)((ITextRendering)block).Render(arguments))).ToList();
+                ? block
+                : new TextBlock((string?)((ITextRendering)block).Render(arguments))).
+            ToList();
     }
+
 }

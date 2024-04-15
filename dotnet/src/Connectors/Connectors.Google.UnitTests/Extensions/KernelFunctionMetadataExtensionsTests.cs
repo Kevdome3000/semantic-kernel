@@ -102,7 +102,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         {
             PluginName = "bar",
             Description = "baz",
-            Parameters = new[] { param1 },
+            Parameters = [param1],
             ReturnParameter = new KernelReturnParameterMetadata
             {
                 Description = "retDesc",
@@ -140,7 +140,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         {
             PluginName = "bar",
             Description = "baz",
-            Parameters = new[] { param1 },
+            Parameters = [param1],
             ReturnParameter = new KernelReturnParameterMetadata
             {
                 Description = "retDesc",
@@ -178,7 +178,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         {
             PluginName = "bar",
             Description = "baz",
-            Parameters = new[] { param1 },
+            Parameters = [param1],
         };
 
         // Act

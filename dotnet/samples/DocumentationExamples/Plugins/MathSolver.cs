@@ -9,15 +9,10 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning.Handlebars;
 
 
-public class MathSolver
+public class MathSolver(ILoggerFactory loggerFactory)
 {
-    private readonly ILogger _logger;
 
-
-    public MathSolver(ILoggerFactory loggerFactory)
-    {
-        this._logger = loggerFactory.CreateLogger<MathSolver>();
-    }
+    private readonly ILogger _logger = loggerFactory.CreateLogger<MathSolver>();
 
 
     [KernelFunction]
@@ -49,4 +44,5 @@ public class MathSolver
 
         return result;
     }
+
 }

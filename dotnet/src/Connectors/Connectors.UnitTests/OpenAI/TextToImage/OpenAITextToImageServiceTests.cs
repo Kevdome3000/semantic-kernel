@@ -17,8 +17,11 @@ using Xunit;
 /// </summary>
 public sealed class OpenAITextToImageServiceTests : IDisposable
 {
+
     private readonly HttpMessageHandlerStub _messageHandlerStub;
+
     private readonly HttpClient _httpClient;
+
     private readonly Mock<ILoggerFactory> _mockLoggerFactory;
 
 
@@ -36,7 +39,9 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
     public void ConstructorWorksCorrectly(bool includeLoggerFactory)
     {
         // Arrange & Act
-        var service = includeLoggerFactory ? new OpenAITextToImageService("api-key", "organization", loggerFactory: this._mockLoggerFactory.Object) : new OpenAITextToImageService("api-key", "organization");
+        var service = includeLoggerFactory
+            ? new OpenAITextToImageService("api-key", "organization", loggerFactory: this._mockLoggerFactory.Object)
+            : new OpenAITextToImageService("api-key", "organization");
 
         // Assert
         Assert.NotNull(service);
@@ -54,16 +59,19 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
     {
         // Arrange
         var service = new OpenAITextToImageService("api-key", "organization", this._httpClient);
+
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         {
-            Content = new StringContent(@"{
-                                            ""created"": 1702575371,
-                                            ""data"": [
+            Content = new StringContent("""
+                                        {
+                                            "created": 1702575371,
+                                            "data": [
                                                 {
-                                                    ""url"": ""https://image-url""
+                                                    "url": "https://image-url"
                                                 }
                                             ]
-                                        }", Encoding.UTF8, "application/json")
+                                        }
+                                        """, Encoding.UTF8, "application/json")
         };
 
         // Act & Assert
@@ -85,4 +93,5 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
         this._httpClient.Dispose();
         this._messageHandlerStub.Dispose();
     }
+
 }

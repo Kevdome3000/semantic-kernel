@@ -15,7 +15,7 @@ using Xunit;
 using Xunit.Abstractions;
 
 
-public sealed class GeminiChatCompletionTests : TestsBase
+public sealed class GeminiChatCompletionTests(ITestOutputHelper output) : TestsBase(output)
 {
 
     [RetryTheory]
@@ -408,11 +408,6 @@ public sealed class GeminiChatCompletionTests : TestsBase
         Assert.NotNull(geminiMetadata);
         this.Output.WriteLine($"ResponseSafetyRatings: {JsonSerializer.Serialize(geminiMetadata.ResponseSafetyRatings)}");
         Assert.NotNull(geminiMetadata.ResponseSafetyRatings);
-    }
-
-
-    public GeminiChatCompletionTests(ITestOutputHelper output) : base(output)
-    {
     }
 
 }

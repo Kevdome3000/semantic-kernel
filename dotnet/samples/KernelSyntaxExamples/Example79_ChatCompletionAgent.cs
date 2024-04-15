@@ -15,7 +15,7 @@ using Xunit;
 using Xunit.Abstractions;
 
 
-public class Example79_ChatCompletionAgent : BaseTest
+public class Example79_ChatCompletionAgent(ITestOutputHelper output) : BaseTest(output)
 {
 
     /// <summary>
@@ -126,15 +126,8 @@ public class Example79_ChatCompletionAgent : BaseTest
     }
 
 
-    private sealed class TurnBasedChat
+    private sealed class TurnBasedChat(IEnumerable<ChatCompletionAgent> agents, Func<ChatHistory, IEnumerable<ChatMessageContent>, int, bool> exitCondition)
     {
-
-        public TurnBasedChat(IEnumerable<ChatCompletionAgent> agents, Func<ChatHistory, IEnumerable<ChatMessageContent>, int, bool> exitCondition)
-        {
-            this._agents = agents.ToArray();
-            this._exitCondition = exitCondition;
-        }
-
 
         public async Task<IReadOnlyList<ChatMessageContent>> SendMessageAsync(string message, CancellationToken cancellationToken = default)
         {
@@ -160,15 +153,10 @@ public class Example79_ChatCompletionAgent : BaseTest
         }
 
 
-        private readonly ChatCompletionAgent[] _agents;
+        private readonly ChatCompletionAgent[] _agents = agents.ToArray();
 
-        private readonly Func<ChatHistory, IEnumerable<ChatMessageContent>, int, bool> _exitCondition;
+        private readonly Func<ChatHistory, IEnumerable<ChatMessageContent>, int, bool> _exitCondition = exitCondition;
 
-    }
-
-
-    public Example79_ChatCompletionAgent(ITestOutputHelper output) : base(output)
-    {
     }
 
 }

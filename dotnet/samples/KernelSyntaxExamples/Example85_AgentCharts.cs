@@ -16,7 +16,7 @@ using Xunit.Abstractions;
 /// <summary>
 /// Showcase usage of code_interpreter and retrieval tools.
 /// </summary>
-public sealed class Example85_AgentCharts : BaseTest
+public sealed class Example85_AgentCharts(ITestOutputHelper output) : BaseTest(output)
 {
 
     /// <summary>
@@ -120,11 +120,6 @@ Sum      426  1622     856 2904
             ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint)
                 ? new AgentBuilder().WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
                 : new AgentBuilder().WithAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.ApiKey);
-    }
-
-
-    public Example85_AgentCharts(ITestOutputHelper output) : base(output)
-    {
     }
 
 }

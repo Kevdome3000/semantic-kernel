@@ -89,10 +89,10 @@ public class QdrantMemoryStoreTests2
         _ = await vectorStore.GetWithPointIdAsync("test_collection", guidString);
         _ = await vectorStore.GetWithPointIdAsync("test_collection", guidString, true);
 
-        _ = await vectorStore.GetWithPointIdBatchAsync("test_collection", new[] { guidString2 }).
+        _ = await vectorStore.GetWithPointIdBatchAsync("test_collection", [guidString2]).
             ToListAsync();
 
-        _ = await vectorStore.GetWithPointIdBatchAsync("test_collection", new[] { guidString2 }, true).
+        _ = await vectorStore.GetWithPointIdBatchAsync("test_collection", [guidString2], true).
             ToListAsync();
 
         // Assert
@@ -608,7 +608,7 @@ public class QdrantMemoryStoreTests2
         var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object, this._mockLogger.Object);
 
         // Act
-        await vectorStore.RemoveBatchAsync("test_collection", new[] { this._id, this._id2, this._id3 });
+        await vectorStore.RemoveBatchAsync("test_collection", [this._id, this._id2, this._id3]);
 
         // Assert
         mockQdrantClient.Verify<Task>(x =>
@@ -671,7 +671,7 @@ public class QdrantMemoryStoreTests2
             ToString();
 
         // Act
-        await vectorStore.RemoveWithPointIdBatchAsync("test_collection", new[] { key, key2, key3 });
+        await vectorStore.RemoveWithPointIdBatchAsync("test_collection", [key, key2, key3]);
 
         // Assert
         mockQdrantClient.Verify<Task>(x =>

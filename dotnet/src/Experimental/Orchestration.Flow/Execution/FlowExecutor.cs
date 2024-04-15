@@ -204,7 +204,7 @@ internal class FlowExecutor : IFlowExecutor
             var stepId = $"{stepKey}_{stepState.ExecutionCount}";
 
             var continueLoop = false;
-            var completed = step.Provides.All(_ => executionState.Variables.ContainsKey(_));
+            var completed = step.Provides.All(executionState.Variables.ContainsKey);
 
             if (!completed)
             {
@@ -907,19 +907,12 @@ internal class FlowExecutor : IFlowExecutor
     }
 
 
-    private class RepeatOrStartStepResult
+    private sealed class RepeatOrStartStepResult(bool? execute, string? prompt = null)
     {
 
-        public RepeatOrStartStepResult(bool? execute, string? prompt = null)
-        {
-            this.Prompt = prompt;
-            this.Execute = execute;
-        }
+        public bool? Execute { get; } = execute;
 
-
-        public bool? Execute { get; }
-
-        public string? Prompt { get; }
+        public string? Prompt { get; } = prompt;
 
     }
 

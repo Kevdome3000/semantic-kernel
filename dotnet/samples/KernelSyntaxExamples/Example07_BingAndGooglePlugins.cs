@@ -18,8 +18,9 @@ using Xunit.Abstractions;
 /// you might want to import into your system, e.g. providing AI prompts with
 /// recent information, or for AI to generate recent information to display to users.
 /// </summary>
-public class Example07_BingAndGooglePlugins : BaseTest
+public class Example07_BingAndGooglePlugins(ITestOutputHelper output) : BaseTest(output)
 {
+
     [Fact(Skip = "Setup Credentials")]
     public async Task RunAsync()
     {
@@ -29,14 +30,15 @@ public class Example07_BingAndGooglePlugins : BaseTest
         if (openAIModelId == null || openAIApiKey == null)
         {
             this.WriteLine("OpenAI credentials not found. Skipping example.");
+
             return;
         }
 
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(
+        Kernel kernel = Kernel.CreateBuilder().
+            AddOpenAIChatCompletion(
                 modelId: openAIModelId,
-                apiKey: openAIApiKey)
-            .Build();
+                apiKey: openAIApiKey).
+            Build();
 
         // Load Bing plugin
         string bingApiKey = TestConfiguration.Bing.ApiKey;
@@ -67,6 +69,7 @@ public class Example07_BingAndGooglePlugins : BaseTest
             using var googleConnector = new GoogleConnector(
                 apiKey: googleApiKey,
                 searchEngineId: googleSearchEngineId);
+
             var google = new WebSearchEnginePlugin(googleConnector);
             kernel.ImportPluginFromObject(new WebSearchEnginePlugin(googleConnector), "google");
             // ReSharper disable once ArrangeThisQualifier
@@ -106,38 +109,40 @@ public class Example07_BingAndGooglePlugins : BaseTest
     {
         this.WriteLine("======== Use Search Plugin to answer user questions ========");
 
-        const string SemanticFunction = @"Answer questions only when you know the facts or the information is provided.
-When you don't have sufficient information you reply with a list of commands to find the information needed.
-When answering multiple questions, use a bullet point list.
-Note: make sure single and double quotes are escaped using a backslash char.
+        const string SemanticFunction = """
+                                        Answer questions only when you know the facts or the information is provided.
+                                        When you don't have sufficient information you reply with a list of commands to find the information needed.
+                                        When answering multiple questions, use a bullet point list.
+                                        Note: make sure single and double quotes are escaped using a backslash char.
 
-[COMMANDS AVAILABLE]
-- bing.search
+                                        [COMMANDS AVAILABLE]
+                                        - bing.search
 
-[INFORMATION PROVIDED]
-{{ $externalInformation }}
+                                        [INFORMATION PROVIDED]
+                                        {{ $externalInformation }}
 
-[EXAMPLE 1]
-Question: what's the biggest lake in Italy?
-Answer: Lake Garda, also known as Lago di Garda.
+                                        [EXAMPLE 1]
+                                        Question: what's the biggest lake in Italy?
+                                        Answer: Lake Garda, also known as Lago di Garda.
 
-[EXAMPLE 2]
-Question: what's the biggest lake in Italy? What's the smallest positive number?
-Answer:
-* Lake Garda, also known as Lago di Garda.
-* The smallest positive number is 1.
+                                        [EXAMPLE 2]
+                                        Question: what's the biggest lake in Italy? What's the smallest positive number?
+                                        Answer:
+                                        * Lake Garda, also known as Lago di Garda.
+                                        * The smallest positive number is 1.
 
-[EXAMPLE 3]
-Question: what's Ferrari stock price? Who is the current number one female tennis player in the world?
-Answer:
-{{ '{{' }} bing.search ""what\\'s Ferrari stock price?"" {{ '}}' }}.
-{{ '{{' }} bing.search ""Who is the current number one female tennis player in the world?"" {{ '}}' }}.
+                                        [EXAMPLE 3]
+                                        Question: what's Ferrari stock price? Who is the current number one female tennis player in the world?
+                                        Answer:
+                                        {{ '{{' }} bing.search "what\\'s Ferrari stock price?" {{ '}}' }}.
+                                        {{ '{{' }} bing.search "Who is the current number one female tennis player in the world?" {{ '}}' }}.
 
-[END OF EXAMPLES]
+                                        [END OF EXAMPLES]
 
-[TASK]
-Question: {{ $question }}.
-Answer: ";
+                                        [TASK]
+                                        Question: {{ $question }}.
+                                        Answer:
+                                        """;
 
         var question = "Who is the most followed person on TikTok right now? What's the exchange rate EUR:USD?";
         this.WriteLine(question);
@@ -199,8 +204,4 @@ Answer: ";
          */
     }
 
-
-    public Example07_BingAndGooglePlugins(ITestOutputHelper output) : base(output)
-    {
-    }
 }

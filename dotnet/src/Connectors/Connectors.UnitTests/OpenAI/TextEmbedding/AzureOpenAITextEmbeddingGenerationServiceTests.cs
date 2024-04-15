@@ -20,8 +20,11 @@ using Xunit;
 /// </summary>
 public sealed class AzureOpenAITextEmbeddingGenerationServiceTests : IDisposable
 {
+
     private readonly HttpMessageHandlerStub _messageHandlerStub;
+
     private readonly HttpClient _httpClient;
+
     private readonly Mock<ILoggerFactory> _mockLoggerFactory;
 
 
@@ -57,6 +60,7 @@ public sealed class AzureOpenAITextEmbeddingGenerationServiceTests : IDisposable
     {
         // Arrange & Act
         var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
+
         var service = includeLoggerFactory
             ? new AzureOpenAITextEmbeddingGenerationService("deployment", "https://endpoint", credentials, "model-id",
                 loggerFactory: this._mockLoggerFactory.Object)
@@ -75,6 +79,7 @@ public sealed class AzureOpenAITextEmbeddingGenerationServiceTests : IDisposable
     {
         // Arrange & Act
         var client = new OpenAIClient("key");
+
         var service = includeLoggerFactory
             ? new AzureOpenAITextEmbeddingGenerationService("deployment", client, "model-id", loggerFactory: this._mockLoggerFactory.Object)
             : new AzureOpenAITextEmbeddingGenerationService("deployment", client, "model-id");
@@ -106,13 +111,16 @@ public sealed class AzureOpenAITextEmbeddingGenerationServiceTests : IDisposable
         // Arrange
         var service = new AzureOpenAITextEmbeddingGenerationService("deployment-name", "https://endpoint", "api-key", "model-id",
             this._httpClient);
+
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         {
-            Content = new StringContent(@"{
-                                            ""object"": ""list"",
-                                            ""data"": [],
-                                            ""model"": ""model-id""
-                                        }", Encoding.UTF8, "application/json")
+            Content = new StringContent("""
+                                        {
+                                            "object": "list",
+                                            "data": [],
+                                            "model": "model-id"
+                                        }
+                                        """, Encoding.UTF8, "application/json")
         };
 
         // Act & Assert
@@ -127,22 +135,25 @@ public sealed class AzureOpenAITextEmbeddingGenerationServiceTests : IDisposable
         // Arrange
         var service = new AzureOpenAITextEmbeddingGenerationService("deployment-name", "https://endpoint", "api-key", "model-id",
             this._httpClient);
+
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         {
-            Content = new StringContent(@"{
-                                            ""object"": ""list"",
-                                            ""data"": [
+            Content = new StringContent("""
+                                        {
+                                            "object": "list",
+                                            "data": [
                                                 {
-                                                    ""object"": ""embedding"",
-                                                    ""embedding"": [
+                                                    "object": "embedding",
+                                                    "embedding": [
                                                         0.018990106880664825,
                                                         -0.0073809814639389515
                                                     ],
-                                                    ""index"": 0
+                                                    "index": 0
                                                 }
                                             ],
-                                            ""model"": ""model-id""
-                                        }", Encoding.UTF8, "application/json")
+                                            "model": "model-id"
+                                        }
+                                        """, Encoding.UTF8, "application/json")
         };
 
         // Act
@@ -163,4 +174,5 @@ public sealed class AzureOpenAITextEmbeddingGenerationServiceTests : IDisposable
         this._httpClient.Dispose();
         this._messageHandlerStub.Dispose();
     }
+
 }

@@ -39,7 +39,7 @@ public class CodeBlockTests
 
         var function = KernelFunctionFactory.CreateFromMethod(method, "function", "description");
 
-        this._kernel.ImportPluginFromFunctions("plugin", new[] { function });
+        this._kernel.ImportPluginFromFunctions("plugin", [function]);
 
         var target = new CodeBlock("plugin.function");
 
@@ -208,7 +208,7 @@ public class CodeBlockTests
             },
             "function");
 
-        this._kernel.ImportPluginFromFunctions("plugin", new[] { function });
+        this._kernel.ImportPluginFromFunctions("plugin", [function]);
 
         // Act
         var codeBlock = new CodeBlock([funcId, varBlock], "");
@@ -237,7 +237,7 @@ public class CodeBlockTests
             },
             "function");
 
-        this._kernel.ImportPluginFromFunctions("plugin", new[] { function });
+        this._kernel.ImportPluginFromFunctions("plugin", [function]);
 
         // Act
         var codeBlock = new CodeBlock([funcBlock, valBlock], "");
@@ -277,7 +277,7 @@ public class CodeBlockTests
             },
             "function");
 
-        this._kernel.ImportPluginFromFunctions("plugin", new[] { function });
+        this._kernel.ImportPluginFromFunctions("plugin", [function]);
 
         // Act
         var codeBlock = new CodeBlock([funcId, namedArgBlock1, namedArgBlock2], "");
@@ -301,13 +301,12 @@ public class CodeBlockTests
         var varBlock = new VarBlock("$var");
         var namedArgBlock = new NamedArgBlock("p1=$a1");
 
-        this._kernel.ImportPluginFromFunctions("p", new[]
-        {
+        this._kernel.ImportPluginFromFunctions("p", [
             KernelFunctionFactory.CreateFromMethod((object p1) =>
             {
                 canary = p1;
             }, "f")
-        });
+        ]);
 
         // Act
         var functionWithPositionedArgument = new CodeBlock([funcId, varBlock], "");
@@ -348,7 +347,7 @@ public class CodeBlockTests
 
         var function = KernelFunctionFactory.CreateFromMethod((string foo, string baz) => { }, "function");
 
-        this._kernel.ImportPluginFromFunctions("plugin", new[] { function });
+        this._kernel.ImportPluginFromFunctions("plugin", [function]);
 
         // Act
         var codeBlock = new CodeBlock([funcId, namedArgBlock1, namedArgBlock2], "");
@@ -391,7 +390,7 @@ public class CodeBlockTests
 
         var function = KernelFunctionFactory.CreateFromMethod(() => { }, "function");
 
-        this._kernel.ImportPluginFromFunctions("plugin", new[] { function });
+        this._kernel.ImportPluginFromFunctions("plugin", [function]);
 
         // Act
         var codeBlock = new CodeBlock(blockList, "");
@@ -411,7 +410,7 @@ public class CodeBlockTests
         var mockTextCompletion = new Mock<ITextGenerationService>();
 
         mockTextCompletion.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).
-            ReturnsAsync(new List<TextContent> { mockTextContent });
+            ReturnsAsync([mockTextContent]);
 
         var builder = Kernel.CreateBuilder();
         builder.Services.AddSingleton<ITextGenerationService>(mockTextCompletion.Object);
@@ -423,12 +422,12 @@ public class CodeBlockTests
             new ValBlock($"'{FooValue}'")
         };
 
-        kernel.ImportPluginFromFunctions("Plugin1", functions: new[]
-            {
+        kernel.ImportPluginFromFunctions("Plugin1", functions:
+            [
                 kernel.CreateFunctionFromPrompt(
                     promptTemplate: $"\"This {{{{${parameterName}}}}}",
                     functionName: "Function1")
-            }
+            ]
         );
 
 #pragma warning disable CS0618 // Events are deprecated
@@ -456,7 +455,7 @@ public class CodeBlockTests
         var mockTextCompletion = new Mock<ITextGenerationService>();
 
         mockTextCompletion.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).
-            ReturnsAsync(new List<TextContent> { mockTextContent });
+            ReturnsAsync([mockTextContent]);
 
         var builder = Kernel.CreateBuilder();
         builder.Services.AddSingleton<ITextGenerationService>(mockTextCompletion.Object);
@@ -474,12 +473,12 @@ public class CodeBlockTests
             new NamedArgBlock("x12='new'") // Extra parameters are ignored
         };
 
-        kernel.ImportPluginFromFunctions("Plugin1", functions: new[]
-            {
+        kernel.ImportPluginFromFunctions("Plugin1", functions:
+            [
                 kernel.CreateFunctionFromPrompt(
                     promptTemplate: "\"This {{$x11}}",
                     functionName: "Function1")
-            }
+            ]
         );
 
 #pragma warning disable CS0618 // Events are deprecated
@@ -529,7 +528,7 @@ public class CodeBlockTests
             },
             "function");
 
-        this._kernel.ImportPluginFromFunctions("plugin", new[] { function });
+        this._kernel.ImportPluginFromFunctions("plugin", [function]);
 
         // Act
         var codeBlock = new CodeBlock([funcId, namedArgBlock1, namedArgBlock2], "");

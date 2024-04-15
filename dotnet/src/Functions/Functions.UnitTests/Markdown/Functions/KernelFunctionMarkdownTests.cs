@@ -8,12 +8,13 @@ using Xunit;
 
 public class KernelFunctionMarkdownTests
 {
+
     [Fact]
     public void ItShouldCreatePromptFunctionConfigFromMarkdown()
     {
         // Arrange
         // Act
-        var model = KernelFunctionMarkdown.CreateFromPromptMarkdown(this._markdown, "TellMeAbout");
+        var model = KernelFunctionMarkdown.CreateFromPromptMarkdown(Markdown, "TellMeAbout");
 
         // Assert
         Assert.NotNull(model);
@@ -32,7 +33,7 @@ public class KernelFunctionMarkdownTests
         var kernel = new Kernel();
 
         // Act
-        var function = KernelFunctionMarkdown.CreateFromPromptMarkdown(this._markdown, "TellMeAbout");
+        var function = KernelFunctionMarkdown.CreateFromPromptMarkdown(Markdown, "TellMeAbout");
 
         // Assert
         Assert.NotNull(function);
@@ -40,28 +41,29 @@ public class KernelFunctionMarkdownTests
     }
 
 
-    private readonly string _markdown = @"
-This is a semantic kernel prompt template
-```sk.prompt
-Hello AI, tell me about {{$input}}
-```
-These are AI execution settings
-```sk.execution_settings
-{
-    ""service1"" : {
-        ""model_id"": ""gpt4"",
-        ""temperature"": 0.7
-    }
-}
-```
-These are more AI execution settings
-```sk.execution_settings
-{
-    ""service2"" : {
-        ""model_id"": ""gpt3.5"",
-        ""temperature"": 0.8
-    }
-}
-```
-";
+    private const string Markdown = """
+                                    This is a semantic kernel prompt template
+                                    ```sk.prompt
+                                    Hello AI, tell me about {{$input}}
+                                    ```
+                                    These are AI execution settings
+                                    ```sk.execution_settings
+                                    {
+                                        "service1" : {
+                                            "model_id": "gpt4",
+                                            "temperature": 0.7
+                                        }
+                                    }
+                                    ```
+                                    These are more AI execution settings
+                                    ```sk.execution_settings
+                                    {
+                                        "service2" : {
+                                            "model_id": "gpt3.5",
+                                            "temperature": 0.8
+                                        }
+                                    }
+                                    ```
+                                    """;
+
 }

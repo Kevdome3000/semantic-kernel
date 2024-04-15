@@ -11,8 +11,9 @@ using Xunit.Abstractions;
 
 
 // The following example shows how to use Semantic Kernel with streaming Chat Completion
-public class Example33_StreamingChat : BaseTest
+public class Example33_StreamingChat(ITestOutputHelper output) : BaseTest(output)
 {
+
     [Fact]
     public Task OpenAIChatStreamSampleAsync()
     {
@@ -101,8 +102,4 @@ public class Example33_StreamingChat : BaseTest
         return Task.CompletedTask;
     }
 
-
-    public Example33_StreamingChat(ITestOutputHelper output) : base(output)
-    {
-    }
 }

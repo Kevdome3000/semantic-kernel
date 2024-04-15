@@ -72,10 +72,10 @@ internal static class TypeExtensions
                 Name;
 
             // Remove the `1, `2 etc from the type name which indicates the number of generic arguments  
-            typeName = typeName.Substring(0, typeName.IndexOf('`', (int)StringComparison.CurrentCulture));
+            typeName = typeName.Substring(0, typeName.IndexOf('`', (int)StringComparison.Ordinal));
 
             string genericArgs = string.Join(", ", type.GetGenericArguments().
-                Select(t => GetFriendlyTypeName(t)));
+                Select(GetFriendlyTypeName));
 
             return $"{typeName}<{genericArgs}>";
         }

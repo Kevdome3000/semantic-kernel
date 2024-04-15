@@ -16,6 +16,7 @@ using Xunit;
 
 public class KernelFilterTests
 {
+
     [Fact]
     public async Task PreInvocationFunctionFilterIsTriggeredAsync()
     {
@@ -380,6 +381,7 @@ public class KernelFilterTests
         // Arrange
         var mockTextGeneration = this.GetMockTextGeneration();
         var function = KernelFunctionFactory.CreateFromPrompt("Prompt");
+
         var kernel = this.GetKernelWithFilters(textGenerationService: mockTextGeneration.Object,
             onPromptRendered: (context) =>
             {
@@ -400,6 +402,7 @@ public class KernelFilterTests
         // Arrange
         var mockTextGeneration = this.GetMockTextGeneration();
         var function = KernelFunctionFactory.CreateFromPrompt("Prompt");
+
         var kernel = this.GetKernelWithFilters(textGenerationService: mockTextGeneration.Object,
             onPromptRendered: (context) =>
             {
@@ -638,13 +641,12 @@ public class KernelFilterTests
     private Mock<ITextGenerationService> GetMockTextGeneration()
     {
         var mockTextGeneration = new Mock<ITextGenerationService>();
-        mockTextGeneration
-            .Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<TextContent> { new("result text") });
 
-        mockTextGeneration
-            .Setup(s => s.GetStreamingTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()))
-            .Returns(new List<StreamingTextContent>() { new("result chunk") }.ToAsyncEnumerable());
+        mockTextGeneration.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).
+            ReturnsAsync([new("result text")]);
+
+        mockTextGeneration.Setup(s => s.GetStreamingTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).
+            Returns(new List<StreamingTextContent>() { new("result chunk") }.ToAsyncEnumerable());
 
         return mockTextGeneration;
     }
@@ -654,7 +656,9 @@ public class KernelFilterTests
         Action<FunctionInvokingContext>? onFunctionInvoking = null,
         Action<FunctionInvokedContext>? onFunctionInvoked = null) : IFunctionFilter
     {
+
         private readonly Action<FunctionInvokingContext>? _onFunctionInvoking = onFunctionInvoking;
+
         private readonly Action<FunctionInvokedContext>? _onFunctionInvoked = onFunctionInvoked;
 
 
@@ -664,6 +668,7 @@ public class KernelFilterTests
 
         public void OnFunctionInvoking(FunctionInvokingContext context) =>
             this._onFunctionInvoking?.Invoke(context);
+
     }
 
 
@@ -671,7 +676,9 @@ public class KernelFilterTests
         Action<PromptRenderingContext>? onPromptRendering = null,
         Action<PromptRenderedContext>? onPromptRendered = null) : IPromptFilter
     {
+
         private readonly Action<PromptRenderingContext>? _onPromptRendering = onPromptRendering;
+
         private readonly Action<PromptRenderedContext>? _onPromptRendered = onPromptRendered;
 
 
@@ -681,5 +688,7 @@ public class KernelFilterTests
 
         public void OnPromptRendering(PromptRenderingContext context) =>
             this._onPromptRendering?.Invoke(context);
+
     }
+
 }

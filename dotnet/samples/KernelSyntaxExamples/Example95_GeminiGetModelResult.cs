@@ -13,7 +13,7 @@ using Xunit.Abstractions;
 /// <summary>
 /// Represents an example class for Gemini Embedding Generation with volatile memory store.
 /// </summary>
-public sealed class Example95_GeminiGetModelResult : BaseTest
+public sealed class Example95_GeminiGetModelResult(ITestOutputHelper output) : BaseTest(output)
 {
 
     [Fact]
@@ -62,11 +62,6 @@ public sealed class Example95_GeminiGetModelResult : BaseTest
         var geminiMetadata = result.Metadata as GeminiMetadata;
         WriteLine(result.GetValue<string>());
         WriteLine(geminiMetadata?.AsJson());
-    }
-
-
-    public Example95_GeminiGetModelResult(ITestOutputHelper output) : base(output)
-    {
     }
 
 }

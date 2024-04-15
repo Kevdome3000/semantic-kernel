@@ -86,7 +86,6 @@ public class KustoMemoryStoreTests
         await store.DeleteCollectionAsync(CollectionName);
 
         // Assert
-        // Assert
         this._cslAdminProviderMock.Verify(client => client.ExecuteControlCommandAsync(
             DatabaseName,
             It.Is<string>(s => s.StartsWith($".drop table {CollectionName}")),
@@ -105,7 +104,7 @@ public class KustoMemoryStoreTests
                 DatabaseName,
                 It.Is<string>(s => s.StartsWith(CslCommandGenerator.GenerateTablesShowCommand())),
                 It.IsAny<ClientRequestProperties>())).
-            ReturnsAsync(CollectionToSingleColumnDataReader(new[] { CollectionName }));
+            ReturnsAsync(CollectionToSingleColumnDataReader([CollectionName]));
 
         // Act
         var doesCollectionExist = await store.DoesCollectionExistAsync(CollectionName);
@@ -165,7 +164,7 @@ public class KustoMemoryStoreTests
         var memoryRecord2 = this.GetRandomMemoryRecord();
         var memoryRecord3 = this.GetRandomMemoryRecord();
 
-        var batchUpsertMemoryRecords = new[] { memoryRecord1, memoryRecord2, memoryRecord3 };
+        MemoryRecord[] batchUpsertMemoryRecords = [memoryRecord1, memoryRecord2, memoryRecord3];
 
         var expectedMemoryRecordKeys = batchUpsertMemoryRecords.Select(l => l.Key).
             ToList();
@@ -250,7 +249,7 @@ public class KustoMemoryStoreTests
         var memoryRecord2 = this.GetRandomMemoryRecord();
         var memoryRecord3 = this.GetRandomMemoryRecord();
 
-        var batchUpsertMemoryRecords = new[] { memoryRecord1, memoryRecord2, memoryRecord3 };
+        MemoryRecord[] batchUpsertMemoryRecords = [memoryRecord1, memoryRecord2, memoryRecord3];
 
         var expectedMemoryRecordKeys = batchUpsertMemoryRecords.Select(l => l.Key).
             ToList();

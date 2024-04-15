@@ -12,12 +12,12 @@ using Microsoft.SemanticKernel.Memory;
 using Xunit;
 
 
-public class MilvusMemoryStoreTests : IClassFixture<MilvusFixture>, IAsyncLifetime
+public class MilvusMemoryStoreTests(MilvusFixture milvusFixture) : IClassFixture<MilvusFixture>, IAsyncLifetime
 {
 
     private const string CollectionName = "test";
 
-    private readonly MilvusFixture _milvusFixture;
+    private readonly MilvusFixture _milvusFixture = milvusFixture;
 
     private MilvusMemoryStore Store { get; set; } = null!;
 
@@ -344,10 +344,6 @@ public class MilvusMemoryStoreTests : IClassFixture<MilvusFixture>, IAsyncLifeti
 
         return idList;
     }
-
-
-    public MilvusMemoryStoreTests(MilvusFixture milvusFixture)
-        => this._milvusFixture = milvusFixture;
 
 
     public async Task InitializeAsync()

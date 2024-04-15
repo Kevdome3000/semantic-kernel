@@ -56,7 +56,7 @@ public sealed class KernelFunctionFromMethodTests2
 
         // Act
         Assert.Equal(methods.Length, functions.Length);
-        Assert.All(functions, f => Assert.NotNull(f));
+        Assert.All(functions, Assert.NotNull);
     }
 
 
@@ -226,16 +226,9 @@ public sealed class KernelFunctionFromMethodTests2
     }
 
 
-    private interface IExampleService
-    {
+    private interface IExampleService;
 
-    }
-
-
-    private sealed class ExampleService : IExampleService
-    {
-
-    }
+    private sealed class ExampleService : IExampleService;
 
 
     private sealed class LocalExamplePlugin

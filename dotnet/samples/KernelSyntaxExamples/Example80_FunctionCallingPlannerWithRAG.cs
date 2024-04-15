@@ -10,7 +10,7 @@ using Xunit;
 using Xunit.Abstractions;
 
 
-public class Example80_FunctionCallingPlannerWithRAG : BaseTest
+public class Example80_FunctionCallingPlannerWithRAG(ITestOutputHelper output) : BaseTest(output)
 {
 
     [Fact]
@@ -60,11 +60,6 @@ public class Example80_FunctionCallingPlannerWithRAG : BaseTest
         kernel.ImportPluginFromType<RetrievePlugin>();
 
         return kernel;
-    }
-
-
-    public Example80_FunctionCallingPlannerWithRAG(ITestOutputHelper output) : base(output)
-    {
     }
 
 

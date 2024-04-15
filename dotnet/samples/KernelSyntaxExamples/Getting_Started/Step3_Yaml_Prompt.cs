@@ -14,8 +14,9 @@ using Xunit.Abstractions;
 /// <summary>
 /// This example shows how to create a prompt <see cref="KernelFunction"/> from a YAML resource.
 /// </summary>
-public sealed class Step3_Yaml_Prompt : BaseTest
+public sealed class Step3_Yaml_Prompt(ITestOutputHelper output) : BaseTest(output)
 {
+
     /// <summary>
     /// Show how to create a prompt <see cref="KernelFunction"/> from a YAML resource.
     /// </summary>
@@ -23,11 +24,11 @@ public sealed class Step3_Yaml_Prompt : BaseTest
     public async Task RunAsync()
     {
         // Create a kernel with OpenAI chat completion
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(
+        Kernel kernel = Kernel.CreateBuilder().
+            AddOpenAIChatCompletion(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
-                apiKey: TestConfiguration.OpenAI.ApiKey)
-            .Build();
+                apiKey: TestConfiguration.OpenAI.ApiKey).
+            Build();
 
         // Load prompt from resource
         var generateStoryYaml = EmbeddedResource.Read("GenerateStory.yaml");
@@ -52,8 +53,4 @@ public sealed class Step3_Yaml_Prompt : BaseTest
         }));
     }
 
-
-    public Step3_Yaml_Prompt(ITestOutputHelper output) : base(output)
-    {
-    }
 }

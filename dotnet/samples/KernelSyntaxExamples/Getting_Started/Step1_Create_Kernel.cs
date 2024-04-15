@@ -13,7 +13,7 @@ using Xunit.Abstractions;
 /// <summary>
 /// This example shows how to create and use a <see cref="Kernel"/>.
 /// </summary>
-public sealed class Step1_Create_Kernel : BaseTest
+public sealed class Step1_Create_Kernel(ITestOutputHelper output) : BaseTest(output)
 {
 
     /// <summary>
@@ -54,11 +54,6 @@ public sealed class Step1_Create_Kernel : BaseTest
 #pragma warning disable SKEXP0010
         arguments = new(new OpenAIPromptExecutionSettings { ResponseFormat = "json_object" }) { { "topic", "chocolate" } };
         WriteLine(await kernel.InvokePromptAsync("Create a recipe for a {{$topic}} cake in JSON format", arguments));
-    }
-
-
-    public Step1_Create_Kernel(ITestOutputHelper output) : base(output)
-    {
     }
 
 }

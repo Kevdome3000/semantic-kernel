@@ -188,13 +188,15 @@ public class OpenAIPromptExecutionSettingsTests
     public void PromptExecutionSettingsCloneWorksAsExpected()
     {
         // Arrange
-        string configPayload = @"{
-            ""max_tokens"": 60,
-            ""temperature"": 0.5,
-            ""top_p"": 0.0,
-            ""presence_penalty"": 0.0,
-            ""frequency_penalty"": 0.0
-        }";
+        string configPayload = """
+                               {
+                                   "max_tokens": 60,
+                                   "temperature": 0.5,
+                                   "top_p": 0.0,
+                                   "presence_penalty": 0.0,
+                                   "frequency_penalty": 0.0
+                               }
+                               """;
 
         var executionSettings = JsonSerializer.Deserialize<OpenAIPromptExecutionSettings>(configPayload);
 
@@ -212,15 +214,17 @@ public class OpenAIPromptExecutionSettingsTests
     public void PromptExecutionSettingsFreezeWorksAsExpected()
     {
         // Arrange
-        string configPayload = @"{
-            ""max_tokens"": 60,
-            ""temperature"": 0.5,
-            ""top_p"": 0.0,
-            ""presence_penalty"": 0.0,
-            ""frequency_penalty"": 0.0,
-            ""stop_sequences"": [ ""DONE"" ],
-            ""token_selection_biases"": { ""1"": 2, ""3"": 4 }
-        }";
+        string configPayload = """
+                               {
+                                   "max_tokens": 60,
+                                   "temperature": 0.5,
+                                   "top_p": 0.0,
+                                   "presence_penalty": 0.0,
+                                   "frequency_penalty": 0.0,
+                                   "stop_sequences": [ "DONE" ],
+                                   "token_selection_biases": { "1": 2, "3": 4 }
+                               }
+                               """;
 
         var executionSettings = JsonSerializer.Deserialize<OpenAIPromptExecutionSettings>(configPayload);
 
@@ -242,8 +246,7 @@ public class OpenAIPromptExecutionSettingsTests
     public void FromExecutionSettingsWithDataDoesNotIncludeEmptyStopSequences()
     {
         // Arrange
-        var executionSettings = new OpenAIPromptExecutionSettings();
-        executionSettings.StopSequences = Array.Empty<string>();
+        var executionSettings = new OpenAIPromptExecutionSettings { StopSequences = [] };
 
         // Act
         var executionSettingsWithData = OpenAIPromptExecutionSettings.FromExecutionSettingsWithData(executionSettings);

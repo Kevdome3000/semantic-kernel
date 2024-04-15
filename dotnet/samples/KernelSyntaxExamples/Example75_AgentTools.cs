@@ -18,7 +18,7 @@ using Xunit.Abstractions;
 /// <summary>
 /// Showcase usage of code_interpreter and retrieval tools.
 /// </summary>
-public sealed class Example75_AgentTools : BaseTest
+public sealed class Example75_AgentTools(ITestOutputHelper output) : BaseTest(output)
 {
 
     /// <summary>
@@ -217,11 +217,6 @@ public sealed class Example75_AgentTools : BaseTest
         this._agents.Add(agent);
 
         return agent;
-    }
-
-
-    public Example75_AgentTools(ITestOutputHelper output) : base(output)
-    {
     }
 
 }

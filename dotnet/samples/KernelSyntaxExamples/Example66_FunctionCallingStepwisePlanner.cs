@@ -10,7 +10,7 @@ using Xunit;
 using Xunit.Abstractions;
 
 
-public class Example66_FunctionCallingStepwisePlanner : BaseTest
+public class Example66_FunctionCallingStepwisePlanner(ITestOutputHelper output) : BaseTest(output)
 {
 
     [Fact]
@@ -61,11 +61,6 @@ public class Example66_FunctionCallingStepwisePlanner : BaseTest
         kernel.ImportPluginFromType<TimePlugin>();
 
         return kernel;
-    }
-
-
-    public Example66_FunctionCallingStepwisePlanner(ITestOutputHelper output) : base(output)
-    {
     }
 
 }

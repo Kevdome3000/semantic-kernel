@@ -9,7 +9,7 @@ using Xunit;
 using Xunit.Abstractions;
 
 
-public class Example43_GetModelResult : BaseTest
+public class Example43_GetModelResult(ITestOutputHelper output) : BaseTest(output)
 {
 
     [Fact]
@@ -84,11 +84,6 @@ public class Example43_GetModelResult : BaseTest
         {
             WriteLine(content.Metadata?.AsJson());
         }
-    }
-
-
-    public Example43_GetModelResult(ITestOutputHelper output) : base(output)
-    {
     }
 
 }

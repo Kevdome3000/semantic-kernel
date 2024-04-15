@@ -12,7 +12,7 @@ public class HuggingFacePromptExecutionSettingsTests
 {
 
     [Fact]
-    public void FromExecutionSettingsWhenAlreadyHuggingFaceShouldReturnSameAsync()
+    public void FromExecutionSettingsWhenAlreadyHuggingFaceShouldReturnSame()
     {
         // Arrange
         var executionSettings = new HuggingFacePromptExecutionSettings();
@@ -26,7 +26,7 @@ public class HuggingFacePromptExecutionSettingsTests
 
 
     [Fact]
-    public void FromExecutionSettingsWhenNullShouldReturnDefaultAsync()
+    public void FromExecutionSettingsWhenNullShouldReturnDefault()
     {
         // Arrange
         HuggingFacePromptExecutionSettings? executionSettings = null;
