@@ -7,12 +7,12 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Client;
+using Core;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
 using Http;
-using SemanticKernel.TextGeneration;
 using Services;
+using TextGeneration;
 
 
 /// <summary>

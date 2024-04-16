@@ -17,6 +17,7 @@ using TextGeneration;
 /// </summary>
 public sealed class OpenAITextGenerationService : ITextGenerationService
 {
+
     private readonly OpenAIClientCore _core;
 
     /// <inheritdoc/>
@@ -38,7 +39,12 @@ public sealed class OpenAITextGenerationService : ITextGenerationService
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(modelId, apiKey, organization, httpClient, loggerFactory?.CreateLogger(typeof(OpenAITextGenerationService)));
+        this._core = new(
+            modelId: modelId,
+            apiKey: apiKey,
+            organization: organization,
+            httpClient: httpClient,
+            logger: loggerFactory?.CreateLogger(typeof(OpenAITextGenerationService)));
 
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
         this._core.AddAttribute(OpenAIClientCore.OrganizationKey, organization);
@@ -63,15 +69,24 @@ public sealed class OpenAITextGenerationService : ITextGenerationService
 
 
     /// <inheritdoc/>
-    public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(
+        string prompt,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
     {
         return this._core.GetTextResultsAsync(prompt, executionSettings, kernel, cancellationToken);
     }
 
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(
+        string prompt,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
     {
         return this._core.GetStreamingTextContentsAsync(prompt, executionSettings, kernel, cancellationToken);
     }
+
 }

@@ -55,17 +55,24 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     }
 
 
-    [Fact]
-    public async Task ItCanRunCreateAndUpdateOperationsWithJsonPayloadSuccessfullyAsync()
+    [Theory]
+    [InlineData("POST")]
+    [InlineData("PUT")]
+    [InlineData("PATCH")]
+    [InlineData("DELETE")]
+    [InlineData("GET")]
+    public async Task ItCanRunCreateAndUpdateOperationsWithJsonPayloadSuccessfullyAsync(string method)
     {
         // Arrange
         this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
+
+        var httpMethod = new HttpMethod(method);
 
         var operation = new RestApiOperation(
             "fake-id",
             new Uri("https://fake-random-test-host"),
             "fake-path",
-            HttpMethod.Post,
+            httpMethod,
             "fake-description",
             [],
             payload: null
@@ -95,7 +102,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.NotNull(this._httpMessageHandlerStub.RequestUri);
         Assert.Equal("https://fake-random-test-host/fake-path", this._httpMessageHandlerStub.RequestUri.AbsoluteUri);
 
-        Assert.Equal(HttpMethod.Post, this._httpMessageHandlerStub.Method);
+        Assert.Equal(httpMethod, this._httpMessageHandlerStub.Method);
 
         Assert.NotNull(this._httpMessageHandlerStub.ContentHeaders);
         Assert.Contains(this._httpMessageHandlerStub.ContentHeaders, h => h.Key == "Content-Type" && h.Value.Contains("application/json; charset=utf-8"));
@@ -131,17 +138,24 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     }
 
 
-    [Fact]
-    public async Task ItCanRunCreateAndUpdateOperationsWithPlainTextPayloadSuccessfullyAsync()
+    [Theory]
+    [InlineData("POST")]
+    [InlineData("PUT")]
+    [InlineData("PATCH")]
+    [InlineData("DELETE")]
+    [InlineData("GET")]
+    public async Task ItCanRunCreateAndUpdateOperationsWithPlainTextPayloadSuccessfullyAsync(string method)
     {
         // Arrange
         this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Text.Plain);
+
+        var httpMethod = new HttpMethod(method);
 
         var operation = new RestApiOperation(
             "fake-id",
             new Uri("https://fake-random-test-host"),
             "fake-path",
-            HttpMethod.Post,
+            httpMethod,
             "fake-description",
             [],
             payload: null
@@ -162,7 +176,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.NotNull(this._httpMessageHandlerStub.RequestUri);
         Assert.Equal("https://fake-random-test-host/fake-path", this._httpMessageHandlerStub.RequestUri.AbsoluteUri);
 
-        Assert.Equal(HttpMethod.Post, this._httpMessageHandlerStub.Method);
+        Assert.Equal(httpMethod, this._httpMessageHandlerStub.Method);
 
         Assert.NotNull(this._httpMessageHandlerStub.ContentHeaders);
         Assert.Contains(this._httpMessageHandlerStub.ContentHeaders, h => h.Key == "Content-Type" && h.Value.Contains("text/plain; charset=utf-8"));
@@ -588,7 +602,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             payload: null
         );
 
-        var arguments = new KernelArguments();
+        KernelArguments arguments = new() { { RestApiOperation.PayloadArgumentName, "fake-content" } };
 
         var sut = new RestApiOperationRunner(
             this._httpClient,
@@ -616,7 +630,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             payload: null
         );
 
-        var arguments = new KernelArguments();
+        KernelArguments arguments = new() { { RestApiOperation.PayloadArgumentName, "fake-content" } };
 
         var sut = new RestApiOperationRunner(
             this._httpClient,

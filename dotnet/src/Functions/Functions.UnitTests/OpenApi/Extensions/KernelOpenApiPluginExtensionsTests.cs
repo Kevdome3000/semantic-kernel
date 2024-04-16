@@ -18,6 +18,7 @@ using Xunit;
 
 public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
 {
+
     /// <summary>
     /// System under test - an instance of OpenApiDocumentParser class.
     /// </summary>
@@ -69,14 +70,20 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
 
         var secretNameParameter = functionView.Parameters.First(p => p.Name == "secret_name");
         Assert.NotNull(secretNameParameter.Schema);
-        Assert.Equal("string", secretNameParameter.Schema!.RootElement.GetProperty("type").GetString());
+
+        Assert.Equal("string", secretNameParameter.Schema!.RootElement.GetProperty("type").
+            GetString());
 
         var apiVersionParameter = functionView.Parameters.First(p => p.Name == "api_version");
-        Assert.Equal("string", apiVersionParameter.Schema!.RootElement.GetProperty("type").GetString());
+
+        Assert.Equal("string", apiVersionParameter.Schema!.RootElement.GetProperty("type").
+            GetString());
 
         var payloadParameter = functionView.Parameters.First(p => p.Name == "payload");
         Assert.NotNull(payloadParameter.Schema);
-        Assert.Equal("object", payloadParameter.Schema!.RootElement.GetProperty("type").GetString());
+
+        Assert.Equal("object", payloadParameter.Schema!.RootElement.GetProperty("type").
+            GetString());
     }
 
 
@@ -252,6 +259,24 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
     }
 
 
+    [Fact]
+    public async Task ItCanIncludeOpenApiDeleteAndPatchOperationsAsync()
+    {
+        // Arrange
+        var openApiDocument = ResourcePluginsProvider.LoadFromResource("repair-service.json");
+
+        // Act
+        var plugin = await this._kernel.ImportPluginFromOpenApiAsync("repairServicePlugin", openApiDocument, this._executionParameters);
+
+        // Assert
+        Assert.NotNull(plugin);
+        var functionsMetadata = plugin.GetFunctionsMetadata();
+        Assert.Equal(4, functionsMetadata.Count);
+        AssertPayloadParameters(plugin, "updateRepair");
+        AssertPayloadParameters(plugin, "deleteRepair");
+    }
+
+
     public void Dispose()
     {
         this._openApiDocument.Dispose();
@@ -259,6 +284,16 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
 
 
     #region private ================================================================================
+
+    private static void AssertPayloadParameters(KernelPlugin plugin, string functionName)
+    {
+        Assert.True(plugin.TryGetFunction(functionName, out var function));
+        Assert.NotNull(function.Metadata.Parameters);
+        Assert.Equal(2, function.Metadata.Parameters.Count);
+        Assert.Equal("payload", function.Metadata.Parameters[0].Name);
+        Assert.Equal("content_type", function.Metadata.Parameters[1].Name);
+    }
+
 
     private KernelArguments GetFakeFunctionArguments()
     {
@@ -274,6 +309,7 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
 
     private sealed class FakePlugin
     {
+
         public string? ParameterValueFakeMethodCalledWith { get; private set; }
 
 
@@ -282,6 +318,7 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
         {
             this.ParameterValueFakeMethodCalledWith = parameter;
         }
+
     }
 
     #endregion

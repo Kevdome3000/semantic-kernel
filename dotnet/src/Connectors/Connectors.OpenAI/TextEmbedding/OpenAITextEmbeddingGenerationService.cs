@@ -4,6 +4,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,6 +17,7 @@ using Services;
 /// <summary>
 /// OpenAI text embedding service.
 /// </summary>
+[Experimental("SKEXP0010")]
 public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerationService
 {
 
@@ -37,10 +39,14 @@ public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerat
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        _core = new OpenAIClientCore(modelId, apiKey, organization, httpClient,
-            loggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGenerationService)));
+        this._core = new(
+            modelId: modelId,
+            apiKey: apiKey,
+            organization: organization,
+            httpClient: httpClient,
+            logger: loggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGenerationService)));
 
-        _core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
 
@@ -55,13 +61,13 @@ public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerat
         OpenAIClient openAIClient,
         ILoggerFactory? loggerFactory = null)
     {
-        _core = new OpenAIClientCore(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGenerationService)));
-        _core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        this._core = new(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGenerationService)));
+        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }
 
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object?> Attributes => _core.Attributes;
+    public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
 
 
     /// <inheritdoc/>
@@ -70,9 +76,9 @@ public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerat
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        _core.LogActionDetails();
+        this._core.LogActionDetails();
 
-        return _core.GetEmbeddingsAsync(data, kernel, cancellationToken);
+        return this._core.GetEmbeddingsAsync(data, kernel, cancellationToken);
     }
 
 }

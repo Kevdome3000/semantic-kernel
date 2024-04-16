@@ -5,7 +5,6 @@ namespace SemanticKernel.Functions.UnitTests.OpenApi;
 using System;
 using System.Linq;
 using System.Net.Http;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Xunit;
 
@@ -230,19 +229,6 @@ public class RestApiOperationExtensionsTests
         Assert.Equal("boolean", hasMagicWards.Type);
         Assert.False(hasMagicWards.IsRequired);
         Assert.Null(hasMagicWards.Description);
-    }
-
-
-    [Theory]
-    [InlineData("PUT")]
-    [InlineData("POST")]
-    public void ItShouldThrowExceptionIfPayloadMetadataDescribingParametersIsMissing(string method)
-    {
-        //Arrange
-        var operation = CreateTestOperation(method, null);
-
-        //Act
-        Assert.Throws<KernelException>(() => operation.GetParameters(addPayloadParamsFromMetadata: true, enablePayloadNamespacing: true));
     }
 
 
