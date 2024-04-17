@@ -24,9 +24,12 @@ public abstract class AgentChat
 
     private readonly Dictionary<Agent, string> _channelMap;
 
-    private readonly ChatHistory _history;
-
     private int _isActive;
+
+    /// <summary>
+    /// Exposes the internal history to subclasses.
+    /// </summary>
+    protected ChatHistory History { get; }
 
 
     /// <summary>
@@ -40,7 +43,7 @@ public abstract class AgentChat
     {
         if (agent == null)
         {
-            return this._history.ToDescendingAsync();
+            return this.History.ToDescendingAsync();
         }
 
         var channelKey = this.GetAgentHash(agent);
@@ -90,7 +93,7 @@ public abstract class AgentChat
         }
 
         // Append to chat history
-        this._history.AddRange(messages);
+        this.History.AddRange(messages);
 
         // Broadcast message to other channels (in parallel)
         var channelRefs = this._agentChannels.Select(kvp => new ChannelReference(kvp.Value, kvp.Key));
@@ -129,7 +132,7 @@ public abstract class AgentChat
                                ConfigureAwait(false))
             {
                 // Add to primary history
-                this._history.Add(message);
+                this.History.Add(message);
                 messages.Add(message);
 
                 // Yield message to caller
@@ -164,9 +167,9 @@ public abstract class AgentChat
             channel = await agent.CreateChannelAsync(cancellationToken).
                 ConfigureAwait(false);
 
-            if (this._history.Count > 0)
+            if (this.History.Count > 0)
             {
-                await channel.ReceiveAsync(this._history, cancellationToken).
+                await channel.ReceiveAsync(this.History, cancellationToken).
                     ConfigureAwait(false);
             }
 
@@ -200,7 +203,7 @@ public abstract class AgentChat
         this._agentChannels = [];
         this._broadcastQueue = new();
         this._channelMap = [];
-        this._history = [];
+        this.History = [];
     }
 
 }

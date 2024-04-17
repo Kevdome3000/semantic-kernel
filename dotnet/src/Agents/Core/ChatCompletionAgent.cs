@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-
 namespace Microsoft.SemanticKernel.Agents;
 
 using System.Collections.Generic;
