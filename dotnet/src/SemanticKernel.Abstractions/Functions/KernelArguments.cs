@@ -7,6 +7,7 @@ namespace Microsoft.SemanticKernel;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 
 /// <summary>
@@ -19,6 +20,7 @@ using System.Collections.Generic;
 /// </remarks>
 public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDictionary<string, object?>
 {
+
     /// <summary>Dictionary of name/values for all the arguments in the instance.</summary>
     private readonly Dictionary<string, object?> _arguments;
 
@@ -26,8 +28,18 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelArguments"/> class with the specified AI execution settings.
     /// </summary>
+    [JsonConstructor]
+    public KernelArguments()
+    {
+        this._arguments = new(StringComparer.OrdinalIgnoreCase);
+    }
+
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="KernelArguments"/> class with the specified AI execution settings.
+    /// </summary>
     /// <param name="executionSettings">The prompt execution settings.</param>
-    public KernelArguments(PromptExecutionSettings? executionSettings = null)
+    public KernelArguments(PromptExecutionSettings? executionSettings)
     {
         this._arguments = new(StringComparer.OrdinalIgnoreCase);
 
@@ -85,6 +97,7 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
     public bool Remove(string name)
     {
         Verify.NotNull(name);
+
         return this._arguments.Remove(name);
     }
 
@@ -103,6 +116,7 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
     public bool ContainsName(string name)
     {
         Verify.NotNull(name);
+
         return this._arguments.ContainsKey(name);
     }
 
@@ -118,6 +132,7 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
     public bool TryGetValue(string name, out object? value)
     {
         Verify.NotNull(name);
+
         return this._arguments.TryGetValue(name, out value);
     }
 
@@ -130,6 +145,7 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
         get
         {
             Verify.NotNull(name);
+
             return this._arguments[name];
         }
         set
