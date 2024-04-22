@@ -168,7 +168,7 @@ public sealed class HuggingFaceStreamingTextGenerationTests : IDisposable
 
         var executionSettings = new HuggingFacePromptExecutionSettings()
         {
-            MaxTokens = 102,
+            MaxTokens = null,
             Temperature = 0.45f,
             TopP = 0.6f,
             TopK = 10,

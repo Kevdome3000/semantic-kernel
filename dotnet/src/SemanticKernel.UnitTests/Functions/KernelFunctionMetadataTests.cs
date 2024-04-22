@@ -1,27 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.UnitTests.Functions;
-
 using System.Collections.Generic;
-using System.ComponentModel;
+using Syste
+
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel;
 using Moq;
 using Xunit;
 
 
-public class KernelFunctionMetadataTests
+ublic class KernelFunctionMetadataTests
 {
-
     private readonly Mock<ILoggerFactory> _logger;
-
 
     public KernelFunctionMetadataTests()
     {
         this._logger = new Mock<ILoggerFactory>();
     }
-
 
     [Fact]
     public void ItReturnsFunctionParams()
@@ -47,7 +42,6 @@ public class KernelFunctionMetadataTests
         Assert.Equal("default 2", funcViewA.Parameters[1].DefaultValue);
     }
 
-
     [Fact]
     public void ItReturnsFunctionReturnParameter()
     {
@@ -70,7 +64,6 @@ public class KernelFunctionMetadataTests
         Assert.Equivalent(KernelJsonSchema.Parse("""{"type": "object" }"""), funcViewA.ReturnParameter.Schema);
     }
 
-
     [Fact]
     public void ItSupportsValidFunctionName()
     {
@@ -84,7 +77,6 @@ public class KernelFunctionMetadataTests
         Assert.Equal("ValidFunctionName", fv.Name);
     }
 
-
     [Fact]
     public void ItSupportsValidFunctionAsyncName()
     {
@@ -97,15 +89,13 @@ public class KernelFunctionMetadataTests
         Assert.Equal("ValidFunctionName", fv.Name);
     }
 
-
     [Fact]
     public void ItSupportsValidFunctionKernelFunctionNameAttributeOverride()
     {
         // Arrange
         [KernelFunction("NewTestFunctionName")]
         static void TestFunctionName()
-        {
-        }
+        { }
 
         // Act
         var function = KernelFunctionFactory.CreateFromMethod(TestFunctionName, loggerFactory: this._logger.Object);
@@ -117,7 +107,6 @@ public class KernelFunctionMetadataTests
         Assert.Equal("NewTestFunctionName", fv.Name);
     }
 
-
     [Fact]
     public void ItSupportsValidAttributeDescriptions()
     {
@@ -125,12 +114,9 @@ public class KernelFunctionMetadataTests
         [Description("function description")]
         [return: Description("return parameter description")]
         static void TestFunctionName(
-            [Description("first parameter description")]
-            int p1,
-            [Description("second parameter description")]
-            int p2)
-        {
-        }
+            [Description("first parameter description")] int p1,
+            [Description("second parameter description")] int p2)
+        { }
 
         // Act
         var function = KernelFunctionFactory.CreateFromMethod(TestFunctionName, loggerFactory: this._logger.Object);
@@ -148,14 +134,11 @@ public class KernelFunctionMetadataTests
         Assert.Equal(typeof(void), fv.ReturnParameter.ParameterType);
     }
 
-
     [Fact]
     public void ItSupportsNoAttributeDescriptions()
     {
         // Arrange
-        static void TestFunctionName(int p1, int p2)
-        {
-        }
+        static void TestFunctionName(int p1, int p2) { }
 
         // Act
         var function = KernelFunctionFactory.CreateFromMethod(TestFunctionName, loggerFactory: this._logger.Object);
@@ -173,14 +156,11 @@ public class KernelFunctionMetadataTests
         Assert.Equal(typeof(void), fv.ReturnParameter.ParameterType);
     }
 
-
     [Fact]
     public void ItSupportsValidNoParameters()
     {
         // Arrange
-        static void TestFunctionName()
-        {
-        }
+        static void TestFunctionName() { }
 
         // Act
         var function = KernelFunctionFactory.CreateFromMethod(TestFunctionName, loggerFactory: this._logger.Object);
@@ -195,16 +175,31 @@ public class KernelFunctionMetadataTests
         Assert.Equal(typeof(void), fv.ReturnParameter.ParameterType);
     }
 
-
-    private static void ValidFunctionName()
+    [Fact]
+    public void ItSupportsAdditionalUnstructuredMetadata()
     {
+        // Arrange
+        var additionalMetadataPropertiesA = new ReadOnlyDictionary<string, object?>(new Dictionary<string, object?>
+        {
+            { "method", "POST" },
+            { "path", "/api/v1" },
+        });
+
+        // Act
+        var actual = new KernelFunctionMetadata("funcA") { AdditionalProperties = additionalMetadataPropertiesA };
+
+        // Assert
+        Assert.NotNull(actual);
+
+        Assert.Equal(2, actual.AdditionalProperties.Count);
+        Assert.Equal("POST", actual.AdditionalProperties["method"]);
+        Assert.Equal("/api/v1", actual.AdditionalProperties["path"]);
     }
 
-
+    private static void ValidFunctionName() { }
     private static async Task ValidFunctionNameAsync()
     {
         var function = KernelFunctionFactory.CreateFromMethod(ValidFunctionName);
         var result = await function.InvokeAsync(new());
     }
-
 }

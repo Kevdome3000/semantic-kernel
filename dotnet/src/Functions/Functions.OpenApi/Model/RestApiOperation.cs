@@ -1,18 +1,25 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Plugins.OpenApi;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Nodes;
 
-namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
 /// The REST API operation.
 /// </summary>
 public sealed class RestApiOperation
 {
+
+    /// <summary>
+    /// A static empty dictionary to default to when none is provided.
+    /// </summary>
+    private static readonly Dictionary<string, object?> s_emptyDictionary = new();
+
     /// <summary>
     /// Gets the name of an artificial parameter to be used for operation having "text/plain" payload media type.
     /// </summary>
@@ -64,6 +71,12 @@ public sealed class RestApiOperation
     public RestApiOperationPayload? Payload { get; }
 
     /// <summary>
+    /// Additional unstructured metadata about the operation.
+    /// </summary>
+    public IReadOnlyDictionary<string, object?> Extensions { get; init; } = s_emptyDictionary;
+
+
+    /// <summary>
     /// Creates an instance of a <see cref="RestApiOperation"/> class.
     /// </summary>
     /// <param name="id">The operation identifier.</param>
@@ -94,6 +107,7 @@ public sealed class RestApiOperation
         this.Responses = responses ?? new Dictionary<string, RestApiOperationExpectedResponse>();
     }
 
+
     /// <summary>
     /// Builds operation Url.
     /// </summary>
@@ -109,6 +123,7 @@ public sealed class RestApiOperation
 
         return new Uri(serverUrl, $"{path.TrimStart('/')}");
     }
+
 
     /// <summary>
     /// Builds operation request headers.
@@ -151,6 +166,7 @@ public sealed class RestApiOperation
         return headers;
     }
 
+
     /// <summary>
     /// Builds the operation query string.
     /// </summary>
@@ -192,6 +208,7 @@ public sealed class RestApiOperation
         return string.Join("&", segments);
     }
 
+
     #region private
 
     /// <summary>
@@ -228,11 +245,13 @@ public sealed class RestApiOperation
             var node = OpenApiTypeConverter.Convert(parameter.Name, parameter.Type, argument);
 
             // Serializing the parameter and adding it to the path.
-            pathTemplate = pathTemplate.Replace($"{{{parameter.Name}}}", node.ToString().Trim('"'));
+            pathTemplate = pathTemplate.Replace($"{{{parameter.Name}}}", node.ToString().
+                Trim('"'));
         }
 
         return pathTemplate;
     }
+
 
     /// <summary>
     /// Returns operation server Url.
@@ -265,6 +284,7 @@ public sealed class RestApiOperation
         return new Uri(serverUrlString);
     }
 
+
     private static readonly Dictionary<RestApiOperationParameterStyle, Func<RestApiOperationParameter, JsonNode, string>> s_parameterSerializers = new()
     {
         { RestApiOperationParameterStyle.Simple, SimpleStyleParameterSerializer.Serialize },
@@ -274,4 +294,6 @@ public sealed class RestApiOperation
     };
 
     # endregion
+
+
 }

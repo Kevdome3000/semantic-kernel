@@ -158,7 +158,8 @@ public static class ApiManifestKernelExtensions
 
             foreach (var path in filteredOpenApiDocument.Paths)
             {
-                var operations = OpenApiDocumentParser.CreateRestApiOperations(serverUrl, path.Key, path.Value);
+                var operations = OpenApiDocumentParser.CreateRestApiOperations(serverUrl, path.Key, path.Value, null,
+                    logger);
 
                 foreach (RestApiOperation operation in operations)
                 {

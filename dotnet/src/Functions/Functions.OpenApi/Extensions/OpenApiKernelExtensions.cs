@@ -4,6 +4,7 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -224,6 +225,13 @@ public static class OpenApiKernelExtensions
 
     #region private
 
+    /// <summary>The metadata property bag key to use when storing the method of an operation.</summary>
+    private const string OperationExtensionsMethodKey = "method";
+
+    /// <summary>The metadata property bag key to use for the list of extension values provided in the swagger file at the operation level.</summary>
+    private const string OperationExtensionsMetadataKey = "operation-extensions";
+
+
     private static async Task<KernelPlugin> CreateOpenApiPluginAsync(
         Kernel kernel,
         string pluginName,
@@ -371,13 +379,28 @@ public static class OpenApiKernelExtensions
 
         var returnParameter = operation.GetDefaultReturnParameter();
 
+        // Add unstructured metadata, specific to Open API, to the metadata property bag.
+        var additionalMetadata = new Dictionary<string, object?>();
+
+        additionalMetadata.Add(OpenApiKernelExtensions.OperationExtensionsMethodKey, operation.Method.ToString().
+            ToUpperInvariant());
+
+        if (operation.Extensions is { Count: > 0 })
+        {
+            additionalMetadata.Add(OpenApiKernelExtensions.OperationExtensionsMetadataKey, operation.Extensions);
+        }
+
         return KernelFunctionFactory.CreateFromMethod(
             method: ExecuteAsync,
-            parameters: parameters,
-            returnParameter: returnParameter,
-            description: operation.Description,
-            functionName: ConvertOperationIdToValidFunctionName(operation.Id, logger),
-            loggerFactory: loggerFactory);
+            new KernelFunctionFromMethodOptions
+            {
+                FunctionName = ConvertOperationIdToValidFunctionName(operation.Id, logger),
+                Description = operation.Description,
+                Parameters = parameters,
+                ReturnParameter = returnParameter,
+                LoggerFactory = loggerFactory,
+                AdditionalMetadata = new ReadOnlyDictionary<string, object?>(additionalMetadata),
+            });
     }
 
 
@@ -398,9 +421,9 @@ public static class OpenApiKernelExtensions
         }
         catch (ArgumentException)
         {
-            // The exception indicates that the operationId is not a valid function name.  
-            // To comply with the SK Function name requirements, it needs to be converted or sanitized.  
-            // Therefore, it should not be re-thrown, but rather swallowed to allow the conversion below.  
+            // The exception indicates that the operationId is not a valid function name.
+            // To comply with the SK Function name requirements, it needs to be converted or sanitized.
+            // Therefore, it should not be re-thrown, but rather swallowed to allow the conversion below.
         }
 
         // Tokenize operation id on forward and back slashes

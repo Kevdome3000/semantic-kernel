@@ -4,6 +4,7 @@ namespace Microsoft.SemanticKernel;
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 
 
@@ -24,6 +25,12 @@ public sealed class KernelFunctionMetadata
 
     /// <summary>The function's return parameter.</summary>
     private KernelReturnParameterMetadata? _returnParameter;
+
+    /// <summary>Optional metadata in addition to the named properties already available on this class.</summary>
+    private ReadOnlyDictionary<string, object?>? _additionalProperties;
+
+    /// <summary>A static empty dictionary to default to when none is provided.</summary>
+    internal static readonly ReadOnlyDictionary<string, object?> s_emptyDictionary = new(new Dictionary<string, object?>());
 
 
     /// <summary>Initializes the <see cref="KernelFunctionMetadata"/> for a function with the specified name.</summary>
@@ -50,6 +57,7 @@ public sealed class KernelFunctionMetadata
         this.Description = metadata.Description;
         this.Parameters = metadata.Parameters;
         this.ReturnParameter = metadata.ReturnParameter;
+        this.AdditionalProperties = metadata.AdditionalProperties;
     }
 
 
@@ -97,6 +105,18 @@ public sealed class KernelFunctionMetadata
         {
             Verify.NotNull(value);
             this._returnParameter = value;
+        }
+    }
+
+    /// <summary>Gets optional metadata in addition to the named properties already available on this class.</summary>
+    [Experimental("SKEXP0001")]
+    public ReadOnlyDictionary<string, object?> AdditionalProperties
+    {
+        get => this._additionalProperties ??= s_emptyDictionary;
+        init
+        {
+            Verify.NotNull(value);
+            this._additionalProperties = value;
         }
     }
 

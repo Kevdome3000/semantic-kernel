@@ -69,6 +69,15 @@ internal sealed class HuggingFaceClient
     }
 
 
+    internal static void ValidateMaxNewTokens(int? maxNewTokens)
+    {
+        if (maxNewTokens is < 0)
+        {
+            throw new ArgumentException($"MaxNewTokens {maxNewTokens} is not valid, the value must be greater than or equal to zero");
+        }
+    }
+
+
     internal async Task<string> SendRequestAndGetStringBodyAsync(
         HttpRequestMessage httpRequestMessage,
         CancellationToken cancellationToken)
@@ -217,7 +226,7 @@ internal sealed class HuggingFaceClient
         PromptExecutionSettings? promptExecutionSettings)
     {
         var huggingFaceExecutionSettings = HuggingFacePromptExecutionSettings.FromExecutionSettings(promptExecutionSettings);
-        ValidateMaxTokens(huggingFaceExecutionSettings.MaxTokens);
+        ValidateMaxNewTokens(huggingFaceExecutionSettings.MaxNewTokens);
         var request = TextGenerationRequest.FromPromptAndExecutionSettings(prompt, huggingFaceExecutionSettings);
 
         return request;

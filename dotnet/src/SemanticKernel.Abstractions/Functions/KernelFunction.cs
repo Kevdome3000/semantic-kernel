@@ -4,6 +4,7 @@ namespace Microsoft.SemanticKernel;
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Linq;
@@ -134,13 +135,15 @@ public abstract class KernelFunction
     /// The <see cref="PromptExecutionSettings"/> to use with the function. These will apply unless they've been
     /// overridden by settings passed into the invocation of the function.
     /// </param>
+    /// <param name="additionalMetadata">Properties/metadata associated with the function itself rather than its parameters and return type.</param>
     protected KernelFunction(
         string name,
         string? pluginName,
         string description,
         IReadOnlyList<KernelParameterMetadata> parameters,
         KernelReturnParameterMetadata? returnParameter = null,
-        Dictionary<string, PromptExecutionSettings>? executionSettings = null)
+        Dictionary<string, PromptExecutionSettings>? executionSettings = null,
+        ReadOnlyDictionary<string, object?>? additionalMetadata = null)
     {
         Verify.NotNull(name);
         Verify.ParametersUniqueness(parameters);
@@ -150,7 +153,8 @@ public abstract class KernelFunction
             PluginName = pluginName,
             Description = description,
             Parameters = parameters,
-            ReturnParameter = returnParameter ?? KernelReturnParameterMetadata.Empty
+            ReturnParameter = returnParameter ?? KernelReturnParameterMetadata.Empty,
+            AdditionalProperties = additionalMetadata ?? KernelFunctionMetadata.s_emptyDictionary,
         };
 
         if (executionSettings is not null)

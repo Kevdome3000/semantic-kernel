@@ -1,56 +1,44 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.UnitTests.Functions;
+using System;
+using System.Collections.Generi
 
 using System;
-using System.Globalization;
-using System.Linq;
-using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Xunit;
 
 
-public sealed class KernelFunctionFromMethodTests2
+ublic sealed class KernelFunctionFromMethodTests2
 {
-
     private static readonly KernelFunction s_nopFunction = KernelFunctionFactory.CreateFromMethod(() => { });
-
 
     [Fact]
     public void ItDoesntThrowForValidFunctionsViaDelegate()
     {
         // Arrange
         var pluginInstance = new LocalExamplePlugin();
+        MethodInfo[] methods = pluginInstance.GetType()
+            .GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.InvokeMethod)
+            .Where(m => m.Name is not "GetType" and not "Equals" and not "GetHashCode" and not "ToString")
+            .ToArray();
 
-        MethodInfo[] methods = pluginInstance.GetType().
-            GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.InvokeMethod).
-            Where(m => m.Name is not "GetType" and not "Equals" and not "GetHashCode" and not "ToString").
-            ToArray();
-
-        KernelFunction[] functions = (
-            from method in methods
-            select KernelFunctionFactory.CreateFromMethod(method, pluginInstance, "plugin")).ToArray();
+        KernelFunction[] functions = (from method in methods select KernelFunctionFactory.CreateFromMethod(method, pluginInstance, "plugin")).ToArray();
 
         // Act
         Assert.Equal(methods.Length, functions.Length);
         Assert.All(functions, Assert.NotNull);
     }
 
-
     [Fact]
     public void ItDoesNotThrowForValidFunctionsViaPlugin()
     {
         // Arrange
         var pluginInstance = new LocalExamplePlugin();
-
-        MethodInfo[] methods = pluginInstance.GetType().
-            GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.InvokeMethod).
-            Where(m => m.Name is not "GetType" and not "Equals" and not "GetHashCode" and not "ToString").
-            ToArray();
+        MethodInfo[] methods = pluginInstance.GetType()
+            .GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.InvokeMethod)
+            .Where(m => m.Name is not "GetType" and not "Equals" and not "GetHashCode" and not "ToString")
+            .ToArray();
 
         KernelFunction[] functions = [.. KernelPluginFactory.CreateFromObject(pluginInstance)];
 
@@ -58,7 +46,6 @@ public sealed class KernelFunctionFromMethodTests2
         Assert.Equal(methods.Length, functions.Length);
         Assert.All(functions, Assert.NotNull);
     }
-
 
     [Fact]
     public async Task ItCanImportMethodFunctionsAsync()
@@ -92,7 +79,6 @@ public sealed class KernelFunctionFromMethodTests2
         Assert.Empty(result.ToString());
     }
 
-
     [Fact]
     public async Task ItCanImportMethodFunctionsWithExternalReferencesAsync()
     {
@@ -111,7 +97,6 @@ public sealed class KernelFunctionFromMethodTests2
         {
             string referenceToExternalVariable = variableOutsideTheFunction;
             await Task.Delay(0);
-
             return referenceToExternalVariable;
         }
 
@@ -128,7 +113,6 @@ public sealed class KernelFunctionFromMethodTests2
         Assert.Equal(variableOutsideTheFunction, result.ToString());
     }
 
-
     [Fact]
     public async Task ItFlowsSpecialArgumentsIntoFunctionsAsync()
     {
@@ -141,17 +125,9 @@ public sealed class KernelFunctionFromMethodTests2
 
         bool invoked = false;
         KernelFunction func = null!;
-
         func = KernelFunctionFactory.CreateFromMethod(
-            (
-                Kernel kernelArg,
-                KernelFunction funcArg,
-                KernelArguments argsArg,
-                ILoggerFactory loggerFactoryArg,
-                ILogger loggerArg,
-                IAIServiceSelector serviceSelectorArg,
-                CultureInfo cultureArg,
-                CancellationToken cancellationToken) =>
+            (Kernel kernelArg, KernelFunction funcArg, KernelArguments argsArg, ILoggerFactory loggerFactoryArg,
+             ILogger loggerArg, IAIServiceSelector serviceSelectorArg, CultureInfo cultureArg, CancellationToken cancellationToken) =>
             {
                 Assert.Same(kernel, kernelArg);
                 Assert.Same(func, funcArg);
@@ -169,7 +145,6 @@ public sealed class KernelFunctionFromMethodTests2
         Assert.True(invoked);
     }
 
-
     [Fact]
     public async Task ItInjectsServicesFromDIIntoFunctionsAsync()
     {
@@ -184,14 +159,12 @@ public sealed class KernelFunctionFromMethodTests2
         Kernel kernel = builder.Build();
 
         bool invoked = false;
-
         KernelFunction func = KernelFunctionFactory.CreateFromMethod(
-            (
-                [FromKernelServices] IExampleService service1Arg,
-                [FromKernelServices("something")] IExampleService service2Arg,
-                [FromKernelServices("somethingelse")] IExampleService service3Arg,
-                [FromKernelServices] IExampleService service4Arg,
-                [FromKernelServices("doesntexist")] IExampleService? service5Arg = null) =>
+            ([FromKernelServices] IExampleService service1Arg,
+             [FromKernelServices("something")] IExampleService service2Arg,
+             [FromKernelServices("somethingelse")] IExampleService service3Arg,
+             [FromKernelServices] IExampleService service4Arg,
+             [FromKernelServices("doesntexist")] IExampleService? service5Arg = null) =>
             {
                 Assert.Same(serviceB, service1Arg);
                 Assert.Same(serviceA, service2Arg);
@@ -207,7 +180,6 @@ public sealed class KernelFunctionFromMethodTests2
 
         Assert.DoesNotContain(func.Metadata.Parameters, p => p.Name.Contains("service", StringComparison.Ordinal));
     }
-
 
     [Fact]
     public async Task ItThrowsForMissingServicesWithoutDefaultsAsync()
@@ -225,20 +197,54 @@ public sealed class KernelFunctionFromMethodTests2
         await Assert.ThrowsAsync<KernelException>(() => func.InvokeAsync(kernel));
     }
 
+    [Fact]
+    public void ItMakesProvidedExtensionPropertiesAvailableViaMetadataWhenConstructedFromDelegate()
+    {
+        // Act.
+        var func = KernelFunctionFactory.CreateFromMethod(() => { return "Value1"; }, new KernelFunctionFromMethodOptions
+        {
+            AdditionalMetadata = new ReadOnlyDictionary<string, object?>(new Dictionary<string, object?>
+            {
+                ["key1"] = "value1",
+            })
+        });
+
+        // Assert.
+        Assert.Contains("key1", func.Metadata.AdditionalProperties.Keys);
+        Assert.Equal("value1", func.Metadata.AdditionalProperties["key1"]);
+    }
+
+    [Fact]
+    public void ItMakesProvidedExtensionPropertiesAvailableViaMetadataWhenConstructedFromMethodInfo()
+    {
+        // Arrange.
+        var target = new LocalExamplePlugin();
+        var methodInfo = target.GetType().GetMethod(nameof(LocalExamplePlugin.Type02))!;
+
+        // Act.
+        var func = KernelFunctionFactory.CreateFromMethod(methodInfo, target, new KernelFunctionFromMethodOptions
+        {
+            AdditionalMetadata = new ReadOnlyDictionary<string, object?>(new Dictionary<string, object?>
+            {
+                ["key1"] = "value1",
+            })
+        });
+
+        // Assert.
+        Assert.Contains("key1", func.Metadata.AdditionalProperties.Keys);
+        Assert.Equal("value1", func.Metadata.AdditionalProperties["key1"]);
+    }
 
     private interface IExampleService;
 
     private sealed class ExampleService : IExampleService;
 
-
     private sealed class LocalExamplePlugin
     {
-
         [KernelFunction]
         public void Type01()
         {
         }
-
 
         [KernelFunction]
         public string Type02()
@@ -246,43 +252,35 @@ public sealed class KernelFunctionFromMethodTests2
             return "";
         }
 
-
         [KernelFunction]
         public string? Type02Nullable()
         {
             return null;
         }
 
-
         [KernelFunction]
         public async Task<string> Type03Async()
         {
             await Task.Delay(0);
-
             return "";
         }
-
 
         [KernelFunction]
         public async Task<string?> Type03NullableAsync()
         {
             await Task.Delay(0);
-
             return null;
         }
-
 
         [KernelFunction]
         public void Type04(string input)
         {
         }
 
-
         [KernelFunction]
         public void Type04Nullable(string? input)
         {
         }
-
 
         [KernelFunction]
         public string Type05(string input)
@@ -290,31 +288,25 @@ public sealed class KernelFunctionFromMethodTests2
             return "";
         }
 
-
         [KernelFunction]
         public string? Type05Nullable(string? input = null)
         {
             return "";
         }
 
-
         [KernelFunction]
         public async Task<string> Type06Async(string input)
         {
             await Task.Delay(0);
-
             return "";
         }
-
 
         [KernelFunction]
         public async Task<string?> Type06NullableAsync(string? input)
         {
             await Task.Delay(0);
-
             return "";
         }
-
 
         [KernelFunction]
         public async Task Type07Async(string input)
@@ -322,13 +314,11 @@ public sealed class KernelFunctionFromMethodTests2
             await Task.Delay(0);
         }
 
-
         [KernelFunction]
         public async Task Type08Async()
         {
             await Task.Delay(0);
         }
-
 
         [KernelFunction]
         public async ValueTask ReturnsValueTaskAsync()
@@ -336,15 +326,12 @@ public sealed class KernelFunctionFromMethodTests2
             await Task.Delay(0);
         }
 
-
         [KernelFunction]
         public async ValueTask<string> ReturnsValueTaskStringAsync()
         {
             await Task.Delay(0);
-
             return "hello world";
         }
-
 
         [KernelFunction]
         public FunctionResult ReturnsFunctionResult()
@@ -352,24 +339,19 @@ public sealed class KernelFunctionFromMethodTests2
             return new FunctionResult(s_nopFunction, "fake-result", CultureInfo.InvariantCulture);
         }
 
-
         [KernelFunction]
         public async Task<FunctionResult> ReturnsTaskFunctionResultAsync()
         {
             await Task.Delay(0);
-
             return new FunctionResult(s_nopFunction, "fake-result", CultureInfo.InvariantCulture);
         }
-
 
         [KernelFunction]
         public async ValueTask<FunctionResult> ReturnsValueTaskFunctionResultAsync()
         {
             await Task.Delay(0);
-
             return new FunctionResult(s_nopFunction, "fake-result", CultureInfo.InvariantCulture);
         }
-
 
         [KernelFunction]
         public string WithPrimitives(
@@ -414,7 +396,5 @@ public sealed class KernelFunctionFromMethodTests2
         {
             return string.Empty;
         }
-
     }
-
 }
