@@ -27,6 +27,7 @@ public static class VertexAIKernelBuilderExtensions
     /// <param name="bearerTokenProvider">The Bearer Key provider for authentication.</param>
     /// <param name="location">The location to process the request</param>
     /// <param name="projectId">Your project ID</param>
+    /// <param name="apiVersion">The version of the Vertex API.</param>
     /// <param name="serviceId">The optional service ID.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <returns>The updated kernel builder.</returns>
@@ -41,6 +42,7 @@ public static class VertexAIKernelBuilderExtensions
         Func<Task<string>> bearerTokenProvider,
         string location,
         string projectId,
+        VertexAIVersion apiVersion = VertexAIVersion.V1,
         string? serviceId = null,
         HttpClient? httpClient = null)
     {
@@ -56,6 +58,7 @@ public static class VertexAIKernelBuilderExtensions
                 bearerTokenProvider: bearerTokenProvider,
                 location: location,
                 projectId: projectId,
+                apiVersion: apiVersion,
                 httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
 
@@ -71,6 +74,7 @@ public static class VertexAIKernelBuilderExtensions
     /// <param name="bearerKey">The Bearer Key for authentication.</param>
     /// <param name="location">The location to process the request</param>
     /// <param name="projectId">Your project ID</param>
+    /// <param name="apiVersion">The version of the Vertex API.</param>
     /// <param name="serviceId">The optional service ID.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <returns>The updated kernel builder.</returns>
@@ -80,6 +84,7 @@ public static class VertexAIKernelBuilderExtensions
         string bearerKey,
         string location,
         string projectId,
+        VertexAIVersion apiVersion = VertexAIVersion.V1,
         string? serviceId = null,
         HttpClient? httpClient = null)
     {
@@ -95,6 +100,7 @@ public static class VertexAIKernelBuilderExtensions
                 bearerKey: bearerKey,
                 location: location,
                 projectId: projectId,
+                apiVersion: apiVersion,
                 httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
 
@@ -110,6 +116,7 @@ public static class VertexAIKernelBuilderExtensions
     /// <param name="bearerTokenProvider">The Bearer Key provider for authentication.</param>
     /// <param name="location">The location to process the request</param>
     /// <param name="projectId">Your project ID</param>
+    /// <param name="apiVersion">The version of the Vertex API.</param>
     /// <param name="serviceId">The optional service ID.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <returns>The updated kernel builder.</returns>
@@ -124,6 +131,7 @@ public static class VertexAIKernelBuilderExtensions
         Func<Task<string>> bearerTokenProvider,
         string location,
         string projectId,
+        VertexAIVersion apiVersion = VertexAIVersion.V1,
         string? serviceId = null,
         HttpClient? httpClient = null)
     {
@@ -139,6 +147,7 @@ public static class VertexAIKernelBuilderExtensions
                 bearerTokenProvider: bearerTokenProvider,
                 location: location,
                 projectId: projectId,
+                apiVersion: apiVersion,
                 httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
 
@@ -154,6 +163,7 @@ public static class VertexAIKernelBuilderExtensions
     /// <param name="bearerKey">The Bearer Key for authentication.</param>
     /// <param name="location">The location to process the request</param>
     /// <param name="projectId">Your project ID</param>
+    /// <param name="apiVersion">The version of the Vertex API.</param>
     /// <param name="serviceId">The optional service ID.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <returns>The updated kernel builder.</returns>
@@ -163,6 +173,7 @@ public static class VertexAIKernelBuilderExtensions
         string bearerKey,
         string location,
         string projectId,
+        VertexAIVersion apiVersion = VertexAIVersion.V1,
         string? serviceId = null,
         HttpClient? httpClient = null)
     {
@@ -178,6 +189,7 @@ public static class VertexAIKernelBuilderExtensions
                 bearerKey: bearerKey,
                 location: location,
                 projectId: projectId,
+                apiVersion: apiVersion,
                 httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
 
