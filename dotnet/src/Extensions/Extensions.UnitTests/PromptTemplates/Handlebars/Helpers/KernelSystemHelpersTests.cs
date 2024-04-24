@@ -7,6 +7,7 @@ namespace SemanticKernel.Extensions.UnitTests.PromptTemplates.Handlebars.Helpers
 using System;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using System.Web;
 using HandlebarsDotNet;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
@@ -75,7 +76,7 @@ public sealed class KernelSystemHelpersTests
         var result = await this.RenderPromptTemplateAsync(template, arguments);
 
         // Assert
-        Assert.Equal("""{"name":"Alice","age":25}""", result);
+        Assert.Equal("""{"name":"Alice","age":25}""", HttpUtility.HtmlDecode(result));
     }
 
 

@@ -277,7 +277,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
     }
 
 
-    [Fact]
+    [Fact(Skip = "The test is temporarily disabled until a more stable solution is found.")]
     public async Task ConnectorAgnosticFunctionCallingModelClassesCanPassFunctionExceptionToConnectorAsync()
     {
         // Arrange

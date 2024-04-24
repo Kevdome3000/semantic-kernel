@@ -4,8 +4,7 @@ namespace Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 
 using System.Threading;
 using System.Threading.Tasks;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
+using System.Web;
 using HandlebarsDotNet;
 using HandlebarsDotNet.Helpers;
 using Helpers;
@@ -28,9 +27,11 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
     /// Constructor for Handlebars PromptTemplate.
     /// </summary>
     /// <param name="promptConfig">Prompt template configuration</param>
+    /// <param name="allowUnsafeContent">Flag indicating whether to allow unsafe content</param>
     /// <param name="options">Handlebars prompt template options</param>
-    public HandlebarsPromptTemplate(PromptTemplateConfig promptConfig, HandlebarsPromptTemplateOptions? options = null)
+    internal HandlebarsPromptTemplate(PromptTemplateConfig promptConfig, bool allowUnsafeContent = false, HandlebarsPromptTemplateOptions? options = null)
     {
+        this._allowUnsafeContent = allowUnsafeContent;
         this._loggerFactory ??= NullLoggerFactory.Instance;
         this._logger = this._loggerFactory.CreateLogger(typeof(HandlebarsPromptTemplate));
         this._promptModel = promptConfig;
@@ -45,7 +46,7 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
     {
         Verify.NotNull(kernel);
 
-        arguments = this.GetVariables(arguments);
+        arguments = this.GetVariables(kernel, arguments);
         var handlebarsInstance = HandlebarsDotNet.Handlebars.Create();
 
         // Register kernel, system, and any custom helpers
@@ -65,6 +66,8 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
     private readonly ILogger _logger;
 
     private readonly PromptTemplateConfig _promptModel;
+
+    private readonly bool _allowUnsafeContent;
 
 
     /// <summary>
@@ -89,7 +92,8 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
         });
 
         // Add helpers for kernel functions
-        KernelFunctionHelpers.Register(handlebarsInstance, kernel, arguments, this._options.PrefixSeparator,
+        KernelFunctionHelpers.Register(handlebarsInstance, kernel, arguments, this._promptModel,
+            this._allowUnsafeContent, this._options.PrefixSeparator,
             cancellationToken);
 
         // Add any custom helpers
@@ -104,7 +108,7 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
     /// <summary>
     /// Gets the variables for the prompt template, including setting any default values from the prompt config.
     /// </summary>
-    private KernelArguments GetVariables(KernelArguments? arguments)
+    private KernelArguments GetVariables(Kernel kernel, KernelArguments? arguments)
     {
         KernelArguments result = [];
 
@@ -124,12 +128,38 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
             {
                 if (kvp.Value is not null)
                 {
-                    result[kvp.Key] = kvp.Value;
+                    var value = kvp.Value;
+
+                    if (this.ShouldEncodeTags(this._promptModel, kvp.Key, kvp.Value))
+                    {
+                        value = HttpUtility.HtmlEncode(value.ToString());
+                    }
+
+                    result[kvp.Key] = value;
                 }
             }
         }
 
         return result;
+    }
+
+
+    private bool ShouldEncodeTags(PromptTemplateConfig promptTemplateConfig, string propertyName, object? propertyValue)
+    {
+        if (propertyValue is null || propertyValue is not string || this._allowUnsafeContent)
+        {
+            return false;
+        }
+
+        foreach (var inputVariable in promptTemplateConfig.InputVariables)
+        {
+            if (inputVariable.Name == propertyName)
+            {
+                return !inputVariable.AllowUnsafeContent;
+            }
+        }
+
+        return true;
     }
 
     #endregion

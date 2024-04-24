@@ -5,9 +5,11 @@ namespace Microsoft.SemanticKernel;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
 using TemplateEngine;
@@ -25,12 +27,14 @@ using TemplateEngine;
 /// </summary>
 internal sealed class KernelPromptTemplate : IPromptTemplate
 {
+
     /// <summary>
     /// Constructor for PromptTemplate.
     /// </summary>
     /// <param name="promptConfig">Prompt template configuration</param>
+    /// <param name="allowUnsafeContent">Flag indicating whether to allow unsafe content</param>
     /// <param name="loggerFactory">Logger factory</param>
-    public KernelPromptTemplate(PromptTemplateConfig promptConfig, ILoggerFactory? loggerFactory = null)
+    internal KernelPromptTemplate(PromptTemplateConfig promptConfig, bool allowUnsafeContent, ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(promptConfig, nameof(promptConfig));
         Verify.NotNull(promptConfig.Template, nameof(promptConfig.Template));
@@ -40,6 +44,11 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
 
         this._blocks = this.ExtractBlocks(promptConfig, loggerFactory);
         AddMissingInputVariables(this._blocks, promptConfig);
+
+        this._allowUnsafeContent = allowUnsafeContent || promptConfig.AllowUnsafeContent;
+
+        this._safeBlocks = new HashSet<string>(promptConfig.InputVariables.Where(iv => allowUnsafeContent || iv.AllowUnsafeContent).
+            Select(iv => iv.Name));
     }
 
 
@@ -55,7 +64,12 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
     #region private
 
     private readonly ILogger _logger;
+
     private readonly List<Block> _blocks;
+
+    private readonly bool _allowUnsafeContent;
+
+    private readonly HashSet<string> _safeBlocks;
 
 
     /// <summary>
@@ -93,25 +107,45 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
     /// <param name="arguments">The arguments.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The prompt template ready to be used for an AI request.</returns>
-    private async Task<string> RenderAsync(List<Block> blocks, Kernel kernel, KernelArguments? arguments, CancellationToken cancellationToken = default)
+    private async Task<string> RenderAsync(
+        List<Block> blocks,
+        Kernel kernel,
+        KernelArguments? arguments,
+        CancellationToken cancellationToken = default)
     {
         var result = new StringBuilder();
 
         foreach (var block in blocks)
         {
+            string? blockResult = null;
+
             switch (block)
             {
                 case ITextRendering staticBlock:
-                    result.Append(InternalTypeConverter.ConvertToString(staticBlock.Render(arguments), kernel.Culture));
+                    blockResult = InternalTypeConverter.ConvertToString(staticBlock.Render(arguments), kernel.Culture);
+
                     break;
 
                 case ICodeRendering dynamicBlock:
-                    result.Append(InternalTypeConverter.ConvertToString(await dynamicBlock.RenderCodeAsync(kernel, arguments, cancellationToken).ConfigureAwait(false), kernel.Culture));
+                    blockResult = InternalTypeConverter.ConvertToString(await dynamicBlock.RenderCodeAsync(kernel, arguments, cancellationToken).
+                        ConfigureAwait(false), kernel.Culture);
+
                     break;
 
                 default:
                     Debug.Fail($"Unexpected block type {block?.GetType()}, the block doesn't have a rendering method");
+
                     break;
+            }
+
+            if (blockResult is not null)
+            {
+                if (ShouldEncodeTags(this._allowUnsafeContent, this._safeBlocks, block!))
+                {
+                    blockResult = HttpUtility.HtmlEncode(blockResult);
+                }
+
+                result.Append(blockResult);
             }
         }
 
@@ -142,6 +176,7 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
                 case BlockTypes.Variable:
                     // Add all variables from variable blocks, e.g. "{{$a}}".
                     AddIfMissing(((VarBlock)block).Name);
+
                     break;
 
                 case BlockTypes.Code:
@@ -152,14 +187,17 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
                             case BlockTypes.Variable:
                                 // Add all variables from code blocks, e.g. "{{p.bar $b}}".
                                 AddIfMissing(((VarBlock)codeBlock).Name);
+
                                 break;
 
                             case BlockTypes.NamedArg when ((NamedArgBlock)codeBlock).VarBlock is { } varBlock:
                                 // Add all variables from named arguments, e.g. "{{p.bar b = $b}}".
                                 AddIfMissing(varBlock.Name);
+
                                 break;
                         }
                     }
+
                     break;
             }
         }
@@ -171,6 +209,17 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
                 config.InputVariables.Add(new InputVariable { Name = variableName });
             }
         }
+    }
+
+
+    private static bool ShouldEncodeTags(bool disableTagEncoding, HashSet<string> safeBlocks, Block block)
+    {
+        if (block is VarBlock varBlock)
+        {
+            return !safeBlocks.Contains(varBlock.Name);
+        }
+
+        return !disableTagEncoding && block is not TextBlock;
     }
 
     #endregion

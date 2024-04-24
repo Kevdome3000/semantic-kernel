@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mime;
@@ -25,12 +26,14 @@ internal sealed class HttpMessageHandlerStub : DelegatingHandler
 
     public HttpResponseMessage ResponseToReturn { get; set; }
 
+    public Queue<HttpResponseMessage> ResponseQueue { get; } = new();
+
 
     public HttpMessageHandlerStub()
     {
         this.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         {
-            Content = new StringContent("{}", Encoding.UTF8, MediaTypeNames.Application.Json)
+            Content = new StringContent("{}", Encoding.UTF8, MediaTypeNames.Application.Json),
         };
     }
 
@@ -47,7 +50,12 @@ internal sealed class HttpMessageHandlerStub : DelegatingHandler
 
         this.ContentHeaders = request.Content?.Headers;
 
-        return await Task.FromResult(this.ResponseToReturn);
+        HttpResponseMessage response =
+            this.ResponseQueue.Count == 0
+                ? this.ResponseToReturn
+                : this.ResponseToReturn = this.ResponseQueue.Dequeue();
+
+        return await Task.FromResult(response);
     }
 
 }

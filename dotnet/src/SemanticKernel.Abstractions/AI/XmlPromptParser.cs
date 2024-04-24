@@ -5,6 +5,8 @@ namespace Microsoft.SemanticKernel;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Web;
 using System.Xml;
 
 
@@ -34,13 +36,18 @@ internal static class XmlPromptParser
 
         if (prompt is null ||
             (startPos = prompt.IndexOf('<')) < 0 ||
-            (prompt.IndexOf("</", startPos + 1, StringComparison.Ordinal) < 0 &&
-             prompt.IndexOf("/>", startPos + 1, StringComparison.Ordinal) < 0))
+            prompt.IndexOf("</", startPos + 1, StringComparison.Ordinal) < 0 &&
+            prompt.IndexOf("/>", startPos + 1, StringComparison.Ordinal) < 0)
         {
             return false;
         }
 
-        var xmlDocument = new XmlDocument();
+        XmlDocument xmlDocument = new XmlDocument()
+        {
+            // This is necessary to preserve whitespace within prompts as this may be significant.
+            // E.g. if the prompt contains well formatted code and we want the LLM to return well formatted code.
+            PreserveWhitespace = true
+        };
 
         try
         {
@@ -74,12 +81,23 @@ internal static class XmlPromptParser
             return null;
         }
 
-        var nodeContent = node.InnerText.Trim();
+        // Since we're preserving whitespace for the contents within each XMLNode, we
+        //  need to skip any whitespace nodes at the front of the children.
+        XmlNode? firstNonWhitespaceChild = node.ChildNodes.
+            Cast<XmlNode>().
+            FirstOrDefault(n => n.NodeType != XmlNodeType.Whitespace);
 
-        var promptNode = new PromptNode(node.Name)
+        bool isCData = firstNonWhitespaceChild?.NodeType == XmlNodeType.CDATA;
+
+        string nodeContent = isCData
+            ? node.InnerText.Trim()
+            : node.InnerXml.Trim();
+
+        PromptNode promptNode = new PromptNode(node.Name)
         {
             Content = !string.IsNullOrEmpty(nodeContent)
-                ? nodeContent
+                ? HttpUtility.HtmlDecode(nodeContent
+                )
                 : null
         };
 
@@ -93,7 +111,7 @@ internal static class XmlPromptParser
 
         foreach (XmlNode childNode in node.ChildNodes)
         {
-            var childPromptNode = GetPromptNode(childNode);
+            PromptNode? childPromptNode = GetPromptNode(childNode);
 
             if (childPromptNode != null)
             {

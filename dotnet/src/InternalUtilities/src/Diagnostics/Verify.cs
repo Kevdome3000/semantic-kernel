@@ -125,7 +125,7 @@ internal static class Verify
 
 
     internal static void StartsWith(
-        string text,
+        [NotNull] string? text,
         string prefix,
         string message,
         [CallerArgumentExpression(nameof(text))]

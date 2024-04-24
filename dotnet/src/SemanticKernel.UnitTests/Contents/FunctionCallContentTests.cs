@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Contents;
+namespace SemanticKernel.UnitTests.Contents;
 
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using ChatCompletion;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 
 
