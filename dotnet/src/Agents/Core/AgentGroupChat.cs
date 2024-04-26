@@ -18,7 +18,6 @@ public sealed class AgentGroupChat : AgentChat
 
     private readonly HashSet<string> _agentIds; // Efficient existence test
 
-    O(1) vs O(n) for list.
     private readonly List<Agent> _agents; // Maintain order the agents joined the chat
 
     /// <summary>

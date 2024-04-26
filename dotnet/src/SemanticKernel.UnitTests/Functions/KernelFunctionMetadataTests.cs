@@ -1,15 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using Syste
-
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel;
 using Moq;
 using Xunit;
 
 
-ublic class KernelFunctionMetadataTests
+public class KernelFunctionMetadataTests
 {
     private readonly Mock<ILoggerFactory> _logger;
 
