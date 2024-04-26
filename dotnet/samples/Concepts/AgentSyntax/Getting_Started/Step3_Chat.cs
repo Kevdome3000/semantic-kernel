@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace Examples;
+namespace GettingStarted;
 
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Examples;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
@@ -18,7 +19,7 @@ using Xunit.Abstractions;
 /// that inform how chat proceeds with regards to: Agent selection, chat continuation, and maximum
 /// number of agent interactions.
 /// </summary>
-public class Example03_Chat(ITestOutputHelper output) : BaseTest(output)
+public class Step3_Chat(ITestOutputHelper output) : BaseTest(output)
 {
 
     private const string ReviewerName = "ArtDirector";
@@ -26,7 +27,7 @@ public class Example03_Chat(ITestOutputHelper output) : BaseTest(output)
     private const string ReviewerInstructions =
         """
         You are an art director who has opinions about copywriting born of a love for David Ogilvy.
-        The goal is to determine is the given copy is acceptable to print.
+        The goal is to determine if the given copy is acceptable to print.
         If so, state that it is approved.
         If not, provide insight on how to refine suggested copy without example.
         """;

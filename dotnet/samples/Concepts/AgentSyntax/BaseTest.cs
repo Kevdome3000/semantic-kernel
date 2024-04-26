@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-
 namespace Examples;
 
 using System.Reflection;
@@ -41,9 +40,7 @@ public abstract class BaseTest
             ? TestConfiguration.OpenAI.ChatModelId
             : TestConfiguration.AzureOpenAI.ChatDeploymentName;
 
-
-    protected Kernel CreateEmptyKernel() => Kernel.CreateBuilder().
-        Build();
+    protected Kernel CreateEmptyKernel() => new();
 
 
     protected Kernel CreateKernelWithChatCompletion()

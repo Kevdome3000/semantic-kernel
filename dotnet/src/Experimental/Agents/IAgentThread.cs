@@ -18,6 +18,12 @@ public interface IAgentThread
     /// </summary>
     string Id { get; }
 
+    /// <summary>
+    /// Allow the <see cref="KernelArguments"/> provided to <see cref="IAgentThread.InvokeAsync(IAgent, KernelArguments?, CancellationToken)"/>
+    /// to be passed through to any function calling.
+    /// </summary>
+    bool EnableFunctionArgumentPassThrough { get; set; }
+
 
     /// <summary>
     /// Add a textual user message to the thread.

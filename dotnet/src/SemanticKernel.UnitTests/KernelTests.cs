@@ -260,7 +260,7 @@ public class KernelTests
         Assert.Equal(1, handlerInvocations);
         Assert.Equal(0, functionInvocations);
         Assert.Same(function, ex.Function);
-        Assert.Null(ex.FunctionResult);
+        Assert.Null(ex.FunctionResult?.Value);
     }
 
 
@@ -287,7 +287,7 @@ public class KernelTests
         Assert.Equal(1, handlerInvocations);
         Assert.Equal(0, functionInvocations);
         Assert.Same(function, ex.Function);
-        Assert.Null(ex.FunctionResult);
+        Assert.Null(ex.FunctionResult?.Value);
     }
 
 
@@ -316,7 +316,7 @@ public class KernelTests
         // Assert
         Assert.Equal(0, invoked);
         Assert.Same(functions["GetAnyValue"], ex.Function);
-        Assert.Null(ex.FunctionResult);
+        Assert.Null(ex.FunctionResult?.Value);
     }
 
 
@@ -627,8 +627,8 @@ public class KernelTests
 #pragma warning restore CA2000
             .
             AddSingleton(loggerFactory.Object).
-            AddSingleton<IFunctionFilter>(new MyFunctionFilter()).
-            AddSingleton<IPromptFilter>(new MyPromptFilter()).
+            AddSingleton<IFunctionInvocationFilter>(new MyFunctionFilter()).
+            AddSingleton<IPromptRenderFilter>(new MyPromptFilter()).
             BuildServiceProvider();
 
         var plugin = KernelPluginFactory.CreateFromFunctions("plugin1");
@@ -781,16 +781,16 @@ public class KernelTests
 
     private void AssertFilters(Kernel kernel1, Kernel kernel2)
     {
-        var functionFilters1 = kernel1.GetAllServices<IFunctionFilter>().
+        var functionFilters1 = kernel1.GetAllServices<IFunctionInvocationFilter>().
             ToArray();
 
-        var promptFilters1 = kernel1.GetAllServices<IPromptFilter>().
+        var promptFilters1 = kernel1.GetAllServices<IPromptRenderFilter>().
             ToArray();
 
-        var functionFilters2 = kernel2.GetAllServices<IFunctionFilter>().
+        var functionFilters2 = kernel2.GetAllServices<IFunctionInvocationFilter>().
             ToArray();
 
-        var promptFilters2 = kernel2.GetAllServices<IPromptFilter>().
+        var promptFilters2 = kernel2.GetAllServices<IPromptRenderFilter>().
             ToArray();
 
         Assert.Equal(functionFilters1.Length, functionFilters2.Length);
@@ -837,31 +837,23 @@ public class KernelTests
     }
 
 
-    private sealed class MyFunctionFilter : IFunctionFilter
+    private sealed class MyFunctionFilter : IFunctionInvocationFilter
     {
 
-        public void OnFunctionInvoked(FunctionInvokedContext context)
+        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
         {
-        }
-
-
-        public void OnFunctionInvoking(FunctionInvokingContext context)
-        {
+            await next(context);
         }
 
     }
 
 
-    private sealed class MyPromptFilter : IPromptFilter
+    private sealed class MyPromptFilter : IPromptRenderFilter
     {
 
-        public void OnPromptRendered(PromptRenderedContext context)
+        public async Task OnPromptRenderAsync(PromptRenderContext context, Func<PromptRenderContext, Task> next)
         {
-        }
-
-
-        public void OnPromptRendering(PromptRenderingContext context)
-        {
+            await next(context);
         }
 
     }

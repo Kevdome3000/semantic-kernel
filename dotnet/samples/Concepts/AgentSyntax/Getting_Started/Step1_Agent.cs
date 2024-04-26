@@ -1,7 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace Examples;
+namespace GettingStarted;
 
 using System.Threading.Tasks;
+using Examples;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -13,7 +14,7 @@ using Xunit.Abstractions;
 /// Demonstrate creation of <see cref="ChatCompletionAgent"/> and
 /// eliciting its response to three explicit user messages.
 /// </summary>
-public class Example01_Agent(ITestOutputHelper output) : BaseTest(output)
+public class Step1_Agent(ITestOutputHelper output) : BaseTest(output)
 {
 
     private const string ParrotName = "Parrot";

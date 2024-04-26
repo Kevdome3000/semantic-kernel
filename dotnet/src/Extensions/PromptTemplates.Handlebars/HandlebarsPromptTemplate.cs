@@ -2,9 +2,12 @@
 
 namespace Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
 using HandlebarsDotNet;
 using HandlebarsDotNet.Helpers;
 using Helpers;
@@ -31,11 +34,11 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
     /// <param name="options">Handlebars prompt template options</param>
     internal HandlebarsPromptTemplate(PromptTemplateConfig promptConfig, bool allowUnsafeContent = false, HandlebarsPromptTemplateOptions? options = null)
     {
-        this._allowUnsafeContent = allowUnsafeContent;
-        this._loggerFactory ??= NullLoggerFactory.Instance;
-        this._logger = this._loggerFactory.CreateLogger(typeof(HandlebarsPromptTemplate));
-        this._promptModel = promptConfig;
-        this._options = options ?? new();
+        _allowUnsafeContent = allowUnsafeContent;
+        _loggerFactory ??= NullLoggerFactory.Instance;
+        _logger = _loggerFactory.CreateLogger(typeof(HandlebarsPromptTemplate));
+        _promptModel = promptConfig;
+        _options = options ?? new HandlebarsPromptTemplateOptions();
     }
 
 
@@ -46,15 +49,15 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
     {
         Verify.NotNull(kernel);
 
-        arguments = this.GetVariables(kernel, arguments);
-        var handlebarsInstance = HandlebarsDotNet.Handlebars.Create();
+        arguments = GetVariables(kernel, arguments);
+        var handlebarsInstance = Handlebars.Create();
 
         // Register kernel, system, and any custom helpers
-        this.RegisterHelpers(handlebarsInstance, kernel, arguments, cancellationToken);
+        RegisterHelpers(handlebarsInstance, kernel, arguments, cancellationToken);
 
-        var template = handlebarsInstance.Compile(this._promptModel.Template);
+        var template = handlebarsInstance.Compile(_promptModel.Template);
 
-        return System.Net.WebUtility.HtmlDecode(template(arguments).
+        return WebUtility.HtmlDecode(template(arguments).
             Trim());
     }
 
@@ -80,27 +83,27 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
         CancellationToken cancellationToken = default)
     {
         // Add SK's built-in system helpers
-        KernelSystemHelpers.Register(handlebarsInstance, kernel, arguments, this._options);
+        KernelSystemHelpers.Register(handlebarsInstance, kernel, arguments, _options);
 
         // Add built-in helpers from the HandlebarsDotNet library
-        HandlebarsHelpers.Register(handlebarsInstance, optionsCallback: options =>
+        HandlebarsHelpers.Register(handlebarsInstance, options =>
         {
-            options.PrefixSeparator = this._options.PrefixSeparator;
-            options.Categories = this._options.Categories;
-            options.UseCategoryPrefix = this._options.UseCategoryPrefix;
-            options.CustomHelperPaths = this._options.CustomHelperPaths;
+            options.PrefixSeparator = _options.PrefixSeparator;
+            options.Categories = _options.Categories;
+            options.UseCategoryPrefix = _options.UseCategoryPrefix;
+            options.CustomHelperPaths = _options.CustomHelperPaths;
         });
 
         // Add helpers for kernel functions
-        KernelFunctionHelpers.Register(handlebarsInstance, kernel, arguments, this._promptModel,
-            this._allowUnsafeContent, this._options.PrefixSeparator,
+        KernelFunctionHelpers.Register(handlebarsInstance, kernel, arguments, _promptModel,
+            _allowUnsafeContent, _options.PrefixSeparator,
             cancellationToken);
 
         // Add any custom helpers
-        this._options.RegisterCustomHelpers?.Invoke(
-            (string name, HandlebarsReturnHelper customHelper)
+        _options.RegisterCustomHelpers?.Invoke(
+            (name, customHelper)
                 => KernelHelpersUtils.RegisterHelperSafe(handlebarsInstance, name, customHelper),
-            this._options,
+            _options,
             arguments);
     }
 
@@ -112,9 +115,9 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
     {
         KernelArguments result = [];
 
-        foreach (var p in this._promptModel.InputVariables)
+        foreach (var p in _promptModel.InputVariables)
         {
-            if (p.Default == null || (p.Default is string stringDefault && stringDefault.Length == 0))
+            if (p.Default == null || p.Default is string stringDefault && stringDefault.Length == 0)
             {
                 continue;
             }
@@ -130,7 +133,7 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
                 {
                     var value = kvp.Value;
 
-                    if (this.ShouldEncodeTags(this._promptModel, kvp.Key, kvp.Value))
+                    if (ShouldEncodeTags(_promptModel, kvp.Key, kvp.Value))
                     {
                         value = HttpUtility.HtmlEncode(value.ToString());
                     }
@@ -146,7 +149,7 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
 
     private bool ShouldEncodeTags(PromptTemplateConfig promptTemplateConfig, string propertyName, object? propertyValue)
     {
-        if (propertyValue is null || propertyValue is not string || this._allowUnsafeContent)
+        if (propertyValue is null || propertyValue is not string || _allowUnsafeContent)
         {
             return false;
         }

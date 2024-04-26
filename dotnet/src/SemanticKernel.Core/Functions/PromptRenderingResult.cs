@@ -10,6 +10,7 @@ using Services;
 /// </summary>
 internal sealed class PromptRenderingResult
 {
+
     public IAIService AIService { get; set; }
 
     public string RenderedPrompt { get; set; }
@@ -20,12 +21,11 @@ internal sealed class PromptRenderingResult
     public PromptRenderedEventArgs? RenderedEventArgs { get; set; }
 #pragma warning restore CS0618 // Events are deprecated
 
-    public PromptRenderedContext? RenderedContext { get; set; }
-
 
     public PromptRenderingResult(IAIService aiService, string renderedPrompt)
     {
         this.AIService = aiService;
         this.RenderedPrompt = renderedPrompt;
     }
+
 }

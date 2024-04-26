@@ -1,7 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace Examples;
+namespace GettingStarted;
 
 using System.Threading.Tasks;
+using Examples;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -15,7 +16,7 @@ using Xunit.Abstractions;
 /// Demonstrate creation of <see cref="ChatCompletionAgent"/> with a <see cref="KernelPlugin"/>,
 /// and then eliciting its response to explicit user messages.
 /// </summary>
-public class Example02_Plugins(ITestOutputHelper output) : BaseTest(output)
+public class Step2_Plugins(ITestOutputHelper output) : BaseTest(output)
 {
 
     private const string HostName = "Host";

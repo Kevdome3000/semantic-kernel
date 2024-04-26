@@ -20,14 +20,25 @@ using Models;
 internal sealed class ChatRun
 {
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// ID of this run.
+    /// </summary>
     public string Id => this._model.Id;
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// ID of the assistant used for execution of this run.
+    /// </summary>
     public string AgentId => this._model.AssistantId;
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// ID of the thread that was executed on as a part of this run.
+    /// </summary>
     public string ThreadId => this._model.ThreadId;
+
+    /// <summary>
+    /// Optional arguments for injection into function-calling.
+    /// </summary>
+    public KernelArguments? Arguments { get; init; }
 
     private const string ActionState = "requires_action";
 
@@ -187,7 +198,7 @@ internal sealed class ChatRun
         {
             var function = this._kernel.GetAssistantTool(functionDetails.Name);
 
-            var functionArguments = new KernelArguments();
+            var functionArguments = new KernelArguments(this.Arguments ?? []);
 
             if (!string.IsNullOrWhiteSpace(functionDetails.Arguments))
             {

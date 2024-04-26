@@ -6,6 +6,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Plugins;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -16,14 +17,15 @@ using Xunit.Abstractions;
 /// </summary>
 /// <remarks>
 /// This example demonstrates that outside of initialization (and cleanup), using
-/// <see cref="OpenAIAssistantAgent"/> is no different from <see cref="ChatCompletionAgent"/>.
+/// <see cref="OpenAIAssistantAgent"/> is no different from <see cref="ChatCompletionAgent"/>
+/// even with with a <see cref="KernelPlugin"/>.
 /// </remarks>
-public class Example11_OpenAIAssistant(ITestOutputHelper output) : BaseTest(output)
+public class OpenAIAssistant_Agent(ITestOutputHelper output) : BaseTest(output)
 {
 
-    private const string ParrotName = "Parrot";
+    private const string HostName = "Host";
 
-    private const string ParrotInstructions = "Repeat the user message in the voice of a pirate and then end with a parrot sound.";
+    private const string HostInstructions = "Answer questions about the menu.";
 
 
     [Fact]
@@ -34,12 +36,16 @@ public class Example11_OpenAIAssistant(ITestOutputHelper output) : BaseTest(outp
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: this.CreateEmptyKernel(),
                 config: new(this.ApiKey, this.Endpoint),
-                definition: new()
+                new()
                 {
-                    Instructions = ParrotInstructions,
-                    Name = ParrotName,
+                    Instructions = HostInstructions,
+                    Name = HostName,
                     ModelId = this.Model,
                 });
+
+        // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).
+        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
+        agent.Kernel.Plugins.Add(plugin);
 
         // Create a chat for agent interaction.
         var chat = new AgentGroupChat();
@@ -47,9 +53,10 @@ public class Example11_OpenAIAssistant(ITestOutputHelper output) : BaseTest(outp
         // Respond to user input
         try
         {
-            await InvokeAgentAsync("Fortune favors the bold.");
-            await InvokeAgentAsync("I came, I saw, I conquered.");
-            await InvokeAgentAsync("Practice makes perfect.");
+            await InvokeAgentAsync("Hello");
+            await InvokeAgentAsync("What is the special soup?");
+            await InvokeAgentAsync("What is the special drink?");
+            await InvokeAgentAsync("Thank you");
         }
         finally
         {

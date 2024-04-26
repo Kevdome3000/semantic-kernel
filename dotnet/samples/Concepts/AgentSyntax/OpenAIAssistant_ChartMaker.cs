@@ -15,7 +15,7 @@ using Xunit.Abstractions;
 /// Demonstrate using code-interpreter with <see cref="OpenAIAssistantAgent"/> to
 /// produce image content displays the requested charts.
 /// </summary>
-public class Example15_OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseTest(output)
+public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseTest(output)
 {
 
     /// <summary>
