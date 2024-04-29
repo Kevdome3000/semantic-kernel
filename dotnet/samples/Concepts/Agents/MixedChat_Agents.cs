@@ -1,18 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+namespace Examples;
+
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Examples;
+
 /// <summary>
 /// Demonstrate that two different agent types are able to participate in the same conversation.
 /// In this case a <see cref="ChatCompletionAgent"/> and <see cref="OpenAIAssistantAgent"/> participate.
 /// </summary>
 public class MixedChat_Agents(ITestOutputHelper output) : BaseTest(output)
 {
+
     private const string ReviewerName = "ArtDirector";
+
     private const string ReviewerInstructions =
         """
         You are an art director who has opinions about copywriting born of a love for David Ogilvy.
@@ -22,6 +26,7 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseTest(output)
         """;
 
     private const string CopyWriterName = "Writer";
+
     private const string CopyWriterInstructions =
         """
         You are a copywriter with ten years of experience and are known for brevity and a dry humor.
@@ -29,6 +34,7 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseTest(output)
         The goal is to refine and decide on the single best copy as an expert in the field.
         Consider suggestions when refining an idea.
         """;
+
 
     [Fact]
     public async Task RunAsync()
@@ -86,10 +92,15 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseTest(output)
         this.WriteLine($"# IS COMPLETE: {chat.IsComplete}");
     }
 
+
     private sealed class ApprovalTerminationStrategy : TerminationStrategy
     {
+
         // Terminate when the final message contains the term "approve"
         protected override Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken)
-            => Task.FromResult(history[history.Count - 1].Content?.Contains("approve", StringComparison.OrdinalIgnoreCase) ?? false);
+            => Task.FromResult(history[history.Count - 1].
+                Content?.Contains("approve", StringComparison.OrdinalIgnoreCase) ?? false);
+
     }
+
 }

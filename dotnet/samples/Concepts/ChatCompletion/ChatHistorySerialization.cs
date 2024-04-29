@@ -1,16 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Examples;
 
 public class ChatHistorySerialization(ITestOutputHelper output) : BaseTest(output)
 {
+
     private static readonly JsonSerializerOptions s_options = new() { WriteIndented = true };
+
 
     /// <summary>
     /// Demonstrates how to serialize and deserialize <see cref="ChatHistory"/> class
@@ -56,6 +59,7 @@ public class ChatHistorySerialization(ITestOutputHelper output) : BaseTest(outpu
         WriteLine($"JSON:\n{chatHistoryJson}");
     }
 
+
     /// <summary>
     /// Shows how to serialize and deserialize <see cref="ChatHistory"/> class with <see cref="ChatMessageContent"/> having custom content type as item.
     /// </summary>
@@ -95,10 +99,14 @@ public class ChatHistorySerialization(ITestOutputHelper output) : BaseTest(outpu
         WriteLine($"JSON:\n{chatHistoryJson}");
     }
 
+
     private sealed class CustomContent(string content) : KernelContent(content)
     {
+
         public string Content { get; } = content;
+
     }
+
 
     /// <summary>
     /// The TypeResolver is used to serialize and deserialize custom content types polymorphically.
@@ -106,6 +114,7 @@ public class ChatHistorySerialization(ITestOutputHelper output) : BaseTest(outpu
     /// </summary>
     private sealed class CustomResolver : DefaultJsonTypeInfoResolver
     {
+
         public override JsonTypeInfo GetTypeInfo(Type type, JsonSerializerOptions options)
         {
             var jsonTypeInfo = base.GetTypeInfo(type, options);
@@ -127,5 +136,7 @@ public class ChatHistorySerialization(ITestOutputHelper output) : BaseTest(outpu
 
             return jsonTypeInfo;
         }
+
     }
+
 }

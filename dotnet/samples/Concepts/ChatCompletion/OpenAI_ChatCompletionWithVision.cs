@@ -1,21 +1,23 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Examples;
 
 // This example shows how to use GPT Vision model with different content types (text and image).
 public class OpenAI_ChatCompletionWithVision(ITestOutputHelper output) : BaseTest(output)
 {
+
     [Fact]
     public async Task RunAsync()
     {
         const string ImageUri = "https://upload.wikimedia.org/wikipedia/commons/d/d5/Half-timbered_mansion%2C_Zirkel%2C_East_view.jpg";
 
-        var kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion("gpt-4-vision-preview", TestConfiguration.OpenAI.ApiKey)
-            .Build();
+        var kernel = Kernel.CreateBuilder().
+            AddOpenAIChatCompletion("gpt-4-vision-preview", TestConfiguration.OpenAI.ApiKey).
+            Build();
 
         var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -31,4 +33,5 @@ public class OpenAI_ChatCompletionWithVision(ITestOutputHelper output) : BaseTes
 
         WriteLine(reply.Content);
     }
+
 }

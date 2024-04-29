@@ -1,13 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using System.ComponentModel;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
 
-namespace Examples;
 
 public class WithFunctionCallingStepwisePlanner(ITestOutputHelper output) : BaseTest(output)
 {
+
     [Fact]
     public async Task RunAsync()
     {
@@ -26,6 +28,7 @@ public class WithFunctionCallingStepwisePlanner(ITestOutputHelper output) : Base
             MaxIterations = 15,
             MaxTokens = 4000,
         };
+
         var planner = new Microsoft.SemanticKernel.Planning.FunctionCallingStepwisePlanner(options);
 
         foreach (var question in questions)
@@ -38,25 +41,28 @@ public class WithFunctionCallingStepwisePlanner(ITestOutputHelper output) : Base
         }
     }
 
+
     /// <summary>
     /// Initialize the kernel and load plugins.
     /// </summary>
     /// <returns>A kernel instance</returns>
     private static Kernel InitializeKernel()
     {
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(
+        Kernel kernel = Kernel.CreateBuilder().
+            AddOpenAIChatCompletion(
                 apiKey: TestConfiguration.OpenAI.ApiKey,
-                modelId: "gpt-3.5-turbo-1106")
-            .Build();
+                modelId: "gpt-3.5-turbo-1106").
+            Build();
 
         kernel.ImportPluginFromType<RetrievePlugin>();
 
         return kernel;
     }
 
+
     internal sealed class RetrievePlugin
     {
+
         [KernelFunction, Description("Given a query retrieve relevant information")]
         public string Retrieve(
             [Description("The input query.")] string query,
@@ -67,6 +73,7 @@ public class WithFunctionCallingStepwisePlanner(ITestOutputHelper output) : Base
             {
                 return "Alice and Bob are fictional characters commonly used as placeholders in discussions about cryptographic systems and protocols,[1] and in other science and engineering literature where there are several participants in a thought experiment.";
             }
+
             if (query.Contains("Tom", System.StringComparison.OrdinalIgnoreCase) ||
                 query.Contains("Dick", System.StringComparison.OrdinalIgnoreCase) ||
                 query.Contains("Harry", System.StringComparison.OrdinalIgnoreCase))
@@ -76,5 +83,7 @@ public class WithFunctionCallingStepwisePlanner(ITestOutputHelper output) : Base
 
             return string.Empty;
         }
+
     }
+
 }

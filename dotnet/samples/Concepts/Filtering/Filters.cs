@@ -1,15 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-namespace Examples;
 
 public class Filters(ITestOutputHelper output) : BaseTest(output)
 {
+
     /// <summary>
     /// Shows how to use function and prompt filters in Kernel.
     /// </summary>
@@ -41,6 +43,7 @@ public class Filters(ITestOutputHelper output) : BaseTest(output)
         WriteLine(result);
     }
 
+
     [Fact]
     public async Task PromptFilterRenderedPromptOverrideAsync()
     {
@@ -63,6 +66,7 @@ public class Filters(ITestOutputHelper output) : BaseTest(output)
         // Prompt from filter
     }
 
+
     [Fact]
     public async Task FunctionFilterResultOverrideAsync()
     {
@@ -83,6 +87,7 @@ public class Filters(ITestOutputHelper output) : BaseTest(output)
         // Result from filter.
         // Metadata: metadata_key: metadata_value
     }
+
 
     [Fact]
     public async Task FunctionFilterResultOverrideOnStreamingAsync()
@@ -111,6 +116,7 @@ public class Filters(ITestOutputHelper output) : BaseTest(output)
         // Output: 2, 4, 6.
     }
 
+
     [Fact]
     public async Task FunctionFilterExceptionHandlingAsync()
     {
@@ -131,6 +137,7 @@ public class Filters(ITestOutputHelper output) : BaseTest(output)
         // Output: Friendly message instead of exception.
     }
 
+
     [Fact]
     public async Task FunctionFilterExceptionHandlingOnStreamingAsync()
     {
@@ -144,6 +151,7 @@ public class Filters(ITestOutputHelper output) : BaseTest(output)
         static async IAsyncEnumerable<string> GetData()
         {
             yield return "first chunk";
+
             // Simulation of exception during function invocation.
             throw new KernelException("Exception in function");
         }
@@ -157,6 +165,7 @@ public class Filters(ITestOutputHelper output) : BaseTest(output)
 
         // Output: first chunk, chunk instead of exception.
     }
+
 
     [Fact]
     public async Task AutoFunctionInvocationFilterAsync()
@@ -190,11 +199,13 @@ public class Filters(ITestOutputHelper output) : BaseTest(output)
         // Result from auto function invocation filter.
     }
 
+
     #region Filter capabilities
 
     /// <summary>Shows syntax for function filter in non-streaming scenario.</summary>
     private sealed class FunctionFilterExample : IFunctionInvocationFilter
     {
+
         public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
         {
             // Example: override kernel arguments
@@ -211,7 +222,10 @@ public class Filters(ITestOutputHelper output) : BaseTest(output)
             var usage = context.Result.Metadata?["Usage"];
 
             // Example: override function result value and metadata
-            Dictionary<string, object?> metadata = context.Result.Metadata is not null ? new(context.Result.Metadata) : [];
+            Dictionary<string, object?> metadata = context.Result.Metadata is not null
+                ? new(context.Result.Metadata)
+                : [];
+
             metadata["metadata_key"] = "metadata_value";
 
             context.Result = new FunctionResult(context.Result, "Result from filter")
@@ -219,11 +233,14 @@ public class Filters(ITestOutputHelper output) : BaseTest(output)
                 Metadata = metadata
             };
         }
+
     }
+
 
     /// <summary>Shows syntax for prompt filter.</summary>
     private sealed class PromptFilterExample : IPromptRenderFilter
     {
+
         public async Task OnPromptRenderAsync(PromptRenderContext context, Func<PromptRenderContext, Task> next)
         {
             // Example: get function information
@@ -234,12 +251,16 @@ public class Filters(ITestOutputHelper output) : BaseTest(output)
             // Example: override rendered prompt before sending it to AI
             context.RenderedPrompt = "Respond with following text: Prompt from filter.";
         }
+
     }
+
 
     /// <summary>Shows syntax for auto function invocation filter.</summary>
     private sealed class AutoFunctionInvocationFilterExample(ITestOutputHelper output) : IAutoFunctionInvocationFilter
     {
+
         private readonly ITestOutputHelper _output = output;
+
 
         public async Task OnAutoFunctionInvocationAsync(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next)
         {
@@ -274,11 +295,14 @@ public class Filters(ITestOutputHelper output) : BaseTest(output)
             // Example: Terminate function invocation
             context.Terminate = true;
         }
+
     }
+
 
     /// <summary>Shows syntax for function filter in streaming scenario.</summary>
     private sealed class StreamingFunctionFilterExample : IFunctionInvocationFilter
     {
+
         public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
         {
             await next(context);
@@ -289,6 +313,7 @@ public class Filters(ITestOutputHelper output) : BaseTest(output)
             context.Result = new FunctionResult(context.Result, OverrideStreamingDataAsync(enumerable!));
         }
 
+
         private async IAsyncEnumerable<int> OverrideStreamingDataAsync(IAsyncEnumerable<int> data)
         {
             await foreach (var item in data)
@@ -297,12 +322,16 @@ public class Filters(ITestOutputHelper output) : BaseTest(output)
                 yield return item * 2;
             }
         }
+
     }
+
 
     /// <summary>Shows syntax for exception handling in function filter in non-streaming scenario.</summary>
     private sealed class ExceptionHandlingFilterExample(ILogger logger) : IFunctionInvocationFilter
     {
+
         private readonly ILogger _logger = logger;
+
 
         public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
         {
@@ -321,12 +350,16 @@ public class Filters(ITestOutputHelper output) : BaseTest(output)
                 // throw new InvalidOperationException("New exception");
             }
         }
+
     }
+
 
     /// <summary>Shows syntax for exception handling in function filter in streaming scenario.</summary>
     private sealed class StreamingExceptionHandlingFilterExample(ILogger logger) : IFunctionInvocationFilter
     {
+
         private readonly ILogger _logger = logger;
+
 
         public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
         {
@@ -335,6 +368,7 @@ public class Filters(ITestOutputHelper output) : BaseTest(output)
             var enumerable = context.Result.GetValue<IAsyncEnumerable<string>>();
             context.Result = new FunctionResult(context.Result, StreamingWithExceptionHandlingAsync(enumerable!));
         }
+
 
         private async IAsyncEnumerable<string> StreamingWithExceptionHandlingAsync(IAsyncEnumerable<string> data)
         {
@@ -348,7 +382,8 @@ public class Filters(ITestOutputHelper output) : BaseTest(output)
 
                     try
                     {
-                        if (!await enumerator.MoveNextAsync().ConfigureAwait(false))
+                        if (!await enumerator.MoveNextAsync().
+                                ConfigureAwait(false))
                         {
                             break;
                         }
@@ -366,15 +401,19 @@ public class Filters(ITestOutputHelper output) : BaseTest(output)
                 }
             }
         }
+
     }
 
     #endregion
+
 
     #region Filters
 
     private sealed class FirstFunctionFilter(ITestOutputHelper output) : IFunctionInvocationFilter
     {
+
         private readonly ITestOutputHelper _output = output;
+
 
         public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
         {
@@ -382,11 +421,15 @@ public class Filters(ITestOutputHelper output) : BaseTest(output)
             await next(context);
             this._output.WriteLine($"{nameof(FirstFunctionFilter)}.FunctionInvoked - {context.Function.PluginName}.{context.Function.Name}");
         }
+
     }
+
 
     private sealed class SecondFunctionFilter(ITestOutputHelper output) : IFunctionInvocationFilter
     {
+
         private readonly ITestOutputHelper _output = output;
+
 
         public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
         {
@@ -394,11 +437,15 @@ public class Filters(ITestOutputHelper output) : BaseTest(output)
             await next(context);
             this._output.WriteLine($"{nameof(SecondFunctionFilter)}.FunctionInvoked - {context.Function.PluginName}.{context.Function.Name}");
         }
+
     }
+
 
     private sealed class FirstPromptFilter(ITestOutputHelper output) : IPromptRenderFilter
     {
+
         private readonly ITestOutputHelper _output = output;
+
 
         public async Task OnPromptRenderAsync(PromptRenderContext context, Func<PromptRenderContext, Task> next)
         {
@@ -406,7 +453,10 @@ public class Filters(ITestOutputHelper output) : BaseTest(output)
             await next(context);
             this._output.WriteLine($"{nameof(FirstPromptFilter)}.PromptRendered - {context.Function.PluginName}.{context.Function.Name}");
         }
+
     }
 
     #endregion
+
+
 }

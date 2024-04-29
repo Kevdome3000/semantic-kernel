@@ -12,6 +12,7 @@ using System.Diagnostics.CodeAnalysis;
 [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/GettingStarted/Step7_Observability.cs of Semantic Kernel repository.")]
 public sealed class PromptRenderedEventArgs : CancelKernelEventArgs
 {
+
     private string _renderedPrompt;
 
 
@@ -45,4 +46,5 @@ public sealed class PromptRenderedEventArgs : CancelKernelEventArgs
             this._renderedPrompt = value;
         }
     }
+
 }

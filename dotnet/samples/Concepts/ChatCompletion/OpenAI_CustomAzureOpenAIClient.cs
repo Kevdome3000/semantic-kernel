@@ -1,14 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Azure;
 using Azure.AI.OpenAI;
 using Azure.Core.Pipeline;
 using Microsoft.SemanticKernel;
 
-namespace Examples;
 
 public sealed class OpenAI_CustomAzureOpenAIClient(ITestOutputHelper output) : BaseTest(output)
 {
+
     [Fact]
     public async Task RunAsync()
     {
@@ -21,6 +23,7 @@ public sealed class OpenAI_CustomAzureOpenAIClient(ITestOutputHelper output) : B
         if (endpoint is null || deploymentName is null || apiKey is null)
         {
             this.WriteLine("Azure OpenAI credentials not found. Skipping example.");
+
             return;
         }
 
@@ -33,6 +36,7 @@ public sealed class OpenAI_CustomAzureOpenAIClient(ITestOutputHelper output) : B
         {
             Transport = new HttpClientTransport(httpClient),
         };
+
         var openAIClient = new OpenAIClient(new Uri(endpoint), new AzureKeyCredential(apiKey), clientOptions);
 
         IKernelBuilder builder = Kernel.CreateBuilder();
@@ -49,8 +53,10 @@ public sealed class OpenAI_CustomAzureOpenAIClient(ITestOutputHelper output) : B
             kernel.Plugins["FunPlugin"]["Excuses"],
             new() { ["input"] = "I have no homework" }
         );
+
         this.WriteLine(result.GetValue<string>());
 
         httpClient.Dispose();
     }
+
 }

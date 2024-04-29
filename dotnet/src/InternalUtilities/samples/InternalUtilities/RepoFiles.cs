@@ -2,8 +2,10 @@
 
 using System.Reflection;
 
+
 public static class RepoFiles
 {
+
     /// <summary>
     /// Scan the local folders from the repo, looking for "samples/plugins" folder.
     /// </summary>
@@ -15,8 +17,11 @@ public static class RepoFiles
 
         static bool SearchPath(string pathToFind, out string result, int maxAttempts = 10)
         {
-            var currDir = Path.GetFullPath(Assembly.GetExecutingAssembly().Location);
+            var currDir = Path.GetFullPath(Assembly.GetExecutingAssembly().
+                Location);
+
             bool found;
+
             do
             {
                 result = Path.Join(currDir, pathToFind);
@@ -35,4 +40,5 @@ public static class RepoFiles
 
         return path;
     }
+
 }

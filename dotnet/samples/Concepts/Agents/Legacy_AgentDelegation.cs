@@ -1,17 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Experimental.Agents;
 using Plugins;
 using Resources;
 
-namespace Examples;
 
 /// <summary>
 /// Showcase complex Open AI Agent interactions using semantic kernel.
 /// </summary>
 public class Legacy_AgentDelegation(ITestOutputHelper output) : BaseTest(output)
 {
+
     /// <summary>
     /// Specific model is required that supports agents and function calling.
     /// Currently this is limited to Open AI hosted services.
@@ -20,6 +22,7 @@ public class Legacy_AgentDelegation(ITestOutputHelper output) : BaseTest(output)
 
     // Track agents for clean-up
     private static readonly List<IAgent> s_agents = [];
+
 
     /// <summary>
     /// Show how to combine coordinate multiple agents.
@@ -32,6 +35,7 @@ public class Legacy_AgentDelegation(ITestOutputHelper output) : BaseTest(output)
         if (TestConfiguration.OpenAI.ApiKey == null)
         {
             WriteLine("OpenAI apiKey not found. Skipping example.");
+
             return;
         }
 
@@ -40,30 +44,28 @@ public class Legacy_AgentDelegation(ITestOutputHelper output) : BaseTest(output)
         try
         {
             var plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
+
             var menuAgent =
                 Track(
-                    await new AgentBuilder()
-                        .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
-                        .FromTemplate(EmbeddedResource.Read("Agents.ToolAgent.yaml"))
-                        .WithDescription("Answer questions about how the menu uses the tool.")
-                        .WithPlugin(plugin)
-                        .BuildAsync());
+                    await new AgentBuilder().WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey).
+                        FromTemplate(EmbeddedResource.Read("Agents.ToolAgent.yaml")).
+                        WithDescription("Answer questions about how the menu uses the tool.").
+                        WithPlugin(plugin).
+                        BuildAsync());
 
             var parrotAgent =
                 Track(
-                    await new AgentBuilder()
-                        .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
-                        .FromTemplate(EmbeddedResource.Read("Agents.ParrotAgent.yaml"))
-                        .BuildAsync());
+                    await new AgentBuilder().WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey).
+                        FromTemplate(EmbeddedResource.Read("Agents.ParrotAgent.yaml")).
+                        BuildAsync());
 
             var toolAgent =
                 Track(
-                    await new AgentBuilder()
-                        .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
-                        .FromTemplate(EmbeddedResource.Read("Agents.ToolAgent.yaml"))
-                        .WithPlugin(parrotAgent.AsPlugin())
-                        .WithPlugin(menuAgent.AsPlugin())
-                        .BuildAsync());
+                    await new AgentBuilder().WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey).
+                        FromTemplate(EmbeddedResource.Read("Agents.ToolAgent.yaml")).
+                        WithPlugin(parrotAgent.AsPlugin()).
+                        WithPlugin(menuAgent.AsPlugin()).
+                        BuildAsync());
 
             var messages = new string[]
             {
@@ -73,6 +75,7 @@ public class Legacy_AgentDelegation(ITestOutputHelper output) : BaseTest(output)
             };
 
             thread = await toolAgent.NewThreadAsync();
+
             foreach (var response in messages.Select(m => thread.InvokeAsync(toolAgent, m)))
             {
                 await foreach (var message in response)
@@ -91,10 +94,12 @@ public class Legacy_AgentDelegation(ITestOutputHelper output) : BaseTest(output)
         }
     }
 
+
     private static IAgent Track(IAgent agent)
     {
         s_agents.Add(agent);
 
         return agent;
     }
+
 }

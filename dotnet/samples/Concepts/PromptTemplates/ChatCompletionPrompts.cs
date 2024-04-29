@@ -1,25 +1,27 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.SemanticKernel;
 
-namespace Examples;
 
 // This example shows how to use chat completion standardized prompts.
 public class ChatCompletionPrompts(ITestOutputHelper output) : BaseTest(output)
 {
+
     [Fact]
     public async Task RunAsync()
     {
         const string ChatPrompt = """
-            <message role="user">What is Seattle?</message>
-            <message role="system">Respond with JSON.</message>
-            """;
+                                  <message role="user">What is Seattle?</message>
+                                  <message role="system">Respond with JSON.</message>
+                                  """;
 
-        var kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(
+        var kernel = Kernel.CreateBuilder().
+            AddOpenAIChatCompletion(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
-                apiKey: TestConfiguration.OpenAI.ApiKey)
-            .Build();
+                apiKey: TestConfiguration.OpenAI.ApiKey).
+            Build();
 
         var chatSemanticFunction = kernel.CreateFunctionFromPrompt(ChatPrompt);
         var chatPromptResult = await kernel.InvokeAsync(chatSemanticFunction);
@@ -31,6 +33,7 @@ public class ChatCompletionPrompts(ITestOutputHelper output) : BaseTest(output)
 
         WriteLine("Chat Prompt Streaming Result:");
         string completeMessage = string.Empty;
+
         await foreach (var message in kernel.InvokeStreamingAsync<string>(chatSemanticFunction))
         {
             completeMessage += message;
@@ -56,4 +59,5 @@ public class ChatCompletionPrompts(ITestOutputHelper output) : BaseTest(output)
         }
         */
     }
+
 }

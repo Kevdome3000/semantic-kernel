@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using Microsoft.SemanticKernel.Plugins.Web.Google;
 
-namespace Examples;
 
 /// <summary>
 /// The example shows how to use Bing and Google to search for current data
@@ -15,6 +16,7 @@ namespace Examples;
 /// </summary>
 public class BingAndGooglePlugins(ITestOutputHelper output) : BaseTest(output)
 {
+
     [Fact(Skip = "Setup Credentials")]
     public async Task RunAsync()
     {
@@ -24,17 +26,19 @@ public class BingAndGooglePlugins(ITestOutputHelper output) : BaseTest(output)
         if (openAIModelId == null || openAIApiKey == null)
         {
             this.WriteLine("OpenAI credentials not found. Skipping example.");
+
             return;
         }
 
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(
+        Kernel kernel = Kernel.CreateBuilder().
+            AddOpenAIChatCompletion(
                 modelId: openAIModelId,
-                apiKey: openAIApiKey)
-            .Build();
+                apiKey: openAIApiKey).
+            Build();
 
         // Load Bing plugin
         string bingApiKey = TestConfiguration.Bing.ApiKey;
+
         if (bingApiKey == null)
         {
             this.WriteLine("Bing credentials not found. Skipping example.");
@@ -61,12 +65,14 @@ public class BingAndGooglePlugins(ITestOutputHelper output) : BaseTest(output)
             using var googleConnector = new GoogleConnector(
                 apiKey: googleApiKey,
                 searchEngineId: googleSearchEngineId);
+
             var google = new WebSearchEnginePlugin(googleConnector);
             kernel.ImportPluginFromObject(new WebSearchEnginePlugin(googleConnector), "google");
             // ReSharper disable once ArrangeThisQualifier
             await Example1Async(kernel, "google");
         }
     }
+
 
     private async Task Example1Async(Kernel kernel, string searchPluginName)
     {
@@ -94,44 +100,45 @@ public class BingAndGooglePlugins(ITestOutputHelper output) : BaseTest(output)
        */
     }
 
+
     private async Task Example2Async(Kernel kernel)
     {
         this.WriteLine("======== Use Search Plugin to answer user questions ========");
 
         const string SemanticFunction = """
-            Answer questions only when you know the facts or the information is provided.
-            When you don't have sufficient information you reply with a list of commands to find the information needed.
-            When answering multiple questions, use a bullet point list.
-            Note: make sure single and double quotes are escaped using a backslash char.
+                                        Answer questions only when you know the facts or the information is provided.
+                                        When you don't have sufficient information you reply with a list of commands to find the information needed.
+                                        When answering multiple questions, use a bullet point list.
+                                        Note: make sure single and double quotes are escaped using a backslash char.
 
-            [COMMANDS AVAILABLE]
-            - bing.search
+                                        [COMMANDS AVAILABLE]
+                                        - bing.search
 
-            [INFORMATION PROVIDED]
-            {{ $externalInformation }}
+                                        [INFORMATION PROVIDED]
+                                        {{ $externalInformation }}
 
-            [EXAMPLE 1]
-            Question: what's the biggest lake in Italy?
-            Answer: Lake Garda, also known as Lago di Garda.
+                                        [EXAMPLE 1]
+                                        Question: what's the biggest lake in Italy?
+                                        Answer: Lake Garda, also known as Lago di Garda.
 
-            [EXAMPLE 2]
-            Question: what's the biggest lake in Italy? What's the smallest positive number?
-            Answer:
-            * Lake Garda, also known as Lago di Garda.
-            * The smallest positive number is 1.
+                                        [EXAMPLE 2]
+                                        Question: what's the biggest lake in Italy? What's the smallest positive number?
+                                        Answer:
+                                        * Lake Garda, also known as Lago di Garda.
+                                        * The smallest positive number is 1.
 
-            [EXAMPLE 3]
-            Question: what's Ferrari stock price? Who is the current number one female tennis player in the world?
-            Answer:
-            {{ '{{' }} bing.search "what\\'s Ferrari stock price?" {{ '}}' }}.
-            {{ '{{' }} bing.search "Who is the current number one female tennis player in the world?" {{ '}}' }}.
+                                        [EXAMPLE 3]
+                                        Question: what's Ferrari stock price? Who is the current number one female tennis player in the world?
+                                        Answer:
+                                        {{ '{{' }} bing.search "what\\'s Ferrari stock price?" {{ '}}' }}.
+                                        {{ '{{' }} bing.search "Who is the current number one female tennis player in the world?" {{ '}}' }}.
 
-            [END OF EXAMPLES]
+                                        [END OF EXAMPLES]
 
-            [TASK]
-            Question: {{ $question }}.
-            Answer: 
-            """;
+                                        [TASK]
+                                        Question: {{ $question }}.
+                                        Answer:
+                                        """;
 
         var question = "Who is the most followed person on TikTok right now? What's the exchange rate EUR:USD?";
         this.WriteLine(question);
@@ -192,4 +199,5 @@ public class BingAndGooglePlugins(ITestOutputHelper output) : BaseTest(output)
             * The exchange rate for EUR to USD is 1.1037097 US Dollars for 1 Euro.
          */
     }
+
 }

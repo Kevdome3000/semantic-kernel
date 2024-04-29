@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.SemanticKernel;
 
-namespace Examples;
 
 /// <summary>
 /// This example demonstrates how to add AI services to a kernel as described at
@@ -10,6 +11,7 @@ namespace Examples;
 /// </summary>
 public class AIServices(ITestOutputHelper output) : BaseTest(output)
 {
+
     [Fact]
     public async Task RunAsync()
     {
@@ -40,30 +42,31 @@ public class AIServices(ITestOutputHelper output) : BaseTest(output)
 
         // Create a kernel with an Azure OpenAI chat completion service
         // <TypicalKernelCreation>
-        Kernel kernel = Kernel.CreateBuilder()
-                              .AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey)
-                              .Build();
+        Kernel kernel = Kernel.CreateBuilder().
+            AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey).
+            Build();
         // </TypicalKernelCreation>
 
         // You could instead create a kernel with a legacy Azure OpenAI text completion service
         // <TextCompletionKernelCreation>
-        kernel = Kernel.CreateBuilder()
-                       .AddAzureOpenAITextGeneration(textModelId, endpoint, apiKey)
-                       .Build();
+        kernel = Kernel.CreateBuilder().
+            AddAzureOpenAITextGeneration(textModelId, endpoint, apiKey).
+            Build();
         // </TextCompletionKernelCreation>
 
         // You can also create a kernel with a (non-Azure) OpenAI chat completion service
         // <OpenAIKernelCreation>
-        kernel = Kernel.CreateBuilder()
-                       .AddOpenAIChatCompletion(openAImodelId, openAIapiKey)
-                       .Build();
+        kernel = Kernel.CreateBuilder().
+            AddOpenAIChatCompletion(openAImodelId, openAIapiKey).
+            Build();
         // </OpenAIKernelCreation>
 
         // Or a kernel with a legacy OpenAI text completion service
         // <OpenAITextCompletionKernelCreation>
-        kernel = Kernel.CreateBuilder()
-                       .AddOpenAITextGeneration(openAItextModelId, openAIapiKey)
-                       .Build();
+        kernel = Kernel.CreateBuilder().
+            AddOpenAITextGeneration(openAItextModelId, openAIapiKey).
+            Build();
         // </OpenAITextCompletionKernelCreation>
     }
+
 }

@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Experimental.Agents;
 using Resources;
 
-namespace Examples;
 
 // ReSharper disable once InconsistentNaming
 /// <summary>
@@ -13,6 +14,7 @@ namespace Examples;
 /// </summary>
 public sealed class Legacy_AgentTools(ITestOutputHelper output) : BaseTest(output)
 {
+
     /// <summary>
     /// Specific model is required that supports agents and parallel function calling.
     /// Currently this is limited to Open AI hosted services.
@@ -32,6 +34,7 @@ public sealed class Legacy_AgentTools(ITestOutputHelper output) : BaseTest(outpu
     // Track agents for clean-up
     private readonly List<IAgent> _agents = [];
 
+
     /// <summary>
     /// Show how to utilize code_interpreter tool.
     /// </summary>
@@ -40,13 +43,15 @@ public sealed class Legacy_AgentTools(ITestOutputHelper output) : BaseTest(outpu
     {
         this.WriteLine("======== Using CodeInterpreter tool ========");
 
-        var builder = CreateAgentBuilder().WithInstructions("Write only code to solve the given problem without comment.");
+        var builder = CreateAgentBuilder().
+            WithInstructions("Write only code to solve the given problem without comment.");
 
         try
         {
             var defaultAgent = Track(await builder.BuildAsync());
 
-            var codeInterpreterAgent = Track(await builder.WithCodeInterpreter().BuildAsync());
+            var codeInterpreterAgent = Track(await builder.WithCodeInterpreter().
+                BuildAsync());
 
             await ChatAsync(
                 defaultAgent,
@@ -60,6 +65,7 @@ public sealed class Legacy_AgentTools(ITestOutputHelper output) : BaseTest(outpu
             await Task.WhenAll(this._agents.Select(a => a.DeleteAsync()));
         }
     }
+
 
     /// <summary>
     /// Show how to utilize retrieval tool.
@@ -76,11 +82,13 @@ public sealed class Legacy_AgentTools(ITestOutputHelper output) : BaseTest(outpu
         if (TestConfiguration.OpenAI.ApiKey == null)
         {
             this.WriteLine("OpenAI apiKey not found. Skipping example.");
+
             return;
         }
 
         Kernel kernel = CreateFileEnabledKernel();
         var fileService = kernel.GetRequiredService<OpenAIFileService>();
+
         var result =
             await fileService.UploadContentAsync(
                 new BinaryContent(() => Task.FromResult(EmbeddedResource.ReadStream("travelinfo.txt")!)),
@@ -89,9 +97,12 @@ public sealed class Legacy_AgentTools(ITestOutputHelper output) : BaseTest(outpu
         var fileId = result.Id;
         this.WriteLine($"! {fileId}");
 
-        var defaultAgent = Track(await CreateAgentBuilder().BuildAsync());
+        var defaultAgent = Track(await CreateAgentBuilder().
+            BuildAsync());
 
-        var retrievalAgent = Track(await CreateAgentBuilder().WithRetrieval().BuildAsync());
+        var retrievalAgent = Track(await CreateAgentBuilder().
+            WithRetrieval().
+            BuildAsync());
 
         if (!PassFileOnRequest)
         {
@@ -103,16 +114,20 @@ public sealed class Legacy_AgentTools(ITestOutputHelper output) : BaseTest(outpu
             await ChatAsync(
                 defaultAgent,
                 retrievalAgent,
-                PassFileOnRequest ? fileId : null,
+                PassFileOnRequest
+                    ? fileId
+                    : null,
                 "Where did sam go?",
                 "When does the flight leave Seattle?",
                 "What is the hotel contact info at the destination?");
         }
         finally
         {
-            await Task.WhenAll(this._agents.Select(a => a.DeleteAsync()).Append(fileService.DeleteFileAsync(fileId)));
+            await Task.WhenAll(this._agents.Select(a => a.DeleteAsync()).
+                Append(fileService.DeleteFileAsync(fileId)));
         }
     }
+
 
     /// <summary>
     /// Common chat loop used for: RunCodeInterpreterToolAsync and RunRetrievalToolAsync.
@@ -125,6 +140,7 @@ public sealed class Legacy_AgentTools(ITestOutputHelper output) : BaseTest(outpu
         params string[] questions)
     {
         string[]? fileIds = null;
+
         if (fileId != null)
         {
             fileIds = [fileId];
@@ -144,6 +160,7 @@ public sealed class Legacy_AgentTools(ITestOutputHelper output) : BaseTest(outpu
             await foreach (var message in agent.InvokeAsync(question, null, fileIds))
             {
                 string content = message.Content;
+
                 foreach (var annotation in message.Annotations)
                 {
                     content = content.Replace(annotation.Label, string.Empty, StringComparison.Ordinal);
@@ -154,6 +171,7 @@ public sealed class Legacy_AgentTools(ITestOutputHelper output) : BaseTest(outpu
                 if (message.Annotations.Count > 0)
                 {
                     this.WriteLine("\n# files:");
+
                     foreach (var annotation in message.Annotations)
                     {
                         this.WriteLine($"* {annotation.FileId}");
@@ -165,21 +183,28 @@ public sealed class Legacy_AgentTools(ITestOutputHelper output) : BaseTest(outpu
         }
     }
 
+
     private static Kernel CreateFileEnabledKernel()
     {
         return
-            ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) ?
-                Kernel.CreateBuilder().AddOpenAIFiles(TestConfiguration.OpenAI.ApiKey).Build() :
-                Kernel.CreateBuilder().AddAzureOpenAIFiles(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey).Build();
+            ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint)
+                ? Kernel.CreateBuilder().
+                    AddOpenAIFiles(TestConfiguration.OpenAI.ApiKey).
+                    Build()
+                : Kernel.CreateBuilder().
+                    AddAzureOpenAIFiles(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey).
+                    Build();
     }
+
 
     private static AgentBuilder CreateAgentBuilder()
     {
         return
-            ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) ?
-                new AgentBuilder().WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey) :
-                new AgentBuilder().WithAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.ApiKey);
+            ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint)
+                ? new AgentBuilder().WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
+                : new AgentBuilder().WithAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.ApiKey);
     }
+
 
     private IAgent Track(IAgent agent)
     {
@@ -187,4 +212,5 @@ public sealed class Legacy_AgentTools(ITestOutputHelper output) : BaseTest(outpu
 
         return agent;
     }
+
 }

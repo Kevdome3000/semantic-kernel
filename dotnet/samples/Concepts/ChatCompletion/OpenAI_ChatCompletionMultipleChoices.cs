@@ -1,13 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-namespace Examples;
 
 // The following example shows how to use Semantic Kernel with streaming Multiple Results Chat Completion.
 public class OpenAI_ChatCompletionMultipleChoices(ITestOutputHelper output) : BaseTest(output)
 {
+
     [Fact]
     public Task AzureOpenAIMultiChatCompletionAsync()
     {
@@ -22,6 +24,7 @@ public class OpenAI_ChatCompletionMultipleChoices(ITestOutputHelper output) : Ba
         return ChatCompletionAsync(chatCompletionService);
     }
 
+
     [Fact]
     public Task OpenAIMultiChatCompletionAsync()
     {
@@ -33,6 +36,7 @@ public class OpenAI_ChatCompletionMultipleChoices(ITestOutputHelper output) : Ba
 
         return ChatCompletionAsync(chatCompletionService);
     }
+
 
     private async Task ChatCompletionAsync(IChatCompletionService chatCompletionService)
     {
@@ -57,4 +61,5 @@ public class OpenAI_ChatCompletionMultipleChoices(ITestOutputHelper output) : Ba
 
         WriteLine();
     }
+
 }

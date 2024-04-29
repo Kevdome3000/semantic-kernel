@@ -4,8 +4,10 @@ using Microsoft.Extensions.Configuration;
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes
 
+
 internal sealed class Env
 {
+
     /// <summary>
     /// Simple helper used to load env vars and secrets like credentials,
     /// to avoid hard coding them in the sample code
@@ -14,17 +16,18 @@ internal sealed class Env
     /// <returns>Value found in Secret Manager or Environment Variable</returns>
     internal static string Var(string name)
     {
-        var configuration = new ConfigurationBuilder()
-            .AddUserSecrets<Env>()
-            .Build();
+        var configuration = new ConfigurationBuilder().AddUserSecrets<Env>().
+            Build();
 
         var value = configuration[name];
+
         if (!string.IsNullOrEmpty(value))
         {
             return value;
         }
 
         value = Environment.GetEnvironmentVariable(name);
+
         if (string.IsNullOrEmpty(value))
         {
             throw new YourAppException($"Secret / Env var not set: {name}");
@@ -32,4 +35,5 @@ internal sealed class Env
 
         return value;
     }
+
 }

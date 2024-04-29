@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using System.ComponentModel;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-namespace Examples;
 
 /// <summary>
 /// This example shows how to create a plugin class and interact with as described at
@@ -14,6 +15,7 @@ namespace Examples;
 /// </summary>
 public class Plugin : BaseTest
 {
+
     [Fact]
     public async Task RunAsync()
     {
@@ -32,8 +34,9 @@ public class Plugin : BaseTest
 
         // Create kernel
         // <KernelCreation>
-        var builder = Kernel.CreateBuilder()
-                            .AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey);
+        var builder = Kernel.CreateBuilder().
+            AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey);
+
         builder.Plugins.AddFromType<LightPlugin>();
         Kernel kernel = builder.Build();
         // </KernelCreation>
@@ -49,6 +52,7 @@ public class Plugin : BaseTest
         // Start the conversation
         Write("User > ");
         string? userInput;
+
         while ((userInput = ReadLine()) != null)
         {
             // Add user input
@@ -78,24 +82,33 @@ public class Plugin : BaseTest
         // </Chat>
     }
 
+
     public Plugin(ITestOutputHelper output) : base(output)
     {
-        SimulatedInputText = [
+        SimulatedInputText =
+        [
             "Hello",
-            "Can you turn on the lights"];
+            "Can you turn on the lights"
+        ];
     }
+
 }
+
 
 // <LightPlugin>
 public class LightPlugin
 {
+
     public bool IsOn { get; set; } = false;
 
 #pragma warning disable CA1024 // Use properties where appropriate
     [KernelFunction]
     [Description("Gets the state of the light.")]
-    public string GetState() => IsOn ? "on" : "off";
+    public string GetState() => IsOn
+        ? "on"
+        : "off";
 #pragma warning restore CA1024 // Use properties where appropriate
+
 
     [KernelFunction]
     [Description("Changes the state of the light.'")]
@@ -109,5 +122,6 @@ public class LightPlugin
 
         return state;
     }
+
 }
 // </LightPlugin>

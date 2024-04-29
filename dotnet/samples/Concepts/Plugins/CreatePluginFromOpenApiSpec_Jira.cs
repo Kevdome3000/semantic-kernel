@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -7,14 +9,15 @@ using Microsoft.Identity.Client;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 
-namespace Examples;
 
 public class CreatePluginFromOpenApiSpec_Jira(ITestOutputHelper output) : BaseTest(output)
 {
+
     private static readonly JsonSerializerOptions s_jsonOptionsCache = new()
     {
         WriteIndented = true
     };
+
 
     /// <summary>
     /// This sample shows how to connect the Semantic Kernel to Jira as an Open API plugin based on the Open API schema.
@@ -42,9 +45,11 @@ public class CreatePluginFromOpenApiSpec_Jira(ITestOutputHelper output) : BaseTe
         string serverUrl = $"https://{TestConfiguration.Jira.Domain}.atlassian.net/rest/api/latest/";
 
         KernelPlugin jiraFunctions;
+
         var tokenProvider = new BasicAuthenticationProvider(() =>
         {
             string s = $"{TestConfiguration.Jira.Email}:{TestConfiguration.Jira.ApiKey}";
+
             return Task.FromResult(s);
         });
 
@@ -52,9 +57,11 @@ public class CreatePluginFromOpenApiSpec_Jira(ITestOutputHelper output) : BaseTe
 
         // The bool useLocalFile can be used to toggle the ingestion method for the openapi schema between a file path and a URL
         bool useLocalFile = true;
+
         if (useLocalFile)
         {
             var apiPluginFile = "./../../../../Plugins/JiraPlugin/openapi.json";
+
             jiraFunctions = await kernel.ImportPluginFromOpenApiAsync(
                 "jiraPlugin",
                 apiPluginFile,
@@ -67,6 +74,7 @@ public class CreatePluginFromOpenApiSpec_Jira(ITestOutputHelper output) : BaseTe
         else
         {
             var apiPluginRawFileURL = new Uri("https://raw.githubusercontent.com/microsoft/PowerPlatformConnectors/dev/certified-connectors/JIRA/apiDefinition.swagger.json");
+
             jiraFunctions = await kernel.ImportPluginFromOpenApiAsync(
                 "jiraPlugin",
                 apiPluginRawFileURL,
@@ -89,8 +97,10 @@ public class CreatePluginFromOpenApiSpec_Jira(ITestOutputHelper output) : BaseTe
         var result = await kernel.InvokeAsync(jiraFunctions["GetIssue"], arguments);
 
         WriteLine("\n\n\n");
+
         var formattedContent = JsonSerializer.Serialize(
             result.GetValue<RestApiOperationResponse>(), s_jsonOptionsCache);
+
         WriteLine($"GetIssue jiraPlugin response: \n{formattedContent}");
 
         // AddComment Function
@@ -106,6 +116,7 @@ public class CreatePluginFromOpenApiSpec_Jira(ITestOutputHelper output) : BaseTe
         WriteLine($"AddComment jiraPlugin response: \n{formattedContent}");
     }
 
+
     #region Example of authentication providers
 
     /// <summary>
@@ -114,7 +125,9 @@ public class CreatePluginFromOpenApiSpec_Jira(ITestOutputHelper output) : BaseTe
     /// </summary>
     public class BasicAuthenticationProvider(Func<Task<string>> credentials)
     {
+
         private readonly Func<Task<string>> _credentials = credentials;
+
 
         /// <summary>
         /// Applies the authentication content to the provided HTTP request message.
@@ -124,10 +137,14 @@ public class CreatePluginFromOpenApiSpec_Jira(ITestOutputHelper output) : BaseTe
         public async Task AuthenticateRequestAsync(HttpRequestMessage request, CancellationToken cancellationToken = default)
         {
             // Base64 encode
-            string encodedContent = Convert.ToBase64String(Encoding.UTF8.GetBytes(await this._credentials().ConfigureAwait(false)));
+            string encodedContent = Convert.ToBase64String(Encoding.UTF8.GetBytes(await this._credentials().
+                ConfigureAwait(false)));
+
             request.Headers.Authorization = new AuthenticationHeaderValue("Basic", encodedContent);
         }
+
     }
+
 
     /// <summary>
     /// Retrieves a token via the provided delegate and applies it to HTTP requests using the
@@ -135,7 +152,9 @@ public class CreatePluginFromOpenApiSpec_Jira(ITestOutputHelper output) : BaseTe
     /// </summary>
     public class BearerAuthenticationProvider(Func<Task<string>> bearerToken)
     {
+
         private readonly Func<Task<string>> _bearerToken = bearerToken;
+
 
         /// <summary>
         /// Applies the token to the provided HTTP request message.
@@ -143,16 +162,21 @@ public class CreatePluginFromOpenApiSpec_Jira(ITestOutputHelper output) : BaseTe
         /// <param name="request">The HTTP request message.</param>
         public async Task AuthenticateRequestAsync(HttpRequestMessage request)
         {
-            var token = await this._bearerToken().ConfigureAwait(false);
+            var token = await this._bearerToken().
+                ConfigureAwait(false);
+
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }
+
     }
+
 
     /// <summary>
     /// Uses the Microsoft Authentication Library (MSAL) to authenticate HTTP requests.
     /// </summary>
     public class InteractiveMsalAuthenticationProvider(string clientId, string tenantId, string[] scopes, Uri redirectUri) : BearerAuthenticationProvider(() => GetTokenAsync(clientId, tenantId, scopes, redirectUri))
     {
+
         /// <summary>
         /// Gets an access token using the Microsoft Authentication Library (MSAL).
         /// </summary>
@@ -161,39 +185,53 @@ public class CreatePluginFromOpenApiSpec_Jira(ITestOutputHelper output) : BaseTe
         /// <param name="scopes">Requested scopes.</param>
         /// <param name="redirectUri">Redirect URI.</param>
         /// <returns>Access token.</returns>
-        private static async Task<string> GetTokenAsync(string clientId, string tenantId, string[] scopes, Uri redirectUri)
+        private static async Task<string> GetTokenAsync(
+            string clientId,
+            string tenantId,
+            string[] scopes,
+            Uri redirectUri)
         {
-            IPublicClientApplication app = PublicClientApplicationBuilder.Create(clientId)
-                .WithRedirectUri(redirectUri.ToString())
-                .WithTenantId(tenantId)
-                .Build();
+            IPublicClientApplication app = PublicClientApplicationBuilder.Create(clientId).
+                WithRedirectUri(redirectUri.ToString()).
+                WithTenantId(tenantId).
+                Build();
 
-            IEnumerable<IAccount> accounts = await app.GetAccountsAsync().ConfigureAwait(false);
+            IEnumerable<IAccount> accounts = await app.GetAccountsAsync().
+                ConfigureAwait(false);
+
             AuthenticationResult result;
+
             try
             {
-                result = await app.AcquireTokenSilent(scopes, accounts.FirstOrDefault())
-                    .ExecuteAsync().ConfigureAwait(false);
+                result = await app.AcquireTokenSilent(scopes, accounts.FirstOrDefault()).
+                    ExecuteAsync().
+                    ConfigureAwait(false);
             }
             catch (MsalUiRequiredException)
             {
                 // A MsalUiRequiredException happened on AcquireTokenSilent.
                 // This indicates you need to call AcquireTokenInteractive to acquire a token
-                result = await app.AcquireTokenInteractive(scopes)
-                    .ExecuteAsync().ConfigureAwait(false);
+                result = await app.AcquireTokenInteractive(scopes).
+                    ExecuteAsync().
+                    ConfigureAwait(false);
             }
 
             return result.AccessToken;
         }
+
     }
+
 
     /// <summary>
     /// Retrieves authentication content (scheme and value) via the provided delegate and applies it to HTTP requests.
     /// </summary>
     public sealed class CustomAuthenticationProvider(Func<Task<string>> header, Func<Task<string>> value)
     {
+
         private readonly Func<Task<string>> _header = header;
+
         private readonly Func<Task<string>> _value = value;
+
 
         /// <summary>
         /// Applies the header and value to the provided HTTP request message.
@@ -201,11 +239,18 @@ public class CreatePluginFromOpenApiSpec_Jira(ITestOutputHelper output) : BaseTe
         /// <param name="request">The HTTP request message.</param>
         public async Task AuthenticateRequestAsync(HttpRequestMessage request)
         {
-            var header = await this._header().ConfigureAwait(false);
-            var value = await this._value().ConfigureAwait(false);
+            var header = await this._header().
+                ConfigureAwait(false);
+
+            var value = await this._value().
+                ConfigureAwait(false);
+
             request.Headers.Add(header, value);
         }
+
     }
 
     #endregion
+
+
 }

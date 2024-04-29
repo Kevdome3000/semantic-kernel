@@ -1,13 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Resources;
 
-namespace Examples;
 
 public sealed class Google_GeminiVision(ITestOutputHelper output) : BaseTest(output)
 {
+
     [Fact]
     public async Task GoogleAIAsync()
     {
@@ -19,14 +21,15 @@ public sealed class Google_GeminiVision(ITestOutputHelper output) : BaseTest(out
         if (geminiApiKey is null)
         {
             this.WriteLine("Gemini credentials not found. Skipping example.");
+
             return;
         }
 
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddGoogleAIGeminiChatCompletion(
+        Kernel kernel = Kernel.CreateBuilder().
+            AddGoogleAIGeminiChatCompletion(
                 modelId: geminiModelId,
-                apiKey: geminiApiKey)
-            .Build();
+                apiKey: geminiApiKey).
+            Build();
 
         var chatHistory = new ChatHistory();
         var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
@@ -49,6 +52,7 @@ public sealed class Google_GeminiVision(ITestOutputHelper output) : BaseTest(out
         WriteLine(reply.Content);
     }
 
+
     [Fact]
     public async Task VertexAIAsync()
     {
@@ -62,16 +66,17 @@ public sealed class Google_GeminiVision(ITestOutputHelper output) : BaseTest(out
         if (geminiBearerKey is null || geminiLocation is null || geminiProject is null)
         {
             this.WriteLine("Gemini vertex ai credentials not found. Skipping example.");
+
             return;
         }
 
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddVertexAIGeminiChatCompletion(
+        Kernel kernel = Kernel.CreateBuilder().
+            AddVertexAIGeminiChatCompletion(
                 modelId: geminiModelId,
                 bearerKey: geminiBearerKey,
                 location: geminiLocation,
-                projectId: geminiProject)
-            .Build();
+                projectId: geminiProject).
+            Build();
 
         // To generate bearer key, you need installed google sdk or use google web console with command:
         //
@@ -120,4 +125,5 @@ public sealed class Google_GeminiVision(ITestOutputHelper output) : BaseTest(out
 
         WriteLine(reply.Content);
     }
+
 }

@@ -1,4 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+namespace Examples;
+
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
@@ -6,16 +8,18 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Resources;
 
-namespace Examples;
+
 /// <summary>
 /// Demonstrate using retrieval on <see cref="OpenAIAssistantAgent"/> .
 /// </summary>
 public class OpenAIAssistant_Retrieval(ITestOutputHelper output) : BaseTest(output)
 {
+
     /// <summary>
     /// Retrieval tool not supported on Azure OpenAI.
     /// </summary>
     protected override bool ForceOpenAI => true;
+
 
     [Fact]
     public async Task RunAsync()
@@ -69,4 +73,5 @@ public class OpenAIAssistant_Retrieval(ITestOutputHelper output) : BaseTest(outp
             }
         }
     }
+
 }

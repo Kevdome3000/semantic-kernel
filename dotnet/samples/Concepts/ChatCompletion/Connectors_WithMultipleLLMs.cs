@@ -1,35 +1,38 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.SemanticKernel;
 using xRetry;
 
-namespace Examples;
 
 public class Connectors_WithMultipleLLMs(ITestOutputHelper output) : BaseTest(output)
 {
+
     /// <summary>
     /// Show how to run a prompt function and specify a specific service to use.
     /// </summary>
     [RetryFact(typeof(HttpOperationException))]
     public async Task RunAsync()
     {
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddAzureOpenAIChatCompletion(
+        Kernel kernel = Kernel.CreateBuilder().
+            AddAzureOpenAIChatCompletion(
                 deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 endpoint: TestConfiguration.AzureOpenAI.Endpoint,
                 apiKey: TestConfiguration.AzureOpenAI.ApiKey,
                 serviceId: "AzureOpenAIChat",
-                modelId: TestConfiguration.AzureOpenAI.ChatModelId)
-            .AddOpenAIChatCompletion(
+                modelId: TestConfiguration.AzureOpenAI.ChatModelId).
+            AddOpenAIChatCompletion(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey,
-                serviceId: "OpenAIChat")
-            .Build();
+                serviceId: "OpenAIChat").
+            Build();
 
         await RunByServiceIdAsync(kernel, "AzureOpenAIChat");
         await RunByModelIdAsync(kernel, TestConfiguration.OpenAI.ChatModelId);
         await RunByFirstModelIdAsync(kernel, "gpt-4-1106-preview", TestConfiguration.AzureOpenAI.ChatModelId, TestConfiguration.OpenAI.ChatModelId);
     }
+
 
     private async Task RunByServiceIdAsync(Kernel kernel, string serviceId)
     {
@@ -38,13 +41,16 @@ public class Connectors_WithMultipleLLMs(ITestOutputHelper output) : BaseTest(ou
         var prompt = "Hello AI, what can you do for me?";
 
         KernelArguments arguments = [];
+
         arguments.ExecutionSettings = new Dictionary<string, PromptExecutionSettings>()
         {
             { serviceId, new PromptExecutionSettings() }
         };
+
         var result = await kernel.InvokePromptAsync(prompt, arguments);
         WriteLine(result.GetValue<string>());
     }
+
 
     private async Task RunByModelIdAsync(Kernel kernel, string modelId)
     {
@@ -53,13 +59,15 @@ public class Connectors_WithMultipleLLMs(ITestOutputHelper output) : BaseTest(ou
         var prompt = "Hello AI, what can you do for me?";
 
         var result = await kernel.InvokePromptAsync(
-           prompt,
-           new(new PromptExecutionSettings()
-           {
-               ModelId = modelId
-           }));
+            prompt,
+            new(new PromptExecutionSettings()
+            {
+                ModelId = modelId
+            }));
+
         WriteLine(result.GetValue<string>());
     }
+
 
     private async Task RunByFirstModelIdAsync(Kernel kernel, params string[] modelIds)
     {
@@ -68,10 +76,12 @@ public class Connectors_WithMultipleLLMs(ITestOutputHelper output) : BaseTest(ou
         var prompt = "Hello AI, what can you do for me?";
 
         var modelSettings = new Dictionary<string, PromptExecutionSettings>();
+
         foreach (var modelId in modelIds)
         {
             modelSettings.Add(modelId, new PromptExecutionSettings() { ModelId = modelId });
         }
+
         var promptConfig = new PromptTemplateConfig(prompt) { Name = "HelloAI", ExecutionSettings = modelSettings };
 
         var function = kernel.CreateFunctionFromPrompt(promptConfig);
@@ -79,4 +89,5 @@ public class Connectors_WithMultipleLLMs(ITestOutputHelper output) : BaseTest(ou
         var result = await kernel.InvokeAsync(function);
         WriteLine(result.GetValue<string>());
     }
+
 }

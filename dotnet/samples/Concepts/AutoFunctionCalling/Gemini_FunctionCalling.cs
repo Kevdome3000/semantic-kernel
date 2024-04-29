@@ -1,14 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Google;
 using xRetry;
 
-namespace Examples;
 
 public sealed class Gemini_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
 {
+
     [RetryFact]
     public async Task GoogleAIAsync()
     {
@@ -20,17 +22,19 @@ public sealed class Gemini_FunctionCalling(ITestOutputHelper output) : BaseTest(
         if (geminiApiKey is null || geminiModelId is null)
         {
             this.WriteLine("Gemini credentials not found. Skipping example.");
+
             return;
         }
 
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddGoogleAIGeminiChatCompletion(
+        Kernel kernel = Kernel.CreateBuilder().
+            AddGoogleAIGeminiChatCompletion(
                 modelId: geminiModelId,
-                apiKey: geminiApiKey)
-            .Build();
+                apiKey: geminiApiKey).
+            Build();
 
         await this.RunSampleAsync(kernel);
     }
+
 
     [RetryFact]
     public async Task VertexAIAsync()
@@ -45,16 +49,17 @@ public sealed class Gemini_FunctionCalling(ITestOutputHelper output) : BaseTest(
         if (geminiApiKey is null || geminiModelId is null || geminiLocation is null || geminiProject is null)
         {
             this.WriteLine("Gemini vertex ai credentials not found. Skipping example.");
+
             return;
         }
 
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddVertexAIGeminiChatCompletion(
+        Kernel kernel = Kernel.CreateBuilder().
+            AddVertexAIGeminiChatCompletion(
                 modelId: geminiModelId,
                 bearerKey: geminiApiKey,
                 location: geminiLocation,
-                projectId: geminiProject)
-            .Build();
+                projectId: geminiProject).
+            Build();
 
         // To generate bearer key, you need installed google sdk or use google web console with command:
         //
@@ -82,6 +87,7 @@ public sealed class Gemini_FunctionCalling(ITestOutputHelper output) : BaseTest(
         await this.RunSampleAsync(kernel);
     }
 
+
     private async Task RunSampleAsync(Kernel kernel)
     {
         // Add a plugin with some helper functions we want to allow the model to utilize.
@@ -103,16 +109,21 @@ public sealed class Gemini_FunctionCalling(ITestOutputHelper output) : BaseTest(
         ]);
 
         WriteLine("======== Example 1: Use automated function calling with a non-streaming prompt ========");
+
         {
             GeminiPromptExecutionSettings settings = new() { ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions };
+
             WriteLine(await kernel.InvokePromptAsync(
                 "Check current UTC time, and return current weather in Paris city", new(settings)));
+
             WriteLine();
         }
 
         WriteLine("======== Example 2: Use automated function calling with a streaming prompt ========");
+
         {
             GeminiPromptExecutionSettings settings = new() { ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions };
+
             await foreach (var update in kernel.InvokePromptStreamingAsync(
                                "Check current UTC time, and return current weather in Boston city", new(settings)))
             {
@@ -123,12 +134,14 @@ public sealed class Gemini_FunctionCalling(ITestOutputHelper output) : BaseTest(
         }
 
         WriteLine("======== Example 3: Use manual function calling with a non-streaming prompt ========");
+
         {
             var chat = kernel.GetRequiredService<IChatCompletionService>();
             var chatHistory = new ChatHistory();
 
             GeminiPromptExecutionSettings settings = new() { ToolCallBehavior = GeminiToolCallBehavior.EnableKernelFunctions };
             chatHistory.AddUserMessage("Check current UTC time, and return current weather in London city");
+
             while (true)
             {
                 var result = (GeminiChatMessageContent)await chat.GetChatMessageContentAsync(chatHistory, settings, kernel);
@@ -144,15 +157,18 @@ public sealed class Gemini_FunctionCalling(ITestOutputHelper output) : BaseTest(
                 }
 
                 chatHistory.Add(result);
+
                 foreach (var toolCall in result.ToolCalls)
                 {
                     KernelArguments? arguments = null;
+
                     if (kernel.Plugins.TryGetFunction(toolCall.PluginName, toolCall.FunctionName, out var function))
                     {
                         // Add parameters to arguments
                         if (toolCall.Arguments is not null)
                         {
                             arguments = [];
+
                             foreach (var parameter in toolCall.Arguments)
                             {
                                 arguments[parameter.Key] = parameter.Value?.ToString();
@@ -162,6 +178,7 @@ public sealed class Gemini_FunctionCalling(ITestOutputHelper output) : BaseTest(
                     else
                     {
                         this.WriteLine("Unable to find function. Please try again!");
+
                         continue;
                     }
 
@@ -210,4 +227,5 @@ public sealed class Gemini_FunctionCalling(ITestOutputHelper output) : BaseTest(
         }
         */
     }
+
 }

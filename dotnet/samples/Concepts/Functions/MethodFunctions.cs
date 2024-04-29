@@ -1,11 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.SemanticKernel.Plugins.Core;
 
-namespace Examples;
 
 public class MethodFunctions(ITestOutputHelper output) : BaseTest(output)
 {
+
     [Fact]
     public Task RunAsync()
     {
@@ -21,4 +23,5 @@ public class MethodFunctions(ITestOutputHelper output) : BaseTest(output)
 
         return Task.CompletedTask;
     }
+
 }

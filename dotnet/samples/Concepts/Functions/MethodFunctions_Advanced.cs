@@ -1,15 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using System.ComponentModel;
 using System.Globalization;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
 
-namespace Examples;
 
 // This example shows different ways how to define and execute method functions using custom and primitive types.
 public class MethodFunctions_Advanced(ITestOutputHelper output) : BaseTest(output)
 {
+
+
     #region Method Functions Chaining
 
     /// <summary>
@@ -30,12 +33,15 @@ public class MethodFunctions_Advanced(ITestOutputHelper output) : BaseTest(outpu
         WriteLine($"CustomType.Text: {customType.Text}"); // From Function1 + From Function2
     }
 
+
     /// <summary>
     /// Plugin example with two method functions, where one function is called from another.
     /// </summary>
     private sealed class FunctionsChainingPlugin
     {
+
         private const string PluginName = nameof(FunctionsChainingPlugin);
+
 
         [KernelFunction]
         public async Task<MyCustomType> Function1Async(Kernel kernel)
@@ -50,6 +56,7 @@ public class MethodFunctions_Advanced(ITestOutputHelper output) : BaseTest(outpu
             };
         }
 
+
         [KernelFunction]
         public static MyCustomType Function2()
         {
@@ -59,9 +66,11 @@ public class MethodFunctions_Advanced(ITestOutputHelper output) : BaseTest(outpu
                 Text = "From Function2"
             };
         }
+
     }
 
     #endregion
+
 
     #region Custom Type
 
@@ -77,10 +86,13 @@ public class MethodFunctions_Advanced(ITestOutputHelper output) : BaseTest(outpu
     [TypeConverter(typeof(MyCustomTypeConverter))]
     private sealed class MyCustomType
     {
+
         public int Number { get; set; }
 
         public string? Text { get; set; }
+
     }
+
 
     /// <summary>
     /// Implementation of <see cref="TypeConverter"/> for <see cref="MyCustomType"/>.
@@ -89,7 +101,9 @@ public class MethodFunctions_Advanced(ITestOutputHelper output) : BaseTest(outpu
     /// </summary>
     private sealed class MyCustomTypeConverter : TypeConverter
     {
+
         public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType) => true;
+
 
         /// <summary>
         /// This method is used to convert object from string to actual type. This will allow to pass object to
@@ -100,15 +114,23 @@ public class MethodFunctions_Advanced(ITestOutputHelper output) : BaseTest(outpu
             return JsonSerializer.Deserialize<MyCustomType>((string)value);
         }
 
+
         /// <summary>
         /// This method is used to convert actual type to string representation, so it can be passed to AI
         /// for further processing.
         /// </summary>
-        public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
+        public override object? ConvertTo(
+            ITypeDescriptorContext? context,
+            CultureInfo? culture,
+            object? value,
+            Type destinationType)
         {
             return JsonSerializer.Serialize(value);
         }
+
     }
 
     #endregion
+
+
 }

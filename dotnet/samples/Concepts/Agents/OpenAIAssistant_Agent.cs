@@ -1,11 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+namespace Examples;
+
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Plugins;
 
-namespace Examples;
+
 /// <summary>
 /// Demonstrate creation of <see cref="OpenAIAssistantAgent"/> and
 /// eliciting its response to three explicit user messages.
@@ -17,8 +19,11 @@ namespace Examples;
 /// </remarks>
 public class OpenAIAssistant_Agent(ITestOutputHelper output) : BaseTest(output)
 {
+
     private const string HostName = "Host";
+
     private const string HostInstructions = "Answer questions about the menu.";
+
 
     [Fact]
     public async Task RunAsync()
@@ -68,4 +73,5 @@ public class OpenAIAssistant_Agent(ITestOutputHelper output) : BaseTest(output)
             }
         }
     }
+
 }

@@ -1,13 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Core;
 
-namespace Examples;
 
 public class TemplateLanguage(ITestOutputHelper output) : BaseTest(output)
 {
+
     /// <summary>
     /// Show how to invoke a Method Function written in C#
     /// from a Prompt Function written in natural language
@@ -23,14 +25,15 @@ public class TemplateLanguage(ITestOutputHelper output) : BaseTest(output)
         if (openAIModelId == null || openAIApiKey == null)
         {
             this.WriteLine("OpenAI credentials not found. Skipping example.");
+
             return;
         }
 
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(
+        Kernel kernel = Kernel.CreateBuilder().
+            AddOpenAIChatCompletion(
                 modelId: openAIModelId,
-                apiKey: openAIApiKey)
-            .Build();
+                apiKey: openAIApiKey).
+            Build();
 
         // Load native plugin into the kernel function collection, sharing its functions with prompt templates
         // Functions loaded here are available as "time.*"
@@ -82,4 +85,5 @@ Is it weekend time (weekend/not weekend)?
             }
          */
     }
+
 }

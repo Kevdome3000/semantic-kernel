@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.TextGeneration;
 
-namespace Examples;
 
 /**
  * The following example shows how to use Semantic Kernel with streaming text generation.
@@ -17,6 +18,7 @@ namespace Examples;
  */
 public class OpenAI_TextGenerationStreaming(ITestOutputHelper output) : BaseTest(output)
 {
+
     [Fact]
     public Task AzureOpenAITextGenerationStreamAsync()
     {
@@ -31,6 +33,7 @@ public class OpenAI_TextGenerationStreaming(ITestOutputHelper output) : BaseTest
         return this.TextGenerationStreamAsync(textGeneration);
     }
 
+
     [Fact]
     public Task OpenAITextGenerationStreamAsync()
     {
@@ -40,6 +43,7 @@ public class OpenAI_TextGenerationStreaming(ITestOutputHelper output) : BaseTest
 
         return this.TextGenerationStreamAsync(textGeneration);
     }
+
 
     private async Task TextGenerationStreamAsync(ITextGenerationService textGeneration)
     {
@@ -55,6 +59,7 @@ public class OpenAI_TextGenerationStreaming(ITestOutputHelper output) : BaseTest
         var prompt = "Write one paragraph why AI is awesome";
 
         WriteLine("Prompt: " + prompt);
+
         await foreach (var content in textGeneration.GetStreamingTextContentsAsync(prompt, executionSettings))
         {
             Write(content);
@@ -62,4 +67,5 @@ public class OpenAI_TextGenerationStreaming(ITestOutputHelper output) : BaseTest
 
         WriteLine();
     }
+
 }

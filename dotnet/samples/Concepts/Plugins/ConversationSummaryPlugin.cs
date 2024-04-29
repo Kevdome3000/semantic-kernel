@@ -1,12 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.SemanticKernel;
 using xRetry;
 
-namespace Examples;
 
 public class ConversationSummaryPlugin(ITestOutputHelper output) : BaseTest(output)
 {
+
     private const string ChatTranscript =
         @"
 John: Hello, how are you?
@@ -115,6 +117,7 @@ John: You're welcome. I'm glad we could help. Goodbye!
 Jane: Goodbye!
 ";
 
+
     [RetryFact(typeof(HttpOperationException))]
     public async Task RunAsync()
     {
@@ -122,6 +125,7 @@ Jane: Goodbye!
         await GetConversationActionItemsAsync();
         await GetConversationTopicsAsync();
     }
+
 
     private async Task ConversationSummaryPluginAsync()
     {
@@ -137,6 +141,7 @@ Jane: Goodbye!
         WriteLine(summary.GetValue<string>());
     }
 
+
     private async Task GetConversationActionItemsAsync()
     {
         WriteLine("======== SamplePlugins - Conversation Summary Plugin - Action Items ========");
@@ -150,6 +155,7 @@ Jane: Goodbye!
         WriteLine("Generated Action Items:");
         WriteLine(summary.GetValue<string>());
     }
+
 
     private async Task GetConversationTopicsAsync()
     {
@@ -165,18 +171,20 @@ Jane: Goodbye!
         WriteLine(summary.GetValue<string>());
     }
 
+
     private Kernel InitializeKernel()
     {
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddAzureOpenAIChatCompletion(
+        Kernel kernel = Kernel.CreateBuilder().
+            AddAzureOpenAIChatCompletion(
                 deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 endpoint: TestConfiguration.AzureOpenAI.Endpoint,
                 apiKey: TestConfiguration.AzureOpenAI.ApiKey,
-                modelId: TestConfiguration.AzureOpenAI.ChatModelId)
-            .Build();
+                modelId: TestConfiguration.AzureOpenAI.ChatModelId).
+            Build();
 
         return kernel;
     }
+
 }
 
 /* Example Output:

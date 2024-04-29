@@ -1,18 +1,21 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+namespace GettingStarted;
+
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Resources;
 
-namespace GettingStarted;
 
 /// <summary>
 /// Demonstrate parsing JSON response.
 /// </summary>
 public class Step5_JsonResult(ITestOutputHelper output) : BaseTest(output)
 {
+
     private const string TutorName = "Tutor";
+
     private const string TutorInstructions =
         """
         Think step-by-step and rate the user input on creativity and expressivness from 1-100.
@@ -24,6 +27,7 @@ public class Step5_JsonResult(ITestOutputHelper output) : BaseTest(output)
             "notes": "the reason for your score"
         }
         """;
+
 
     [Fact]
     public async Task RunAsync()
@@ -70,10 +74,13 @@ public class Step5_JsonResult(ITestOutputHelper output) : BaseTest(output)
         }
     }
 
+
     private record struct InputScore(int score, string notes);
+
 
     private sealed class ThresholdTerminationStrategy : TerminationStrategy
     {
+
         protected override Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken)
         {
             string lastMessageContent = history[history.Count - 1].Content ?? string.Empty;
@@ -82,5 +89,7 @@ public class Step5_JsonResult(ITestOutputHelper output) : BaseTest(output)
 
             return Task.FromResult((result?.score ?? 0) >= 70);
         }
+
     }
+
 }

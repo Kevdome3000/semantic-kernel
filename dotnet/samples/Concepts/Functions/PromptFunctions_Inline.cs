@@ -1,12 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-namespace Examples;
 
 public class PromptFunctions_Inline(ITestOutputHelper output) : BaseTest(output)
 {
+
     [Fact]
     public async Task RunAsync()
     {
@@ -18,6 +20,7 @@ public class PromptFunctions_Inline(ITestOutputHelper output) : BaseTest(output)
         if (openAIModelId is null || openAIApiKey is null)
         {
             this.WriteLine("OpenAI credentials not found. Skipping example.");
+
             return;
         }
 
@@ -27,11 +30,11 @@ public class PromptFunctions_Inline(ITestOutputHelper output) : BaseTest(output)
          *          function inline if you like.
          */
 
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(
+        Kernel kernel = Kernel.CreateBuilder().
+            AddOpenAIChatCompletion(
                 modelId: openAIModelId,
-                apiKey: openAIApiKey)
-            .Build();
+                apiKey: openAIApiKey).
+            Build();
 
         // Function defined using few-shot design pattern
         string promptTemplate = @"
@@ -60,4 +63,5 @@ Event: {{$input}}
         result = await kernel.InvokeAsync(fixedFunction);
         this.WriteLine(result.GetValue<string>());
     }
+
 }

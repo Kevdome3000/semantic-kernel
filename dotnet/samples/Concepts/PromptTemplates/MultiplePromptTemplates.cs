@@ -1,14 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using xRetry;
 
-namespace Examples;
 
 // This example shows how to use multiple prompt template formats.
 public class MultiplePromptTemplates(ITestOutputHelper output) : BaseTest(output)
 {
+
     /// <summary>
     /// Show how to combine multiple prompt template factories.
     /// </summary>
@@ -19,14 +21,14 @@ public class MultiplePromptTemplates(ITestOutputHelper output) : BaseTest(output
     {
         WriteLine($"======== {nameof(MultiplePromptTemplates)} ========");
 
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddAzureOpenAIChatCompletion(
+        Kernel kernel = Kernel.CreateBuilder().
+            AddAzureOpenAIChatCompletion(
                 deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 endpoint: TestConfiguration.AzureOpenAI.Endpoint,
                 serviceId: "AzureOpenAIChat",
                 apiKey: TestConfiguration.AzureOpenAI.ApiKey,
-                modelId: TestConfiguration.AzureOpenAI.ChatModelId)
-            .Build();
+                modelId: TestConfiguration.AzureOpenAI.ChatModelId).
+            Build();
 
         var promptTemplateFactory = new AggregatorPromptTemplateFactory(
             new KernelPromptTemplateFactory(),
@@ -35,7 +37,12 @@ public class MultiplePromptTemplates(ITestOutputHelper output) : BaseTest(output
         return RunPromptAsync(kernel, prompt, templateFormat, promptTemplateFactory);
     }
 
-    private async Task RunPromptAsync(Kernel kernel, string prompt, string templateFormat, IPromptTemplateFactory promptTemplateFactory)
+
+    private async Task RunPromptAsync(
+        Kernel kernel,
+        string prompt,
+        string templateFormat,
+        IPromptTemplateFactory promptTemplateFactory)
     {
         WriteLine($"======== {templateFormat} : {prompt} ========");
 
@@ -57,4 +64,5 @@ public class MultiplePromptTemplates(ITestOutputHelper output) : BaseTest(output
         var result = await kernel.InvokeAsync(function, arguments);
         WriteLine(result.GetValue<string>());
     }
+
 }

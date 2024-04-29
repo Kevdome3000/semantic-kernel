@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using xRetry;
 
-namespace Examples;
 
 /// <summary>
 /// This example demonstrates how to use Azure OpenAI Chat Completion with data.
@@ -27,6 +28,7 @@ namespace Examples;
 /// </value>
 public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 {
+
     [RetryFact(typeof(HttpOperationException))]
     public async Task ExampleWithChatCompletionAsync()
     {
@@ -76,6 +78,7 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
         WriteLine(Environment.NewLine);
     }
 
+
     [RetryFact(typeof(HttpOperationException))]
     public async Task ExampleWithKernelAsync()
     {
@@ -85,9 +88,9 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
 
         var completionWithDataConfig = GetCompletionWithDataConfig();
 
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddAzureOpenAIChatCompletion(config: completionWithDataConfig)
-            .Build();
+        Kernel kernel = Kernel.CreateBuilder().
+            AddAzureOpenAIChatCompletion(config: completionWithDataConfig).
+            Build();
 
         var function = kernel.CreateFunctionFromPrompt("Question: {{$input}}");
 
@@ -114,6 +117,7 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
         WriteLine();
     }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureOpenAIChatCompletionWithDataConfig"/> class.
     /// </summary>
@@ -129,4 +133,5 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
             DataSourceIndex = TestConfiguration.AzureAISearch.IndexName
         };
     }
+
 }

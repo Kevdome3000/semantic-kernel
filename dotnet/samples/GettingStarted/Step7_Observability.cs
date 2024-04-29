@@ -1,14 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace GettingStarted;
+
 using System.ComponentModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-namespace GettingStarted;
 
 public sealed class Step7_Observability(ITestOutputHelper output) : BaseTest(output)
 {
+
     /// <summary>
     /// Shows how to observe the execution of a <see cref="KernelPlugin"/> instance with filters.
     /// </summary>
@@ -17,9 +19,10 @@ public sealed class Step7_Observability(ITestOutputHelper output) : BaseTest(out
     {
         // Create a kernel with OpenAI chat completion
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
+
         kernelBuilder.AddOpenAIChatCompletion(
-                modelId: TestConfiguration.OpenAI.ChatModelId,
-                apiKey: TestConfiguration.OpenAI.ApiKey);
+            modelId: TestConfiguration.OpenAI.ChatModelId,
+            apiKey: TestConfiguration.OpenAI.ApiKey);
 
         kernelBuilder.Plugins.AddFromType<TimeInformation>();
 
@@ -37,6 +40,7 @@ public sealed class Step7_Observability(ITestOutputHelper output) : BaseTest(out
         WriteLine(await kernel.InvokePromptAsync("How many days until Christmas? Explain your thinking.", new(settings)));
     }
 
+
     /// <summary>
     /// Shows how to observe the execution of a <see cref="KernelPlugin"/> instance with hooks.
     /// </summary>
@@ -46,9 +50,10 @@ public sealed class Step7_Observability(ITestOutputHelper output) : BaseTest(out
     {
         // Create a kernel with OpenAI chat completion
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
+
         kernelBuilder.AddOpenAIChatCompletion(
-                modelId: TestConfiguration.OpenAI.ChatModelId,
-                apiKey: TestConfiguration.OpenAI.ApiKey);
+            modelId: TestConfiguration.OpenAI.ChatModelId,
+            apiKey: TestConfiguration.OpenAI.ApiKey);
 
         kernelBuilder.Plugins.AddFromType<TimeInformation>();
 
@@ -92,22 +97,28 @@ public sealed class Step7_Observability(ITestOutputHelper output) : BaseTest(out
         WriteLine(await kernel.InvokePromptAsync("How many days until Christmas? Explain your thinking.", new(settings)));
     }
 
+
     /// <summary>
     /// A plugin that returns the current time.
     /// </summary>
     private sealed class TimeInformation
     {
+
         [KernelFunction]
         [Description("Retrieves the current time in UTC.")]
         public string GetCurrentUtcTime() => DateTime.UtcNow.ToString("R");
+
     }
+
 
     /// <summary>
     /// Function filter for observability.
     /// </summary>
     private sealed class MyFunctionFilter(ITestOutputHelper output) : IFunctionInvocationFilter
     {
+
         private readonly ITestOutputHelper _output = output;
+
 
         public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
         {
@@ -122,14 +133,18 @@ public sealed class Step7_Observability(ITestOutputHelper output) : BaseTest(out
                 this._output.WriteLine($"Token usage: {metadata["Usage"]?.AsJson()}");
             }
         }
+
     }
+
 
     /// <summary>
     /// Prompt filter for observability.
     /// </summary>
     private sealed class MyPromptFilter(ITestOutputHelper output) : IPromptRenderFilter
     {
+
         private readonly ITestOutputHelper _output = output;
+
 
         public async Task OnPromptRenderAsync(PromptRenderContext context, Func<PromptRenderContext, Task> next)
         {
@@ -139,5 +154,7 @@ public sealed class Step7_Observability(ITestOutputHelper output) : BaseTest(out
 
             this._output.WriteLine($"Rendered prompt: {context.RenderedPrompt}");
         }
+
     }
+
 }

@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Plugins;
 
-namespace Examples;
 
 /// <summary>
 /// This example demonstrates how to create native functions for AI to call as described at
@@ -13,6 +14,7 @@ namespace Examples;
 /// </summary>
 public class CreatingFunctions : BaseTest
 {
+
     [Fact]
     public async Task RunAsync()
     {
@@ -30,8 +32,9 @@ public class CreatingFunctions : BaseTest
         }
 
         // <RunningNativeFunction>
-        var builder = Kernel.CreateBuilder()
-                            .AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey);
+        var builder = Kernel.CreateBuilder().
+            AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey);
+
         builder.Plugins.AddFromType<MathPlugin>();
         Kernel kernel = builder.Build();
 
@@ -41,6 +44,7 @@ public class CreatingFunctions : BaseTest
             {
                 { "number1", 12 }
             });
+
         WriteLine($"The square root of 12 is {answer}.");
         // </RunningNativeFunction>
 
@@ -55,6 +59,7 @@ public class CreatingFunctions : BaseTest
         // Start the conversation
         Write("User > ");
         string? userInput;
+
         while ((userInput = ReadLine()) != null)
         {
             history.AddUserMessage(userInput);
@@ -67,13 +72,14 @@ public class CreatingFunctions : BaseTest
 
             // Get the response from the AI
             var result = chatCompletionService.GetStreamingChatMessageContentsAsync(
-                                history,
-                                executionSettings: openAIPromptExecutionSettings,
-                                kernel: kernel);
+                history,
+                executionSettings: openAIPromptExecutionSettings,
+                kernel: kernel);
 
             // Stream the results
             string fullMessage = "";
             var first = true;
+
             await foreach (var content in result)
             {
                 if (content.Role.HasValue && first)
@@ -81,9 +87,11 @@ public class CreatingFunctions : BaseTest
                     Write("Assistant > ");
                     first = false;
                 }
+
                 Write(content.Content);
                 fullMessage += content.Content;
             }
+
             WriteLine();
 
             // Add the message from the agent to the chat history
@@ -96,8 +104,10 @@ public class CreatingFunctions : BaseTest
         // </Chat>
     }
 
+
     public CreatingFunctions(ITestOutputHelper output) : base(output)
     {
         SimulatedInputText = ["What is 49 diivided by 37?"];
     }
+
 }

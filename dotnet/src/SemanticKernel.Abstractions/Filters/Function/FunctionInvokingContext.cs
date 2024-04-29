@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel;
+
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Class with data related to function before invocation.
@@ -12,6 +13,7 @@ namespace Microsoft.SemanticKernel;
 [Obsolete("This class is deprecated in favor of FunctionInvocationContext class, which is used in IFunctionInvocationFilter interface.")]
 public sealed class FunctionInvokingContext : FunctionFilterContext
 {
+
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionInvokingContext"/> class.
     /// </summary>
@@ -21,4 +23,5 @@ public sealed class FunctionInvokingContext : FunctionFilterContext
         : base(function, arguments, metadata: null)
     {
     }
+
 }

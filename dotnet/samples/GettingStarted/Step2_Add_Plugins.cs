@@ -1,18 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace GettingStarted;
+
 using System.ComponentModel;
 using System.Text.Json.Serialization;
 using Microsoft.OpenApi.Extensions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-namespace GettingStarted;
 
 /// <summary>
 /// This example shows how to load a <see cref="KernelPlugin"/> instances.
 /// </summary>
 public sealed class Step2_Add_Plugins(ITestOutputHelper output) : BaseTest(output)
 {
+
     /// <summary>
     /// Shows different ways to load a <see cref="KernelPlugin"/> instances.
     /// </summary>
@@ -21,9 +23,11 @@ public sealed class Step2_Add_Plugins(ITestOutputHelper output) : BaseTest(outpu
     {
         // Create a kernel with OpenAI chat completion
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
+
         kernelBuilder.AddOpenAIChatCompletion(
-                modelId: TestConfiguration.OpenAI.ChatModelId,
-                apiKey: TestConfiguration.OpenAI.ApiKey);
+            modelId: TestConfiguration.OpenAI.ChatModelId,
+            apiKey: TestConfiguration.OpenAI.ApiKey);
+
         kernelBuilder.Plugins.AddFromType<TimeInformation>();
         kernelBuilder.Plugins.AddFromType<WidgetFactory>();
         Kernel kernel = kernelBuilder.Build();
@@ -44,26 +48,33 @@ public sealed class Step2_Add_Plugins(ITestOutputHelper output) : BaseTest(outpu
         WriteLine(await kernel.InvokePromptAsync("Create an attractive maroon and navy colored widget for me.", new(settings)));
     }
 
+
     /// <summary>
     /// A plugin that returns the current time.
     /// </summary>
     public class TimeInformation
     {
+
         [KernelFunction]
         [Description("Retrieves the current time in UTC.")]
         public string GetCurrentUtcTime() => DateTime.UtcNow.ToString("R");
+
     }
+
 
     /// <summary>
     /// A plugin that creates widgets.
     /// </summary>
     public class WidgetFactory
     {
+
         [KernelFunction]
         [Description("Creates a new widget of the specified type and colors")]
         public WidgetDetails CreateWidget([Description("The type of widget to be created")] WidgetType widgetType, [Description("The colors of the widget to be created")] WidgetColor[] widgetColors)
         {
-            var colors = string.Join('-', widgetColors.Select(c => c.GetDisplayName()).ToArray());
+            var colors = string.Join('-', widgetColors.Select(c => c.GetDisplayName()).
+                ToArray());
+
             return new()
             {
                 SerialNumber = $"{widgetType}-{colors}-{Guid.NewGuid()}",
@@ -71,7 +82,9 @@ public sealed class Step2_Add_Plugins(ITestOutputHelper output) : BaseTest(outpu
                 Colors = widgetColors
             };
         }
+
     }
+
 
     /// <summary>
     /// A <see cref="JsonConverter"/> is required to correctly convert enum values.
@@ -79,12 +92,15 @@ public sealed class Step2_Add_Plugins(ITestOutputHelper output) : BaseTest(outpu
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum WidgetType
     {
+
         [Description("A widget that is useful.")]
         Useful,
 
         [Description("A widget that is decorative.")]
         Decorative
+
     }
+
 
     /// <summary>
     /// A <see cref="JsonConverter"/> is required to correctly convert enum values.
@@ -92,6 +108,7 @@ public sealed class Step2_Add_Plugins(ITestOutputHelper output) : BaseTest(outpu
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum WidgetColor
     {
+
         [Description("Use when creating a red item.")]
         Red,
 
@@ -100,12 +117,19 @@ public sealed class Step2_Add_Plugins(ITestOutputHelper output) : BaseTest(outpu
 
         [Description("Use when creating a blue item.")]
         Blue
+
     }
+
 
     public class WidgetDetails
     {
+
         public string SerialNumber { get; init; }
+
         public WidgetType Type { get; init; }
+
         public WidgetColor[] Colors { get; init; }
+
     }
+
 }

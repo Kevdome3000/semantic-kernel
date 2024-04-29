@@ -1,12 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 
-namespace Examples;
 
 public class OpenAIPlugins(ITestOutputHelper output) : BaseTest(output)
 {
+
     /// <summary>
     /// Generic template on how to call OpenAI plugins
     /// </summary>
@@ -32,6 +34,7 @@ public class OpenAIPlugins(ITestOutputHelper output) : BaseTest(output)
         WriteLine($"Function execution result: {result?.Content}");
     }
 
+
     [Fact]
     public async Task CallKlarnaAsync()
     {
@@ -41,9 +44,9 @@ public class OpenAIPlugins(ITestOutputHelper output) : BaseTest(output)
 
         var arguments = new KernelArguments
         {
-            ["q"] = "Laptop",      // Category or product that needs to be searched for.
-            ["size"] = "3",        // Number of products to return
-            ["budget"] = "200",    // Maximum price of the matching product in local currency
+            ["q"] = "Laptop", // Category or product that needs to be searched for.
+            ["size"] = "3", // Number of products to return
+            ["budget"] = "200", // Maximum price of the matching product in local currency
             ["countryCode"] = "US" // ISO 3166 country code with 2 characters based on the user location.
         };
         // Currently, only US, GB, DE, SE and DK are supported.
@@ -54,4 +57,5 @@ public class OpenAIPlugins(ITestOutputHelper output) : BaseTest(output)
 
         WriteLine($"Function execution result: {result?.Content}");
     }
+
 }

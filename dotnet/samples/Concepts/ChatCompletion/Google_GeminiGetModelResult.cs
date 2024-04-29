@@ -1,28 +1,30 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Google;
 
-namespace Examples;
 
 /// <summary>
 /// Represents an example class for Gemini Embedding Generation with volatile memory store.
 /// </summary>
 public sealed class Google_GeminiGetModelResult(ITestOutputHelper output) : BaseTest(output)
 {
+
     [Fact]
     public async Task GetTokenUsageMetadataAsync()
     {
         WriteLine("======== Inline Function Definition + Invocation ========");
 
         // Create kernel
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddVertexAIGeminiChatCompletion(
+        Kernel kernel = Kernel.CreateBuilder().
+            AddVertexAIGeminiChatCompletion(
                 modelId: TestConfiguration.VertexAI.Gemini.ModelId,
                 bearerKey: TestConfiguration.VertexAI.BearerKey,
                 location: TestConfiguration.VertexAI.Location,
-                projectId: TestConfiguration.VertexAI.ProjectId)
-            .Build();
+                projectId: TestConfiguration.VertexAI.ProjectId).
+            Build();
 
         // To generate bearer key, you need installed google sdk or use google web console with command:
         //
@@ -57,4 +59,5 @@ public sealed class Google_GeminiGetModelResult(ITestOutputHelper output) : Base
         WriteLine(result.GetValue<string>());
         WriteLine(geminiMetadata?.AsJson());
     }
+
 }

@@ -1,18 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.HuggingFace;
-using xRetry;
-
 #pragma warning disable format // Format item can be simplified
 #pragma warning disable CA1861 // Avoid constant arrays as arguments
 
 namespace Examples;
 
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.HuggingFace;
+using xRetry;
+
+
 // The following example shows how to use Semantic Kernel with HuggingFace API.
 public class HuggingFace_TextGeneration(ITestOutputHelper helper) : BaseTest(helper)
 {
+
     private const string DefaultModel = "HuggingFaceH4/zephyr-7b-beta";
+
+
     /// <summary>
     /// This example uses HuggingFace Inference API to access hosted models.
     /// More information here: <see href="https://huggingface.co/inference-api"/>
@@ -22,11 +26,11 @@ public class HuggingFace_TextGeneration(ITestOutputHelper helper) : BaseTest(hel
     {
         WriteLine("\n======== HuggingFace Inference API example ========\n");
 
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddHuggingFaceTextGeneration(
+        Kernel kernel = Kernel.CreateBuilder().
+            AddHuggingFaceTextGeneration(
                 model: TestConfiguration.HuggingFace.ModelId ?? DefaultModel,
-                apiKey: TestConfiguration.HuggingFace.ApiKey)
-            .Build();
+                apiKey: TestConfiguration.HuggingFace.ApiKey).
+            Build();
 
         var questionAnswerFunction = kernel.CreateFunctionFromPrompt("Question: {{$input}}; Answer:");
 
@@ -34,6 +38,7 @@ public class HuggingFace_TextGeneration(ITestOutputHelper helper) : BaseTest(hel
 
         WriteLine(result.GetValue<string>());
     }
+
 
     /// <summary>
     /// Some Hugging Face models support streaming responses, configure using the HuggingFace ModelId setting.
@@ -48,11 +53,11 @@ public class HuggingFace_TextGeneration(ITestOutputHelper helper) : BaseTest(hel
 
         WriteLine($"\n======== HuggingFace {model} streaming example ========\n");
 
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddHuggingFaceTextGeneration(
+        Kernel kernel = Kernel.CreateBuilder().
+            AddHuggingFaceTextGeneration(
                 model: model,
-                apiKey: TestConfiguration.HuggingFace.ApiKey)
-            .Build();
+                apiKey: TestConfiguration.HuggingFace.ApiKey).
+            Build();
 
         var settings = new HuggingFacePromptExecutionSettings { UseCache = false };
 
@@ -66,6 +71,7 @@ public class HuggingFace_TextGeneration(ITestOutputHelper helper) : BaseTest(hel
             this.Write(text);
         }
     }
+
 
     /// <summary>
     /// This example uses HuggingFace Llama 2 model and local HTTP server from Semantic Kernel repository.
@@ -89,12 +95,12 @@ public class HuggingFace_TextGeneration(ITestOutputHelper helper) : BaseTest(hel
         // HuggingFace local HTTP server endpoint
         // const string Endpoint = "http://localhost:5000/completions";
 
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddHuggingFaceTextGeneration(
+        Kernel kernel = Kernel.CreateBuilder().
+            AddHuggingFaceTextGeneration(
                 model: Model,
                 //endpoint: Endpoint,
-                apiKey: TestConfiguration.HuggingFace.ApiKey)
-            .Build();
+                apiKey: TestConfiguration.HuggingFace.ApiKey).
+            Build();
 
         var questionAnswerFunction = kernel.CreateFunctionFromPrompt("Question: {{$input}}; Answer:");
 
@@ -102,4 +108,5 @@ public class HuggingFace_TextGeneration(ITestOutputHelper helper) : BaseTest(hel
 
         WriteLine(result.GetValue<string>());
     }
+
 }

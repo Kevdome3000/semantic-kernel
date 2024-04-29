@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel;
+
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Class with data related to prompt after rendering.
@@ -12,7 +13,9 @@ namespace Microsoft.SemanticKernel;
 [Obsolete("This class is deprecated in favor of PromptRenderContext class, which is used in IPromptRenderFilter interface.")]
 public sealed class PromptRenderedContext : PromptFilterContext
 {
+
     private string _renderedPrompt;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptRenderedContext"/> class.
@@ -25,6 +28,7 @@ public sealed class PromptRenderedContext : PromptFilterContext
     {
         this.RenderedPrompt = renderedPrompt;
     }
+
 
     /// <summary>
     /// Gets or sets a value indicating whether the operation associated with
@@ -57,4 +61,5 @@ public sealed class PromptRenderedContext : PromptFilterContext
             this._renderedPrompt = value;
         }
     }
+
 }

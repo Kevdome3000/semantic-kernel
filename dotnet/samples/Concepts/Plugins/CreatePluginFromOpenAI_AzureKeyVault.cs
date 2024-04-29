@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Text;
@@ -9,12 +11,14 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Resources;
 
-namespace Examples;
 
 public class CreatePluginFromOpenAI_AzureKeyVault(ITestOutputHelper output) : BaseTest(output)
 {
+
     private const string SecretName = "Foo";
+
     private const string SecretValue = "Bar";
+
 
     /// <summary>
     /// This example demonstrates how to connect an Azure Key Vault plugin to the Semantic Kernel.
@@ -61,6 +65,7 @@ public class CreatePluginFromOpenAI_AzureKeyVault(ITestOutputHelper output) : Ba
 
         // Import Open AI Plugin
         var openAIManifest = EmbeddedResource.ReadStream("22-ai-plugin.json");
+
         var plugin = await kernel.ImportPluginFromOpenAIAsync(
             "AzureKeyVaultPlugin",
             openAIManifest!,
@@ -75,6 +80,7 @@ public class CreatePluginFromOpenAI_AzureKeyVault(ITestOutputHelper output) : Ba
         await AddSecretToAzureKeyVaultAsync(kernel, plugin);
         await GetSecretFromAzureKeyVaultWithRetryAsync(kernel, plugin);
     }
+
 
     private async Task AddSecretToAzureKeyVaultAsync(Kernel kernel, KernelPlugin plugin)
     {
@@ -95,6 +101,7 @@ public class CreatePluginFromOpenAI_AzureKeyVault(ITestOutputHelper output) : Ba
         Console.WriteLine("SetSecret function result: {0}", result?.Content?.ToString());
     }
 
+
     private static async Task GetSecretFromAzureKeyVaultWithRetryAsync(Kernel kernel, KernelPlugin plugin)
     {
         // Add arguments for required parameters, arguments for optional ones can be skipped.
@@ -111,7 +118,9 @@ public class CreatePluginFromOpenAI_AzureKeyVault(ITestOutputHelper output) : Ba
 
         Console.WriteLine("GetSecret function result: {0}", result?.Content?.ToString());
     }
+
 }
+
 
 #region Utility Classes
 
@@ -120,10 +129,12 @@ public class CreatePluginFromOpenAI_AzureKeyVault(ITestOutputHelper output) : Ba
 /// </summary>
 internal sealed class OpenAIAuthenticationProvider(Dictionary<string, Dictionary<string, string>>? oAuthValues = null, Dictionary<string, string>? credentials = null)
 {
+
     private readonly Dictionary<string, Dictionary<string, string>> _oAuthValues = oAuthValues ?? [];
 #pragma warning disable CA1823 // TODO: Use credentials
     private readonly Dictionary<string, string> _credentials = credentials ?? [];
 #pragma warning restore CA1823
+
 
     /// <summary>
     /// Applies the authentication content to the provided HTTP request message.
@@ -132,7 +143,11 @@ internal sealed class OpenAIAuthenticationProvider(Dictionary<string, Dictionary
     /// <param name="pluginName">Name of the plugin</param>
     /// <param name="openAIAuthConfig ">The <see cref="OpenAIAuthenticationConfig"/> used to authenticate.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    public async Task AuthenticateRequestAsync(HttpRequestMessage request, string pluginName, OpenAIAuthenticationConfig openAIAuthConfig, CancellationToken cancellationToken = default)
+    public async Task AuthenticateRequestAsync(
+        HttpRequestMessage request,
+        string pluginName,
+        OpenAIAuthenticationConfig openAIAuthConfig,
+        CancellationToken cancellationToken = default)
     {
         if (openAIAuthConfig.Type == OpenAIAuthenticationType.None)
         {
@@ -145,9 +160,10 @@ internal sealed class OpenAIAuthenticationProvider(Dictionary<string, Dictionary
         if (openAIAuthConfig.Type == OpenAIAuthenticationType.OAuth)
         {
             var domainOAuthValues = this._oAuthValues[openAIAuthConfig.AuthorizationUrl!.Host]
-                ?? throw new KernelException("No OAuth values found for the provided authorization URL.");
+                                    ?? throw new KernelException("No OAuth values found for the provided authorization URL.");
 
-            var values = new Dictionary<string, string>(domainOAuthValues) {
+            var values = new Dictionary<string, string>(domainOAuthValues)
+            {
                 { "scope", openAIAuthConfig.Scope ?? "" },
             };
 
@@ -161,13 +177,18 @@ internal sealed class OpenAIAuthenticationProvider(Dictionary<string, Dictionary
             // Request the token
             using var client = new HttpClient();
             using var authRequest = new HttpRequestMessage(HttpMethod.Post, openAIAuthConfig.AuthorizationUrl) { Content = requestContent };
-            var response = await client.SendAsync(authRequest, cancellationToken).ConfigureAwait(false);
+
+            var response = await client.SendAsync(authRequest, cancellationToken).
+                ConfigureAwait(false);
 
             response.EnsureSuccessStatusCode();
 
             // Read the token
-            var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).
+                ConfigureAwait(false);
+
             OAuthTokenResponse? tokenResponse;
+
             try
             {
                 tokenResponse = JsonSerializer.Deserialize<OAuthTokenResponse>(responseContent);
@@ -184,7 +205,7 @@ internal sealed class OpenAIAuthenticationProvider(Dictionary<string, Dictionary
         else
         {
             var token = openAIAuthConfig.VerificationTokens?[pluginName]
-                ?? throw new KernelException("No verification token found for the provided plugin name.");
+                        ?? throw new KernelException("No verification token found for the provided plugin name.");
 
             scheme = openAIAuthConfig.AuthorizationType.ToString();
             credential = token;
@@ -192,13 +213,16 @@ internal sealed class OpenAIAuthenticationProvider(Dictionary<string, Dictionary
 
         request.Headers.Authorization = new AuthenticationHeaderValue(scheme, credential);
     }
+
 }
+
 
 /// <summary>
 /// Represents the authentication section for an OpenAI plugin.
 /// </summary>
 internal sealed class OAuthTokenResponse
 {
+
     /// <summary>
     /// The type of access token.
     /// </summary>
@@ -210,11 +234,15 @@ internal sealed class OAuthTokenResponse
     /// </summary>
     [JsonPropertyName("access_token")]
     public string AccessToken { get; set; } = "";
+
 }
+
 
 internal sealed class HttpMessageHandlerStub : DelegatingHandler
 {
+
     public HttpResponseMessage ResponseToReturn { get; set; }
+
 
     public HttpMessageHandlerStub(string responseToReturn)
     {
@@ -224,6 +252,7 @@ internal sealed class HttpMessageHandlerStub : DelegatingHandler
         };
     }
 
+
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         if (request.RequestUri!.Scheme.Equals("file", StringComparison.OrdinalIgnoreCase))
@@ -232,6 +261,7 @@ internal sealed class HttpMessageHandlerStub : DelegatingHandler
         }
 
         using var httpClient = new HttpClient();
+
         using var newRequest = new HttpRequestMessage() // construct a new request because the same one cannot be sent twice
         {
             Content = request.Content,
@@ -243,8 +273,11 @@ internal sealed class HttpMessageHandlerStub : DelegatingHandler
         {
             newRequest.Headers.Add(header.Key, header.Value);
         }
-        return await httpClient.SendAsync(newRequest, cancellationToken).ConfigureAwait(false);
+
+        return await httpClient.SendAsync(newRequest, cancellationToken).
+            ConfigureAwait(false);
     }
+
 }
 
 #endregion

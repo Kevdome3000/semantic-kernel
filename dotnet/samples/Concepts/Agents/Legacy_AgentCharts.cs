@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using System.Diagnostics;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Experimental.Agents;
 
-namespace Examples;
 
 // ReSharper disable once InconsistentNaming
 /// <summary>
@@ -12,6 +13,7 @@ namespace Examples;
 /// </summary>
 public sealed class Legacy_AgentCharts(ITestOutputHelper output) : BaseTest(output)
 {
+
     /// <summary>
     /// Specific model is required that supports agents and parallel function calling.
     /// Currently this is limited to Open AI hosted services.
@@ -25,6 +27,7 @@ public sealed class Legacy_AgentCharts(ITestOutputHelper output) : BaseTest(outp
     /// </summary>
     private new const bool ForceOpenAI = false;
 
+
     /// <summary>
     /// Create a chart and retrieve by file_id.
     /// </summary>
@@ -35,7 +38,9 @@ public sealed class Legacy_AgentCharts(ITestOutputHelper output) : BaseTest(outp
 
         var fileService = CreateFileService();
 
-        var agent = await CreateAgentBuilder().WithCodeInterpreter().BuildAsync();
+        var agent = await CreateAgentBuilder().
+            WithCodeInterpreter().
+            BuildAsync();
 
         try
         {
@@ -53,6 +58,7 @@ X12345    16   395     352  763
 Others    23   373     156  552
 Sum      426  1622     856 2904
 ");
+
             await InvokeAgentAsync(thread, "2-colors", "Can you regenerate this same chart using the category names as the bar colors?");
             await InvokeAgentAsync(thread, "3-line", "Can you regenerate this as a line chart?");
         }
@@ -75,6 +81,7 @@ Sum      426  1622     856 2904
                     await using var outputStream = File.OpenWrite(filename);
                     await using var inputStream = await content.GetStreamAsync();
                     await inputStream.CopyToAsync(outputStream);
+
                     Process.Start(
                         new ProcessStartInfo
                         {
@@ -92,19 +99,22 @@ Sum      426  1622     856 2904
         }
     }
 
+
     private static OpenAIFileService CreateFileService()
     {
         return
-            ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) ?
-                new OpenAIFileService(TestConfiguration.OpenAI.ApiKey) :
-                new OpenAIFileService(new Uri(TestConfiguration.AzureOpenAI.Endpoint), apiKey: TestConfiguration.AzureOpenAI.ApiKey);
+            ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint)
+                ? new OpenAIFileService(TestConfiguration.OpenAI.ApiKey)
+                : new OpenAIFileService(new Uri(TestConfiguration.AzureOpenAI.Endpoint), apiKey: TestConfiguration.AzureOpenAI.ApiKey);
     }
+
 
     private static AgentBuilder CreateAgentBuilder()
     {
         return
-            ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) ?
-                new AgentBuilder().WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey) :
-                new AgentBuilder().WithAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.ApiKey);
+            ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint)
+                ? new AgentBuilder().WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
+                : new AgentBuilder().WithAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.ApiKey);
     }
+
 }

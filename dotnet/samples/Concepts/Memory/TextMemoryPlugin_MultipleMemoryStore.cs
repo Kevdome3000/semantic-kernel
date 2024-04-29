@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
 using Microsoft.SemanticKernel.Connectors.Chroma;
@@ -18,11 +20,12 @@ using Microsoft.SemanticKernel.Plugins.Memory;
 using Npgsql;
 using StackExchange.Redis;
 
-namespace Examples;
 
 public class TextMemoryPlugin_MultipleMemoryStore(ITestOutputHelper output) : BaseTest(output)
 {
+
     private const string MemoryCollectionName = "aboutMe";
+
 
     [Theory]
     [InlineData("Volatile")]
@@ -76,53 +79,70 @@ public class TextMemoryPlugin_MultipleMemoryStore(ITestOutputHelper output) : Ba
         await RunWithStoreAsync(store);
     }
 
+
     private async Task<IMemoryStore> CreateSampleSqliteMemoryStoreAsync()
     {
         IMemoryStore store = await SqliteMemoryStore.ConnectAsync("memories.sqlite");
+
         return store;
     }
+
 
     private async Task<IMemoryStore> CreateSampleDuckDbMemoryStoreAsync()
     {
         IMemoryStore store = await DuckDBMemoryStore.ConnectAsync("memories.duckdb");
+
         return store;
     }
+
 
     private IMemoryStore CreateSampleMongoDBMemoryStore()
     {
         IMemoryStore store = new MongoDBMemoryStore(TestConfiguration.MongoDB.ConnectionString, "memoryPluginExample");
+
         return store;
     }
+
 
     private IMemoryStore CreateSampleAzureAISearchMemoryStore()
     {
         IMemoryStore store = new AzureAISearchMemoryStore(TestConfiguration.AzureAISearch.Endpoint, TestConfiguration.AzureAISearch.ApiKey);
+
         return store;
     }
+
 
     private IMemoryStore CreateSampleChromaMemoryStore()
     {
         IMemoryStore store = new ChromaMemoryStore(TestConfiguration.Chroma.Endpoint, this.LoggerFactory);
+
         return store;
     }
+
 
     private IMemoryStore CreateSampleQdrantMemoryStore()
     {
         IMemoryStore store = new QdrantMemoryStore(TestConfiguration.Qdrant.Endpoint, 1536, this.LoggerFactory);
+
         return store;
     }
+
 
     private IMemoryStore CreateSamplePineconeMemoryStore()
     {
         IMemoryStore store = new PineconeMemoryStore(TestConfiguration.Pinecone.Environment, TestConfiguration.Pinecone.ApiKey, this.LoggerFactory);
+
         return store;
     }
+
 
     private IMemoryStore CreateSampleWeaviateMemoryStore()
     {
         IMemoryStore store = new WeaviateMemoryStore(TestConfiguration.Weaviate.Endpoint, TestConfiguration.Weaviate.ApiKey);
+
         return store;
     }
+
 
     private async Task<IMemoryStore> CreateSampleRedisMemoryStoreAsync()
     {
@@ -130,8 +150,10 @@ public class TextMemoryPlugin_MultipleMemoryStore(ITestOutputHelper output) : Ba
         ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configuration);
         IDatabase database = connectionMultiplexer.GetDatabase();
         IMemoryStore store = new RedisMemoryStore(database, vectorSize: 1536);
+
         return store;
     }
+
 
     private static IMemoryStore CreateSamplePostgresMemoryStore()
     {
@@ -139,22 +161,26 @@ public class TextMemoryPlugin_MultipleMemoryStore(ITestOutputHelper output) : Ba
         dataSourceBuilder.UseVector();
         NpgsqlDataSource dataSource = dataSourceBuilder.Build();
         IMemoryStore store = new PostgresMemoryStore(dataSource, vectorSize: 1536, schema: "public");
+
         return store;
     }
+
 
     private static IMemoryStore CreateSampleKustoMemoryStore()
     {
         var connectionString = new Kusto.Data.KustoConnectionStringBuilder(TestConfiguration.Kusto.ConnectionString).WithAadUserPromptAuthentication();
         IMemoryStore store = new KustoMemoryStore(connectionString, "MyDatabase");
+
         return store;
     }
 
+
     private async Task RunWithStoreAsync(IMemoryStore memoryStore)
     {
-        var kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
-            .AddOpenAITextEmbeddingGeneration(TestConfiguration.OpenAI.EmbeddingModelId, TestConfiguration.OpenAI.ApiKey)
-            .Build();
+        var kernel = Kernel.CreateBuilder().
+            AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey).
+            AddOpenAITextEmbeddingGeneration(TestConfiguration.OpenAI.EmbeddingModelId, TestConfiguration.OpenAI.ApiKey).
+            Build();
 
         // Create an embedding generator to use for semantic memory.
         var embeddingGenerator = new OpenAITextEmbeddingGenerationService(TestConfiguration.OpenAI.EmbeddingModelId, TestConfiguration.OpenAI.ApiKey);
@@ -201,6 +227,7 @@ public class TextMemoryPlugin_MultipleMemoryStore(ITestOutputHelper output) : Ba
 
         // Save a memory with the Kernel
         WriteLine("Saving memory with key 'info5': \"My family is from New York\"");
+
         await kernel.InvokeAsync(memoryPlugin["Save"], new()
         {
             [TextMemoryPlugin.InputParam] = "My family is from New York",
@@ -210,6 +237,7 @@ public class TextMemoryPlugin_MultipleMemoryStore(ITestOutputHelper output) : Ba
 
         // Retrieve a specific memory with the Kernel
         WriteLine("== PART 2b: Retrieving Memories through the Kernel with TextMemoryPlugin and the 'Retrieve' function ==");
+
         var result = await kernel.InvokeAsync(memoryPlugin["Retrieve"], new KernelArguments()
         {
             [TextMemoryPlugin.CollectionParam] = MemoryCollectionName,
@@ -231,11 +259,11 @@ public class TextMemoryPlugin_MultipleMemoryStore(ITestOutputHelper output) : Ba
         WriteLine("Ask: where did I grow up?");
 
         await foreach (var answer in textMemory.SearchAsync(
-            collection: MemoryCollectionName,
-            query: "where did I grow up?",
-            limit: 2,
-            minRelevanceScore: 0.79,
-            withEmbeddings: true))
+                           collection: MemoryCollectionName,
+                           query: "where did I grow up?",
+                           limit: 2,
+                           minRelevanceScore: 0.79,
+                           withEmbeddings: true))
         {
             WriteLine($"Answer: {answer.Metadata.Text}");
         }
@@ -316,10 +344,12 @@ Answer:
 
         WriteLine("Printing Collections in DB...");
         var collections = memoryStore.GetCollectionsAsync();
+
         await foreach (var collection in collections)
         {
             WriteLine(collection);
         }
+
         WriteLine();
 
         WriteLine($"Removing Collection {MemoryCollectionName}");
@@ -328,9 +358,11 @@ Answer:
 
         WriteLine($"Printing Collections in DB (after removing {MemoryCollectionName})...");
         collections = memoryStore.GetCollectionsAsync();
+
         await foreach (var collection in collections)
         {
             WriteLine(collection);
         }
     }
+
 }

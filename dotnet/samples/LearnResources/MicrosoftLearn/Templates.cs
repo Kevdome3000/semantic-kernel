@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 
-namespace Examples;
 
 /// <summary>
 /// This example demonstrates how to templatize prompts as described at
@@ -12,6 +13,7 @@ namespace Examples;
 /// </summary>
 public class Templates : BaseTest
 {
+
     [Fact]
     public async Task RunAsync()
     {
@@ -28,9 +30,9 @@ public class Templates : BaseTest
             return;
         }
 
-        Kernel kernel = Kernel.CreateBuilder()
-                              .AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey)
-                              .Build();
+        Kernel kernel = Kernel.CreateBuilder().
+            AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey).
+            Build();
 
         // Create a Semantic Kernel template for chat
         var chat = kernel.CreateFunctionFromPrompt(
@@ -122,6 +124,7 @@ public class Templates : BaseTest
 
             // Stream the response
             string message = "";
+
             await foreach (var chunk in chatResult)
             {
                 if (chunk.Role.HasValue)
@@ -132,6 +135,7 @@ public class Templates : BaseTest
                 message += chunk;
                 Write(chunk);
             }
+
             WriteLine();
 
             // Append to history
@@ -140,10 +144,14 @@ public class Templates : BaseTest
         }
     }
 
+
     public Templates(ITestOutputHelper output) : base(output)
     {
-        SimulatedInputText = [
+        SimulatedInputText =
+        [
             "Can you send an approval to the marketing team?",
-            "That is all, thanks."];
+            "That is all, thanks."
+        ];
     }
+
 }

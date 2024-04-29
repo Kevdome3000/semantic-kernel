@@ -1,16 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using System.Net;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 
-namespace Examples;
 
 // These examples show how to use HttpClient and HttpClientFactory within SK SDK.
 public class HttpClient_Resiliency(ITestOutputHelper output) : BaseTest(output)
 {
+
     /// <summary>
     /// Demonstrates the usage of the HttpClientFactory with a custom resilience policy.
     /// </summary>
@@ -19,15 +21,20 @@ public class HttpClient_Resiliency(ITestOutputHelper output) : BaseTest(output)
     {
         // Create a Kernel with the HttpClient
         IKernelBuilder builder = Kernel.CreateBuilder();
-        builder.Services.AddLogging(c => c.AddConsole().SetMinimumLevel(LogLevel.Information));
+
+        builder.Services.AddLogging(c => c.AddConsole().
+            SetMinimumLevel(LogLevel.Information));
+
         builder.Services.ConfigureHttpClientDefaults(c =>
         {
             // Use a standard resiliency policy, augmented to retry on 401 Unauthorized for this example
-            c.AddStandardResilienceHandler().Configure(o =>
-            {
-                o.Retry.ShouldHandle = args => ValueTask.FromResult(args.Outcome.Result?.StatusCode is HttpStatusCode.Unauthorized);
-            });
+            c.AddStandardResilienceHandler().
+                Configure(o =>
+                {
+                    o.Retry.ShouldHandle = args => ValueTask.FromResult(args.Outcome.Result?.StatusCode is HttpStatusCode.Unauthorized);
+                });
         });
+
         builder.Services.AddOpenAIChatCompletion("gpt-4", "BAD_KEY"); // OpenAI settings - you can set the OpenAI.ApiKey to an invalid value to see the retry policy in play
         Kernel kernel = builder.Build();
 
@@ -53,4 +60,5 @@ public class HttpClient_Resiliency(ITestOutputHelper output) : BaseTest(output)
             logger.LogInformation("Error: {Message}", ex.Message);
         }
     }
+
 }

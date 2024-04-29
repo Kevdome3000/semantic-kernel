@@ -1,15 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 
-namespace Examples;
 
 /// <summary>
 /// Examples to show how to create plugins from OpenAPI specs.
 /// </summary>
 public class CreatePluginFromOpenApiSpec_Github(ITestOutputHelper output) : BaseTest(output)
 {
+
     /// <summary>
     /// Example to show how to consume operation extensions and other metadata from an OpenAPI spec.
     /// Try modifying the sample schema to simulate the other cases by
@@ -27,28 +29,29 @@ public class CreatePluginFromOpenApiSpec_Github(ITestOutputHelper output) : Base
         // Create a sample OpenAPI schema that calls the github versions api, and has an operation extension property.
         // The x-openai-isConsequential property is the operation extension property.
         var schema = """
-            {
-                "openapi": "3.0.1",
-                "info": {
-                    "title": "Github Versions API",
-                    "version": "1.0.0"
-                },
-                "servers": [ { "url": "https://api.github.com" } ],
-                "paths": {
-                    "/versions": {
-                        "get": {
-                            "x-openai-isConsequential": false,
-                            "operationId": "getVersions",
-                            "responses": {
-                                "200": {
-                                    "description": "OK"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            """;
+                     {
+                         "openapi": "3.0.1",
+                         "info": {
+                             "title": "Github Versions API",
+                             "version": "1.0.0"
+                         },
+                         "servers": [ { "url": "https://api.github.com" } ],
+                         "paths": {
+                             "/versions": {
+                                 "get": {
+                                     "x-openai-isConsequential": false,
+                                     "operationId": "getVersions",
+                                     "responses": {
+                                         "200": {
+                                             "description": "OK"
+                                         }
+                                     }
+                                 }
+                             }
+                         }
+                     }
+                     """;
+
         var schemaStream = new MemoryStream();
         WriteStringToStream(schemaStream, schema);
 
@@ -97,6 +100,7 @@ public class CreatePluginFromOpenApiSpec_Github(ITestOutputHelper output) : Base
         }
     }
 
+
     private static void WriteStringToStream(Stream stream, string input)
     {
         using var writer = new StreamWriter(stream, leaveOpen: true);
@@ -104,4 +108,5 @@ public class CreatePluginFromOpenApiSpec_Github(ITestOutputHelper output) : Base
         writer.Flush();
         stream.Position = 0;
     }
+
 }

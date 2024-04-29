@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using System.Globalization;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Resources;
 
-namespace Examples;
 
 /// <summary>
 /// Scenario:
@@ -33,6 +34,7 @@ namespace Examples;
 /// </summary>
 public class ChatWithPrompts(ITestOutputHelper output) : BaseTest(output)
 {
+
     [Fact]
     public async Task RunAsync()
     {
@@ -48,9 +50,9 @@ public class ChatWithPrompts(ITestOutputHelper output) : BaseTest(output)
         var selectedText = EmbeddedResource.Read("30-user-context.txt");
         var userPromptTemplate = EmbeddedResource.Read("30-user-prompt.txt");
 
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey, serviceId: "chat")
-            .Build();
+        Kernel kernel = Kernel.CreateBuilder().
+            AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey, serviceId: "chat").
+            Build();
 
         // As an example, we import the time plugin, which is used in system prompt to read the current date.
         // We could also use a variable, this is just to show that the prompt can invoke functions.
@@ -76,12 +78,16 @@ public class ChatWithPrompts(ITestOutputHelper output) : BaseTest(output)
 
         // Render the system prompt. This string is used to configure the chat.
         // This contains the context, ie a piece of a wikipedia page selected by the user.
-        string systemMessage = await promptTemplateFactory.Create(new PromptTemplateConfig(systemPromptTemplate)).RenderAsync(kernel, arguments);
+        string systemMessage = await promptTemplateFactory.Create(new PromptTemplateConfig(systemPromptTemplate)).
+            RenderAsync(kernel, arguments);
+
         WriteLine($"------------------------------------\n{systemMessage}");
 
         // Render the user prompt. This string is the query sent by the user
         // This contains the user request, ie "extract locations as a bullet point list"
-        string userMessage = await promptTemplateFactory.Create(new PromptTemplateConfig(userPromptTemplate)).RenderAsync(kernel, arguments);
+        string userMessage = await promptTemplateFactory.Create(new PromptTemplateConfig(userPromptTemplate)).
+            RenderAsync(kernel, arguments);
+
         WriteLine($"------------------------------------\n{userMessage}");
 
         // Client used to request answers
@@ -122,4 +128,5 @@ public class ChatWithPrompts(ITestOutputHelper output) : BaseTest(output)
 
         */
     }
+
 }

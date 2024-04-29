@@ -10,6 +10,7 @@ using System.Collections.Generic;
 [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/GettingStarted/Step7_Observability.cs of Semantic Kernel repository.")]
 public abstract class KernelEventArgs : EventArgs
 {
+
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelEventArgs"/> class.
     /// </summary>
@@ -41,4 +42,5 @@ public abstract class KernelEventArgs : EventArgs
     /// Gets a dictionary of metadata related to the event.
     /// </summary>
     public IReadOnlyDictionary<string, object?>? Metadata { get; }
+
 }

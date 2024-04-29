@@ -1,15 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.ML.Tokenizers;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Text;
 
-namespace Examples;
 
 public class TextChunkingAndEmbedding(ITestOutputHelper output) : BaseTest(output)
 {
+
     private const string EmbeddingModelName = "text-embedding-ada-002";
+
     private static readonly Tokenizer s_tokenizer = Tokenizer.CreateTiktokenForModel(EmbeddingModelName);
+
 
     [Fact]
     public async Task RunAsync()
@@ -17,6 +21,7 @@ public class TextChunkingAndEmbedding(ITestOutputHelper output) : BaseTest(outpu
         this.WriteLine("======== Text Embedding ========");
         await RunExampleAsync();
     }
+
 
     private async Task RunExampleAsync()
     {
@@ -33,12 +38,11 @@ public class TextChunkingAndEmbedding(ITestOutputHelper output) : BaseTest(outpu
 
         // Azure OpenAI currently supports input arrays up to 16 for text-embedding-ada-002 (Version 2).
         // Both require the max input token limit per API request to remain under 8191 for this model.
-        var chunks = paragraphs
-            .ChunkByAggregate(
+        var chunks = paragraphs.ChunkByAggregate(
                 seed: 0,
                 aggregator: (tokenCount, paragraph) => tokenCount + s_tokenizer.CountTokens(paragraph),
-                predicate: (tokenCount, index) => tokenCount < 8191 && index < 16)
-            .ToList();
+                predicate: (tokenCount, index) => tokenCount < 8191 && index < 16).
+            ToList();
 
         this.WriteLine($"Consolidated paragraphs into {chunks.Count}");
 
@@ -51,6 +55,7 @@ public class TextChunkingAndEmbedding(ITestOutputHelper output) : BaseTest(outpu
             this.WriteLine($"Generated {embeddings.Count} embeddings from chunk {i + 1}");
         }
     }
+
 
     #region Transcript
 
@@ -163,4 +168,6 @@ Jane: Goodbye!
 ";
 
     #endregion
+
+
 }

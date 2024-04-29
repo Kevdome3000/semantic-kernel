@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TextGeneration;
 
-namespace Examples;
 
 /**
  * The following example shows how to plug a custom text generation service in SK.
@@ -24,6 +25,7 @@ namespace Examples;
  */
 public class Custom_TextGenerationService(ITestOutputHelper output) : BaseTest(output)
 {
+
     [Fact]
     public async Task CustomTextGenerationWithKernelFunctionAsync()
     {
@@ -46,6 +48,7 @@ public class Custom_TextGenerationService(ITestOutputHelper output) : BaseTest(o
         WriteLine(result);
     }
 
+
     [Fact]
     public async Task CustomTextGenerationAsync()
     {
@@ -60,6 +63,7 @@ public class Custom_TextGenerationService(ITestOutputHelper output) : BaseTest(o
         WriteLine(result);
     }
 
+
     [Fact]
     public async Task CustomTextGenerationStreamAsync()
     {
@@ -69,6 +73,7 @@ public class Custom_TextGenerationService(ITestOutputHelper output) : BaseTest(o
         var completionService = new MyTextGenerationService();
 
         WriteLine($"Prompt: {Prompt}\n");
+
         await foreach (var message in completionService.GetStreamingTextContentsAsync(Prompt))
         {
             Write(message);
@@ -77,11 +82,13 @@ public class Custom_TextGenerationService(ITestOutputHelper output) : BaseTest(o
         WriteLine();
     }
 
+
     /// <summary>
     /// Text generation service stub.
     /// </summary>
     private sealed class MyTextGenerationService : ITextGenerationService
     {
+
         private const string LLMResultText = @"...output from your custom model... Example:
 AI is awesome because it can help us solve complex problems, enhance our creativity,
 and improve our lives in many ways. AI can perform tasks that are too difficult,
@@ -92,7 +99,12 @@ providing personalized recommendations, entertainment, and assistance. AI is awe
 
         public IReadOnlyDictionary<string, object?> Attributes => new Dictionary<string, object?>();
 
-        public async IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+
+        public async IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(
+            string prompt,
+            PromptExecutionSettings? executionSettings = null,
+            Kernel? kernel = null,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             foreach (string word in LLMResultText.Split(' ', StringSplitOptions.RemoveEmptyEntries))
             {
@@ -103,12 +115,19 @@ providing personalized recommendations, entertainment, and assistance. AI is awe
             }
         }
 
-        public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+
+        public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(
+            string prompt,
+            PromptExecutionSettings? executionSettings = null,
+            Kernel? kernel = null,
+            CancellationToken cancellationToken = default)
         {
             return Task.FromResult<IReadOnlyList<TextContent>>(
             [
                 new(LLMResultText)
             ]);
         }
+
     }
+
 }

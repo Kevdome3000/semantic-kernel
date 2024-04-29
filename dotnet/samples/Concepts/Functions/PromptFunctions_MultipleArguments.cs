@@ -1,15 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Core;
 
-namespace Examples;
 
 public class PromptFunctions_MultipleArguments(ITestOutputHelper output) : BaseTest(output)
 {
+
     /// <summary>
     /// Show how to invoke a Method Function written in C# with multiple arguments
     /// from a Prompt Function written in natural language
@@ -28,17 +30,20 @@ public class PromptFunctions_MultipleArguments(ITestOutputHelper output) : BaseT
         if (apiKey == null || deploymentName == null || modelId == null || endpoint == null)
         {
             WriteLine("AzureOpenAI modelId, endpoint, apiKey, or deploymentName not found. Skipping example.");
+
             return;
         }
 
         IKernelBuilder builder = Kernel.CreateBuilder();
         builder.Services.AddLogging(c => c.AddConsole());
+
         builder.AddAzureOpenAIChatCompletion(
             deploymentName: deploymentName,
             endpoint: endpoint,
             serviceId: serviceId,
             apiKey: apiKey,
             modelId: modelId);
+
         Kernel kernel = builder.Build();
 
         var arguments = new KernelArguments
@@ -82,4 +87,5 @@ Wizarding world he explores,
 Harry Potter's tale.
          */
     }
+
 }

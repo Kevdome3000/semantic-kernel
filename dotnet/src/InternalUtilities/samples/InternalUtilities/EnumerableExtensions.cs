@@ -2,6 +2,7 @@
 
 public static class EnumerableExtensions
 {
+
     public static IEnumerable<List<TSource>> ChunkByAggregate<TSource, TAccumulate>(
         this IEnumerable<TSource> source,
         TAccumulate seed,
@@ -41,4 +42,5 @@ public static class EnumerableExtensions
             yield return chunk;
         }
     }
+
 }

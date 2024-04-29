@@ -1,23 +1,28 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+namespace Examples;
+
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Examples;
+
 /// <summary>
 /// Demonstrate using code-interpreter with <see cref="OpenAIAssistantAgent"/> to
 /// produce image content displays the requested charts.
 /// </summary>
 public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseTest(output)
 {
+
     /// <summary>
     /// Target Open AI services.
     /// </summary>
     protected override bool ForceOpenAI => true;
 
     private const string AgentName = "ChartMaker";
+
     private const string AgentInstructions = "Create charts as requested without explanation.";
+
 
     [Fact]
     public async Task RunAsync()
@@ -81,4 +86,5 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseTest(out
             }
         }
     }
+
 }

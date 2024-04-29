@@ -1,13 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using System.Text;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Examples;
 
 public sealed class Google_GeminiChatCompletionStreaming(ITestOutputHelper output) : BaseTest(output)
 {
+
     [Fact]
     public async Task GoogleAIAsync()
     {
@@ -19,17 +21,19 @@ public sealed class Google_GeminiChatCompletionStreaming(ITestOutputHelper outpu
         if (geminiApiKey is null || geminiModelId is null)
         {
             this.WriteLine("Gemini credentials not found. Skipping example.");
+
             return;
         }
 
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddGoogleAIGeminiChatCompletion(
+        Kernel kernel = Kernel.CreateBuilder().
+            AddGoogleAIGeminiChatCompletion(
                 modelId: geminiModelId,
-                apiKey: geminiApiKey)
-            .Build();
+                apiKey: geminiApiKey).
+            Build();
 
         await RunSampleAsync(kernel);
     }
+
 
     [Fact]
     public async Task VertexAIAsync()
@@ -44,16 +48,17 @@ public sealed class Google_GeminiChatCompletionStreaming(ITestOutputHelper outpu
         if (geminiBearerKey is null || geminiModelId is null || geminiLocation is null || geminiProject is null)
         {
             this.WriteLine("Gemini vertex ai credentials not found. Skipping example.");
+
             return;
         }
 
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddVertexAIGeminiChatCompletion(
+        Kernel kernel = Kernel.CreateBuilder().
+            AddVertexAIGeminiChatCompletion(
                 modelId: geminiModelId,
                 bearerKey: geminiBearerKey,
                 location: geminiLocation,
-                projectId: geminiProject)
-            .Build();
+                projectId: geminiProject).
+            Build();
 
         // To generate bearer key, you need installed google sdk or use google web console with command:
         //
@@ -81,10 +86,12 @@ public sealed class Google_GeminiChatCompletionStreaming(ITestOutputHelper outpu
         await RunSampleAsync(kernel);
     }
 
+
     private async Task RunSampleAsync(Kernel kernel)
     {
         await StreamingChatAsync(kernel);
     }
+
 
     private async Task StreamingChatAsync(Kernel kernel)
     {
@@ -112,6 +119,7 @@ public sealed class Google_GeminiChatCompletionStreaming(ITestOutputHelper outpu
         chatHistory.Add(reply);
     }
 
+
     /// <summary>
     /// Outputs the last message of the chat history
     /// </summary>
@@ -125,10 +133,12 @@ public sealed class Google_GeminiChatCompletionStreaming(ITestOutputHelper outpu
         return Task.CompletedTask;
     }
 
+
     private async Task<ChatMessageContent> MessageOutputAsync(IAsyncEnumerable<StreamingChatMessageContent> streamingChat)
     {
         bool first = true;
         StringBuilder messageBuilder = new();
+
         await foreach (var chatMessage in streamingChat)
         {
             if (first)
@@ -143,6 +153,8 @@ public sealed class Google_GeminiChatCompletionStreaming(ITestOutputHelper outpu
 
         this.WriteLine();
         this.WriteLine("------------------------");
+
         return new ChatMessageContent(AuthorRole.Assistant, messageBuilder.ToString());
     }
+
 }

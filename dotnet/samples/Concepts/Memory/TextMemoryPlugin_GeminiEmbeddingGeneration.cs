@@ -1,18 +1,21 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Google;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Memory;
 
-namespace Examples;
 
 /// <summary>
 /// Represents an example class for Gemini Embedding Generation with volatile memory store.
 /// </summary>
 public sealed class TextMemoryPlugin_GeminiEmbeddingGeneration(ITestOutputHelper output) : BaseTest(output)
 {
+
     private const string MemoryCollectionName = "aboutMe";
+
 
     [Fact]
     public async Task GoogleAIAsync()
@@ -26,21 +29,23 @@ public sealed class TextMemoryPlugin_GeminiEmbeddingGeneration(ITestOutputHelper
         if (googleAIApiKey is null || geminiModelId is null || embeddingModelId is null)
         {
             this.WriteLine("GoogleAI credentials not found. Skipping example.");
+
             return;
         }
 
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddGoogleAIGeminiChatCompletion(
+        Kernel kernel = Kernel.CreateBuilder().
+            AddGoogleAIGeminiChatCompletion(
                 modelId: geminiModelId,
-                apiKey: googleAIApiKey)
-            .AddGoogleAIEmbeddingGeneration(
+                apiKey: googleAIApiKey).
+            AddGoogleAIEmbeddingGeneration(
                 modelId: embeddingModelId,
-                apiKey: googleAIApiKey)
-            .Build();
+                apiKey: googleAIApiKey).
+            Build();
 
         await this.RunSimpleSampleAsync(kernel);
         await this.RunTextMemoryPluginSampleAsync(kernel);
     }
+
 
     [Fact]
     public async Task VertexAIAsync()
@@ -57,21 +62,22 @@ public sealed class TextMemoryPlugin_GeminiEmbeddingGeneration(ITestOutputHelper
             || geminiProject is null || embeddingModelId is null)
         {
             this.WriteLine("VertexAI credentials not found. Skipping example.");
+
             return;
         }
 
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddVertexAIGeminiChatCompletion(
+        Kernel kernel = Kernel.CreateBuilder().
+            AddVertexAIGeminiChatCompletion(
                 modelId: geminiModelId,
                 bearerKey: vertexBearerKey,
                 location: geminiLocation,
-                projectId: geminiProject)
-            .AddVertexAIEmbeddingGeneration(
+                projectId: geminiProject).
+            AddVertexAIEmbeddingGeneration(
                 modelId: embeddingModelId,
                 bearerKey: vertexBearerKey,
                 location: geminiLocation,
-                projectId: geminiProject)
-            .Build();
+                projectId: geminiProject).
+            Build();
 
         // To generate bearer key, you need installed google sdk or use google web console with command:
         //
@@ -111,6 +117,7 @@ public sealed class TextMemoryPlugin_GeminiEmbeddingGeneration(ITestOutputHelper
         await this.RunTextMemoryPluginSampleAsync(kernel);
     }
 
+
     private async Task RunSimpleSampleAsync(Kernel kernel)
     {
         this.WriteLine("== Simple Sample: Generating Embeddings ==");
@@ -119,10 +126,13 @@ public sealed class TextMemoryPlugin_GeminiEmbeddingGeneration(ITestOutputHelper
         var embeddingGenerator = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
 
         var generatedEmbeddings = await embeddingGenerator.GenerateEmbeddingAsync("My name is Andrea");
+
         this.WriteLine($"Generated Embeddings count: {generatedEmbeddings.Length}, " +
                        $"First five: {string.Join(", ", generatedEmbeddings[..5])}...");
+
         this.WriteLine();
     }
+
 
     private async Task RunTextMemoryPluginSampleAsync(Kernel kernel)
     {
@@ -171,6 +181,7 @@ public sealed class TextMemoryPlugin_GeminiEmbeddingGeneration(ITestOutputHelper
 
         // Save a memory with the Kernel
         WriteLine("Saving memory with key 'info5': \"My family is from New York\"");
+
         await kernel.InvokeAsync(memoryPlugin["Save"], new()
         {
             [Microsoft.SemanticKernel.Plugins.Memory.TextMemoryPlugin.InputParam] = "My family is from New York",
@@ -272,6 +283,7 @@ Answer:
 
         WriteLine("Printing Collections in DB...");
         var collections = memoryStore.GetCollectionsAsync();
+
         await foreach (var collection in collections)
         {
             WriteLine(collection);
@@ -285,9 +297,11 @@ Answer:
 
         WriteLine($"Printing Collections in DB (after removing {MemoryCollectionName})...");
         collections = memoryStore.GetCollectionsAsync();
+
         await foreach (var collection in collections)
         {
             WriteLine(collection);
         }
     }
+
 }

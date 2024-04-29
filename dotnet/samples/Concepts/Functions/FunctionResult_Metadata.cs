@@ -1,22 +1,24 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.SemanticKernel;
 
-namespace Examples;
 
 public class FunctionResult_Metadata(ITestOutputHelper output) : BaseTest(output)
 {
+
     [Fact]
     public async Task GetTokenUsageMetadataAsync()
     {
         WriteLine("======== Inline Function Definition + Invocation ========");
 
         // Create kernel
-        var kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(
+        var kernel = Kernel.CreateBuilder().
+            AddOpenAIChatCompletion(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
-                apiKey: TestConfiguration.OpenAI.ApiKey)
-            .Build();
+                apiKey: TestConfiguration.OpenAI.ApiKey).
+            Build();
 
         // Create function
         const string FunctionDefinition = "Hi, give me 5 book suggestions about: {{$input}}";
@@ -27,9 +29,13 @@ public class FunctionResult_Metadata(ITestOutputHelper output) : BaseTest(output
 
         // Display results
         WriteLine(result.GetValue<string>());
-        WriteLine(result.Metadata?["Usage"]?.AsJson());
+
+        WriteLine(result.Metadata?["Usage"]?.
+            AsJson());
+
         WriteLine();
     }
+
 
     [Fact]
     public async Task GetFullModelMetadataAsync()
@@ -37,11 +43,11 @@ public class FunctionResult_Metadata(ITestOutputHelper output) : BaseTest(output
         WriteLine("======== Inline Function Definition + Invocation ========");
 
         // Create kernel
-        var kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(
+        var kernel = Kernel.CreateBuilder().
+            AddOpenAIChatCompletion(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
-                apiKey: TestConfiguration.OpenAI.ApiKey)
-            .Build();
+                apiKey: TestConfiguration.OpenAI.ApiKey).
+            Build();
 
         // Create function
         const string FunctionDefinition = "1 + 1 = ?";
@@ -56,14 +62,15 @@ public class FunctionResult_Metadata(ITestOutputHelper output) : BaseTest(output
         WriteLine();
     }
 
+
     [Fact]
     public async Task GetMetadataFromStreamAsync()
     {
-        var kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(
+        var kernel = Kernel.CreateBuilder().
+            AddOpenAIChatCompletion(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
-                apiKey: TestConfiguration.OpenAI.ApiKey)
-            .Build();
+                apiKey: TestConfiguration.OpenAI.ApiKey).
+            Build();
 
         // Create function
         const string FunctionDefinition = "1 + 1 = ?";
@@ -74,4 +81,5 @@ public class FunctionResult_Metadata(ITestOutputHelper output) : BaseTest(output
             WriteLine(content.Metadata?.AsJson());
         }
     }
+
 }

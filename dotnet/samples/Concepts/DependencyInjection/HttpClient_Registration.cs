@@ -1,13 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 
-namespace Examples;
 
 // These examples show how to use HttpClient and HttpClientFactory within SK SDK.
 public class HttpClient_Registration(ITestOutputHelper output) : BaseTest(output)
 {
+
     /// <summary>
     /// Demonstrates the "basic usage" approach for HttpClientFactory.
     /// </summary>
@@ -22,14 +24,15 @@ public class HttpClient_Registration(ITestOutputHelper output) : BaseTest(output
         {
             var factory = sp.GetRequiredService<IHttpClientFactory>();
 
-            return Kernel.CreateBuilder()
-                .AddOpenAIChatCompletion(
+            return Kernel.CreateBuilder().
+                AddOpenAIChatCompletion(
                     modelId: TestConfiguration.OpenAI.ChatModelId,
                     apiKey: TestConfiguration.OpenAI.ApiKey,
-                    httpClient: factory.CreateClient())
-                .Build();
+                    httpClient: factory.CreateClient()).
+                Build();
         });
     }
+
 
     /// <summary>
     /// Demonstrates the "named clients" approach for HttpClientFactory.
@@ -52,12 +55,13 @@ public class HttpClient_Registration(ITestOutputHelper output) : BaseTest(output
         {
             var factory = sp.GetRequiredService<IHttpClientFactory>();
 
-            return Kernel.CreateBuilder()
-                .AddOpenAIChatCompletion(
+            return Kernel.CreateBuilder().
+                AddOpenAIChatCompletion(
                     modelId: TestConfiguration.OpenAI.ChatModelId,
                     apiKey: TestConfiguration.OpenAI.ApiKey,
-                    httpClient: factory.CreateClient("test-client"))
-                .Build();
+                    httpClient: factory.CreateClient("test-client")).
+                Build();
         });
     }
+
 }

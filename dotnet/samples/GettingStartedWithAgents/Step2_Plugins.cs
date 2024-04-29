@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+namespace GettingStarted;
+
 using System.ComponentModel;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-namespace GettingStarted;
 
 /// <summary>
 /// Demonstrate creation of <see cref="ChatCompletionAgent"/> with a <see cref="KernelPlugin"/>,
@@ -13,8 +14,11 @@ namespace GettingStarted;
 /// </summary>
 public class Step2_Plugins(ITestOutputHelper output) : BaseTest(output)
 {
+
     private const string HostName = "Host";
+
     private const string HostInstructions = "Answer questions about the menu.";
+
 
     [Fact]
     public async Task RunAsync()
@@ -55,8 +59,10 @@ public class Step2_Plugins(ITestOutputHelper output) : BaseTest(output)
         }
     }
 
+
     public sealed class MenuPlugin
     {
+
         [KernelFunction, Description("Provides a list of specials from the menu.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "Too smart")]
         public string GetSpecials()
@@ -68,12 +74,15 @@ Special Drink: Chai Tea
 ";
         }
 
+
         [KernelFunction, Description("Provides the price of the requested menu item.")]
         public string GetItemPrice(
             [Description("The name of the menu item.")]
-        string menuItem)
+            string menuItem)
         {
             return "$9.99";
         }
+
     }
+
 }

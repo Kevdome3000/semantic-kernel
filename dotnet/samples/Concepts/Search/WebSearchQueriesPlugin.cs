@@ -1,12 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Web;
 
-namespace Examples;
 
 public class WebSearchQueriesPlugin(ITestOutputHelper output) : BaseTest(output)
 {
+
     [Fact]
     public async Task RunAsync()
     {
@@ -24,12 +26,13 @@ public class WebSearchQueriesPlugin(ITestOutputHelper output) : BaseTest(output)
         WriteLine(ask + "\n");
         WriteLine(result.GetValue<string>());
 
-        /* Expected output: 
-        * ======== WebSearchQueries ========
-        * What's the tallest building in Europe?
-        * 
-        * https://www.bing.com/search?q=What%27s%20the%20tallest%20building%20in%20Europe%3F
-        * == DONE ==
-        */
+        /* Expected output:
+         * ======== WebSearchQueries ========
+         * What's the tallest building in Europe?
+         *
+         * https://www.bing.com/search?q=What%27s%20the%20tallest%20building%20in%20Europe%3F
+         * == DONE ==
+         */
     }
+
 }

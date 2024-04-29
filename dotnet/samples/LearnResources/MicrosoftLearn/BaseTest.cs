@@ -1,15 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.Extensions.Configuration;
 
-namespace Examples;
 
 public abstract class BaseTest
 {
+
     protected ITestOutputHelper Output { get; }
 
     protected List<string> SimulatedInputText = [];
+
     protected int SimulatedInputTextIndex = 0;
+
 
     protected BaseTest(ITestOutputHelper output)
     {
@@ -17,16 +21,17 @@ public abstract class BaseTest
         LoadUserSecrets();
     }
 
+
     private static void LoadUserSecrets()
     {
-        IConfigurationRoot configRoot = new ConfigurationBuilder()
-            .AddJsonFile("appsettings.Development.json", true)
-            .AddEnvironmentVariables()
-            .AddUserSecrets<TestConfiguration>()
-            .Build();
+        IConfigurationRoot configRoot = new ConfigurationBuilder().AddJsonFile("appsettings.Development.json", true).
+            AddEnvironmentVariables().
+            AddUserSecrets<TestConfiguration>().
+            Build();
 
         TestConfiguration.Initialize(configRoot);
     }
+
 
     /// <summary>
     /// This method can be substituted by Console.WriteLine when used in Console apps.
@@ -37,6 +42,7 @@ public abstract class BaseTest
         this.Output.WriteLine(target?.ToString() ?? string.Empty);
     }
 
+
     /// <summary>
     /// Current interface ITestOutputHelper does not have a Write method. This extension method adds it to make it analogous to Console.Write when used in Console apps.
     /// </summary>
@@ -45,6 +51,7 @@ public abstract class BaseTest
     {
         this.Output.WriteLine(target?.ToString() ?? string.Empty);
     }
+
 
     /// <summary>
     /// Simulates reading input strings from a user for the purpose of running tests.
@@ -59,4 +66,5 @@ public abstract class BaseTest
 
         return null;
     }
+
 }

@@ -1,14 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-namespace Examples;
 
 // The following example shows how to use Chat History with Author identity associated with each chat message.
 public class ChatHistoryAuthorName(ITestOutputHelper output) : BaseTest(output)
 {
+
     /// <summary>
     /// Flag to force usage of OpenAI configuration if both <see cref="TestConfiguration.OpenAI"/>
     /// and <see cref="TestConfiguration.AzureOpenAI"/> are defined.
@@ -28,6 +30,7 @@ public class ChatHistoryAuthorName(ITestOutputHelper output) : BaseTest(output)
             TopP = 0.5,
         };
 
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -46,6 +49,7 @@ public class ChatHistoryAuthorName(ITestOutputHelper output) : BaseTest(output)
         ValidateMessages(chatHistory, withName);
     }
 
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -57,21 +61,35 @@ public class ChatHistoryAuthorName(ITestOutputHelper output) : BaseTest(output)
 
         ChatHistory chatHistory = CreateHistory(withName);
 
-        var content = await chatHistory.AddStreamingMessageAsync(chatService.GetStreamingChatMessageContentsAsync(chatHistory, s_executionSettings).Cast<OpenAIStreamingChatMessageContent>()).ToArrayAsync();
+        var content = await chatHistory.AddStreamingMessageAsync(chatService.GetStreamingChatMessageContentsAsync(chatHistory, s_executionSettings).
+                Cast<OpenAIStreamingChatMessageContent>()).
+            ToArrayAsync();
 
         WriteMessages(chatHistory);
 
         ValidateMessages(chatHistory, withName);
     }
 
+
     private static ChatHistory CreateHistory(bool withName)
     {
         return
-            [
-                new ChatMessageContent(AuthorRole.System, "Write one paragraph in response to the user that rhymes") { AuthorName = withName ? "Echo" : null },
-                new ChatMessageContent(AuthorRole.User, "Why is AI awesome") { AuthorName = withName ? "Ralph" : null },
-            ];
+        [
+            new ChatMessageContent(AuthorRole.System, "Write one paragraph in response to the user that rhymes")
+            {
+                AuthorName = withName
+                    ? "Echo"
+                    : null
+            },
+            new ChatMessageContent(AuthorRole.User, "Why is AI awesome")
+            {
+                AuthorName = withName
+                    ? "Ralph"
+                    : null
+            },
+        ];
     }
+
 
     private void ValidateMessages(ChatHistory chatHistory, bool expectName)
     {
@@ -88,6 +106,7 @@ public class ChatHistoryAuthorName(ITestOutputHelper output) : BaseTest(output)
         }
     }
 
+
     private void WriteMessages(IReadOnlyList<ChatMessageContent> messages, ChatHistory? history = null)
     {
         foreach (var message in messages)
@@ -98,17 +117,19 @@ public class ChatHistoryAuthorName(ITestOutputHelper output) : BaseTest(output)
         history?.AddRange(messages);
     }
 
+
     private static IChatCompletionService CreateCompletionService()
     {
         return
-            ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) ?
-                new OpenAIChatCompletionService(
+            ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint)
+                ? new OpenAIChatCompletionService(
                     TestConfiguration.OpenAI.ChatModelId,
-                    TestConfiguration.OpenAI.ApiKey) :
-                new AzureOpenAIChatCompletionService(
+                    TestConfiguration.OpenAI.ApiKey)
+                : new AzureOpenAIChatCompletionService(
                     deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
                     endpoint: TestConfiguration.AzureOpenAI.Endpoint,
                     apiKey: TestConfiguration.AzureOpenAI.ApiKey,
                     modelId: TestConfiguration.AzureOpenAI.ChatModelId);
     }
+
 }

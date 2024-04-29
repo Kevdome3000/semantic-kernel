@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using System.Net.Http.Headers;
 using System.Web;
 using Microsoft.Extensions.Logging;
@@ -7,11 +9,12 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.CredentialManagers;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Microsoft.SemanticKernel.Plugins.OpenApi.Extensions;
-namespace Examples;
+
 
 // This example shows how to use the ApiManifest based plugins
 public class ApiManifestBasedPlugins(ITestOutputHelper output) : BaseTest(output)
 {
+
     public static readonly IEnumerable<object[]> s_parameters =
     [
         // function names are sanitized operationIds from the OpenAPI document
@@ -20,19 +23,30 @@ public class ApiManifestBasedPlugins(ITestOutputHelper output) : BaseTest(output
         ["ContactsPlugin", "meListContacts", new KernelArguments() { { "_count", "true" } }, "ContactsPlugin", "MessagesPlugin"],
         ["CalendarPlugin", "mecalendarListEvents", new KernelArguments() { { "_top", "1" } }, "CalendarPlugin", "MessagesPlugin"],
 
+
         #region Multiple API dependencies (multiple auth requirements) scenario within the same plugin
+
         // Graph API uses MSAL
         ["AstronomyPlugin", "meListMessages", new KernelArguments { { "_top", "1" } }, "AstronomyPlugin"],
         // Astronomy API uses API key authentication
         ["AstronomyPlugin", "apod", new KernelArguments { { "_date", "2022-02-02" } }, "AstronomyPlugin"],
+
         #endregion
     ];
 
+
     [Theory, MemberData(nameof(s_parameters))]
-    public async Task RunSampleWithPlannerAsync(string pluginToTest, string functionToTest, KernelArguments? arguments, params string[] pluginsToLoad)
+    public async Task RunSampleWithPlannerAsync(
+        string pluginToTest,
+        string functionToTest,
+        KernelArguments? arguments,
+        params string[] pluginsToLoad)
     {
         WriteSampleHeadingToConsole(pluginToTest, functionToTest, arguments, pluginsToLoad);
-        var kernel = Kernel.CreateBuilder().Build();
+
+        var kernel = Kernel.CreateBuilder().
+            Build();
+
         await AddApiManifestPluginsAsync(kernel, pluginsToLoad);
 
         var result = await kernel.InvokeAsync(pluginToTest, functionToTest, arguments);
@@ -41,7 +55,12 @@ public class ApiManifestBasedPlugins(ITestOutputHelper output) : BaseTest(output
         this.WriteLine("--------------------");
     }
 
-    private void WriteSampleHeadingToConsole(string pluginToTest, string functionToTest, KernelArguments? arguments, params string[] pluginsToLoad)
+
+    private void WriteSampleHeadingToConsole(
+        string pluginToTest,
+        string functionToTest,
+        KernelArguments? arguments,
+        params string[] pluginsToLoad)
     {
         this.WriteLine();
         this.WriteLine("======== [ApiManifest Plugins Sample] ========");
@@ -49,6 +68,7 @@ public class ApiManifestBasedPlugins(ITestOutputHelper output) : BaseTest(output
         this.WriteLine($"======== Calling Plugin Function: {pluginToTest}.{functionToTest} with parameters {arguments?.Select(x => x.Key + " = " + x.Value).Aggregate((x, y) => x + ", " + y)} ========");
         this.WriteLine();
     }
+
 
     private async Task AddApiManifestPluginsAsync(Kernel kernel, params string[] pluginNames)
     {
@@ -58,13 +78,15 @@ public class ApiManifestBasedPlugins(ITestOutputHelper output) : BaseTest(output
             throw new InvalidOperationException("Missing Scopes configuration for Microsoft Graph API.");
         }
 
-        LocalUserMSALCredentialManager credentialManager = await LocalUserMSALCredentialManager.CreateAsync().ConfigureAwait(false);
+        LocalUserMSALCredentialManager credentialManager = await LocalUserMSALCredentialManager.CreateAsync().
+            ConfigureAwait(false);
 
         var token = await credentialManager.GetTokenAsync(
-                        TestConfiguration.MSGraph.ClientId,
-                        TestConfiguration.MSGraph.TenantId,
-                        TestConfiguration.MSGraph.Scopes.ToArray(),
-                        TestConfiguration.MSGraph.RedirectUri).ConfigureAwait(false);
+                TestConfiguration.MSGraph.ClientId,
+                TestConfiguration.MSGraph.TenantId,
+                TestConfiguration.MSGraph.Scopes.ToArray(),
+                TestConfiguration.MSGraph.RedirectUri).
+            ConfigureAwait(false);
 #pragma warning restore SKEXP0050
 
         BearerAuthenticationProviderWithCancellationToken authenticationProvider = new(() => Task.FromResult(token));
@@ -99,23 +121,28 @@ public class ApiManifestBasedPlugins(ITestOutputHelper output) : BaseTest(output
             try
             {
                 KernelPlugin plugin =
-                await kernel.ImportPluginFromApiManifestAsync(
-                    pluginName,
-                    $"Plugins/ApiManifestPlugins/{pluginName}/apimanifest.json",
-                    apiManifestPluginParameters)
-                    .ConfigureAwait(false);
+                    await kernel.ImportPluginFromApiManifestAsync(
+                            pluginName,
+                            $"Plugins/ApiManifestPlugins/{pluginName}/apimanifest.json",
+                            apiManifestPluginParameters).
+                        ConfigureAwait(false);
+
                 this.WriteLine($">> {pluginName} is created.");
 #pragma warning restore SKEXP0040
 #pragma warning restore SKEXP0043
             }
             catch (Exception ex)
             {
-                kernel.LoggerFactory.CreateLogger("Plugin Creation").LogError(ex, "Plugin creation failed. Message: {0}", ex.Message);
+                kernel.LoggerFactory.CreateLogger("Plugin Creation").
+                    LogError(ex, "Plugin creation failed. Message: {0}", ex.Message);
+
                 throw new AggregateException($"Plugin creation failed for {pluginName}", ex);
             }
         }
     }
+
 }
+
 
 /// <summary>
 /// Retrieves a token via the provided delegate and applies it to HTTP requests using the
@@ -123,7 +150,9 @@ public class ApiManifestBasedPlugins(ITestOutputHelper output) : BaseTest(output
 /// </summary>
 public class BearerAuthenticationProviderWithCancellationToken(Func<Task<string>> bearerToken)
 {
+
     private readonly Func<Task<string>> _bearerToken = bearerToken;
+
 
     /// <summary>
     /// Applies the token to the provided HTTP request message.
@@ -132,7 +161,10 @@ public class BearerAuthenticationProviderWithCancellationToken(Func<Task<string>
     /// <param name="cancellationToken"></param>
     public async Task AuthenticateRequestAsync(HttpRequestMessage request, CancellationToken cancellationToken = default)
     {
-        var token = await this._bearerToken().ConfigureAwait(false);
+        var token = await this._bearerToken().
+            ConfigureAwait(false);
+
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
     }
+
 }

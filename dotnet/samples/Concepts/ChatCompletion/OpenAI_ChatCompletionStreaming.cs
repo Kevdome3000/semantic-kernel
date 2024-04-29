@@ -1,13 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-namespace Examples;
 
 // The following example shows how to use Semantic Kernel with streaming Chat Completion
 public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest(output)
 {
+
     [Fact]
     public Task OpenAIChatStreamSampleAsync()
     {
@@ -17,6 +19,7 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 
         return this.StartStreamingChatAsync(chatCompletionService);
     }
+
 
     [Fact]
     public Task AzureOpenAIChatStreamSampleAsync()
@@ -31,6 +34,7 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 
         return this.StartStreamingChatAsync(chatCompletionService);
     }
+
 
     private async Task StartStreamingChatAsync(IChatCompletionService chatCompletionService)
     {
@@ -54,6 +58,7 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
         // Second bot assistant message
         await StreamMessageOutputAsync(chatCompletionService, chatHistory, AuthorRole.Assistant);
     }
+
 
     private async Task StreamMessageOutputAsync(IChatCompletionService chatCompletionService, ChatHistory chatHistory, AuthorRole authorRole)
     {
@@ -79,6 +84,7 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
         chatHistory.AddMessage(authorRole, fullMessage);
     }
 
+
     /// <summary>
     /// Outputs the last message of the chat history
     /// </summary>
@@ -91,4 +97,5 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 
         return Task.CompletedTask;
     }
+
 }

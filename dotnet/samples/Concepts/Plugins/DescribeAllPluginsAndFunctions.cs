@@ -1,14 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Plugins;
 
-namespace Examples;
 
 public class DescribeAllPluginsAndFunctions(ITestOutputHelper output) : BaseTest(output)
 {
+
     /// <summary>
     /// Print a list of all the functions imported into the kernel, including function descriptions,
     /// list of parameters, parameters descriptions, etc.
@@ -17,11 +19,11 @@ public class DescribeAllPluginsAndFunctions(ITestOutputHelper output) : BaseTest
     [Fact]
     public Task RunAsync()
     {
-        var kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(
+        var kernel = Kernel.CreateBuilder().
+            AddOpenAIChatCompletion(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
-                apiKey: TestConfiguration.OpenAI.ApiKey)
-            .Build();
+                apiKey: TestConfiguration.OpenAI.ApiKey).
+            Build();
 
         // Import a native plugin
         kernel.ImportPluginFromType<StaticTextPlugin>();
@@ -58,6 +60,7 @@ public class DescribeAllPluginsAndFunctions(ITestOutputHelper output) : BaseTest
         return Task.CompletedTask;
     }
 
+
     private void PrintFunction(KernelFunctionMetadata func)
     {
         WriteLine($"Plugin: {func.PluginName}");
@@ -66,6 +69,7 @@ public class DescribeAllPluginsAndFunctions(ITestOutputHelper output) : BaseTest
         if (func.Parameters.Count > 0)
         {
             WriteLine("      Params:");
+
             foreach (var p in func.Parameters)
             {
                 WriteLine($"      - {p.Name}: {p.Description}");
@@ -75,6 +79,7 @@ public class DescribeAllPluginsAndFunctions(ITestOutputHelper output) : BaseTest
 
         WriteLine();
     }
+
 }
 
 /** Sample output:

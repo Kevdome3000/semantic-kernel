@@ -1,13 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Grpc;
 
-namespace Examples;
 
 // This example shows how to use gRPC plugins.
 public class ImportPluginFromGrpc(ITestOutputHelper output) : BaseTest(output)
 {
+
     [Fact(Skip = "Setup crendentials")]
     public async Task RunAsync()
     {
@@ -30,4 +32,5 @@ public class ImportPluginFromGrpc(ITestOutputHelper output) : BaseTest(output)
 
         WriteLine($"Plugin response: {result.GetValue<string>()}");
     }
+
 }

@@ -9,6 +9,7 @@ using Microsoft.SemanticKernel;
 
 internal sealed class EmailPlugin
 {
+
     [KernelFunction, Description("Given an e-mail and message body, send an email")]
     public string SendEmail(
         [Description("The body of the email message to send.")]
@@ -35,4 +36,5 @@ internal sealed class EmailPlugin
             _ => "johndoe1234@example.com",
         };
     }
+
 }

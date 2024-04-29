@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using System.Net.Http.Headers;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
@@ -9,16 +11,16 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Resources;
 
-namespace Examples;
 
 public class WithPlugins(ITestOutputHelper output) : BaseTest(output)
 {
+
     [Fact]
     public async Task RAGWithCustomPluginAsync()
     {
-        var kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
-            .Build();
+        var kernel = Kernel.CreateBuilder().
+            AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey).
+            Build();
 
         kernel.ImportPluginFromType<CustomPlugin>();
 
@@ -27,20 +29,20 @@ public class WithPlugins(ITestOutputHelper output) : BaseTest(output)
         WriteLine(result);
     }
 
+
     /// <summary>
     /// Shows how to use RAG pattern with <see cref="Microsoft.SemanticKernel.Plugins.Memory.TextMemoryPlugin"/>.
     /// </summary>
     [Fact(Skip = "Requires Chroma server up and running")]
     public async Task RAGWithTextMemoryPluginAsync()
     {
-        var memory = new MemoryBuilder()
-            .WithMemoryStore(new ChromaMemoryStore("http://localhost:8000"))
-            .WithOpenAITextEmbeddingGeneration(TestConfiguration.OpenAI.EmbeddingModelId, TestConfiguration.OpenAI.ApiKey)
-            .Build();
+        var memory = new MemoryBuilder().WithMemoryStore(new ChromaMemoryStore("http://localhost:8000")).
+            WithOpenAITextEmbeddingGeneration(TestConfiguration.OpenAI.EmbeddingModelId, TestConfiguration.OpenAI.ApiKey).
+            Build();
 
-        var kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
-            .Build();
+        var kernel = Kernel.CreateBuilder().
+            AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey).
+            Build();
 
         kernel.ImportPluginFromObject(new Microsoft.SemanticKernel.Plugins.Memory.TextMemoryPlugin(memory));
 
@@ -48,6 +50,7 @@ public class WithPlugins(ITestOutputHelper output) : BaseTest(output)
 
         WriteLine(result);
     }
+
 
     /// <summary>
     /// Shows how to use RAG pattern with ChatGPT Retrieval Plugin.
@@ -57,9 +60,9 @@ public class WithPlugins(ITestOutputHelper output) : BaseTest(output)
     {
         var openApi = EmbeddedResource.ReadStream("chat-gpt-retrieval-plugin-open-api.yaml");
 
-        var kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
-            .Build();
+        var kernel = Kernel.CreateBuilder().
+            AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey).
+            Build();
 
         await kernel.ImportPluginFromOpenApiAsync("ChatGPTRetrievalPlugin", openApi!, executionParameters: new(authCallback: async (request, cancellationToken) =>
         {
@@ -80,17 +83,22 @@ public class WithPlugins(ITestOutputHelper output) : BaseTest(output)
         WriteLine(result);
     }
 
+
     #region Custom Plugin
 
     private sealed class CustomPlugin
     {
+
         [KernelFunction]
         public async Task<string> SearchAsync(string query)
         {
             // Here will be a call to vector DB, return example result for demo purposes
             return "Year Budget 2020 100,000 2021 120,000 2022 150,000 2023 200,000 2024 364,000";
         }
+
     }
 
     #endregion
+
+
 }

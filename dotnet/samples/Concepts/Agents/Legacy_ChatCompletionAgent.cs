@@ -1,28 +1,29 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Kusto.Cloud.Platform.Utils;
+namespace Examples;
+
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Experimental.Agents;
 
-namespace Examples;
 
 public class Legacy_ChatCompletionAgent(ITestOutputHelper output) : BaseTest(output)
 {
+
     /// <summary>
     /// This example demonstrates a chat with the chat completion agent that utilizes the SK ChatCompletion API to communicate with LLM.
     /// </summary>
     [Fact]
     public async Task ChatWithAgentAsync()
     {
-        var kernel = Kernel.CreateBuilder()
-           .AddAzureOpenAIChatCompletion(
-               deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
-               endpoint: TestConfiguration.AzureOpenAI.Endpoint,
-               apiKey: TestConfiguration.AzureOpenAI.ApiKey,
-               modelId: TestConfiguration.AzureOpenAI.ChatModelId)
-           .Build();
+        var kernel = Kernel.CreateBuilder().
+            AddAzureOpenAIChatCompletion(
+                deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                endpoint: TestConfiguration.AzureOpenAI.Endpoint,
+                apiKey: TestConfiguration.AzureOpenAI.ApiKey,
+                modelId: TestConfiguration.AzureOpenAI.ChatModelId).
+            Build();
 
         var agent = new ChatCompletionAgent(
             kernel,
@@ -35,11 +36,12 @@ public class Legacy_ChatCompletionAgent(ITestOutputHelper output) : BaseTest(out
                 PresencePenalty = 0.0,
                 FrequencyPenalty = 0.0,
             }
-         );
+        );
 
         var prompt = PrintPrompt("I need help with my investment portfolio. Please guide me.");
         PrintConversation(await agent.InvokeAsync([new ChatMessageContent(AuthorRole.User, prompt)]));
     }
+
 
     /// <summary>
     /// This example demonstrates a round-robin chat between two chat completion agents using the TurnBasedChat collaboration experience.
@@ -47,13 +49,13 @@ public class Legacy_ChatCompletionAgent(ITestOutputHelper output) : BaseTest(out
     [Fact]
     public async Task TurnBasedAgentsChatAsync()
     {
-        var kernel = Kernel.CreateBuilder()
-           .AddAzureOpenAIChatCompletion(
-               deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
-               endpoint: TestConfiguration.AzureOpenAI.Endpoint,
-               apiKey: TestConfiguration.AzureOpenAI.ApiKey,
-               modelId: TestConfiguration.AzureOpenAI.ChatModelId)
-           .Build();
+        var kernel = Kernel.CreateBuilder().
+            AddAzureOpenAIChatCompletion(
+                deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                endpoint: TestConfiguration.AzureOpenAI.Endpoint,
+                apiKey: TestConfiguration.AzureOpenAI.ApiKey,
+                modelId: TestConfiguration.AzureOpenAI.ChatModelId).
+            Build();
 
         var settings = new OpenAIPromptExecutionSettings
         {
@@ -65,35 +67,36 @@ public class Legacy_ChatCompletionAgent(ITestOutputHelper output) : BaseTest(out
         };
 
         var fitnessTrainer = new ChatCompletionAgent(
-           kernel,
-           instructions: "As a fitness trainer, suggest workout routines, and exercises for beginners. " +
-           "You are not a stress management expert, so refrain from recommending stress management strategies. " +
-           "Collaborate with the stress management expert to create a holistic wellness plan." +
-           "Always incorporate stress reduction techniques provided by the stress management expert into the fitness plan." +
-           "Always include your role at the beginning of each response, such as 'As a fitness trainer.",
-           settings
+            kernel,
+            instructions: "As a fitness trainer, suggest workout routines, and exercises for beginners. " +
+                          "You are not a stress management expert, so refrain from recommending stress management strategies. " +
+                          "Collaborate with the stress management expert to create a holistic wellness plan." +
+                          "Always incorporate stress reduction techniques provided by the stress management expert into the fitness plan." +
+                          "Always include your role at the beginning of each response, such as 'As a fitness trainer.",
+            settings
         );
 
         var stressManagementExpert = new ChatCompletionAgent(
             kernel,
             instructions: "As a stress management expert, provide guidance on stress reduction strategies. " +
-            "Collaborate with the fitness trainer to create a simple and holistic wellness plan." +
-            "You are not a fitness expert; therefore, avoid recommending fitness exercises." +
-            "If the plan is not aligned with recommended stress reduction plan, ask the fitness trainer to rework it to incorporate recommended stress reduction techniques. " +
-            "Only you can stop the conversation by saying WELLNESS_PLAN_COMPLETE if suggested fitness plan is good." +
-            "Always include your role at the beginning of each response such as 'As a stress management expert.",
+                          "Collaborate with the fitness trainer to create a simple and holistic wellness plan." +
+                          "You are not a fitness expert; therefore, avoid recommending fitness exercises." +
+                          "If the plan is not aligned with recommended stress reduction plan, ask the fitness trainer to rework it to incorporate recommended stress reduction techniques. " +
+                          "Only you can stop the conversation by saying WELLNESS_PLAN_COMPLETE if suggested fitness plan is good." +
+                          "Always include your role at the beginning of each response such as 'As a stress management expert.",
             settings
-         );
+        );
 
         var chat = new TurnBasedChat([fitnessTrainer, stressManagementExpert], (chatHistory, replies, turn) =>
             turn >= 10 || // Limit the number of turns to 10    
             replies.Any(
                 message => message.Role == AuthorRole.Assistant &&
-                message.Content!.Contains("WELLNESS_PLAN_COMPLETE", StringComparison.InvariantCulture))); // Exit when the message "WELLNESS_PLAN_COMPLETE" received from agent  
+                           message.Content!.Contains("WELLNESS_PLAN_COMPLETE", StringComparison.InvariantCulture))); // Exit when the message "WELLNESS_PLAN_COMPLETE" received from agent  
 
         var prompt = "I need help creating a simple wellness plan for a beginner. Please guide me.";
         PrintConversation(await chat.SendMessageAsync(prompt));
     }
+
 
     private string PrintPrompt(string prompt)
     {
@@ -101,6 +104,7 @@ public class Legacy_ChatCompletionAgent(ITestOutputHelper output) : BaseTest(out
 
         return prompt;
     }
+
 
     private void PrintConversation(IEnumerable<ChatMessageContent> messages)
     {
@@ -114,8 +118,10 @@ public class Legacy_ChatCompletionAgent(ITestOutputHelper output) : BaseTest(out
         this.WriteLine();
     }
 
+
     private sealed class TurnBasedChat(IEnumerable<ChatCompletionAgent> agents, Func<ChatHistory, IEnumerable<ChatMessageContent>, int, bool> exitCondition)
     {
+
         public async Task<IReadOnlyList<ChatMessageContent>> SendMessageAsync(string message, CancellationToken cancellationToken = default)
         {
             var chat = new ChatHistory();
@@ -134,13 +140,16 @@ public class Legacy_ChatCompletionAgent(ITestOutputHelper output) : BaseTest(out
                 chat.AddRange(result);
 
                 turn++;
-            }
-            while (!this._exitCondition(chat, result, turn));
+            } while (!this._exitCondition(chat, result, turn));
 
             return chat;
         }
 
+
         private readonly ChatCompletionAgent[] _agents = agents.ToArray();
+
         private readonly Func<ChatHistory, IEnumerable<ChatMessageContent>, int, bool> _exitCondition = exitCondition;
+
     }
+
 }

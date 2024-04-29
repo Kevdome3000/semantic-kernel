@@ -1,12 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Examples;
 
 public sealed class Google_GeminiChatCompletion(ITestOutputHelper output) : BaseTest(output)
 {
+
     [Fact]
     public async Task GoogleAIAsync()
     {
@@ -18,17 +20,19 @@ public sealed class Google_GeminiChatCompletion(ITestOutputHelper output) : Base
         if (geminiApiKey is null || geminiModelId is null)
         {
             this.WriteLine("Gemini credentials not found. Skipping example.");
+
             return;
         }
 
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddGoogleAIGeminiChatCompletion(
+        Kernel kernel = Kernel.CreateBuilder().
+            AddGoogleAIGeminiChatCompletion(
                 modelId: geminiModelId,
-                apiKey: geminiApiKey)
-            .Build();
+                apiKey: geminiApiKey).
+            Build();
 
         await RunSampleAsync(kernel);
     }
+
 
     [Fact]
     public async Task VertexAIAsync()
@@ -43,16 +47,17 @@ public sealed class Google_GeminiChatCompletion(ITestOutputHelper output) : Base
         if (geminiBearerKey is null || geminiModelId is null || geminiLocation is null || geminiProject is null)
         {
             this.WriteLine("Gemini vertex ai credentials not found. Skipping example.");
+
             return;
         }
 
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddVertexAIGeminiChatCompletion(
+        Kernel kernel = Kernel.CreateBuilder().
+            AddVertexAIGeminiChatCompletion(
                 modelId: geminiModelId,
                 bearerKey: geminiBearerKey,
                 location: geminiLocation,
-                projectId: geminiProject)
-            .Build();
+                projectId: geminiProject).
+            Build();
 
         // To generate bearer key, you need installed google sdk or use google web console with command:
         //
@@ -80,10 +85,12 @@ public sealed class Google_GeminiChatCompletion(ITestOutputHelper output) : Base
         await RunSampleAsync(kernel);
     }
 
+
     private async Task RunSampleAsync(Kernel kernel)
     {
         await SimpleChatAsync(kernel);
     }
+
 
     private async Task SimpleChatAsync(Kernel kernel)
     {
@@ -111,6 +118,7 @@ public sealed class Google_GeminiChatCompletion(ITestOutputHelper output) : Base
         await MessageOutputAsync(chatHistory);
     }
 
+
     /// <summary>
     /// Outputs the last message of the chat history
     /// </summary>
@@ -123,4 +131,5 @@ public sealed class Google_GeminiChatCompletion(ITestOutputHelper output) : Base
 
         return Task.CompletedTask;
     }
+
 }

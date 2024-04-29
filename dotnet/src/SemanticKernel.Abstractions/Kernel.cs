@@ -337,7 +337,8 @@ public sealed class Kernel
     {
         FunctionInvocationContext context = new(this, function, arguments, functionResult);
 
-        await InvokeFilterOrFunctionAsync(this._functionInvocationFilters, functionCallback, context).ConfigureAwait(false);
+        await InvokeFilterOrFunctionAsync(this._functionInvocationFilters, functionCallback, context).
+            ConfigureAwait(false);
 
         return context;
     }
@@ -358,12 +359,15 @@ public sealed class Kernel
     {
         if (functionFilters is { Count: > 0 } && index < functionFilters.Count)
         {
-            await functionFilters[index].OnFunctionInvocationAsync(context,
-                (context) => InvokeFilterOrFunctionAsync(functionFilters, functionCallback, context, index + 1)).ConfigureAwait(false);
+            await functionFilters[index].
+                OnFunctionInvocationAsync(context,
+                    (context) => InvokeFilterOrFunctionAsync(functionFilters, functionCallback, context, index + 1)).
+                ConfigureAwait(false);
         }
         else
         {
-            await functionCallback(context).ConfigureAwait(false);
+            await functionCallback(context).
+                ConfigureAwait(false);
         }
     }
 
@@ -376,7 +380,8 @@ public sealed class Kernel
     {
         PromptRenderContext context = new(this, function, arguments);
 
-        await InvokeFilterOrPromptRenderAsync(this._promptRenderFilters, renderCallback, context).ConfigureAwait(false);
+        await InvokeFilterOrPromptRenderAsync(this._promptRenderFilters, renderCallback, context).
+            ConfigureAwait(false);
 
         return context;
     }

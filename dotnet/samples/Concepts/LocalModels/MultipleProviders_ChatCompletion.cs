@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-namespace Examples;
 
 /// <summary>
 /// This example shows a way of using OpenAI connector with other APIs that supports the same ChatCompletion Message API standard from OpenAI.
@@ -30,6 +31,7 @@ namespace Examples;
 /// </summary>
 public class MultipleProviders_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 {
+
     [Theory(Skip = "Manual configuration needed")]
     [InlineData("LMStudio", "http://localhost:1234", "llama2")] // Setup Llama2 as the model in LM Studio UI and start the Message API Server on http://localhost:1234
     [InlineData("Ollama", "http://localhost:11434", "llama2")] // Start the Ollama Message API Server on http://localhost:11434 using docker
@@ -39,12 +41,12 @@ public class MultipleProviders_ChatCompletion(ITestOutputHelper output) : BaseTe
         WriteLine($"Example using local {messageAPIPlatform}");
         // Setup Llama2 as the model in LM Studio UI.
 
-        var kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(
+        var kernel = Kernel.CreateBuilder().
+            AddOpenAIChatCompletion(
                 modelId: modelId,
                 apiKey: null,
-                endpoint: new Uri(url))
-            .Build();
+                endpoint: new Uri(url)).
+            Build();
 
         var prompt = @"Rewrite the text between triple backticks into a business mail. Use a professional tone, be clear and concise.
                    Sign the mail as AI Assistant.
@@ -61,6 +63,7 @@ public class MultipleProviders_ChatCompletion(ITestOutputHelper output) : BaseTe
         this.WriteLine(response);
     }
 
+
     [Theory(Skip = "Manual configuration needed")]
     [InlineData("LMStudio", "http://localhost:1234", "llama2")] // Setup Llama2 as the model in LM Studio UI and start the Message API Server on http://localhost:1234
     [InlineData("Ollama", "http://localhost:11434", "llama2")] // Start the Ollama Message API Server on http://localhost:11434 using docker
@@ -69,12 +72,12 @@ public class MultipleProviders_ChatCompletion(ITestOutputHelper output) : BaseTe
     {
         WriteLine($"Example using local {messageAPIPlatform}");
 
-        var kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(
+        var kernel = Kernel.CreateBuilder().
+            AddOpenAIChatCompletion(
                 modelId: modelId,
                 apiKey: null,
-                endpoint: new Uri(url))
-            .Build();
+                endpoint: new Uri(url)).
+            Build();
 
         var prompt = @"Rewrite the text between triple backticks into a business mail. Use a professional tone, be clear and concise.
                    Sign the mail as AI Assistant.
@@ -90,6 +93,9 @@ public class MultipleProviders_ChatCompletion(ITestOutputHelper output) : BaseTe
         await foreach (var word in kernel.InvokeStreamingAsync(mailFunction, new() { ["input"] = "Tell David that I'm going to finish the business plan by the end of the week." }))
         {
             this.WriteLine(word);
-        };
+        }
+
+        ;
     }
+
 }

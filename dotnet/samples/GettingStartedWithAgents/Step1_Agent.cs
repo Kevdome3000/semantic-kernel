@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+namespace GettingStarted;
+
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace GettingStarted;
 
 /// <summary>
 /// Demonstrate creation of <see cref="ChatCompletionAgent"/> and
@@ -11,8 +12,11 @@ namespace GettingStarted;
 /// </summary>
 public class Step1_Agent(ITestOutputHelper output) : BaseTest(output)
 {
+
     private const string ParrotName = "Parrot";
+
     private const string ParrotInstructions = "Repeat the user message in the voice of a pirate and then end with a parrot sound.";
+
 
     [Fact]
     public async Task RunAsync()
@@ -47,4 +51,5 @@ public class Step1_Agent(ITestOutputHelper output) : BaseTest(output)
             }
         }
     }
+
 }

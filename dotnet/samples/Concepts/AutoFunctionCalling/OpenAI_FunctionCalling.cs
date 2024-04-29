@@ -1,16 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-namespace Examples;
 
 // This example shows how to use OpenAI's tool calling capability via the chat completions interface.
 public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
 {
+
     [Fact]
     public async Task RunAsync()
     {
@@ -21,7 +23,9 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
         // i.e. gpt-3.5-turbo-1106 or gpt-4-1106-preview
         builder.AddOpenAIChatCompletion("gpt-3.5-turbo-1106", TestConfiguration.OpenAI.ApiKey);
 
-        builder.Services.AddLogging(services => services.AddConsole().SetMinimumLevel(LogLevel.Trace));
+        builder.Services.AddLogging(services => services.AddConsole().
+            SetMinimumLevel(LogLevel.Trace));
+
         Kernel kernel = builder.Build();
 
         // Add a plugin with some helper functions we want to allow the model to utilize.
@@ -43,6 +47,7 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
         ]);
 
         WriteLine("======== Example 1: Use automated function calling with a non-streaming prompt ========");
+
         {
             OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
             WriteLine(await kernel.InvokePromptAsync("Given the current time of day and weather, what is the likely color of the sky in Boston?", new(settings)));
@@ -50,16 +55,20 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
         }
 
         WriteLine("======== Example 2: Use automated function calling with a streaming prompt ========");
+
         {
             OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+
             await foreach (var update in kernel.InvokePromptStreamingAsync("Given the current time of day and weather, what is the likely color of the sky in Boston?", new(settings)))
             {
                 Write(update);
             }
+
             WriteLine();
         }
 
         WriteLine("======== Example 3: Use manual function calling with a non-streaming prompt ========");
+
         {
             var chat = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -71,12 +80,14 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
             while (true)
             {
                 ChatMessageContent result = await chat.GetChatMessageContentAsync(chatHistory, settings, kernel);
+
                 if (result.Content is not null)
                 {
                     Write(result.Content);
                 }
 
                 IEnumerable<FunctionCallContent> functionCalls = FunctionCallContent.GetFunctionCalls(result);
+
                 if (!functionCalls.Any())
                 {
                     break;
@@ -107,6 +118,7 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
         }
 
         WriteLine("======== Example 4: Simulated function calling with a non-streaming prompt ========");
+
         {
             var chat = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -118,6 +130,7 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
             while (true)
             {
                 ChatMessageContent result = await chat.GetChatMessageContentAsync(chatHistory, settings, kernel);
+
                 if (result.Content is not null)
                 {
                     Write(result.Content);
@@ -126,6 +139,7 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
                 chatHistory.Add(result); // Adding LLM response containing function calls(requests) to chat history as it's required by LLMs.
 
                 IEnumerable<FunctionCallContent> functionCalls = FunctionCallContent.GetFunctionCalls(result);
+
                 if (!functionCalls.Any())
                 {
                     break;
@@ -181,4 +195,5 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
             }
         }*/
     }
+
 }

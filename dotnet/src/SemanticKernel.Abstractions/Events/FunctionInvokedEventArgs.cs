@@ -11,6 +11,7 @@ using System;
 [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/GettingStarted/Step7_Observability.cs of Semantic Kernel repository.")]
 public sealed class FunctionInvokedEventArgs : CancelKernelEventArgs
 {
+
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionInvokedEventArgs"/> class.
     /// </summary>
@@ -38,4 +39,5 @@ public sealed class FunctionInvokedEventArgs : CancelKernelEventArgs
     {
         this.ResultValue = value;
     }
+
 }

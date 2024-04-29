@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -7,7 +9,6 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Plugins;
 
-namespace Examples;
 
 /// <summary>
 /// This example demonstrates how to create native functions for AI to call as described at
@@ -15,6 +16,7 @@ namespace Examples;
 /// </summary>
 public class Planner(ITestOutputHelper output) : BaseTest(output)
 {
+
     [Fact]
     public async Task RunAsync()
     {
@@ -32,9 +34,12 @@ public class Planner(ITestOutputHelper output) : BaseTest(output)
         }
 
         // <RunningNativeFunction>
-        var builder = Kernel.CreateBuilder()
-                            .AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey);
-        builder.Services.AddLogging(c => c.AddDebug().SetMinimumLevel(LogLevel.Trace));
+        var builder = Kernel.CreateBuilder().
+            AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey);
+
+        builder.Services.AddLogging(c => c.AddDebug().
+            SetMinimumLevel(LogLevel.Trace));
+
         builder.Plugins.AddFromType<MathSolver>();
         Kernel kernel = builder.Build();
 
@@ -47,6 +52,7 @@ public class Planner(ITestOutputHelper output) : BaseTest(output)
         // Start the conversation
         Write("User > ");
         string? userInput;
+
         while ((userInput = ReadLine()) != null)
         {
             // Get user input
@@ -61,13 +67,14 @@ public class Planner(ITestOutputHelper output) : BaseTest(output)
 
             // Get the response from the AI
             var result = chatCompletionService.GetStreamingChatMessageContentsAsync(
-                                history,
-                                executionSettings: openAIPromptExecutionSettings,
-                                kernel: kernel);
+                history,
+                executionSettings: openAIPromptExecutionSettings,
+                kernel: kernel);
 
             // Stream the results
             string fullMessage = "";
             var first = true;
+
             await foreach (var content in result)
             {
                 if (content.Role.HasValue && first)
@@ -75,9 +82,11 @@ public class Planner(ITestOutputHelper output) : BaseTest(output)
                     Write("Assistant > ");
                     first = false;
                 }
+
                 Write(content.Content);
                 fullMessage += content.Content;
             }
+
             WriteLine();
 
             // Add the message from the agent to the chat history
@@ -87,4 +96,5 @@ public class Planner(ITestOutputHelper output) : BaseTest(output)
             Write("User > ");
         }
     }
+
 }

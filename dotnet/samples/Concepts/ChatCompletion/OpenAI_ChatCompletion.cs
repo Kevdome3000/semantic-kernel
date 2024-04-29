@@ -1,13 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-namespace Examples;
 
 // The following example shows how to use Semantic Kernel with OpenAI ChatGPT API
 public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 {
+
     [Fact]
     public async Task OpenAIChatSampleAsync()
     {
@@ -46,6 +48,7 @@ public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
         */
     }
 
+
     [Fact]
     public async Task AzureOpenAIChatSampleAsync()
     {
@@ -59,6 +62,7 @@ public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 
         await StartChatAsync(chatCompletionService);
     }
+
 
     private async Task StartChatAsync(IChatCompletionService chatGPT)
     {
@@ -86,6 +90,7 @@ public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
         await MessageOutputAsync(chatHistory);
     }
 
+
     /// <summary>
     /// Outputs the last message of the chat history
     /// </summary>
@@ -98,4 +103,5 @@ public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 
         return Task.CompletedTask;
     }
+
 }

@@ -1,15 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.SemanticKernel;
 
-namespace Examples;
 
 /// <summary>
 /// This example shows how to create a mutable <see cref="KernelPlugin"/>.
 /// </summary>
 public class CustomMutablePlugin(ITestOutputHelper output) : BaseTest(output)
 {
+
     [Fact]
     public async Task RunAsync()
     {
@@ -24,13 +26,16 @@ public class CustomMutablePlugin(ITestOutputHelper output) : BaseTest(output)
         WriteLine($"Result: {result}");
     }
 
+
     /// <summary>
     /// Provides an <see cref="KernelPlugin"/> implementation around a collection of functions.
     /// </summary>
     public class MutableKernelPlugin : KernelPlugin
     {
+
         /// <summary>The collection of functions associated with this plugin.</summary>
         private readonly Dictionary<string, KernelFunction> _functions;
+
 
         /// <summary>Initializes the new plugin from the provided name, description, and function collection.</summary>
         /// <param name="name">The name for the plugin.</param>
@@ -41,6 +46,7 @@ public class CustomMutablePlugin(ITestOutputHelper output) : BaseTest(output)
         public MutableKernelPlugin(string name, string? description = null, IEnumerable<KernelFunction>? functions = null) : base(name, description)
         {
             this._functions = new Dictionary<string, KernelFunction>(StringComparer.OrdinalIgnoreCase);
+
             if (functions is not null)
             {
                 foreach (KernelFunction f in functions)
@@ -53,12 +59,15 @@ public class CustomMutablePlugin(ITestOutputHelper output) : BaseTest(output)
             }
         }
 
+
         /// <inheritdoc/>
         public override int FunctionCount => this._functions.Count;
+
 
         /// <inheritdoc/>
         public override bool TryGetFunction(string name, [NotNullWhen(true)] out KernelFunction? function) =>
             this._functions.TryGetValue(name, out function);
+
 
         /// <summary>Adds a function to the plugin.</summary>
         /// <param name="function">The function to add.</param>
@@ -73,7 +82,10 @@ public class CustomMutablePlugin(ITestOutputHelper output) : BaseTest(output)
             this._functions.Add(cloned.Name, cloned);
         }
 
+
         /// <inheritdoc/>
         public override IEnumerator<KernelFunction> GetEnumerator() => this._functions.Values.GetEnumerator();
+
     }
+
 }

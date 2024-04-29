@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-namespace Examples;
 
 /**
  * Logit_bias is an optional parameter that modifies the likelihood of specified tokens appearing in a Completion.
@@ -11,6 +12,7 @@ namespace Examples;
  */
 public class OpenAI_UsingLogitBias(ITestOutputHelper output) : BaseTest(output)
 {
+
     [Fact]
     public async Task RunAsync()
     {
@@ -64,6 +66,7 @@ public class OpenAI_UsingLogitBias(ITestOutputHelper output) : BaseTest(output)
         */
     }
 
+
     /// <summary>
     /// Outputs the last message of the chat history
     /// </summary>
@@ -76,4 +79,5 @@ public class OpenAI_UsingLogitBias(ITestOutputHelper output) : BaseTest(output)
 
         return Task.CompletedTask;
     }
+
 }

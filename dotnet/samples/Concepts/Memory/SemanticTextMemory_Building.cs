@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Memory;
 
-namespace Examples;
 
 /* The files contains two examples about SK Semantic Memory.
  *
@@ -16,7 +17,9 @@ namespace Examples;
  */
 public class SemanticTextMemory_Building(ITestOutputHelper output) : BaseTest(output)
 {
+
     private const string MemoryCollectionName = "SKGitHub";
+
 
     [Fact]
     public async Task RunAsync()
@@ -31,10 +34,9 @@ public class SemanticTextMemory_Building(ITestOutputHelper output) : BaseTest(ou
          * need to worry about embedding generation.
          */
 
-        var memoryWithACS = new MemoryBuilder()
-            .WithOpenAITextEmbeddingGeneration("text-embedding-ada-002", TestConfiguration.OpenAI.ApiKey)
-            .WithMemoryStore(new AzureAISearchMemoryStore(TestConfiguration.AzureAISearch.Endpoint, TestConfiguration.AzureAISearch.ApiKey))
-            .Build();
+        var memoryWithACS = new MemoryBuilder().WithOpenAITextEmbeddingGeneration("text-embedding-ada-002", TestConfiguration.OpenAI.ApiKey).
+            WithMemoryStore(new AzureAISearchMemoryStore(TestConfiguration.AzureAISearch.Endpoint, TestConfiguration.AzureAISearch.ApiKey)).
+            Build();
 
         await RunExampleAsync(memoryWithACS);
 
@@ -51,10 +53,9 @@ public class SemanticTextMemory_Building(ITestOutputHelper output) : BaseTest(ou
          * or implement your connectors for Pinecone, Vespa, Postgres + pgvector, SQLite VSS, etc.
          */
 
-        var memoryWithCustomDb = new MemoryBuilder()
-            .WithOpenAITextEmbeddingGeneration("text-embedding-ada-002", TestConfiguration.OpenAI.ApiKey)
-            .WithMemoryStore(new VolatileMemoryStore())
-            .Build();
+        var memoryWithCustomDb = new MemoryBuilder().WithOpenAITextEmbeddingGeneration("text-embedding-ada-002", TestConfiguration.OpenAI.ApiKey).
+            WithMemoryStore(new VolatileMemoryStore()).
+            Build();
 
         // Uncomment the following line to use GoogleAI embeddings
         // var memoryWithCustomDb = new MemoryBuilder()
@@ -64,6 +65,7 @@ public class SemanticTextMemory_Building(ITestOutputHelper output) : BaseTest(ou
 
         await RunExampleAsync(memoryWithCustomDb);
     }
+
 
     private async Task RunExampleAsync(ISemanticTextMemory memory)
     {
@@ -104,6 +106,7 @@ public class SemanticTextMemory_Building(ITestOutputHelper output) : BaseTest(ou
         */
     }
 
+
     private async Task SearchMemoryAsync(ISemanticTextMemory memory, string query)
     {
         WriteLine("\nQuery: " + query + "\n");
@@ -111,6 +114,7 @@ public class SemanticTextMemory_Building(ITestOutputHelper output) : BaseTest(ou
         var memoryResults = memory.SearchAsync(MemoryCollectionName, query, limit: 2, minRelevanceScore: 0.5);
 
         int i = 0;
+
         await foreach (MemoryQueryResult memoryResult in memoryResults)
         {
             WriteLine($"Result {++i}:");
@@ -122,6 +126,7 @@ public class SemanticTextMemory_Building(ITestOutputHelper output) : BaseTest(ou
 
         WriteLine("----------------------");
     }
+
 
     private async Task StoreMemoryAsync(ISemanticTextMemory memory)
     {
@@ -136,6 +141,7 @@ public class SemanticTextMemory_Building(ITestOutputHelper output) : BaseTest(ou
         WriteLine("\nAdding some GitHub file URLs and their descriptions to the semantic memory.");
         var githubFiles = SampleData();
         var i = 0;
+
         foreach (var entry in githubFiles)
         {
             await memory.SaveReferenceAsync(
@@ -150,6 +156,7 @@ public class SemanticTextMemory_Building(ITestOutputHelper output) : BaseTest(ou
 
         WriteLine("\n----------------------");
     }
+
 
     private static Dictionary<string, string> SampleData()
     {
@@ -167,4 +174,5 @@ public class SemanticTextMemory_Building(ITestOutputHelper output) : BaseTest(ou
                 = "C# class that defines a volatile embedding store",
         };
     }
+
 }

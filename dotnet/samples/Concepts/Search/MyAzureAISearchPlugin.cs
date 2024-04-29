@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Examples;
+
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Azure;
@@ -10,10 +12,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Embeddings;
 
-namespace Examples;
 
 public class AzureAISearchPlugin(ITestOutputHelper output) : BaseTest(output)
 {
+
     /// <summary>
     /// Shows how to register Azure AI Search service as a plugin and work with custom index schema.
     /// </summary>
@@ -65,6 +67,7 @@ public class AzureAISearchPlugin(ITestOutputHelper output) : BaseTest(output)
         WriteLine(result2);
     }
 
+
     #region Index Schema
 
     /// <summary>
@@ -72,6 +75,7 @@ public class AzureAISearchPlugin(ITestOutputHelper output) : BaseTest(output)
     /// </summary>
     private sealed class IndexSchema
     {
+
         [JsonPropertyName("chunk_id")]
         public string ChunkId { get; set; }
 
@@ -86,9 +90,11 @@ public class AzureAISearchPlugin(ITestOutputHelper output) : BaseTest(output)
 
         [JsonPropertyName("vector")]
         public ReadOnlyMemory<float> Vector { get; set; }
+
     }
 
     #endregion
+
 
     #region Azure AI Search Service
 
@@ -97,21 +103,26 @@ public class AzureAISearchPlugin(ITestOutputHelper output) : BaseTest(output)
     /// </summary>
     private interface IAzureAISearchService
     {
+
         Task<string?> SearchAsync(
             string collectionName,
             ReadOnlyMemory<float> vector,
             List<string>? searchFields = null,
             CancellationToken cancellationToken = default);
+
     }
+
 
     /// <summary>
     /// Implementation of Azure AI Search service.
     /// </summary>
     private sealed class AzureAISearchService(SearchIndexClient indexClient) : IAzureAISearchService
     {
+
         private readonly List<string> _defaultVectorFields = ["vector"];
 
         private readonly SearchIndexClient _indexClient = indexClient;
+
 
         public async Task<string?> SearchAsync(
             string collectionName,
@@ -123,7 +134,9 @@ public class AzureAISearchPlugin(ITestOutputHelper output) : BaseTest(output)
             SearchClient searchClient = this._indexClient.GetSearchClient(collectionName);
 
             // Use search fields passed from Plugin or default fields configured in this class.
-            List<string> fields = searchFields is { Count: > 0 } ? searchFields : this._defaultVectorFields;
+            List<string> fields = searchFields is { Count: > 0 }
+                ? searchFields
+                : this._defaultVectorFields;
 
             // Configure request parameters
             VectorizedQuery vectorQuery = new(vector);
@@ -146,11 +159,14 @@ public class AzureAISearchPlugin(ITestOutputHelper output) : BaseTest(output)
             // In real applications, the logic can check document score, sort and return top N results
             // or aggregate all results in one text.
             // The logic and decision which text data to return should be based on business scenario. 
-            return results.FirstOrDefault()?.Chunk;
+            return results.FirstOrDefault()?.
+                Chunk;
         }
+
     }
 
     #endregion
+
 
     #region Azure AI Search SK Plugin
 
@@ -163,8 +179,11 @@ public class AzureAISearchPlugin(ITestOutputHelper output) : BaseTest(output)
         ITextEmbeddingGenerationService textEmbeddingGenerationService,
         Examples.AzureAISearchPlugin.IAzureAISearchService searchService)
     {
+
         private readonly ITextEmbeddingGenerationService _textEmbeddingGenerationService = textEmbeddingGenerationService;
+
         private readonly IAzureAISearchService _searchService = searchService;
+
 
         [KernelFunction("Search")]
         public async Task<string> SearchAsync(
@@ -179,7 +198,10 @@ public class AzureAISearchPlugin(ITestOutputHelper output) : BaseTest(output)
             // Perform search
             return await this._searchService.SearchAsync(collection, embedding, searchFields, cancellationToken) ?? string.Empty;
         }
+
     }
 
     #endregion
+
+
 }

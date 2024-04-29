@@ -4,26 +4,29 @@
 // The easier way to instantiate the Semantic Kernel is to use KernelBuilder.
 // You can access the builder using Kernel.CreateBuilder().
 
+namespace Examples;
+
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Core;
 
-namespace Examples;
 
 public class BuildingKernel(ITestOutputHelper output) : BaseTest(output)
 {
+
     [Fact]
     public void BuildKernelWithAzureChatCompletion()
     {
         // KernelBuilder provides a simple way to configure a Kernel. This constructs a kernel
         // with logging and an Azure OpenAI chat completion service configured.
-        Kernel kernel1 = Kernel.CreateBuilder()
-            .AddAzureOpenAIChatCompletion(
+        Kernel kernel1 = Kernel.CreateBuilder().
+            AddAzureOpenAIChatCompletion(
                 deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 endpoint: TestConfiguration.AzureOpenAI.Endpoint,
                 apiKey: TestConfiguration.AzureOpenAI.ApiKey,
-                modelId: TestConfiguration.AzureOpenAI.ChatModelId)
-            .Build();
+                modelId: TestConfiguration.AzureOpenAI.ChatModelId).
+            Build();
     }
+
 
     [Fact]
     public void BuildKernelWithPlugins()
@@ -33,4 +36,5 @@ public class BuildingKernel(ITestOutputHelper output) : BaseTest(output)
         builder.Plugins.AddFromType<HttpPlugin>();
         Kernel kernel3 = builder.Build();
     }
+
 }
