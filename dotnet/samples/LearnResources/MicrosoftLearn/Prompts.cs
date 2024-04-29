@@ -1,12 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Examples;
-
-using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Xunit;
-using Xunit.Abstractions;
 
+namespace Examples;
 
 /// <summary>
 /// This example demonstrates how to use prompts as described at
@@ -14,7 +10,6 @@ using Xunit.Abstractions;
 /// </summary>
 public class Prompts(ITestOutputHelper output) : BaseTest(output)
 {
-
     [Fact]
     public async Task RunAsync()
     {
@@ -32,9 +27,9 @@ public class Prompts(ITestOutputHelper output) : BaseTest(output)
         }
 
         // <KernelCreation>
-        Kernel kernel = Kernel.CreateBuilder().
-            AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey).
-            Build();
+        Kernel kernel = Kernel.CreateBuilder()
+                              .AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey)
+                              .Build();
         // </KernelCreation>
 
         // 0.0 Initial prompt
@@ -81,33 +76,33 @@ public class Prompts(ITestOutputHelper output) : BaseTest(output)
         //////////////////////////////////////////////////////////////////////////////////
         // <FormattedPrompt>
         prompt = $$"""
-                   ## Instructions
-                   Provide the intent of the request using the following format:
-
-                   ```json
-                   {
-                       "intent": {intent}
-                   }
-                   ```
-
-                   ## Choices
-                   You can choose between the following intents:
-
-                   ```json
-                   ["SendEmail", "SendMessage", "CompleteTask", "CreateDocument"]
-                   ```
-
-                   ## User Input
-                   The user input is:
-
-                   ```json
-                   {
-                       "request": "{{request}}"
-                   }
-                   ```
-
-                   ## Intent
-                   """;
+                 ## Instructions
+                 Provide the intent of the request using the following format:
+                 
+                 ```json
+                 {
+                     "intent": {intent}
+                 }
+                 ```
+                 
+                 ## Choices
+                 You can choose between the following intents:
+                 
+                 ```json
+                 ["SendEmail", "SendMessage", "CompleteTask", "CreateDocument"]
+                 ```
+                 
+                 ## User Input
+                 The user input is:
+                 
+                 ```json
+                 {
+                     "request": "{{request}}"
+                 }
+                 ```
+                 
+                 ## Intent
+                 """;
         // </FormattedPrompt>
 
         WriteLine("2.1 Add structure to the output with formatting (using Markdown and JSON)");
@@ -136,19 +131,19 @@ Intent: ";
         //////////////////////////////////////////////////////////////////////////////////
         // <AvoidPrompt>
         prompt = $"""
-                  Instructions: What is the intent of this request?
-                  If you don't know the intent, don't guess; instead respond with "Unknown".
-                  Choices: SendEmail, SendMessage, CompleteTask, CreateDocument, Unknown.
+                 Instructions: What is the intent of this request?
+                 If you don't know the intent, don't guess; instead respond with "Unknown".
+                 Choices: SendEmail, SendMessage, CompleteTask, CreateDocument, Unknown.
 
-                  User Input: Can you send a very quick approval to the marketing team?
-                  Intent: SendMessage
+                 User Input: Can you send a very quick approval to the marketing team?
+                 Intent: SendMessage
 
-                  User Input: Can you send the full update to the marketing team?
-                  Intent: SendEmail
+                 User Input: Can you send the full update to the marketing team?
+                 Intent: SendEmail
 
-                  User Input: {request}
-                  Intent:
-                  """;
+                 User Input: {request}
+                 Intent: 
+                 """;
         // </AvoidPrompt>
 
         WriteLine("4.0 Tell the AI what to do to avoid doing something wrong");
@@ -163,20 +158,20 @@ Intent: ";
                          """;
 
         prompt = $"""
-                  Instructions: What is the intent of this request?
-                  If you don't know the intent, don't guess; instead respond with "Unknown".
-                  Choices: SendEmail, SendMessage, CompleteTask, CreateDocument, Unknown.
-
-                  User Input: Can you send a very quick approval to the marketing team?
-                  Intent: SendMessage
-
-                  User Input: Can you send the full update to the marketing team?
-                  Intent: SendEmail
-
-                  {history}
-                  User Input: {request}
-                  Intent:
-                  """;
+                 Instructions: What is the intent of this request?
+                 If you don't know the intent, don't guess; instead respond with "Unknown".
+                 Choices: SendEmail, SendMessage, CompleteTask, CreateDocument, Unknown.
+                 
+                 User Input: Can you send a very quick approval to the marketing team?
+                 Intent: SendMessage
+                 
+                 User Input: Can you send the full update to the marketing team?
+                 Intent: SendEmail
+                 
+                 {history}
+                 User Input: {request}
+                 Intent: 
+                 """;
         // </ContextPrompt>
 
         WriteLine("5.0 Provide context to the AI");
@@ -191,22 +186,22 @@ Intent: ";
                   """;
 
         prompt = $"""
-                  <message role="system">Instructions: What is the intent of this request?
-                  If you don't know the intent, don't guess; instead respond with "Unknown".
-                  Choices: SendEmail, SendMessage, CompleteTask, CreateDocument, Unknown.</message>
-
-                  <message role="user">Can you send a very quick approval to the marketing team?</message>
-                  <message role="system">Intent:</message>
-                  <message role="assistant">SendMessage</message>
-
-                  <message role="user">Can you send the full update to the marketing team?</message>
-                  <message role="system">Intent:</message>
-                  <message role="assistant">SendEmail</message>
-
-                  {history}
-                  <message role="user">{request}</message>
-                  <message role="system">Intent:</message>
-                  """;
+                 <message role="system">Instructions: What is the intent of this request?
+                 If you don't know the intent, don't guess; instead respond with "Unknown".
+                 Choices: SendEmail, SendMessage, CompleteTask, CreateDocument, Unknown.</message>
+                 
+                 <message role="user">Can you send a very quick approval to the marketing team?</message>
+                 <message role="system">Intent:</message>
+                 <message role="assistant">SendMessage</message>
+                 
+                 <message role="user">Can you send the full update to the marketing team?</message>
+                 <message role="system">Intent:</message>
+                 <message role="assistant">SendEmail</message>
+                 
+                 {history}
+                 <message role="user">{request}</message>
+                 <message role="system">Intent:</message>
+                 """;
         // </RolePrompt>
 
         WriteLine("6.0 Using message roles in chat completion prompts");
@@ -221,27 +216,26 @@ Intent: ";
                   """;
 
         prompt = $"""
-                  <message role="system">Instructions: What is the intent of this request?
-                  If you don't know the intent, don't guess; instead respond with "Unknown".
-                  Choices: SendEmail, SendMessage, CompleteTask, CreateDocument, Unknown.
-                  Bonus: You'll get $20 if you get this right.</message>
-
-                  <message role="user">Can you send a very quick approval to the marketing team?</message>
-                  <message role="system">Intent:</message>
-                  <message role="assistant">SendMessage</message>
-
-                  <message role="user">Can you send the full update to the marketing team?</message>
-                  <message role="system">Intent:</message>
-                  <message role="assistant">SendEmail</message>
-
-                  {history}
-                  <message role="user">{request}</message>
-                  <message role="system">Intent:</message>
-                  """;
+                 <message role="system">Instructions: What is the intent of this request?
+                 If you don't know the intent, don't guess; instead respond with "Unknown".
+                 Choices: SendEmail, SendMessage, CompleteTask, CreateDocument, Unknown.
+                 Bonus: You'll get $20 if you get this right.</message>
+                
+                 <message role="user">Can you send a very quick approval to the marketing team?</message>
+                 <message role="system">Intent:</message>
+                 <message role="assistant">SendMessage</message>
+                
+                 <message role="user">Can you send the full update to the marketing team?</message>
+                 <message role="system">Intent:</message>
+                 <message role="assistant">SendEmail</message>
+                
+                 {history}
+                 <message role="user">{request}</message>
+                 <message role="system">Intent:</message>
+                 """;
         // </BonusPrompt>
 
         WriteLine("7.0 Give your AI words of encouragement");
         WriteLine(await kernel.InvokePromptAsync(prompt));
     }
-
 }

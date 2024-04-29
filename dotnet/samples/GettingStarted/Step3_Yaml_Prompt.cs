@@ -1,22 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace GettingStarted;
-
-using System.Threading.Tasks;
-using Examples;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using Resources;
-using Xunit;
-using Xunit.Abstractions;
 
+namespace GettingStarted;
 
 /// <summary>
 /// This example shows how to create a prompt <see cref="KernelFunction"/> from a YAML resource.
 /// </summary>
 public sealed class Step3_Yaml_Prompt(ITestOutputHelper output) : BaseTest(output)
 {
-
     /// <summary>
     /// Show how to create a prompt <see cref="KernelFunction"/> from a YAML resource.
     /// </summary>
@@ -24,11 +18,11 @@ public sealed class Step3_Yaml_Prompt(ITestOutputHelper output) : BaseTest(outpu
     public async Task RunAsync()
     {
         // Create a kernel with OpenAI chat completion
-        Kernel kernel = Kernel.CreateBuilder().
-            AddOpenAIChatCompletion(
+        Kernel kernel = Kernel.CreateBuilder()
+            .AddOpenAIChatCompletion(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
-                apiKey: TestConfiguration.OpenAI.ApiKey).
-            Build();
+                apiKey: TestConfiguration.OpenAI.ApiKey)
+            .Build();
 
         // Load prompt from resource
         var generateStoryYaml = EmbeddedResource.Read("GenerateStory.yaml");
@@ -36,10 +30,10 @@ public sealed class Step3_Yaml_Prompt(ITestOutputHelper output) : BaseTest(outpu
 
         // Invoke the prompt function and display the result
         WriteLine(await kernel.InvokeAsync(function, arguments: new()
-        {
-            { "topic", "Dog" },
-            { "length", "3" },
-        }));
+            {
+                { "topic", "Dog" },
+                { "length", "3" },
+            }));
 
         // Load prompt from resource
         var generateStoryHandlebarsYaml = EmbeddedResource.Read("GenerateStoryHandlebars.yaml");
@@ -47,10 +41,9 @@ public sealed class Step3_Yaml_Prompt(ITestOutputHelper output) : BaseTest(outpu
 
         // Invoke the prompt function and display the result
         WriteLine(await kernel.InvokeAsync(function, arguments: new()
-        {
-            { "topic", "Cat" },
-            { "length", "3" },
-        }));
+            {
+                { "topic", "Cat" },
+                { "length", "3" },
+            }));
     }
-
 }

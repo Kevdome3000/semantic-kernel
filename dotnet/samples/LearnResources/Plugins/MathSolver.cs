@@ -3,7 +3,6 @@
 namespace Plugins;
 
 using System.ComponentModel;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning.Handlebars;

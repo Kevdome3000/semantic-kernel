@@ -1,19 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace GettingStarted;
-
-using System;
-using System.Threading.Tasks;
-using Examples;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
-using Xunit;
-using Xunit.Abstractions;
 
+namespace GettingStarted;
 
 public sealed class Step6_Responsible_AI(ITestOutputHelper output) : BaseTest(output)
 {
-
     /// <summary>
     /// Show how to use prompt filters to ensure that prompts are rendered in a responsible manner.
     /// </summary>
@@ -21,8 +14,8 @@ public sealed class Step6_Responsible_AI(ITestOutputHelper output) : BaseTest(ou
     public async Task RunAsync()
     {
         // Create a kernel with OpenAI chat completion
-        var builder = Kernel.CreateBuilder().
-            AddOpenAIChatCompletion(
+        var builder = Kernel.CreateBuilder()
+            .AddOpenAIChatCompletion(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey);
 
@@ -42,12 +35,9 @@ public sealed class Step6_Responsible_AI(ITestOutputHelper output) : BaseTest(ou
         // Output: Sorry, but I can't assist with that.
     }
 
-
     private sealed class PromptFilter(ITestOutputHelper output) : IPromptRenderFilter
     {
-
         private readonly ITestOutputHelper _output = output;
-
 
         /// <summary>
         /// Method which is called asynchronously before prompt rendering.
@@ -67,7 +57,5 @@ public sealed class Step6_Responsible_AI(ITestOutputHelper output) : BaseTest(ou
 
             this._output.WriteLine(context.RenderedPrompt);
         }
-
     }
-
 }

@@ -1,16 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel;
-
+using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Base class with data related to prompt rendering.
 /// </summary>
+[Experimental("SKEXP0001")]
+[Obsolete("This class is deprecated in favor of PromptRenderContext class, which is used in IPromptRenderFilter interface.")]
 public abstract class PromptFilterContext
 {
-
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptFilterContext"/> class.
     /// </summary>
@@ -22,11 +24,10 @@ public abstract class PromptFilterContext
         Verify.NotNull(function);
         Verify.NotNull(arguments);
 
-        Function = function;
-        Arguments = arguments;
-        Metadata = metadata;
+        this.Function = function;
+        this.Arguments = arguments;
+        this.Metadata = metadata;
     }
-
 
     /// <summary>
     /// Gets the <see cref="KernelFunction"/> with which this filter is associated.
@@ -42,5 +43,4 @@ public abstract class PromptFilterContext
     /// Gets a dictionary of metadata associated with the operation.
     /// </summary>
     public IReadOnlyDictionary<string, object?>? Metadata { get; }
-
 }

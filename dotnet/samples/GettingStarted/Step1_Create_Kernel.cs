@@ -1,21 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace GettingStarted;
-
-using System.Threading.Tasks;
-using Examples;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Xunit;
-using Xunit.Abstractions;
 
+namespace GettingStarted;
 
 /// <summary>
 /// This example shows how to create and use a <see cref="Kernel"/>.
 /// </summary>
 public sealed class Step1_Create_Kernel(ITestOutputHelper output) : BaseTest(output)
 {
-
     /// <summary>
     /// Show how to create a <see cref="Kernel"/> and use it to execute prompts.
     /// </summary>
@@ -23,11 +17,11 @@ public sealed class Step1_Create_Kernel(ITestOutputHelper output) : BaseTest(out
     public async Task RunAsync()
     {
         // Create a kernel with OpenAI chat completion
-        Kernel kernel = Kernel.CreateBuilder().
-            AddOpenAIChatCompletion(
+        Kernel kernel = Kernel.CreateBuilder()
+            .AddOpenAIChatCompletion(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
-                apiKey: TestConfiguration.OpenAI.ApiKey).
-            Build();
+                apiKey: TestConfiguration.OpenAI.ApiKey)
+            .Build();
 
         // Example 1. Invoke the kernel with a prompt and display the result
         WriteLine(await kernel.InvokePromptAsync("What color is the sky?"));
@@ -55,5 +49,4 @@ public sealed class Step1_Create_Kernel(ITestOutputHelper output) : BaseTest(out
         arguments = new(new OpenAIPromptExecutionSettings { ResponseFormat = "json_object" }) { { "topic", "chocolate" } };
         WriteLine(await kernel.InvokePromptAsync("Create a recipe for a {{$topic}} cake in JSON format", arguments));
     }
-
 }

@@ -1,18 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 // <NecessaryPackages>
-// </NecessaryPackages>
-
-namespace Examples;
-
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Core;
-using Xunit;
-using Xunit.Abstractions;
+// </NecessaryPackages>
 
+namespace Examples;
 
 /// <summary>
 /// This example demonstrates how to interact with the kernel as described at
@@ -20,7 +15,6 @@ using Xunit.Abstractions;
 /// </summary>
 public class UsingTheKernel(ITestOutputHelper output) : BaseTest(output)
 {
-
     [Fact]
     public async Task RunAsync()
     {
@@ -39,12 +33,9 @@ public class UsingTheKernel(ITestOutputHelper output) : BaseTest(output)
 
         // Create a kernel with a logger and Azure OpenAI chat completion service
         // <KernelCreation>
-        var builder = Kernel.CreateBuilder().
-            AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey);
-
-        builder.Services.AddLogging(c => c.AddDebug().
-            SetMinimumLevel(LogLevel.Trace));
-
+        var builder = Kernel.CreateBuilder()
+                            .AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey);
+        builder.Services.AddLogging(c => c.AddDebug().SetMinimumLevel(LogLevel.Trace));
         builder.Plugins.AddFromType<TimePlugin>();
         builder.Plugins.AddFromPromptDirectory("./../../../Plugins/WriterPlugin");
         Kernel kernel = builder.Build();
@@ -62,9 +53,7 @@ public class UsingTheKernel(ITestOutputHelper output) : BaseTest(output)
         {
             { "input", currentTime }
         });
-
         WriteLine(poemResult);
         // </InvokeShortPoem>
     }
-
 }

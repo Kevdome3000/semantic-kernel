@@ -1,7 +1,6 @@
 ﻿# Microsoft.SemanticKernel.Connectors.MongoDB
 
-This connector uses [MongoDB Atlas Vector Search](https://www.mongodb.com/products/platform/atlas-vector-search) to
-implement Semantic Memory.
+This connector uses [MongoDB Atlas Vector Search](https://www.mongodb.com/products/platform/atlas-vector-search) to implement Semantic Memory.
 
 ## Quick Start
 
@@ -9,8 +8,7 @@ implement Semantic Memory.
 
 2. Create a [collection](https://www.mongodb.com/docs/atlas/atlas-ui/collections/)
 
-3. Create [Vector Search Index](https://www.mongodb.com/docs/atlas/atlas-vector-search/vector-search-overview/) for the
-   collection. The index has to be defined on a field called `embedding`. For example:
+3. Create [Vector Search Index](https://www.mongodb.com/docs/atlas/atlas-vector-search/vector-search-overview/) for the collection. The index has to be defined on a field called `embedding`. For example:
 
 ```
 {
@@ -27,9 +25,7 @@ implement Semantic Memory.
 ```
 
 4. Create the MongoDB memory store
-   > See [Example 14](../../../samples/KernelSyntaxExamples/Example14_SemanticMemory.cs)
-   and [Example 15](../../../samples/KernelSyntaxExamples/Example15_TextMemoryPlugin.cs) for more memory usage examples
-   with the kernel.
+   > See [Example 14](../../../samples/Concepts/Memory/SemanticTextMemory_Building.cs) and [Example 15](../../../samples/Concepts/Memory/TextMemoryPlugin_MultipleMemoryStore.cs) for more memory usage examples with the kernel.
 
 ```csharp
 var connectionString = "MONGODB ATLAS CONNECTION STRING"

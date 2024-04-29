@@ -1,19 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Examples;
-
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
-using Xunit;
-using Xunit.Abstractions;
 
+namespace Examples;
 
 /// <summary>
 /// This example demonstrates how to serialize prompts as described at
@@ -21,7 +14,6 @@ using Xunit.Abstractions;
 /// </summary>
 public class SerializingPrompts : BaseTest
 {
-
     [Fact]
     public async Task RunAsync()
     {
@@ -38,9 +30,8 @@ public class SerializingPrompts : BaseTest
             return;
         }
 
-        var builder = Kernel.CreateBuilder().
-            AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey);
-
+        var builder = Kernel.CreateBuilder()
+                            .AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey);
         builder.Plugins.AddFromType<ConversationSummaryPlugin>();
         Kernel kernel = builder.Build();
 
@@ -48,9 +39,7 @@ public class SerializingPrompts : BaseTest
         var prompts = kernel.CreatePluginFromPromptDirectory("./../../../Plugins/Prompts");
 
         // Load prompt from YAML
-        using StreamReader reader = new(Assembly.GetExecutingAssembly().
-            GetManifestResourceStream("Resources.getIntent.prompt.yaml")!);
-
+        using StreamReader reader = new(Assembly.GetExecutingAssembly().GetManifestResourceStream("Resources.getIntent.prompt.yaml")!);
         KernelFunction getIntent = kernel.CreateFunctionFromPromptYaml(
             await reader.ReadToEndAsync(),
             promptTemplateFactory: new HandlebarsPromptTemplateFactory()
@@ -80,7 +69,6 @@ public class SerializingPrompts : BaseTest
         // Start the chat loop
         Write("User > ");
         string? userInput;
-
         while ((userInput = ReadLine()) != null)
         {
             // Invoke handlebars prompt
@@ -113,18 +101,15 @@ public class SerializingPrompts : BaseTest
 
             // Stream the response
             string message = "";
-
             await foreach (var chunk in chatResult)
             {
                 if (chunk.Role.HasValue)
                 {
                     Write(chunk.Role + " > ");
                 }
-
                 message += chunk;
                 Write(chunk);
             }
-
             WriteLine();
 
             // Append to history
@@ -136,14 +121,10 @@ public class SerializingPrompts : BaseTest
         }
     }
 
-
     public SerializingPrompts(ITestOutputHelper output) : base(output)
     {
-        SimulatedInputText =
-        [
+        SimulatedInputText = [
             "Can you send an approval to the marketing team?",
-            "That is all, thanks."
-        ];
+            "That is all, thanks."];
     }
-
 }

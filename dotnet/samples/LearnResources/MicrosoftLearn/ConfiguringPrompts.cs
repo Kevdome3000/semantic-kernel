@@ -1,16 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Examples;
-
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Core;
-using Xunit;
-using Xunit.Abstractions;
 
+namespace Examples;
 
 /// <summary>
 /// This example demonstrates how to configure prompts as described at
@@ -18,7 +13,6 @@ using Xunit.Abstractions;
 /// </summary>
 public class ConfiguringPrompts : BaseTest
 {
-
     [Fact]
     public async Task RunAsync()
     {
@@ -35,9 +29,8 @@ public class ConfiguringPrompts : BaseTest
             return;
         }
 
-        var builder = Kernel.CreateBuilder().
-            AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey);
-
+        var builder = Kernel.CreateBuilder()
+                            .AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey);
         builder.Plugins.AddFromType<ConversationSummaryPlugin>();
         Kernel kernel = builder.Build();
 
@@ -95,7 +88,6 @@ public class ConfiguringPrompts : BaseTest
         // Start the chat loop
         Write("User > ");
         string? userInput;
-
         while ((userInput = ReadLine()) != null)
         {
             // Get chat response
@@ -110,18 +102,15 @@ public class ConfiguringPrompts : BaseTest
 
             // Stream the response
             string message = "";
-
             await foreach (var chunk in chatResult)
             {
                 if (chunk.Role.HasValue)
                 {
                     Write(chunk.Role + " > ");
                 }
-
                 message += chunk;
                 Write(chunk);
             }
-
             WriteLine();
 
             // Append to history
@@ -133,10 +122,8 @@ public class ConfiguringPrompts : BaseTest
         }
     }
 
-
     public ConfiguringPrompts(ITestOutputHelper output) : base(output)
     {
         SimulatedInputText = ["Who were the Vikings?"];
     }
-
 }

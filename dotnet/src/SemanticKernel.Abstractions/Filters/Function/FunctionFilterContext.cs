@@ -1,16 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel;
-
+using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Base class with data related to function invocation.
 /// </summary>
+[Experimental("SKEXP0001")]
+[Obsolete("This class is deprecated in favor of FunctionInvocationContext class, which is used in IFunctionInvocationFilter interface.")]
 public abstract class FunctionFilterContext
 {
-
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionFilterContext"/> class.
     /// </summary>
@@ -22,11 +24,10 @@ public abstract class FunctionFilterContext
         Verify.NotNull(function);
         Verify.NotNull(arguments);
 
-        Function = function;
-        Arguments = arguments;
-        Metadata = metadata;
+        this.Function = function;
+        this.Arguments = arguments;
+        this.Metadata = metadata;
     }
-
 
     /// <summary>
     /// Gets the <see cref="KernelFunction"/> with which this filter is associated.
@@ -54,5 +55,4 @@ public abstract class FunctionFilterContext
     /// be considered by the component that triggers filter.
     /// </remarks>
     public bool Cancel { get; set; }
-
 }

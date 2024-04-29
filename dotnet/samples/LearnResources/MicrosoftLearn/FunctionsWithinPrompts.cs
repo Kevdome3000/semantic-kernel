@@ -1,17 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Examples;
-
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
-using Xunit;
-using Xunit.Abstractions;
 
+namespace Examples;
 
 /// <summary>
 /// This example demonstrates how to call functions within prompts as described at
@@ -19,7 +13,6 @@ using Xunit.Abstractions;
 /// </summary>
 public class FunctionsWithinPrompts : BaseTest
 {
-
     [Fact]
     public async Task RunAsync()
     {
@@ -37,9 +30,8 @@ public class FunctionsWithinPrompts : BaseTest
         }
 
         // <KernelCreation>
-        var builder = Kernel.CreateBuilder().
-            AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey);
-
+        var builder = Kernel.CreateBuilder()
+                            .AddAzureOpenAIChatCompletion(modelId, endpoint, apiKey);
         builder.Plugins.AddFromType<ConversationSummaryPlugin>();
         Kernel kernel = builder.Build();
         // </KernelCreation>
@@ -67,21 +59,21 @@ public class FunctionsWithinPrompts : BaseTest
             new()
             {
                 Template = """
-                           <message role="system">Instructions: What is the intent of this request?
-                           Do not explain the reasoning, just reply back with the intent. If you are unsure, reply with {{choices[0]}}.
-                           Choices: {{choices}}.</message>
+                            <message role="system">Instructions: What is the intent of this request?
+                            Do not explain the reasoning, just reply back with the intent. If you are unsure, reply with {{choices[0]}}.
+                            Choices: {{choices}}.</message>
 
-                           {{#each fewShotExamples}}
-                               {{#each this}}
-                                   <message role="{{role}}">{{content}}</message>
-                               {{/each}}
-                           {{/each}}
+                            {{#each fewShotExamples}}
+                                {{#each this}}
+                                    <message role="{{role}}">{{content}}</message>
+                                {{/each}}
+                            {{/each}}
 
-                           {{ConversationSummaryPlugin-SummarizeConversation history}}
+                            {{ConversationSummaryPlugin-SummarizeConversation history}}
 
-                           <message role="user">{{request}}</message>
-                           <message role="system">Intent:</message>
-                           """,
+                            <message role="user">{{request}}</message>
+                            <message role="system">Intent:</message>
+                            """,
                 TemplateFormat = "handlebars"
             },
             new HandlebarsPromptTemplateFactory()
@@ -91,7 +83,7 @@ public class FunctionsWithinPrompts : BaseTest
         // Create a Semantic Kernel template for chat
         // <FunctionFromPrompt>
         var chat = kernel.CreateFunctionFromPrompt(
-            @"{{ConversationSummaryPlugin.SummarizeConversation $history}}
+@"{{ConversationSummaryPlugin.SummarizeConversation $history}}
 User: {{$request}}
 Assistant: "
         );
@@ -138,18 +130,15 @@ Assistant: "
 
             // Stream the response
             string message = "";
-
             await foreach (var chunk in chatResult)
             {
                 if (chunk.Role.HasValue)
                 {
                     Write(chunk.Role + " > ");
                 }
-
                 message += chunk;
                 Write(chunk);
             }
-
             WriteLine();
 
             // Append to history
@@ -160,14 +149,10 @@ Assistant: "
         // </Chat>
     }
 
-
     public FunctionsWithinPrompts(ITestOutputHelper output) : base(output)
     {
-        SimulatedInputText =
-        [
+        SimulatedInputText = [
             "Can you send an approval to the marketing team?",
-            "That is all, thanks."
-        ];
+            "That is all, thanks."];
     }
-
 }
