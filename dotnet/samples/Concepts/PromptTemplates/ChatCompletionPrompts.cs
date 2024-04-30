@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Examples;
+namespace PromptTemplates;
 
 using Microsoft.SemanticKernel;
 
@@ -26,22 +26,22 @@ public class ChatCompletionPrompts(ITestOutputHelper output) : BaseTest(output)
         var chatSemanticFunction = kernel.CreateFunctionFromPrompt(ChatPrompt);
         var chatPromptResult = await kernel.InvokeAsync(chatSemanticFunction);
 
-        WriteLine("Chat Prompt:");
-        WriteLine(ChatPrompt);
-        WriteLine("Chat Prompt Result:");
-        WriteLine(chatPromptResult);
+        Console.WriteLine("Chat Prompt:");
+        Console.WriteLine(ChatPrompt);
+        Console.WriteLine("Chat Prompt Result:");
+        Console.WriteLine(chatPromptResult);
 
-        WriteLine("Chat Prompt Streaming Result:");
+        Console.WriteLine("Chat Prompt Streaming Result:");
         string completeMessage = string.Empty;
 
         await foreach (var message in kernel.InvokeStreamingAsync<string>(chatSemanticFunction))
         {
             completeMessage += message;
-            Write(message);
+            Console.Write(message);
         }
 
-        WriteLine("---------- Streamed Content ----------");
-        WriteLine(completeMessage);
+        Console.WriteLine("---------- Streamed Content ----------");
+        Console.WriteLine(completeMessage);
 
         /*
         Chat Prompt:

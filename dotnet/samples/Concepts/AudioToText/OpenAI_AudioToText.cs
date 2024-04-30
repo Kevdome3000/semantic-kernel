@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Examples;
+namespace AudioToText;
 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AudioToText;
@@ -52,7 +52,7 @@ public sealed class OpenAI_AudioToText(ITestOutputHelper output) : BaseTest(outp
         var textContent = await audioToTextService.GetTextContentAsync(audioContent, executionSettings);
 
         // Output the transcribed text
-        this.WriteLine(textContent.Text);
+        Console.WriteLine(textContent.Text);
     }
 
 }

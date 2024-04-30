@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Examples;
+namespace ChatCompletion;
 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -31,7 +31,7 @@ public class OpenAI_ChatCompletionWithVision(ITestOutputHelper output) : BaseTes
 
         var reply = await chatCompletionService.GetChatMessageContentAsync(chatHistory);
 
-        WriteLine(reply.Content);
+        Console.WriteLine(reply.Content);
     }
 
 }

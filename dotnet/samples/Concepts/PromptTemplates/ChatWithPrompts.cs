@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Examples;
+namespace PromptTemplates;
 
 using System.Globalization;
 using Microsoft.SemanticKernel;
@@ -38,7 +38,7 @@ public class ChatWithPrompts(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public async Task RunAsync()
     {
-        WriteLine("======== Chat with prompts ========");
+        Console.WriteLine("======== Chat with prompts ========");
 
         /* Load 3 files:
          * - 30-system-prompt.txt: the system prompt, used to initialize the chat session.
@@ -81,14 +81,14 @@ public class ChatWithPrompts(ITestOutputHelper output) : BaseTest(output)
         string systemMessage = await promptTemplateFactory.Create(new PromptTemplateConfig(systemPromptTemplate)).
             RenderAsync(kernel, arguments);
 
-        WriteLine($"------------------------------------\n{systemMessage}");
+        Console.WriteLine($"------------------------------------\n{systemMessage}");
 
         // Render the user prompt. This string is the query sent by the user
         // This contains the user request, ie "extract locations as a bullet point list"
         string userMessage = await promptTemplateFactory.Create(new PromptTemplateConfig(userPromptTemplate)).
             RenderAsync(kernel, arguments);
 
-        WriteLine($"------------------------------------\n{userMessage}");
+        Console.WriteLine($"------------------------------------\n{userMessage}");
 
         // Client used to request answers
         var chatCompletion = kernel.GetRequiredService<IChatCompletionService>();
@@ -103,7 +103,7 @@ public class ChatWithPrompts(ITestOutputHelper output) : BaseTest(output)
 
         // Finally, get the response from AI
         var answer = await chatCompletion.GetChatMessageContentAsync(chatHistory);
-        WriteLine($"------------------------------------\n{answer}");
+        Console.WriteLine($"------------------------------------\n{answer}");
 
         /*
 

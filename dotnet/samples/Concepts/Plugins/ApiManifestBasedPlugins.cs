@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Examples;
+namespace Plugins;
 
 using System.Net.Http.Headers;
 using System.Web;
@@ -50,9 +50,9 @@ public class ApiManifestBasedPlugins(ITestOutputHelper output) : BaseTest(output
         await AddApiManifestPluginsAsync(kernel, pluginsToLoad);
 
         var result = await kernel.InvokeAsync(pluginToTest, functionToTest, arguments);
-        this.WriteLine("--------------------");
-        this.WriteLine($"\nResult:\n{result}\n");
-        this.WriteLine("--------------------");
+        Console.WriteLine("--------------------");
+        Console.WriteLine($"\nResult:\n{result}\n");
+        Console.WriteLine("--------------------");
     }
 
 
@@ -62,11 +62,11 @@ public class ApiManifestBasedPlugins(ITestOutputHelper output) : BaseTest(output
         KernelArguments? arguments,
         params string[] pluginsToLoad)
     {
-        this.WriteLine();
-        this.WriteLine("======== [ApiManifest Plugins Sample] ========");
-        this.WriteLine($"======== Loading Plugins: {string.Join(" ", pluginsToLoad)} ========");
-        this.WriteLine($"======== Calling Plugin Function: {pluginToTest}.{functionToTest} with parameters {arguments?.Select(x => x.Key + " = " + x.Value).Aggregate((x, y) => x + ", " + y)} ========");
-        this.WriteLine();
+        Console.WriteLine();
+        Console.WriteLine("======== [ApiManifest Plugins Sample] ========");
+        Console.WriteLine($"======== Loading Plugins: {string.Join(" ", pluginsToLoad)} ========");
+        Console.WriteLine($"======== Calling Plugin Function: {pluginToTest}.{functionToTest} with parameters {arguments?.Select(x => x.Key + " = " + x.Value).Aggregate((x, y) => x + ", " + y)} ========");
+        Console.WriteLine();
     }
 
 
@@ -127,7 +127,7 @@ public class ApiManifestBasedPlugins(ITestOutputHelper output) : BaseTest(output
                             apiManifestPluginParameters).
                         ConfigureAwait(false);
 
-                this.WriteLine($">> {pluginName} is created.");
+                Console.WriteLine($">> {pluginName} is created.");
 #pragma warning restore SKEXP0040
 #pragma warning restore SKEXP0043
             }

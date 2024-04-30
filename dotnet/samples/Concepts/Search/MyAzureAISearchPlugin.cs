@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Examples;
+namespace Search;
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -52,7 +52,7 @@ public class AzureAISearchPlugin(ITestOutputHelper output) : BaseTest(output)
         var result1 = await kernel.InvokePromptAsync(
             "{{search 'David' collection='index-1'}} Who is David?");
 
-        WriteLine(result1);
+        Console.WriteLine(result1);
 
         // Query with index name and search fields.
         // Search fields are optional. Since one index may contain multiple searchable fields,
@@ -64,7 +64,7 @@ public class AzureAISearchPlugin(ITestOutputHelper output) : BaseTest(output)
             "{{search 'Story' collection='index-2' searchFields=$searchFields}} Who is Elara?",
             arguments);
 
-        WriteLine(result2);
+        Console.WriteLine(result2);
     }
 
 
@@ -177,7 +177,7 @@ public class AzureAISearchPlugin(ITestOutputHelper output) : BaseTest(output)
     /// </summary>
     private sealed class MyAzureAISearchPlugin(
         ITextEmbeddingGenerationService textEmbeddingGenerationService,
-        Examples.AzureAISearchPlugin.IAzureAISearchService searchService)
+        AzureAISearchPlugin.IAzureAISearchService searchService)
     {
 
         private readonly ITextEmbeddingGenerationService _textEmbeddingGenerationService = textEmbeddingGenerationService;

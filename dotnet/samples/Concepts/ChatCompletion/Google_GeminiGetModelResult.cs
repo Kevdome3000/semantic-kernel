@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Examples;
+namespace ChatCompletion;
 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Google;
@@ -15,7 +15,7 @@ public sealed class Google_GeminiGetModelResult(ITestOutputHelper output) : Base
     [Fact]
     public async Task GetTokenUsageMetadataAsync()
     {
-        WriteLine("======== Inline Function Definition + Invocation ========");
+        Console.WriteLine("======== Inline Function Definition + Invocation ========");
 
         // Create kernel
         Kernel kernel = Kernel.CreateBuilder().
@@ -56,8 +56,8 @@ public sealed class Google_GeminiGetModelResult(ITestOutputHelper output) : Base
 
         // Display results
         var geminiMetadata = result.Metadata as GeminiMetadata;
-        WriteLine(result.GetValue<string>());
-        WriteLine(geminiMetadata?.AsJson());
+        Console.WriteLine(result.GetValue<string>());
+        Console.WriteLine(geminiMetadata?.AsJson());
     }
 
 }

@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Examples;
+namespace PromptTemplates;
 
 using Microsoft.SemanticKernel;
 
@@ -14,7 +14,7 @@ public class PromptFunctionsWithChatGPT(ITestOutputHelper output) : BaseTest(out
     [Fact]
     public async Task RunAsync()
     {
-        WriteLine("======== Using Chat GPT model for text generation ========");
+        Console.WriteLine("======== Using Chat GPT model for text generation ========");
 
         Kernel kernel = Kernel.CreateBuilder().
             AddAzureOpenAIChatCompletion(
@@ -28,7 +28,7 @@ public class PromptFunctionsWithChatGPT(ITestOutputHelper output) : BaseTest(out
             "List the two planets closest to '{{$input}}', excluding moons, using bullet points.");
 
         var result = await func.InvokeAsync(kernel, new() { ["input"] = "Jupiter" });
-        WriteLine(result.GetValue<string>());
+        Console.WriteLine(result.GetValue<string>());
 
         /*
         Output:

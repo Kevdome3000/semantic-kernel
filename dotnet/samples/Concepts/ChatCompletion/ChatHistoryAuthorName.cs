@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Examples;
+namespace ChatCompletion;
 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -36,7 +36,7 @@ public class ChatHistoryAuthorName(ITestOutputHelper output) : BaseTest(output)
     [InlineData(true)]
     public async Task CompletionIdentityAsync(bool withName)
     {
-        WriteLine("======== Completion Identity ========");
+        Console.WriteLine("======== Completion Identity ========");
 
         IChatCompletionService chatService = CreateCompletionService();
 
@@ -55,7 +55,7 @@ public class ChatHistoryAuthorName(ITestOutputHelper output) : BaseTest(output)
     [InlineData(true)]
     public async Task StreamingIdentityAsync(bool withName)
     {
-        WriteLine("======== Completion Identity ========");
+        Console.WriteLine("======== Completion Identity ========");
 
         IChatCompletionService chatService = CreateCompletionService();
 
@@ -111,7 +111,7 @@ public class ChatHistoryAuthorName(ITestOutputHelper output) : BaseTest(output)
     {
         foreach (var message in messages)
         {
-            WriteLine($"# {message.Role}:{message.AuthorName ?? "?"} - {message.Content ?? "-"}");
+            Console.WriteLine($"# {message.Role}:{message.AuthorName ?? "?"} - {message.Content ?? "-"}");
         }
 
         history?.AddRange(messages);

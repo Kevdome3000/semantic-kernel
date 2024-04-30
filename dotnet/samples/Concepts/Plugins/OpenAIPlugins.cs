@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Examples;
+namespace Plugins;
 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
@@ -31,7 +31,7 @@ public class OpenAIPlugins(ITestOutputHelper output) : BaseTest(output)
 
         var result = functionResult.GetValue<RestApiOperationResponse>();
 
-        WriteLine($"Function execution result: {result?.Content}");
+        Console.WriteLine($"Function execution result: {result?.Content}");
     }
 
 
@@ -55,7 +55,7 @@ public class OpenAIPlugins(ITestOutputHelper output) : BaseTest(output)
 
         var result = functionResult.GetValue<RestApiOperationResponse>();
 
-        WriteLine($"Function execution result: {result?.Content}");
+        Console.WriteLine($"Function execution result: {result?.Content}");
     }
 
 }

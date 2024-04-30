@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Examples;
+namespace TextGeneration;
 
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.TextGeneration;
@@ -22,7 +22,7 @@ public class OpenAI_TextGenerationStreaming(ITestOutputHelper output) : BaseTest
     [Fact]
     public Task AzureOpenAITextGenerationStreamAsync()
     {
-        WriteLine("======== Azure OpenAI - Text Generation - Raw Streaming ========");
+        Console.WriteLine("======== Azure OpenAI - Text Generation - Raw Streaming ========");
 
         var textGeneration = new AzureOpenAITextGenerationService(
             deploymentName: TestConfiguration.AzureOpenAI.DeploymentName,
@@ -37,7 +37,7 @@ public class OpenAI_TextGenerationStreaming(ITestOutputHelper output) : BaseTest
     [Fact]
     public Task OpenAITextGenerationStreamAsync()
     {
-        WriteLine("======== Open AI - Text Generation - Raw Streaming ========");
+        Console.WriteLine("======== Open AI - Text Generation - Raw Streaming ========");
 
         var textGeneration = new OpenAITextGenerationService("gpt-3.5-turbo-instruct", TestConfiguration.OpenAI.ApiKey);
 
@@ -58,14 +58,14 @@ public class OpenAI_TextGenerationStreaming(ITestOutputHelper output) : BaseTest
 
         var prompt = "Write one paragraph why AI is awesome";
 
-        WriteLine("Prompt: " + prompt);
+        Console.WriteLine("Prompt: " + prompt);
 
         await foreach (var content in textGeneration.GetStreamingTextContentsAsync(prompt, executionSettings))
         {
-            Write(content);
+            Console.Write(content);
         }
 
-        WriteLine();
+        Console.WriteLine();
     }
 
 }

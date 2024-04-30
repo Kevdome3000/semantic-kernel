@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Examples;
+namespace Agents;
 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -100,7 +100,7 @@ public class Legacy_ChatCompletionAgent(ITestOutputHelper output) : BaseTest(out
 
     private string PrintPrompt(string prompt)
     {
-        this.WriteLine($"Prompt: {prompt}");
+        Console.WriteLine($"Prompt: {prompt}");
 
         return prompt;
     }
@@ -110,12 +110,12 @@ public class Legacy_ChatCompletionAgent(ITestOutputHelper output) : BaseTest(out
     {
         foreach (var message in messages)
         {
-            this.WriteLine($"------------------------------- {message.Role} ------------------------------");
-            this.WriteLine(message.Content);
-            this.WriteLine();
+            Console.WriteLine($"------------------------------- {message.Role} ------------------------------");
+            Console.WriteLine(message.Content);
+            Console.WriteLine();
         }
 
-        this.WriteLine();
+        Console.WriteLine();
     }
 
 

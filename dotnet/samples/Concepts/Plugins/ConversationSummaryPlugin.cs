@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Examples;
+namespace Plugins;
 
 using Microsoft.SemanticKernel;
 using xRetry;
@@ -129,7 +129,7 @@ Jane: Goodbye!
 
     private async Task ConversationSummaryPluginAsync()
     {
-        WriteLine("======== SamplePlugins - Conversation Summary Plugin - Summarize ========");
+        Console.WriteLine("======== SamplePlugins - Conversation Summary Plugin - Summarize ========");
         Kernel kernel = InitializeKernel();
 
         KernelPlugin conversationSummaryPlugin = kernel.ImportPluginFromType<Microsoft.SemanticKernel.Plugins.Core.ConversationSummaryPlugin>();
@@ -137,14 +137,14 @@ Jane: Goodbye!
         FunctionResult summary = await kernel.InvokeAsync(
             conversationSummaryPlugin["SummarizeConversation"], new() { ["input"] = ChatTranscript });
 
-        WriteLine("Generated Summary:");
-        WriteLine(summary.GetValue<string>());
+        Console.WriteLine("Generated Summary:");
+        Console.WriteLine(summary.GetValue<string>());
     }
 
 
     private async Task GetConversationActionItemsAsync()
     {
-        WriteLine("======== SamplePlugins - Conversation Summary Plugin - Action Items ========");
+        Console.WriteLine("======== SamplePlugins - Conversation Summary Plugin - Action Items ========");
         Kernel kernel = InitializeKernel();
 
         KernelPlugin conversationSummary = kernel.ImportPluginFromType<Microsoft.SemanticKernel.Plugins.Core.ConversationSummaryPlugin>();
@@ -152,14 +152,14 @@ Jane: Goodbye!
         FunctionResult summary = await kernel.InvokeAsync(
             conversationSummary["GetConversationActionItems"], new() { ["input"] = ChatTranscript });
 
-        WriteLine("Generated Action Items:");
-        WriteLine(summary.GetValue<string>());
+        Console.WriteLine("Generated Action Items:");
+        Console.WriteLine(summary.GetValue<string>());
     }
 
 
     private async Task GetConversationTopicsAsync()
     {
-        WriteLine("======== SamplePlugins - Conversation Summary Plugin - Topics ========");
+        Console.WriteLine("======== SamplePlugins - Conversation Summary Plugin - Topics ========");
         Kernel kernel = InitializeKernel();
 
         KernelPlugin conversationSummary = kernel.ImportPluginFromType<Microsoft.SemanticKernel.Plugins.Core.ConversationSummaryPlugin>();
@@ -167,8 +167,8 @@ Jane: Goodbye!
         FunctionResult summary = await kernel.InvokeAsync(
             conversationSummary["GetConversationTopics"], new() { ["input"] = ChatTranscript });
 
-        WriteLine("Generated Topics:");
-        WriteLine(summary.GetValue<string>());
+        Console.WriteLine("Generated Topics:");
+        Console.WriteLine(summary.GetValue<string>());
     }
 
 

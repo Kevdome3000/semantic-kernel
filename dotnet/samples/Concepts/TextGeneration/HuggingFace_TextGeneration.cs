@@ -3,7 +3,7 @@
 #pragma warning disable format // Format item can be simplified
 #pragma warning disable CA1861 // Avoid constant arrays as arguments
 
-namespace Examples;
+namespace TextGeneration;
 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.HuggingFace;
@@ -24,7 +24,7 @@ public class HuggingFace_TextGeneration(ITestOutputHelper helper) : BaseTest(hel
     [Fact]
     public async Task RunInferenceApiExampleAsync()
     {
-        WriteLine("\n======== HuggingFace Inference API example ========\n");
+        Console.WriteLine("\n======== HuggingFace Inference API example ========\n");
 
         Kernel kernel = Kernel.CreateBuilder().
             AddHuggingFaceTextGeneration(
@@ -36,7 +36,7 @@ public class HuggingFace_TextGeneration(ITestOutputHelper helper) : BaseTest(hel
 
         var result = await kernel.InvokeAsync(questionAnswerFunction, new() { ["input"] = "What is New York?" });
 
-        WriteLine(result.GetValue<string>());
+        Console.WriteLine(result.GetValue<string>());
     }
 
 
@@ -51,7 +51,7 @@ public class HuggingFace_TextGeneration(ITestOutputHelper helper) : BaseTest(hel
     {
         string model = TestConfiguration.HuggingFace.ModelId ?? DefaultModel;
 
-        WriteLine($"\n======== HuggingFace {model} streaming example ========\n");
+        Console.WriteLine($"\n======== HuggingFace {model} streaming example ========\n");
 
         Kernel kernel = Kernel.CreateBuilder().
             AddHuggingFaceTextGeneration(
@@ -68,7 +68,7 @@ public class HuggingFace_TextGeneration(ITestOutputHelper helper) : BaseTest(hel
 
         await foreach (string text in kernel.InvokePromptStreamingAsync<string>("Question: {{$input}}; Answer:", new(settings) { ["input"] = "What is New York?" }))
         {
-            this.Write(text);
+            Console.Write(text);
         }
     }
 
@@ -87,7 +87,7 @@ public class HuggingFace_TextGeneration(ITestOutputHelper helper) : BaseTest(hel
     [Fact(Skip = "Requires local model or Huggingface Pro subscription")]
     public async Task RunLlamaExampleAsync()
     {
-        WriteLine("\n======== HuggingFace Llama 2 example ========\n");
+        Console.WriteLine("\n======== HuggingFace Llama 2 example ========\n");
 
         // HuggingFace Llama 2 model: https://huggingface.co/meta-llama/Llama-2-7b-hf
         const string Model = "meta-llama/Llama-2-7b-hf";
@@ -106,7 +106,7 @@ public class HuggingFace_TextGeneration(ITestOutputHelper helper) : BaseTest(hel
 
         var result = await kernel.InvokeAsync(questionAnswerFunction, new() { ["input"] = "What is New York?" });
 
-        WriteLine(result.GetValue<string>());
+        Console.WriteLine(result.GetValue<string>());
     }
 
 }

@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Examples;
+namespace Agents;
 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -41,7 +41,7 @@ public sealed class Legacy_AgentTools(ITestOutputHelper output) : BaseTest(outpu
     [Fact]
     public async Task RunCodeInterpreterToolAsync()
     {
-        this.WriteLine("======== Using CodeInterpreter tool ========");
+        Console.WriteLine("======== Using CodeInterpreter tool ========");
 
         var builder = CreateAgentBuilder().
             WithInstructions("Write only code to solve the given problem without comment.");
@@ -77,11 +77,11 @@ public sealed class Legacy_AgentTools(ITestOutputHelper output) : BaseTest(outpu
         // Set to "false" to associate fileId with agent definition.
         const bool PassFileOnRequest = false;
 
-        this.WriteLine("======== Using Retrieval tool ========");
+        Console.WriteLine("======== Using Retrieval tool ========");
 
         if (TestConfiguration.OpenAI.ApiKey == null)
         {
-            this.WriteLine("OpenAI apiKey not found. Skipping example.");
+            Console.WriteLine("OpenAI apiKey not found. Skipping example.");
 
             return;
         }
@@ -95,7 +95,7 @@ public sealed class Legacy_AgentTools(ITestOutputHelper output) : BaseTest(outpu
                 new OpenAIFileUploadExecutionSettings("travelinfo.txt", OpenAIFilePurpose.Assistants));
 
         var fileId = result.Id;
-        this.WriteLine($"! {fileId}");
+        Console.WriteLine($"! {fileId}");
 
         var defaultAgent = Track(await CreateAgentBuilder().
             BuildAsync());
@@ -148,10 +148,10 @@ public sealed class Legacy_AgentTools(ITestOutputHelper output) : BaseTest(outpu
 
         foreach (var question in questions)
         {
-            this.WriteLine("\nDEFAULT AGENT:");
+            Console.WriteLine("\nDEFAULT AGENT:");
             await InvokeAgentAsync(defaultAgent, question);
 
-            this.WriteLine("\nTOOL ENABLED AGENT:");
+            Console.WriteLine("\nTOOL ENABLED AGENT:");
             await InvokeAgentAsync(enabledAgent, question);
         }
 
@@ -166,20 +166,20 @@ public sealed class Legacy_AgentTools(ITestOutputHelper output) : BaseTest(outpu
                     content = content.Replace(annotation.Label, string.Empty, StringComparison.Ordinal);
                 }
 
-                this.WriteLine($"# {message.Role}: {content}");
+                Console.WriteLine($"# {message.Role}: {content}");
 
                 if (message.Annotations.Count > 0)
                 {
-                    this.WriteLine("\n# files:");
+                    Console.WriteLine("\n# files:");
 
                     foreach (var annotation in message.Annotations)
                     {
-                        this.WriteLine($"* {annotation.FileId}");
+                        Console.WriteLine($"* {annotation.FileId}");
                     }
                 }
             }
 
-            this.WriteLine();
+            Console.WriteLine();
         }
     }
 

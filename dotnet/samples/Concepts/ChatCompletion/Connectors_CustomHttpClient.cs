@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Examples;
+namespace ChatCompletion;
 
 using Microsoft.SemanticKernel;
 

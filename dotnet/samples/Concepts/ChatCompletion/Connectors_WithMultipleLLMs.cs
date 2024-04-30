@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Examples;
+namespace ChatCompletion;
 
 using Microsoft.SemanticKernel;
 using xRetry;
@@ -36,7 +36,7 @@ public class Connectors_WithMultipleLLMs(ITestOutputHelper output) : BaseTest(ou
 
     private async Task RunByServiceIdAsync(Kernel kernel, string serviceId)
     {
-        WriteLine($"======== Service Id: {serviceId} ========");
+        Console.WriteLine($"======== Service Id: {serviceId} ========");
 
         var prompt = "Hello AI, what can you do for me?";
 
@@ -48,13 +48,13 @@ public class Connectors_WithMultipleLLMs(ITestOutputHelper output) : BaseTest(ou
         };
 
         var result = await kernel.InvokePromptAsync(prompt, arguments);
-        WriteLine(result.GetValue<string>());
+        Console.WriteLine(result.GetValue<string>());
     }
 
 
     private async Task RunByModelIdAsync(Kernel kernel, string modelId)
     {
-        WriteLine($"======== Model Id: {modelId} ========");
+        Console.WriteLine($"======== Model Id: {modelId} ========");
 
         var prompt = "Hello AI, what can you do for me?";
 
@@ -65,13 +65,13 @@ public class Connectors_WithMultipleLLMs(ITestOutputHelper output) : BaseTest(ou
                 ModelId = modelId
             }));
 
-        WriteLine(result.GetValue<string>());
+        Console.WriteLine(result.GetValue<string>());
     }
 
 
     private async Task RunByFirstModelIdAsync(Kernel kernel, params string[] modelIds)
     {
-        WriteLine($"======== Model Ids: {string.Join(", ", modelIds)} ========");
+        Console.WriteLine($"======== Model Ids: {string.Join(", ", modelIds)} ========");
 
         var prompt = "Hello AI, what can you do for me?";
 
@@ -87,7 +87,7 @@ public class Connectors_WithMultipleLLMs(ITestOutputHelper output) : BaseTest(ou
         var function = kernel.CreateFunctionFromPrompt(promptConfig);
 
         var result = await kernel.InvokeAsync(function);
-        WriteLine(result.GetValue<string>());
+        Console.WriteLine(result.GetValue<string>());
     }
 
 }

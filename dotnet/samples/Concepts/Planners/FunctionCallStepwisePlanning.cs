@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Examples;
+namespace Planners;
 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
@@ -33,7 +33,7 @@ public class FunctionCallStepwisePlanning(ITestOutputHelper output) : BaseTest(o
         foreach (var question in questions)
         {
             FunctionCallingStepwisePlannerResult result = await planner.ExecuteAsync(kernel, question);
-            WriteLine($"Q: {question}\nA: {result.FinalAnswer}");
+            Console.WriteLine($"Q: {question}\nA: {result.FinalAnswer}");
 
             // You can uncomment the line below to see the planner's process for completing the request.
             // Console.WriteLine($"Chat history:\n{System.Text.Json.JsonSerializer.Serialize(result.ChatHistory)}");

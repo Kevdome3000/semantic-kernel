@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Examples;
+namespace Plugins;
 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Grpc;
@@ -30,7 +30,7 @@ public class ImportPluginFromGrpc(ITestOutputHelper output) : BaseTest(output)
         // Run
         var result = await kernel.InvokeAsync(plugin["<operation-name>"], arguments);
 
-        WriteLine($"Plugin response: {result.GetValue<string>()}");
+        Console.WriteLine($"Plugin response: {result.GetValue<string>()}");
     }
 
 }

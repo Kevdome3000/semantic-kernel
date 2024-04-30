@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Examples;
+namespace ChatCompletion;
 
 using System.Text;
 using System.Text.Json;
@@ -45,18 +45,18 @@ public class ChatHistorySerialization(ITestOutputHelper output) : BaseTest(outpu
 
         var deserializedMessage = deserializedHistory!.Single();
 
-        WriteLine($"Content: {deserializedMessage.Content}");
-        WriteLine($"Role: {deserializedMessage.Role.Label}");
+        Console.WriteLine($"Content: {deserializedMessage.Content}");
+        Console.WriteLine($"Role: {deserializedMessage.Role.Label}");
 
-        WriteLine($"Text content: {(deserializedMessage.Items![0]! as TextContent)!.Text}");
+        Console.WriteLine($"Text content: {(deserializedMessage.Items![0]! as TextContent)!.Text}");
 
-        WriteLine($"Image content: {(deserializedMessage.Items![1]! as ImageContent)!.Uri}");
+        Console.WriteLine($"Image content: {(deserializedMessage.Items![1]! as ImageContent)!.Uri}");
 
-        WriteLine($"Binary content: {Encoding.UTF8.GetString((deserializedMessage.Items![2]! as BinaryContent)!.Content!.Value.Span)}");
+        Console.WriteLine($"Binary content: {Encoding.UTF8.GetString((deserializedMessage.Items![2]! as BinaryContent)!.Content!.Value.Span)}");
 
-        WriteLine($"Audio content: {Encoding.UTF8.GetString((deserializedMessage.Items![3]! as AudioContent)!.Data!.Value.Span)}");
+        Console.WriteLine($"Audio content: {Encoding.UTF8.GetString((deserializedMessage.Items![3]! as AudioContent)!.Data!.Value.Span)}");
 
-        WriteLine($"JSON:\n{chatHistoryJson}");
+        Console.WriteLine($"JSON:\n{chatHistoryJson}");
     }
 
 
@@ -90,13 +90,13 @@ public class ChatHistorySerialization(ITestOutputHelper output) : BaseTest(outpu
 
         var deserializedMessage = deserializedHistory!.Single();
 
-        WriteLine($"Content: {deserializedMessage.Content}");
-        WriteLine($"Role: {deserializedMessage.Role.Label}");
+        Console.WriteLine($"Content: {deserializedMessage.Content}");
+        Console.WriteLine($"Role: {deserializedMessage.Role.Label}");
 
-        WriteLine($"Text content: {(deserializedMessage.Items![0]! as TextContent)!.Text}");
+        Console.WriteLine($"Text content: {(deserializedMessage.Items![0]! as TextContent)!.Text}");
 
-        WriteLine($"Custom content: {(deserializedMessage.Items![1]! as CustomContent)!.Content}");
-        WriteLine($"JSON:\n{chatHistoryJson}");
+        Console.WriteLine($"Custom content: {(deserializedMessage.Items![1]! as CustomContent)!.Content}");
+        Console.WriteLine($"JSON:\n{chatHistoryJson}");
     }
 
 

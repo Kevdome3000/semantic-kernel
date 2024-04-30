@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Examples;
+namespace ChatCompletion;
 
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -13,7 +13,7 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
     [Fact]
     public Task OpenAIChatStreamSampleAsync()
     {
-        WriteLine("======== Open AI - ChatGPT Streaming ========");
+        Console.WriteLine("======== Open AI - ChatGPT Streaming ========");
 
         OpenAIChatCompletionService chatCompletionService = new(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
 
@@ -24,7 +24,7 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
     [Fact]
     public Task AzureOpenAIChatStreamSampleAsync()
     {
-        WriteLine("======== Azure Open AI - ChatGPT Streaming ========");
+        Console.WriteLine("======== Azure Open AI - ChatGPT Streaming ========");
 
         AzureOpenAIChatCompletionService chatCompletionService = new(
             deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
@@ -38,8 +38,8 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 
     private async Task StartStreamingChatAsync(IChatCompletionService chatCompletionService)
     {
-        WriteLine("Chat content:");
-        WriteLine("------------------------");
+        Console.WriteLine("Chat content:");
+        Console.WriteLine("------------------------");
 
         var chatHistory = new ChatHistory("You are a librarian, expert about books");
         await MessageOutputAsync(chatHistory);
@@ -69,18 +69,18 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
         {
             if (!roleWritten && chatUpdate.Role.HasValue)
             {
-                Write($"{chatUpdate.Role.Value}: {chatUpdate.Content}");
+                Console.Write($"{chatUpdate.Role.Value}: {chatUpdate.Content}");
                 roleWritten = true;
             }
 
             if (chatUpdate.Content is { Length: > 0 })
             {
                 fullMessage += chatUpdate.Content;
-                Write(chatUpdate.Content);
+                Console.Write(chatUpdate.Content);
             }
         }
 
-        WriteLine("\n------------------------");
+        Console.WriteLine("\n------------------------");
         chatHistory.AddMessage(authorRole, fullMessage);
     }
 
@@ -92,8 +92,8 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
     {
         var message = chatHistory.Last();
 
-        WriteLine($"{message.Role}: {message.Content}");
-        WriteLine("------------------------");
+        Console.WriteLine($"{message.Role}: {message.Content}");
+        Console.WriteLine("------------------------");
 
         return Task.CompletedTask;
     }

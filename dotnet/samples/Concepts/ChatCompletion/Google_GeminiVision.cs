@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Examples;
+namespace ChatCompletion;
 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -13,14 +13,14 @@ public sealed class Google_GeminiVision(ITestOutputHelper output) : BaseTest(out
     [Fact]
     public async Task GoogleAIAsync()
     {
-        this.WriteLine("============= Google AI - Gemini Chat Completion with vision =============");
+        Console.WriteLine("============= Google AI - Gemini Chat Completion with vision =============");
 
         string geminiApiKey = TestConfiguration.GoogleAI.ApiKey;
         string geminiModelId = "gemini-pro-vision";
 
         if (geminiApiKey is null)
         {
-            this.WriteLine("Gemini credentials not found. Skipping example.");
+            Console.WriteLine("Gemini credentials not found. Skipping example.");
 
             return;
         }
@@ -49,14 +49,14 @@ public sealed class Google_GeminiVision(ITestOutputHelper output) : BaseTest(out
 
         var reply = await chatCompletionService.GetChatMessageContentAsync(chatHistory);
 
-        WriteLine(reply.Content);
+        Console.WriteLine(reply.Content);
     }
 
 
     [Fact]
     public async Task VertexAIAsync()
     {
-        this.WriteLine("============= Vertex AI - Gemini Chat Completion with vision =============");
+        Console.WriteLine("============= Vertex AI - Gemini Chat Completion with vision =============");
 
         string geminiBearerKey = TestConfiguration.VertexAI.BearerKey;
         string geminiModelId = "gemini-pro-vision";
@@ -65,7 +65,7 @@ public sealed class Google_GeminiVision(ITestOutputHelper output) : BaseTest(out
 
         if (geminiBearerKey is null || geminiLocation is null || geminiProject is null)
         {
-            this.WriteLine("Gemini vertex ai credentials not found. Skipping example.");
+            Console.WriteLine("Gemini vertex ai credentials not found. Skipping example.");
 
             return;
         }
@@ -123,7 +123,7 @@ public sealed class Google_GeminiVision(ITestOutputHelper output) : BaseTest(out
 
         var reply = await chatCompletionService.GetChatMessageContentAsync(chatHistory);
 
-        WriteLine(reply.Content);
+        Console.WriteLine(reply.Content);
     }
 
 }

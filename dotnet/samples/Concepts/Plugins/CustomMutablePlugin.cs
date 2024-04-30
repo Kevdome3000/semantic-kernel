@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Examples;
+namespace Plugins;
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.SemanticKernel;
@@ -23,7 +23,7 @@ public class CustomMutablePlugin(ITestOutputHelper output) : BaseTest(output)
 
         var result = await kernel.InvokeAsync(kernel.Plugins["Plugin"]["Function"]);
 
-        WriteLine($"Result: {result}");
+        Console.WriteLine($"Result: {result}");
     }
 
 

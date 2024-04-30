@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Examples;
+namespace Memory;
 
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -24,9 +24,9 @@ public class SemanticTextMemory_Building(ITestOutputHelper output) : BaseTest(ou
     [Fact]
     public async Task RunAsync()
     {
-        WriteLine("==============================================================");
-        WriteLine("======== Semantic Memory using Azure AI Search ========");
-        WriteLine("==============================================================");
+        Console.WriteLine("==============================================================");
+        Console.WriteLine("======== Semantic Memory using Azure AI Search ========");
+        Console.WriteLine("==============================================================");
 
         /* This example leverages Azure AI Search to provide SK with Semantic Memory.
          *
@@ -40,9 +40,9 @@ public class SemanticTextMemory_Building(ITestOutputHelper output) : BaseTest(ou
 
         await RunExampleAsync(memoryWithACS);
 
-        WriteLine("====================================================");
-        WriteLine("======== Semantic Memory (volatile, in RAM) ========");
-        WriteLine("====================================================");
+        Console.WriteLine("====================================================");
+        Console.WriteLine("======== Semantic Memory (volatile, in RAM) ========");
+        Console.WriteLine("====================================================");
 
         /* You can build your own semantic memory combining an Embedding Generator
          * with a Memory storage that supports search by similarity (ie semantic search).
@@ -109,7 +109,7 @@ public class SemanticTextMemory_Building(ITestOutputHelper output) : BaseTest(ou
 
     private async Task SearchMemoryAsync(ISemanticTextMemory memory, string query)
     {
-        WriteLine("\nQuery: " + query + "\n");
+        Console.WriteLine("\nQuery: " + query + "\n");
 
         var memoryResults = memory.SearchAsync(MemoryCollectionName, query, limit: 2, minRelevanceScore: 0.5);
 
@@ -117,14 +117,14 @@ public class SemanticTextMemory_Building(ITestOutputHelper output) : BaseTest(ou
 
         await foreach (MemoryQueryResult memoryResult in memoryResults)
         {
-            WriteLine($"Result {++i}:");
-            WriteLine("  URL:     : " + memoryResult.Metadata.Id);
-            WriteLine("  Title    : " + memoryResult.Metadata.Description);
-            WriteLine("  Relevance: " + memoryResult.Relevance);
-            WriteLine();
+            Console.WriteLine($"Result {++i}:");
+            Console.WriteLine("  URL:     : " + memoryResult.Metadata.Id);
+            Console.WriteLine("  Title    : " + memoryResult.Metadata.Description);
+            Console.WriteLine("  Relevance: " + memoryResult.Relevance);
+            Console.WriteLine();
         }
 
-        WriteLine("----------------------");
+        Console.WriteLine("----------------------");
     }
 
 
@@ -138,7 +138,7 @@ public class SemanticTextMemory_Building(ITestOutputHelper output) : BaseTest(ou
          * care of creating and storing the index
          */
 
-        WriteLine("\nAdding some GitHub file URLs and their descriptions to the semantic memory.");
+        Console.WriteLine("\nAdding some GitHub file URLs and their descriptions to the semantic memory.");
         var githubFiles = SampleData();
         var i = 0;
 
@@ -154,7 +154,7 @@ public class SemanticTextMemory_Building(ITestOutputHelper output) : BaseTest(ou
             Console.Write($" #{++i} saved.");
         }
 
-        WriteLine("\n----------------------");
+        Console.WriteLine("\n----------------------");
     }
 
 

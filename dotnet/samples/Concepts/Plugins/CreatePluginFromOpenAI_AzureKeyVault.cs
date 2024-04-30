@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Examples;
+namespace Plugins;
 
 using System.Net.Http.Headers;
 using System.Net.Mime;
@@ -102,7 +102,7 @@ public class CreatePluginFromOpenAI_AzureKeyVault(ITestOutputHelper output) : Ba
     }
 
 
-    private static async Task GetSecretFromAzureKeyVaultWithRetryAsync(Kernel kernel, KernelPlugin plugin)
+    private async Task GetSecretFromAzureKeyVaultWithRetryAsync(Kernel kernel, KernelPlugin plugin)
     {
         // Add arguments for required parameters, arguments for optional ones can be skipped.
         var arguments = new KernelArguments

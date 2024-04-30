@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Examples;
+namespace Functions;
 
 using System.ComponentModel;
 using System.Globalization;
@@ -15,7 +15,7 @@ public class MethodFunctions_Types(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public async Task RunAsync()
     {
-        this.WriteLine("======== Method Function types ========");
+        Console.WriteLine("======== Method Function types ========");
 
         var builder = Kernel.CreateBuilder().
             AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);

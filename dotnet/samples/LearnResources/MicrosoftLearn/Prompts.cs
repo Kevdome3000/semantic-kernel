@@ -15,7 +15,7 @@ public class Prompts(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public async Task RunAsync()
     {
-        WriteLine("======== Prompts ========");
+        Console.WriteLine("======== Prompts ========");
 
         string? endpoint = TestConfiguration.AzureOpenAI.Endpoint;
         string? modelId = TestConfiguration.AzureOpenAI.ChatModelId;
@@ -23,7 +23,7 @@ public class Prompts(ITestOutputHelper output) : BaseTest(output)
 
         if (endpoint is null || modelId is null || apiKey is null)
         {
-            WriteLine("Azure OpenAI credentials not found. Skipping example.");
+            Console.WriteLine("Azure OpenAI credentials not found. Skipping example.");
 
             return;
         }
@@ -41,15 +41,15 @@ public class Prompts(ITestOutputHelper output) : BaseTest(output)
 
         /* Uncomment this code to make this example interactive
         // <InitialPrompt>
-        Write("Your request: ");
+        Console.Write("Your request: ");
         string request = ReadLine()!;
         string prompt = $"What is the intent of this request? {request}";
         // </InitialPrompt>
         */
 
-        WriteLine("0.0 Initial prompt");
+        Console.WriteLine("0.0 Initial prompt");
         // <InvokeInitialPrompt>
-        WriteLine(await kernel.InvokePromptAsync(prompt));
+        Console.WriteLine(await kernel.InvokePromptAsync(prompt));
         // </InvokeInitialPrompt>
 
         // 1.0 Make the prompt more specific
@@ -59,8 +59,8 @@ public class Prompts(ITestOutputHelper output) : BaseTest(output)
         You can choose between SendEmail, SendMessage, CompleteTask, CreateDocument.";
         // </MoreSpecificPrompt>
 
-        WriteLine("1.0 Make the prompt more specific");
-        WriteLine(await kernel.InvokePromptAsync(prompt));
+        Console.WriteLine("1.0 Make the prompt more specific");
+        Console.WriteLine(await kernel.InvokePromptAsync(prompt));
 
         // 2.0 Add structure to the output with formatting
         //////////////////////////////////////////////////////////////////////////////////
@@ -71,8 +71,8 @@ public class Prompts(ITestOutputHelper output) : BaseTest(output)
         Intent: ";
         // </StructuredPrompt>
 
-        WriteLine("2.0 Add structure to the output with formatting");
-        WriteLine(await kernel.InvokePromptAsync(prompt));
+        Console.WriteLine("2.0 Add structure to the output with formatting");
+        Console.WriteLine(await kernel.InvokePromptAsync(prompt));
 
         // 2.1 Add structure to the output with formatting (using Markdown and JSON)
         //////////////////////////////////////////////////////////////////////////////////
@@ -107,8 +107,8 @@ public class Prompts(ITestOutputHelper output) : BaseTest(output)
                    """;
         // </FormattedPrompt>
 
-        WriteLine("2.1 Add structure to the output with formatting (using Markdown and JSON)");
-        WriteLine(await kernel.InvokePromptAsync(prompt));
+        Console.WriteLine("2.1 Add structure to the output with formatting (using Markdown and JSON)");
+        Console.WriteLine(await kernel.InvokePromptAsync(prompt));
 
         // 3.0 Provide examples with few-shot prompting
         //////////////////////////////////////////////////////////////////////////////////
@@ -126,8 +126,8 @@ User Input: {request}
 Intent: ";
         // </FewShotPrompt>
 
-        WriteLine("3.0 Provide examples with few-shot prompting");
-        WriteLine(await kernel.InvokePromptAsync(prompt));
+        Console.WriteLine("3.0 Provide examples with few-shot prompting");
+        Console.WriteLine(await kernel.InvokePromptAsync(prompt));
 
         // 4.0 Tell the AI what to do to avoid doing something wrong
         //////////////////////////////////////////////////////////////////////////////////
@@ -148,8 +148,8 @@ Intent: ";
                   """;
         // </AvoidPrompt>
 
-        WriteLine("4.0 Tell the AI what to do to avoid doing something wrong");
-        WriteLine(await kernel.InvokePromptAsync(prompt));
+        Console.WriteLine("4.0 Tell the AI what to do to avoid doing something wrong");
+        Console.WriteLine(await kernel.InvokePromptAsync(prompt));
 
         // 5.0 Provide context to the AI
         //////////////////////////////////////////////////////////////////////////////////
@@ -176,8 +176,8 @@ Intent: ";
                   """;
         // </ContextPrompt>
 
-        WriteLine("5.0 Provide context to the AI");
-        WriteLine(await kernel.InvokePromptAsync(prompt));
+        Console.WriteLine("5.0 Provide context to the AI");
+        Console.WriteLine(await kernel.InvokePromptAsync(prompt));
 
         // 6.0 Using message roles in chat completion prompts
         //////////////////////////////////////////////////////////////////////////////////
@@ -206,8 +206,8 @@ Intent: ";
                   """;
         // </RolePrompt>
 
-        WriteLine("6.0 Using message roles in chat completion prompts");
-        WriteLine(await kernel.InvokePromptAsync(prompt));
+        Console.WriteLine("6.0 Using message roles in chat completion prompts");
+        Console.WriteLine(await kernel.InvokePromptAsync(prompt));
 
         // 7.0 Give your AI words of encouragement
         //////////////////////////////////////////////////////////////////////////////////
@@ -237,8 +237,8 @@ Intent: ";
                   """;
         // </BonusPrompt>
 
-        WriteLine("7.0 Give your AI words of encouragement");
-        WriteLine(await kernel.InvokePromptAsync(prompt));
+        Console.WriteLine("7.0 Give your AI words of encouragement");
+        Console.WriteLine(await kernel.InvokePromptAsync(prompt));
     }
 
 }

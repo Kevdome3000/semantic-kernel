@@ -4,7 +4,7 @@
 // The easier way to instantiate the Semantic Kernel is to use KernelBuilder.
 // You can access the builder using Kernel.CreateBuilder().
 
-namespace Examples;
+namespace KernelExamples;
 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Core;

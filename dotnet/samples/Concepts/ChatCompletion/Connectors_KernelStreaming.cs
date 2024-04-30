@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Examples;
+namespace ChatCompletion;
 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -23,7 +23,7 @@ public class Connectors_KernelStreaming(ITestOutputHelper output) : BaseTest(out
 
         if (apiKey == null || chatDeploymentName == null || chatModelId == null || endpoint == null)
         {
-            WriteLine("Azure endpoint, apiKey, deploymentName or modelId not found. Skipping example.");
+            Console.WriteLine("Azure endpoint, apiKey, deploymentName or modelId not found. Skipping example.");
 
             return;
         }
@@ -41,7 +41,7 @@ public class Connectors_KernelStreaming(ITestOutputHelper output) : BaseTest(out
 
         var roleDisplayed = false;
 
-        WriteLine("\n===  Prompt Function - Streaming ===\n");
+        Console.WriteLine("\n===  Prompt Function - Streaming ===\n");
 
         string fullContent = string.Empty;
 
@@ -51,7 +51,7 @@ public class Connectors_KernelStreaming(ITestOutputHelper output) : BaseTest(out
             // You will be always able to know the type of the update by checking the Type property.
             if (!roleDisplayed && update.Role.HasValue)
             {
-                WriteLine($"Role: {update.Role}");
+                Console.WriteLine($"Role: {update.Role}");
                 fullContent += $"Role: {update.Role}\n";
                 roleDisplayed = true;
             }
@@ -59,12 +59,12 @@ public class Connectors_KernelStreaming(ITestOutputHelper output) : BaseTest(out
             if (update.Content is { Length: > 0 })
             {
                 fullContent += update.Content;
-                Write(update.Content);
+                Console.Write(update.Content);
             }
         }
 
-        WriteLine("\n------  Streamed Content ------\n");
-        WriteLine(fullContent);
+        Console.WriteLine("\n------  Streamed Content ------\n");
+        Console.WriteLine(fullContent);
     }
 
 }

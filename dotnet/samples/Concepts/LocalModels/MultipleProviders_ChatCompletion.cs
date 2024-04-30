@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Examples;
+namespace LocalModels;
 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -38,7 +38,7 @@ public class MultipleProviders_ChatCompletion(ITestOutputHelper output) : BaseTe
     [InlineData("LocalAI", "http://localhost:8080", "phi-2")]
     public async Task LocalModel_ExampleAsync(string messageAPIPlatform, string url, string modelId)
     {
-        WriteLine($"Example using local {messageAPIPlatform}");
+        Console.WriteLine($"Example using local {messageAPIPlatform}");
         // Setup Llama2 as the model in LM Studio UI.
 
         var kernel = Kernel.CreateBuilder().
@@ -60,7 +60,7 @@ public class MultipleProviders_ChatCompletion(ITestOutputHelper output) : BaseTe
         });
 
         var response = await kernel.InvokeAsync(mailFunction, new() { ["input"] = "Tell David that I'm going to finish the business plan by the end of the week." });
-        this.WriteLine(response);
+        Console.WriteLine(response);
     }
 
 
@@ -70,7 +70,7 @@ public class MultipleProviders_ChatCompletion(ITestOutputHelper output) : BaseTe
     [InlineData("LocalAI", "http://localhost:8080", "phi-2")]
     public async Task LocalModel_StreamingExampleAsync(string messageAPIPlatform, string url, string modelId)
     {
-        WriteLine($"Example using local {messageAPIPlatform}");
+        Console.WriteLine($"Example using local {messageAPIPlatform}");
 
         var kernel = Kernel.CreateBuilder().
             AddOpenAIChatCompletion(
@@ -92,7 +92,7 @@ public class MultipleProviders_ChatCompletion(ITestOutputHelper output) : BaseTe
 
         await foreach (var word in kernel.InvokeStreamingAsync(mailFunction, new() { ["input"] = "Tell David that I'm going to finish the business plan by the end of the week." }))
         {
-            this.WriteLine(word);
+            Console.WriteLine(word);
         }
 
         ;

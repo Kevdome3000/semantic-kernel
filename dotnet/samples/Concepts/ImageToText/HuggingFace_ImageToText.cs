@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Examples;
+namespace ImageToText;
 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.HuggingFace;
@@ -49,7 +49,7 @@ public sealed class HuggingFace_ImageToText(ITestOutputHelper output) : BaseTest
         var textContent = await imageToText.GetTextContentAsync(imageContent, executionSettings);
 
         // Output image description
-        this.WriteLine(textContent.Text);
+        Console.WriteLine(textContent.Text);
     }
 
 }

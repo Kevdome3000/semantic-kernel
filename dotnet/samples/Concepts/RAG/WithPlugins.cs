@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Examples;
+namespace RAG;
 
 using System.Net.Http.Headers;
 using System.Text.Json;
@@ -26,7 +26,7 @@ public class WithPlugins(ITestOutputHelper output) : BaseTest(output)
 
         var result = await kernel.InvokePromptAsync("{{search 'budget by year'}} What is my budget for 2024?");
 
-        WriteLine(result);
+        Console.WriteLine(result);
     }
 
 
@@ -48,7 +48,7 @@ public class WithPlugins(ITestOutputHelper output) : BaseTest(output)
 
         var result = await kernel.InvokePromptAsync("{{recall 'budget by year' collection='finances'}} What is my budget for 2024?");
 
-        WriteLine(result);
+        Console.WriteLine(result);
     }
 
 
@@ -80,7 +80,7 @@ public class WithPlugins(ITestOutputHelper output) : BaseTest(output)
 
         var result = await kernel.InvokeAsync(function, arguments);
 
-        WriteLine(result);
+        Console.WriteLine(result);
     }
 
 

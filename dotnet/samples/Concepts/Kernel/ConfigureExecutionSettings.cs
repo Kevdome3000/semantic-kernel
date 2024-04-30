@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Examples;
+namespace KernelExamples;
 
 using System.Text.Json;
 using Microsoft.SemanticKernel;
@@ -16,7 +16,7 @@ public sealed class ConfigureExecutionSettings(ITestOutputHelper output) : BaseT
     [Fact]
     public async Task RunAsync()
     {
-        this.WriteLine("======== ConfigureExecutionSettings ========");
+        Console.WriteLine("======== ConfigureExecutionSettings ========");
 
         string serviceId = TestConfiguration.AzureOpenAI.ServiceId;
         string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
@@ -26,7 +26,7 @@ public sealed class ConfigureExecutionSettings(ITestOutputHelper output) : BaseT
 
         if (apiKey == null || chatDeploymentName == null || endpoint == null)
         {
-            this.WriteLine("AzureOpenAI endpoint, apiKey, or deploymentName not found. Skipping example.");
+            Console.WriteLine("AzureOpenAI endpoint, apiKey, or deploymentName not found. Skipping example.");
 
             return;
         }
@@ -52,7 +52,7 @@ public sealed class ConfigureExecutionSettings(ITestOutputHelper output) : BaseT
                 Temperature = 0.7
             }));
 
-        this.WriteLine(result.GetValue<string>());
+        Console.WriteLine(result.GetValue<string>());
 
         // Option 2:
         // Load prompt template configuration including the execution settings from a JSON payload
@@ -79,7 +79,7 @@ public sealed class ConfigureExecutionSettings(ITestOutputHelper output) : BaseT
         var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
         result = await kernel.InvokeAsync(func);
-        this.WriteLine(result.GetValue<string>());
+        Console.WriteLine(result.GetValue<string>());
 
         /* OUTPUT (using gpt4):
 Hello! As an AI language model, I can help you with a variety of tasks, such as:

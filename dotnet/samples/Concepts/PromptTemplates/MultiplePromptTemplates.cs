@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Examples;
+namespace PromptTemplates;
 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
@@ -19,7 +19,7 @@ public class MultiplePromptTemplates(ITestOutputHelper output) : BaseTest(output
     [InlineData("handlebars", "Hello AI, my name is {{name}}. What is the origin of my name?")]
     public Task RunAsync(string templateFormat, string prompt)
     {
-        WriteLine($"======== {nameof(MultiplePromptTemplates)} ========");
+        Console.WriteLine($"======== {nameof(MultiplePromptTemplates)} ========");
 
         Kernel kernel = Kernel.CreateBuilder().
             AddAzureOpenAIChatCompletion(
@@ -44,7 +44,7 @@ public class MultiplePromptTemplates(ITestOutputHelper output) : BaseTest(output
         string templateFormat,
         IPromptTemplateFactory promptTemplateFactory)
     {
-        WriteLine($"======== {templateFormat} : {prompt} ========");
+        Console.WriteLine($"======== {templateFormat} : {prompt} ========");
 
         var function = kernel.CreateFunctionFromPrompt(
             promptConfig: new PromptTemplateConfig()
@@ -62,7 +62,7 @@ public class MultiplePromptTemplates(ITestOutputHelper output) : BaseTest(output
         };
 
         var result = await kernel.InvokeAsync(function, arguments);
-        WriteLine(result.GetValue<string>());
+        Console.WriteLine(result.GetValue<string>());
     }
 
 }

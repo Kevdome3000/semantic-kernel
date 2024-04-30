@@ -11,13 +11,16 @@ using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 /// This example demonstrates how to templatize prompts as described at
 /// https://learn.microsoft.com/semantic-kernel/prompts/templatizing-prompts
 /// </summary>
-public class Templates : BaseTest
+public class Templates(ITestOutputHelper output) : LearnBaseTest([
+    "Can you send an approval to the marketing team?",
+    "That is all, thanks."
+], output)
 {
 
     [Fact]
     public async Task RunAsync()
     {
-        WriteLine("======== Templates ========");
+        Console.WriteLine("======== Templates ========");
 
         string? endpoint = TestConfiguration.AzureOpenAI.Endpoint;
         string? modelId = TestConfiguration.AzureOpenAI.ChatModelId;
@@ -25,7 +28,7 @@ public class Templates : BaseTest
 
         if (endpoint is null || modelId is null || apiKey is null)
         {
-            WriteLine("Azure OpenAI credentials not found. Skipping example.");
+            Console.WriteLine("Azure OpenAI credentials not found. Skipping example.");
 
             return;
         }
@@ -91,8 +94,8 @@ public class Templates : BaseTest
         while (true)
         {
             // Get user input
-            Write("User > ");
-            var request = ReadLine();
+            Console.Write("User > ");
+            var request = Console.ReadLine();
 
             // Invoke prompt
             var intent = await kernel.InvokeAsync(
@@ -129,29 +132,19 @@ public class Templates : BaseTest
             {
                 if (chunk.Role.HasValue)
                 {
-                    Write(chunk.Role + " > ");
+                    Console.Write(chunk.Role + " > ");
                 }
 
                 message += chunk;
-                Write(chunk);
+                Console.Write(chunk);
             }
 
-            WriteLine();
+            Console.WriteLine();
 
             // Append to history
             history.AddUserMessage(request!);
             history.AddAssistantMessage(message);
         }
-    }
-
-
-    public Templates(ITestOutputHelper output) : base(output)
-    {
-        SimulatedInputText =
-        [
-            "Can you send an approval to the marketing team?",
-            "That is all, thanks."
-        ];
     }
 
 }

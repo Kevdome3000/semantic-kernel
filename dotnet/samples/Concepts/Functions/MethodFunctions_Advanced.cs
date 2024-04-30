@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Examples;
+namespace Functions;
 
 using System.ComponentModel;
 using System.Globalization;
@@ -21,7 +21,7 @@ public class MethodFunctions_Advanced(ITestOutputHelper output) : BaseTest(outpu
     [Fact]
     public async Task MethodFunctionsChainingAsync()
     {
-        WriteLine("Running Method Function Chaining example...");
+        Console.WriteLine("Running Method Function Chaining example...");
 
         var kernel = new Kernel();
 
@@ -29,8 +29,8 @@ public class MethodFunctions_Advanced(ITestOutputHelper output) : BaseTest(outpu
 
         var customType = await kernel.InvokeAsync<MyCustomType>(functions["Function1"]);
 
-        WriteLine($"CustomType.Number: {customType!.Number}"); // 2
-        WriteLine($"CustomType.Text: {customType.Text}"); // From Function1 + From Function2
+        Console.WriteLine($"CustomType.Number: {customType!.Number}"); // 2
+        Console.WriteLine($"CustomType.Text: {customType.Text}"); // From Function1 + From Function2
     }
 
 

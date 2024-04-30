@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Examples;
+namespace DependencyInjection;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;

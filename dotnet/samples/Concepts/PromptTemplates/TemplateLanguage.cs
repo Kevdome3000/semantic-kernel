@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Examples;
+namespace PromptTemplates;
 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -17,14 +17,14 @@ public class TemplateLanguage(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public async Task RunAsync()
     {
-        this.WriteLine("======== TemplateLanguage ========");
+        Console.WriteLine("======== TemplateLanguage ========");
 
         string openAIModelId = TestConfiguration.OpenAI.ChatModelId;
         string openAIApiKey = TestConfiguration.OpenAI.ApiKey;
 
         if (openAIModelId == null || openAIApiKey == null)
         {
-            this.WriteLine("OpenAI credentials not found. Skipping example.");
+            Console.WriteLine("OpenAI credentials not found. Skipping example.");
 
             return;
         }
@@ -50,19 +50,19 @@ Is it weekend time (weekend/not weekend)?
 ";
 
         // This allows to see the prompt before it's sent to OpenAI
-        this.WriteLine("--- Rendered Prompt");
+        Console.WriteLine("--- Rendered Prompt");
         var promptTemplateFactory = new KernelPromptTemplateFactory();
         var promptTemplate = promptTemplateFactory.Create(new PromptTemplateConfig(FunctionDefinition));
         var renderedPrompt = await promptTemplate.RenderAsync(kernel);
-        this.WriteLine(renderedPrompt);
+        Console.WriteLine(renderedPrompt);
 
         // Run the prompt / prompt function
         var kindOfDay = kernel.CreateFunctionFromPrompt(FunctionDefinition, new OpenAIPromptExecutionSettings() { MaxTokens = 100 });
 
         // Show the result
-        this.WriteLine("--- Prompt Function result");
+        Console.WriteLine("--- Prompt Function result");
         var result = await kernel.InvokeAsync(kindOfDay);
-        this.WriteLine(result.GetValue<string>());
+        Console.WriteLine(result.GetValue<string>());
 
         /* OUTPUT:
 

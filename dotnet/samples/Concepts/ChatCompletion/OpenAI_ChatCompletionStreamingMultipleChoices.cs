@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Examples;
+namespace ChatCompletion;
 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -14,7 +14,7 @@ public class OpenAI_ChatCompletionStreamingMultipleChoices(ITestOutputHelper out
     [Fact]
     public Task AzureOpenAIMultiStreamingChatCompletionAsync()
     {
-        WriteLine("======== Azure OpenAI - Multiple Chat Completions - Raw Streaming ========");
+        Console.WriteLine("======== Azure OpenAI - Multiple Chat Completions - Raw Streaming ========");
 
         AzureOpenAIChatCompletionService chatCompletionService = new(
             deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
@@ -29,7 +29,7 @@ public class OpenAI_ChatCompletionStreamingMultipleChoices(ITestOutputHelper out
     [Fact]
     public Task OpenAIMultiStreamingChatCompletionAsync()
     {
-        WriteLine("======== OpenAI - Multiple Chat Completions - Raw Streaming ========");
+        Console.WriteLine("======== OpenAI - Multiple Chat Completions - Raw Streaming ========");
 
         OpenAIChatCompletionService chatCompletionService = new(
             modelId: TestConfiguration.OpenAI.ChatModelId,
@@ -67,12 +67,12 @@ public class OpenAI_ChatCompletionStreamingMultipleChoices(ITestOutputHelper out
 
         await ProcessStreamAsyncEnumerableAsync(chatCompletionService, prompt, executionSettings, consoleLinesPerResult);
 
-        WriteLine();
+        Console.WriteLine();
 
         // Set cursor position to after displayed results
         // Console.SetCursorPosition(0, executionSettings.ResultsPerPrompt * consoleLinesPerResult);
 
-        WriteLine();
+        Console.WriteLine();
     }
 
 
@@ -99,7 +99,7 @@ public class OpenAI_ChatCompletionStreamingMultipleChoices(ITestOutputHelper out
             if (!messagesPerChoice.ContainsKey(chatUpdate.ChoiceIndex))
             {
                 messagesPerChoice[chatUpdate.ChoiceIndex] = $"Role: {chatUpdate.Role ?? new AuthorRole()}\n";
-                Write($"Choice index: {chatUpdate.ChoiceIndex}, Role: {chatUpdate.Role ?? new AuthorRole()}");
+                Console.Write($"Choice index: {chatUpdate.ChoiceIndex}, Role: {chatUpdate.Role ?? new AuthorRole()}");
             }
 
             // Add latest completion bit, if any
@@ -110,14 +110,14 @@ public class OpenAI_ChatCompletionStreamingMultipleChoices(ITestOutputHelper out
 
             // Overwrite what is currently in the console area for the updated choice
             // Console.Write(messagesPerChoice[chatUpdate.ChoiceIndex]);
-            Write($"Choice index: {chatUpdate.ChoiceIndex}, Content: {chatUpdate.Content}");
+            Console.Write($"Choice index: {chatUpdate.ChoiceIndex}, Content: {chatUpdate.Content}");
         }
 
         // Display the aggregated results
         foreach (string message in messagesPerChoice.Values)
         {
-            WriteLine("-------------------");
-            WriteLine(message);
+            Console.WriteLine("-------------------");
+            Console.WriteLine(message);
         }
     }
 
@@ -127,9 +127,9 @@ public class OpenAI_ChatCompletionStreamingMultipleChoices(ITestOutputHelper out
     /// </summary>
     private void ClearDisplayByAddingEmptyLines()
     {
-        for (int i = 0; i < Console.WindowHeight - 2; i++)
+        for (int i = 0; i < System.Console.WindowHeight - 2; i++)
         {
-            WriteLine();
+            Console.WriteLine();
         }
     }
 
