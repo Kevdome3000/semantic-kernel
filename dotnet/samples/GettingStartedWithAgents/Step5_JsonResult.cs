@@ -14,6 +14,8 @@ using Resources;
 public class Step5_JsonResult(ITestOutputHelper output) : BaseTest(output)
 {
 
+    private const int ScoreCompletionThreshold = 70;
+
     private const string TutorName = "Tutor";
 
     private const string TutorInstructions =
@@ -87,7 +89,7 @@ public class Step5_JsonResult(ITestOutputHelper output) : BaseTest(output)
 
             InputScore? result = JsonResultTranslator.Translate<InputScore>(lastMessageContent);
 
-            return Task.FromResult((result?.score ?? 0) >= 70);
+            return Task.FromResult((result?.score ?? 0) >= ScoreCompletionThreshold);
         }
 
     }

@@ -4,14 +4,22 @@ namespace Microsoft.SemanticKernel.Agents;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 
 /// <summary>
 /// Defines the communication protocol for a particular <see cref="Agent"/> type.
-/// An agent provides it own <see cref="AgentChannel"/> via <see cref="Agent.CreateChannelAsync(CancellationToken)"/>.
+/// An agent provides it own <see cref="AgentChannel"/> via <see cref="Agent.CreateChannelAsync"/>.
 /// </summary>
 public abstract class AgentChannel
 {
+
+    /// <summary>
+    /// The <see cref="ILogger"/> associated with the <see cref="AgentChannel"/>.
+    /// </summary>
+    public ILogger Logger { get; set; } = NullLogger.Instance;
+
 
     /// <summary>
     /// Receive the conversation messages.  Used when joining a conversation and also during each agent interaction..
@@ -44,7 +52,7 @@ public abstract class AgentChannel
 
 /// <summary>
 /// Defines the communication protocol for a particular <see cref="Agent"/> type.
-/// An agent provides it own <see cref="AgentChannel"/> via <see cref="Agent.CreateChannelAsync(CancellationToken)"/>.
+/// An agent provides it own <see cref="AgentChannel"/> via <see cref="Agent.CreateChannelAsync"/>.
 /// </summary>
 /// <typeparam name="TAgent">The agent type for this channel</typeparam>
 /// <remarks>

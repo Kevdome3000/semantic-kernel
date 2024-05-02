@@ -100,7 +100,7 @@ internal sealed class BroadcastQueue
                     Exception failure = queueRef.ReceiveFailure;
                     queueRef.ReceiveFailure = null;
 
-                    throw new KernelException($"Unexpected failure broadcasting to channel: {channelRef.Channel.GetType().Name}", failure);
+                    throw new KernelException($"Unexpected failure broadcasting to channel: {channelRef.Channel.GetType()}", failure);
                 }
 
                 // Activate non-empty queue

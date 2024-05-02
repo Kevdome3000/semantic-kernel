@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 namespace Microsoft.SemanticKernel.Agents;
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -8,6 +9,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Chat;
 using ChatCompletion;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 
 /// <summary>
@@ -16,7 +19,7 @@ using ChatCompletion;
 public sealed class AgentGroupChat : AgentChat
 {
 
-    private readonly HashSet<string> _agentIds; // Efficient existence test
+    private readonly HashSet<string> _agentIds; // Efficient existence test O(1) vs O(n) for list.
 
     private readonly List<Agent> _agents; // Maintain order the agents joined the chat
 
@@ -59,8 +62,10 @@ public sealed class AgentGroupChat : AgentChat
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
-    public async IAsyncEnumerable<ChatMessageContent> InvokeAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async override IAsyncEnumerable<ChatMessageContent> InvokeAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        this.EnsureStrategyLoggerAssignment();
+
         if (this.IsComplete)
         {
             // Throw exception if chat is completed and automatic-reset is not enabled.
@@ -72,11 +77,29 @@ public sealed class AgentGroupChat : AgentChat
             this.IsComplete = false;
         }
 
+        this.Logger.LogDebug("[{MethodName}] Invoking chat: {Agents}", nameof(InvokeAsync), string.Join(", ", this.Agents.Select(a => $"{a.GetType()}:{a.Id}")));
+
         for (int index = 0; index < this.ExecutionSettings.TerminationStrategy.MaximumIterations; index++)
         {
             // Identify next agent using strategy
-            Agent agent = await this.ExecutionSettings.SelectionStrategy.NextAsync(this.Agents, this.History, cancellationToken).
-                ConfigureAwait(false);
+            this.Logger.LogDebug("[{MethodName}] Selecting agent: {StrategyType}", nameof(InvokeAsync), this.ExecutionSettings.SelectionStrategy.GetType());
+
+            Agent agent;
+
+            try
+            {
+                agent = await this.ExecutionSettings.SelectionStrategy.NextAsync(this.Agents, this.History, cancellationToken).
+                    ConfigureAwait(false);
+            }
+            catch (Exception exception)
+            {
+                this.Logger.LogError(exception, "[{MethodName}] Unable to determine next agent.", nameof(InvokeAsync));
+
+                throw;
+            }
+
+            this.Logger.LogInformation("[{MethodName}] Agent selected {AgentType}: {AgentId} by {StrategyType}", nameof(InvokeAsync), agent.GetType(), agent.Id,
+                this.ExecutionSettings.SelectionStrategy.GetType());
 
             // Invoke agent and process messages along with termination
             await foreach (var message in base.InvokeAgentAsync(agent, cancellationToken).
@@ -96,6 +119,8 @@ public sealed class AgentGroupChat : AgentChat
                 break;
             }
         }
+
+        this.Logger.LogDebug("[{MethodName}] Yield chat - IsComplete: {IsComplete}", nameof(InvokeAsync), this.IsComplete);
     }
 
 
@@ -128,6 +153,10 @@ public sealed class AgentGroupChat : AgentChat
         bool isJoining,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        this.EnsureStrategyLoggerAssignment();
+
+        this.Logger.LogDebug("[{MethodName}] Invoking chat: {AgentType}: {AgentId}", nameof(InvokeAsync), agent.GetType(), agent.Id);
+
         if (isJoining)
         {
             this.AddAgent(agent);
@@ -144,6 +173,8 @@ public sealed class AgentGroupChat : AgentChat
 
             yield return message;
         }
+
+        this.Logger.LogDebug("[{MethodName}] Yield chat - IsComplete: {IsComplete}", nameof(InvokeAsync), this.IsComplete);
     }
 
 
@@ -155,6 +186,21 @@ public sealed class AgentGroupChat : AgentChat
     {
         this._agents = new(agents);
         this._agentIds = new(this._agents.Select(a => a.Id));
+    }
+
+
+    private void EnsureStrategyLoggerAssignment()
+    {
+        // Only invoke logger factory when required.
+        if (this.ExecutionSettings.SelectionStrategy.Logger == NullLogger.Instance)
+        {
+            this.ExecutionSettings.SelectionStrategy.Logger = this.LoggerFactory.CreateLogger(this.ExecutionSettings.SelectionStrategy.GetType());
+        }
+
+        if (this.ExecutionSettings.TerminationStrategy.Logger == NullLogger.Instance)
+        {
+            this.ExecutionSettings.TerminationStrategy.Logger = this.LoggerFactory.CreateLogger(this.ExecutionSettings.TerminationStrategy.GetType());
+        }
     }
 
 }

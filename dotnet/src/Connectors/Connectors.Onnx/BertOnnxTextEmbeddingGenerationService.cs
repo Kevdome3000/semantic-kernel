@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Numerics.Tensors;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Embeddings;
@@ -168,7 +169,7 @@ public sealed class BertOnnxTextEmbeddingGenerationService : ITextEmbeddingGener
 
         if (async)
         {
-            await onnxModelStream.CopyToAsync(modelBytes, cancellationToken).
+            await onnxModelStream.CopyToAsync(modelBytes, 81920, cancellationToken).
                 ConfigureAwait(false);
         }
         else
@@ -186,7 +187,8 @@ public sealed class BertOnnxTextEmbeddingGenerationService : ITextEmbeddingGener
 
         var tokenizer = new BertTokenizer();
 
-        using (StreamReader vocabReader = new(vocabStream, leaveOpen: true))
+        using (StreamReader vocabReader = new(vocabStream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true, bufferSize: 1024,
+                   leaveOpen: true))
         {
             if (async)
             {

@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using ChatCompletion;
 using Extensions;
 using Internal;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 
 /// <summary>
@@ -23,12 +25,13 @@ public abstract class AgentChat
 
     private readonly BroadcastQueue _broadcastQueue;
 
-    private readonly Dictionary<string, AgentChannel> _agentChannels;
+    private readonly Dictionary<string, AgentChannel> _agentChannels; // Map channel hash to channel: one entry per channel.
 
-    // Map channel hash to channel: one entry per channel.
     private readonly Dictionary<Agent, string> _channelMap; // Map agent to its channel-hash: one entry per agent.
 
     private int _isActive;
+
+    private ILogger? _logger;
 
     /// <summary>
     /// Indicates if a chat operation is active.  Activity is defined as
@@ -37,9 +40,36 @@ public abstract class AgentChat
     public bool IsActive => Interlocked.CompareExchange(ref this._isActive, 1, 1) > 0;
 
     /// <summary>
+    /// The <see cref="ILoggerFactory"/> associated with the <see cref="AgentChat"/>.
+    /// </summary>
+    public ILoggerFactory LoggerFactory { get; init; } = NullLoggerFactory.Instance;
+
+    /// <summary>
+    /// The <see cref="ILogger"/> associated with this chat.
+    /// </summary>
+    protected ILogger Logger => this._logger ??= this.LoggerFactory.CreateLogger(this.GetType());
+
+    /// <summary>
     /// Exposes the internal history to subclasses.
     /// </summary>
     protected ChatHistory History { get; }
+
+
+    /// <summary>
+    /// Process a series of interactions between the agents participating in this chat.
+    /// </summary>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Asynchronous enumeration of messages.</returns>
+    public abstract IAsyncEnumerable<ChatMessageContent> InvokeAsync(CancellationToken cancellationToken = default);
+
+
+    /// <summary>
+    /// Retrieve the chat history.
+    /// </summary>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The message history</returns>
+    public IAsyncEnumerable<ChatMessageContent> GetChatMessagesAsync(CancellationToken cancellationToken = default) =>
+        this.GetChatMessagesAsync(agent: null, cancellationToken);
 
 
     /// <summary>
@@ -54,10 +84,13 @@ public abstract class AgentChat
     /// will throw exception if concurrent activity is attempted.
     /// </remarks>
     public async IAsyncEnumerable<ChatMessageContent> GetChatMessagesAsync(
-        Agent? agent = null,
+        Agent? agent,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         this.SetActivityOrThrow(); // Disallow concurrent access to chat history
+
+        this.Logger.LogDebug("[{MethodName}] Source: {MessageSourceType}/{MessageSourceId}", nameof(GetChatMessagesAsync), agent?.GetType().
+            Name ?? "primary", agent?.Id ?? "primary");
 
         try
         {
@@ -144,6 +177,11 @@ public abstract class AgentChat
             }
         }
 
+        if (this.Logger.IsEnabled(LogLevel.Debug)) // Avoid boxing if not enabled
+        {
+            this.Logger.LogDebug("[{MethodName}] Adding Messages: {MessageCount}", nameof(AddChatMessages), messages.Count);
+        }
+
         try
         {
             // Append to chat history
@@ -153,6 +191,11 @@ public abstract class AgentChat
             // Note: Able to queue messages without synchronizing channels.
             var channelRefs = this._agentChannels.Select(kvp => new ChannelReference(kvp.Value, kvp.Key));
             this._broadcastQueue.Enqueue(channelRefs, messages);
+
+            if (this.Logger.IsEnabled(LogLevel.Information)) // Avoid boxing if not enabled
+            {
+                this.Logger.LogInformation("[{MethodName}] Added Messages: {MessageCount}", nameof(AddChatMessages), messages.Count);
+            }
         }
         finally
         {
@@ -177,6 +220,8 @@ public abstract class AgentChat
     {
         this.SetActivityOrThrow(); // Disallow concurrent access to chat history
 
+        this.Logger.LogDebug("[{MethodName}] Invoking agent {AgentType}: {AgentId}", nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
+
         try
         {
             // Get or create the required channel and block until channel is synchronized.
@@ -187,16 +232,18 @@ public abstract class AgentChat
             // Invoke agent & process response
             List<ChatMessageContent> messages = [];
 
-            await foreach (var message in channel.InvokeAsync(agent, cancellationToken).
+            await foreach (ChatMessageContent message in channel.InvokeAsync(agent, cancellationToken).
                                ConfigureAwait(false))
             {
+                this.Logger.LogTrace("[{MethodName}] Agent message {AgentType}: {Message}", nameof(InvokeAgentAsync), agent.GetType(), message);
+
                 // Add to primary history
                 this.History.Add(message);
                 messages.Add(message);
 
+                // Don't expose internal messages to caller.
                 if (message.Role == AuthorRole.Tool || message.Items.All(i => i is FunctionCallContent))
                 {
-                    // Don't expose internal messages to caller.
                     continue;
                 }
 
@@ -211,6 +258,8 @@ public abstract class AgentChat
                     Select(kvp => new ChannelReference(kvp.Value, kvp.Key));
 
             this._broadcastQueue.Enqueue(channelRefs, messages);
+
+            this.Logger.LogInformation("[{MethodName}] Invoked agent {AgentType}: {AgentId}", nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
         }
         finally
         {
@@ -226,8 +275,14 @@ public abstract class AgentChat
 
             if (channel == null)
             {
-                channel = await agent.CreateChannelAsync(cancellationToken).
+                this.Logger.LogDebug("[{MethodName}] Creating channel for {AgentType}: {AgentId}", nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
+
+                // Creating an agent-typed logger for CreateChannelAsync
+                channel = await agent.CreateChannelAsync(this.LoggerFactory.CreateLogger(agent.GetType()), cancellationToken).
                     ConfigureAwait(false);
+
+                // Creating an channel-typed logger for the channel
+                channel.Logger = this.LoggerFactory.CreateLogger(channel.GetType());
 
                 this._agentChannels.Add(channelKey, channel);
 
@@ -236,6 +291,8 @@ public abstract class AgentChat
                     await channel.ReceiveAsync(this.History, cancellationToken).
                         ConfigureAwait(false);
                 }
+
+                this.Logger.LogInformation("[{MethodName}] Created channel for {AgentType}: {AgentId}", nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
             }
 
             return channel;
@@ -277,7 +334,7 @@ public abstract class AgentChat
 
     private string GetAgentHash(Agent agent)
     {
-        if (!this._channelMap.TryGetValue(agent, out var hash))
+        if (!this._channelMap.TryGetValue(agent, out string hash))
         {
             hash = KeyEncoder.GenerateHash(agent.GetChannelKeys());
 

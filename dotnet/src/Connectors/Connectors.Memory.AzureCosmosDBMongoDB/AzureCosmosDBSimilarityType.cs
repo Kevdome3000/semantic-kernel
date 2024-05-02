@@ -27,9 +27,9 @@ public enum AzureCosmosDBSimilarityType
     InnerProduct,
 
     /// <summary>
-    /// Eucledian similarity
+    /// Euclidean similarity
     /// </summary>
     [JsonPropertyName("L2")]
-    Eucledian
+    Euclidean
 
 }

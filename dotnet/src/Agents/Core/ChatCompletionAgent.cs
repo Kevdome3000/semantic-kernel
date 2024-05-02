@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using ChatCompletion;
+using Microsoft.Extensions.Logging;
 
 
 /// <summary>
@@ -26,6 +27,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     /// <inheritdoc/>
     public override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         IReadOnlyList<ChatMessageContent> history,
+        ILogger logger,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var chatCompletionService = this.Kernel.GetRequiredService<IChatCompletionService>();
@@ -41,6 +43,8 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
         int messageCount = chat.Count;
 
+        logger.LogDebug("[{MethodName}] Invoking {ServiceType}.", nameof(InvokeAsync), chatCompletionService.GetType());
+
         IReadOnlyList<ChatMessageContent> messages =
             await chatCompletionService.GetChatMessageContentsAsync(
                     chat,
@@ -48,6 +52,11 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
                     this.Kernel,
                     cancellationToken).
                 ConfigureAwait(false);
+
+        if (logger.IsEnabled(LogLevel.Information)) // Avoid boxing if not enabled
+        {
+            logger.LogInformation("[{MethodName}] Invoked {ServiceType} with message count: {MessageCount}.", nameof(InvokeAsync), chatCompletionService.GetType(), messages.Count);
+        }
 
         // Capture mutated messages related function calling / tools
         for (int messageIndex = messageCount; messageIndex < chat.Count; messageIndex++)

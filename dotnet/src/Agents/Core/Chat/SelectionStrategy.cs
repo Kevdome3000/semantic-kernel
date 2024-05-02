@@ -4,6 +4,8 @@ namespace Microsoft.SemanticKernel.Agents.Chat;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 
 /// <summary>
@@ -11,6 +13,12 @@ using System.Threading.Tasks;
 /// </summary>
 public abstract class SelectionStrategy
 {
+
+    /// <summary>
+    /// The <see cref="ILogger"/> associated with the <see cref="SelectionStrategy"/>.
+    /// </summary>
+    protected internal ILogger Logger { get; internal set; } = NullLogger.Instance;
+
 
     /// <summary>
     /// Determine which agent goes next.
