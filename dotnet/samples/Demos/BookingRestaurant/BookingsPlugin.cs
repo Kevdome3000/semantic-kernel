@@ -3,6 +3,8 @@
 namespace Plugins;
 
 using System.ComponentModel;
+using Microsoft.Graph;
+using Microsoft.Graph.Models;
 using Microsoft.SemanticKernel;
 
 
