@@ -163,6 +163,8 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
         CancellationToken cancellationToken = default
     )
     {
+        record.Key = record.Metadata.Id;
+
         var replaceOptions = new ReplaceOptions() { IsUpsert = true };
 
         var result = await this.GetCollection(collectionName).
@@ -380,9 +382,9 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
                             "cosmosSearchOptions",
                             new BsonDocument
                             {
-                                { "kind", this._config.Kind },
+                                { "kind", this._config.Kind.GetCustomName() },
                                 { "numLists", this._config.NumLists },
-                                { "similarity", this._config.Similarity },
+                                { "similarity", this._config.Similarity.GetCustomName() },
                                 { "dimensions", this._config.Dimensions }
                             }
                         }
@@ -413,10 +415,10 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
                             "cosmosSearchOptions",
                             new BsonDocument
                             {
-                                { "kind", this._config.Kind },
+                                { "kind", this._config.Kind.GetCustomName() },
                                 { "m", this._config.NumberOfConnections },
                                 { "efConstruction", this._config.EfConstruction },
-                                { "similarity", this._config.Similarity },
+                                { "similarity", this._config.Similarity.GetCustomName() },
                                 { "dimensions", this._config.Dimensions }
                             }
                         }
@@ -453,7 +455,7 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
                 break;
         }
 
-        using var cursor = await this.GetCollection(collectionName).
+        var cursor = await this.GetCollection(collectionName).
             AggregateAsync<BsonDocument>(pipeline, cancellationToken: cancellationToken).
             ConfigureAwait(false);
 

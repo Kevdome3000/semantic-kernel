@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Azure;
+using Azure.AI.ContentSafety;
 using ContentSafety.Extensions;
 using ContentSafety.Filters;
 using ContentSafety.Handlers;

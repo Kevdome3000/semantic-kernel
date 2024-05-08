@@ -3,6 +3,7 @@
 namespace ContentSafety.Exceptions;
 
 using System.Collections;
+using Azure.AI.ContentSafety;
 
 
 /// <summary>

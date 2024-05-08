@@ -11,9 +11,13 @@ using Microsoft.SemanticKernel;
 
 internal static class TestHelpers
 {
+
+    private const string PluginsFolder = "../../../../../../prompt_template_samples";
+
+
     internal static void ImportAllSamplePlugins(Kernel kernel)
     {
-        ImportSamplePromptFunctions(kernel, "../../../../../../samples/plugins",
+        ImportSamplePromptFunctions(kernel, PluginsFolder,
             "ChatPlugin",
             "SummarizePlugin",
             "WriterPlugin",
@@ -36,13 +40,14 @@ internal static class TestHelpers
 
     internal static IReadOnlyKernelPluginCollection ImportSamplePlugins(Kernel kernel, params string[] pluginNames)
     {
-        return ImportSamplePromptFunctions(kernel, "../../../../../../samples/plugins", pluginNames);
+        return ImportSamplePromptFunctions(kernel, PluginsFolder, pluginNames);
     }
 
 
     internal static IReadOnlyKernelPluginCollection ImportSamplePromptFunctions(Kernel kernel, string path, params string[] pluginNames)
     {
-        string? currentAssemblyDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        string? currentAssemblyDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().
+            Location);
 
         if (string.IsNullOrWhiteSpace(currentAssemblyDirectory))
         {
@@ -55,4 +60,5 @@ internal static class TestHelpers
             from pluginName in pluginNames
             select kernel.ImportPluginFromPromptDirectory(Path.Combine(parentDirectory, pluginName)));
     }
+
 }

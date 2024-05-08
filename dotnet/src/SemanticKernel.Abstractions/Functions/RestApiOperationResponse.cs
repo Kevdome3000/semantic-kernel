@@ -2,6 +2,7 @@
 
 namespace Microsoft.SemanticKernel;
 
+using System;
 using System.ComponentModel;
 
 
@@ -11,6 +12,7 @@ using System.ComponentModel;
 [TypeConverterAttribute(typeof(RestApiOperationResponseConverter))]
 public sealed class RestApiOperationResponse
 {
+
     /// <summary>
     /// Gets the content of the response.
     /// </summary>
@@ -25,6 +27,21 @@ public sealed class RestApiOperationResponse
     /// The expected schema of the response as advertised in the OpenAPI operation.
     /// </summary>
     public KernelJsonSchema? ExpectedSchema { get; set; }
+
+    /// <summary>
+    /// Gets the method used for the HTTP request.
+    /// </summary>
+    public string? RequestMethod { get; init; }
+
+    /// <summary>
+    /// Gets the System.Uri used for the HTTP request.
+    /// </summary>
+    public Uri? RequestUri { get; init; }
+
+    /// <summary>
+    /// Gets the payload sent in the request.
+    /// </summary>
+    public object? RequestPayload { get; init; }
 
 
     /// <summary>
@@ -43,4 +60,5 @@ public sealed class RestApiOperationResponse
 
     /// <inheritdoc/>
     public override string ToString() => this.Content?.ToString() ?? string.Empty;
+
 }

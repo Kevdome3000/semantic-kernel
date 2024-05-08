@@ -3,6 +3,8 @@
 namespace ContentSafety.Services.PromptShield;
 
 using System.Text.Json;
+using Azure.AI.ContentSafety;
+using Azure.Core;
 using Options;
 
 

@@ -120,7 +120,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     }
 
 
-    /// <inheritdoc/>j
+    /// <inheritdoc/>
     protected override async ValueTask<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
         KernelArguments arguments,
@@ -138,6 +138,14 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         }
 #pragma warning restore CS0612 // Events are deprecated
 
+        // Return function result if it was set in prompt filter.
+        if (result.FunctionResult is not null)
+        {
+            result.FunctionResult.RenderedPrompt = result.RenderedPrompt;
+
+            return result.FunctionResult;
+        }
+
         if (result.AIService is IChatCompletionService chatCompletion)
         {
             var chatContent = await chatCompletion.GetChatMessageContentAsync(result.RenderedPrompt, result.ExecutionSettings, kernel, cancellationToken).
@@ -145,7 +153,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
             this.CaptureUsageDetails(chatContent.ModelId, chatContent.Metadata, this._logger);
 
-            return new FunctionResult(this, chatContent, kernel.Culture, chatContent.Metadata);
+            return new FunctionResult(this, chatContent, kernel.Culture, chatContent.Metadata) { RenderedPrompt = result.RenderedPrompt };
         }
 
         if (result.AIService is ITextGenerationService textGeneration)
@@ -155,7 +163,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
             this.CaptureUsageDetails(textContent.ModelId, textContent.Metadata, this._logger);
 
-            return new FunctionResult(this, textContent, kernel.Culture, textContent.Metadata);
+            return new FunctionResult(this, textContent, kernel.Culture, textContent.Metadata) { RenderedPrompt = result.RenderedPrompt };
         }
 
         // The service selector didn't find an appropriate service. This should only happen with a poorly implemented selector.
@@ -404,12 +412,13 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         {
             ExecutionSettings = executionSettings,
             RenderedEventArgs = renderedEventArgs,
+            FunctionResult = renderingContext.Result
         };
     }
 
 
     /// <summary>Create a random, valid function name.</summary>
-    private static string CreateRandomFunctionName() => $"func{Guid.NewGuid():N}";
+    internal static string CreateRandomFunctionName(string? prefix = "Function") => $"{prefix}_{Guid.NewGuid():N}";
 
 
     /// <summary>

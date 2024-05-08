@@ -1,13 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Azure.Core;
+using Azure.Identity;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Graph;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Plugins;
-
-var configuration = new ConfigurationBuilder().AddUserSecrets<Program>().
-    AddEnvironmentVariables().
-    Build();
 
 // Use this for application permissions
 string[] scopes;

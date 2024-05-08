@@ -3,6 +3,7 @@
 namespace ContentSafety.Controllers;
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.SemanticKernel;
 using Models;
 
 

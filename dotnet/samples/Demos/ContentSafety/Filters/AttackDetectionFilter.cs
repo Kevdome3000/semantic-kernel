@@ -3,6 +3,7 @@
 namespace ContentSafety.Filters;
 
 using Exceptions;
+using Microsoft.SemanticKernel;
 using Services.PromptShield;
 
 

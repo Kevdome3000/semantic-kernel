@@ -2,7 +2,9 @@
 
 namespace ContentSafety.Filters;
 
+using Azure.AI.ContentSafety;
 using Exceptions;
+using Microsoft.SemanticKernel;
 
 
 /// <summary>

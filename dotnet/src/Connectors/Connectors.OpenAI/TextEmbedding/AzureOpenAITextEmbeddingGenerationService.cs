@@ -4,6 +4,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,10 +18,13 @@ using Services;
 /// <summary>
 /// Azure OpenAI text embedding service.
 /// </summary>
+[Experimental("SKEXP0010")]
 public sealed class AzureOpenAITextEmbeddingGenerationService : ITextEmbeddingGenerationService
 {
 
     private readonly AzureOpenAIClientCore _core;
+
+    private readonly int? _dimensions;
 
 
     /// <summary>
@@ -32,18 +36,22 @@ public sealed class AzureOpenAITextEmbeddingGenerationService : ITextEmbeddingGe
     /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
     public AzureOpenAITextEmbeddingGenerationService(
         string deploymentName,
         string endpoint,
         string apiKey,
         string? modelId = null,
         HttpClient? httpClient = null,
-        ILoggerFactory? loggerFactory = null)
+        ILoggerFactory? loggerFactory = null,
+        int? dimensions = null)
     {
-        _core = new AzureOpenAIClientCore(deploymentName, endpoint, apiKey, httpClient,
+        this._core = new(deploymentName, endpoint, apiKey, httpClient,
             loggerFactory?.CreateLogger(typeof(AzureOpenAITextEmbeddingGenerationService)));
 
-        _core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+
+        this._dimensions = dimensions;
     }
 
 
@@ -56,18 +64,22 @@ public sealed class AzureOpenAITextEmbeddingGenerationService : ITextEmbeddingGe
     /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
     public AzureOpenAITextEmbeddingGenerationService(
         string deploymentName,
         string endpoint,
         TokenCredential credential,
         string? modelId = null,
         HttpClient? httpClient = null,
-        ILoggerFactory? loggerFactory = null)
+        ILoggerFactory? loggerFactory = null,
+        int? dimensions = null)
     {
-        _core = new AzureOpenAIClientCore(deploymentName, endpoint, credential, httpClient,
+        this._core = new(deploymentName, endpoint, credential, httpClient,
             loggerFactory?.CreateLogger(typeof(AzureOpenAITextEmbeddingGenerationService)));
 
-        _core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+
+        this._dimensions = dimensions;
     }
 
 
@@ -78,26 +90,33 @@ public sealed class AzureOpenAITextEmbeddingGenerationService : ITextEmbeddingGe
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/> for HTTP requests.</param>
     /// <param name="modelId">Azure OpenAI model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
     public AzureOpenAITextEmbeddingGenerationService(
         string deploymentName,
         OpenAIClient openAIClient,
         string? modelId = null,
-        ILoggerFactory? loggerFactory = null)
+        ILoggerFactory? loggerFactory = null,
+        int? dimensions = null)
     {
-        _core = new AzureOpenAIClientCore(deploymentName, openAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextEmbeddingGenerationService)));
+        this._core = new(deploymentName, openAIClient, loggerFactory?.CreateLogger(typeof(AzureOpenAITextEmbeddingGenerationService)));
 
-        _core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+
+        this._dimensions = dimensions;
     }
 
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object?> Attributes => _core.Attributes;
+    public IReadOnlyDictionary<string, object?> Attributes => this._core.Attributes;
 
 
     /// <inheritdoc/>
     public Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
         IList<string> data,
         Kernel? kernel = null,
-        CancellationToken cancellationToken = default) => _core.GetEmbeddingsAsync(data, kernel, cancellationToken);
+        CancellationToken cancellationToken = default)
+    {
+        return this._core.GetEmbeddingsAsync(data, kernel, this._dimensions, cancellationToken);
+    }
 
 }

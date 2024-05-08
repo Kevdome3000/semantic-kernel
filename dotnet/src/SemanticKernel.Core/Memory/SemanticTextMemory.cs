@@ -51,7 +51,8 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
             ConfigureAwait(false);
 
         MemoryRecord data = MemoryRecord.LocalRecord(
-            id, text, description, additionalMetadata: additionalMetadata,
+            id, text,
+            description, additionalMetadata: additionalMetadata,
             embedding: embedding);
 
         if (!await _storage.DoesCollectionExistAsync(collection, cancellationToken).
@@ -140,18 +141,22 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
         ReadOnlyMemory<float> queryEmbedding = await _embeddingGenerator.GenerateEmbeddingAsync(query, kernel, cancellationToken).
             ConfigureAwait(false);
 
-        IAsyncEnumerable<(MemoryRecord, double)> results = _storage.GetNearestMatchesAsync(
-            collection,
-            queryEmbedding,
-            limit,
-            minRelevanceScore,
-            withEmbeddings,
-            cancellationToken);
-
-        await foreach ((MemoryRecord, double) result in results.WithCancellation(cancellationToken).
-                           ConfigureAwait(false))
+        if ((await this._storage.DoesCollectionExistAsync(collection, cancellationToken).
+                ConfigureAwait(false)))
         {
-            yield return MemoryQueryResult.FromMemoryRecord(result.Item1, result.Item2);
+            IAsyncEnumerable<(MemoryRecord, double)> results = _storage.GetNearestMatchesAsync(
+                collection,
+                queryEmbedding,
+                limit,
+                minRelevanceScore,
+                withEmbeddings,
+                cancellationToken);
+
+            await foreach ((MemoryRecord, double) result in results.WithCancellation(cancellationToken).
+                               ConfigureAwait(false))
+            {
+                yield return MemoryQueryResult.FromMemoryRecord(result.Item1, result.Item2);
+            }
         }
     }
 

@@ -6,34 +6,40 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using global::MongoDB.Driver;
+using global::MongoDB.Driver.Core.Configuration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Connectors.MongoDB;
+using Microsoft.SemanticKernel.Memory;
 using Xunit;
 
 
 public class MongoDBMemoryStoreTestsFixture : IAsyncLifetime
 {
+
 #pragma warning disable CA1859 // Use concrete types when possible for improved performance
     private readonly IMongoClient _mongoClient = null!;
 #pragma warning restore CA1859 // Use concrete types when possible for improved performance
 
     public string DatabaseTestName { get; }
+
     public string ListCollectionsDatabaseTestName { get; }
+
     public string VectorSearchCollectionName { get; }
 
     public MongoDBMemoryStore MemoryStore { get; }
+
     public MongoDBMemoryStore ListCollectionsMemoryStore { get; }
+
     public MongoDBMemoryStore VectorSearchMemoryStore { get; }
 
 
     public MongoDBMemoryStoreTestsFixture()
     {
         // Load configuration
-        var configuration = new ConfigurationBuilder()
-            .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
-            .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
-            .AddEnvironmentVariables()
-            .Build();
+        var configuration = new ConfigurationBuilder().AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true).
+            AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true).
+            AddEnvironmentVariables().
+            Build();
 
         var connectionString = GetSetting(configuration, "ConnectionString");
         var vectorSearchCollection = GetSetting(configuration, "VectorSearchCollection");
@@ -41,8 +47,12 @@ public class MongoDBMemoryStoreTestsFixture : IAsyncLifetime
         var vectorSearchCollectionNamespace = CollectionNamespace.FromFullName(vectorSearchCollection);
         this.VectorSearchCollectionName = vectorSearchCollectionNamespace.CollectionName;
 
+        var skVersion = typeof(IMemoryStore).Assembly?.GetName()?.
+            Version?.ToString();
+
         var mongoClientSettings = MongoClientSettings.FromConnectionString(connectionString);
         mongoClientSettings.ApplicationName = GetRandomName();
+        mongoClientSettings.LibraryInfo = new LibraryInfo("Microsoft Semantic Kernel", skVersion);
 
         this.DatabaseTestName = "dotnetMSKIntegrationTests1";
         this.ListCollectionsDatabaseTestName = "dotnetMSKIntegrationTests2";
@@ -56,7 +66,8 @@ public class MongoDBMemoryStoreTestsFixture : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        await this.VectorSearchMemoryStore.UpsertBatchAsync(this.VectorSearchCollectionName, DataHelper.VectorSearchTestRecords).ToListAsync();
+        await this.VectorSearchMemoryStore.UpsertBatchAsync(this.VectorSearchCollectionName, DataHelper.VectorSearchTestRecords).
+            ToListAsync();
     }
 
 

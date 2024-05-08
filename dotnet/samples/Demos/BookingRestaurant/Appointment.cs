@@ -2,6 +2,9 @@
 
 namespace Plugins;
 
+using Microsoft.Graph.Models;
+
+
 /// <summary>
 /// This class represents an appointment model for the booking plugin.
 /// </summary>

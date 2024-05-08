@@ -515,7 +515,7 @@ public static class KernelExtensions
     ///             |__ config.json           #     settings (optional file)
     /// </code>
     /// <para>
-    /// See https://github.com/microsoft/semantic-kernel/tree/main/samples/plugins for examples in the Semantic Kernel repository.
+    /// See https://github.com/microsoft/semantic-kernel/tree/main/prompt_template_samples for examples in the Semantic Kernel repository.
     /// </para>
     /// </remarks>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
@@ -630,7 +630,7 @@ public static class KernelExtensions
     ///             |__ config.json           #     settings (optional file)
     /// </code>
     /// <para>
-    /// See https://github.com/microsoft/semantic-kernel/tree/main/samples/plugins for examples in the Semantic Kernel repository.
+    /// See https://github.com/microsoft/semantic-kernel/tree/main/prompt_template_samples for examples in the Semantic Kernel repository.
     /// </para>
     /// </remarks>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
@@ -680,7 +680,7 @@ public static class KernelExtensions
     ///             |__ config.json           #     settings (optional file)
     /// </code>
     /// <para>
-    /// See https://github.com/microsoft/semantic-kernel/tree/main/samples/plugins for examples in the Semantic Kernel repository.
+    /// See https://github.com/microsoft/semantic-kernel/tree/main/prompt_template_samples for examples in the Semantic Kernel repository.
     /// </para>
     /// </remarks>
     /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
@@ -741,6 +741,7 @@ public static class KernelExtensions
 
         KernelFunction function = KernelFunctionFromPrompt.Create(
             promptTemplate,
+            functionName: KernelFunctionFromPrompt.CreateRandomFunctionName(nameof(InvokePromptAsync)),
             templateFormat: templateFormat,
             promptTemplateFactory: promptTemplateFactory,
             loggerFactory: kernel.LoggerFactory);
@@ -780,6 +781,7 @@ public static class KernelExtensions
 
         KernelFunction function = KernelFunctionFromPrompt.Create(
             promptTemplate,
+            functionName: KernelFunctionFromPrompt.CreateRandomFunctionName(nameof(InvokePromptAsync)),
             templateFormat: templateFormat,
             promptTemplateFactory: promptTemplateFactory,
             loggerFactory: kernel.LoggerFactory);
@@ -860,6 +862,7 @@ public static class KernelExtensions
 
         KernelFunction function = KernelFunctionFromPrompt.Create(
             promptTemplate,
+            functionName: KernelFunctionFromPrompt.CreateRandomFunctionName(nameof(InvokePromptStreamingAsync)),
             templateFormat: templateFormat,
             promptTemplateFactory: promptTemplateFactory,
             loggerFactory: kernel.LoggerFactory);
@@ -901,6 +904,7 @@ public static class KernelExtensions
 
         KernelFunction function = KernelFunctionFromPrompt.Create(
             promptTemplate,
+            functionName: KernelFunctionFromPrompt.CreateRandomFunctionName(nameof(InvokePromptStreamingAsync)),
             templateFormat: templateFormat,
             promptTemplateFactory: promptTemplateFactory,
             loggerFactory: kernel.LoggerFactory);
