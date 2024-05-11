@@ -31,6 +31,8 @@ using Http;
 internal abstract class ClientCore
 {
 
+    private const string ModelProvider = "openai";
+
     private const int MaxResultsPerPrompt = 128;
 
     /// <summary>
@@ -73,6 +75,8 @@ internal abstract class ClientCore
     /// OpenAI / Azure OpenAI Client
     /// </summary>
     internal abstract OpenAIClient Client { get; }
+
+    internal Uri? Endpoint { get; set; } = null;
 
     /// <summary>
     /// Logger instance
@@ -137,19 +141,48 @@ internal abstract class ClientCore
 
         var options = CreateCompletionsOptions(text, textExecutionSettings, this.DeploymentOrModelName);
 
-        var responseData = (await RunRequestAsync(() => this.Client.GetCompletionsAsync(options, cancellationToken)).
-            ConfigureAwait(false)).Value;
+        Completions? responseData = null;
+        List<TextContent> responseContent;
 
-        if (responseData.Choices.Count == 0)
+        using (var activity = ModelDiagnostics.StartCompletionActivity(this.Endpoint, this.DeploymentOrModelName, ModelProvider, text,
+                   executionSettings))
         {
-            throw new KernelException("Text completions not found");
+            try
+            {
+                responseData = (await RunRequestAsync(() => this.Client.GetCompletionsAsync(options, cancellationToken)).
+                    ConfigureAwait(false)).Value;
+
+                if (responseData.Choices.Count == 0)
+                {
+                    throw new KernelException("Text completions not found");
+                }
+            }
+            catch (Exception ex)
+            {
+                activity?.SetError(ex);
+
+                if (responseData != null)
+                {
+                    // Capture available metadata even if the operation failed.
+                    activity?
+                        .SetResponseId(responseData.Id).
+                        SetPromptTokenUsage(responseData.Usage.PromptTokens).
+                        SetCompletionTokenUsage(responseData.Usage.CompletionTokens);
+                }
+
+                throw;
+            }
+
+            responseContent = responseData.Choices.Select(choice => new TextContent(choice.Text, this.DeploymentOrModelName, choice, Encoding.UTF8,
+                    GetTextChoiceMetadata(responseData, choice))).
+                ToList();
+
+            activity?.SetCompletionResponse(responseContent, responseData.Usage.PromptTokens, responseData.Usage.CompletionTokens);
         }
 
         this.CaptureUsageDetails(responseData.Usage);
 
-        return responseData.Choices.Select(choice => new TextContent(choice.Text, this.DeploymentOrModelName, choice, Encoding.UTF8,
-                GetTextChoiceMetadata(responseData, choice))).
-            ToList();
+        return responseContent;
     }
 
 
@@ -345,22 +378,51 @@ internal abstract class ClientCore
         for (int requestIndex = 1;; requestIndex++)
         {
             // Make the request.
-            var responseData = (await RunRequestAsync(() => this.Client.GetChatCompletionsAsync(chatOptions, cancellationToken)).
-                ConfigureAwait(false)).Value;
+            ChatCompletions? responseData = null;
+            List<OpenAIChatMessageContent> responseContent;
 
-            this.CaptureUsageDetails(responseData.Usage);
-
-            if (responseData.Choices.Count == 0)
+            using (var activity = ModelDiagnostics.StartCompletionActivity(this.Endpoint, this.DeploymentOrModelName, ModelProvider, chat,
+                       executionSettings))
             {
-                throw new KernelException("Chat completions not found");
+                try
+                {
+                    responseData = (await RunRequestAsync(() => this.Client.GetChatCompletionsAsync(chatOptions, cancellationToken)).
+                        ConfigureAwait(false)).Value;
+
+                    this.CaptureUsageDetails(responseData.Usage);
+
+                    if (responseData.Choices.Count == 0)
+                    {
+                        throw new KernelException("Chat completions not found");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    activity?.SetError(ex);
+
+                    if (responseData != null)
+                    {
+                        // Capture available metadata even if the operation failed.
+                        activity?
+                            .SetResponseId(responseData.Id).
+                            SetPromptTokenUsage(responseData.Usage.PromptTokens).
+                            SetCompletionTokenUsage(responseData.Usage.CompletionTokens);
+                    }
+
+                    throw;
+                }
+
+                responseContent = responseData.Choices.Select(chatChoice => this.GetChatMessage(chatChoice, responseData)).
+                    ToList();
+
+                activity?.SetCompletionResponse(responseContent, responseData.Usage.PromptTokens, responseData.Usage.CompletionTokens);
             }
 
             // If we don't want to attempt to invoke any functions, just return the result.
             // Or if we are auto-invoking but we somehow end up with other than 1 choice even though only 1 was requested, similarly bail.
             if (!autoInvoke || responseData.Choices.Count != 1)
             {
-                return responseData.Choices.Select(chatChoice => this.GetChatMessage(chatChoice, responseData)).
-                    ToList();
+                return responseContent;
             }
 
             Debug.Assert(kernel is not null);
@@ -536,7 +598,7 @@ internal abstract class ClientCore
 
                     if (toolCall is ChatCompletionsFunctionToolCall functionCall)
                     {
-                        // Add an item of type FunctionResultContent to the ChatMessageContent.Items collection in addition to the function result stored as a string in the ChatMessageContent.Content property.  
+                        // Add an item of type FunctionResultContent to the ChatMessageContent.Items collection in addition to the function result stored as a string in the ChatMessageContent.Content property.
                         // This will enable migration to the new function calling model and facilitate the deprecation of the current one in the future.
                         var functionName = FunctionName.Parse(functionCall.Name, OpenAIFunction.NameSeparator);
                         message.Items.Add(new FunctionResultContent(functionName.Name, functionName.PluginName, functionCall.Id, result));
@@ -1237,8 +1299,8 @@ internal abstract class ClientCore
         {
             var asstMessage = new ChatRequestAssistantMessage(message.Content) { Name = message.AuthorName };
 
-            // Handling function calls supplied via either:  
-            // ChatCompletionsToolCall.ToolCalls collection items or  
+            // Handling function calls supplied via either:
+            // ChatCompletionsToolCall.ToolCalls collection items or
             // ChatMessageContent.Metadata collection item with 'ChatResponseMessage.FunctionToolCalls' key.
             IEnumerable<ChatCompletionsToolCall>? tools = (message as OpenAIChatMessageContent)?.ToolCalls;
 
@@ -1470,16 +1532,16 @@ internal abstract class ClientCore
             return stringResult;
         }
 
-        // This is an optimization to use ChatMessageContent content directly  
-        // without unnecessary serialization of the whole message content class.  
+        // This is an optimization to use ChatMessageContent content directly
+        // without unnecessary serialization of the whole message content class.
         if (functionResult is ChatMessageContent chatMessageContent)
         {
             return chatMessageContent.ToString();
         }
 
-        // For polymorphic serialization of unknown in advance child classes of the KernelContent class,  
-        // a corresponding JsonTypeInfoResolver should be provided via the JsonSerializerOptions.TypeInfoResolver property.  
-        // For more details about the polymorphic serialization, see the article at:  
+        // For polymorphic serialization of unknown in advance child classes of the KernelContent class,
+        // a corresponding JsonTypeInfoResolver should be provided via the JsonSerializerOptions.TypeInfoResolver property.
+        // For more details about the polymorphic serialization, see the article at:
         // https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/polymorphism?pivots=dotnet-8-0
 #pragma warning disable CS0618 // Type or member is obsolete
         return JsonSerializer.Serialize(functionResult, toolCallBehavior?.ToolCallResultSerializerOptions);

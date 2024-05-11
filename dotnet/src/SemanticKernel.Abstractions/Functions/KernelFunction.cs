@@ -12,6 +12,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Diagnostics;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
 
@@ -472,7 +473,7 @@ public abstract class KernelFunction : IKernelFunction
         tags.Add(MeasurementErrorTagName, ex.GetType().
             FullName);
 
-        activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+        activity?.SetError(ex);
         logger.LogFunctionError(ex, ex.Message);
 
         // If the exception is an OperationCanceledException, wrap it in a KernelFunctionCanceledException

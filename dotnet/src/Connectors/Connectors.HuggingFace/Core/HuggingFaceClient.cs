@@ -12,6 +12,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Diagnostics;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
 using Http;
@@ -22,6 +23,8 @@ internal sealed class HuggingFaceClient
 {
 
     private readonly HttpClient _httpClient;
+
+    internal string ModelProvider => "huggingface";
 
     internal string ModelId { get; }
 
@@ -159,14 +162,31 @@ internal sealed class HuggingFaceClient
         string modelId = executionSettings?.ModelId ?? this.ModelId;
         var endpoint = this.GetTextGenerationEndpoint(modelId);
         var request = this.CreateTextRequest(prompt, executionSettings);
+
+        using var activity = ModelDiagnostics.StartCompletionActivity(endpoint, modelId, this.ModelProvider, prompt,
+            executionSettings);
+
         using var httpRequestMessage = this.CreatePost(request, endpoint, this.ApiKey);
 
-        string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken).
-            ConfigureAwait(false);
+        TextGenerationResponse response;
 
-        var response = DeserializeResponse<TextGenerationResponse>(body);
+        try
+        {
+            string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken).
+                ConfigureAwait(false);
+
+            response = DeserializeResponse<TextGenerationResponse>(body);
+        }
+        catch (Exception ex)
+        {
+            activity?.SetError(ex);
+
+            throw;
+        }
+
         var textContents = GetTextContentsFromResponse(response, modelId);
 
+        activity?.SetCompletionResponse(textContents);
         this.LogTextGenerationUsage(executionSettings);
 
         return textContents;

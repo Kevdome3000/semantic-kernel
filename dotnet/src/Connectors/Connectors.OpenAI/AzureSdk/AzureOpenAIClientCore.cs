@@ -16,6 +16,7 @@ using Services;
 /// </summary>
 internal sealed class AzureOpenAIClientCore : ClientCore
 {
+
     /// <summary>
     /// Gets the key used to store the deployment name in the <see cref="IAIService.Attributes"/> dictionary.
     /// </summary>
@@ -50,7 +51,8 @@ internal sealed class AzureOpenAIClientCore : ClientCore
         var options = GetOpenAIClientOptions(httpClient);
 
         this.DeploymentOrModelName = deploymentName;
-        this.Client = new OpenAIClient(new Uri(endpoint), new AzureKeyCredential(apiKey), options);
+        this.Endpoint = new Uri(endpoint);
+        this.Client = new OpenAIClient(this.Endpoint, new AzureKeyCredential(apiKey), options);
     }
 
 
@@ -76,7 +78,8 @@ internal sealed class AzureOpenAIClientCore : ClientCore
         var options = GetOpenAIClientOptions(httpClient);
 
         this.DeploymentOrModelName = deploymentName;
-        this.Client = new OpenAIClient(new Uri(endpoint), credential, options);
+        this.Endpoint = new Uri(endpoint);
+        this.Client = new OpenAIClient(this.Endpoint, credential, options);
     }
 
 
@@ -101,4 +104,5 @@ internal sealed class AzureOpenAIClientCore : ClientCore
 
         this.AddAttribute(DeploymentNameKey, deploymentName);
     }
+
 }

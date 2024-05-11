@@ -8,6 +8,7 @@ using System.Diagnostics.Metrics;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Diagnostics;
 using Extensions.Logging;
 
 
@@ -73,7 +74,7 @@ internal static partial class PlannerInstrumentation
             tags.Add("error.type", ex.GetType().
                 FullName);
 
-            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.SetError(ex);
             logger.LogCreatePlanError(ex, ex.Message);
 
             throw;
@@ -124,7 +125,7 @@ internal static partial class PlannerInstrumentation
             tags.Add("error.type", ex.GetType().
                 FullName);
 
-            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.SetError(ex);
             logger.LogInvokePlanError(ex, ex.Message);
 
             throw;
