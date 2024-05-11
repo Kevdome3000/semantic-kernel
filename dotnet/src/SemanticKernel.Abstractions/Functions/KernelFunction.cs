@@ -19,7 +19,7 @@ using Extensions.Logging.Abstractions;
 /// <summary>
 /// Represents a function that can be invoked as part of a Semantic Kernel workload.
 /// </summary>
-public abstract class KernelFunction
+public abstract class KernelFunction : IKernelFunction
 {
 
     /// <summary>The measurement tag name for the function name.</summary>

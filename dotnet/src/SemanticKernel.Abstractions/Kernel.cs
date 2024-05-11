@@ -443,6 +443,24 @@ public sealed class Kernel
 
 
     /// <summary>
+    /// Invoke the <see cref="IKernelFunction"/> with the specified arguments.
+    /// </summary>
+    /// <param name="function">The kernel function to invoke.</param>
+    /// <param name="arguments">The optional kernel arguments.</param>
+    /// <param name="cancellationToken">The optional cancellation token.</param>
+    /// <returns>The task representing the asynchronous operation.</returns>
+    public Task<FunctionResult> InvokeAsync(
+        IKernelFunction function,
+        KernelArguments? arguments = null,
+        CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(function);
+
+        return function.InvokeAsync(this, arguments, cancellationToken);
+    }
+
+
+    /// <summary>
     /// Invokes a function from <see cref="Kernel.Plugins"/> using the specified arguments.
     /// </summary>
     /// <param name="pluginName">The name of the plugin containing the function to invoke. If null, all plugins will be searched for the first function of the specified name.</param>
