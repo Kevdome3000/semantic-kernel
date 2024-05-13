@@ -3,7 +3,6 @@
 namespace Microsoft.SemanticKernel.Memory;
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Text;
@@ -12,7 +11,6 @@ using Text;
 /// <summary>
 /// IMPORTANT: this is a storage schema. Changing the fields will invalidate existing metadata stored in persistent vector DBs.
 /// </summary>
-[Experimental("SKEXP0001")]
 public class MemoryRecord : DataEntryBase
 {
 
@@ -40,8 +38,8 @@ public class MemoryRecord : DataEntryBase
         string? key,
         DateTimeOffset? timestamp = null) : base(key, timestamp)
     {
-        this.Metadata = metadata;
-        this.Embedding = embedding;
+        Metadata = metadata;
+        Embedding = embedding;
     }
 
 
@@ -64,23 +62,20 @@ public class MemoryRecord : DataEntryBase
         ReadOnlyMemory<float> embedding,
         string? additionalMetadata = null,
         string? key = null,
-        DateTimeOffset? timestamp = null)
-    {
-        return new MemoryRecord(
-            new MemoryRecordMetadata
-            (
-                isReference: true,
-                externalSourceName: sourceName,
-                id: externalId,
-                description: description ?? string.Empty,
-                text: string.Empty,
-                additionalMetadata: additionalMetadata ?? string.Empty
-            ),
-            embedding,
-            key,
-            timestamp
-        );
-    }
+        DateTimeOffset? timestamp = null) => new(
+        new MemoryRecordMetadata
+        (
+            true,
+            externalSourceName: sourceName,
+            id: externalId,
+            description: description ?? string.Empty,
+            text: string.Empty,
+            additionalMetadata: additionalMetadata ?? string.Empty
+        ),
+        embedding,
+        key,
+        timestamp
+    );
 
 
     /// <summary>
@@ -101,24 +96,20 @@ public class MemoryRecord : DataEntryBase
         ReadOnlyMemory<float> embedding,
         string? additionalMetadata = null,
         string? key = null,
-        DateTimeOffset? timestamp = null)
-    {
-        return new MemoryRecord
+        DateTimeOffset? timestamp = null) => new(
+        new MemoryRecordMetadata
         (
-            new MemoryRecordMetadata
-            (
-                isReference: false,
-                id: id,
-                text: text,
-                description: description ?? string.Empty,
-                externalSourceName: string.Empty,
-                additionalMetadata: additionalMetadata ?? string.Empty
-            ),
-            embedding,
-            key,
-            timestamp
-        );
-    }
+            false,
+            id,
+            text,
+            description ?? string.Empty,
+            string.Empty,
+            additionalMetadata ?? string.Empty
+        ),
+        embedding,
+        key,
+        timestamp
+    );
 
 
     /// <summary>
@@ -156,19 +147,13 @@ public class MemoryRecord : DataEntryBase
         MemoryRecordMetadata metadata,
         ReadOnlyMemory<float> embedding,
         string? key = null,
-        DateTimeOffset? timestamp = null)
-    {
-        return new MemoryRecord(metadata, embedding, key, timestamp);
-    }
+        DateTimeOffset? timestamp = null) => new(metadata, embedding, key, timestamp);
 
 
     /// <summary>
     /// Serialize the metadata of a memory record.
     /// </summary>
     /// <returns>The memory record's metadata serialized to a json string.</returns>
-    public string GetSerializedMetadata()
-    {
-        return JsonSerializer.Serialize(this.Metadata);
-    }
+    public string GetSerializedMetadata() => JsonSerializer.Serialize(Metadata);
 
 }
