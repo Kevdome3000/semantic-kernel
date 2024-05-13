@@ -79,7 +79,7 @@ public sealed class PineconeClient : IPineconeClient
 
         FetchResponse? data = JsonSerializer.Deserialize<FetchResponse>(responseContent, this._jsonSerializerOptions);
 
-        if (data == null)
+        if (data is null)
         {
             this._logger.LogWarning("Unable to deserialize Get response");
 
@@ -138,7 +138,7 @@ public sealed class PineconeClient : IPineconeClient
 
         QueryResponse? queryResponse = JsonSerializer.Deserialize<QueryResponse>(responseContent, this._jsonSerializerOptions);
 
-        if (queryResponse == null)
+        if (queryResponse is null)
         {
             this._logger.LogWarning("Unable to deserialize Query response");
 
@@ -188,7 +188,7 @@ public sealed class PineconeClient : IPineconeClient
         await foreach (PineconeDocument? match in matches.WithCancellation(cancellationToken).
                            ConfigureAwait(false))
         {
-            if (match == null)
+            if (match is null)
             {
                 continue;
             }
@@ -258,7 +258,7 @@ public sealed class PineconeClient : IPineconeClient
 
             UpsertResponse? data = JsonSerializer.Deserialize<UpsertResponse>(responseContent, this._jsonSerializerOptions);
 
-            if (data == null)
+            if (data is null)
             {
                 this._logger.LogWarning("Unable to deserialize Upsert response");
 
@@ -285,7 +285,7 @@ public sealed class PineconeClient : IPineconeClient
         bool deleteAll = false,
         CancellationToken cancellationToken = default)
     {
-        if (ids == null && string.IsNullOrEmpty(indexNamespace) && filter == null && !deleteAll)
+        if (ids is null && string.IsNullOrEmpty(indexNamespace) && filter is null && !deleteAll)
         {
             throw new ArgumentException("Must provide at least one of ids, filter, or deleteAll");
         }
@@ -382,7 +382,7 @@ public sealed class PineconeClient : IPineconeClient
 
         IndexStats? result = JsonSerializer.Deserialize<IndexStats>(responseContent, this._jsonSerializerOptions);
 
-        if (result != null)
+        if (result is not null)
         {
             this._logger.LogDebug("Index stats retrieved");
         }
@@ -406,7 +406,7 @@ public sealed class PineconeClient : IPineconeClient
 
         string[]? indices = JsonSerializer.Deserialize<string[]?>(responseContent, this._jsonSerializerOptions);
 
-        if (indices == null)
+        if (indices is null)
         {
             yield break;
         }
@@ -492,7 +492,7 @@ public sealed class PineconeClient : IPineconeClient
             ToListAsync(cancellationToken).
             ConfigureAwait(false);
 
-        if (indexNames == null || !indexNames.Any(name => name == indexName))
+        if (indexNames is null || !indexNames.Any(name => name == indexName))
         {
             return false;
         }
@@ -500,7 +500,7 @@ public sealed class PineconeClient : IPineconeClient
         PineconeIndex? index = await this.DescribeIndexAsync(indexName, cancellationToken).
             ConfigureAwait(false);
 
-        return index != null && index.Status.State == IndexState.Ready;
+        return index is not null && index.Status.State == IndexState.Ready;
     }
 
 
@@ -534,7 +534,7 @@ public sealed class PineconeClient : IPineconeClient
 
         PineconeIndex? indexDescription = JsonSerializer.Deserialize<PineconeIndex>(responseContent, this._jsonSerializerOptions);
 
-        if (indexDescription == null)
+        if (indexDescription is null)
         {
             this._logger.LogDebug("Deserialized index description is null");
         }

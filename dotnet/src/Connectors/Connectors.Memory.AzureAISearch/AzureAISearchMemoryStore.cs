@@ -24,7 +24,7 @@ using Memory;
 /// <summary>
 /// <see cref="AzureAISearchMemoryStore"/> is a memory store implementation using Azure AI Search.
 /// </summary>
-public class AzureAISearchMemoryStore : IMemoryStore
+public partial class AzureAISearchMemoryStore : IMemoryStore
 {
 
     /// <summary>
@@ -150,7 +150,7 @@ public class AzureAISearchMemoryStore : IMemoryStore
             return null;
         }
 
-        if (result?.Value == null)
+        if (result?.Value is null)
         {
             throw new KernelException("Memory read returned null");
         }
@@ -171,7 +171,7 @@ public class AzureAISearchMemoryStore : IMemoryStore
             var record = await this.GetAsync(collectionName, key, withEmbeddings, cancellationToken).
                 ConfigureAwait(false);
 
-            if (record != null) { yield return record; }
+            if (record is not null) { yield return record; }
         }
     }
 
@@ -235,14 +235,14 @@ public class AzureAISearchMemoryStore : IMemoryStore
             // Index not found, no data to return
         }
 
-        if (searchResult == null) { yield break; }
+        if (searchResult is null) { yield break; }
 
         var minAzureSearchScore = CosineSimilarityToScore(minRelevanceScore);
 
         await foreach (SearchResult<AzureAISearchMemoryRecord>? doc in searchResult.Value.GetResultsAsync().
                            ConfigureAwait(false))
         {
-            if (doc == null || doc.Score < minAzureSearchScore) { continue; }
+            if (doc is null || doc.Score < minAzureSearchScore) { continue; }
 
             MemoryRecord memoryRecord = doc.Document.ToMemoryRecord(withEmbeddings);
 
@@ -290,7 +290,13 @@ public class AzureAISearchMemoryStore : IMemoryStore
     /// - replacing chars introduces a small chance of conflicts, e.g. "the-user" and "the_user".
     /// - we should consider whether making this optional and leave it to the developer to handle.
     /// </summary>
+#if NET
+    [GeneratedRegex(@"[\s|\\|/|.|_|:]")]
+    private static partial Regex ReplaceIndexNameSymbolsRegex();
+#else
+    private static Regex ReplaceIndexNameSymbolsRegex() => s_replaceIndexNameSymbolsRegex;
     private static readonly Regex s_replaceIndexNameSymbolsRegex = new(@"[\s|\\|/|.|_|:]");
+#endif
 
     private readonly ConcurrentDictionary<string, SearchClient> _clientsByIndex = new();
 
@@ -406,7 +412,7 @@ public class AzureAISearchMemoryStore : IMemoryStore
                 ConfigureAwait(false);
         }
 
-        if (result == null || result.Value.Results.Count == 0)
+        if (result is null || result.Value.Results.Count == 0)
         {
             throw new KernelException("Memory write returned null or an empty set");
         }
@@ -435,7 +441,8 @@ public class AzureAISearchMemoryStore : IMemoryStore
         indexName = indexName.ToLowerInvariant();
 #pragma warning restore CA1308
 
-        return s_replaceIndexNameSymbolsRegex.Replace(indexName.Trim(), "-");
+        return ReplaceIndexNameSymbolsRegex().
+            Replace(indexName.Trim(), "-");
     }
 
 

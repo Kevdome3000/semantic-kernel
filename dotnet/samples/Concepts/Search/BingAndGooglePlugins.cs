@@ -23,7 +23,7 @@ public class BingAndGooglePlugins(ITestOutputHelper output) : BaseTest(output)
         string openAIModelId = TestConfiguration.OpenAI.ChatModelId;
         string openAIApiKey = TestConfiguration.OpenAI.ApiKey;
 
-        if (openAIModelId == null || openAIApiKey == null)
+        if (openAIModelId is null || openAIApiKey is null)
         {
             Console.WriteLine("OpenAI credentials not found. Skipping example.");
 
@@ -39,7 +39,7 @@ public class BingAndGooglePlugins(ITestOutputHelper output) : BaseTest(output)
         // Load Bing plugin
         string bingApiKey = TestConfiguration.Bing.ApiKey;
 
-        if (bingApiKey == null)
+        if (bingApiKey is null)
         {
             Console.WriteLine("Bing credentials not found. Skipping example.");
         }
@@ -56,7 +56,7 @@ public class BingAndGooglePlugins(ITestOutputHelper output) : BaseTest(output)
         string googleApiKey = TestConfiguration.Google.ApiKey;
         string googleSearchEngineId = TestConfiguration.Google.SearchEngineId;
 
-        if (googleApiKey == null || googleSearchEngineId == null)
+        if (googleApiKey is null || googleSearchEngineId is null)
         {
             Console.WriteLine("Google credentials not found. Skipping example.");
         }
@@ -137,7 +137,7 @@ public class BingAndGooglePlugins(ITestOutputHelper output) : BaseTest(output)
 
                                         [TASK]
                                         Question: {{ $question }}.
-                                        Answer:
+                                        Answer: 
                                         """;
 
         var question = "Who is the most followed person on TikTok right now? What's the exchange rate EUR:USD?";

@@ -88,9 +88,9 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
         var results = await search.ExecuteAsync(cancellationToken).
             ConfigureAwait(false);
 
-        List<T>? returnValues = [];
+        List<T>? returnValues = null;
 
-        if (results.Items != null)
+        if (results.Items is not null)
         {
             if (typeof(T) == typeof(string))
             {
@@ -122,9 +122,10 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
             }
         }
 
-        return returnValues != null && returnValues.Count == 0
-            ? returnValues
-            : returnValues.Take(count);
+        return
+            returnValues is null ? [] :
+            returnValues.Count <= count ? returnValues :
+            returnValues.Take(count);
     }
 
 

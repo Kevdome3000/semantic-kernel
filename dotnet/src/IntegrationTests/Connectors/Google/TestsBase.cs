@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.IntegrationTests.Connectors.GoogleVertexAI;
+namespace SemanticKernel.IntegrationTests.Connectors.Google;
 
 using System;
 using Microsoft.Extensions.Configuration;

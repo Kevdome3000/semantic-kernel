@@ -94,8 +94,6 @@ public class MultipleProviders_ChatCompletion(ITestOutputHelper output) : BaseTe
         {
             Console.WriteLine(word);
         }
-
-        ;
     }
 
 }

@@ -14,6 +14,7 @@ using Text;
 /// </summary>
 public static class KustoSerializer
 {
+
     /// <summary>
     /// Returns serialized string from an embedding instance.
     /// </summary>
@@ -30,7 +31,9 @@ public static class KustoSerializer
     /// <param name="embedding">Serialized embedding.</param>
     public static ReadOnlyMemory<float> DeserializeEmbedding(string? embedding)
     {
-        return string.IsNullOrEmpty(embedding) ? default : JsonSerializer.Deserialize<ReadOnlyMemory<float>>(embedding!, JsonOptionsCache.Default);
+        return string.IsNullOrEmpty(embedding)
+            ? default
+            : JsonSerializer.Deserialize<ReadOnlyMemory<float>>(embedding!, JsonOptionsCache.Default);
     }
 
 
@@ -40,7 +43,7 @@ public static class KustoSerializer
     /// <param name="metadata">Instance of <see cref="MemoryRecordMetadata"/> for serialization.</param>
     public static string SerializeMetadata(MemoryRecordMetadata metadata)
     {
-        if (metadata == null)
+        if (metadata is null)
         {
             return string.Empty;
         }
@@ -65,7 +68,7 @@ public static class KustoSerializer
     /// <param name="dateTimeOffset">Instance of <see cref="DateTimeOffset"/> for serialization.</param>
     public static string SerializeDateTimeOffset(DateTimeOffset? dateTimeOffset)
     {
-        if (dateTimeOffset == null)
+        if (dateTimeOffset is null)
         {
             return string.Empty;
         }
@@ -85,7 +88,8 @@ public static class KustoSerializer
             return null;
         }
 
-        if (DateTimeOffset.TryParseExact(dateTimeOffset, TimestampFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTimeOffset result))
+        if (DateTimeOffset.TryParseExact(dateTimeOffset, TimestampFormat, CultureInfo.InvariantCulture, DateTimeStyles.None,
+                out DateTimeOffset result))
         {
             return result;
         }

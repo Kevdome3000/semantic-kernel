@@ -27,7 +27,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 /// Further consolidation can happen in the future so that flow executor becomes a generalization of StepwisePlanner.
 /// And both chatMode and completionMode could be supported.
 /// </remarks>
-internal class FlowExecutor : IFlowExecutor
+internal partial class FlowExecutor : IFlowExecutor
 {
 
     /// <summary>
@@ -70,23 +70,47 @@ internal class FlowExecutor : IFlowExecutor
     /// </summary>
     private const string RestrictedPluginName = "FlowExecutor_Excluded";
 
+
     /// <summary>
     /// The regex for parsing the final answer response
     /// </summary>
-    private static readonly Regex s_finalAnswerRegex =
-        new(@"\[FINAL.+\](?<final_answer>.+)", RegexOptions.Singleline);
+#if NET
+    [GeneratedRegex(@"\[FINAL.+\](?<final_answer>.+)", RegexOptions.Singleline)]
+    private static partial Regex FinalAnswerRegex();
+#else
+    private static Regex FinalAnswerRegex() => s_finalAnswerRegex;
+
+
+    private static readonly Regex s_finalAnswerRegex = new(@"\[FINAL.+\](?<final_answer>.+)", RegexOptions.Singleline | RegexOptions.Compiled);
+#endif
+
 
     /// <summary>
     /// The regex for parsing the question
     /// </summary>
-    private static readonly Regex s_questionRegex =
-        new(@"\[QUESTION\](?<question>.+)", RegexOptions.Singleline);
+#if NET
+    [GeneratedRegex(@"\[QUESTION\](?<question>.+)", RegexOptions.Singleline)]
+    private static partial Regex QuestionRegex();
+#else
+    private static Regex QuestionRegex() => s_questionRegex;
+
+
+    private static readonly Regex s_questionRegex = new(@"\[QUESTION\](?<question>.+)", RegexOptions.Singleline | RegexOptions.Compiled);
+#endif
+
 
     /// <summary>
     /// The regex for parsing the thought response
     /// </summary>
-    private static readonly Regex s_thoughtRegex =
-        new(@"\[THOUGHT\](?<thought>.+)", RegexOptions.Singleline);
+#if NET
+    [GeneratedRegex(@"\[THOUGHT\](?<thought>.+)", RegexOptions.Singleline)]
+    private static partial Regex ThoughtRegex();
+#else
+    private static Regex ThoughtRegex() => s_thoughtRegex;
+
+
+    private static readonly Regex s_thoughtRegex = new(@"\[THOUGHT\](?<thought>.+)", RegexOptions.Singleline | RegexOptions.Compiled);
+#endif
 
     /// <summary>
     /// Check repeat step function
@@ -589,7 +613,7 @@ internal class FlowExecutor : IFlowExecutor
         var chatHistory = await this._flowStatusProvider.GetChatHistoryAsync(sessionId, checkRepeatOrStartStepId).
             ConfigureAwait(false);
 
-        if (chatHistory != null)
+        if (chatHistory is not null)
         {
             chatHistory.AddUserMessage(input);
         }
@@ -617,7 +641,8 @@ internal class FlowExecutor : IFlowExecutor
             this._logger.LogInformation("Response from {Function} : {ActionText}", "CheckRepeatOrStartStep", llmResponseText);
         }
 
-        Match finalAnswerMatch = s_finalAnswerRegex.Match(llmResponseText);
+        Match finalAnswerMatch = FinalAnswerRegex().
+            Match(llmResponseText);
 
         if (finalAnswerMatch.Success)
         {
@@ -634,7 +659,8 @@ internal class FlowExecutor : IFlowExecutor
         }
 
         // Extract thought
-        Match thoughtMatch = s_thoughtRegex.Match(llmResponseText);
+        Match thoughtMatch = ThoughtRegex().
+            Match(llmResponseText);
 
         if (thoughtMatch.Success)
         {
@@ -644,7 +670,8 @@ internal class FlowExecutor : IFlowExecutor
             chatHistory.AddSystemMessage(thoughtString);
         }
 
-        Match questionMatch = s_questionRegex.Match(llmResponseText);
+        Match questionMatch = QuestionRegex().
+            Match(llmResponseText);
 
         if (questionMatch.Success)
         {
@@ -709,7 +736,7 @@ internal class FlowExecutor : IFlowExecutor
 
         var lastStep = stepsTaken.LastOrDefault();
 
-        if (lastStep != null)
+        if (lastStep is not null)
         {
             lastStep.Observation += $"{AuthorRole.User.Label}: {input}\n";
 

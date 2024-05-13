@@ -332,7 +332,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
                     cancellationToken).
                 ConfigureAwait(false);
 
-            if (record != null)
+            if (record is not null)
             {
                 yield return record;
             }
@@ -780,7 +780,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         }
 
         // compare metadata dictionaries
-        if (existingRecord.Metadata != null && vectorData.Metadata != null)
+        if (existingRecord.Metadata is not null && vectorData.Metadata is not null)
         {
             if (existingRecord.Metadata.SequenceEqual(vectorData.Metadata))
             {

@@ -121,16 +121,4 @@ public class OpenAI_ChatCompletionStreamingMultipleChoices(ITestOutputHelper out
         }
     }
 
-
-    /// <summary>
-    /// Add enough new lines to clear the console window.
-    /// </summary>
-    private void ClearDisplayByAddingEmptyLines()
-    {
-        for (int i = 0; i < System.Console.WindowHeight - 2; i++)
-        {
-            Console.WriteLine();
-        }
-    }
-
 }

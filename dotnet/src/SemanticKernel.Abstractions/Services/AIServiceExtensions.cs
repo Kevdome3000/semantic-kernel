@@ -14,6 +14,7 @@ using Extensions.DependencyInjection;
 /// </summary>
 public static class AIServiceExtensions
 {
+
     /// <summary>
     /// Gets the key used to store the model identifier in the <see cref="IAIService.Attributes"/> dictionary.
     /// </summary>
@@ -60,7 +61,10 @@ public static class AIServiceExtensions
     private static string? GetAttribute(this IAIService service, string key)
     {
         Verify.NotNull(service);
-        return service.Attributes?.TryGetValue(key, out object? value) == true ? value as string : null;
+
+        return service.Attributes?.TryGetValue(key, out object? value) == true
+            ? value as string
+            : null;
     }
 
 
@@ -97,7 +101,9 @@ public static class AIServiceExtensions
             return (service, settings);
         }
 
-        var message = new StringBuilder($"Required service of type {typeof(T)} not registered.");
+        var message = new StringBuilder().Append("Required service of type ").
+            Append(typeof(T)).
+            Append(" not registered.");
 
         if (function.ExecutionSettings is not null)
         {
@@ -105,17 +111,22 @@ public static class AIServiceExtensions
 
             if (!string.IsNullOrEmpty(serviceIds))
             {
-                message.Append($" Expected serviceIds: {serviceIds}.");
+                message.Append(" Expected serviceIds: ").
+                    Append(serviceIds).
+                    Append('.');
             }
 
             string modelIds = string.Join("|", function.ExecutionSettings.Values.Select(model => model.ModelId));
 
             if (!string.IsNullOrEmpty(modelIds))
             {
-                message.Append($" Expected modelIds: {modelIds}.");
+                message.Append(" Expected modelIds: ").
+                    Append(modelIds).
+                    Append('.');
             }
         }
 
         throw new KernelException(message.ToString());
     }
+
 }

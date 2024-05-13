@@ -386,6 +386,7 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
     [Theory]
     [InlineData(InitializationType.ApiKey)]
     [InlineData(InitializationType.OpenAIClientInline)]
+    [InlineData(InitializationType.OpenAIClientEndpoint)]
     [InlineData(InitializationType.OpenAIClientInServiceProvider)]
     public void KernelBuilderAddOpenAIChatCompletionAddsValidService(InitializationType type)
     {
@@ -401,6 +402,7 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
             InitializationType.ApiKey => builder.AddOpenAIChatCompletion("model-id", "api-key"),
             InitializationType.OpenAIClientInline => builder.AddOpenAIChatCompletion("model-id", client),
             InitializationType.OpenAIClientInServiceProvider => builder.AddOpenAIChatCompletion("model-id"),
+            InitializationType.OpenAIClientEndpoint => builder.AddOpenAIChatCompletion("model-id", new Uri("http://localhost:12345"), "apikey"),
             _ => builder
         };
 
@@ -416,6 +418,7 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
     [Theory]
     [InlineData(InitializationType.ApiKey)]
     [InlineData(InitializationType.OpenAIClientInline)]
+    [InlineData(InitializationType.OpenAIClientEndpoint)]
     [InlineData(InitializationType.OpenAIClientInServiceProvider)]
     public void ServiceCollectionAddOpenAIChatCompletionAddsValidService(InitializationType type)
     {
@@ -430,6 +433,7 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         {
             InitializationType.ApiKey => builder.Services.AddOpenAIChatCompletion("model-id", "api-key"),
             InitializationType.OpenAIClientInline => builder.Services.AddOpenAIChatCompletion("model-id", client),
+            InitializationType.OpenAIClientEndpoint => builder.Services.AddOpenAIChatCompletion("model-id", new Uri("http://localhost:12345"), "apikey"),
             InitializationType.OpenAIClientInServiceProvider => builder.Services.AddOpenAIChatCompletion("model-id"),
             _ => builder.Services
         };
@@ -781,6 +785,8 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         OpenAIClientInline,
 
         OpenAIClientInServiceProvider,
+
+        OpenAIClientEndpoint,
 
         ChatCompletionWithData
 

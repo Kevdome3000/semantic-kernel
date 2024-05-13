@@ -13,6 +13,7 @@ using System.Text.Json.Serialization;
 /// </summary>
 public class IndexDefinition
 {
+
     /// <summary>
     /// The unique name of an index.
     /// </summary>
@@ -90,6 +91,7 @@ public class IndexDefinition
     public IndexDefinition WithDimension(int dimension)
     {
         this.Dimension = dimension;
+
         return this;
     }
 
@@ -101,6 +103,7 @@ public class IndexDefinition
     public IndexDefinition WithMetric(IndexMetric metric)
     {
         this.Metric = metric;
+
         return this;
     }
 
@@ -112,6 +115,7 @@ public class IndexDefinition
     public IndexDefinition NumberOfPods(int pods)
     {
         this.Pods = pods;
+
         return this;
     }
 
@@ -123,6 +127,7 @@ public class IndexDefinition
     public IndexDefinition NumberOfReplicas(int replicas)
     {
         this.Replicas = replicas;
+
         return this;
     }
 
@@ -134,6 +139,7 @@ public class IndexDefinition
     public IndexDefinition WithPodType(PodType podType)
     {
         this.PodType = podType;
+
         return this;
     }
 
@@ -145,6 +151,7 @@ public class IndexDefinition
     public IndexDefinition WithMetadataIndex(MetadataIndexConfig? config = default)
     {
         this.MetadataConfig = config;
+
         return this;
     }
 
@@ -156,6 +163,7 @@ public class IndexDefinition
     public IndexDefinition FromSourceCollection(string sourceCollection)
     {
         this.SourceCollection = sourceCollection;
+
         return this;
     }
 
@@ -181,13 +189,13 @@ public class IndexDefinition
     {
         string indexName = name ?? PineconeUtils.DefaultIndexName;
 
-        return Create(indexName)
-            .WithDimension(PineconeUtils.DefaultDimension)
-            .WithMetric(PineconeUtils.DefaultIndexMetric)
-            .NumberOfPods(1)
-            .NumberOfReplicas(1)
-            .WithPodType(PineconeUtils.DefaultPodType)
-            .WithMetadataIndex(MetadataIndexConfig.Default);
+        return Create(indexName).
+            WithDimension(PineconeUtils.DefaultDimension).
+            WithMetric(PineconeUtils.DefaultIndexMetric).
+            NumberOfPods(1).
+            NumberOfReplicas(1).
+            WithPodType(PineconeUtils.DefaultPodType).
+            WithMetadataIndex(MetadataIndexConfig.Default);
     }
 
 
@@ -204,12 +212,12 @@ public class IndexDefinition
         builder.AppendLine($"Replicas: {this.Replicas}, ");
         builder.AppendLine($"PodType: {this.PodType}, ");
 
-        if (this.MetadataConfig != null)
+        if (this.MetadataConfig is not null)
         {
             builder.AppendLine($"MetaIndex: {string.Join(",", this.MetadataConfig)}, ");
         }
 
-        if (this.SourceCollection != null)
+        if (this.SourceCollection is not null)
         {
             builder.AppendLine($"SourceCollection: {this.SourceCollection}, ");
         }
@@ -226,4 +234,5 @@ public class IndexDefinition
     {
         this.Name = name;
     }
+
 }

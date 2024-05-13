@@ -78,7 +78,7 @@ public class CreatePluginFromOpenApiSpec_Github(ITestOutputHelper output) : Base
         else
         {
             // Invoke the function and output the result.
-            var functionResult = await kernel.InvokeAsync(function, new KernelArguments());
+            var functionResult = await kernel.InvokeAsync(function);
             var result = functionResult.GetValue<RestApiOperationResponse>();
             Console.WriteLine($"Function execution result: {result?.Content}");
         }
@@ -90,7 +90,7 @@ public class CreatePluginFromOpenApiSpec_Github(ITestOutputHelper output) : Base
         if (function.Metadata.AdditionalProperties.TryGetValue("method", out var method) && method as string is "GET")
         {
             // Invoke the function and output the result.
-            var functionResult = await kernel.InvokeAsync(function, new KernelArguments());
+            var functionResult = await kernel.InvokeAsync(function);
             var result = functionResult.GetValue<RestApiOperationResponse>();
             Console.WriteLine($"Function execution result: {result?.Content}");
         }

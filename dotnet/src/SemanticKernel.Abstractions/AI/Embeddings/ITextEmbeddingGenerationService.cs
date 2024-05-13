@@ -2,10 +2,11 @@
 
 namespace Microsoft.SemanticKernel.Embeddings;
 
+using System.Diagnostics.CodeAnalysis;
+
+
 /// <summary>
 /// Represents a generator of text embeddings of type <c>float</c>.
 /// </summary>
-public interface ITextEmbeddingGenerationService : IEmbeddingGenerationService<string, float>
-{
-
-}
+[Experimental("SKEXP0001")]
+public interface ITextEmbeddingGenerationService : IEmbeddingGenerationService<string, float>;

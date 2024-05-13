@@ -214,7 +214,7 @@ public sealed class GrpcRunnerTests : IDisposable
             this.RequestUri = request.RequestUri;
             this.RequestHeaders = request.Headers;
 
-            this.RequestContent = request.Content == null
+            this.RequestContent = request.Content is null
                 ? null
                 : await request.Content.ReadAsByteArrayAsync(cancellationToken);
 

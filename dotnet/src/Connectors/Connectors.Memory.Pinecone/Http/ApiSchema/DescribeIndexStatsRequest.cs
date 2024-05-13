@@ -13,6 +13,7 @@ using System.Text.Json.Serialization;
 /// </summary>
 internal sealed class DescribeIndexStatsRequest
 {
+
     /// <summary>
     /// If this parameter is present, the operation only affects vectors that satisfy the filter. See https://www.pinecone.io/docs/metadata-filtering/.
     /// </summary>
@@ -30,13 +31,14 @@ internal sealed class DescribeIndexStatsRequest
     public DescribeIndexStatsRequest WithFilter(Dictionary<string, object>? filter)
     {
         this.Filter = filter;
+
         return this;
     }
 
 
     public HttpRequestMessage Build()
     {
-        HttpRequestMessage request = this.Filter == null
+        HttpRequestMessage request = this.Filter is null
             ? HttpRequest.CreatePostRequest("/describe_index_stats")
             : HttpRequest.CreatePostRequest("/describe_index_stats", this);
 

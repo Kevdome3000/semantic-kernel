@@ -7,7 +7,7 @@ using Azure.Core;
 using Azure.Core.Pipeline;
 
 
-internal class CustomHostPipelinePolicy : HttpPipelineSynchronousPolicy
+internal sealed class CustomHostPipelinePolicy : HttpPipelineSynchronousPolicy
 {
 
     private readonly Uri _endpoint;
@@ -21,13 +21,8 @@ internal class CustomHostPipelinePolicy : HttpPipelineSynchronousPolicy
 
     public override void OnSendingRequest(HttpMessage message)
     {
-        if (message?.Request == null)
-        {
-            return;
-        }
-
         // Update current host to provided endpoint
-        message.Request.Uri.Reset(this._endpoint);
+        message.Request?.Uri.Reset(this._endpoint);
     }
 
 }

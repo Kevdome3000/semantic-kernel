@@ -14,6 +14,7 @@ using Xunit;
 /// </summary>
 public sealed class OpenAIFunctionToolCallTests
 {
+
     [Theory]
     [InlineData("MyFunction", "MyFunction")]
     [InlineData("MyPlugin_MyFunction", "MyPlugin_MyFunction")]
@@ -25,6 +26,7 @@ public sealed class OpenAIFunctionToolCallTests
 
         // Act & Assert
         Assert.Equal(expectedName, openAIFunctionToolCall.FullyQualifiedName);
+        Assert.Same(openAIFunctionToolCall.FullyQualifiedName, openAIFunctionToolCall.FullyQualifiedName);
     }
 
 
@@ -82,4 +84,5 @@ public sealed class OpenAIFunctionToolCallTests
         Assert.Equal("test-function", toolCall.Name);
         Assert.Equal("test-argument", toolCall.Arguments);
     }
+
 }

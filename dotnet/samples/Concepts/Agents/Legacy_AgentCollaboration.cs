@@ -174,7 +174,7 @@ public class Legacy_AgentCollaboration(ITestOutputHelper output) : BaseTest(outp
     {
         Console.WriteLine($"[{message.Id}]");
 
-        if (agent != null)
+        if (agent is not null)
         {
             Console.WriteLine($"# {message.Role}: ({agent.Name}) {message.Content}");
         }

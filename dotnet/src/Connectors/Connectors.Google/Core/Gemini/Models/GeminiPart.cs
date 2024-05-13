@@ -57,19 +57,19 @@ internal sealed class GeminiPart : IJsonOnDeserialized
     /// </summary>
     public bool IsValid()
     {
-        return (this.Text != null
+        return (this.Text is not null
                 ? 1
                 : 0) +
-            (this.InlineData != null
+            (this.InlineData is not null
                 ? 1
                 : 0) +
-            (this.FileData != null
+            (this.FileData is not null
                 ? 1
                 : 0) +
-            (this.FunctionCall != null
+            (this.FunctionCall is not null
                 ? 1
                 : 0) +
-            (this.FunctionResponse != null
+            (this.FunctionResponse is not null
                 ? 1
                 : 0) == 1;
     }

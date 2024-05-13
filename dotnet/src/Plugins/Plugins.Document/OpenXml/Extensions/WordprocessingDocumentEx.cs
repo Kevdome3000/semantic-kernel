@@ -35,7 +35,7 @@ internal static class WordprocessingDocumentEx
 
         var paras = body.Descendants<Paragraph>();
 
-        if (paras != null)
+        if (paras is not null)
         {
             foreach (Paragraph para in paras)
             {

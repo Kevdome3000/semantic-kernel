@@ -2,7 +2,9 @@
 
 namespace SemanticKernel.Connectors.UnitTests.OpenAI.AzureSdk;
 
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -62,11 +64,15 @@ public sealed class OpenAIChatMessageContentTests
     }
 
 
-    [Fact]
-    public void MetadataIsInitializedCorrectly()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void MetadataIsInitializedCorrectly(bool readOnlyMetadata)
     {
         // Arrange
-        var metadata = new Dictionary<string, object?> { { "key", "value" } };
+        IReadOnlyDictionary<string, object?> metadata = readOnlyMetadata
+            ? new CustomReadOnlyDictionary<string, object?>(new Dictionary<string, object?> { { "key", "value" } })
+            : new Dictionary<string, object?> { { "key", "value" } };
 
         List<ChatCompletionsToolCall> toolCalls =
         [
@@ -120,6 +126,28 @@ public sealed class OpenAIChatMessageContentTests
 
     private sealed class FakeChatCompletionsToolCall(string id) : ChatCompletionsToolCall(id)
     {
+
+    }
+
+
+    private sealed class CustomReadOnlyDictionary<TKey, TValue>(IDictionary<TKey, TValue> dictionary) : IReadOnlyDictionary<TKey, TValue> // explicitly not implementing IDictionary<>
+    {
+
+        public TValue this[TKey key] => dictionary[key];
+
+        public IEnumerable<TKey> Keys => dictionary.Keys;
+
+        public IEnumerable<TValue> Values => dictionary.Values;
+
+        public int Count => dictionary.Count;
+
+        public bool ContainsKey(TKey key) => dictionary.ContainsKey(key);
+
+        public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() => dictionary.GetEnumerator();
+
+        public bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value) => dictionary.TryGetValue(key, out value);
+
+        IEnumerator IEnumerable.GetEnumerator() => dictionary.GetEnumerator();
 
     }
 

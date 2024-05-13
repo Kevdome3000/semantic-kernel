@@ -46,7 +46,7 @@ public class OpenAIAssistantDefinitionTests
                 ModelId = "testmodel",
                 Instructions = "testinstructions",
                 Description = "testdescription",
-                FileIds = new[] { "id" },
+                FileIds = ["id"],
                 Metadata = new Dictionary<string, string>() { { "a", "1" } },
                 EnableCodeInterpreter = true,
                 EnableRetrieval = true,

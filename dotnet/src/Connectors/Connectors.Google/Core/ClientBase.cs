@@ -104,7 +104,7 @@ internal abstract class ClientBase
         httpRequestMessage.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion,
             HttpHeaderConstant.Values.GetAssemblyVersion(typeof(ClientBase)));
 
-        if (this._bearerTokenProvider != null && await this._bearerTokenProvider().
+        if (this._bearerTokenProvider is not null && await this._bearerTokenProvider().
                 ConfigureAwait(false) is { } bearerKey)
         {
             httpRequestMessage.Headers.Authorization =

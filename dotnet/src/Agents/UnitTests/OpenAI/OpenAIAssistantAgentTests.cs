@@ -226,12 +226,10 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         Assert.Equal(2, messages[0].Items.Count);
 
         Assert.NotNull(messages[0].
-            Items.Where(c => c is TextContent).
-            SingleOrDefault());
+            Items.SingleOrDefault(c => c is TextContent));
 
         Assert.NotNull(messages[0].
-            Items.Where(c => c is AnnotationContent).
-            SingleOrDefault());
+            Items.SingleOrDefault(c => c is AnnotationContent));
     }
 
 
@@ -683,7 +681,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
               "first_id": "step_abc123",
               "last_id": "step_abc456",
               "has_more": false
-            }
+            }                       
             """;
 
         public const string ToolSteps =
@@ -729,7 +727,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
               "first_id": "step_abc123",
               "last_id": "step_abc456",
               "has_more": false
-            }
+            }                       
             """;
 
         public const string ToolResponse = "{ }";
@@ -874,7 +872,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
                   "tools": [],
                   "file_ids": [],
                   "metadata": {}
-                }
+                }           
               ],
               "first_id": "asst_abc789",
               "last_id": "asst_abc789",

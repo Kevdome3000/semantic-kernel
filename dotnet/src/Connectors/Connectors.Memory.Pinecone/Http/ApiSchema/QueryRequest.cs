@@ -14,6 +14,7 @@ using System.Text.Json.Serialization;
 /// </summary>
 internal sealed class QueryRequest
 {
+
     /// <summary>
     /// An index namespace name
     /// </summary>
@@ -80,6 +81,7 @@ internal sealed class QueryRequest
     public QueryRequest WithMetadata(bool includeMetadata)
     {
         this.IncludeMetadata = includeMetadata;
+
         return this;
     }
 
@@ -87,13 +89,14 @@ internal sealed class QueryRequest
     public QueryRequest WithEmbeddings(bool includeValues)
     {
         this.IncludeValues = includeValues;
+
         return this;
     }
 
 
     public HttpRequestMessage Build()
     {
-        if (this.Filter != null)
+        if (this.Filter is not null)
         {
             this.Filter = PineconeUtils.ConvertFilterToPineconeFilter(this.Filter);
         }
@@ -116,4 +119,5 @@ internal sealed class QueryRequest
     {
         this.Vector = values;
     }
+
 }

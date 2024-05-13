@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 /// </summary>
 public sealed class FileIOPlugin
 {
+
     /// <summary>
     /// Read a file
     /// </summary>
@@ -26,7 +27,9 @@ public sealed class FileIOPlugin
     public async Task<string> ReadAsync([Description("Source file")] string path)
     {
         using var reader = File.OpenText(path);
-        return await reader.ReadToEndAsync().ConfigureAwait(false);
+
+        return await reader.ReadToEndAsync().
+            ConfigureAwait(false);
     }
 
 
@@ -46,13 +49,21 @@ public sealed class FileIOPlugin
     {
         byte[] text = Encoding.UTF8.GetBytes(content);
 
-        if (File.Exists(path) && File.GetAttributes(path).HasFlag(FileAttributes.ReadOnly))
+        if (File.Exists(path) && File.GetAttributes(path).
+                HasFlag(FileAttributes.ReadOnly))
         {
             // Most environments will throw this with OpenWrite, but running inside docker on Linux will not.
             throw new UnauthorizedAccessException($"File is read-only: {path}");
         }
 
         using var writer = File.OpenWrite(path);
-        await writer.WriteAsync(text, 0, text.Length).ConfigureAwait(false);
+
+        await writer.WriteAsync(text
+#if !NET
+            , 0, text.Length
+#endif
+            ).
+            ConfigureAwait(false);
     }
+
 }

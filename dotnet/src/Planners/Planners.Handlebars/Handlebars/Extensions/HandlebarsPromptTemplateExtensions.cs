@@ -13,6 +13,7 @@ using PromptTemplates.Handlebars;
 /// </summary>
 internal sealed class HandlebarsPromptTemplateExtensions
 {
+
     public static void RegisterCustomCreatePlanHelpers(
         RegisterHelperCallback registerHelper,
         HandlebarsPromptTemplateOptions options,
@@ -22,14 +23,20 @@ internal sealed class HandlebarsPromptTemplateExtensions
         registerHelper("getSchemaTypeName", static (Context context, Arguments arguments) =>
         {
             KernelParameterMetadata parameter = (KernelParameterMetadata)arguments[0];
+
             return parameter.GetSchemaTypeName();
         });
 
         registerHelper("getSchemaReturnTypeName", static (Context context, Arguments arguments) =>
         {
             KernelReturnParameterMetadata parameter = (KernelReturnParameterMetadata)arguments[0];
-            var functionName = arguments[1].ToString();
-            return parameter.ToKernelParameterMetadata(functionName).GetSchemaTypeName();
+
+            var functionName = arguments[1].
+                ToString() ?? string.Empty;
+
+            return parameter.ToKernelParameterMetadata(functionName).
+                GetSchemaTypeName();
         });
     }
+
 }

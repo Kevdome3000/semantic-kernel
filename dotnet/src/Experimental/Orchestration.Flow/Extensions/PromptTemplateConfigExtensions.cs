@@ -7,6 +7,7 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 /// </summary>
 internal static class PromptTemplateConfigExtensions
 {
+
     /// <summary>
     /// Set the max_tokens request setting to be used by OpenAI models
     /// </summary>
@@ -18,10 +19,11 @@ internal static class PromptTemplateConfigExtensions
 
         foreach (var setting in executionSettings)
         {
-            if (setting.Value.ExtensionData != null)
+            if (setting.Value.ExtensionData is not null)
             {
                 setting.Value.ExtensionData["max_tokens"] = maxTokens;
             }
         }
     }
+
 }

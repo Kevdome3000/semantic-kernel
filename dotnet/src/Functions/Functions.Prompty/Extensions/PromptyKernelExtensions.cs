@@ -5,30 +5,42 @@ namespace Microsoft.SemanticKernel;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using PromptTemplates.Handlebars;
 using PromptTemplates.Liquid;
 using Prompty.Core;
+using YamlDotNet.Serialization;
 
 
 /// <summary>
 /// Provides extension methods for creating <see cref="KernelFunction"/>s from the Prompty template format.
 /// </summary>
-public static class PromptyKernelExtensions
+public static partial class PromptyKernelExtensions
 {
 
     /// <summary>Default template factory to use when none is provided.</summary>
     private static readonly AggregatorPromptTemplateFactory s_defaultTemplateFactory =
         new(new LiquidPromptTemplateFactory(), new HandlebarsPromptTemplateFactory());
 
+    private const string PromptyPattern = /* lang=regex */ """
+                                                           ^---\s*$\n      # Start of YAML front matter, a line beginning with "---" followed by optional whitespace
+                                                           (?<header>.*?)  # Capture the YAML front matter, everything up to the next "---" line
+                                                           ^---\s*$\n      # End of YAML front matter, a line beginning with "---" followed by optional whitespace
+                                                           (?<content>.*)  # Capture the content after the YAML front matter
+                                                           """;
+
+
     /// <summary>Regex for parsing the YAML frontmatter and content from the prompty template.</summary>
-    private static readonly Regex s_promptyRegex = new("""
-                                                       ^---\s*$\n      # Start of YAML front matter, a line beginning with "---" followed by optional whitespace
-                                                       (?<header>.*?)  # Capture the YAML front matter, everything up to the next "---" line
-                                                       ^---\s*$\n      # End of YAML front matter, a line beginning with "---" followed by optional whitespace
-                                                       (?<content>.*)  # Capture the content after the YAML front matter
-                                                       """,
-        RegexOptions.Multiline | RegexOptions.Singleline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
+#if NET
+    [GeneratedRegex(PromptyPattern, RegexOptions.Multiline | RegexOptions.Singleline | RegexOptions.IgnorePatternWhitespace)]
+    private static partial Regex PromptyRegex();
+#else
+    private static Regex PromptyRegex() => s_promptyRegex;
+
+
+    private static readonly Regex s_promptyRegex = new(PromptyPattern, RegexOptions.Multiline | RegexOptions.Singleline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
+#endif
 
 
     /// <summary>
@@ -111,7 +123,8 @@ public static class PromptyKernelExtensions
         // ... (rest of the prompty content)
 
         // Parse the YAML frontmatter and content from the prompty template
-        Match m = s_promptyRegex.Match(promptyTemplate);
+        Match m = PromptyRegex().
+            Match(promptyTemplate);
 
         if (!m.Success)
         {
@@ -122,12 +135,8 @@ public static class PromptyKernelExtensions
         var content = m.Groups["content"].Value;
 
         var prompty = new DeserializerBuilder().Build().
-            Deserialize<PromptyYaml>(header);
-
-        if (prompty is null)
-        {
-            throw new ArgumentException("Invalid prompty template. Header could not be parsed.");
-        }
+                          Deserialize<PromptyYaml>(header) ??
+                      throw new ArgumentException("Invalid prompty template. Header could not be parsed.");
 
         // Step 2:
         // Create a prompt template config from the prompty data.

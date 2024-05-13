@@ -1,16 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Plugins.OpenApi;
+
 using System;
 using System.Text.Json;
 using Json.Schema;
 
-namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
 /// Class for extensions methods for the <see cref="RestApiOperationResponse"/> class.
 /// </summary>
 public static class RestApiOperationResponseExtensions
 {
+
     /// <summary>
     /// Validates the response content against the schema.
     /// </summary>
@@ -42,13 +44,15 @@ public static class RestApiOperationResponseExtensions
         };
     }
 
+
     private static bool ValidateJson(RestApiOperationResponse response)
     {
         try
         {
             var jsonSchema = JsonSchema.FromText(JsonSerializer.Serialize(response.ExpectedSchema));
-            using var contentDoc = JsonDocument.Parse(response.Content.ToString());
+            using var contentDoc = JsonDocument.Parse(response.Content.ToString() ?? "");
             var result = jsonSchema.Evaluate(contentDoc);
+
             return result.IsValid;
         }
         catch (JsonException)
@@ -57,11 +61,13 @@ public static class RestApiOperationResponseExtensions
         }
     }
 
-    private static bool ValidateXml(RestApiOperationResponse response)
+
+    private static bool ValidateXml(RestApiOperationResponse _)
     {
         // todo -- implement
         return true;
     }
+
 
     private static bool ValidateTextHtml(RestApiOperationResponse response)
     {
@@ -70,6 +76,7 @@ public static class RestApiOperationResponseExtensions
             var jsonSchema = JsonSchema.FromText(JsonSerializer.Serialize(response.ExpectedSchema));
             using var contentDoc = JsonDocument.Parse($"\"{response.Content}\"");
             var result = jsonSchema.Evaluate(contentDoc);
+
             return result.IsValid;
         }
         catch (JsonException)
@@ -77,4 +84,5 @@ public static class RestApiOperationResponseExtensions
             return false;
         }
     }
+
 }

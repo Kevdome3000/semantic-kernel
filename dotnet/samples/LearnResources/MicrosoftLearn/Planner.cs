@@ -53,7 +53,7 @@ public class Planner(ITestOutputHelper output) : LearnBaseTest(output)
         Console.Write("User > ");
         string? userInput;
 
-        while ((userInput = Console.ReadLine()) != null)
+        while ((userInput = Console.ReadLine()) is not null)
         {
             // Get user input
             Console.Write("User > ");

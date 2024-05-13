@@ -233,7 +233,7 @@ internal
         {
             if (HasJsonConstructorAttribute(constructor))
             {
-                if (ctorWithAttribute != null)
+                if (ctorWithAttribute is not null)
                 {
                     deserializationCtor = null;
 
@@ -254,7 +254,7 @@ internal
         {
             if (HasJsonConstructorAttribute(constructor))
             {
-                if (ctorWithAttribute != null)
+                if (ctorWithAttribute is not null)
                 {
                     deserializationCtor = null;
 
@@ -266,7 +266,7 @@ internal
         }
 
         // Structs will use default constructor if attribute isn't used.
-        if (useDefaultCtorInAnnotatedStructs && type.IsValueType && ctorWithAttribute == null)
+        if (useDefaultCtorInAnnotatedStructs && type.IsValueType && ctorWithAttribute is null)
         {
             deserializationCtor = null;
 
@@ -278,7 +278,7 @@ internal
         return true;
 
         static bool HasJsonConstructorAttribute(ConstructorInfo constructorInfo) =>
-            constructorInfo.GetCustomAttribute<JsonConstructorAttribute>() != null;
+            constructorInfo.GetCustomAttribute<JsonConstructorAttribute>() is not null;
     }
 
 
@@ -311,7 +311,7 @@ internal
             }
 
             // Step 2. Look for nullable annotations on the generic method declaration.
-            if (typeParam.DeclaringMethod != null && GetNullableContextFlag(typeParam.DeclaringMethod) is byte flag)
+            if (typeParam.DeclaringMethod is not null && GetNullableContextFlag(typeParam.DeclaringMethod) is byte flag)
             {
                 return TranslateByte(flag);
             }

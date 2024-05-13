@@ -15,7 +15,7 @@ internal sealed class AuthorRoleConverter : JsonConverter<AuthorRole?>
     {
         string? role = reader.GetString();
 
-        if (role == null)
+        if (role is null)
         {
             return null;
         }
@@ -41,7 +41,7 @@ internal sealed class AuthorRoleConverter : JsonConverter<AuthorRole?>
 
     public override void Write(Utf8JsonWriter writer, AuthorRole? value, JsonSerializerOptions options)
     {
-        if (value == null)
+        if (value is null)
         {
             writer.WriteNullValue();
 

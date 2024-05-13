@@ -46,7 +46,7 @@ internal sealed class ChatMessage : IChatMessage
         var content = model.Content.First();
 
         this.Annotations =
-            content.Text == null
+            content.Text is null
                 ? Array.Empty<IAnnotation>()
                 : content.Text.Annotations.Select(a => new Annotation(a.Text, a.StartIndex, a.EndIndex, a.FileCitation?.FileId ?? a.FilePath!.FileId,
                         a.FileCitation?.Quote)).
@@ -60,7 +60,7 @@ internal sealed class ChatMessage : IChatMessage
 
         this.Role = model.Role;
 
-        this.ContentType = content.Text == null
+        this.ContentType = content.Text is null
             ? ChatMessageType.Image
             : ChatMessageType.Text;
 

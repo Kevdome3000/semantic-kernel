@@ -172,7 +172,7 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
             var result = await this.InternalGetAsync(collectionName, key, withEmbeddings, cancellationToken).
                 ConfigureAwait(false);
 
-            if (result != null)
+            if (result is not null)
             {
                 yield return result;
             }

@@ -96,9 +96,9 @@ public sealed class BingConnector : IWebSearchEngineConnector
 
         WebSearchResponse? data = JsonSerializer.Deserialize<WebSearchResponse>(json);
 
-        List<T>? returnValues = [];
+        List<T>? returnValues = null;
 
-        if (data?.WebPages?.Value != null)
+        if (data?.WebPages?.Value is not null)
         {
             if (typeof(T) == typeof(string))
             {
@@ -120,9 +120,10 @@ public sealed class BingConnector : IWebSearchEngineConnector
             }
         }
 
-        return returnValues != null && returnValues.Count == 0
-            ? returnValues
-            : returnValues.Take(count);
+        return
+            returnValues is null ? [] :
+            returnValues.Count <= count ? returnValues :
+            returnValues.Take(count);
     }
 
 

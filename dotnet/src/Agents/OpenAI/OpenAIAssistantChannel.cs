@@ -160,7 +160,7 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
                 ThreadMessage? message = await this.RetrieveMessageAsync(detail, cancellationToken).
                     ConfigureAwait(false);
 
-                if (message != null)
+                if (message is not null)
                 {
                     AuthorRole role = new(message.Role.ToString());
 
@@ -179,7 +179,7 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
                             content = GenerateImageFileContent(agent.GetName(), role, contentImage);
                         }
 
-                        if (content != null)
+                        if (content is not null)
                         {
                             yield return content;
                         }
@@ -281,7 +281,7 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
                         content = GenerateImageFileContent(assistantName, role, contentImage);
                     }
 
-                    if (content != null)
+                    if (content is not null)
                     {
                         yield return content;
                     }
@@ -322,10 +322,9 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
         return
             new ChatMessageContent(
                 role,
-                new ChatMessageContentItemCollection()
-                {
+                [
                     new FileReferenceContent(contentImage.FileId)
-                })
+                ])
             {
                 AuthorName = agentName,
             };
@@ -385,7 +384,7 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
             {
                 KernelFunction function = agent.Kernel.GetKernelFunction(functionDetails.Name, FunctionDelimiter);
 
-                KernelArguments functionArguments = new();
+                KernelArguments functionArguments = [];
 
                 if (!string.IsNullOrWhiteSpace(functionDetails.Arguments))
                 {

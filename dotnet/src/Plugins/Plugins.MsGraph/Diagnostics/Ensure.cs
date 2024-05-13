@@ -1,13 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Plugins.MsGraph.Diagnostics;
+
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
-namespace Microsoft.SemanticKernel.Plugins.MsGraph.Diagnostics;
 
 internal static class Ensure
 {
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void NotNullOrWhitespace([NotNull] string parameter, [NotNull] string parameterName)
     {
@@ -17,12 +19,14 @@ internal static class Ensure
         }
     }
 
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void NotNull([NotNull] object parameter, [NotNull] string parameterName)
     {
-        if (parameter == null)
+        if (parameter is null)
         {
             throw new ArgumentNullException($"Parameter '{parameterName}' cannot be null.", parameterName);
         }
     }
+
 }

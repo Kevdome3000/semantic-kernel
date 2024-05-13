@@ -42,7 +42,7 @@ internal static class AzureCosmosDBSimilarityTypeExtensions
     public static string GetCustomName(this AzureCosmosDBSimilarityType type)
     {
         var attribute = type.GetType().
-            GetField(type.ToString()).
+            GetField(type.ToString())?.
             GetCustomAttribute<BsonElementAttribute>();
 
         return attribute?.ElementName ?? type.ToString();

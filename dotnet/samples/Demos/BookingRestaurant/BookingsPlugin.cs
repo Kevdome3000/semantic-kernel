@@ -94,8 +94,8 @@ internal sealed class BookingsPlugin
                 },
                 MaximumAttendeesCount = partySize,
                 FilledAttendeesCount = partySize,
-                Customers = new List<BookingCustomerInformationBase>
-                {
+                Customers =
+                [
                     new BookingCustomerInformation
                     {
                         OdataType = "#microsoft.graph.bookingCustomerInformation",
@@ -104,7 +104,7 @@ internal sealed class BookingsPlugin
                         Phone = customerPhone,
                         TimeZone = this._customerTimeZone,
                     },
-                },
+                ],
                 AdditionalData = new Dictionary<string, object>
                 {
                     ["priceType@odata.type"] = "#microsoft.graph.bookingPriceType",

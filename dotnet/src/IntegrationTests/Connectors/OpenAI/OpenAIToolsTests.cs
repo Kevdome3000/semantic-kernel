@@ -11,6 +11,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Time.Testing;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -116,6 +117,29 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         // Assert
         Assert.NotNull(result);
         Assert.Contains("10", result.GetValue<string>(), StringComparison.InvariantCulture);
+    }
+
+
+    [Fact(Skip = "OpenAI is throttling requests. Switch this test to use Azure OpenAI.")]
+    public async Task CanAutoInvokeKernelFunctionsWithEnumTypeParametersAsync()
+    {
+        // Arrange
+        Kernel kernel = this.InitializeKernel();
+        var timeProvider = new FakeTimeProvider();
+        timeProvider.SetUtcNow(new DateTimeOffset(new DateTime(2024, 4, 24))); // Wednesday
+        var timePlugin = new TimePlugin(timeProvider);
+        kernel.ImportPluginFromObject(timePlugin, nameof(TimePlugin));
+
+        // Act
+        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+
+        var result = await kernel.InvokePromptAsync(
+            "When was last friday? Show the date in format DD.MM.YYYY for example: 15.07.2019",
+            new(settings));
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Contains("19.04.2024", result.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
 
 
@@ -353,7 +377,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
             {
                 var result = await functionCall.InvokeAsync(kernel);
 
-                chatHistory.AddMessage(AuthorRole.Tool, new ChatMessageContentItemCollection() { result });
+                chatHistory.AddMessage(AuthorRole.Tool, [result]);
             }
 
             // Adding a simulated function call to the connector response message
@@ -489,8 +513,8 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
 
         if (importHelperPlugin)
         {
-            kernel.ImportPluginFromFunctions("HelperFunctions", new[]
-            {
+            kernel.ImportPluginFromFunctions("HelperFunctions",
+            [
                 kernel.CreateFunctionFromMethod(() => DateTime.UtcNow.ToString("R"), "GetCurrentUtcTime", "Retrieves the current time in UTC."),
                 kernel.CreateFunctionFromMethod((string cityName) =>
                     cityName switch
@@ -498,7 +522,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
                         "Boston" => "61 and rainy",
                         _ => "31 and snowing",
                     }, "Get_Weather_For_City", "Gets the current weather for the specified city"),
-            });
+            ]);
         }
 
         return kernel;
@@ -608,5 +632,41 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
 
     #endregion
 
+
+    public sealed class TimePlugin
+    {
+
+        private readonly TimeProvider _timeProvider;
+
+
+        public TimePlugin(TimeProvider timeProvider)
+        {
+            this._timeProvider = timeProvider;
+        }
+
+
+        [KernelFunction]
+        [Description("Get the date of the last day matching the supplied week day name in English. Example: Che giorno era 'Martedi' scorso -> dateMatchingLastDayName 'Tuesday' => Tuesday, 16 May, 2023")]
+        public string DateMatchingLastDayName(
+            [Description("The day name to match")] DayOfWeek input,
+            IFormatProvider? formatProvider = null)
+        {
+            DateTimeOffset dateTime = this._timeProvider.GetUtcNow();
+
+            // Walk backwards from the previous day for up to a week to find the matching day
+            for (int i = 1; i <= 7; ++i)
+            {
+                dateTime = dateTime.AddDays(-1);
+
+                if (dateTime.DayOfWeek == input)
+                {
+                    break;
+                }
+            }
+
+            return dateTime.ToString("D", formatProvider);
+        }
+
+    }
 
 }

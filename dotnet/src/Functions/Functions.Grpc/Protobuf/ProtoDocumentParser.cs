@@ -36,7 +36,7 @@ internal sealed class ProtoDocumentParser
 
         var errors = descriptor.GetErrors();
 
-        if (errors != null && errors.Length != 0)
+        if (errors is not null && errors.Length != 0)
         {
             throw new KernelException($"Parsing of '{protoFileName}' .proto document has failed. Details: {string.Join(";", errors.AsEnumerable())}");
         }
@@ -134,12 +134,12 @@ internal sealed class ProtoDocumentParser
     {
         var fieldInfo = typeof(FieldDescriptorProto.Type).GetField(type.ToString());
 
-        if (fieldInfo != null)
+        if (fieldInfo is not null)
         {
             //Get protobuf type name from enum attribute - [global::ProtoBuf.ProtoEnum(Name = @"TYPE_DOUBLE")]
             var attribute = (ProtoEnumAttribute?)Attribute.GetCustomAttribute(fieldInfo, typeof(ProtoEnumAttribute));
 
-            if (attribute != null)
+            if (attribute is not null)
             {
                 return attribute.Name;
             }

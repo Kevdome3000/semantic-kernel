@@ -6,8 +6,9 @@ using System.Text.RegularExpressions;
 using Extensions.Logging;
 
 
-internal sealed class VarBlock : Block, ITextRendering
+internal sealed partial class VarBlock : Block, ITextRendering
 {
+
     internal override BlockTypes Type => BlockTypes.Variable;
 
     internal string Name { get; } = string.Empty;
@@ -18,6 +19,7 @@ internal sealed class VarBlock : Block, ITextRendering
         if (this.Content.Length < 2)
         {
             this.Logger.LogError("The variable name is empty");
+
             return;
         }
 
@@ -35,6 +37,7 @@ internal sealed class VarBlock : Block, ITextRendering
         {
             errorMsg = $"A variable must start with the symbol {Symbols.VarPrefix} and have a name";
             this.Logger.LogError(errorMsg);
+
             return false;
         }
 
@@ -42,6 +45,7 @@ internal sealed class VarBlock : Block, ITextRendering
         {
             errorMsg = $"A variable must start with the symbol {Symbols.VarPrefix}";
             this.Logger.LogError(errorMsg);
+
             return false;
         }
 
@@ -49,14 +53,18 @@ internal sealed class VarBlock : Block, ITextRendering
         {
             errorMsg = "The variable name is empty";
             this.Logger.LogError(errorMsg);
+
             return false;
         }
 
-        if (!s_validNameRegex.IsMatch(this.Name))
+        if (!ValidNameRegex().
+                IsMatch(this.Name))
         {
             errorMsg = $"The variable name '{this.Name}' contains invalid characters. " +
                        "Only alphanumeric chars and underscore are allowed.";
+
             this.Logger.LogError(errorMsg);
+
             return false;
         }
 
@@ -68,12 +76,13 @@ internal sealed class VarBlock : Block, ITextRendering
     /// <inheritdoc/>
     public object? Render(KernelArguments? arguments)
     {
-        if (arguments == null) { return null; }
+        if (arguments is null) { return null; }
 
         if (string.IsNullOrEmpty(this.Name))
         {
             const string ErrMsg = "Variable rendering failed, the variable name is empty";
             this.Logger.LogError(ErrMsg);
+
             throw new KernelException(ErrMsg);
         }
 
@@ -88,5 +97,13 @@ internal sealed class VarBlock : Block, ITextRendering
     }
 
 
-    private static readonly Regex s_validNameRegex = new("^[a-zA-Z0-9_]*$");
+#if NET
+    [GeneratedRegex("^[a-zA-Z0-9_]*$")]
+    private static partial Regex ValidNameRegex();
+#else
+    private static Regex ValidNameRegex() => s_validNameRegex;
+
+    private static readonly Regex s_validNameRegex = new("^[a-zA-Z0-9_]*$", RegexOptions.Compiled);
+#endif
+
 }

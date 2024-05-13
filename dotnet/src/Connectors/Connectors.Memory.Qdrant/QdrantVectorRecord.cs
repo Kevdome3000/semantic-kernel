@@ -14,6 +14,7 @@ using Text;
 /// </summary>
 public class QdrantVectorRecord
 {
+
     /// <summary>
     /// The unique point id for assigned to the vector index.
     /// </summary>
@@ -47,7 +48,11 @@ public class QdrantVectorRecord
     /// <param name="embedding"></param>
     /// <param name="payload"></param>
     /// <param name="tags"></param>
-    public QdrantVectorRecord(string pointId, ReadOnlyMemory<float> embedding, Dictionary<string, object> payload, List<string>? tags = null)
+    public QdrantVectorRecord(
+        string pointId,
+        ReadOnlyMemory<float> embedding,
+        Dictionary<string, object> payload,
+        List<string>? tags = null)
     {
         this.PointId = pointId;
         this.Embedding = embedding;
@@ -75,15 +80,20 @@ public class QdrantVectorRecord
     /// <param name="tags"></param>
     /// <returns>Vector record</returns>
     /// <exception cref="KernelException">Qdrant exception</exception>
-    public static QdrantVectorRecord FromJsonMetadata(string pointId, ReadOnlyMemory<float> embedding, string json, List<string>? tags = null)
+    public static QdrantVectorRecord FromJsonMetadata(
+        string pointId,
+        ReadOnlyMemory<float> embedding,
+        string json,
+        List<string>? tags = null)
     {
         var payload = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
 
-        if (payload != null)
+        if (payload is not null)
         {
             return new QdrantVectorRecord(pointId, embedding, payload, tags);
         }
 
         throw new KernelException("Unable to deserialize record payload");
     }
+
 }

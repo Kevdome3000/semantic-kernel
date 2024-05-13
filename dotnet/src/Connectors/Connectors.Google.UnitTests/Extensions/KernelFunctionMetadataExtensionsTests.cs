@@ -93,7 +93,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
             DefaultValue = "1",
             ParameterType = typeof(int),
             IsRequired = false,
-            Schema = schema != null
+            Schema = schema is not null
                 ? KernelJsonSchema.Parse(schema)
                 : null,
         };
@@ -216,7 +216,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         Assert.NotNull(result);
 
         Assert.Equal(
-            """{"type":"object","required":["parameter1","parameter2","parameter3"],"properties":{"parameter1":{"type":"string","description":"String parameter"},"parameter2":{"enum":["Value1","Value2"],"description":"Enum parameter"},"parameter3":{"type":"string","format":"date-time","description":"DateTime parameter"}}}""",
+            """{"type":"object","required":["parameter1","parameter2","parameter3"],"properties":{"parameter1":{"type":"string","description":"String parameter"},"parameter2":{"type":"string","enum":["Value1","Value2"],"description":"Enum parameter"},"parameter3":{"type":"string","format":"date-time","description":"DateTime parameter"}}}""",
             JsonSerializer.Serialize(result.Parameters)
         );
     }

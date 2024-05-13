@@ -1,16 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Experimental.Orchestration;
+
 using System;
 using System.Linq;
-using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
+using Abstractions;
 
-namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 
 /// <summary>
 /// The flow validator
 /// </summary>
 public class FlowValidator : IFlowValidator
 {
+
     /// <inheritdoc/>
     public void Validate(Flow flow)
     {
@@ -22,6 +24,7 @@ public class FlowValidator : IFlowValidator
         this.ValidateStartingMessage(flow);
         this.ValidatePassthroughVariables(flow);
     }
+
 
     private void ValidateStartingMessage(Flow flow)
     {
@@ -36,6 +39,7 @@ public class FlowValidator : IFlowValidator
         }
     }
 
+
     private void ValidateNonEmpty(Flow flow)
     {
         if (flow.Steps.Count == 0)
@@ -43,6 +47,7 @@ public class FlowValidator : IFlowValidator
             throw new ArgumentException("Flow must contain at least one flow step.");
         }
     }
+
 
     private void ValidatePartialOrder(Flow flow)
     {
@@ -56,11 +61,11 @@ public class FlowValidator : IFlowValidator
         }
     }
 
+
     private void ValidateReferenceStep(Flow flow)
     {
-        var steps = flow.Steps
-            .Select(step => step as ReferenceFlowStep)
-            .Where(step => step != null);
+        var steps = flow.Steps.Select(step => step as ReferenceFlowStep).
+            Where(step => step is not null);
 
         foreach (var step in steps)
         {
@@ -83,6 +88,7 @@ public class FlowValidator : IFlowValidator
         }
     }
 
+
     private void ValidatePassthroughVariables(Flow flow)
     {
         foreach (var step in flow.Steps)
@@ -96,4 +102,5 @@ public class FlowValidator : IFlowValidator
             }
         }
     }
+
 }

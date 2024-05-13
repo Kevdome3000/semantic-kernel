@@ -45,7 +45,7 @@ namespace System.Reflection
 
         private NullabilityState? GetNullableContext(MemberInfo? memberInfo)
         {
-            while (memberInfo != null)
+            while (memberInfo is not null)
             {
                 if (_context.TryGetValue(memberInfo, out NullabilityState state))
                 {
@@ -131,7 +131,7 @@ namespace System.Reflection
                     return;
             }
 
-            if (metaParameter != null)
+            if (metaParameter is not null)
             {
                 CheckGenericParameters(nullability, metaMember, metaParameter.ParameterType, parameter.Member.ReflectedType);
             }
@@ -226,8 +226,8 @@ namespace System.Reflection
             MethodInfo? getter = propertyInfo.GetGetMethod(true);
             MethodInfo? setter = propertyInfo.GetSetMethod(true);
 
-            bool annotationsDisabled = (getter == null || IsPrivateOrInternalMethodAndAnnotationDisabled(getter))
-                                       && (setter == null || IsPrivateOrInternalMethodAndAnnotationDisabled(setter));
+            bool annotationsDisabled = (getter is null || IsPrivateOrInternalMethodAndAnnotationDisabled(getter))
+                                       && (setter is null || IsPrivateOrInternalMethodAndAnnotationDisabled(setter));
 
             NullableAttributeStateParser parser = annotationsDisabled
                 ? NullableAttributeStateParser.Unknown
@@ -235,7 +235,7 @@ namespace System.Reflection
 
             NullabilityInfo nullability = GetNullabilityInfo(propertyInfo, propertyInfo.PropertyType, parser);
 
-            if (getter != null)
+            if (getter is not null)
             {
                 CheckNullabilityAttributes(nullability, getter.ReturnParameter.GetCustomAttributesData());
             }
@@ -244,7 +244,7 @@ namespace System.Reflection
                 nullability.ReadState = NullabilityState.Unknown;
             }
 
-            if (setter != null)
+            if (setter is not null)
             {
                 CheckNullabilityAttributes(nullability, setter.GetParameters().
                     Last().
@@ -490,7 +490,7 @@ namespace System.Reflection
                 metaType = GetPropertyMetaType(property);
             }
 
-            if (metaType != null)
+            if (metaType is not null)
             {
                 CheckGenericParameters(nullability, metaMember!, metaType, memberInfo.ReflectedType);
             }
@@ -501,7 +501,7 @@ namespace System.Reflection
         {
             Type? type = member.DeclaringType;
 
-            if ((type != null) && type.IsGenericType && !type.IsGenericTypeDefinition)
+            if ((type is not null) && type.IsGenericType && !type.IsGenericTypeDefinition)
             {
                 return NullabilityInfoHelpers.GetMemberWithSameMetadataDefinitionAs(type.GetGenericTypeDefinition(), member);
             }

@@ -7,8 +7,9 @@ using System.Text.RegularExpressions;
 using Extensions.Logging;
 
 
-internal sealed class FunctionIdBlock : Block, ITextRendering
+internal sealed partial class FunctionIdBlock : Block, ITextRendering
 {
+
     internal override BlockTypes Type => BlockTypes.FunctionId;
 
     internal string PluginName { get; } = string.Empty;
@@ -24,6 +25,7 @@ internal sealed class FunctionIdBlock : Block, ITextRendering
         if (functionNameParts.Length > 2)
         {
             this.Logger.LogError("Invalid function name `{FunctionName}`.", this.Content);
+
             throw new KernelException($"Invalid function name `{this.Content}`. A function name can contain at most one dot separating the plugin name from the function name");
         }
 
@@ -31,6 +33,7 @@ internal sealed class FunctionIdBlock : Block, ITextRendering
         {
             this.PluginName = functionNameParts[0];
             this.FunctionName = functionNameParts[1];
+
             return;
         }
 
@@ -40,19 +43,23 @@ internal sealed class FunctionIdBlock : Block, ITextRendering
 
     public override bool IsValid(out string errorMsg)
     {
-        if (!s_validContentRegex.IsMatch(this.Content))
+        if (!ValidContentRegex().
+                IsMatch(this.Content))
         {
             errorMsg = "The function identifier is empty";
+
             return false;
         }
 
         if (HasMoreThanOneDot(this.Content))
         {
             errorMsg = "The function identifier can contain max one '.' char separating plugin name from function name";
+
             return false;
         }
 
         errorMsg = "";
+
         return true;
     }
 
@@ -66,12 +73,21 @@ internal sealed class FunctionIdBlock : Block, ITextRendering
 
     private static bool HasMoreThanOneDot(string? value)
     {
-        if (value == null || value.Length < 2) { return false; }
+        if (value is null || value.Length < 2) { return false; }
 
         int count = 0;
+
         return value.Any(t => t == '.' && ++count > 1);
     }
 
 
+#if NET
+    [GeneratedRegex("^[a-zA-Z0-9_.]*$")]
+    private static partial Regex ValidContentRegex();
+#else
+    private static Regex ValidContentRegex() => s_validContentRegex;
+
     private static readonly Regex s_validContentRegex = new("^[a-zA-Z0-9_.]*$");
+#endif
+
 }

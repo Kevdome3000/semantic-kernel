@@ -50,7 +50,7 @@ internal sealed class MultipleHttpMessageHandlerStub : DelegatingHandler
         this.RequestHeaders.Add(request.Headers);
         this.ContentHeaders.Add(request.Content?.Headers);
 
-        var content = request.Content == null
+        var content = request.Content is null
             ? null
             : await request.Content.ReadAsByteArrayAsync(cancellationToken);
 

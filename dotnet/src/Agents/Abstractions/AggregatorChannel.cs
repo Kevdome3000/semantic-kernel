@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 /// <summary>
 /// Adapt channel contract to underlying <see cref="AgentChat"/>.
 /// </summary>
-internal class AggregatorChannel(AgentChat chat) : AgentChannel<AggregatorAgent>
+internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<AggregatorAgent>
 {
 
     private readonly AgentChat _chat = chat;
@@ -40,7 +40,7 @@ internal class AggregatorChannel(AgentChat chat) : AgentChannel<AggregatorAgent>
 
         // For AggregatorMode.Nested, only the final message is merged into the owning chat.
         // The entire history is always preserved within nested chat, however.
-        if (agent.Mode == AggregatorMode.Nested && lastMessage != null)
+        if (agent.Mode == AggregatorMode.Nested && lastMessage is not null)
         {
             ChatMessageContent message =
                 new(lastMessage.Role, lastMessage.Items, lastMessage.ModelId, lastMessage.InnerContent,

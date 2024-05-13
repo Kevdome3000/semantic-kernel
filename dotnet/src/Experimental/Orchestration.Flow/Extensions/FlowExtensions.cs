@@ -22,12 +22,8 @@ public static class FlowExtensions
 
         while (remainingSteps.Count > 0)
         {
-            var independentStep = remainingSteps.FirstOrDefault(step => !remainingSteps.Any(step.DependsOn));
-
-            if (independentStep is null)
-            {
-                throw new KernelException("The plan contains circular dependencies.");
-            }
+            var independentStep = remainingSteps.FirstOrDefault(step => !remainingSteps.Any(step.DependsOn)) ??
+                                  throw new KernelException("The plan contains circular dependencies.");
 
             sortedSteps.Add(independentStep);
             remainingSteps.Remove(independentStep);

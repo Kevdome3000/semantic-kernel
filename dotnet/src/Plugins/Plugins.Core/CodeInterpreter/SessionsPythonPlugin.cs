@@ -19,7 +19,7 @@ using Http;
 /// <summary>
 /// A plugin for running Python code in an Azure Container Apps dynamic sessions code interpreter.
 /// </summary>
-public class SessionsPythonPlugin
+public partial class SessionsPythonPlugin
 {
 
     private static readonly string s_assemblyVersion = typeof(Kernel).Assembly.GetName().
@@ -55,12 +55,12 @@ public class SessionsPythonPlugin
 
         this._settings = settings;
 
-        // Ensure the endpoint won't change by reference
+        // Ensure the endpoint won't change by reference 
         this._poolManagementEndpoint = GetBaseEndpoint(settings.Endpoint);
 
         this._authTokenProvider = authTokenProvider;
         this._httpClientFactory = httpClientFactory;
-        this._logger = loggerFactory?.CreateLogger<SessionsPythonPlugin>() ?? new NullLogger<SessionsPythonPlugin>();
+        this._logger = loggerFactory?.CreateLogger(typeof(SessionsPythonPlugin)) ?? NullLogger.Instance;
     }
 
 
@@ -77,13 +77,15 @@ public class SessionsPythonPlugin
     /// <returns> The result of the Python code execution. </returns>
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="HttpRequestException"></exception>
-    [KernelFunction, Description(@"Executes the provided Python code.
-                     Start and end the code snippet with double quotes to define it as a string.
-                     Insert \n within the string wherever a new line should appear.
-                     Add spaces directly after \n sequences to replicate indentation.
-                     Use \"" to include double quotes within the code without ending the string.
-                     Keep everything in a single line; the \n sequences will represent line breaks
-                     when the string is processed or displayed.")]
+    [KernelFunction, Description("""
+                                 Executes the provided Python code.
+                                 Start and end the code snippet with double quotes to define it as a string.
+                                 Insert \n within the string wherever a new line should appear.
+                                 Add spaces directly after \n sequences to replicate indentation.
+                                 Use \" to include double quotes within the code without ending the string.
+                                 Keep everything in a single line; the \n sequences will represent line breaks
+                                 when the string is processed or displayed.
+                                 """)]
     public async Task<string> ExecuteCodeAsync([Description("The valid Python code to execute.")] string code)
     {
         Verify.NotNullOrWhiteSpace(code, nameof(code));
@@ -93,10 +95,7 @@ public class SessionsPythonPlugin
             code = SanitizeCodeInput(code);
         }
 
-        if (this._logger.IsEnabled(LogLevel.Trace))
-        {
-            this._logger.LogTrace("Executing Python code: {Code}", code);
-        }
+        this._logger.LogTrace("Executing Python code: {Code}", code);
 
         using var httpClient = this._httpClientFactory.CreateClient();
 
@@ -127,12 +126,14 @@ public class SessionsPythonPlugin
         var jsonElementResult = JsonSerializer.Deserialize<JsonElement>(await response.Content.ReadAsStringAsync().
             ConfigureAwait(false));
 
-        return $@"Result:
-{jsonElementResult.GetProperty("result").GetRawText()}
-Stdout:
-{jsonElementResult.GetProperty("stdout").GetRawText()}
-Stderr:
-{jsonElementResult.GetProperty("stderr").GetRawText()}";
+        return $"""
+                Result:
+                {jsonElementResult.GetProperty("result").GetRawText()}
+                Stdout:
+                {jsonElementResult.GetProperty("stdout").GetRawText()}
+                Stderr:
+                {jsonElementResult.GetProperty("stderr").GetRawText()}
+                """;
     }
 
 
@@ -165,10 +166,7 @@ Stderr:
         Verify.NotNullOrWhiteSpace(remoteFilePath, nameof(remoteFilePath));
         Verify.NotNullOrWhiteSpace(localFilePath, nameof(localFilePath));
 
-        if (this._logger.IsEnabled(LogLevel.Information))
-        {
-            this._logger.LogInformation("Uploading file: {LocalFilePath} to {RemoteFilePath}", localFilePath, remoteFilePath);
-        }
+        this._logger.LogInformation("Uploading file: {LocalFilePath} to {RemoteFilePath}", localFilePath, remoteFilePath);
 
         using var httpClient = this._httpClientFactory.CreateClient();
 
@@ -219,17 +217,14 @@ Stderr:
     {
         Verify.NotNullOrWhiteSpace(remoteFilePath, nameof(remoteFilePath));
 
-        if (this._logger.IsEnabled(LogLevel.Trace))
-        {
-            this._logger.LogTrace("Downloading file: {RemoteFilePath} to {LocalFilePath}", remoteFilePath, localFilePath);
-        }
+        this._logger.LogTrace("Downloading file: {RemoteFilePath} to {LocalFilePath}", remoteFilePath, localFilePath);
 
         using var httpClient = this._httpClientFactory.CreateClient();
 
         await this.AddHeadersAsync(httpClient).
             ConfigureAwait(false);
 
-        var response = await httpClient.GetAsync($"{this._poolManagementEndpoint}python/downloadFile?identifier={this._settings.SessionId}&filename={remoteFilePath}").
+        var response = await httpClient.GetAsync(new Uri($"{this._poolManagementEndpoint}python/downloadFile?identifier={this._settings.SessionId}&filename={remoteFilePath}")).
             ConfigureAwait(false);
 
         if (!response.IsSuccessStatusCode)
@@ -266,17 +261,14 @@ Stderr:
     [KernelFunction, Description("Lists all files in the provided session id pool.")]
     public async Task<IReadOnlyList<SessionsRemoteFileMetadata>> ListFilesAsync()
     {
-        if (this._logger.IsEnabled(LogLevel.Trace))
-        {
-            this._logger.LogTrace("Listing files for Session ID: {SessionId}", this._settings.SessionId);
-        }
+        this._logger.LogTrace("Listing files for Session ID: {SessionId}", this._settings.SessionId);
 
         using var httpClient = this._httpClientFactory.CreateClient();
 
         await this.AddHeadersAsync(httpClient).
             ConfigureAwait(false);
 
-        var response = await httpClient.GetAsync($"{this._poolManagementEndpoint}python/files?identifier={this._settings.SessionId}").
+        var response = await httpClient.GetAsync(new Uri($"{this._poolManagementEndpoint}python/files?identifier={this._settings.SessionId}")).
             ConfigureAwait(false);
 
         if (!response.IsSuccessStatusCode)
@@ -327,12 +319,30 @@ Stderr:
     private static string SanitizeCodeInput(string code)
     {
         // Remove leading whitespace and backticks and python (if llm mistakes python console as terminal)
-        code = Regex.Replace(code, @"^(\s|`)*(?i:python)?\s*", "");
+        code = RemoveLeadingWhitespaceBackticksPython().
+            Replace(code, "");
 
         // Remove trailing whitespace and backticks
-        code = Regex.Replace(code, @"(\s|`)*$", "");
+        code = RemoveTrailingWhitespaceBackticks().
+            Replace(code, "");
 
         return code;
     }
+
+
+#if NET
+    [GeneratedRegex(@"^(\s|`)*(?i:python)?\s*", RegexOptions.ExplicitCapture)]
+    private static partial Regex RemoveLeadingWhitespaceBackticksPython();
+
+
+    [GeneratedRegex(@"(\s|`)*$", RegexOptions.ExplicitCapture)]
+    private static partial Regex RemoveTrailingWhitespaceBackticks();
+#else
+    private static Regex RemoveLeadingWhitespaceBackticksPython() => s_removeLeadingWhitespaceBackticksPython;
+    private static readonly Regex s_removeLeadingWhitespaceBackticksPython = new(@"^(\s|`)*(?i:python)?\s*", RegexOptions.Compiled | RegexOptions.ExplicitCapture);
+
+    private static Regex RemoveTrailingWhitespaceBackticks() => s_removeTrailingWhitespaceBackticks;
+    private static readonly Regex s_removeTrailingWhitespaceBackticks = new(@"(\s|`)*$", RegexOptions.Compiled | RegexOptions.ExplicitCapture);
+#endif
 
 }

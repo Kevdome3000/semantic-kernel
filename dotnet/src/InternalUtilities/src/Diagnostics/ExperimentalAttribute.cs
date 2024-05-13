@@ -4,9 +4,9 @@
 // https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Diagnostics/CodeAnalysis/ExperimentalAttribute.cs
 // made internal rather than public.
 
+#if !NET8_0_OR_GREATER
 namespace System.Diagnostics.CodeAnalysis;
 
-#if !NET8_0_OR_GREATER
 /// <summary>
 ///  Indicates that an API is experimental and it may change in the future.
 /// </summary>
@@ -29,6 +29,7 @@ namespace System.Diagnostics.CodeAnalysis;
                 AttributeTargets.Delegate, Inherited = false)]
 internal sealed class ExperimentalAttribute : Attribute
 {
+
     /// <summary>
     ///  Initializes a new instance of the <see cref="ExperimentalAttribute"/> class, specifying the ID that the compiler will use
     ///  when reporting a use of the API the attribute applies to.
@@ -54,5 +55,6 @@ internal sealed class ExperimentalAttribute : Attribute
     /// <value>The format string that represents a URL to corresponding documentation.</value>
     /// <remarks>An example format string is <c>https://contoso.com/obsoletion-warnings/{0}</c>.</remarks>
     public string? UrlFormat { get; set; }
+
 }
 #endif

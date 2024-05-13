@@ -83,17 +83,16 @@ public class AgentChatTests
         lock (syncObject)
         {
             tasks =
-                new[]
-                {
-                    Task.Run(() => SynchronizedInvokeAsync()),
-                    Task.Run(() => SynchronizedInvokeAsync()),
-                    Task.Run(() => SynchronizedInvokeAsync()),
-                    Task.Run(() => SynchronizedInvokeAsync()),
-                    Task.Run(() => SynchronizedInvokeAsync()),
-                    Task.Run(() => SynchronizedInvokeAsync()),
-                    Task.Run(() => SynchronizedInvokeAsync()),
-                    Task.Run(() => SynchronizedInvokeAsync()),
-                };
+            [
+                Task.Run(() => SynchronizedInvokeAsync()),
+                Task.Run(() => SynchronizedInvokeAsync()),
+                Task.Run(() => SynchronizedInvokeAsync()),
+                Task.Run(() => SynchronizedInvokeAsync()),
+                Task.Run(() => SynchronizedInvokeAsync()),
+                Task.Run(() => SynchronizedInvokeAsync()),
+                Task.Run(() => SynchronizedInvokeAsync()),
+                Task.Run(() => SynchronizedInvokeAsync()),
+            ];
         }
 
         // Signal tasks to execute

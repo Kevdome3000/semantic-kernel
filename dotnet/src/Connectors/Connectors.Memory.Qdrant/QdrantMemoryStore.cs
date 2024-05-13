@@ -182,7 +182,7 @@ public class QdrantMemoryStore : IMemoryStore
             var vectorData = await this._qdrantClient.GetVectorByPayloadIdAsync(collectionName, key, withEmbedding, cancellationToken).
                 ConfigureAwait(false);
 
-            if (vectorData == null) { return null; }
+            if (vectorData is null) { return null; }
 
             return MemoryRecord.FromJsonMetadata(
                 json: vectorData.GetSerializedPayload(),
@@ -210,7 +210,7 @@ public class QdrantMemoryStore : IMemoryStore
             MemoryRecord? record = await this.GetAsync(collectionName, key, withEmbeddings, cancellationToken).
                 ConfigureAwait(false);
 
-            if (record != null)
+            if (record is not null)
             {
                 yield return record;
             }
@@ -240,7 +240,7 @@ public class QdrantMemoryStore : IMemoryStore
             var vectorData = await vectorDataList.FirstOrDefaultAsync(cancellationToken).
                 ConfigureAwait(false);
 
-            if (vectorData == null) { return null; }
+            if (vectorData is null) { return null; }
 
             return MemoryRecord.FromJsonMetadata(
                 json: vectorData.GetSerializedPayload(),
@@ -399,7 +399,7 @@ public class QdrantMemoryStore : IMemoryStore
                 hasResult = false;
             }
 
-            if (result != null)
+            if (result is not null)
             {
                 yield return (
                     MemoryRecord.FromJsonMetadata(
@@ -460,7 +460,7 @@ public class QdrantMemoryStore : IMemoryStore
                     cancellationToken: cancellationToken).
                 ConfigureAwait(false);
 
-            if (existingRecord != null)
+            if (existingRecord is not null)
             {
                 pointId = existingRecord.PointId;
             }
@@ -475,7 +475,7 @@ public class QdrantMemoryStore : IMemoryStore
                     existingRecord = await this._qdrantClient.GetVectorsByIdAsync(collectionName, [pointId], cancellationToken: cancellationToken).
                         FirstOrDefaultAsync(cancellationToken).
                         ConfigureAwait(false);
-                } while (existingRecord != null);
+                } while (existingRecord is not null);
             }
         }
 

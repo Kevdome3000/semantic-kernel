@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 /// <summary>
 /// Text to image response
 /// </summary>
-internal class TextToImageResponse
+internal sealed class TextToImageResponse
 {
 
     /// <summary>

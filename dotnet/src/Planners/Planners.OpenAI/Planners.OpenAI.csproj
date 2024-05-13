@@ -4,7 +4,7 @@
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
     <AssemblyName>Microsoft.SemanticKernel.Planners.OpenAI</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Planning</RootNamespace>
-    <TargetFramework>netstandard2.0</TargetFramework>
+      <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
       <VersionSuffix>preview</VersionSuffix>
   </PropertyGroup>
 
@@ -35,11 +35,5 @@
       <ProjectReference Include="..\..\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj"/>
     <ProjectReference Include="..\..\Functions\Functions.Yaml\Functions.Yaml.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Microsoft.SemanticKernel.Abstractions">
-      <HintPath>..\..\SemanticKernel.Abstractions\bin\Debug\netstandard2.0\Microsoft.SemanticKernel.Abstractions.dll</HintPath>
-    </Reference>
   </ItemGroup>
 </Project>

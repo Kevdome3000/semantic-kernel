@@ -46,7 +46,7 @@ internal static class ChatHistorySerializer
     }
 
 
-    private class SerializableChatMessage
+    private sealed class SerializableChatMessage
     {
 
         public string? Role { get; set; }

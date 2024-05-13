@@ -213,8 +213,6 @@ public sealed class HuggingFaceStreamingTextGenerationTests : IDisposable
             Assert.NotNull(textContent!.ModelId);
             Assert.Equal(expectedModel, textContent.ModelId);
         }
-
-        ;
     }
 
 
@@ -232,8 +230,6 @@ public sealed class HuggingFaceStreamingTextGenerationTests : IDisposable
             Assert.NotNull(textContent!.ModelId);
             Assert.Equal(expectedModel, textContent.ModelId);
         }
-
-        ;
     }
 
 

@@ -32,12 +32,10 @@ internal static class KernelSystemHelpers
     /// <param name="handlebarsInstance">The <see cref="IHandlebars"/>-instance.</param>
     /// <param name="kernel">Kernel instance.</param>
     /// <param name="variables">Dictionary of variables maintained by the Handlebars context.</param>
-    /// <param name="options">Handlebars prompt template options.</param>
     public static void Register(
         IHandlebars handlebarsInstance,
         Kernel kernel,
-        KernelArguments variables,
-        HandlebarsPromptTemplateOptions options)
+        KernelArguments variables)
     {
         RegisterSystemHelpers(handlebarsInstance, kernel, variables);
     }
@@ -94,7 +92,7 @@ internal static class KernelSystemHelpers
                 var args = ProcessArguments(arguments, variables);
 
                 name = args[0].
-                    ToString();
+                    ToString() ?? string.Empty;
 
                 value = args[1];
             }
@@ -151,10 +149,10 @@ internal static class KernelSystemHelpers
 
             // Create list with numbers from start to end (inclusive)
             var start = int.Parse(args[0].
-                ToString(), kernel.Culture);
+                ToString()!, kernel.Culture);
 
             var end = int.Parse(args[1].
-                ToString(), kernel.Culture) + 1;
+                ToString()!, kernel.Culture) + 1;
 
             var count = end - start;
 
@@ -179,14 +177,14 @@ internal static class KernelSystemHelpers
         {
             var args = ProcessArguments(arguments, variables);
 
-            return args.Sum(arg => decimal.Parse(arg.ToString(), kernel.Culture));
+            return args.Sum(arg => decimal.Parse(arg.ToString()!, kernel.Culture));
         });
 
         handlebarsInstance.RegisterHelper("subtract", (in HelperOptions options, in Context context, in Arguments arguments) =>
         {
             var args = ProcessArguments(arguments, variables);
 
-            return args.Aggregate((a, b) => decimal.Parse(a.ToString(), kernel.Culture) - decimal.Parse(b.ToString(), kernel.Culture));
+            return args.Aggregate((a, b) => decimal.Parse(a.ToString()!, kernel.Culture) - decimal.Parse(b.ToString()!, kernel.Culture));
         });
 
         handlebarsInstance.RegisterHelper("equals", (in HelperOptions options, in Context context, in Arguments arguments) =>

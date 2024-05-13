@@ -1,16 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.Diagnostics;
+
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
-namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.Diagnostics;
 
 /// <summary>
 /// Internal data validation class.
 /// </summary>
 internal static class Ensure
 {
+
     /// <summary>
     /// Ensures the given parameter is not null or does not contain only white-space characters.
     /// Throws an <see cref="ArgumentException"/> if the parameter is invalid.
@@ -25,6 +27,7 @@ internal static class Ensure
         }
     }
 
+
     /// <summary>
     /// Ensures the given parameter is not null.
     /// Throws an <see cref="ArgumentNullException"/> if the parameter is invalid.
@@ -33,9 +36,10 @@ internal static class Ensure
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void NotNull([NotNull] object parameter, [NotNull] string parameterName)
     {
-        if (parameter == null)
+        if (parameter is null)
         {
             throw new ArgumentNullException($"Parameter '{parameterName}' cannot be null.", parameterName);
         }
     }
+
 }

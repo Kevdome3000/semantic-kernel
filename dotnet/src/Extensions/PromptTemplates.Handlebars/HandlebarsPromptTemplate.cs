@@ -2,7 +2,6 @@
 
 namespace Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
@@ -34,11 +33,11 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
     /// <param name="options">Handlebars prompt template options</param>
     internal HandlebarsPromptTemplate(PromptTemplateConfig promptConfig, bool allowUnsafeContent = false, HandlebarsPromptTemplateOptions? options = null)
     {
-        _allowUnsafeContent = allowUnsafeContent;
-        _loggerFactory ??= NullLoggerFactory.Instance;
-        _logger = _loggerFactory.CreateLogger(typeof(HandlebarsPromptTemplate));
-        _promptModel = promptConfig;
-        _options = options ?? new HandlebarsPromptTemplateOptions();
+        this._allowUnsafeContent = allowUnsafeContent;
+        this._loggerFactory ??= NullLoggerFactory.Instance;
+        this._logger = this._loggerFactory.CreateLogger(typeof(HandlebarsPromptTemplate));
+        this._promptModel = promptConfig;
+        this._options = options ?? new();
     }
 
 
@@ -49,15 +48,15 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
     {
         Verify.NotNull(kernel);
 
-        arguments = GetVariables(kernel, arguments);
-        var handlebarsInstance = Handlebars.Create();
+        arguments = this.GetVariables(arguments);
+        var handlebarsInstance = HandlebarsDotNet.Handlebars.Create();
 
         // Register kernel, system, and any custom helpers
-        RegisterHelpers(handlebarsInstance, kernel, arguments, cancellationToken);
+        this.RegisterHelpers(handlebarsInstance, kernel, arguments, cancellationToken);
 
-        var template = handlebarsInstance.Compile(_promptModel.Template);
+        var template = handlebarsInstance.Compile(this._promptModel.Template);
 
-        return WebUtility.HtmlDecode(template(arguments).
+        return System.Net.WebUtility.HtmlDecode(template(arguments).
             Trim());
     }
 
@@ -83,27 +82,26 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
         CancellationToken cancellationToken = default)
     {
         // Add SK's built-in system helpers
-        KernelSystemHelpers.Register(handlebarsInstance, kernel, arguments, _options);
+        KernelSystemHelpers.Register(handlebarsInstance, kernel, arguments);
 
         // Add built-in helpers from the HandlebarsDotNet library
-        HandlebarsHelpers.Register(handlebarsInstance, options =>
+        HandlebarsHelpers.Register(handlebarsInstance, optionsCallback: options =>
         {
-            options.PrefixSeparator = _options.PrefixSeparator;
-            options.Categories = _options.Categories;
-            options.UseCategoryPrefix = _options.UseCategoryPrefix;
-            options.CustomHelperPaths = _options.CustomHelperPaths;
+            options.PrefixSeparator = this._options.PrefixSeparator;
+            options.Categories = this._options.Categories;
+            options.UseCategoryPrefix = this._options.UseCategoryPrefix;
+            options.CustomHelperPaths = this._options.CustomHelperPaths;
         });
 
         // Add helpers for kernel functions
-        KernelFunctionHelpers.Register(handlebarsInstance, kernel, arguments, _promptModel,
-            _allowUnsafeContent, _options.PrefixSeparator,
-            cancellationToken);
+        KernelFunctionHelpers.Register(handlebarsInstance, kernel, arguments, this._promptModel,
+            this._allowUnsafeContent, this._options.PrefixSeparator, cancellationToken);
 
         // Add any custom helpers
-        _options.RegisterCustomHelpers?.Invoke(
-            (name, customHelper)
+        this._options.RegisterCustomHelpers?.Invoke(
+            (string name, HandlebarsReturnHelper customHelper)
                 => KernelHelpersUtils.RegisterHelperSafe(handlebarsInstance, name, customHelper),
-            _options,
+            this._options,
             arguments);
     }
 
@@ -111,13 +109,13 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
     /// <summary>
     /// Gets the variables for the prompt template, including setting any default values from the prompt config.
     /// </summary>
-    private KernelArguments GetVariables(Kernel kernel, KernelArguments? arguments)
+    private KernelArguments GetVariables(KernelArguments? arguments)
     {
         KernelArguments result = [];
 
-        foreach (var p in _promptModel.InputVariables)
+        foreach (var p in this._promptModel.InputVariables)
         {
-            if (p.Default == null || p.Default is string stringDefault && stringDefault.Length == 0)
+            if (p.Default is null || (p.Default is string stringDefault && stringDefault.Length == 0))
             {
                 continue;
             }
@@ -133,7 +131,7 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
                 {
                     var value = kvp.Value;
 
-                    if (ShouldEncodeTags(_promptModel, kvp.Key, kvp.Value))
+                    if (this.ShouldEncodeTags(this._promptModel, kvp.Key, kvp.Value))
                     {
                         value = HttpUtility.HtmlEncode(value.ToString());
                     }
@@ -149,7 +147,7 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
 
     private bool ShouldEncodeTags(PromptTemplateConfig promptTemplateConfig, string propertyName, object? propertyValue)
     {
-        if (propertyValue is null || propertyValue is not string || _allowUnsafeContent)
+        if (propertyValue is null || propertyValue is not string || this._allowUnsafeContent)
         {
             return false;
         }

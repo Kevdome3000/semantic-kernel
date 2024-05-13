@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-
-
 // ReSharper disable StringLiteralTypo
 
 namespace SemanticKernel.UnitTests.Functions;
@@ -673,7 +671,7 @@ public class KernelFunctionFromPromptTests
             ReturnsAsync(new List<TextContent> { mockTextContent });
 
 #pragma warning disable CS0618 // Events are deprecated
-        void MyRenderedHandler(object? sender, PromptRenderedEventArgs e)
+        static void MyRenderedHandler(object? sender, PromptRenderedEventArgs e)
         {
             e.RenderedPrompt += " USE SHORT, CLEAR, COMPLETE SENTENCES.";
         }

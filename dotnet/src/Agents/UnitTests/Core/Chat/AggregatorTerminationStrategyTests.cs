@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+
 namespace SemanticKernel.Agents.UnitTests.Core.Chat;
 
-using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -120,7 +120,7 @@ public class AggregatorTerminationStrategyTests
             agentMockB.Object,
             new(strategyMockTrue, strategyMockTrue)
             {
-                Agents = new[] { agentMockA.Object },
+                Agents = [agentMockA.Object],
                 Condition = AggregateTerminationCondition.All,
             });
 
@@ -129,7 +129,7 @@ public class AggregatorTerminationStrategyTests
             agentMockB.Object,
             new(strategyMockTrue, strategyMockTrue)
             {
-                Agents = new[] { agentMockB.Object },
+                Agents = [agentMockB.Object],
                 Condition = AggregateTerminationCondition.All,
             });
     }
@@ -137,7 +137,7 @@ public class AggregatorTerminationStrategyTests
 
     private static async Task VerifyResultAsync(bool expectedResult, Agent agent, AggregatorTerminationStrategy strategyRoot)
     {
-        var result = await strategyRoot.ShouldTerminateAsync(agent, Array.Empty<ChatMessageContent>());
+        var result = await strategyRoot.ShouldTerminateAsync(agent, []);
         Assert.Equal(expectedResult, result);
     }
 

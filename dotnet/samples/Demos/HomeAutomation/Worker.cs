@@ -45,7 +45,7 @@ internal sealed class Worker(
 
         string? input = null;
 
-        while ((input = Console.ReadLine()) != null)
+        while ((input = Console.ReadLine()) is not null)
         {
             Console.WriteLine();
 

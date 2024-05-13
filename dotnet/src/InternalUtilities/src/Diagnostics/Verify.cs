@@ -12,12 +12,25 @@ using System.Text.RegularExpressions;
 
 
 [ExcludeFromCodeCoverage]
-internal static class Verify
+internal static partial class Verify
 {
 
-    private static readonly Regex s_asciiLettersDigitsUnderscoresRegex = new("^[0-9A-Za-z_]*$");
+#if NET
+    [GeneratedRegex("^[0-9A-Za-z_]*$")]
+    private static partial Regex AsciiLettersDigitsUnderscoresRegex();
 
-    private static readonly Regex s_filenameRegex = new("^[^.]+\\.[^.]+$");
+
+    [GeneratedRegex("^[^.]+\\.[^.]+$")]
+    private static partial Regex FilenameRegex();
+#else
+    private static Regex AsciiLettersDigitsUnderscoresRegex() => s_asciiLettersDigitsUnderscoresRegex;
+
+    private static readonly Regex s_asciiLettersDigitsUnderscoresRegex = new("^[0-9A-Za-z_]*$", RegexOptions.Compiled);
+
+    private static Regex FilenameRegex() => s_filenameRegex;
+
+    private static readonly Regex s_filenameRegex = new("^[^.]+\\.[^.]+$", RegexOptions.Compiled);
+#endif
 
 
     /// <summary>
@@ -26,22 +39,30 @@ internal static class Verify
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void NotNull([NotNull] object? obj, [CallerArgumentExpression(nameof(obj))] string? paramName = null)
     {
+#if NET
+        ArgumentNullException.ThrowIfNull(obj, paramName);
+#else
         if (obj is null)
         {
             ThrowArgumentNullException(paramName);
         }
+#endif
     }
 
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void NotNullOrWhiteSpace([NotNull] string? str, [CallerArgumentExpression(nameof(str))] string? paramName = null)
     {
+#if NET
+        ArgumentException.ThrowIfNullOrWhiteSpace(str, paramName);
+#else
         NotNull(str, paramName);
 
         if (string.IsNullOrWhiteSpace(str))
         {
             ThrowArgumentWhiteSpaceException(paramName);
         }
+#endif
     }
 
 
@@ -69,7 +90,8 @@ internal static class Verify
     {
         NotNullOrWhiteSpace(pluginName);
 
-        if (!s_asciiLettersDigitsUnderscoresRegex.IsMatch(pluginName))
+        if (!AsciiLettersDigitsUnderscoresRegex().
+                IsMatch(pluginName))
         {
             ThrowArgumentInvalidName("plugin name", pluginName, paramName);
         }
@@ -85,7 +107,8 @@ internal static class Verify
     {
         NotNullOrWhiteSpace(functionName);
 
-        if (!s_asciiLettersDigitsUnderscoresRegex.IsMatch(functionName))
+        if (!AsciiLettersDigitsUnderscoresRegex().
+                IsMatch(functionName))
         {
             ThrowArgumentInvalidName("function name", functionName, paramName);
         }
@@ -96,7 +119,8 @@ internal static class Verify
     {
         NotNullOrWhiteSpace(filename);
 
-        if (!s_filenameRegex.IsMatch(filename))
+        if (!FilenameRegex().
+                IsMatch(filename))
         {
             throw new ArgumentException($"Invalid filename format: '{filename}'. Filename should consist of an actual name and a file extension.", paramName);
         }

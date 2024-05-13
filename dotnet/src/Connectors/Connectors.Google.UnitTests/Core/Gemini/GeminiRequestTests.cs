@@ -254,7 +254,7 @@ public sealed class GeminiRequestTests
             c => c.Role == AuthorRole.Tool);
 
         Assert.Single(request.Contents,
-            c => c.Parts![0].FunctionResponse != null);
+            c => c.Parts![0].FunctionResponse is not null);
 
         Assert.Single(request.Contents,
             c => string.Equals(c.Parts![0].FunctionResponse!.FunctionName, toolCallResult.FullyQualifiedName, StringComparison.Ordinal));

@@ -24,7 +24,7 @@ internal sealed class HandlebarsParameterTypeMetadata
 
 
     // Override the Equals method to compare the property values
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         // Check to make sure the object is the expected type
         if (obj is not HandlebarsParameterTypeMetadata other)
@@ -47,7 +47,7 @@ internal sealed class HandlebarsParameterTypeMetadata
     private static bool ArePropertiesEqual(List<KernelParameterMetadata> list1, List<KernelParameterMetadata> list2)
     {
         // Check if the lists are null or have different lengths
-        if (list1 == null || list2 == null || list1.Count != list2.Count)
+        if (list1 is null || list2 is null || list1.Count != list2.Count)
         {
             return false;
         }

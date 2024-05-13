@@ -148,7 +148,7 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
                     cancellationToken).
                 ConfigureAwait(false);
 
-            if (result != null)
+            if (result is not null)
             {
                 yield return result;
             }

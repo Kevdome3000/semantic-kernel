@@ -36,7 +36,7 @@ internal static class AzureCosmosDBVectorSearchTypeExtensions
     public static string GetCustomName(this AzureCosmosDBVectorSearchType type)
     {
         var attribute = type.GetType().
-            GetField(type.ToString()).
+            GetField(type.ToString())?.
             GetCustomAttribute<BsonElementAttribute>();
 
         return attribute?.ElementName ?? type.ToString();

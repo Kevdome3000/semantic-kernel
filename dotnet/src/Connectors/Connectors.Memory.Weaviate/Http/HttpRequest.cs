@@ -11,6 +11,7 @@ using Text;
 
 internal static class HttpRequest
 {
+
     private static readonly JsonSerializerOptions s_jsonOptionsCache = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -45,12 +46,14 @@ internal static class HttpRequest
 
     private static StringContent? GetJsonContent(object? payload)
     {
-        if (payload == null)
+        if (payload is null)
         {
             return null;
         }
 
         string strPayload = payload as string ?? JsonSerializer.Serialize(payload, s_jsonOptionsCache);
+
         return new(strPayload, Encoding.UTF8, "application/json");
     }
+
 }

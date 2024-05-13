@@ -15,6 +15,7 @@ using System.Globalization;
 [ExcludeFromCodeCoverage]
 internal static class InternalTypeConverter
 {
+
     /// <summary>
     /// Converts the given object value to a string representation using the appropriate CultureInfo.
     /// </summary>
@@ -23,13 +24,13 @@ internal static class InternalTypeConverter
     /// <returns>A string representation of the object value, considering the specified CultureInfo.</returns>
     public static string? ConvertToString(object? value, CultureInfo? culture = null)
     {
-        if (value == null) { return null; }
+        if (value is null) { return null; }
 
         var sourceType = value.GetType();
 
         var converterDelegate = GetTypeToStringConverterDelegate(sourceType);
 
-        return converterDelegate == null
+        return converterDelegate is null
             ? value.ToString()
             : converterDelegate(value, culture ?? CultureInfo.InvariantCulture);
     }
@@ -64,4 +65,5 @@ internal static class InternalTypeConverter
 
     /// <summary>Converter functions for converting types to strings.</summary>
     private static readonly ConcurrentDictionary<Type, Func<object?, CultureInfo, string?>?> s_converters = new();
+
 }

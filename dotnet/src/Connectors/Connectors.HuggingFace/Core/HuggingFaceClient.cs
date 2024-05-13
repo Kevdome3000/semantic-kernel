@@ -110,14 +110,8 @@ internal sealed class HuggingFaceClient
     {
         try
         {
-            T? deserializedResponse = JsonSerializer.Deserialize<T>(body);
-
-            if (deserializedResponse is null)
-            {
-                throw new JsonException("Response is null");
-            }
-
-            return deserializedResponse;
+            return JsonSerializer.Deserialize<T>(body) ??
+                   throw new JsonException("Response is null");
         }
         catch (JsonException exc)
         {
@@ -344,8 +338,8 @@ internal sealed class HuggingFaceClient
         var endpoint = this.GetImageToTextGenerationEndpoint(executionSettings?.ModelId ?? this.ModelId);
 
         // Read the file into a byte array
-        var imageContent = new ByteArrayContent(content.Data?.ToArray());
-        imageContent.Headers.ContentType = new(content.MimeType);
+        var imageContent = new ByteArrayContent(content.Data?.ToArray() ?? []);
+        imageContent.Headers.ContentType = new(content.MimeType ?? string.Empty);
 
         var request = new HttpRequestMessage(HttpMethod.Post, endpoint)
         {

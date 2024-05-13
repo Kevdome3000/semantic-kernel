@@ -198,7 +198,7 @@ internal sealed class HuggingFaceMessageApiClient
 
     private static StreamingChatMessageContent GetStreamingChatMessageContentFromStreamResponse(ChatCompletionStreamResponse response, string modelId)
     {
-        var choice = response.Choices.FirstOrDefault();
+        var choice = response.Choices?.FirstOrDefault();
 
         if (choice is not null)
         {

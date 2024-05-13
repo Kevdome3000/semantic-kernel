@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.IntegrationTests.Connectors.GoogleVertexAI.Gemini;
+namespace SemanticKernel.IntegrationTests.Connectors.Google.Gemini;
 
 using System;
 using System.IO;

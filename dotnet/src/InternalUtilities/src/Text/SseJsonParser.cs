@@ -47,7 +47,7 @@ internal static class SseJsonParser
                 SseLine? sseLine = await sseReader.ReadSingleDataEventAsync(cancellationToken).
                     ConfigureAwait(false);
 
-                if (sseLine == null)
+                if (sseLine is null)
                 {
                     break; // end of stream
                 }
@@ -61,7 +61,7 @@ internal static class SseJsonParser
 
                 var sseData = parser(sseLine.Value);
 
-                if (sseData != null)
+                if (sseData is not null)
                 {
                     yield return sseData;
                 }

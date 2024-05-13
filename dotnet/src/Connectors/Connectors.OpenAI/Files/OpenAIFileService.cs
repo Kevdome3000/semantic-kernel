@@ -344,7 +344,7 @@ public sealed class OpenAIFileService
         };
 
 
-    private class FileInfoList
+    private sealed class FileInfoList
     {
 
         [JsonPropertyName("data")]
@@ -356,7 +356,7 @@ public sealed class OpenAIFileService
     }
 
 
-    private class FileInfo
+    private sealed class FileInfo
     {
 
         [JsonPropertyName("id")]

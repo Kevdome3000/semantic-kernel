@@ -15,14 +15,10 @@ using Plugins;
 string[] scopes;
 
 var config = new ConfigurationBuilder().AddUserSecrets<Program>().
-    AddEnvironmentVariables().
-    Build().
-    Get<AppConfig>();
-
-if (config is null)
-{
-    throw new InvalidOperationException("Configuration is not setup correctly.");
-}
+                 AddEnvironmentVariables().
+                 Build().
+                 Get<AppConfig>() ??
+             throw new InvalidOperationException("Configuration is not setup correctly.");
 
 config.Validate();
 
@@ -94,7 +90,7 @@ var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
 // Start the conversation
 string? input = null;
 
-do
+while (true)
 {
     Console.Write("User > ");
     input = Console.ReadLine();
@@ -122,4 +118,4 @@ do
 
     // Add the message from the agent to the chat history
     chatHistory.AddMessage(result.Role, result?.Content!);
-} while (true);
+}

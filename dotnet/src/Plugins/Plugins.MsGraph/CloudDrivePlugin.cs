@@ -17,7 +17,9 @@ using Extensions.Logging.Abstractions;
 /// </summary>
 public sealed class CloudDrivePlugin
 {
+
     private readonly ICloudDriveConnector _connector;
+
     private readonly ILogger _logger;
 
 
@@ -47,12 +49,18 @@ public sealed class CloudDrivePlugin
         CancellationToken cancellationToken = default)
     {
         this._logger.LogDebug("Getting file content for '{0}'", filePath);
-        Stream fileContentStream = await this._connector.GetFileContentStreamAsync(filePath, cancellationToken).ConfigureAwait(false);
+
+        Stream fileContentStream = await this._connector.GetFileContentStreamAsync(filePath, cancellationToken).
+            ConfigureAwait(false);
 
         using StreamReader sr = new(fileContentStream);
-        string content = await sr.ReadToEndAsync().ConfigureAwait(false);
 
-        return content;
+        return await sr.ReadToEndAsync(
+#if NET
+            cancellationToken
+#endif
+            ).
+            ConfigureAwait(false);
     }
 
 
@@ -77,7 +85,8 @@ public sealed class CloudDrivePlugin
         this._logger.LogDebug("Uploading file '{0}'", filePath);
 
         // TODO Add support for large file uploads (i.e. upload sessions)
-        await this._connector.UploadSmallFileAsync(filePath, destinationPath, cancellationToken).ConfigureAwait(false);
+        await this._connector.UploadSmallFileAsync(filePath, destinationPath, cancellationToken).
+            ConfigureAwait(false);
     }
 
 
@@ -96,6 +105,8 @@ public sealed class CloudDrivePlugin
         const string Type = "view"; // TODO expose this as an SK variable
         const string Scope = "anonymous"; // TODO expose this as an SK variable
 
-        return await this._connector.CreateShareLinkAsync(filePath, Type, Scope, cancellationToken).ConfigureAwait(false);
+        return await this._connector.CreateShareLinkAsync(filePath, Type, Scope, cancellationToken).
+            ConfigureAwait(false);
     }
+
 }

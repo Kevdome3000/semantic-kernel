@@ -14,6 +14,7 @@ using Models;
 /// </summary>
 internal static class MicrosoftGraphModelExtensions
 {
+
     /// <summary>
     /// Convert a Microsoft Graph message to an email message.
     /// </summary>
@@ -22,7 +23,9 @@ internal static class MicrosoftGraphModelExtensions
         {
             BccRecipients = graphMessage.BccRecipients?.Select(r => r.EmailAddress.ToEmailAddress()),
             Body = graphMessage.Body?.Content,
+#pragma warning disable CA1307 // Specify StringComparison for clarity
             BodyPreview = graphMessage.BodyPreview.Replace("\u200C", ""), // BodyPreviews are sometimes filled with zero-width non-joiner characters - remove them.
+#pragma warning restore CA1307
             CcRecipients = graphMessage.CcRecipients?.Select(r => r.EmailAddress.ToEmailAddress()),
             From = graphMessage.From?.EmailAddress?.ToEmailAddress(),
             IsRead = graphMessage.IsRead,
@@ -76,4 +79,5 @@ internal static class MicrosoftGraphModelExtensions
             Location = msGraphEvent.Location?.DisplayName,
             Attendees = msGraphEvent.Attendees?.Select(a => a.EmailAddress.Address)
         };
+
 }

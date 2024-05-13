@@ -10,6 +10,7 @@ using Threading.Tasks;
 
 internal static class AsyncEnumerable
 {
+
     public static IAsyncEnumerable<T> Empty<T>() => EmptyAsyncEnumerable<T>.Instance;
 
 #pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
@@ -19,14 +20,20 @@ internal static class AsyncEnumerable
 
         try
         {
-            while (enumerator.MoveNextAsync().AsTask().GetAwaiter().GetResult())
+            while (enumerator.MoveNextAsync().
+                   AsTask().
+                   GetAwaiter().
+                   GetResult())
             {
                 yield return enumerator.Current;
             }
         }
         finally
         {
-            enumerator.DisposeAsync().AsTask().GetAwaiter().GetResult();
+            enumerator.DisposeAsync().
+                AsTask().
+                GetAwaiter().
+                GetResult();
         }
     }
 #pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
@@ -46,7 +53,8 @@ internal static class AsyncEnumerable
 
     public static async ValueTask<T?> FirstOrDefaultAsync<T>(this IAsyncEnumerable<T> source, CancellationToken cancellationToken = default)
     {
-        await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+        await foreach (var item in source.WithCancellation(cancellationToken).
+                           ConfigureAwait(false))
         {
             return item;
         }
@@ -60,13 +68,16 @@ internal static class AsyncEnumerable
         var last = default(T)!; // NB: Only matters when hasLast is set to true.
         var hasLast = false;
 
-        await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+        await foreach (var item in source.WithCancellation(cancellationToken).
+                           ConfigureAwait(false))
         {
             hasLast = true;
             last = item;
         }
 
-        return hasLast ? last! : default;
+        return hasLast
+            ? last!
+            : default;
     }
 
 
@@ -74,7 +85,8 @@ internal static class AsyncEnumerable
     {
         var result = new List<T>();
 
-        await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+        await foreach (var item in source.WithCancellation(cancellationToken).
+                           ConfigureAwait(false))
         {
             result.Add(item);
         }
@@ -101,7 +113,8 @@ internal static class AsyncEnumerable
     {
         int count = 0;
 
-        await foreach (var _ in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+        await foreach (var _ in source.WithCancellation(cancellationToken).
+                           ConfigureAwait(false))
         {
             checked { count++; }
         }
@@ -122,12 +135,12 @@ internal static class AsyncEnumerable
     /// <remarks>The return type of this operator differs from the corresponding operator on IEnumerable in order to retain asynchronous behavior.</remarks>
     public static ValueTask<bool> AnyAsync<TSource>(this IAsyncEnumerable<TSource> source, Func<TSource, bool> predicate, CancellationToken cancellationToken = default)
     {
-        if (source == null)
+        if (source is null)
         {
             throw new ArgumentNullException(nameof(source));
         }
 
-        if (predicate == null)
+        if (predicate is null)
         {
             throw new ArgumentNullException(nameof(predicate));
         }
@@ -136,7 +149,8 @@ internal static class AsyncEnumerable
 
         static async ValueTask<bool> Core(IAsyncEnumerable<TSource> source, Func<TSource, bool> predicate, CancellationToken cancellationToken)
         {
-            await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+            await foreach (var item in source.WithCancellation(cancellationToken).
+                               ConfigureAwait(false))
             {
                 if (predicate(item))
                 {
@@ -151,10 +165,17 @@ internal static class AsyncEnumerable
 
     private sealed class EmptyAsyncEnumerable<T> : IAsyncEnumerable<T>, IAsyncEnumerator<T>
     {
+
         public static readonly EmptyAsyncEnumerable<T> Instance = new();
+
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) => this;
+
         public ValueTask<bool> MoveNextAsync() => new(false);
+
         public T Current => default!;
+
         public ValueTask DisposeAsync() => default;
+
     }
+
 }

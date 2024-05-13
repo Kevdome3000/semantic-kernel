@@ -10,12 +10,14 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using Scriban;
+using Scriban.Syntax;
 
 
 /// <summary>
 /// Represents a Liquid prompt template.
 /// </summary>
-internal sealed class LiquidPromptTemplate : IPromptTemplate
+internal sealed partial class LiquidPromptTemplate : IPromptTemplate
 {
 
     private const string ReservedString = "&#58;";
@@ -28,11 +30,18 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
 
     private readonly bool _allowUnsafeContent;
 
-    private static readonly Regex s_roleRegex = new(@"(?<role>system|assistant|user|function):\s+", RegexOptions.Compiled);
-
     private readonly Template _liquidTemplate;
 
     private readonly Dictionary<string, object> _inputVariables;
+
+#if NET
+    [GeneratedRegex(@"(?<role>system|assistant|user|function):\s+")]
+    private static partial Regex RoleRegex();
+#else
+    private static Regex RoleRegex() => s_roleRegex;
+
+    private static readonly Regex s_roleRegex = new(@"(?<role>system|assistant|user|function):\s+", RegexOptions.Compiled);
+#endif
 
 
     /// <summary>Initializes the <see cref="LiquidPromptTemplate"/>.</summary>
@@ -54,6 +63,7 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
 
         this._allowUnsafeContent = allowUnsafeContent;
         this._config = config;
+
         // Parse the template now so we can check for errors, understand variable usage, and
         // avoid having to parse on each render.
         this._liquidTemplate = Template.ParseLiquid(config.Template);
@@ -109,7 +119,8 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
         // <message role="system|assistant|user|function">
         // xxxx
         // </message>
-        var splits = s_roleRegex.Split(renderedResult);
+        var splits = RoleRegex().
+            Split(renderedResult);
 
         // if no role is found, return the entire text
         if (splits.Length > 1)
@@ -173,13 +184,13 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
     /// <summary>
     /// Gets the variables for the prompt template, including setting any default values from the prompt config.
     /// </summary>
-    private Dictionary<string, object> GetVariables(KernelArguments? arguments)
+    private Dictionary<string, object?> GetVariables(KernelArguments? arguments)
     {
-        var result = new Dictionary<string, object>();
+        var result = new Dictionary<string, object?>();
 
         foreach (var p in this._config.InputVariables)
         {
-            if (p.Default == null || (p.Default is string stringDefault && stringDefault.Length == 0))
+            if (p.Default is null || (p.Default is string stringDefault && stringDefault.Length == 0))
             {
                 continue;
             }
@@ -197,9 +208,8 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
 
                     if (this.ShouldReplaceColonToReservedString(this._config, kvp.Key, kvp.Value))
                     {
-                        var valueString = value.ToString();
-                        valueString = valueString.Replace(ColonString, ReservedString);
-                        result[kvp.Key] = valueString;
+                        result[kvp.Key] = value.ToString()?.
+                            Replace(ColonString, ReservedString);
                     }
                     else
                     {
