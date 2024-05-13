@@ -20,6 +20,7 @@ using Azure.AI.OpenAI;
 using Azure.Core;
 using Azure.Core.Pipeline;
 using ChatCompletion;
+using Diagnostics;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
 using Http;
@@ -60,10 +61,7 @@ internal abstract class ClientCore
     private static readonly AsyncLocal<int> s_inflightAutoInvokes = new();
 
 
-    internal ClientCore(ILogger? logger = null)
-    {
-        this.Logger = logger ?? NullLogger.Instance;
-    }
+    internal ClientCore(ILogger? logger = null) => Logger = logger ?? NullLogger.Instance;
 
 
     /// <summary>
@@ -98,27 +96,27 @@ internal abstract class ClientCore
     /// </summary>
     private static readonly Counter<int> s_promptTokensCounter =
         s_meter.CreateCounter<int>(
-            name: "semantic_kernel.connectors.openai.tokens.prompt",
-            unit: "{token}",
-            description: "Number of prompt tokens used");
+            "semantic_kernel.connectors.openai.tokens.prompt",
+            "{token}",
+            "Number of prompt tokens used");
 
     /// <summary>
     /// Instance of <see cref="Counter{T}"/> to keep track of the number of completion tokens used.
     /// </summary>
     private static readonly Counter<int> s_completionTokensCounter =
         s_meter.CreateCounter<int>(
-            name: "semantic_kernel.connectors.openai.tokens.completion",
-            unit: "{token}",
-            description: "Number of completion tokens used");
+            "semantic_kernel.connectors.openai.tokens.completion",
+            "{token}",
+            "Number of completion tokens used");
 
     /// <summary>
     /// Instance of <see cref="Counter{T}"/> to keep track of the total number of tokens used.
     /// </summary>
     private static readonly Counter<int> s_totalTokensCounter =
         s_meter.CreateCounter<int>(
-            name: "semantic_kernel.connectors.openai.tokens.total",
-            unit: "{token}",
-            description: "Number of tokens used");
+            "semantic_kernel.connectors.openai.tokens.total",
+            "{token}",
+            "Number of tokens used");
 
 
     /// <summary>
@@ -139,17 +137,17 @@ internal abstract class ClientCore
 
         ValidateMaxTokens(textExecutionSettings.MaxTokens);
 
-        var options = CreateCompletionsOptions(text, textExecutionSettings, this.DeploymentOrModelName);
+        var options = CreateCompletionsOptions(text, textExecutionSettings, DeploymentOrModelName);
 
         Completions? responseData = null;
         List<TextContent> responseContent;
 
-        using (var activity = ModelDiagnostics.StartCompletionActivity(this.Endpoint, this.DeploymentOrModelName, ModelProvider, text,
+        using (var activity = ModelDiagnostics.StartCompletionActivity(Endpoint, DeploymentOrModelName, ModelProvider, text,
                    executionSettings))
         {
             try
             {
-                responseData = (await RunRequestAsync(() => this.Client.GetCompletionsAsync(options, cancellationToken)).
+                responseData = (await RunRequestAsync(() => Client.GetCompletionsAsync(options, cancellationToken)).
                     ConfigureAwait(false)).Value;
 
                 if (responseData.Choices.Count == 0)
@@ -173,14 +171,14 @@ internal abstract class ClientCore
                 throw;
             }
 
-            responseContent = responseData.Choices.Select(choice => new TextContent(choice.Text, this.DeploymentOrModelName, choice, Encoding.UTF8,
+            responseContent = responseData.Choices.Select(choice => new TextContent(choice.Text, DeploymentOrModelName, choice, Encoding.UTF8,
                     GetTextChoiceMetadata(responseData, choice))).
                 ToList();
 
             activity?.SetCompletionResponse(responseContent, responseData.Usage.PromptTokens, responseData.Usage.CompletionTokens);
         }
 
-        this.CaptureUsageDetails(responseData.Usage);
+        CaptureUsageDetails(responseData.Usage);
 
         return responseContent;
     }
@@ -196,86 +194,74 @@ internal abstract class ClientCore
 
         ValidateMaxTokens(textExecutionSettings.MaxTokens);
 
-        var options = CreateCompletionsOptions(prompt, textExecutionSettings, this.DeploymentOrModelName);
+        var options = CreateCompletionsOptions(prompt, textExecutionSettings, DeploymentOrModelName);
 
-        StreamingResponse<Completions>? response = await RunRequestAsync(() => this.Client.GetCompletionsStreamingAsync(options, cancellationToken)).
+        StreamingResponse<Completions>? response = await RunRequestAsync(() => Client.GetCompletionsStreamingAsync(options, cancellationToken)).
             ConfigureAwait(false);
 
         await foreach (Completions completions in response.ConfigureAwait(false))
         {
             foreach (Choice choice in completions.Choices)
             {
-                yield return new OpenAIStreamingTextContent(choice.Text, choice.Index, this.DeploymentOrModelName, choice,
+                yield return new OpenAIStreamingTextContent(choice.Text, choice.Index, DeploymentOrModelName, choice,
                     GetTextChoiceMetadata(completions, choice));
             }
         }
     }
 
 
-    private static Dictionary<string, object?> GetTextChoiceMetadata(Completions completions, Choice choice)
+    private static Dictionary<string, object?> GetTextChoiceMetadata(Completions completions, Choice choice) => new(8)
     {
-        return new Dictionary<string, object?>(8)
-        {
-            { nameof(completions.Id), completions.Id },
-            { nameof(completions.Created), completions.Created },
-            { nameof(completions.PromptFilterResults), completions.PromptFilterResults },
-            { nameof(completions.Usage), completions.Usage },
-            { nameof(choice.ContentFilterResults), choice.ContentFilterResults },
+        { nameof(completions.Id), completions.Id },
+        { nameof(completions.Created), completions.Created },
+        { nameof(completions.PromptFilterResults), completions.PromptFilterResults },
+        { nameof(completions.Usage), completions.Usage },
+        { nameof(choice.ContentFilterResults), choice.ContentFilterResults },
 
-            // Serialization of this struct behaves as an empty object {}, need to cast to string to avoid it.
-            { nameof(choice.FinishReason), choice.FinishReason?.ToString() },
+        // Serialization of this struct behaves as an empty object {}, need to cast to string to avoid it.
+        { nameof(choice.FinishReason), choice.FinishReason?.ToString() },
 
-            { nameof(choice.LogProbabilityModel), choice.LogProbabilityModel },
-            { nameof(choice.Index), choice.Index },
-        };
-    }
+        { nameof(choice.LogProbabilityModel), choice.LogProbabilityModel },
+        { nameof(choice.Index), choice.Index }
+    };
 
 
-    private static Dictionary<string, object?> GetChatChoiceMetadata(ChatCompletions completions, ChatChoice chatChoice)
+    private static Dictionary<string, object?> GetChatChoiceMetadata(ChatCompletions completions, ChatChoice chatChoice) => new(12)
     {
-        return new Dictionary<string, object?>(12)
-        {
-            { nameof(completions.Id), completions.Id },
-            { nameof(completions.Created), completions.Created },
-            { nameof(completions.PromptFilterResults), completions.PromptFilterResults },
-            { nameof(completions.SystemFingerprint), completions.SystemFingerprint },
-            { nameof(completions.Usage), completions.Usage },
-            { nameof(chatChoice.ContentFilterResults), chatChoice.ContentFilterResults },
+        { nameof(completions.Id), completions.Id },
+        { nameof(completions.Created), completions.Created },
+        { nameof(completions.PromptFilterResults), completions.PromptFilterResults },
+        { nameof(completions.SystemFingerprint), completions.SystemFingerprint },
+        { nameof(completions.Usage), completions.Usage },
+        { nameof(chatChoice.ContentFilterResults), chatChoice.ContentFilterResults },
 
-            // Serialization of this struct behaves as an empty object {}, need to cast to string to avoid it.
-            { nameof(chatChoice.FinishReason), chatChoice.FinishReason?.ToString() },
+        // Serialization of this struct behaves as an empty object {}, need to cast to string to avoid it.
+        { nameof(chatChoice.FinishReason), chatChoice.FinishReason?.ToString() },
 
-            { nameof(chatChoice.FinishDetails), chatChoice.FinishDetails },
-            { nameof(chatChoice.LogProbabilityInfo), chatChoice.LogProbabilityInfo },
-            { nameof(chatChoice.Index), chatChoice.Index },
-            { nameof(chatChoice.Enhancements), chatChoice.Enhancements },
-        };
-    }
+        { nameof(chatChoice.FinishDetails), chatChoice.FinishDetails },
+        { nameof(chatChoice.LogProbabilityInfo), chatChoice.LogProbabilityInfo },
+        { nameof(chatChoice.Index), chatChoice.Index },
+        { nameof(chatChoice.Enhancements), chatChoice.Enhancements }
+    };
 
 
-    private static Dictionary<string, object?> GetResponseMetadata(StreamingChatCompletionsUpdate completions)
+    private static Dictionary<string, object?> GetResponseMetadata(StreamingChatCompletionsUpdate completions) => new(4)
     {
-        return new Dictionary<string, object?>(4)
-        {
-            { nameof(completions.Id), completions.Id },
-            { nameof(completions.Created), completions.Created },
-            { nameof(completions.SystemFingerprint), completions.SystemFingerprint },
+        { nameof(completions.Id), completions.Id },
+        { nameof(completions.Created), completions.Created },
+        { nameof(completions.SystemFingerprint), completions.SystemFingerprint },
 
-            // Serialization of this struct behaves as an empty object {}, need to cast to string to avoid it.
-            { nameof(completions.FinishReason), completions.FinishReason?.ToString() },
-        };
-    }
+        // Serialization of this struct behaves as an empty object {}, need to cast to string to avoid it.
+        { nameof(completions.FinishReason), completions.FinishReason?.ToString() }
+    };
 
 
-    private static Dictionary<string, object?> GetResponseMetadata(AudioTranscription audioTranscription)
+    private static Dictionary<string, object?> GetResponseMetadata(AudioTranscription audioTranscription) => new(3)
     {
-        return new Dictionary<string, object?>(3)
-        {
-            { nameof(audioTranscription.Language), audioTranscription.Language },
-            { nameof(audioTranscription.Duration), audioTranscription.Duration },
-            { nameof(audioTranscription.Segments), audioTranscription.Segments }
-        };
-    }
+        { nameof(audioTranscription.Language), audioTranscription.Language },
+        { nameof(audioTranscription.Duration), audioTranscription.Duration },
+        { nameof(audioTranscription.Segments), audioTranscription.Segments }
+    };
 
 
     /// <summary>
@@ -296,12 +282,12 @@ internal abstract class ClientCore
 
         if (data.Count > 0)
         {
-            var embeddingsOptions = new EmbeddingsOptions(this.DeploymentOrModelName, data)
+            var embeddingsOptions = new EmbeddingsOptions(DeploymentOrModelName, data)
             {
                 Dimensions = dimensions
             };
 
-            var response = await RunRequestAsync(() => this.Client.GetEmbeddingsAsync(embeddingsOptions, cancellationToken)).
+            var response = await RunRequestAsync(() => Client.GetEmbeddingsAsync(embeddingsOptions, cancellationToken)).
                 ConfigureAwait(false);
 
             var embeddings = response.Value.Data;
@@ -335,7 +321,7 @@ internal abstract class ClientCore
         var audioOptions = new AudioTranscriptionOptions
         {
             AudioData = BinaryData.FromBytes(content.Data.Value),
-            DeploymentName = this.DeploymentOrModelName,
+            DeploymentName = DeploymentOrModelName,
             Filename = audioExecutionSettings.Filename,
             Language = audioExecutionSettings.Language,
             Prompt = audioExecutionSettings.Prompt,
@@ -343,10 +329,10 @@ internal abstract class ClientCore
             Temperature = audioExecutionSettings.Temperature
         };
 
-        AudioTranscription responseData = (await RunRequestAsync(() => this.Client.GetAudioTranscriptionAsync(audioOptions, cancellationToken)).
+        AudioTranscription responseData = (await RunRequestAsync(() => Client.GetAudioTranscriptionAsync(audioOptions, cancellationToken)).
             ConfigureAwait(false)).Value;
 
-        return [new(responseData.Text, this.DeploymentOrModelName, metadata: GetResponseMetadata(responseData))];
+        return [new TextContent(responseData.Text, DeploymentOrModelName, metadata: GetResponseMetadata(responseData))];
     }
 
 
@@ -373,7 +359,7 @@ internal abstract class ClientCore
         ValidateAutoInvoke(autoInvoke, chatExecutionSettings.ResultsPerPrompt);
 
         // Create the Azure SDK ChatCompletionOptions instance from all available information.
-        var chatOptions = CreateChatCompletionsOptions(chatExecutionSettings, chat, kernel, this.DeploymentOrModelName);
+        var chatOptions = CreateChatCompletionsOptions(chatExecutionSettings, chat, kernel, DeploymentOrModelName);
 
         for (int requestIndex = 1;; requestIndex++)
         {
@@ -381,15 +367,15 @@ internal abstract class ClientCore
             ChatCompletions? responseData = null;
             List<OpenAIChatMessageContent> responseContent;
 
-            using (var activity = ModelDiagnostics.StartCompletionActivity(this.Endpoint, this.DeploymentOrModelName, ModelProvider, chat,
+            using (var activity = ModelDiagnostics.StartCompletionActivity(Endpoint, DeploymentOrModelName, ModelProvider, chat,
                        executionSettings))
             {
                 try
                 {
-                    responseData = (await RunRequestAsync(() => this.Client.GetChatCompletionsAsync(chatOptions, cancellationToken)).
+                    responseData = (await RunRequestAsync(() => Client.GetChatCompletionsAsync(chatOptions, cancellationToken)).
                         ConfigureAwait(false)).Value;
 
-                    this.CaptureUsageDetails(responseData.Usage);
+                    CaptureUsageDetails(responseData.Usage);
 
                     if (responseData.Choices.Count == 0)
                     {
@@ -412,7 +398,7 @@ internal abstract class ClientCore
                     throw;
                 }
 
-                responseContent = responseData.Choices.Select(chatChoice => this.GetChatMessage(chatChoice, responseData)).
+                responseContent = responseData.Choices.Select(chatChoice => GetChatMessage(chatChoice, responseData)).
                     ToList();
 
                 activity?.SetCompletionResponse(responseContent, responseData.Usage.PromptTokens, responseData.Usage.CompletionTokens);
@@ -433,21 +419,21 @@ internal abstract class ClientCore
             // may return a FinishReason of "stop" even if there are tool calls to be made, in particular if a required tool
             // is specified.
             ChatChoice resultChoice = responseData.Choices[0];
-            OpenAIChatMessageContent result = this.GetChatMessage(resultChoice, responseData);
+            OpenAIChatMessageContent result = GetChatMessage(resultChoice, responseData);
 
             if (result.ToolCalls.Count == 0)
             {
                 return [result];
             }
 
-            if (this.Logger.IsEnabled(LogLevel.Debug))
+            if (Logger.IsEnabled(LogLevel.Debug))
             {
-                this.Logger.LogDebug("Tool requests: {Requests}", result.ToolCalls.Count);
+                Logger.LogDebug("Tool requests: {Requests}", result.ToolCalls.Count);
             }
 
-            if (this.Logger.IsEnabled(LogLevel.Trace))
+            if (Logger.IsEnabled(LogLevel.Trace))
             {
-                this.Logger.LogTrace("Function call requests: {Requests}", string.Join(", ", result.ToolCalls.OfType<ChatCompletionsFunctionToolCall>().
+                Logger.LogTrace("Function call requests: {Requests}", string.Join(", ", result.ToolCalls.OfType<ChatCompletionsFunctionToolCall>().
                     Select(ftc => $"{ftc.Name}({ftc.Arguments})")));
             }
 
@@ -467,8 +453,8 @@ internal abstract class ClientCore
                 // We currently only know about function tool calls. If it's anything else, we'll respond with an error.
                 if (toolCall is not ChatCompletionsFunctionToolCall functionToolCall)
                 {
-                    AddResponseMessage(chatOptions, chat, result: null, "Error: Tool call was not a function call.",
-                        toolCall, this.Logger);
+                    AddResponseMessage(chatOptions, chat, null, "Error: Tool call was not a function call.",
+                        toolCall, Logger);
 
                     continue;
                 }
@@ -478,12 +464,12 @@ internal abstract class ClientCore
 
                 try
                 {
-                    openAIFunctionToolCall = new(functionToolCall);
+                    openAIFunctionToolCall = new OpenAIFunctionToolCall(functionToolCall);
                 }
                 catch (JsonException)
                 {
-                    AddResponseMessage(chatOptions, chat, result: null, "Error: Function call arguments were invalid JSON.",
-                        toolCall, this.Logger);
+                    AddResponseMessage(chatOptions, chat, null, "Error: Function call arguments were invalid JSON.",
+                        toolCall, Logger);
 
                     continue;
                 }
@@ -494,8 +480,8 @@ internal abstract class ClientCore
                 if (chatExecutionSettings.ToolCallBehavior?.AllowAnyRequestedKernelFunction is not true &&
                     !IsRequestableTool(chatOptions, openAIFunctionToolCall))
                 {
-                    AddResponseMessage(chatOptions, chat, result: null, "Error: Function call request for a function that wasn't defined.",
-                        toolCall, this.Logger);
+                    AddResponseMessage(chatOptions, chat, null, "Error: Function call request for a function that wasn't defined.",
+                        toolCall, Logger);
 
                     continue;
                 }
@@ -503,8 +489,8 @@ internal abstract class ClientCore
                 // Find the function in the kernel and populate the arguments.
                 if (!kernel!.Plugins.TryGetFunctionAndArguments(openAIFunctionToolCall, out KernelFunction? function, out KernelArguments? functionArgs))
                 {
-                    AddResponseMessage(chatOptions, chat, result: null, "Error: Requested function could not be found.",
-                        toolCall, this.Logger);
+                    AddResponseMessage(chatOptions, chat, null, "Error: Requested function could not be found.",
+                        toolCall, Logger);
 
                     continue;
                 }
@@ -524,7 +510,7 @@ internal abstract class ClientCore
 
                 try
                 {
-                    invocationContext = await OnAutoFunctionInvocationAsync(kernel, invocationContext, async (context) =>
+                    invocationContext = await OnAutoFunctionInvocationAsync(kernel, invocationContext, async context =>
                         {
                             // Check if filter requested termination.
                             if (context.Terminate)
@@ -535,7 +521,7 @@ internal abstract class ClientCore
                             // Note that we explicitly do not use executionSettings here; those pertain to the all-up operation and not necessarily to any
                             // further calls made as part of this function invocation. In particular, we must not use function calling settings naively here,
                             // as the called function could in turn telling the model about itself as a possible candidate for invocation.
-                            context.Result = await function.InvokeAsync(kernel, invocationContext.Arguments, cancellationToken: cancellationToken).
+                            context.Result = await function.InvokeAsync(kernel, invocationContext.Arguments, cancellationToken).
                                 ConfigureAwait(false);
                         }).
                         ConfigureAwait(false);
@@ -545,7 +531,7 @@ internal abstract class ClientCore
 #pragma warning restore CA1031 // Do not catch general exception types
                 {
                     AddResponseMessage(chatOptions, chat, null, $"Error: Exception while invoking function. {e.Message}",
-                        toolCall, this.Logger);
+                        toolCall, Logger);
 
                     continue;
                 }
@@ -560,15 +546,15 @@ internal abstract class ClientCore
                 object functionResultValue = functionResult.GetValue<object>() ?? string.Empty;
                 var stringResult = ProcessFunctionResult(functionResultValue, chatExecutionSettings.ToolCallBehavior);
 
-                AddResponseMessage(chatOptions, chat, stringResult, errorMessage: null,
-                    functionToolCall, this.Logger);
+                AddResponseMessage(chatOptions, chat, stringResult, null,
+                    functionToolCall, Logger);
 
                 // If filter requested termination, returning latest function result.
                 if (invocationContext.Terminate)
                 {
-                    if (this.Logger.IsEnabled(LogLevel.Debug))
+                    if (Logger.IsEnabled(LogLevel.Debug))
                     {
-                        this.Logger.LogDebug("Filter requested termination of automatic function invocation.");
+                        Logger.LogDebug("Filter requested termination of automatic function invocation.");
                     }
 
                     return [chat.Last()];
@@ -594,7 +580,7 @@ internal abstract class ClientCore
                     chatOptions.Messages.Add(new ChatRequestToolMessage(result, toolCall.Id));
 
                     // Add the tool response message to the chat history.
-                    var message = new ChatMessageContent(role: AuthorRole.Tool, content: result, metadata: new Dictionary<string, object?> { { OpenAIChatMessageContent.ToolIdProperty, toolCall.Id } });
+                    var message = new ChatMessageContent(AuthorRole.Tool, result, metadata: new Dictionary<string, object?> { { OpenAIChatMessageContent.ToolIdProperty, toolCall.Id } });
 
                     if (toolCall is ChatCompletionsFunctionToolCall functionCall)
                     {
@@ -618,9 +604,9 @@ internal abstract class ClientCore
             if (requestIndex >= chatExecutionSettings.ToolCallBehavior!.MaximumUseAttempts)
             {
                 // Don't add any tools as we've reached the maximum attempts limit.
-                if (this.Logger.IsEnabled(LogLevel.Debug))
+                if (Logger.IsEnabled(LogLevel.Debug))
                 {
-                    this.Logger.LogDebug("Maximum use ({MaximumUse}) reached; removing the tool.", chatExecutionSettings.ToolCallBehavior!.MaximumUseAttempts);
+                    Logger.LogDebug("Maximum use ({MaximumUse}) reached; removing the tool.", chatExecutionSettings.ToolCallBehavior!.MaximumUseAttempts);
                 }
             }
             else
@@ -643,9 +629,9 @@ internal abstract class ClientCore
             {
                 autoInvoke = false;
 
-                if (this.Logger.IsEnabled(LogLevel.Debug))
+                if (Logger.IsEnabled(LogLevel.Debug))
                 {
-                    this.Logger.LogDebug("Maximum auto-invoke ({MaximumAutoInvoke}) reached.", chatExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts);
+                    Logger.LogDebug("Maximum auto-invoke ({MaximumAutoInvoke}) reached.", chatExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts);
                 }
             }
         }
@@ -667,7 +653,7 @@ internal abstract class ClientCore
         bool autoInvoke = kernel is not null && chatExecutionSettings.ToolCallBehavior?.MaximumAutoInvokeAttempts > 0 && s_inflightAutoInvokes.Value < MaxInflightAutoInvokes;
         ValidateAutoInvoke(autoInvoke, chatExecutionSettings.ResultsPerPrompt);
 
-        var chatOptions = CreateChatCompletionsOptions(chatExecutionSettings, chat, kernel, this.DeploymentOrModelName);
+        var chatOptions = CreateChatCompletionsOptions(chatExecutionSettings, chat, kernel, DeploymentOrModelName);
 
         StringBuilder? contentBuilder = null;
         Dictionary<int, string>? toolCallIdsByIndex = null;
@@ -677,7 +663,7 @@ internal abstract class ClientCore
         for (int requestIndex = 1;; requestIndex++)
         {
             // Make the request.
-            var response = await RunRequestAsync(() => this.Client.GetChatCompletionsStreamingAsync(chatOptions, cancellationToken)).
+            var response = await RunRequestAsync(() => Client.GetChatCompletionsStreamingAsync(chatOptions, cancellationToken)).
                 ConfigureAwait(false);
 
             // Reset state
@@ -704,13 +690,13 @@ internal abstract class ClientCore
                 {
                     if (update.ContentUpdate is { Length: > 0 } contentUpdate)
                     {
-                        (contentBuilder ??= new()).Append(contentUpdate);
+                        (contentBuilder ??= new StringBuilder()).Append(contentUpdate);
                     }
 
                     OpenAIFunctionToolCall.TrackStreamingToolingUpdate(update.ToolCallUpdate, ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
                 }
 
-                yield return new OpenAIStreamingChatMessageContent(update, update.ChoiceIndex ?? 0, this.DeploymentOrModelName, metadata) { AuthorName = streamedName };
+                yield return new OpenAIStreamingChatMessageContent(update, update.ChoiceIndex ?? 0, DeploymentOrModelName, metadata) { AuthorName = streamedName };
             }
 
             // If we don't have a function to invoke, we're done.
@@ -731,20 +717,20 @@ internal abstract class ClientCore
                 ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
 
             // Log the requests
-            if (this.Logger.IsEnabled(LogLevel.Trace))
+            if (Logger.IsEnabled(LogLevel.Trace))
             {
-                this.Logger.LogTrace("Function call requests: {Requests}", string.Join(", ", toolCalls.Select(fcr => $"{fcr.Name}({fcr.Arguments})")));
+                Logger.LogTrace("Function call requests: {Requests}", string.Join(", ", toolCalls.Select(fcr => $"{fcr.Name}({fcr.Arguments})")));
             }
-            else if (this.Logger.IsEnabled(LogLevel.Debug))
+            else if (Logger.IsEnabled(LogLevel.Debug))
             {
-                this.Logger.LogDebug("Function call requests: {Requests}", toolCalls.Length);
+                Logger.LogDebug("Function call requests: {Requests}", toolCalls.Length);
             }
 
             // Add the original assistant message to the chatOptions; this is required for the service
             // to understand the tool call responses.
             chatOptions.Messages.Add(GetRequestMessage(streamedRole ?? default, content, streamedName, toolCalls));
 
-            chat.Add(new OpenAIChatMessageContent(streamedRole ?? default, content, this.DeploymentOrModelName, toolCalls,
+            chat.Add(new OpenAIChatMessageContent(streamedRole ?? default, content, DeploymentOrModelName, toolCalls,
                 metadata) { AuthorName = streamedName });
 
             // Respond to each tooling request.
@@ -756,7 +742,7 @@ internal abstract class ClientCore
                 if (string.IsNullOrEmpty(toolCall.Name))
                 {
                     AddResponseMessage(chatOptions, chat, streamedRole, toolCall,
-                        metadata, result: null, "Error: Tool call was not a function call.", this.Logger);
+                        metadata, null, "Error: Tool call was not a function call.", Logger);
 
                     continue;
                 }
@@ -766,12 +752,12 @@ internal abstract class ClientCore
 
                 try
                 {
-                    openAIFunctionToolCall = new(toolCall);
+                    openAIFunctionToolCall = new OpenAIFunctionToolCall(toolCall);
                 }
                 catch (JsonException)
                 {
                     AddResponseMessage(chatOptions, chat, streamedRole, toolCall,
-                        metadata, result: null, "Error: Function call arguments were invalid JSON.", this.Logger);
+                        metadata, null, "Error: Function call arguments were invalid JSON.", Logger);
 
                     continue;
                 }
@@ -783,7 +769,7 @@ internal abstract class ClientCore
                     !IsRequestableTool(chatOptions, openAIFunctionToolCall))
                 {
                     AddResponseMessage(chatOptions, chat, streamedRole, toolCall,
-                        metadata, result: null, "Error: Function call request for a function that wasn't defined.", this.Logger);
+                        metadata, null, "Error: Function call request for a function that wasn't defined.", Logger);
 
                     continue;
                 }
@@ -792,7 +778,7 @@ internal abstract class ClientCore
                 if (!kernel!.Plugins.TryGetFunctionAndArguments(openAIFunctionToolCall, out KernelFunction? function, out KernelArguments? functionArgs))
                 {
                     AddResponseMessage(chatOptions, chat, streamedRole, toolCall,
-                        metadata, result: null, "Error: Requested function could not be found.", this.Logger);
+                        metadata, null, "Error: Requested function could not be found.", Logger);
 
                     continue;
                 }
@@ -812,7 +798,7 @@ internal abstract class ClientCore
 
                 try
                 {
-                    invocationContext = await OnAutoFunctionInvocationAsync(kernel, invocationContext, async (context) =>
+                    invocationContext = await OnAutoFunctionInvocationAsync(kernel, invocationContext, async context =>
                         {
                             // Check if filter requested termination.
                             if (context.Terminate)
@@ -823,7 +809,7 @@ internal abstract class ClientCore
                             // Note that we explicitly do not use executionSettings here; those pertain to the all-up operation and not necessarily to any
                             // further calls made as part of this function invocation. In particular, we must not use function calling settings naively here,
                             // as the called function could in turn telling the model about itself as a possible candidate for invocation.
-                            context.Result = await function.InvokeAsync(kernel, invocationContext.Arguments, cancellationToken: cancellationToken).
+                            context.Result = await function.InvokeAsync(kernel, invocationContext.Arguments, cancellationToken).
                                 ConfigureAwait(false);
                         }).
                         ConfigureAwait(false);
@@ -833,7 +819,7 @@ internal abstract class ClientCore
 #pragma warning restore CA1031 // Do not catch general exception types
                 {
                     AddResponseMessage(chatOptions, chat, streamedRole, toolCall,
-                        metadata, result: null, $"Error: Exception while invoking function. {e.Message}", this.Logger);
+                        metadata, null, $"Error: Exception while invoking function. {e.Message}", Logger);
 
                     continue;
                 }
@@ -849,14 +835,14 @@ internal abstract class ClientCore
                 var stringResult = ProcessFunctionResult(functionResultValue, chatExecutionSettings.ToolCallBehavior);
 
                 AddResponseMessage(chatOptions, chat, streamedRole, toolCall,
-                    metadata, stringResult, errorMessage: null, this.Logger);
+                    metadata, stringResult, null, Logger);
 
                 // If filter requested termination, breaking request iteration loop.
                 if (invocationContext.Terminate)
                 {
-                    if (this.Logger.IsEnabled(LogLevel.Debug))
+                    if (Logger.IsEnabled(LogLevel.Debug))
                     {
-                        this.Logger.LogDebug("Filter requested termination of automatic function invocation.");
+                        Logger.LogDebug("Filter requested termination of automatic function invocation.");
                     }
 
                     yield break;
@@ -895,9 +881,9 @@ internal abstract class ClientCore
             if (requestIndex >= chatExecutionSettings.ToolCallBehavior!.MaximumUseAttempts)
             {
                 // Don't add any tools as we've reached the maximum attempts limit.
-                if (this.Logger.IsEnabled(LogLevel.Debug))
+                if (Logger.IsEnabled(LogLevel.Debug))
                 {
-                    this.Logger.LogDebug("Maximum use ({MaximumUse}) reached; removing the tool.", chatExecutionSettings.ToolCallBehavior!.MaximumUseAttempts);
+                    Logger.LogDebug("Maximum use ({MaximumUse}) reached; removing the tool.", chatExecutionSettings.ToolCallBehavior!.MaximumUseAttempts);
                 }
             }
             else
@@ -920,9 +906,9 @@ internal abstract class ClientCore
             {
                 autoInvoke = false;
 
-                if (this.Logger.IsEnabled(LogLevel.Debug))
+                if (Logger.IsEnabled(LogLevel.Debug))
                 {
-                    this.Logger.LogDebug("Maximum auto-invoke ({MaximumAutoInvoke}) reached.", chatExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts);
+                    Logger.LogDebug("Maximum auto-invoke ({MaximumAutoInvoke}) reached.", chatExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts);
                 }
             }
         }
@@ -956,7 +942,7 @@ internal abstract class ClientCore
         OpenAIPromptExecutionSettings chatSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
         ChatHistory chat = CreateNewChat(prompt, chatSettings);
 
-        await foreach (var chatUpdate in this.GetStreamingChatMessageContentsAsync(chat, executionSettings, kernel, cancellationToken).
+        await foreach (var chatUpdate in GetStreamingChatMessageContentsAsync(chat, executionSettings, kernel, cancellationToken).
                            ConfigureAwait(false))
         {
             yield return new StreamingTextContent(chatUpdate.Content, chatUpdate.ChoiceIndex, chatUpdate.ModelId, chatUpdate,
@@ -975,7 +961,7 @@ internal abstract class ClientCore
 
         ChatHistory chat = CreateNewChat(text, chatSettings);
 
-        return (await this.GetChatMessageContentsAsync(chat, chatSettings, kernel, cancellationToken).
+        return (await GetChatMessageContentsAsync(chat, chatSettings, kernel, cancellationToken).
                 ConfigureAwait(false)).Select(chat => new TextContent(chat.Content, chat.ModelId, chat.Content, Encoding.UTF8,
                 chat.Metadata)).
             ToList();
@@ -986,7 +972,7 @@ internal abstract class ClientCore
     {
         if (!string.IsNullOrEmpty(value))
         {
-            this.Attributes.Add(key, value);
+            Attributes.Add(key, value);
         }
     }
 
@@ -998,8 +984,8 @@ internal abstract class ClientCore
     internal static OpenAIClientOptions GetOpenAIClientOptions(HttpClient? httpClient, OpenAIClientOptions.ServiceVersion? serviceVersion = null)
     {
         OpenAIClientOptions options = serviceVersion is not null
-            ? new(serviceVersion.Value)
-            : new();
+            ? new OpenAIClientOptions(serviceVersion.Value)
+            : new OpenAIClientOptions();
 
         options.Diagnostics.ApplicationId = HttpHeaderConstant.Values.UserAgent;
         options.AddPolicy(new AddHeaderRequestPolicy(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(ClientCore))), HttpPipelinePosition.PerCall);
@@ -1007,7 +993,7 @@ internal abstract class ClientCore
         if (httpClient is not null)
         {
             options.Transport = new HttpClientTransport(httpClient);
-            options.RetryPolicy = new RetryPolicy(maxRetries: 0); // Disable Azure SDK retry policy if and only if a custom HttpClient is provided.
+            options.RetryPolicy = new RetryPolicy(0); // Disable Azure SDK retry policy if and only if a custom HttpClient is provided.
             options.Retry.NetworkTimeout = Timeout.InfiniteTimeSpan; // Disable Azure SDK default timeout
         }
 
@@ -1285,7 +1271,7 @@ internal abstract class ClientCore
 
             return new[]
             {
-                new ChatRequestUserMessage(message.Items.Select(static (KernelContent item) => (ChatMessageContentItem)(item switch
+                new ChatRequestUserMessage(message.Items.Select(static item => (ChatMessageContentItem)(item switch
                     {
                         TextContent textContent => new ChatMessageTextContentItem(textContent.Text),
                         ImageContent imageContent => new ChatMessageImageContentItem(imageContent.Uri),
@@ -1399,7 +1385,7 @@ internal abstract class ClientCore
 
     private OpenAIChatMessageContent GetChatMessage(ChatChoice chatChoice, ChatCompletions responseData)
     {
-        var message = new OpenAIChatMessageContent(chatChoice.Message, this.DeploymentOrModelName, GetChatChoiceMetadata(responseData, chatChoice));
+        var message = new OpenAIChatMessageContent(chatChoice.Message, DeploymentOrModelName, GetChatChoiceMetadata(responseData, chatChoice));
 
         foreach (var toolCall in chatChoice.Message.ToolCalls)
         {
@@ -1430,19 +1416,19 @@ internal abstract class ClientCore
                 {
                     exception = new KernelException("Error: Function call arguments were invalid JSON.", ex);
 
-                    if (this.Logger.IsEnabled(LogLevel.Debug))
+                    if (Logger.IsEnabled(LogLevel.Debug))
                     {
-                        this.Logger.LogDebug(ex, "Failed to deserialize function arguments ({FunctionName}/{FunctionId}).", functionToolCall.Name, functionToolCall.Id);
+                        Logger.LogDebug(ex, "Failed to deserialize function arguments ({FunctionName}/{FunctionId}).", functionToolCall.Name, functionToolCall.Id);
                     }
                 }
 
                 var functionName = FunctionName.Parse(functionToolCall.Name, OpenAIFunction.NameSeparator);
 
                 var functionCallContent = new FunctionCallContent(
-                    functionName: functionName.Name,
-                    pluginName: functionName.PluginName,
-                    id: functionToolCall.Id,
-                    arguments: arguments)
+                    functionName.Name,
+                    functionName.PluginName,
+                    functionToolCall.Id,
+                    arguments)
                 {
                     InnerContent = functionToolCall,
                     Exception = exception
@@ -1498,17 +1484,17 @@ internal abstract class ClientCore
     {
         if (usage is null)
         {
-            if (this.Logger.IsEnabled(LogLevel.Debug))
+            if (Logger.IsEnabled(LogLevel.Debug))
             {
-                this.Logger.LogDebug("Usage information is not available.");
+                Logger.LogDebug("Usage information is not available.");
             }
 
             return;
         }
 
-        if (this.Logger.IsEnabled(LogLevel.Information))
+        if (Logger.IsEnabled(LogLevel.Information))
         {
-            this.Logger.LogInformation(
+            Logger.LogInformation(
                 "Prompt tokens: {PromptTokens}. Completion tokens: {CompletionTokens}. Total tokens: {TotalTokens}.",
                 usage.PromptTokens, usage.CompletionTokens, usage.TotalTokens);
         }
@@ -1582,7 +1568,7 @@ internal abstract class ClientCore
         {
             await autoFunctionInvocationFilters[index].
                 OnAutoFunctionInvocationAsync(context,
-                    (context) => InvokeFilterOrFunctionAsync(autoFunctionInvocationFilters, functionCallCallback, context, index + 1)).
+                    context => InvokeFilterOrFunctionAsync(autoFunctionInvocationFilters, functionCallCallback, context, index + 1)).
                 ConfigureAwait(false);
         }
         else
