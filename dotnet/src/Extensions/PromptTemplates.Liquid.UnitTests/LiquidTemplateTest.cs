@@ -121,10 +121,10 @@ public class LiquidTemplateTest
         var target = factory.Create(new PromptTemplateConfig(template)
         {
             TemplateFormat = LiquidPromptTemplateFactory.LiquidTemplateFormat,
-            AllowUnsafeContent = true,
+            AllowDangerouslySetContent = true,
             InputVariables =
             [
-                new() { Name = "input", AllowUnsafeContent = true }
+                new() { Name = "input", AllowDangerouslySetContent = true }
             ]
         });
 
@@ -188,10 +188,10 @@ public class LiquidTemplateTest
         var target = factory.Create(new PromptTemplateConfig(template)
         {
             TemplateFormat = LiquidPromptTemplateFactory.LiquidTemplateFormat,
-            AllowUnsafeContent = true,
+            AllowDangerouslySetContent = true,
             InputVariables =
             [
-                new() { Name = "colon", AllowUnsafeContent = true },
+                new() { Name = "colon", AllowDangerouslySetContent = true },
                 new() { Name = "encodedColon" },
                 new() { Name = "htmlTag" },
                 new() { Name = "encodedHtmlTag" },
@@ -275,7 +275,7 @@ public class LiquidTemplateTest
 
         var target = factory.Create(new PromptTemplateConfig(template)
         {
-            AllowUnsafeContent = false,
+            AllowDangerouslySetContent = false,
             TemplateFormat = LiquidPromptTemplateFactory.LiquidTemplateFormat,
             InputVariables =
             [
@@ -437,7 +437,7 @@ public class LiquidTemplateTest
             TemplateFormat = LiquidPromptTemplateFactory.LiquidTemplateFormat,
             InputVariables =
             [
-                new() { Name = nameof(safeInput), AllowUnsafeContent = true },
+                new() { Name = nameof(safeInput), AllowDangerouslySetContent = true },
                 new() { Name = nameof(unsafeInput) },
             ]
         });
@@ -539,7 +539,7 @@ public class LiquidTemplateTest
         var target = factory.Create(new PromptTemplateConfig(template)
         {
             TemplateFormat = LiquidPromptTemplateFactory.LiquidTemplateFormat,
-            InputVariables = [new() { Name = "safe_input", AllowUnsafeContent = false }]
+            InputVariables = [new() { Name = "safe_input", AllowDangerouslySetContent = false }]
         });
 
         // Act

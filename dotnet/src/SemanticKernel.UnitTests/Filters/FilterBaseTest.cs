@@ -65,11 +65,8 @@ public abstract class FilterBaseTest
         Func<FunctionInvocationContext, Func<FunctionInvocationContext, Task>, Task>? onFunctionInvocation) : IFunctionInvocationFilter
     {
 
-        private readonly Func<FunctionInvocationContext, Func<FunctionInvocationContext, Task>, Task>? _onFunctionInvocation = onFunctionInvocation;
-
-
         public Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next) =>
-            this._onFunctionInvocation?.Invoke(context, next) ?? Task.CompletedTask;
+            onFunctionInvocation?.Invoke(context, next) ?? Task.CompletedTask;
 
     }
 
@@ -78,11 +75,18 @@ public abstract class FilterBaseTest
         Func<PromptRenderContext, Func<PromptRenderContext, Task>, Task>? onPromptRender) : IPromptRenderFilter
     {
 
-        private readonly Func<PromptRenderContext, Func<PromptRenderContext, Task>, Task>? _onPromptRender = onPromptRender;
-
-
         public Task OnPromptRenderAsync(PromptRenderContext context, Func<PromptRenderContext, Task> next) =>
-            this._onPromptRender?.Invoke(context, next) ?? Task.CompletedTask;
+            onPromptRender?.Invoke(context, next) ?? Task.CompletedTask;
+
+    }
+
+
+    protected sealed class FakeAutoFunctionFilter(
+        Func<AutoFunctionInvocationContext, Func<AutoFunctionInvocationContext, Task>, Task>? onAutoFunctionInvocation) : IAutoFunctionInvocationFilter
+    {
+
+        public Task OnAutoFunctionInvocationAsync(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next) =>
+            onAutoFunctionInvocation?.Invoke(context, next) ?? Task.CompletedTask;
 
     }
 

@@ -22,14 +22,13 @@ using System.Threading.Tasks;
 using Extensions.DependencyInjection;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
-using Text;
 
 
 /// <summary>
 /// Provides factory methods for creating <see cref="KernelFunction"/> instances backed by a .NET method.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-internal sealed partial class KernelFunctionFromMethod : KernelFunction
+internal sealed class KernelFunctionFromMethod : KernelFunction
 {
 
     /// <summary>
@@ -179,12 +178,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
     }
 
 
-    /// <summary>
-    /// JSON serialized string representation of the function.
-    /// </summary>
-    public override string ToString() => JsonSerializer.Serialize(this, JsonOptionsCache.WriteIndented);
-
-
     /// <summary>Delegate used to invoke the underlying delegate.</summary>
     private delegate ValueTask<FunctionResult> ImplementationFunc(
         Kernel kernel,
@@ -328,7 +321,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
             Description = method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.
                 Description ?? "",
             Parameters = argParameterViews,
-            ReturnParameter = new KernelReturnParameterMetadata()
+            ReturnParameter = new KernelReturnParameterMetadata
             {
                 ParameterType = returnType,
                 Description = method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.
@@ -378,73 +371,73 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         if (type == typeof(KernelFunction))
         {
             return (static (
-                KernelFunction func,
-                Kernel _,
-                KernelArguments _,
-                CancellationToken _) => func, null);
+                func,
+                _,
+                _,
+                _) => func, null);
         }
 
         if (type == typeof(Kernel))
         {
             return (static (
-                KernelFunction _,
-                Kernel kernel,
-                KernelArguments _,
-                CancellationToken _) => kernel, null);
+                _,
+                kernel,
+                _,
+                _) => kernel, null);
         }
 
         if (type == typeof(KernelArguments))
         {
             return (static (
-                KernelFunction _,
-                Kernel _,
-                KernelArguments arguments,
-                CancellationToken _) => arguments, null);
+                _,
+                _,
+                arguments,
+                _) => arguments, null);
         }
 
         if (type == typeof(ILoggerFactory))
         {
             return ((
-                KernelFunction _,
-                Kernel kernel,
-                KernelArguments _,
-                CancellationToken _) => kernel.LoggerFactory, null);
+                _,
+                kernel,
+                _,
+                _) => kernel.LoggerFactory, null);
         }
 
         if (type == typeof(ILogger))
         {
             return ((
-                KernelFunction _,
-                Kernel kernel,
-                KernelArguments _,
-                CancellationToken _) => kernel.LoggerFactory.CreateLogger(method?.DeclaringType ?? typeof(KernelFunctionFromPrompt)) ?? NullLogger.Instance, null);
+                _,
+                kernel,
+                _,
+                _) => kernel.LoggerFactory.CreateLogger(method?.DeclaringType ?? typeof(KernelFunctionFromPrompt)) ?? NullLogger.Instance, null);
         }
 
         if (type == typeof(IAIServiceSelector))
         {
             return ((
-                KernelFunction _,
-                Kernel kernel,
-                KernelArguments _,
-                CancellationToken _) => kernel.ServiceSelector, null);
+                _,
+                kernel,
+                _,
+                _) => kernel.ServiceSelector, null);
         }
 
         if (type == typeof(CultureInfo) || type == typeof(IFormatProvider))
         {
             return (static (
-                KernelFunction _,
-                Kernel kernel,
-                KernelArguments _,
-                CancellationToken _) => kernel.Culture, null);
+                _,
+                kernel,
+                _,
+                _) => kernel.Culture, null);
         }
 
         if (type == typeof(CancellationToken))
         {
             return (static (
-                KernelFunction _,
-                Kernel _,
-                KernelArguments _,
-                CancellationToken cancellationToken) => cancellationToken, null);
+                _,
+                _,
+                _,
+                cancellationToken) => cancellationToken, null);
         }
 
         // Handle the special FromKernelServicesAttribute, which indicates that the parameter should be sourced from the kernel's services.
@@ -452,10 +445,10 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         if (parameter.GetCustomAttribute<FromKernelServicesAttribute>() is FromKernelServicesAttribute fromKernelAttr)
         {
             return ((
-                KernelFunction _,
-                Kernel kernel,
-                KernelArguments _,
-                CancellationToken _) =>
+                _,
+                kernel,
+                _,
+                _) =>
             {
                 // Try to resolve the service from kernel.Services, using the attribute's key if one was provided.
                 object? service = kernel.Services is IKeyedServiceProvider keyedServiceProvider

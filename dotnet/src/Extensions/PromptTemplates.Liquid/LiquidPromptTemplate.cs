@@ -28,7 +28,7 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
 
     private readonly PromptTemplateConfig _config;
 
-    private readonly bool _allowUnsafeContent;
+    private readonly bool _allowDangerouslySetContent;
 
     private readonly Template _liquidTemplate;
 
@@ -46,12 +46,12 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
 
     /// <summary>Initializes the <see cref="LiquidPromptTemplate"/>.</summary>
     /// <param name="config">Prompt template configuration</param>
-    /// <param name="allowUnsafeContent">Whether to allow unsafe content in the template</param>
+    /// <param name="allowDangerouslySetContent">Whether to allow dangerously set content in the template</param>
     /// <exception cref="ArgumentException">throw if <see cref="PromptTemplateConfig.TemplateFormat"/> is not <see cref="LiquidPromptTemplateFactory.LiquidTemplateFormat"/></exception>
     /// <exception cref="ArgumentException">The template in <paramref name="config"/> could not be parsed.</exception>
     /// <exception cref="ArgumentNullException">throw if <paramref name="config"/> is null</exception>
     /// <exception cref="ArgumentNullException">throw if the template in <paramref name="config"/> is null</exception>
-    public LiquidPromptTemplate(PromptTemplateConfig config, bool allowUnsafeContent = false)
+    public LiquidPromptTemplate(PromptTemplateConfig config, bool allowDangerouslySetContent = false)
     {
         Verify.NotNull(config, nameof(config));
         Verify.NotNull(config.Template, nameof(config.Template));
@@ -61,7 +61,7 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
             throw new ArgumentException($"Invalid template format: {config.TemplateFormat}");
         }
 
-        this._allowUnsafeContent = allowUnsafeContent;
+        this._allowDangerouslySetContent = allowDangerouslySetContent;
         this._config = config;
 
         // Parse the template now so we can check for errors, understand variable usage, and
@@ -82,7 +82,7 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
         {
             foreach (string implicitVariable in SimpleVariablesVisitor.InferInputs(this._liquidTemplate))
             {
-                config.InputVariables.Add(new() { Name = implicitVariable, AllowUnsafeContent = config.AllowUnsafeContent });
+                config.InputVariables.Add(new() { Name = implicitVariable, AllowDangerouslySetContent = config.AllowDangerouslySetContent });
             }
         }
 
@@ -172,7 +172,7 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
 
     private string ReplaceReservedStringBackToColonIfNeeded(string text)
     {
-        if (this._allowUnsafeContent)
+        if (this._allowDangerouslySetContent)
         {
             return text;
         }
@@ -225,7 +225,7 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
 
     private bool ShouldReplaceColonToReservedString(PromptTemplateConfig promptTemplateConfig, string propertyName, object? propertyValue)
     {
-        if (propertyValue is null || propertyValue is not string || this._allowUnsafeContent)
+        if (propertyValue is null || propertyValue is not string || this._allowDangerouslySetContent)
         {
             return false;
         }
@@ -234,7 +234,7 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
         {
             if (inputVariable.Name == propertyName)
             {
-                return !inputVariable.AllowUnsafeContent;
+                return !inputVariable.AllowDangerouslySetContent;
             }
         }
 

@@ -249,12 +249,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     }
 
 
-    /// <summary>
-    /// JSON serialized string representation of the function.
-    /// </summary>
-    public override string ToString() => JsonSerializer.Serialize(this);
-
-
     private KernelFunctionFromPrompt(
         IPromptTemplate template,
         PromptTemplateConfig promptConfig,

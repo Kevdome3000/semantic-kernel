@@ -153,7 +153,8 @@ public static class KernelExtensions
     /// </param>
     /// <returns>A <see cref="KernelPlugin"/> containing <see cref="KernelFunction"/>s for all relevant members of <typeparamref name="T"/>.</returns>
     /// <remarks>
-    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
+    /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
     public static KernelPlugin CreatePluginFromType<T>(this Kernel kernel, string? pluginName = null)
     {
@@ -175,7 +176,8 @@ public static class KernelExtensions
     /// </param>
     /// <returns>A <see cref="KernelPlugin"/> containing <see cref="KernelFunction"/>s for all relevant members of <paramref name="target"/>.</returns>
     /// <remarks>
-    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
+    /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
     public static KernelPlugin CreatePluginFromObject(this Kernel kernel, object target, string? pluginName = null)
     {
@@ -236,7 +238,8 @@ public static class KernelExtensions
     /// </param>
     /// <returns>A <see cref="KernelPlugin"/> containing <see cref="KernelFunction"/>s for all relevant members of <typeparamref name="T"/>.</returns>
     /// <remarks>
-    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
+    /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
     public static KernelPlugin ImportPluginFromType<T>(this Kernel kernel, string? pluginName = null)
     {
@@ -256,7 +259,8 @@ public static class KernelExtensions
     /// <param name="serviceProvider">Service provider from which to resolve dependencies, such as <see cref="ILoggerFactory"/>.</param>
     /// <returns>A <see cref="KernelPlugin"/> containing <see cref="KernelFunction"/>s for all relevant members of <typeparamref name="T"/>.</returns>
     /// <remarks>
-    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
+    /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
     public static KernelPlugin AddFromType<T>(this ICollection<KernelPlugin> plugins, string? pluginName = null, IServiceProvider? serviceProvider = null)
     {
@@ -277,7 +281,8 @@ public static class KernelExtensions
     /// </param>
     /// <returns>The same instance as <paramref name="plugins"/>.</returns>
     /// <remarks>
-    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
+    /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
     public static IKernelBuilderPlugins AddFromType<T>(this IKernelBuilderPlugins plugins, string? pluginName = null)
     {
@@ -316,7 +321,8 @@ public static class KernelExtensions
     /// </param>
     /// <returns>A <see cref="KernelPlugin"/> containing <see cref="KernelFunction"/>s for all relevant members of <paramref name="target"/>.</returns>
     /// <remarks>
-    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
+    /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
     public static KernelPlugin ImportPluginFromObject(this Kernel kernel, object target, string? pluginName = null)
     {
@@ -336,7 +342,8 @@ public static class KernelExtensions
     /// <param name="serviceProvider">Service provider from which to resolve dependencies, such as <see cref="ILoggerFactory"/>.</param>
     /// <returns>A <see cref="KernelPlugin"/> containing <see cref="KernelFunction"/>s for all relevant members of <paramref name="target"/>.</returns>
     /// <remarks>
-    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
+    /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
     public static KernelPlugin AddFromObject(
         this ICollection<KernelPlugin> plugins,
@@ -361,7 +368,8 @@ public static class KernelExtensions
     /// </param>
     /// <returns>The same instance as <paramref name="plugins"/>.</returns>
     /// <remarks>
-    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
+    /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
     public static IKernelBuilderPlugins AddFromObject(this IKernelBuilderPlugins plugins, object target, string? pluginName = null)
     {

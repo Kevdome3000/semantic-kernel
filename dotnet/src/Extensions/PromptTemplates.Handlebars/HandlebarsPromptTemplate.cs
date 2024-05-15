@@ -29,11 +29,11 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
     /// Constructor for Handlebars PromptTemplate.
     /// </summary>
     /// <param name="promptConfig">Prompt template configuration</param>
-    /// <param name="allowUnsafeContent">Flag indicating whether to allow unsafe content</param>
+    /// <param name="allowDangerouslySetContent">Flag indicating whether to allow potentially dangerous content to be inserted into the prompt</param>
     /// <param name="options">Handlebars prompt template options</param>
-    internal HandlebarsPromptTemplate(PromptTemplateConfig promptConfig, bool allowUnsafeContent = false, HandlebarsPromptTemplateOptions? options = null)
+    internal HandlebarsPromptTemplate(PromptTemplateConfig promptConfig, bool allowDangerouslySetContent = false, HandlebarsPromptTemplateOptions? options = null)
     {
-        this._allowUnsafeContent = allowUnsafeContent;
+        this._allowDangerouslySetContent = allowDangerouslySetContent;
         this._loggerFactory ??= NullLoggerFactory.Instance;
         this._logger = this._loggerFactory.CreateLogger(typeof(HandlebarsPromptTemplate));
         this._promptModel = promptConfig;
@@ -69,7 +69,7 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
 
     private readonly PromptTemplateConfig _promptModel;
 
-    private readonly bool _allowUnsafeContent;
+    private readonly bool _allowDangerouslySetContent;
 
 
     /// <summary>
@@ -95,7 +95,7 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
 
         // Add helpers for kernel functions
         KernelFunctionHelpers.Register(handlebarsInstance, kernel, arguments, this._promptModel,
-            this._allowUnsafeContent, this._options.PrefixSeparator, cancellationToken);
+            this._allowDangerouslySetContent, this._options.PrefixSeparator, cancellationToken);
 
         // Add any custom helpers
         this._options.RegisterCustomHelpers?.Invoke(
@@ -147,7 +147,7 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
 
     private bool ShouldEncodeTags(PromptTemplateConfig promptTemplateConfig, string propertyName, object? propertyValue)
     {
-        if (propertyValue is null || propertyValue is not string || this._allowUnsafeContent)
+        if (propertyValue is null || propertyValue is not string || this._allowDangerouslySetContent)
         {
             return false;
         }
@@ -156,7 +156,7 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
         {
             if (inputVariable.Name == propertyName)
             {
-                return !inputVariable.AllowUnsafeContent;
+                return !inputVariable.AllowDangerouslySetContent;
             }
         }
 

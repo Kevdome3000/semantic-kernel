@@ -432,6 +432,12 @@ public abstract class KernelFunction : IKernelFunction
     public abstract KernelFunction Clone(string pluginName);
 
 
+    /// <inheritdoc/>
+    public override string ToString() => string.IsNullOrWhiteSpace(this.PluginName)
+        ? this.Name
+        : $"{this.PluginName}.{this.Name}";
+
+
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/>.
     /// </summary>
