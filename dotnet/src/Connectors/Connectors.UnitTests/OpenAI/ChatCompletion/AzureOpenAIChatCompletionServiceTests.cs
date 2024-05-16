@@ -412,8 +412,8 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
     public async Task GetChatMessageContentsWithFunctionCallMaximumAutoInvokeAttemptsAsync()
     {
         // Arrange
-        const int DefaultMaximumAutoInvokeAttempts = 5;
-        const int AutoInvokeResponsesCount = 6;
+        const int DefaultMaximumAutoInvokeAttempts = 128;
+        const int ModelResponsesCount = 129;
 
         int functionCallCount = 0;
 
@@ -436,7 +436,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
 
         var responses = new List<HttpResponseMessage>();
 
-        for (var i = 0; i < AutoInvokeResponsesCount; i++)
+        for (var i = 0; i < ModelResponsesCount; i++)
         {
             responses.Add(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_single_function_call_test_response.json")) });
         }
@@ -627,8 +627,8 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
     public async Task GetStreamingChatMessageContentsWithFunctionCallMaximumAutoInvokeAttemptsAsync()
     {
         // Arrange
-        const int DefaultMaximumAutoInvokeAttempts = 5;
-        const int AutoInvokeResponsesCount = 6;
+        const int DefaultMaximumAutoInvokeAttempts = 128;
+        const int ModelResponsesCount = 129;
 
         int functionCallCount = 0;
 
@@ -651,7 +651,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
 
         var responses = new List<HttpResponseMessage>();
 
-        for (var i = 0; i < AutoInvokeResponsesCount; i++)
+        for (var i = 0; i < ModelResponsesCount; i++)
         {
             responses.Add(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_streaming_single_function_call_test_response.txt")) });
         }

@@ -67,6 +67,8 @@ public sealed class TestConfiguration
 
     public static MsGraphConfiguration MSGraph => LoadSection<MsGraphConfiguration>();
 
+    public static MistralAIConfig MistralAI => LoadSection<MistralAIConfig>();
+
     public static GoogleAIConfig GoogleAI => LoadSection<GoogleAIConfig>();
 
     public static VertexAIConfig VertexAI => LoadSection<VertexAIConfig>();
@@ -300,6 +302,18 @@ public sealed class TestConfiguration
     {
 
         public string Token { get; set; }
+
+    }
+
+
+    public class MistralAIConfig
+    {
+
+        public string ApiKey { get; set; }
+
+        public string ChatModelId { get; set; }
+
+        public string EmbeddingModelId { get; set; }
 
     }
 
