@@ -11,6 +11,7 @@ using System.Globalization;
 /// </summary>
 public sealed class TextPlugin
 {
+
     /// <summary>
     /// Trim whitespace from the start and end of a string.
     /// </summary>
@@ -45,7 +46,8 @@ public sealed class TextPlugin
     /// <param name="cultureInfo"> An object that supplies culture-specific casing rules. </param>
     /// <returns> The converted string. </returns>
     [KernelFunction, Description("Convert a string to uppercase.")]
-    public string Uppercase(string input, CultureInfo? cultureInfo = null) => input.ToUpper(cultureInfo);
+    public string Uppercase(string input, CultureInfo? cultureInfo = null) =>
+        input.ToUpper(cultureInfo ?? CultureInfo.CurrentCulture);
 
 
     /// <summary>
@@ -55,7 +57,8 @@ public sealed class TextPlugin
     /// <param name="cultureInfo"> An object that supplies culture-specific casing rules. </param>
     /// <returns> The converted string. </returns>
     [KernelFunction, Description("Convert a string to lowercase.")]
-    public string Lowercase(string input, CultureInfo? cultureInfo = null) => input.ToLower(cultureInfo);
+    public string Lowercase(string input, CultureInfo? cultureInfo = null) =>
+        input.ToLower(cultureInfo ?? CultureInfo.CurrentCulture);
 
 
     /// <summary>
@@ -93,4 +96,5 @@ public sealed class TextPlugin
     {
         return text;
     }
+
 }

@@ -64,8 +64,6 @@ public sealed class MistralAIChatCompletionServiceTests : MistralTestBase
             chunks.Add(chunk);
         }
 
-        ;
-
         // Assert
         Assert.NotNull(response);
         Assert.Equal(124, chunks.Count);

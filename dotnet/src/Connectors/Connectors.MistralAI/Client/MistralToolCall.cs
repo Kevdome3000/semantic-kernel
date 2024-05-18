@@ -8,7 +8,7 @@ using System.Text.Json.Serialization;
 /// <summary>
 /// Tool call for chat completion.
 /// </summary>
-internal class MistralToolCall
+internal sealed class MistralToolCall
 {
 
     [JsonPropertyName("id")]

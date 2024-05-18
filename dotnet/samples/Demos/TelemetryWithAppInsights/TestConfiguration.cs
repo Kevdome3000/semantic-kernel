@@ -34,6 +34,8 @@ public sealed class TestConfiguration
 
     public static HuggingFaceConfig HuggingFace => LoadSection<HuggingFaceConfig>();
 
+    public static MistralAIConfig MistralAI => LoadSection<MistralAIConfig>();
+
 
     private static T LoadSection<T>([CallerMemberName] string? caller = null)
     {
@@ -105,6 +107,16 @@ public sealed class TestConfiguration
         public string ModelId { get; set; }
 
         public string EmbeddingModelId { get; set; }
+
+    }
+
+
+    public class MistralAIConfig
+    {
+
+        public string ApiKey { get; set; }
+
+        public string ChatModelId { get; set; }
 
     }
 

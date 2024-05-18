@@ -9,7 +9,7 @@ using System.Text.Json.Serialization;
 /// <summary>
 /// Chat message for MistralAI.
 /// </summary>
-internal class MistralChatMessage
+internal sealed class MistralChatMessage
 {
 
     [JsonPropertyName("role")]
@@ -32,7 +32,7 @@ internal class MistralChatMessage
     [JsonConstructor]
     internal MistralChatMessage(string? role, string? content)
     {
-        if (role is not null && role is not "system" && role is not "user" && role is not "assistant" && role is not "tool")
+        if (role is not null and not "system" and not "user" and not "assistant" and not "tool")
         {
             throw new System.ArgumentException($"Role must be one of: system, user, assistant or tool. {role} is an invalid role.", nameof(role));
         }

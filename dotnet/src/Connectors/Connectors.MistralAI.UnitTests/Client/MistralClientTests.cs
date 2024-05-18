@@ -132,8 +132,6 @@ public sealed class MistralClientTests : MistralTestBase
             chunks.Add(chunk);
         }
 
-        ;
-
         // Assert
         Assert.NotNull(response);
         Assert.Equal(124, chunks.Count);
@@ -238,8 +236,6 @@ public sealed class MistralClientTests : MistralTestBase
         {
             chunks.Add(chunk);
         }
-
-        ;
 
         // Assert
         Assert.NotNull(response);

@@ -154,8 +154,6 @@ public sealed class MistralAIChatCompletionTests
             content.Append(chunk.Content);
         }
 
-        ;
-
         // Assert
         Assert.NotNull(response);
         Assert.True(chunks.Count > 0);

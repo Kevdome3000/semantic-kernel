@@ -8,7 +8,7 @@ using System.Text.Json.Serialization;
 /// <summary>
 /// A tool to be used in the chat completion request.
 /// </summary>
-internal class MistralTool
+internal sealed class MistralTool
 {
 
     /// <summary>

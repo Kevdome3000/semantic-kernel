@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 /// <summary>
 /// Represents a chat completion chunk from Mistral.
 /// </summary>
-internal class MistralChatCompletionChunk
+internal sealed class MistralChatCompletionChunk
 {
 
     [JsonPropertyName("id")]
@@ -32,53 +32,26 @@ internal class MistralChatCompletionChunk
     public MistralUsage? Usage { get; set; }
 
 
-    internal IReadOnlyDictionary<string, object?>? GetMetadata()
-    {
-        if (this._metadata is null)
+    internal IReadOnlyDictionary<string, object?>? GetMetadata() =>
+        this._metadata ??= new Dictionary<string, object?>(4)
         {
-            this._metadata = new Dictionary<string, object?>(4)
-            {
-                { nameof(MistralChatCompletionChunk.Id), this.Id },
-                { nameof(MistralChatCompletionChunk.Model), this.Model },
-                { nameof(MistralChatCompletionChunk.Created), this.Created },
-                { nameof(MistralChatCompletionChunk.Object), this.Object },
-                { nameof(MistralChatCompletionChunk.Usage), this.Usage },
-            };
-        }
-
-        return this._metadata;
-    }
+            { nameof(MistralChatCompletionChunk.Id), this.Id },
+            { nameof(MistralChatCompletionChunk.Model), this.Model },
+            { nameof(MistralChatCompletionChunk.Created), this.Created },
+            { nameof(MistralChatCompletionChunk.Object), this.Object },
+            { nameof(MistralChatCompletionChunk.Usage), this.Usage },
+        };
 
 
-    internal int GetChoiceCount()
-    {
-        return this.Choices?.Count ?? 0;
-    }
+    internal int GetChoiceCount() => this.Choices?.Count ?? 0;
 
+    internal string? GetRole(int index) => this.Choices?[index]?.Delta?.Role;
 
-    internal string? GetRole(int index)
-    {
-        return this.Choices?[index]?.Delta?.Role;
-    }
+    internal string? GetContent(int index) => this.Choices?[index]?.Delta?.Content;
 
+    internal int GetChoiceIndex(int index) => this.Choices?[index]?.Index ?? -1;
 
-    internal string? GetContent(int index)
-    {
-        return this.Choices?[index]?.Delta?.Content;
-    }
-
-
-    internal int GetChoiceIndex(int index)
-    {
-        return this.Choices?[index]?.Index ?? -1;
-    }
-
-
-    internal Encoding? GetEncoding()
-    {
-        return null;
-    }
-
+    internal Encoding? GetEncoding() => null;
 
     private IReadOnlyDictionary<string, object?>? _metadata;
 

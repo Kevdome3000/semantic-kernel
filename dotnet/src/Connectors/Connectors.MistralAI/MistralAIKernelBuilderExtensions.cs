@@ -8,6 +8,7 @@ using ChatCompletion;
 using Connectors.MistralAI;
 using Embeddings;
 using Extensions.DependencyInjection;
+using Extensions.Logging;
 using Http;
 
 
@@ -40,7 +41,8 @@ public static class MistralAIKernelBuilderExtensions
         Verify.NotNullOrWhiteSpace(apiKey);
 
         builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
-            new MistralAIChatCompletionService(modelId, apiKey, endpoint, HttpClientProvider.GetHttpClient(httpClient, serviceProvider)));
+            new MistralAIChatCompletionService(modelId, apiKey, endpoint, HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                serviceProvider.GetService<ILoggerFactory>()));
 
         return builder;
     }
@@ -67,7 +69,8 @@ public static class MistralAIKernelBuilderExtensions
         Verify.NotNull(builder);
 
         builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
-            new MistralAITextEmbeddingGenerationService(modelId, apiKey, endpoint, HttpClientProvider.GetHttpClient(httpClient, serviceProvider)));
+            new MistralAITextEmbeddingGenerationService(modelId, apiKey, endpoint, HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                serviceProvider.GetService<ILoggerFactory>()));
 
         return builder;
     }

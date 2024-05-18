@@ -59,7 +59,7 @@ public sealed class MistralAITextEmbeddingGenerationService : ITextEmbeddingGene
 
     #region private
 
-    private Dictionary<string, object?> AttributesInternal { get; } = new();
+    private Dictionary<string, object?> AttributesInternal { get; } = [];
 
     private MistralClient Client { get; }
 

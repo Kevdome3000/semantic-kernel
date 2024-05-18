@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Google;
 using Microsoft.SemanticKernel.Connectors.HuggingFace;
+using Microsoft.SemanticKernel.Connectors.MistralAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Services;
 using OpenTelemetry;
@@ -87,6 +88,8 @@ public sealed class Program
             await RunGoogleAIChatAsync(kernel);
             Console.WriteLine();
             await RunHuggingFaceChatAsync(kernel);
+            Console.WriteLine();
+            await RunMistralAIChatAsync(kernel);
         }
 
         Console.WriteLine();
@@ -123,6 +126,8 @@ public sealed class Program
     private const string GoogleAIGeminiServiceKey = "GoogleAIGemini";
 
     private const string HuggingFaceServiceKey = "HuggingFace";
+
+    private const string MistralAIServiceKey = "MistralAI";
 
 
     #region chat completion
@@ -171,6 +176,25 @@ public sealed class Program
 
         using var activity = s_activitySource.StartActivity(HuggingFaceServiceKey);
         SetTargetService(kernel, HuggingFaceServiceKey);
+
+        try
+        {
+            await RunChatAsync(kernel);
+        }
+        catch (Exception ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+    }
+
+
+    private static async Task RunMistralAIChatAsync(Kernel kernel)
+    {
+        Console.WriteLine("============= MistralAI Chat Completion =============");
+
+        using var activity = s_activitySource.StartActivity(MistralAIServiceKey);
+        SetTargetService(kernel, MistralAIServiceKey);
 
         try
         {
@@ -266,7 +290,12 @@ public sealed class Program
                 model: TestConfiguration.HuggingFace.ModelId,
                 endpoint: new Uri("https://api-inference.huggingface.co"),
                 apiKey: TestConfiguration.HuggingFace.ApiKey,
-                serviceId: HuggingFaceServiceKey);
+                serviceId: HuggingFaceServiceKey).
+            AddMistralChatCompletion(
+                modelId: TestConfiguration.MistralAI.ChatModelId,
+                apiKey: TestConfiguration.MistralAI.ApiKey,
+                serviceId: MistralAIServiceKey
+            );
 
         builder.Services.AddSingleton<IAIServiceSelector>(new AIServiceSelector());
         builder.Plugins.AddFromPromptDirectory(Path.Combine(folder, "WriterPlugin"));
@@ -340,6 +369,11 @@ public sealed class Program
                         HuggingFaceServiceKey => new HuggingFacePromptExecutionSettings()
                         {
                             Temperature = 0,
+                        },
+                        MistralAIServiceKey => new MistralAIPromptExecutionSettings()
+                        {
+                            Temperature = 0,
+                            ToolCallBehavior = MistralAIToolCallBehavior.AutoInvokeKernelFunctions
                         },
                         _ => null,
                     };

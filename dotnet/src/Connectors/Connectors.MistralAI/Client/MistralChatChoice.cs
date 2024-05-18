@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 /// <summary>
 /// Choice for chat completion.
 /// </summary>
-internal class MistralChatChoice
+internal sealed class MistralChatChoice
 {
 
     [JsonPropertyName("index")]

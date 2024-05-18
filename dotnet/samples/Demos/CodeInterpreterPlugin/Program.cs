@@ -94,7 +94,7 @@ var chatHistory = new ChatHistory();
 
 StringBuilder fullAssistantContent = new();
 
-do
+while (true)
 {
     Console.Write("\nUser: ");
     var input = Console.ReadLine();
@@ -117,4 +117,4 @@ do
     }
 
     chatHistory.AddAssistantMessage(fullAssistantContent.ToString());
-} while (true);
+}

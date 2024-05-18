@@ -10,12 +10,6 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace Microsoft.SemanticKernel.Http;
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Net.Http;
-using Extensions.DependencyInjection;
-
-
 /// <summary>
 /// Provides functionality for retrieving instances of HttpClient.
 /// </summary>
@@ -102,11 +96,15 @@ internal static class HttpClientProvider
 #else
         private static HttpClientHandler CreateHandler()
         {
-            return new HttpClientHandler()
+            var handler = new HttpClientHandler();
+
+            try
             {
-                // Check cert revocation
-                CheckCertificateRevocationList = true,
-            };
+                handler.CheckCertificateRevocationList = true;
+            }
+            catch (PlatformNotSupportedException) { } // not supported on older frameworks
+
+            return handler;
         }
 #endif
 

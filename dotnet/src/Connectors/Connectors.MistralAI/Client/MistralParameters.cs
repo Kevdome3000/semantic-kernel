@@ -9,7 +9,7 @@ using System.Text.Json.Serialization;
 /// <summary>
 /// Represents the parameters of a MistralAI function.
 /// </summary>
-internal class MistralParameters
+internal sealed class MistralParameters
 {
 
     /// <summary>
@@ -28,6 +28,6 @@ internal class MistralParameters
     /// Gets or sets the list of required properties.
     /// </summary>
     [JsonPropertyName("required")]
-    public IList<string> Required { get; set; } = new List<string>();
+    public IList<string> Required { get; set; } = [];
 
 }
