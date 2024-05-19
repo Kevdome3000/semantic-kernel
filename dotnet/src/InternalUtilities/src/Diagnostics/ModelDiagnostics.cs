@@ -2,6 +2,16 @@
 
 namespace Microsoft.SemanticKernel.Diagnostics;
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Text;
+using System.Text.Json;
+using ChatCompletion;
+
+
 /// <summary>
 /// Model diagnostics helper class that provides a set of methods to trace model activities with the OTel semantic conventions.
 /// This class contains experimental features and may change in the future.
