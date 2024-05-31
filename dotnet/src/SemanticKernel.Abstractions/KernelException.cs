@@ -8,8 +8,13 @@ using System;
 /// <summary>
 /// Represents the base exception from which all Semantic Kernel exceptions derive.
 /// </summary>
+/// <remarks>
+/// Instances of this class optionally contain telemetry information in the Exception.Data property using keys that are consistent with the OpenTelemetry standard.
+/// See https://opentelemetry.io/ for more information.
+/// </remarks>
 public class KernelException : Exception
 {
+
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelException"/> class.
     /// </summary>
@@ -35,4 +40,5 @@ public class KernelException : Exception
     public KernelException(string? message, Exception? innerException) : base(message, innerException)
     {
     }
+
 }

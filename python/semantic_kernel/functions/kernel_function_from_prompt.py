@@ -1,10 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
-from __future__ import annotations
 
 import logging
 import os
+from collections.abc import AsyncGenerator
 from html import unescape
-from typing import Any, AsyncGenerator
+from typing import Any
 
 import yaml
 from pydantic import Field, ValidationError, model_validator
@@ -19,6 +19,7 @@ from semantic_kernel.exceptions import FunctionExecutionException, FunctionIniti
 from semantic_kernel.exceptions.function_exceptions import PromptRenderingException
 from semantic_kernel.filters.filter_types import FilterTypes
 from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
+from semantic_kernel.filters.kernel_filters_extension import _rebuild_prompt_render_context
 from semantic_kernel.filters.prompts.prompt_render_context import PromptRenderContext
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -26,7 +27,6 @@ from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP, Kerne
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.functions.prompt_rendering_result import PromptRenderingResult
-from semantic_kernel.kernel_extensions.kernel_filters_extension import _rebuild_prompt_render_context
 from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME, TEMPLATE_FORMAT_TYPES
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
@@ -59,12 +59,10 @@ class KernelFunctionFromPrompt(KernelFunction):
         template_format: TEMPLATE_FORMAT_TYPES = KERNEL_TEMPLATE_FORMAT_NAME,
         prompt_template: PromptTemplateBase | None = None,
         prompt_template_config: PromptTemplateConfig | None = None,
-        prompt_execution_settings: None | (
-            PromptExecutionSettings | list[PromptExecutionSettings] | dict[str, PromptExecutionSettings]
-        ) = None,
+        prompt_execution_settings: None
+        | (PromptExecutionSettings | list[PromptExecutionSettings] | dict[str, PromptExecutionSettings]) = None,
     ) -> None:
-        """
-        Initializes a new instance of the KernelFunctionFromPrompt class
+        """Initializes a new instance of the KernelFunctionFromPrompt class.
 
         Args:
             function_name (str): The name of the function
@@ -86,6 +84,16 @@ class KernelFunctionFromPrompt(KernelFunction):
 through prompt_template_config or in the prompt_template."
             )
 
+        if prompt and prompt_template_config and prompt_template_config.template != prompt:
+            logger.warning(
+                f"Prompt ({prompt}) and PromptTemplateConfig ({prompt_template_config.template}) both supplied, "
+                "using the template in PromptTemplateConfig, ignoring prompt."
+            )
+        if template_format and prompt_template_config and prompt_template_config.template_format != template_format:
+            logger.warning(
+                f"Template ({template_format}) and PromptTemplateConfig ({prompt_template_config.template_format}) "
+                "both supplied, using the template format in PromptTemplateConfig, ignoring template."
+            )
         if not prompt_template:
             if not prompt_template_config:
                 # prompt must be there if prompt_template and prompt_template_config is not supplied
@@ -95,7 +103,9 @@ through prompt_template_config or in the prompt_template."
                     template=prompt,
                     template_format=template_format,
                 )
-            prompt_template = TEMPLATE_FORMAT_MAP[template_format](prompt_template_config=prompt_template_config)  # type: ignore
+            prompt_template = TEMPLATE_FORMAT_MAP[prompt_template_config.template_format](
+                prompt_template_config=prompt_template_config
+            )  # type: ignore
 
         try:
             metadata = KernelFunctionMetadata(
@@ -274,7 +284,7 @@ through prompt_template_config or in the prompt_template."
                 arguments[parameter.name] = parameter.default
 
     @classmethod
-    def from_yaml(cls, yaml_str: str, plugin_name: str | None = None) -> KernelFunctionFromPrompt:
+    def from_yaml(cls, yaml_str: str, plugin_name: str | None = None) -> "KernelFunctionFromPrompt":
         """Creates a new instance of the KernelFunctionFromPrompt class from a YAML string."""
         try:
             data = yaml.safe_load(yaml_str)
@@ -299,7 +309,7 @@ through prompt_template_config or in the prompt_template."
         )
 
     @classmethod
-    def from_directory(cls, path: str, plugin_name: str | None = None) -> KernelFunctionFromPrompt:
+    def from_directory(cls, path: str, plugin_name: str | None = None) -> "KernelFunctionFromPrompt":
         """Creates a new instance of the KernelFunctionFromPrompt class from a directory.
 
         The directory needs to contain:

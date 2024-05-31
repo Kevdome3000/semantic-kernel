@@ -582,7 +582,7 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
         this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingResponses();
 
         // Act
-        await kernel.InvokePromptAsync("Test prompt", new(new OpenAIPromptExecutionSettings
+        var result = await kernel.InvokePromptAsync("Test prompt", new(new OpenAIPromptExecutionSettings
         {
             ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
         }));
@@ -592,6 +592,13 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
         Assert.Equal(0, secondFunctionInvocations);
         Assert.Equal([0], requestSequenceNumbers);
         Assert.Equal([0], functionSequenceNumbers);
+
+        // Results of function invoked before termination should be returned
+        var lastMessageContent = result.GetValue<ChatMessageContent>();
+        Assert.NotNull(lastMessageContent);
+
+        Assert.Equal("function1-value", lastMessageContent.Content);
+        Assert.Equal(AuthorRole.Tool, lastMessageContent.Role);
     }
 
 
@@ -635,9 +642,12 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
 
         var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
+        List<StreamingKernelContent> streamingContent = [];
+
         // Act
         await foreach (var item in kernel.InvokePromptStreamingAsync("Test prompt", new(executionSettings)))
         {
+            streamingContent.Add(item);
         }
 
         // Assert
@@ -645,6 +655,15 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
         Assert.Equal(0, secondFunctionInvocations);
         Assert.Equal([0], requestSequenceNumbers);
         Assert.Equal([0], functionSequenceNumbers);
+
+        // Results of function invoked before termination should be returned 
+        Assert.Equal(3, streamingContent.Count);
+
+        var lastMessageContent = streamingContent[^1] as StreamingChatMessageContent;
+        Assert.NotNull(lastMessageContent);
+
+        Assert.Equal("function1-value", lastMessageContent.Content);
+        Assert.Equal(AuthorRole.Tool, lastMessageContent.Role);
     }
 
 

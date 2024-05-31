@@ -9,6 +9,10 @@ using System.Net;
 /// <summary>
 /// Represents an exception specific to HTTP operations.
 /// </summary>
+/// <remarks>
+/// Instances of this class optionally contain telemetry information in the Exception.Data property using keys that are consistent with the OpenTelemetry standard.
+/// See https://opentelemetry.io/ for more information.
+/// </remarks>
 public class HttpOperationException : Exception
 {
 
@@ -75,6 +79,7 @@ public class HttpOperationException : Exception
     /// <remarks>
     /// This information is only available in limited circumstances e.g. when using Open API plugins.
     /// </remarks>
+    [Obsolete("This property is obsolete and will be removed in a future version. Use the Exception.Data['Name'] instead.")]
     public string? RequestMethod { get; set; }
 
     /// <summary>
@@ -83,6 +88,7 @@ public class HttpOperationException : Exception
     /// <remarks>
     /// This information is only available in limited circumstances e.g. when using Open API plugins.
     /// </remarks>
+    [Obsolete("This property is obsolete and will be removed in a future version. Use the Exception.Data['Url'] instead.")]
     public Uri? RequestUri { get; set; }
 
     /// <summary>
@@ -91,6 +97,7 @@ public class HttpOperationException : Exception
     /// <remarks>
     /// This information is only available in limited circumstances e.g. when using Open API plugins.
     /// </remarks>
+    [Obsolete("This property is obsolete and will be removed in a future version. Use the Exception.Data['Data'] instead.")]
     public object? RequestPayload { get; set; }
 
 }

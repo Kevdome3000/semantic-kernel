@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
+using System.Text;
+using System.Text.RegularExpressions;
 using Extensions.DependencyInjection;
 using Extensions.Logging;
 
@@ -13,7 +15,7 @@ using Extensions.Logging;
 /// <summary>
 /// Provides static factory methods for creating commonly-used plugin implementations.
 /// </summary>
-public static class KernelPluginFactory
+public static partial class KernelPluginFactory
 {
 
     /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/>.</summary>
@@ -53,9 +55,7 @@ public static class KernelPluginFactory
     {
         Verify.NotNull(target);
 
-        pluginName ??= target.GetType().
-            Name;
-
+        pluginName ??= CreatePluginName(target.GetType());
         Verify.ValidPluginName(pluginName);
 
         MethodInfo[] methods = target.GetType().
@@ -80,14 +80,14 @@ public static class KernelPluginFactory
         if (loggerFactory?.CreateLogger(target.GetType()) is ILogger logger &&
             logger.IsEnabled(LogLevel.Trace))
         {
-            logger.LogTrace("Created plugin {PluginName} with {IncludedFunctions} [KernelFunction] methods out of {TotalMethods} methods found", pluginName, functions.Count, methods.Length);
+            logger.LogTrace("Created plugin {PluginName} with {IncludedFunctions} [KernelFunction] methods out of {TotalMethods} methods found.", pluginName, functions.Count, methods.Length);
         }
 
         var description = target.GetType().
             GetCustomAttribute<DescriptionAttribute>(inherit: true)?.
             Description;
 
-        return CreateFromFunctions(pluginName, description, functions);
+        return KernelPluginFactory.CreateFromFunctions(pluginName, description, functions);
     }
 
 
@@ -114,5 +114,59 @@ public static class KernelPluginFactory
     /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
     public static KernelPlugin CreateFromFunctions(string pluginName, string? description = null, IEnumerable<KernelFunction>? functions = null) =>
         new DefaultKernelPlugin(pluginName, description, functions);
+
+
+    /// <summary>Creates a name for a plugin based on its type name.</summary>
+    private static string CreatePluginName(Type type)
+    {
+        string name = type.Name;
+
+        if (type.IsGenericType)
+        {
+            // Simple representation of generic arguments, without recurring into their generics
+            var builder = new StringBuilder();
+            AppendWithoutArity(builder, name);
+
+            Type[] genericArgs = type.GetGenericArguments();
+
+            for (int i = 0; i < genericArgs.Length; i++)
+            {
+                builder.Append('_');
+                AppendWithoutArity(builder, genericArgs[i].Name);
+            }
+
+            name = builder.ToString();
+
+            static void AppendWithoutArity(StringBuilder builder, string name)
+            {
+                int tickPos = name.IndexOf('`');
+
+                if (tickPos >= 0)
+                {
+                    builder.Append(name, 0, tickPos);
+                }
+                else
+                {
+                    builder.Append(name);
+                }
+            }
+        }
+
+        // Replace invalid characters
+        name = InvalidPluginNameCharactersRegex().
+            Replace(name, "_");
+
+        return name;
+    }
+
+
+#if NET
+    [GeneratedRegex("[^0-9A-Za-z_]")]
+    private static partial Regex InvalidPluginNameCharactersRegex();
+#else
+    private static Regex InvalidPluginNameCharactersRegex() => s_invalidPluginNameCharactersRegex;
+
+    private static readonly Regex s_invalidPluginNameCharactersRegex = new("[^0-9A-Za-z_]", RegexOptions.Compiled);
+#endif
 
 }

@@ -17,7 +17,7 @@ will walk you through the necessary steps to integrate these technologies seamle
   to generate responses from the LLM.
 - [Chat History](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Abstractions/AI/ChatCompletion/ChatHistory.cs)
   Using the Chat History abstraction to create, update and retrieve chat history from Chat Completion Models.
-- [Auto Function Calling](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/KernelSyntaxExamples/Example59_OpenAIFunctionCalling.cs)
+- [Auto Function Calling](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/AutoFunctionCalling/OpenAI_FunctionCalling.cs)
   Enables the LLM to have knowledge of current importedUsing the Function Calling feature automatically call the Booking
   Plugin from the LLM.
 

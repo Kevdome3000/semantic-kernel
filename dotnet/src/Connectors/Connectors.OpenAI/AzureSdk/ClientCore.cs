@@ -968,13 +968,17 @@ internal abstract class ClientCore
                 AddResponseMessage(chatOptions, chat, streamedRole, toolCall,
                     metadata, stringResult, errorMessage: null, this.Logger);
 
-                // If filter requested termination, breaking request iteration loop.
+                // If filter requested termination, returning latest function result and breaking request iteration loop.
                 if (invocationContext.Terminate)
                 {
                     if (this.Logger.IsEnabled(LogLevel.Debug))
                     {
                         this.Logger.LogDebug("Filter requested termination of automatic function invocation.");
                     }
+
+                    var lastChatMessage = chat.Last();
+
+                    yield return new OpenAIStreamingChatMessageContent(lastChatMessage.Role, lastChatMessage.Content);
 
                     yield break;
                 }
@@ -1178,7 +1182,7 @@ internal abstract class ClientCore
             Echo = false,
             ChoicesPerPrompt = executionSettings.ResultsPerPrompt,
             GenerationSampleCount = executionSettings.ResultsPerPrompt,
-            LogProbabilityCount = null,
+            LogProbabilityCount = executionSettings.TopLogprobs,
             User = executionSettings.User,
             DeploymentName = deploymentOrModelName
         };
@@ -1231,7 +1235,9 @@ internal abstract class ClientCore
             ChoiceCount = executionSettings.ResultsPerPrompt,
             DeploymentName = deploymentOrModelName,
             Seed = executionSettings.Seed,
-            User = executionSettings.User
+            User = executionSettings.User,
+            LogProbabilitiesPerToken = executionSettings.TopLogprobs,
+            EnableLogProbabilities = executionSettings.Logprobs
         };
 
         switch (executionSettings.ResponseFormat)

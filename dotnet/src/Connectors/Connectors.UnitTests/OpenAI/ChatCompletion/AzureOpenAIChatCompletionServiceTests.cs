@@ -188,7 +188,9 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
             ResultsPerPrompt = 5,
             Seed = 567,
             TokenSelectionBiases = new Dictionary<int, int> { { 2, 3 } },
-            StopSequences = ["stop_sequence"]
+            StopSequences = ["stop_sequence"],
+            Logprobs = true,
+            TopLogprobs = 5
         };
 
         var chatHistory = new ChatHistory();
@@ -287,6 +289,12 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
 
         Assert.Equal("stop_sequence", content.GetProperty("stop")[0].
             GetString());
+
+        Assert.True(content.GetProperty("logprobs").
+            GetBoolean());
+
+        Assert.Equal(5, content.GetProperty("top_logprobs").
+            GetInt32());
     }
 
 

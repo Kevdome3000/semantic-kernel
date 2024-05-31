@@ -50,17 +50,20 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         string? description = null,
         IEnumerable<KernelParameterMetadata>? parameters = null,
         KernelReturnParameterMetadata? returnParameter = null,
-        ILoggerFactory? loggerFactory = null) => Create(
-        method,
-        target,
-        new KernelFunctionFromMethodOptions
-        {
-            FunctionName = functionName,
-            Description = description,
-            Parameters = parameters,
-            ReturnParameter = returnParameter,
-            LoggerFactory = loggerFactory
-        });
+        ILoggerFactory? loggerFactory = null)
+    {
+        return Create(
+            method,
+            target,
+            new KernelFunctionFromMethodOptions
+            {
+                FunctionName = functionName,
+                Description = description,
+                Parameters = parameters,
+                ReturnParameter = returnParameter,
+                LoggerFactory = loggerFactory
+            });
+    }
 
 
     /// <summary>
@@ -107,7 +110,10 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
     protected override ValueTask<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
         KernelArguments arguments,
-        CancellationToken cancellationToken) => _function(kernel, this, arguments, cancellationToken);
+        CancellationToken cancellationToken)
+    {
+        return this._function(kernel, this, arguments, cancellationToken);
+    }
 
 
     /// <inheritdoc/>
@@ -116,7 +122,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         KernelArguments arguments,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        FunctionResult functionResult = await InvokeCoreAsync(kernel, arguments, cancellationToken).
+        FunctionResult functionResult = await this.InvokeCoreAsync(kernel, arguments, cancellationToken).
             ConfigureAwait(false);
 
         if (functionResult.Value is TResult result)
@@ -152,7 +158,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
             yield break;
         }
 
-        throw new NotSupportedException($"Streaming function {Name} does not support type {typeof(TResult)}");
+        throw new NotSupportedException($"Streaming function {this.Name} does not support type {typeof(TResult)}");
     }
 
 
@@ -162,13 +168,13 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         Verify.NotNullOrWhiteSpace(pluginName, nameof(pluginName));
 
         return new KernelFunctionFromMethod(
-            _function,
-            Name,
+            this._function,
+            this.Name,
             pluginName,
-            Description,
-            Metadata.Parameters,
-            Metadata.ReturnParameter,
-            Metadata.AdditionalProperties);
+            this.Description,
+            this.Metadata.Parameters,
+            this.Metadata.ReturnParameter,
+            this.Metadata.AdditionalProperties);
     }
 
 
@@ -219,13 +225,13 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
     {
         Verify.ValidFunctionName(functionName);
 
-        _function = implementationFunc;
+        this._function = implementationFunc;
     }
 
 
     private static MethodDetails GetMethodDetails(string? functionName, MethodInfo method, object? target)
     {
-        ThrowForInvalidSignatureIf(method.IsGenericMethodDefinition, method, "Generic methods are not supported");
+        ThrowForInvalidSignatureIf(method.ContainsGenericParameters, method, "Open generic methods are not supported");
 
         if (functionName is null)
         {
@@ -233,7 +239,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
             // Otherwise, we use the name of the method, but strip off any "Async" suffix if it's {Value}Task-returning.
             // We don't apply any heuristics to the value supplied by KernelFunction's Name so that it can always be used
             // as a definitive override.
-            functionName = method.GetCustomAttribute<KernelFunctionAttribute>(true)?.
+            functionName = method.GetCustomAttribute<KernelFunctionAttribute>(inherit: true)?.
                 Name?.Trim();
 
             if (string.IsNullOrEmpty(functionName))
@@ -312,14 +318,14 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         {
             Function = Function,
             Name = functionName!,
-            Description = method.GetCustomAttribute<DescriptionAttribute>(true)?.
+            Description = method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.
                 Description ?? "",
             Parameters = argParameterViews,
-            ReturnParameter = new KernelReturnParameterMetadata
+            ReturnParameter = new KernelReturnParameterMetadata()
             {
                 ParameterType = returnType,
-                Description = method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(true)?.
-                    Description
+                Description = method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.
+                    Description,
             }
         };
     }
@@ -365,73 +371,73 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         if (type == typeof(KernelFunction))
         {
             return (static (
-                func,
-                _,
-                _,
-                _) => func, null);
+                KernelFunction func,
+                Kernel _,
+                KernelArguments _,
+                CancellationToken _) => func, null);
         }
 
         if (type == typeof(Kernel))
         {
             return (static (
-                _,
-                kernel,
-                _,
-                _) => kernel, null);
+                KernelFunction _,
+                Kernel kernel,
+                KernelArguments _,
+                CancellationToken _) => kernel, null);
         }
 
         if (type == typeof(KernelArguments))
         {
             return (static (
-                _,
-                _,
-                arguments,
-                _) => arguments, null);
+                KernelFunction _,
+                Kernel _,
+                KernelArguments arguments,
+                CancellationToken _) => arguments, null);
         }
 
         if (type == typeof(ILoggerFactory))
         {
             return ((
-                _,
-                kernel,
-                _,
-                _) => kernel.LoggerFactory, null);
+                KernelFunction _,
+                Kernel kernel,
+                KernelArguments _,
+                CancellationToken _) => kernel.LoggerFactory, null);
         }
 
         if (type == typeof(ILogger))
         {
             return ((
-                _,
-                kernel,
-                _,
-                _) => kernel.LoggerFactory.CreateLogger(method?.DeclaringType ?? typeof(KernelFunctionFromPrompt)) ?? NullLogger.Instance, null);
+                KernelFunction _,
+                Kernel kernel,
+                KernelArguments _,
+                CancellationToken _) => kernel.LoggerFactory.CreateLogger(method?.DeclaringType ?? typeof(KernelFunctionFromPrompt)) ?? NullLogger.Instance, null);
         }
 
         if (type == typeof(IAIServiceSelector))
         {
             return ((
-                _,
-                kernel,
-                _,
-                _) => kernel.ServiceSelector, null);
+                KernelFunction _,
+                Kernel kernel,
+                KernelArguments _,
+                CancellationToken _) => kernel.ServiceSelector, null);
         }
 
         if (type == typeof(CultureInfo) || type == typeof(IFormatProvider))
         {
             return (static (
-                _,
-                kernel,
-                _,
-                _) => kernel.Culture, null);
+                KernelFunction _,
+                Kernel kernel,
+                KernelArguments _,
+                CancellationToken _) => kernel.Culture, null);
         }
 
         if (type == typeof(CancellationToken))
         {
             return (static (
-                _,
-                _,
-                _,
-                cancellationToken) => cancellationToken, null);
+                KernelFunction _,
+                Kernel _,
+                KernelArguments _,
+                CancellationToken cancellationToken) => cancellationToken, null);
         }
 
         // Handle the special FromKernelServicesAttribute, which indicates that the parameter should be sourced from the kernel's services.
@@ -439,10 +445,10 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         if (parameter.GetCustomAttribute<FromKernelServicesAttribute>() is FromKernelServicesAttribute fromKernelAttr)
         {
             return ((
-                _,
-                kernel,
-                _,
-                _) =>
+                KernelFunction _,
+                Kernel kernel,
+                KernelArguments _,
+                CancellationToken _) =>
             {
                 // Try to resolve the service from kernel.Services, using the attribute's key if one was provided.
                 object? service = kernel.Services is IKeyedServiceProvider keyedServiceProvider
@@ -525,13 +531,13 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
 
         var parameterView = new KernelParameterMetadata(name)
         {
-            Description = parameter.GetCustomAttribute<DescriptionAttribute>(true)?.
+            Description = parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.
                 Description,
             DefaultValue = parameter.HasDefaultValue
                 ? parameter.DefaultValue?.ToString()
                 : null,
             IsRequired = !parameter.IsOptional,
-            ParameterType = type
+            ParameterType = type,
         };
 
         return (parameterFunc, parameterView);
@@ -592,8 +598,8 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
 
         if (returnType == typeof(void))
         {
-            return (typeof(void), static (_, function, _) =>
-                new ValueTask<FunctionResult>(new FunctionResult(function)));
+            return (typeof(void), (static (_, function, _) =>
+                new ValueTask<FunctionResult>(new FunctionResult(function))));
         }
 
         if (returnType == typeof(Task))
@@ -752,7 +758,10 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         }
 
         // For everything else, just use the result as-is.
-        return (returnType, (kernel, function, result) => { return new ValueTask<FunctionResult>(new FunctionResult(function, result, kernel.Culture)); }
+        return (returnType, (kernel, function, result) =>
+                {
+                    return new ValueTask<FunctionResult>(new FunctionResult(function, result, kernel.Culture));
+                }
             );
 
         // Throws an exception if a result is found to be null unexpectedly
@@ -771,8 +780,8 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         {
             const BindingFlags BindingFlagsDoNotWrapExceptions = (BindingFlags)0x02000000; // BindingFlags.DoNotWrapExceptions on .NET Core 2.1+, ignored before then
 
-            result = method.Invoke(target, BindingFlagsDoNotWrapExceptions, null, arguments,
-                null);
+            result = method.Invoke(target, BindingFlagsDoNotWrapExceptions, binder: null, arguments,
+                culture: null);
         }
         catch (TargetInvocationException e) when (e.InnerException is not null)
         {
@@ -843,13 +852,13 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
                         if (input?.GetType() is Type type && converter.CanConvertFrom(type))
                         {
                             // This line performs string to type conversion
-                            return converter.ConvertFrom(null, culture, input);
+                            return converter.ConvertFrom(context: null, culture, input);
                         }
 
                         // This line performs implicit type conversion, e.g., int to long, byte to int, Guid to string, etc.
                         if (converter.CanConvertTo(targetType))
                         {
-                            return converter.ConvertTo(null, culture, input, targetType);
+                            return converter.ConvertTo(context: null, culture, input, targetType);
                         }
 
                         // EnumConverter cannot convert integer, so we verify manually
@@ -888,15 +897,15 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
 
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private string DebuggerDisplay => string.IsNullOrWhiteSpace(Description)
-        ? Name
-        : $"{Name} ({Description})";
+    private string DebuggerDisplay => string.IsNullOrWhiteSpace(this.Description)
+        ? this.Name
+        : $"{this.Name} ({this.Description})";
 
 
     /// <summary>
     /// Remove characters from method name that are valid in metadata but invalid for SK.
     /// </summary>
-    private static string SanitizeMetadataName(string methodName) =>
+    internal static string SanitizeMetadataName(string methodName) =>
         InvalidNameCharsRegex().
             Replace(methodName, "_");
 

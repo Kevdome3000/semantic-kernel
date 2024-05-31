@@ -3,7 +3,7 @@
 import asyncio
 import os
 from functools import reduce
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
@@ -54,9 +54,9 @@ chat_function = kernel.add_function(
 # when the function_call parameter is set to "auto" the model will decide which function to use, if any.
 # if you only want to use a specific function, set the name of that function in this parameter,
 # the format for that is 'PluginName-FunctionName', (i.e. 'math-Add').
-# if the model or api version do not support this you will get an error.
+# if the model or api version does not support this you will get an error.
 
-# Note: the number of responses for auto inoking tool calls is limited to 1.
+# Note: the number of responses for auto invoking tool calls is limited to 1.
 # If configured to be greater than one, this value will be overridden to 1.
 execution_settings = OpenAIChatPromptExecutionSettings(
     service_id="chat",
@@ -64,7 +64,7 @@ execution_settings = OpenAIChatPromptExecutionSettings(
     temperature=0.7,
     top_p=0.8,
     function_call_behavior=FunctionCallBehavior.EnableFunctions(
-        auto_invoke=True, filters={"included_plugins": ["math"]}
+        auto_invoke=True, filters={"included_plugins": ["math", "time"]}
     ),
 )
 
@@ -108,7 +108,7 @@ async def handle_streaming(
     )
 
     print("Mosscap:> ", end="")
-    streamed_chunks: List[StreamingChatMessageContent] = []
+    streamed_chunks: list[StreamingChatMessageContent] = []
     async for message in response:
         if not execution_settings.function_call_behavior.auto_invoke_kernel_functions and isinstance(
             message[0], ChatMessageContent

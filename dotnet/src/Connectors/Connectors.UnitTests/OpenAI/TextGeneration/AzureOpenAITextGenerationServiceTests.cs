@@ -24,8 +24,11 @@ using Xunit;
 /// </summary>
 public sealed class AzureOpenAITextGenerationServiceTests : IDisposable
 {
+
     private readonly HttpMessageHandlerStub _messageHandlerStub;
+
     private readonly HttpClient _httpClient;
+
     private readonly Mock<ILoggerFactory> _mockLoggerFactory;
 
 
@@ -43,7 +46,10 @@ public sealed class AzureOpenAITextGenerationServiceTests : IDisposable
     public void ConstructorWithApiKeyWorksCorrectly(bool includeLoggerFactory)
     {
         // Arrange & Act
-        var service = includeLoggerFactory ? new AzureOpenAITextGenerationService("deployment-name", "https://endpoint", "api-key", "model-id", loggerFactory: this._mockLoggerFactory.Object) : new AzureOpenAITextGenerationService("deployment-name", "https://endpoint", "api-key", "model-id");
+        var service = includeLoggerFactory
+            ? new AzureOpenAITextGenerationService("deployment-name", "https://endpoint", "api-key", "model-id",
+                loggerFactory: this._mockLoggerFactory.Object)
+            : new AzureOpenAITextGenerationService("deployment-name", "https://endpoint", "api-key", "model-id");
 
         // Assert
         Assert.NotNull(service);
@@ -58,7 +64,11 @@ public sealed class AzureOpenAITextGenerationServiceTests : IDisposable
     {
         // Arrange & Act
         var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
-        var service = includeLoggerFactory ? new AzureOpenAITextGenerationService("deployment", "https://endpoint", credentials, "model-id", loggerFactory: this._mockLoggerFactory.Object) : new AzureOpenAITextGenerationService("deployment", "https://endpoint", credentials, "model-id");
+
+        var service = includeLoggerFactory
+            ? new AzureOpenAITextGenerationService("deployment", "https://endpoint", credentials, "model-id",
+                loggerFactory: this._mockLoggerFactory.Object)
+            : new AzureOpenAITextGenerationService("deployment", "https://endpoint", credentials, "model-id");
 
         // Assert
         Assert.NotNull(service);
@@ -73,7 +83,10 @@ public sealed class AzureOpenAITextGenerationServiceTests : IDisposable
     {
         // Arrange & Act
         var client = new OpenAIClient("key");
-        var service = includeLoggerFactory ? new AzureOpenAITextGenerationService("deployment", client, "model-id", loggerFactory: this._mockLoggerFactory.Object) : new AzureOpenAITextGenerationService("deployment", client, "model-id");
+
+        var service = includeLoggerFactory
+            ? new AzureOpenAITextGenerationService("deployment", client, "model-id", loggerFactory: this._mockLoggerFactory.Object)
+            : new AzureOpenAITextGenerationService("deployment", client, "model-id");
 
         // Assert
         Assert.NotNull(service);
@@ -85,7 +98,9 @@ public sealed class AzureOpenAITextGenerationServiceTests : IDisposable
     public async Task GetTextContentsWithEmptyChoicesThrowsExceptionAsync()
     {
         // Arrange
-        var service = new AzureOpenAITextGenerationService("deployment-name", "https://endpoint", "api-key", "model-id", this._httpClient);
+        var service = new AzureOpenAITextGenerationService("deployment-name", "https://endpoint", "api-key", "model-id",
+            this._httpClient);
+
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent("{\"id\":\"response-id\",\"object\":\"text_completion\",\"created\":1646932609,\"model\":\"ada\",\"choices\":[]}")
@@ -104,7 +119,9 @@ public sealed class AzureOpenAITextGenerationServiceTests : IDisposable
     public async Task GetTextContentsWithInvalidResultsPerPromptValueThrowsExceptionAsync(int resultsPerPrompt)
     {
         // Arrange
-        var service = new AzureOpenAITextGenerationService("deployment-name", "https://endpoint", "api-key", "model-id", this._httpClient);
+        var service = new AzureOpenAITextGenerationService("deployment-name", "https://endpoint", "api-key", "model-id",
+            this._httpClient);
+
         var settings = new OpenAIPromptExecutionSettings { ResultsPerPrompt = resultsPerPrompt };
 
         // Act & Assert
@@ -118,7 +135,9 @@ public sealed class AzureOpenAITextGenerationServiceTests : IDisposable
     public async Task GetTextContentsHandlesSettingsCorrectlyAsync()
     {
         // Arrange
-        var service = new AzureOpenAITextGenerationService("deployment-name", "https://endpoint", "api-key", "model-id", this._httpClient);
+        var service = new AzureOpenAITextGenerationService("deployment-name", "https://endpoint", "api-key", "model-id",
+            this._httpClient);
+
         var settings = new OpenAIPromptExecutionSettings
         {
             MaxTokens = 123,
@@ -128,7 +147,8 @@ public sealed class AzureOpenAITextGenerationServiceTests : IDisposable
             PresencePenalty = 1.2,
             ResultsPerPrompt = 5,
             TokenSelectionBiases = new Dictionary<int, int> { { 2, 3 } },
-            StopSequences = ["stop_sequence"]
+            StopSequences = ["stop_sequence"],
+            TopLogprobs = 5
         };
 
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
@@ -146,16 +166,39 @@ public sealed class AzureOpenAITextGenerationServiceTests : IDisposable
 
         var content = JsonSerializer.Deserialize<JsonElement>(Encoding.UTF8.GetString(requestContent));
 
-        Assert.Equal("Prompt", content.GetProperty("prompt")[0].GetString());
-        Assert.Equal(123, content.GetProperty("max_tokens").GetInt32());
-        Assert.Equal(0.6, content.GetProperty("temperature").GetDouble());
-        Assert.Equal(0.5, content.GetProperty("top_p").GetDouble());
-        Assert.Equal(1.6, content.GetProperty("frequency_penalty").GetDouble());
-        Assert.Equal(1.2, content.GetProperty("presence_penalty").GetDouble());
-        Assert.Equal(5, content.GetProperty("n").GetInt32());
-        Assert.Equal(5, content.GetProperty("best_of").GetInt32());
-        Assert.Equal(3, content.GetProperty("logit_bias").GetProperty("2").GetInt32());
-        Assert.Equal("stop_sequence", content.GetProperty("stop")[0].GetString());
+        Assert.Equal("Prompt", content.GetProperty("prompt")[0].
+            GetString());
+
+        Assert.Equal(123, content.GetProperty("max_tokens").
+            GetInt32());
+
+        Assert.Equal(0.6, content.GetProperty("temperature").
+            GetDouble());
+
+        Assert.Equal(0.5, content.GetProperty("top_p").
+            GetDouble());
+
+        Assert.Equal(1.6, content.GetProperty("frequency_penalty").
+            GetDouble());
+
+        Assert.Equal(1.2, content.GetProperty("presence_penalty").
+            GetDouble());
+
+        Assert.Equal(5, content.GetProperty("n").
+            GetInt32());
+
+        Assert.Equal(5, content.GetProperty("best_of").
+            GetInt32());
+
+        Assert.Equal(3, content.GetProperty("logit_bias").
+            GetProperty("2").
+            GetInt32());
+
+        Assert.Equal("stop_sequence", content.GetProperty("stop")[0].
+            GetString());
+
+        Assert.Equal(5, content.GetProperty("logprobs").
+            GetInt32());
     }
 
 
@@ -163,7 +206,9 @@ public sealed class AzureOpenAITextGenerationServiceTests : IDisposable
     public async Task GetTextContentsWorksCorrectlyAsync()
     {
         // Arrange
-        var service = new AzureOpenAITextGenerationService("deployment-name", "https://endpoint", "api-key", "model-id", this._httpClient);
+        var service = new AzureOpenAITextGenerationService("deployment-name", "https://endpoint", "api-key", "model-id",
+            this._httpClient);
+
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(OpenAITestHelper.GetTestResponse("text_completion_test_response.json"))
@@ -176,7 +221,8 @@ public sealed class AzureOpenAITextGenerationServiceTests : IDisposable
         Assert.True(result.Count > 0);
         Assert.Equal("Test chat response", result[0].Text);
 
-        var usage = result[0].Metadata?["Usage"] as CompletionsUsage;
+        var usage = result[0].
+            Metadata?["Usage"] as CompletionsUsage;
 
         Assert.NotNull(usage);
         Assert.Equal(55, usage.PromptTokens);
@@ -189,7 +235,9 @@ public sealed class AzureOpenAITextGenerationServiceTests : IDisposable
     public async Task GetStreamingTextContentsWorksCorrectlyAsync()
     {
         // Arrange
-        var service = new AzureOpenAITextGenerationService("deployment-name", "https://endpoint", "api-key", "model-id", this._httpClient);
+        var service = new AzureOpenAITextGenerationService("deployment-name", "https://endpoint", "api-key", "model-id",
+            this._httpClient);
+
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes(OpenAITestHelper.GetTestResponse("text_completion_streaming_test_response.txt")));
 
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
@@ -210,4 +258,5 @@ public sealed class AzureOpenAITextGenerationServiceTests : IDisposable
         this._httpClient.Dispose();
         this._messageHandlerStub.Dispose();
     }
+
 }

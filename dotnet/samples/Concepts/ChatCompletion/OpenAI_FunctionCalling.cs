@@ -15,7 +15,7 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
     public async Task AutoInvokeKernelFunctionsAsync()
     {
         // Create a kernel with MistralAI chat completion and WeatherPlugin
-        Kernel kernel = CreateKernelWithWeatherPlugin();
+        Kernel kernel = CreateKernelWithPlugin<WeatherPlugin>();
 
         // Invoke chat prompt with auto invocation of functions enabled
         const string ChatPrompt = """
@@ -37,7 +37,7 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
     public async Task AutoInvokeKernelFunctionsMultipleCallsAsync()
     {
         // Create a kernel with MistralAI chat completion and WeatherPlugin
-        Kernel kernel = CreateKernelWithWeatherPlugin();
+        Kernel kernel = CreateKernelWithPlugin<WeatherPlugin>();
         var service = kernel.GetRequiredService<IChatCompletionService>();
 
         // Invoke chat prompt with auto invocation of functions enabled
@@ -47,14 +47,36 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
         };
 
         var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
-        var result1 = await service.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);
-        chatHistory.AddRange(result1);
+        var result1 = await service.GetChatMessageContentAsync(chatHistory, executionSettings, kernel);
+        chatHistory.Add(result1);
 
         chatHistory.Add(new ChatMessageContent(AuthorRole.User, "What is the weather like in Marseille?"));
-        var result2 = await service.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);
+        var result2 = await service.GetChatMessageContentAsync(chatHistory, executionSettings, kernel);
 
-        Console.WriteLine(result1[0].Content);
-        Console.WriteLine(result2[0].Content);
+        Console.WriteLine(result1);
+        Console.WriteLine(result2);
+    }
+
+
+    [Fact]
+    public async Task AutoInvokeKernelFunctionsWithComplexParameterAsync()
+    {
+        // Create a kernel with MistralAI chat completion and HolidayPlugin
+        Kernel kernel = CreateKernelWithPlugin<HolidayPlugin>();
+
+        // Invoke chat prompt with auto invocation of functions enabled
+        const string ChatPrompt = """
+                                      <message role="user">Book a holiday for me from 6th June 2025 to 20th June 2025?</message>
+                                  """;
+
+        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+
+        var chatSemanticFunction = kernel.CreateFunctionFromPrompt(
+            ChatPrompt, executionSettings);
+
+        var chatPromptResult = await kernel.InvokeAsync(chatSemanticFunction);
+
+        Console.WriteLine(chatPromptResult);
     }
 
 
@@ -66,12 +88,36 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
         public string GetWeather(
             [Description("The city and department, e.g. Marseille, 13")]
             string location
-        ) => "12°C\nWind: 11 KMPH\nHumidity: 48%\nMostly cloudy";
+        ) => $"12°C\nWind: 11 KMPH\nHumidity: 48%\nMostly cloudy\nLocation: {location}";
 
     }
 
 
-    private Kernel CreateKernelWithWeatherPlugin()
+    public sealed class HolidayPlugin
+    {
+
+        [KernelFunction]
+        [Description("Book a holiday for a specified time period.")]
+        public string BookHoliday(
+            [Description("Holiday time period")] HolidayRequest holidayRequest
+        ) => $"Holiday booked, starting {holidayRequest.StartDate} and ending {holidayRequest.EndDate}";
+
+    }
+
+
+    public sealed class HolidayRequest
+    {
+
+        [Description("The date when the holiday period starts in ISO 8601 format")]
+        public string StartDate { get; set; } = string.Empty;
+
+        [Description("The date when the holiday period ends in ISO 8601 format")]
+        public string EndDate { get; set; } = string.Empty;
+
+    }
+
+
+    private Kernel CreateKernelWithPlugin<T>()
     {
         // Create a logging handler to output HTTP requests and responses
         var handler = new LoggingHandler(new HttpClientHandler(), this.Output);
@@ -85,7 +131,7 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
             apiKey: TestConfiguration.OpenAI.ApiKey!,
             httpClient: httpClient);
 
-        kernelBuilder.Plugins.AddFromType<WeatherPlugin>();
+        kernelBuilder.Plugins.AddFromType<T>();
         Kernel kernel = kernelBuilder.Build();
 
         return kernel;

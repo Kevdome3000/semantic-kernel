@@ -1,21 +1,21 @@
 # Copyright (c) Microsoft. All rights reserved.
-from typing import List
 
 import numpy as np
 import pytest
-from azure.cosmos import PartitionKey
-from azure.cosmos.aio import CosmosClient
 
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 
 try:
+    from azure.cosmos import PartitionKey
+    from azure.cosmos.aio import CosmosClient
+
     from semantic_kernel.connectors.memory.azure_cosmosdb_no_sql.azure_cosmosdb_no_sql_memory_store import (
         AzureCosmosDBNoSQLMemoryStore,
     )
 
     azure_cosmosdb_no_sql_memory_store_installed = True
-except AssertionError:
+except ImportError:
     azure_cosmosdb_no_sql_memory_store_installed = False
 
 pytest_mark = pytest.mark.skipif(
@@ -173,7 +173,7 @@ def create_embedding(non_zero_pos: int) -> np.ndarray:
     return embedding
 
 
-def get_vector_items() -> List[MemoryRecord]:
+def get_vector_items() -> list[MemoryRecord]:
     records = []
     record = MemoryRecord(
         id="test_id1",

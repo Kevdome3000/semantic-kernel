@@ -1,5 +1,4 @@
 # Copyright (c) Microsoft. All rights reserved.
-from __future__ import annotations
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.functions.function_result import FunctionResult
@@ -8,8 +7,7 @@ from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 
 
 class PromptRenderingResult(KernelBaseModel):
-    """
-    Represents the result of rendering a prompt template.
+    """Represents the result of rendering a prompt template.
 
     Attributes:
         rendered_prompt (str): The rendered prompt.
