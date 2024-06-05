@@ -4,6 +4,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using ChatCompletion;
@@ -15,6 +16,8 @@ using ChatCompletion;
 /// <remarks>
 /// Represents a chat message content chunk that was streamed from the remote model.
 /// </remarks>
+[Experimental("SKEXP0010")]
+[Obsolete("This class is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions")]
 public sealed class AzureOpenAIWithDataStreamingChatMessageContent : StreamingChatMessageContent
 {
 
@@ -40,14 +43,17 @@ public sealed class AzureOpenAIWithDataStreamingChatMessageContent : StreamingCh
         base(AuthorRole.Assistant, null, choice, choiceIndex,
             modelId, Encoding.UTF8, metadata)
     {
-        var message = choice.Messages.FirstOrDefault(IsValidMessage);
+        var message = choice.Messages.FirstOrDefault(this.IsValidMessage);
         var messageContent = message?.Delta?.Content;
 
-        Content = messageContent;
+        this.Content = messageContent;
     }
 
 
-    private bool IsValidMessage(ChatWithDataStreamingMessage message) => !message.EndTurn &&
-                                                                         (message.Delta.Role is null || !message.Delta.Role.Equals(AuthorRole.Tool.Label, StringComparison.Ordinal));
+    private bool IsValidMessage(ChatWithDataStreamingMessage message)
+    {
+        return !message.EndTurn &&
+               (message.Delta.Role is null || !message.Delta.Role.Equals(AuthorRole.Tool.Label, StringComparison.Ordinal));
+    }
 
 }

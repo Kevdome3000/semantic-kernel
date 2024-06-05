@@ -4,14 +4,16 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Text;
 using ChatCompletion;
 
 
 /// <summary>
 /// OpenAI specialized with data chat message content
 /// </summary>
+[Experimental("SKEXP0010")]
+[Obsolete("This class is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions")]
 public sealed class AzureOpenAIWithDataChatMessageContent : ChatMessageContent
 {
 
@@ -30,19 +32,19 @@ public sealed class AzureOpenAIWithDataChatMessageContent : ChatMessageContent
     /// <param name="metadata">Additional metadata</param>
     internal AzureOpenAIWithDataChatMessageContent(ChatWithDataChoice chatChoice, string? modelId, IReadOnlyDictionary<string, object?>? metadata = null)
         : base(default, string.Empty, modelId, chatChoice,
-            Encoding.UTF8, CreateMetadataDictionary(metadata))
+            System.Text.Encoding.UTF8, CreateMetadataDictionary(metadata))
     {
         // An assistant message content must be present, otherwise the chat is not valid.
         var chatMessage = chatChoice.Messages.FirstOrDefault(m => string.Equals(m.Role, AuthorRole.Assistant.Label, StringComparison.OrdinalIgnoreCase)) ??
                           throw new ArgumentException("Chat is not valid. Chat message does not contain any messages with 'assistant' role.");
 
-        Content = chatMessage.Content;
-        Role = new AuthorRole(chatMessage.Role);
+        this.Content = chatMessage.Content;
+        this.Role = new AuthorRole(chatMessage.Role);
 
-        ToolContent = chatChoice.Messages.FirstOrDefault(message => message.Role.Equals(AuthorRole.Tool.Label, StringComparison.OrdinalIgnoreCase))?.
+        this.ToolContent = chatChoice.Messages.FirstOrDefault(message => message.Role.Equals(AuthorRole.Tool.Label, StringComparison.OrdinalIgnoreCase))?.
             Content;
 
-        ((Dictionary<string, object?>)Metadata!).Add(nameof(ToolContent), ToolContent);
+        ((Dictionary<string, object?>)this.Metadata!).Add(nameof(this.ToolContent), this.ToolContent);
     }
 
 

@@ -2,10 +2,16 @@
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
+using System;
+using System.Diagnostics.CodeAnalysis;
+
+
 /// <summary>
 /// Required configuration for Azure OpenAI chat completion with data.
 /// More information: <see href="https://learn.microsoft.com/en-us/azure/ai-services/openai/use-your-data-quickstart"/>
 /// </summary>
+[Experimental("SKEXP0010")]
+[Obsolete("This class is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions")]
 public class AzureOpenAIChatCompletionWithDataConfig
 {
 

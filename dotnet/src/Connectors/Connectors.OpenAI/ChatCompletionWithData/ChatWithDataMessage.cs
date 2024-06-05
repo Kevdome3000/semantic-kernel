@@ -2,9 +2,13 @@
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
+using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 
+[Experimental("SKEXP0010")]
+[Obsolete("This class is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions")]
 internal sealed class ChatWithDataMessage
 {
 

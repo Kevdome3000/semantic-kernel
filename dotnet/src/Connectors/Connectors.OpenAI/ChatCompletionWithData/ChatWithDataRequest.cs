@@ -4,9 +4,12 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 
+[Experimental("SKEXP0010")]
+[Obsolete("This class is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions")]
 internal sealed class ChatWithDataRequest
 {
 
@@ -43,6 +46,8 @@ internal sealed class ChatWithDataRequest
 }
 
 
+[Experimental("SKEXP0010")]
+[Obsolete("This class is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions")]
 internal sealed class ChatWithDataSource
 {
 
@@ -53,11 +58,13 @@ internal sealed class ChatWithDataSource
     public string Type { get; set; } = "AzureCognitiveSearch";
 
     [JsonPropertyName("parameters")]
-    public ChatWithDataSourceParameters Parameters { get; set; } = new();
+    public ChatWithDataSourceParameters Parameters { get; set; } = new ChatWithDataSourceParameters();
 
 }
 
 
+[Experimental("SKEXP0010")]
+[Obsolete("This class is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions")]
 internal sealed class ChatWithDataSourceParameters
 {
 

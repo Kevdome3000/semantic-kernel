@@ -6,12 +6,15 @@ using System.Collections.Generic;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Xunit;
 
+#pragma warning disable CS0618 // AzureOpenAIChatCompletionWithData is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions
+
 
 /// <summary>
 /// Unit tests for <see cref="AzureOpenAIWithDataStreamingChatMessageContent"/> class.
 /// </summary>
 public sealed class AzureOpenAIWithDataStreamingChatMessageContentTests
 {
+
     [Theory]
     [MemberData(nameof(ValidChoices))]
     public void ConstructorWithValidChoiceSetsNonEmptyContent(object choice, string expectedContent)
@@ -59,4 +62,5 @@ public sealed class AzureOpenAIWithDataStreamingChatMessageContentTests
             yield return new object[] { new ChatWithDataStreamingChoice { Messages = [new() { Delta = new() { Content = "Content", Role = "tool" } }] } };
         }
     }
+
 }
