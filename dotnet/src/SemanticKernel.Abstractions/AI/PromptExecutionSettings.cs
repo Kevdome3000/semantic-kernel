@@ -36,12 +36,12 @@ public class PromptExecutionSettings
     [JsonPropertyName("model_id")]
     public string? ModelId
     {
-        get => this._modelId;
+        get => _modelId;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._modelId = value;
+            ThrowIfFrozen();
+            _modelId = value;
         }
     }
 
@@ -52,14 +52,15 @@ public class PromptExecutionSettings
     /// Avoid using this property if possible. Instead, use one of the classes that extends <see cref="PromptExecutionSettings"/>.
     /// </remarks>
     [JsonExtensionData]
+    [JsonIgnore]
     public IDictionary<string, object>? ExtensionData
     {
-        get => this._extensionData;
+        get => _extensionData;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._extensionData = value;
+            ThrowIfFrozen();
+            _extensionData = value;
         }
     }
 
@@ -75,16 +76,16 @@ public class PromptExecutionSettings
     /// </summary>
     public virtual void Freeze()
     {
-        if (this.IsFrozen)
+        if (IsFrozen)
         {
             return;
         }
 
-        this.IsFrozen = true;
+        IsFrozen = true;
 
-        if (this._extensionData is not null)
+        if (_extensionData is not null)
         {
-            this._extensionData = new ReadOnlyDictionary<string, object>(this._extensionData);
+            _extensionData = new ReadOnlyDictionary<string, object>(_extensionData);
         }
     }
 
@@ -92,16 +93,13 @@ public class PromptExecutionSettings
     /// <summary>
     /// Creates a new <see cref="PromptExecutionSettings"/> object that is a copy of the current instance.
     /// </summary>
-    public virtual PromptExecutionSettings Clone()
+    public virtual PromptExecutionSettings Clone() => new()
     {
-        return new()
-        {
-            ModelId = this.ModelId,
-            ExtensionData = this.ExtensionData is not null
-                ? new Dictionary<string, object>(this.ExtensionData)
-                : null
-        };
-    }
+        ModelId = ModelId,
+        ExtensionData = ExtensionData is not null
+            ? new Dictionary<string, object>(ExtensionData)
+            : null
+    };
 
 
     /// <summary>
@@ -110,7 +108,7 @@ public class PromptExecutionSettings
     /// <exception cref="InvalidOperationException"></exception>
     protected void ThrowIfFrozen()
     {
-        if (this.IsFrozen)
+        if (IsFrozen)
         {
             throw new InvalidOperationException("PromptExecutionSettings are frozen and cannot be modified.");
         }

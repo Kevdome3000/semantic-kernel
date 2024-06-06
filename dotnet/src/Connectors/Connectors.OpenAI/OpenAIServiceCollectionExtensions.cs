@@ -583,7 +583,6 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    [Experimental("SKEXP0010")]
     public static IKernelBuilder AddOpenAITextEmbeddingGeneration(
         this IKernelBuilder builder,
         string modelId,
@@ -740,7 +739,7 @@ public static class OpenAIServiceCollectionExtensions
                 new AzureKeyCredential(apiKey),
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider));
 
-            return new(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
+            return new AzureOpenAIChatCompletionService(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
         };
 
         builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, factory);
@@ -780,7 +779,7 @@ public static class OpenAIServiceCollectionExtensions
                 new AzureKeyCredential(apiKey),
                 HttpClientProvider.GetHttpClient(serviceProvider));
 
-            return new(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
+            return new AzureOpenAIChatCompletionService(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
         };
 
         services.AddKeyedSingleton<IChatCompletionService>(serviceId, factory);
@@ -822,7 +821,7 @@ public static class OpenAIServiceCollectionExtensions
                 credentials,
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider));
 
-            return new(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
+            return new AzureOpenAIChatCompletionService(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
         };
 
         builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, factory);
@@ -862,7 +861,7 @@ public static class OpenAIServiceCollectionExtensions
                 credentials,
                 HttpClientProvider.GetHttpClient(serviceProvider));
 
-            return new(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
+            return new AzureOpenAIChatCompletionService(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
         };
 
         services.AddKeyedSingleton<IChatCompletionService>(serviceId, factory);
@@ -892,7 +891,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(deploymentName);
 
         Func<IServiceProvider, object?, AzureOpenAIChatCompletionService> factory = (serviceProvider, _) =>
-            new(deploymentName, openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(), modelId, serviceProvider.GetService<ILoggerFactory>());
+            new AzureOpenAIChatCompletionService(deploymentName, openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(), modelId, serviceProvider.GetService<ILoggerFactory>());
 
         builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, factory);
         builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, factory);
@@ -921,7 +920,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(deploymentName);
 
         Func<IServiceProvider, object?, AzureOpenAIChatCompletionService> factory = (serviceProvider, _) =>
-            new(deploymentName, openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(), modelId, serviceProvider.GetService<ILoggerFactory>());
+            new AzureOpenAIChatCompletionService(deploymentName, openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(), modelId, serviceProvider.GetService<ILoggerFactory>());
 
         services.AddKeyedSingleton<IChatCompletionService>(serviceId, factory);
         services.AddKeyedSingleton<ITextGenerationService>(serviceId, factory);
@@ -951,7 +950,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNull(config);
 
         Func<IServiceProvider, object?, AzureOpenAIChatCompletionWithDataService> factory = (serviceProvider, _) =>
-            new(config,
+            new AzureOpenAIChatCompletionWithDataService(config,
                 HttpClientProvider.GetHttpClient(serviceProvider),
                 serviceProvider.GetService<ILoggerFactory>());
 
@@ -983,7 +982,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNull(config);
 
         Func<IServiceProvider, object?, AzureOpenAIChatCompletionWithDataService> factory = (serviceProvider, _) =>
-            new(config,
+            new AzureOpenAIChatCompletionWithDataService(config,
                 HttpClientProvider.GetHttpClient(serviceProvider),
                 serviceProvider.GetService<ILoggerFactory>());
 
@@ -1017,7 +1016,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(apiKey);
 
         Func<IServiceProvider, object?, OpenAIChatCompletionService> factory = (serviceProvider, _) =>
-            new(modelId,
+            new OpenAIChatCompletionService(modelId,
                 apiKey,
                 orgId,
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
@@ -1051,7 +1050,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(apiKey);
 
         Func<IServiceProvider, object?, OpenAIChatCompletionService> factory = (serviceProvider, _) =>
-            new(modelId,
+            new OpenAIChatCompletionService(modelId,
                 apiKey,
                 orgId,
                 HttpClientProvider.GetHttpClient(serviceProvider),
@@ -1082,7 +1081,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(modelId);
 
         Func<IServiceProvider, object?, OpenAIChatCompletionService> factory = (serviceProvider, _) =>
-            new(modelId, openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(), serviceProvider.GetService<ILoggerFactory>());
+            new OpenAIChatCompletionService(modelId, openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(), serviceProvider.GetService<ILoggerFactory>());
 
         builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, factory);
         builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, factory);
@@ -1109,7 +1108,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(modelId);
 
         Func<IServiceProvider, object?, OpenAIChatCompletionService> factory = (serviceProvider, _) =>
-            new(modelId, openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(), serviceProvider.GetService<ILoggerFactory>());
+            new OpenAIChatCompletionService(modelId, openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(), serviceProvider.GetService<ILoggerFactory>());
 
         services.AddKeyedSingleton<IChatCompletionService>(serviceId, factory);
         services.AddKeyedSingleton<ITextGenerationService>(serviceId, factory);
@@ -1141,7 +1140,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(modelId);
 
         Func<IServiceProvider, object?, OpenAIChatCompletionService> factory = (serviceProvider, _) =>
-            new(modelId,
+            new OpenAIChatCompletionService(modelId,
                 endpoint,
                 apiKey,
                 orgId,
@@ -1180,7 +1179,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(modelId);
 
         Func<IServiceProvider, object?, OpenAIChatCompletionService> factory = (serviceProvider, _) =>
-            new(modelId: modelId,
+            new OpenAIChatCompletionService(modelId,
                 apiKey: apiKey,
                 endpoint: endpoint,
                 organization: orgId,
@@ -1788,7 +1787,7 @@ public static class OpenAIServiceCollectionExtensions
                 new AzureKeyCredential(apiKey),
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider));
 
-            return new(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
+            return new AzureOpenAIAudioToTextService(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
         };
 
         builder.Services.AddKeyedSingleton<IAudioToTextService>(serviceId, factory);
@@ -1828,7 +1827,7 @@ public static class OpenAIServiceCollectionExtensions
                 new AzureKeyCredential(apiKey),
                 HttpClientProvider.GetHttpClient(serviceProvider));
 
-            return new(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
+            return new AzureOpenAIAudioToTextService(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
         };
 
         services.AddKeyedSingleton<IAudioToTextService>(serviceId, factory);
@@ -1870,7 +1869,7 @@ public static class OpenAIServiceCollectionExtensions
                 credentials,
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider));
 
-            return new(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
+            return new AzureOpenAIAudioToTextService(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
         };
 
         builder.Services.AddKeyedSingleton<IAudioToTextService>(serviceId, factory);
@@ -1910,7 +1909,7 @@ public static class OpenAIServiceCollectionExtensions
                 credentials,
                 HttpClientProvider.GetHttpClient(serviceProvider));
 
-            return new(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
+            return new AzureOpenAIAudioToTextService(deploymentName, client, modelId, serviceProvider.GetService<ILoggerFactory>());
         };
 
         services.AddKeyedSingleton<IAudioToTextService>(serviceId, factory);
@@ -1940,7 +1939,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(deploymentName);
 
         Func<IServiceProvider, object?, AzureOpenAIAudioToTextService> factory = (serviceProvider, _) =>
-            new(deploymentName, openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(), modelId, serviceProvider.GetService<ILoggerFactory>());
+            new AzureOpenAIAudioToTextService(deploymentName, openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(), modelId, serviceProvider.GetService<ILoggerFactory>());
 
         builder.Services.AddKeyedSingleton<IAudioToTextService>(serviceId, factory);
 
@@ -1969,7 +1968,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(deploymentName);
 
         Func<IServiceProvider, object?, AzureOpenAIAudioToTextService> factory = (serviceProvider, _) =>
-            new(deploymentName, openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(), modelId, serviceProvider.GetService<ILoggerFactory>());
+            new AzureOpenAIAudioToTextService(deploymentName, openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(), modelId, serviceProvider.GetService<ILoggerFactory>());
 
         services.AddKeyedSingleton<IAudioToTextService>(serviceId, factory);
 
@@ -2001,7 +2000,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(apiKey);
 
         Func<IServiceProvider, object?, OpenAIAudioToTextService> factory = (serviceProvider, _) =>
-            new(modelId,
+            new OpenAIAudioToTextService(modelId,
                 apiKey,
                 orgId,
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
@@ -2035,7 +2034,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(apiKey);
 
         Func<IServiceProvider, object?, OpenAIAudioToTextService> factory = (serviceProvider, _) =>
-            new(modelId,
+            new OpenAIAudioToTextService(modelId,
                 apiKey,
                 orgId,
                 HttpClientProvider.GetHttpClient(serviceProvider),
@@ -2066,7 +2065,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(modelId);
 
         Func<IServiceProvider, object?, OpenAIAudioToTextService> factory = (serviceProvider, _) =>
-            new(modelId, openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(), serviceProvider.GetService<ILoggerFactory>());
+            new OpenAIAudioToTextService(modelId, openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(), serviceProvider.GetService<ILoggerFactory>());
 
         builder.Services.AddKeyedSingleton<IAudioToTextService>(serviceId, factory);
 
@@ -2093,7 +2092,7 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(modelId);
 
         Func<IServiceProvider, object?, OpenAIAudioToTextService> factory = (serviceProvider, _) =>
-            new(modelId, openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(), serviceProvider.GetService<ILoggerFactory>());
+            new OpenAIAudioToTextService(modelId, openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(), serviceProvider.GetService<ILoggerFactory>());
 
         services.AddKeyedSingleton<IAudioToTextService>(serviceId, factory);
 

@@ -87,8 +87,7 @@ public abstract class KernelFunction : IKernelFunction
     /// Gets the metadata describing the function.
     /// </summary>
     /// <returns>An instance of <see cref="KernelFunctionMetadata"/> describing the function</returns>
-    [JsonPropertyName("metadata")]
-    [JsonInclude]
+    [JsonIgnore]
     public KernelFunctionMetadata Metadata { get; protected set; }
 
     /// <summary>
@@ -155,7 +154,7 @@ public abstract class KernelFunction : IKernelFunction
             Description = description,
             Parameters = parameters,
             ReturnParameter = returnParameter ?? KernelReturnParameterMetadata.Empty,
-            AdditionalProperties = additionalMetadata ?? KernelFunctionMetadata.s_emptyDictionary,
+            AdditionalProperties = additionalMetadata ?? KernelFunctionMetadata.s_emptyDictionary
         };
 
         if (executionSettings is not null)
@@ -215,10 +214,10 @@ public abstract class KernelFunction : IKernelFunction
                 throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.FunctionInvoking)} event handler requested cancellation before function invocation.");
             }
 
-            var invocationContext = await kernel.OnFunctionInvocationAsync(this, arguments, functionResult, async (context) =>
+            var invocationContext = await kernel.OnFunctionInvocationAsync(this, arguments, functionResult, async context =>
                 {
                     // Invoking the function and updating context with result.
-                    context.Result = functionResult = await this.InvokeCoreAsync(kernel, context.Arguments, cancellationToken).
+                    context.Result = functionResult = await InvokeCoreAsync(kernel, context.Arguments, cancellationToken).
                         ConfigureAwait(false);
                 }).
                 ConfigureAwait(false);
@@ -355,10 +354,10 @@ public abstract class KernelFunction : IKernelFunction
 
                 FunctionResult functionResult = new(this, culture: kernel.Culture);
 
-                var invocationContext = await kernel.OnFunctionInvocationAsync(this, arguments, functionResult, (context) =>
+                var invocationContext = await kernel.OnFunctionInvocationAsync(this, arguments, functionResult, context =>
                     {
                         // Invoke the function and get its streaming enumerable.
-                        var enumerable = this.InvokeStreamingCoreAsync<TResult>(kernel, context.Arguments, cancellationToken);
+                        var enumerable = InvokeStreamingCoreAsync<TResult>(kernel, context.Arguments, cancellationToken);
 
                         // Update context with enumerable as result value.
                         context.Result = new FunctionResult(this, enumerable, kernel.Culture);
@@ -433,9 +432,9 @@ public abstract class KernelFunction : IKernelFunction
 
 
     /// <inheritdoc/>
-    public override string ToString() => string.IsNullOrWhiteSpace(this.PluginName)
-        ? this.Name
-        : $"{this.PluginName}.{this.Name}";
+    public override string ToString() => string.IsNullOrWhiteSpace(PluginName)
+        ? Name
+        : $"{PluginName}.{Name}";
 
 
     /// <summary>
