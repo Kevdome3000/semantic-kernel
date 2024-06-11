@@ -10,14 +10,16 @@ using System.Threading;
 using System.Threading.Tasks;
 
 
-internal sealed class HttpMessageHandlerStub : DelegatingHandler
+public sealed class HttpMessageHandlerStub : DelegatingHandler
 {
 
     public HttpRequestHeaders? RequestHeaders { get; private set; }
 
     public HttpContentHeaders? ContentHeaders { get; private set; }
 
+#pragma warning disable CA1819 // Properties should not return arrays - Ignore here since setter is private
     public byte[]? RequestContent { get; private set; }
+#pragma warning restore CA1819 // Properties should not return arrays
 
     public Uri? RequestUri { get; private set; }
 

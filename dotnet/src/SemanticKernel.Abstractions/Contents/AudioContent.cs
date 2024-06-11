@@ -1,23 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable CA1054 // URI-like parameters should not be strings
+
 namespace Microsoft.SemanticKernel;
 
 using System;
-using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 
 /// <summary>
 /// Represents audio content.
 /// </summary>
-public class AudioContent : KernelContent
+public class AudioContent : BinaryContent
 {
-
-    /// <summary>
-    /// The audio data.
-    /// </summary>
-    public ReadOnlyMemory<byte>? Data { get; set; }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AudioContent"/> class.
@@ -31,15 +26,28 @@ public class AudioContent : KernelContent
     /// <summary>
     /// Initializes a new instance of the <see cref="AudioContent"/> class.
     /// </summary>
-    /// <param name="data">The audio binary data.</param>
-    /// <param name="modelId">The model ID used to generate the content.</param>
-    /// <param name="innerContent">Inner content,</param>
-    /// <param name="metadata">Additional metadata</param>
-    public AudioContent(
-        ReadOnlyMemory<byte> data,
-        string? modelId = null,
-        object? innerContent = null,
-        IReadOnlyDictionary<string, object?>? metadata = null)
-        : base(innerContent, modelId, metadata) => Data = data;
+    /// <param name="uri">The URI of audio.</param>
+    public AudioContent(Uri uri) : base(uri)
+    {
+    }
+
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AudioContent"/> class.
+    /// </summary>
+    /// <param name="dataUri">DataUri of the audio</param>
+    public AudioContent(string dataUri) : base(dataUri)
+    {
+    }
+
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AudioContent"/> class.
+    /// </summary>
+    /// <param name="data">Byte array of the audio</param>
+    /// <param name="mimeType">Mime type of the audio</param>
+    public AudioContent(ReadOnlyMemory<byte> data, string? mimeType) : base(data, mimeType)
+    {
+    }
 
 }

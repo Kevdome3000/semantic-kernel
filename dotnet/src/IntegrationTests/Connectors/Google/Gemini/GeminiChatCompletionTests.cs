@@ -81,7 +81,7 @@ public sealed class GeminiChatCompletionTests(ITestOutputHelper output) : TestsB
         var messageContent = new ChatMessageContent(AuthorRole.User, items:
         [
             new TextContent("This is an image with a car. Which color is it? You can chose from red, blue, green, and yellow"),
-            new ImageContent(image) { MimeType = "image/jpeg" }
+            new ImageContent(image, "image/jpeg")
         ]);
 
         chatHistory.Add(messageContent);
@@ -110,7 +110,7 @@ public sealed class GeminiChatCompletionTests(ITestOutputHelper output) : TestsB
         var messageContent = new ChatMessageContent(AuthorRole.User, items:
         [
             new TextContent("This is an image with a car. Which color is it? You can chose from red, blue, green, and yellow"),
-            new ImageContent(image) { MimeType = "image/jpeg" }
+            new ImageContent(image, "image/jpeg")
         ]);
 
         chatHistory.Add(messageContent);

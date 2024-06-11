@@ -10,25 +10,25 @@ using Xunit;
 
 
 /// <summary>
-/// Unit tests for <see cref="ImageContent"/> class.
+/// Unit tests for <see cref="AudioContent"/> class.
 /// </summary>
-public sealed class ImageContentTests
+public sealed class AudioContentTests
 {
 
     [Fact]
     public void ToStringForUriReturnsString()
     {
         // Arrange
-        var content1 = new ImageContent((Uri)null!);
-        var content2 = new ImageContent(new Uri("https://endpoint/"));
+        var content1 = new AudioContent((Uri)null!);
+        var content2 = new AudioContent(new Uri("https://endpoint/"));
 
         // Act
         var result1 = content1.ToString();
         var result2 = content2.ToString();
 
         // Assert
-        Assert.Equal($"Microsoft.SemanticKernel.{nameof(ImageContent)}", result1);
-        Assert.Equal($"Microsoft.SemanticKernel.{nameof(ImageContent)}", result2);
+        Assert.Equal($"Microsoft.SemanticKernel.{nameof(AudioContent)}", result1);
+        Assert.Equal($"Microsoft.SemanticKernel.{nameof(AudioContent)}", result2);
     }
 
 
@@ -37,14 +37,14 @@ public sealed class ImageContentTests
     {
         // Arrange
         var data = BinaryData.FromString("this is a test");
-        var content1 = new ImageContent(data, "text/plain");
+        var content1 = new AudioContent(data, "text/plain");
 
         // Act
         var result1 = content1.ToString();
         var dataUriToExpect = $"data:text/plain;base64,{Convert.ToBase64String(data.ToArray())}";
 
         // Assert
-        Assert.Equal($"Microsoft.SemanticKernel.{nameof(ImageContent)}", result1);
+        Assert.Equal($"Microsoft.SemanticKernel.{nameof(AudioContent)}", result1);
     }
 
 
@@ -53,14 +53,14 @@ public sealed class ImageContentTests
     {
         // Arrange
         var data = BinaryData.FromString("this is a test");
-        var content1 = new ImageContent(data, "text/plain") { Uri = new Uri("https://endpoint/") };
+        var content1 = new AudioContent(data, "text/plain") { Uri = new Uri("https://endpoint/") };
 
         // Act
         var result1 = content1.ToString();
         var dataUriToExpect = $"data:text/plain;base64,{Convert.ToBase64String(data.ToArray())}";
 
         // Assert
-        Assert.Equal($"Microsoft.SemanticKernel.{nameof(ImageContent)}", result1);
+        Assert.Equal($"Microsoft.SemanticKernel.{nameof(AudioContent)}", result1);
     }
 
 
@@ -72,7 +72,7 @@ public sealed class ImageContentTests
 
         // Assert
         Assert.Throws<ArgumentException>(()
-            => new ImageContent(data, "text/plain"));
+            => new AudioContent(data, "text/plain"));
     }
 
 
@@ -82,14 +82,14 @@ public sealed class ImageContentTests
         // Arrange
         var bytes = System.Text.Encoding.UTF8.GetBytes("this is a test");
         var data = BinaryData.FromBytes(bytes);
-        var content1 = new ImageContent(data, "text/plain");
+        var content1 = new AudioContent(data, "text/plain");
 
         // Act
         var result1 = content1.ToString();
         var dataUriToExpect = $"data:text/plain;base64,{Convert.ToBase64String(data.ToArray())}";
 
         // Assert
-        Assert.Equal($"Microsoft.SemanticKernel.{nameof(ImageContent)}", result1);
+        Assert.Equal($"Microsoft.SemanticKernel.{nameof(AudioContent)}", result1);
     }
 
 
@@ -99,14 +99,14 @@ public sealed class ImageContentTests
         // Arrange
         using var ms = new System.IO.MemoryStream(System.Text.Encoding.UTF8.GetBytes("this is a test"));
         var data = BinaryData.FromStream(ms);
-        var content1 = new ImageContent(data, "text/plain");
+        var content1 = new AudioContent(data, "text/plain");
 
         // Act
         var result1 = content1.ToString();
         var dataUriToExpect = $"data:text/plain;base64,{Convert.ToBase64String(data.ToArray())}";
 
         // Assert
-        Assert.Equal($"Microsoft.SemanticKernel.{nameof(ImageContent)}", result1);
+        Assert.Equal($"Microsoft.SemanticKernel.{nameof(AudioContent)}", result1);
     }
 
 
@@ -119,7 +119,7 @@ public sealed class ImageContentTests
         var data = BinaryData.FromStream(ms);
 
         // Assert throws if mediatype is null
-        Assert.Throws<ArgumentException>(() => new ImageContent(BinaryData.FromStream(ms), mimeType: null));
+        Assert.Throws<ArgumentException>(() => new AudioContent(BinaryData.FromStream(ms), mimeType: null));
     }
 
 
@@ -127,32 +127,32 @@ public sealed class ImageContentTests
     public void ToStringInMemoryImageWithoutMediaTypeReturnsType()
     {
         // Arrange
-        var sut = new ImageContent(new byte[] { 1, 2, 3 }, mimeType: null);
+        var sut = new AudioContent(new byte[] { 1, 2, 3 }, mimeType: null);
 
         // Act
         var dataUrl = sut.ToString();
 
         // Assert
-        Assert.Equal($"Microsoft.SemanticKernel.{nameof(ImageContent)}", dataUrl?.ToString());
+        Assert.Equal($"Microsoft.SemanticKernel.{nameof(AudioContent)}", dataUrl?.ToString());
     }
 
 
-    // Ensure retrocompatibility with ImageContent Pre-BinaryContent Version
+    // Ensure retrocompatibility with AudioContent Pre-BinaryContent Version
 
 
     [Theory]
-    [InlineData("", null, $"Microsoft.SemanticKernel.{nameof(ImageContent)}")]
-    [InlineData(null, null, $"Microsoft.SemanticKernel.{nameof(ImageContent)}")]
-    [InlineData("", "http://localhost:9090/", $"Microsoft.SemanticKernel.{nameof(ImageContent)}")]
-    [InlineData(null, "http://localhost:9090/", $"Microsoft.SemanticKernel.{nameof(ImageContent)}")]
-    [InlineData("image/png", null, $"Microsoft.SemanticKernel.{nameof(ImageContent)}")]
-    [InlineData("image/png", "http://localhost:9090", $"Microsoft.SemanticKernel.{nameof(ImageContent)}")]
+    [InlineData("", null, $"Microsoft.SemanticKernel.{nameof(AudioContent)}")]
+    [InlineData(null, null, $"Microsoft.SemanticKernel.{nameof(AudioContent)}")]
+    [InlineData("", "http://localhost:9090/", $"Microsoft.SemanticKernel.{nameof(AudioContent)}")]
+    [InlineData(null, "http://localhost:9090/", $"Microsoft.SemanticKernel.{nameof(AudioContent)}")]
+    [InlineData("image/png", null, $"Microsoft.SemanticKernel.{nameof(AudioContent)}")]
+    [InlineData("image/png", "http://localhost:9090", $"Microsoft.SemanticKernel.{nameof(AudioContent)}")]
     public void ToStringShouldReturn(string? mimeType, string? path, string expectedToString)
     {
         // Arrange
         var bytes = Encoding.UTF8.GetBytes("this is a test");
         var data = BinaryData.FromBytes(bytes);
-        var content1 = new ImageContent(data, mimeType);
+        var content1 = new AudioContent(data, mimeType);
 
         if (path is not null)
         {
@@ -172,7 +172,7 @@ public sealed class ImageContentTests
     {
         // Arrange
         var data = BinaryData.FromString("this is a test");
-        var content = new ImageContent(data, "text/plain");
+        var content = new AudioContent(data, "text/plain");
 
         // Act
         var serializeBefore = JsonSerializer.Serialize(content);
@@ -201,7 +201,7 @@ public sealed class ImageContentTests
     {
         // Arrange
         var data = BinaryData.FromString("this is a test");
-        var content = new ImageContent(data, "text/plain");
+        var content = new AudioContent(data, "text/plain");
 
         // Act
         var toStringBefore = content.ToString();
@@ -223,7 +223,7 @@ public sealed class ImageContentTests
     {
         // Arrange
         var dataUriBefore = "data:text/plain;base64,dGhpcyBpcyBhIHRlc3Q=";
-        var content = new ImageContent(dataUriBefore);
+        var content = new AudioContent(dataUriBefore);
 
         // Act
         var newData = BinaryData.FromString("this is a new test");
@@ -242,9 +242,9 @@ public sealed class ImageContentTests
     [Fact]
     public void EmptyConstructorSerializationAndDeserializationAsExpected()
     {
-        var content = new ImageContent();
+        var content = new AudioContent();
         var serialized = JsonSerializer.Serialize(content);
-        var deserialized = JsonSerializer.Deserialize<ImageContent>(serialized);
+        var deserialized = JsonSerializer.Deserialize<AudioContent>(serialized);
 
         Assert.Equal("{}", serialized);
 
@@ -269,9 +269,9 @@ public sealed class ImageContentTests
             ? new Uri(path)
             : null;
 
-        var content = new ImageContent(uri);
+        var content = new AudioContent(uri);
         var serialized = JsonSerializer.Serialize(content);
-        var deserialized = JsonSerializer.Deserialize<ImageContent>(serialized);
+        var deserialized = JsonSerializer.Deserialize<AudioContent>(serialized);
 
         if (uri is null)
         {

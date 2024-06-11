@@ -26,7 +26,7 @@ public class FunctionResultContentTests
         var sut = new FunctionResultContent(this._callContent, "result");
 
         // Assert
-        Assert.Equal("id", sut.Id);
+        Assert.Equal("id", sut.CallId);
     }
 
 
@@ -91,7 +91,7 @@ public class FunctionResultContentTests
 
         // Assert
         Assert.NotNull(deserializedSut);
-        Assert.Equal(sut.Id, deserializedSut.Id);
+        Assert.Equal(sut.CallId, deserializedSut.CallId);
         Assert.Equal(sut.PluginName, deserializedSut.PluginName);
         Assert.Equal(sut.FunctionName, deserializedSut.FunctionName);
         Assert.Equal(sut.Result, deserializedSut.Result?.ToString());

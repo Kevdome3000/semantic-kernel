@@ -195,7 +195,7 @@ public sealed class GeminiRequestTests
             [new ImageContent(new Uri("https://example-image.com/")) { MimeType = "image/png" }]);
 
         chatHistory.AddUserMessage(contentItems:
-            [new ImageContent(imageAsBytes) { MimeType = "image/png" }]);
+            [new ImageContent(imageAsBytes, "image/png")]);
 
         var executionSettings = new GeminiPromptExecutionSettings();
 

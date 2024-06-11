@@ -377,6 +377,12 @@ internal abstract class ClientCore
         CancellationToken cancellationToken)
     {
         Verify.NotNull(content.Data);
+        var audioData = content.Data.Value;
+
+        if (audioData.IsEmpty)
+        {
+            throw new ArgumentException("Audio data cannot be empty", nameof(content));
+        }
 
         OpenAIAudioToTextExecutionSettings? audioExecutionSettings = OpenAIAudioToTextExecutionSettings.FromExecutionSettings(executionSettings);
 
@@ -384,7 +390,7 @@ internal abstract class ClientCore
 
         var audioOptions = new AudioTranscriptionOptions
         {
-            AudioData = BinaryData.FromBytes(content.Data.Value),
+            AudioData = BinaryData.FromBytes(audioData),
             DeploymentName = this.DeploymentOrModelName,
             Filename = audioExecutionSettings.Filename,
             Language = audioExecutionSettings.Language,
@@ -647,7 +653,7 @@ internal abstract class ClientCore
 
                     if (toolCall is ChatCompletionsFunctionToolCall functionCall)
                     {
-                        // Add an item of type FunctionResultContent to the ChatMessageContent.Items collection in addition to the function result stored as a string in the ChatMessageContent.Content property.
+                        // Add an item of type FunctionResultContent to the ChatMessageContent.Items collection in addition to the function result stored as a string in the ChatMessageContent.Content property.  
                         // This will enable migration to the new function calling model and facilitate the deprecation of the current one in the future.
                         var functionName = FunctionName.Parse(functionCall.Name, OpenAIFunction.NameSeparator);
                         message.Items.Add(new FunctionResultContent(functionName.Name, functionName.PluginName, functionCall.Id, result));
@@ -1389,14 +1395,14 @@ internal abstract class ClientCore
 
                 if (resultContent.Result is Exception ex)
                 {
-                    toolMessages.Add(new ChatRequestToolMessage($"Error: Exception while invoking function. {ex.Message}", resultContent.Id));
+                    toolMessages.Add(new ChatRequestToolMessage($"Error: Exception while invoking function. {ex.Message}", resultContent.CallId));
 
                     continue;
                 }
 
                 var stringResult = ProcessFunctionResult(resultContent.Result ?? string.Empty, toolCallBehavior);
 
-                toolMessages.Add(new ChatRequestToolMessage(stringResult ?? string.Empty, resultContent.Id));
+                toolMessages.Add(new ChatRequestToolMessage(stringResult ?? string.Empty, resultContent.CallId));
             }
 
             if (toolMessages is not null)
@@ -1430,8 +1436,8 @@ internal abstract class ClientCore
         {
             var asstMessage = new ChatRequestAssistantMessage(message.Content) { Name = message.AuthorName };
 
-            // Handling function calls supplied via either:
-            // ChatCompletionsToolCall.ToolCalls collection items or
+            // Handling function calls supplied via either:  
+            // ChatCompletionsToolCall.ToolCalls collection items or  
             // ChatMessageContent.Metadata collection item with 'ChatResponseMessage.FunctionToolCalls' key.
             IEnumerable<ChatCompletionsToolCall>? tools = (message as OpenAIChatMessageContent)?.ToolCalls;
 
@@ -1681,16 +1687,16 @@ internal abstract class ClientCore
             return stringResult;
         }
 
-        // This is an optimization to use ChatMessageContent content directly
-        // without unnecessary serialization of the whole message content class.
+        // This is an optimization to use ChatMessageContent content directly  
+        // without unnecessary serialization of the whole message content class.  
         if (functionResult is ChatMessageContent chatMessageContent)
         {
             return chatMessageContent.ToString();
         }
 
-        // For polymorphic serialization of unknown in advance child classes of the KernelContent class,
-        // a corresponding JsonTypeInfoResolver should be provided via the JsonSerializerOptions.TypeInfoResolver property.
-        // For more details about the polymorphic serialization, see the article at:
+        // For polymorphic serialization of unknown in advance child classes of the KernelContent class,  
+        // a corresponding JsonTypeInfoResolver should be provided via the JsonSerializerOptions.TypeInfoResolver property.  
+        // For more details about the polymorphic serialization, see the article at:  
         // https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/polymorphism?pivots=dotnet-8-0
 #pragma warning disable CS0618 // Type or member is obsolete
         return JsonSerializer.Serialize(functionResult, toolCallBehavior?.ToolCallResultSerializerOptions);

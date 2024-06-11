@@ -158,10 +158,7 @@ public partial class FormMain : Form
     /// <param name="pictureBox">The target <see cref="PictureBox"/>.</param>
     /// <returns>Returns a <see cref="ImageContent"/>.</returns>
     private static ImageContent CreateImageContentFromPictureBox(PictureBox pictureBox)
-        => new(ConvertImageToReadOnlyMemory(pictureBox))
-        {
-            MimeType = GetMimeType(pictureBox.Tag?.ToString()!)
-        };
+        => new(ConvertImageToReadOnlyMemory(pictureBox), GetMimeType(pictureBox.Tag?.ToString()!));
 
 
     /// <summary>

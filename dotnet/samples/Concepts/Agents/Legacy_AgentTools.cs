@@ -91,7 +91,7 @@ public sealed class Legacy_AgentTools(ITestOutputHelper output) : BaseTest(outpu
 
         var result =
             await fileService.UploadContentAsync(
-                new BinaryContent(() => Task.FromResult(EmbeddedResource.ReadStream("travelinfo.txt")!)),
+                new BinaryContent(await EmbeddedResource.ReadAllAsync("travelinfo.txt")!, "text/plain"),
                 new OpenAIFileUploadExecutionSettings("travelinfo.txt", OpenAIFilePurpose.Assistants));
 
         var fileId = result.Id;
