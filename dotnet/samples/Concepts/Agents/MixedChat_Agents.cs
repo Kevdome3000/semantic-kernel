@@ -39,7 +39,7 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseTest(output)
 
 
     [Fact]
-    public async Task RunAsync()
+    public async Task ChatWithOpenAIAssistantAgentAndChatCompletionAgentAsync()
     {
         // Define the agents: one of each type
         ChatCompletionAgent agentReviewer =
@@ -61,7 +61,7 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseTest(output)
                     ModelId = this.Model,
                 });
 
-        // Create a nexus for agent interaction.
+        // Create a chat for agent interaction.
         var chat =
             new AgentGroupChat(agentWriter, agentReviewer)
             {

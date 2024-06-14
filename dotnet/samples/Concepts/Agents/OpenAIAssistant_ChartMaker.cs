@@ -25,7 +25,7 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseTest(out
 
 
     [Fact]
-    public async Task RunAsync()
+    public async Task GenerateChartWithOpenAIAssistantAgentAsync()
     {
         // Define the agent
         OpenAIAssistantAgent agent =
@@ -81,7 +81,7 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseTest(out
 
                 foreach (var fileReference in message.Items.OfType<FileReferenceContent>())
                 {
-                    Console.WriteLine($"# {message.Role} - {message.AuthorName ?? "*"}: #{fileReference.FileId}");
+                    Console.WriteLine($"# {message.Role} - {message.AuthorName ?? "*"}: @{fileReference.FileId}");
                 }
             }
         }

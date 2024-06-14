@@ -681,7 +681,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
               "first_id": "step_abc123",
               "last_id": "step_abc456",
               "has_more": false
-            }                       
+            }
             """;
 
         public const string ToolSteps =
@@ -690,13 +690,13 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
               "object": "list",
               "data": [
                 {
-                  "id": "step_abc123",
+                  "id": "step_abc987",
                   "object": "thread.run.step",
                   "created_at": 1699063291,
                   "run_id": "run_abc123",
                   "assistant_id": "asst_abc123",
                   "thread_id": "thread_abc123",
-                  "type": "message_creation",
+                  "type": "tool_calls",
                   "status": "in_progress",
                   "cancelled_at": null,
                   "completed_at": 1699063291,
@@ -712,7 +712,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
                         "function": {
                             "name": "MyPlugin-MyFunction",
                             "arguments": "{ \"index\": 3 }",
-                            "output": null
+                            "output": "test"
                         }
                      }
                     ]
@@ -727,7 +727,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
               "first_id": "step_abc123",
               "last_id": "step_abc456",
               "has_more": false
-            }                       
+            }
             """;
 
         public const string ToolResponse = "{ }";

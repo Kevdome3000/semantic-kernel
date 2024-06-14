@@ -22,7 +22,7 @@ public class OpenAIAssistant_Retrieval(ITestOutputHelper output) : BaseTest(outp
 
 
     [Fact]
-    public async Task RunAsync()
+    public async Task UseRetrievalToolWithOpenAIAssistantAgentAsync()
     {
         OpenAIFileService fileService = new(TestConfiguration.OpenAI.ApiKey);
 

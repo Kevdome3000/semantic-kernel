@@ -13,10 +13,11 @@ using TextGeneration;
 /// </summary>
 public class StreamingTextContent : StreamingKernelContent
 {
+
     /// <summary>
     /// Text associated to the update
     /// </summary>
-    public string? Text { get; }
+    public string? Text { get; set; }
 
     /// <summary>
     /// The encoding of the text content.
@@ -35,7 +36,13 @@ public class StreamingTextContent : StreamingKernelContent
     /// <param name="encoding">Encoding of the text</param>
     /// <param name="metadata">Metadata information</param>
     [JsonConstructor]
-    public StreamingTextContent(string? text, int choiceIndex = 0, string? modelId = null, object? innerContent = null, Encoding? encoding = null, IReadOnlyDictionary<string, object?>? metadata = null) : base(innerContent, choiceIndex, modelId, metadata)
+    public StreamingTextContent(
+        string? text,
+        int choiceIndex = 0,
+        string? modelId = null,
+        object? innerContent = null,
+        Encoding? encoding = null,
+        IReadOnlyDictionary<string, object?>? metadata = null) : base(innerContent, choiceIndex, modelId, metadata)
     {
         this.Text = text;
         this.Encoding = encoding ?? Encoding.UTF8;
@@ -54,4 +61,5 @@ public class StreamingTextContent : StreamingKernelContent
     {
         return this.Encoding.GetBytes(this.ToString());
     }
+
 }

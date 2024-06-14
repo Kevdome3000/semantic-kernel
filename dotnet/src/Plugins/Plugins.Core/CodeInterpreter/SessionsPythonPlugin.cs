@@ -25,6 +25,8 @@ public partial class SessionsPythonPlugin
     private static readonly string s_assemblyVersion = typeof(Kernel).Assembly.GetName().
         Version!.ToString();
 
+    private const string ApiVersion = "2024-02-02-preview";
+
     private readonly Uri _poolManagementEndpoint;
 
     private readonly SessionsPythonSettings _settings;
@@ -55,7 +57,7 @@ public partial class SessionsPythonPlugin
 
         this._settings = settings;
 
-        // Ensure the endpoint won't change by reference 
+        // Ensure the endpoint won't change by reference
         this._poolManagementEndpoint = GetBaseEndpoint(settings.Endpoint);
 
         this._authTokenProvider = authTokenProvider;
@@ -107,7 +109,7 @@ public partial class SessionsPythonPlugin
         await this.AddHeadersAsync(httpClient).
             ConfigureAwait(false);
 
-        using var request = new HttpRequestMessage(HttpMethod.Post, this._poolManagementEndpoint + "python/execute")
+        using var request = new HttpRequestMessage(HttpMethod.Post, this._poolManagementEndpoint + $"python/execute?api-version={ApiVersion}")
         {
             Content = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json")
         };
@@ -175,7 +177,7 @@ public partial class SessionsPythonPlugin
 
         using var fileContent = new ByteArrayContent(File.ReadAllBytes(localFilePath));
 
-        using var request = new HttpRequestMessage(HttpMethod.Post, $"{this._poolManagementEndpoint}python/uploadFile?identifier={this._settings.SessionId}")
+        using var request = new HttpRequestMessage(HttpMethod.Post, $"{this._poolManagementEndpoint}python/uploadFile?identifier={this._settings.SessionId}&api-version={ApiVersion}")
         {
             Content = new MultipartFormDataContent
             {
@@ -224,7 +226,7 @@ public partial class SessionsPythonPlugin
         await this.AddHeadersAsync(httpClient).
             ConfigureAwait(false);
 
-        var response = await httpClient.GetAsync(new Uri($"{this._poolManagementEndpoint}python/downloadFile?identifier={this._settings.SessionId}&filename={remoteFilePath}")).
+        var response = await httpClient.GetAsync(new Uri($"{this._poolManagementEndpoint}python/downloadFile?identifier={this._settings.SessionId}&filename={remoteFilePath}&api-version={ApiVersion}")).
             ConfigureAwait(false);
 
         if (!response.IsSuccessStatusCode)
@@ -268,7 +270,7 @@ public partial class SessionsPythonPlugin
         await this.AddHeadersAsync(httpClient).
             ConfigureAwait(false);
 
-        var response = await httpClient.GetAsync(new Uri($"{this._poolManagementEndpoint}python/files?identifier={this._settings.SessionId}")).
+        var response = await httpClient.GetAsync(new Uri($"{this._poolManagementEndpoint}python/files?identifier={this._settings.SessionId}&api-version={ApiVersion}")).
             ConfigureAwait(false);
 
         if (!response.IsSuccessStatusCode)

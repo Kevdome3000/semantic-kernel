@@ -374,14 +374,14 @@ internal static class ModelDiagnostics
         int? promptTokens,
         int? completionTokens)
     {
-        if (!IsModelDiagnosticsEnabled())
+        if (!IsModelDiagnosticsEnabled() || choices.Count == 0)
         {
             return;
         }
 
         // Assuming all metadata is in the last chunk of the choice
         switch (choices.FirstOrDefault().
-                    Value.FirstOrDefault())
+                    Value?.FirstOrDefault())
         {
             case StreamingTextContent:
                 var textCompletions = choices.Select(choiceContents =>

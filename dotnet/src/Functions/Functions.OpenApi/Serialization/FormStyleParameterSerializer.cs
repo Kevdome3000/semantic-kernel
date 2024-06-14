@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Web;
-
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
+using System;
 using System.Text.Json.Nodes;
+using System.Web;
 
 
 /// <summary>
@@ -13,6 +12,7 @@ using System.Text.Json.Nodes;
 /// </summary>
 internal static class FormStyleParameterSerializer
 {
+
     /// <summary>
     /// Serializes a REST API operation `Form` style parameter.
     /// </summary>
@@ -26,7 +26,9 @@ internal static class FormStyleParameterSerializer
         Verify.NotNull(parameter);
         Verify.NotNull(argument);
 
-        if (parameter.Style != RestApiOperationParameterStyle.Form)
+        var style = parameter.Style ?? RestApiOperationParameterStyle.Form;
+
+        if (style != RestApiOperationParameterStyle.Form)
         {
             throw new NotSupportedException($"Unsupported Rest API operation parameter style '{parameter.Style}' for parameter '{parameter.Name}'");
         }
@@ -37,9 +39,16 @@ internal static class FormStyleParameterSerializer
             return SerializeArrayParameter(parameter, argument);
         }
 
-        // Handling parameters of primitive and removing extra quotes added by the JsonValue for string values.
+        // Handling parameters where the underlying value is already a string.
+        if (argument is JsonValue jsonValue && jsonValue.TryGetValue(out string? value))
+        {
+            return $"{parameter.Name}={HttpUtility.UrlEncode(value)}";
+        }
+
+        // Handling parameters of any arbitrary type by using JSON format without enclosing quotes.
         return $"{parameter.Name}={HttpUtility.UrlEncode(argument.ToString().Trim('"'))}";
     }
+
 
     /// <summary>
     /// Serializes an array-type parameter.
@@ -61,4 +70,5 @@ internal static class FormStyleParameterSerializer
 
         return $"{parameter.Name}={ArrayParameterValueSerializer.SerializeArrayAsDelimitedValues(array, delimiter: ",")}"; // id=1,2,3
     }
+
 }

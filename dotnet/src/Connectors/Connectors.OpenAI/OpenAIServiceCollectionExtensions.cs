@@ -1356,6 +1356,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
+    /// <param name="modelId">The model to use for image generation.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
@@ -1364,6 +1365,7 @@ public static class OpenAIServiceCollectionExtensions
         this IKernelBuilder builder,
         string apiKey,
         string? orgId = null,
+        string? modelId = null,
         string? serviceId = null,
         HttpClient? httpClient = null)
     {
@@ -1374,6 +1376,7 @@ public static class OpenAIServiceCollectionExtensions
             new OpenAITextToImageService(
                 apiKey,
                 orgId,
+                modelId,
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
                 serviceProvider.GetService<ILoggerFactory>()));
 
@@ -1387,6 +1390,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
+    /// <param name="modelId">The model to use for image generation.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
@@ -1394,6 +1398,7 @@ public static class OpenAIServiceCollectionExtensions
         this IServiceCollection services,
         string apiKey,
         string? orgId = null,
+        string? modelId = null,
         string? serviceId = null)
     {
         Verify.NotNull(services);
@@ -1403,6 +1408,7 @@ public static class OpenAIServiceCollectionExtensions
             new OpenAITextToImageService(
                 apiKey,
                 orgId,
+                modelId,
                 HttpClientProvider.GetHttpClient(serviceProvider),
                 serviceProvider.GetService<ILoggerFactory>()));
     }
