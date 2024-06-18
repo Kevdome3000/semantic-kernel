@@ -43,7 +43,7 @@ public sealed class VertexAITextEmbeddingGenerationService : ITextEmbeddingGener
         VertexAIVersion apiVersion = VertexAIVersion.V1,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
-        : this(modelId, () => Task.FromResult(bearerKey), location, projectId,
+        : this(modelId, () => new ValueTask<string>(bearerKey), location, projectId,
             apiVersion, httpClient, loggerFactory)
     {
         Verify.NotNullOrWhiteSpace(bearerKey);
@@ -67,7 +67,7 @@ public sealed class VertexAITextEmbeddingGenerationService : ITextEmbeddingGener
     /// </remarks>
     public VertexAITextEmbeddingGenerationService(
         string modelId,
-        Func<Task<string>> bearerTokenProvider,
+        Func<ValueTask<string>> bearerTokenProvider,
         string location,
         string projectId,
         VertexAIVersion apiVersion = VertexAIVersion.V1,

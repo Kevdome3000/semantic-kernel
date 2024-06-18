@@ -41,7 +41,7 @@ public sealed class VertexAIServiceCollectionExtensionsTests
         var kernelBuilder = Kernel.CreateBuilder();
 
         // Act
-        kernelBuilder.AddVertexAIGeminiChatCompletion("modelId", () => Task.FromResult("apiKey"), location: "test2", projectId: "projectId");
+        kernelBuilder.AddVertexAIGeminiChatCompletion("modelId", () => ValueTask.FromResult("apiKey"), location: "test2", projectId: "projectId");
         var kernel = kernelBuilder.Build();
 
         // Assert
@@ -75,7 +75,7 @@ public sealed class VertexAIServiceCollectionExtensionsTests
         var services = new ServiceCollection();
 
         // Act
-        services.AddVertexAIGeminiChatCompletion("modelId", () => Task.FromResult("apiKey"), location: "test2", projectId: "projectId");
+        services.AddVertexAIGeminiChatCompletion("modelId", () => ValueTask.FromResult("apiKey"), location: "test2", projectId: "projectId");
         var serviceProvider = services.BuildServiceProvider();
 
         // Assert
@@ -109,7 +109,7 @@ public sealed class VertexAIServiceCollectionExtensionsTests
         var kernelBuilder = Kernel.CreateBuilder();
 
         // Act
-        kernelBuilder.AddVertexAIEmbeddingGeneration("modelId", () => Task.FromResult("apiKey"), location: "test2", projectId: "projectId");
+        kernelBuilder.AddVertexAIEmbeddingGeneration("modelId", () => ValueTask.FromResult("apiKey"), location: "test2", projectId: "projectId");
         var kernel = kernelBuilder.Build();
 
         // Assert
@@ -143,7 +143,7 @@ public sealed class VertexAIServiceCollectionExtensionsTests
         var services = new ServiceCollection();
 
         // Act
-        services.AddVertexAIEmbeddingGeneration("modelId", () => Task.FromResult("apiKey"), location: "test2", projectId: "projectId");
+        services.AddVertexAIEmbeddingGeneration("modelId", () => ValueTask.FromResult("apiKey"), location: "test2", projectId: "projectId");
         var serviceProvider = services.BuildServiceProvider();
 
         // Assert

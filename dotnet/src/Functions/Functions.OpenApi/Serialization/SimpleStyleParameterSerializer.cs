@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
+using System;
 using System.Text.Json.Nodes;
 
 
@@ -12,6 +11,7 @@ using System.Text.Json.Nodes;
 /// </summary>
 internal static class SimpleStyleParameterSerializer
 {
+
     /// <summary>
     /// Serializes a REST API operation `Simple` style parameter.
     /// </summary>
@@ -25,7 +25,9 @@ internal static class SimpleStyleParameterSerializer
         Verify.NotNull(parameter);
         Verify.NotNull(argument);
 
-        if (parameter.Style != RestApiOperationParameterStyle.Simple)
+        var style = parameter.Style ?? RestApiOperationParameterStyle.Simple;
+
+        if (style != RestApiOperationParameterStyle.Simple)
         {
             throw new NotSupportedException($"Unsupported Rest API operation parameter style '{parameter.Style}' for parameter '{parameter.Name}'");
         }
@@ -36,9 +38,17 @@ internal static class SimpleStyleParameterSerializer
             return SerializeArrayParameter(parameter, argument);
         }
 
-        // Handling parameters of primitive and removing extra quotes added by the JsonValue for string values.
-        return argument.ToString().Trim('"');
+        // Handling parameters where the underlying value is already a string.
+        if (argument is JsonValue jsonValue && jsonValue.TryGetValue(out string? value))
+        {
+            return value;
+        }
+
+        // Handling parameters of any arbitrary type by using JSON format without enclosing quotes.
+        return argument.ToString().
+            Trim('"');
     }
+
 
     /// <summary>
     /// Serializes an array-type parameter.
@@ -55,4 +65,5 @@ internal static class SimpleStyleParameterSerializer
 
         return ArrayParameterValueSerializer.SerializeArrayAsDelimitedValues(array, delimiter: ",", encode: false); //1,2,3
     }
+
 }
