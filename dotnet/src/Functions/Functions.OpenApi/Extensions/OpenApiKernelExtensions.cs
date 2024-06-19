@@ -310,7 +310,11 @@ public static partial class OpenApiKernelExtensions
 
         var logger = loggerFactory?.CreateLogger(typeof(OpenApiKernelExtensions)) ?? NullLogger.Instance;
 
-        async Task<RestApiOperationResponse> ExecuteAsync(KernelArguments variables, CancellationToken cancellationToken)
+        async Task<RestApiOperationResponse> ExecuteAsync(
+            Kernel kernel,
+            KernelFunction function,
+            KernelArguments variables,
+            CancellationToken cancellationToken)
         {
             try
             {
@@ -347,6 +351,9 @@ public static partial class OpenApiKernelExtensions
 
                 var options = new RestApiOperationRunOptions
                 {
+                    Kernel = kernel,
+                    KernelFunction = function,
+                    KernelArguments = arguments,
                     ServerUrlOverride = executionParameters?.ServerUrlOverride,
                     ApiHostUrl = documentUri is not null
                         ? new Uri(documentUri.GetLeftPart(UriPartial.Authority))
@@ -408,12 +415,12 @@ public static partial class OpenApiKernelExtensions
 
 
     /// <summary>
-    /// Converts operation id to valid SK Function name.
+    /// Converts operation id to valid <see cref="KernelFunction"/> name.
     /// A function name can contain only ASCII letters, digits, and underscores.
     /// </summary>
     /// <param name="operationId">The operation id.</param>
     /// <param name="logger">The logger.</param>
-    /// <returns>Valid SK Function name.</returns>
+    /// <returns>Valid KernelFunction name.</returns>
     private static string ConvertOperationIdToValidFunctionName(string operationId, ILogger logger)
     {
         try
@@ -425,7 +432,7 @@ public static partial class OpenApiKernelExtensions
         catch (ArgumentException)
         {
             // The exception indicates that the operationId is not a valid function name.  
-            // To comply with the SK Function name requirements, it needs to be converted or sanitized.  
+            // To comply with the KernelFunction name requirements, it needs to be converted or sanitized.  
             // Therefore, it should not be re-thrown, but rather swallowed to allow the conversion below.  
         }
 
@@ -456,6 +463,8 @@ public static partial class OpenApiKernelExtensions
     private static partial Regex RemoveInvalidCharsRegex();
 #else
     private static Regex RemoveInvalidCharsRegex() => s_removeInvalidCharsRegex;
+
+
     private static readonly Regex s_removeInvalidCharsRegex = new("[^0-9A-Za-z_]", RegexOptions.Compiled);
 #endif
 

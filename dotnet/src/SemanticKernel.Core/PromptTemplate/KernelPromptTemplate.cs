@@ -29,7 +29,7 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
 {
 
     /// <summary>
-    /// Constructor for PromptTemplate.
+    /// Constructor for <see cref="KernelPromptTemplate"/>.
     /// </summary>
     /// <param name="promptConfig">Prompt template configuration</param>
     /// <param name="allowDangerouslySetContent">Flag indicating whether to allow potentially dangerous content to be inserted into the prompt</param>
