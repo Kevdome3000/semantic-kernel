@@ -12,7 +12,7 @@ from the solution in which this project is found, they will be re-used.
 ### To set your secrets with Secret Manager:
 
 ```
-cd dotnet/samples/HouseAutomation
+cd dotnet/samples/Demos/HouseAutomation
 
 dotnet user-secrets init
 

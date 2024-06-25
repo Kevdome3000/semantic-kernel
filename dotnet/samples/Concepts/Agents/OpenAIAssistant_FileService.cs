@@ -1,14 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 namespace Agents;
 
-using Azure.AI.OpenAI.Assistants;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Resources;
 
 
 /// <summary>
-/// Demonstrate uploading and retrieving files with <see cref="OpenAIFileService"/> .
+/// Demonstrate using <see cref="OpenAIFileService"/> .
 /// </summary>
 public class OpenAIAssistant_FileService(ITestOutputHelper output) : BaseTest(output)
 {
@@ -22,7 +21,6 @@ public class OpenAIAssistant_FileService(ITestOutputHelper output) : BaseTest(ou
     [Fact]
     public async Task UploadAndRetrieveFilesAsync()
     {
-        var openAIClient = new AssistantsClient(TestConfiguration.OpenAI.ApiKey);
         OpenAIFileService fileService = new(TestConfiguration.OpenAI.ApiKey);
 
         BinaryContent[] files =
@@ -33,43 +31,41 @@ public class OpenAIAssistant_FileService(ITestOutputHelper output) : BaseTest(ou
             new BinaryContent(data: await EmbeddedResource.ReadAllAsync("travelinfo.txt"), mimeType: "text/plain") { InnerContent = "travelinfo.txt" }
         ];
 
-        var fileIds = new Dictionary<string, BinaryContent>();
+        var fileContents = new Dictionary<string, BinaryContent>();
 
-        foreach (var file in files)
+        foreach (BinaryContent file in files)
         {
-            var result = await openAIClient.UploadFileAsync(new BinaryData(file.Data), Azure.AI.OpenAI.Assistants.OpenAIFilePurpose.FineTune);
-            fileIds.Add(result.Value.Id, file);
+            OpenAIFileReference result = await fileService.UploadContentAsync(file, new(file.InnerContent!.ToString()!, OpenAIFilePurpose.FineTune));
+            fileContents.Add(result.Id, file);
         }
 
-        foreach (var file in (await openAIClient.GetFilesAsync(Azure.AI.OpenAI.Assistants.OpenAIFilePurpose.FineTune)).Value)
+        foreach (OpenAIFileReference fileReference in await fileService.GetFilesAsync(OpenAIFilePurpose.FineTune))
         {
-            if (!fileIds.ContainsKey(file.Id))
+            // Only interested in the files we uploaded
+            if (!fileContents.ContainsKey(fileReference.Id))
             {
                 continue;
             }
 
-            var data = (await openAIClient.GetFileContentAsync(file.Id)).Value;
+            BinaryContent content = await fileService.GetFileContentAsync(fileReference.Id);
 
-            var mimeType = fileIds[file.Id].MimeType;
-            var fileName = fileIds[file.Id].InnerContent!.ToString();
-            var metadata = new Dictionary<string, object?> { ["id"] = file.Id };
-            var uri = new Uri($"https://api.openai.com/v1/files/{file.Id}/content");
+            string? mimeType = fileContents[fileReference.Id].MimeType;
+            string? fileName = fileContents[fileReference.Id].InnerContent!.ToString();
+            ReadOnlyMemory<byte> data = content.Data ?? new();
 
-            var content = mimeType switch
+            var typedContent = mimeType switch
             {
-                "image/jpeg" => new ImageContent(data, mimeType) { Uri = uri, InnerContent = fileName, Metadata = metadata },
-                "audio/wav" => new AudioContent(data, mimeType) { Uri = uri, InnerContent = fileName, Metadata = metadata },
-                _ => new BinaryContent(data, mimeType) { Uri = uri, InnerContent = fileName, Metadata = metadata }
+                "image/jpeg" => new ImageContent(data, mimeType) { Uri = content.Uri, InnerContent = fileName, Metadata = content.Metadata },
+                "audio/wav" => new AudioContent(data, mimeType) { Uri = content.Uri, InnerContent = fileName, Metadata = content.Metadata },
+                _ => new BinaryContent(data, mimeType) { Uri = content.Uri, InnerContent = fileName, Metadata = content.Metadata }
             };
 
-            // Display the the file-name and mime-tyupe for each content type.
-            Console.WriteLine($"File: {fileName} - {mimeType}");
-
-            // Display the each content type-name.
-            Console.WriteLine($"Type: {content}");
+            Console.WriteLine($"\nFile: {fileName} - {mimeType}");
+            Console.WriteLine($"Type: {typedContent}");
+            Console.WriteLine($"Uri: {typedContent.Uri}");
 
             // Delete the test file remotely
-            await openAIClient.DeleteFileAsync(file.Id);
+            await fileService.DeleteFileAsync(fileReference.Id);
         }
     }
 

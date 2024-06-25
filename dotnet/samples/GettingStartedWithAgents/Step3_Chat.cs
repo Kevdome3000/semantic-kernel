@@ -39,7 +39,7 @@ public class Step3_Chat(ITestOutputHelper output) : BaseTest(output)
 
 
     [Fact]
-    public async Task RunAsync()
+    public async Task UseAgentGroupChatWithTwoAgentsAsync()
     {
         // Define the agents
         ChatCompletionAgent agentReviewer =

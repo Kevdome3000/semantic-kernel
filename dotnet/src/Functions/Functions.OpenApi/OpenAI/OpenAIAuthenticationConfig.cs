@@ -1,16 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Plugins.OpenApi;
+
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
 /// Represents the authentication section for an OpenAI plugin.
 /// </summary>
+[Obsolete("This class is deprecated and will be removed in a future version.")]
 public class OpenAIAuthenticationConfig
 {
+
     /// <summary>
     /// The type of authentication.
     /// </summary>
@@ -52,13 +55,17 @@ public class OpenAIAuthenticationConfig
     /// </summary>
     [JsonPropertyName("verification_tokens")]
     public Dictionary<string, string>? VerificationTokens { get; set; }
+
 }
+
 
 /// <summary>
 /// Represents the type of authentication for an OpenAI plugin.
 /// </summary>
+[Obsolete("This enum is deprecated and will be removed in a future version.")]
 public enum OpenAIAuthenticationType
 {
+
     /// <summary>
     /// No authentication.
     /// </summary>
@@ -78,13 +85,17 @@ public enum OpenAIAuthenticationType
     /// OAuth authentication.
     /// </summary>
     OAuth
+
 }
+
 
 /// <summary>
 /// Represents the type of authorization for an OpenAI plugin.
 /// </summary>
+[Obsolete("This enum is deprecated and will be removed in a future version.")]
 public enum OpenAIAuthorizationType
 {
+
     /// <summary>
     /// Basic authorization.
     /// </summary>
@@ -94,4 +105,5 @@ public enum OpenAIAuthorizationType
     /// Bearer authorization.
     /// </summary>
     Bearer
+
 }

@@ -12,6 +12,7 @@ using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Resources;
 
 
+[Obsolete("OpenAI plugins are deprecated and will be removed in a future version.")]
 public class CreatePluginFromOpenAI_AzureKeyVault(ITestOutputHelper output) : BaseTest(output)
 {
 
@@ -127,6 +128,7 @@ public class CreatePluginFromOpenAI_AzureKeyVault(ITestOutputHelper output) : Ba
 /// <summary>
 /// Provides authentication for HTTP requests to OpenAI using OAuth or verification tokens.
 /// </summary>
+[Obsolete("OpenAI plugins are deprecated and will be removed in a future version.")]
 internal sealed class OpenAIAuthenticationProvider(Dictionary<string, Dictionary<string, string>>? oAuthValues = null, Dictionary<string, string>? credentials = null)
 {
 

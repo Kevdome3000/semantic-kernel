@@ -1,27 +1,28 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Plugins.OpenApi;
+
 using System;
 using System.IO;
 using System.Net.Http;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Http;
-
-namespace Microsoft.SemanticKernel.Plugins.OpenApi;
-
-using System.Text.Json.Nodes;
+using Extensions.DependencyInjection;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
+using Http;
 
 
 /// <summary>
 /// Provides extension methods for importing plugins exposed through OpenAI's ChatGPT format.
 /// </summary>
+[Obsolete("This class is deprecated and will be removed in a future version.")]
 public static class OpenAIPluginKernelExtensions
 {
+
     private static readonly JsonSerializerOptions s_jsonOptionsCache =
         new()
         {
@@ -29,6 +30,7 @@ public static class OpenAIPluginKernelExtensions
         };
 
     // TODO: Review XML comments
+
 
     /// <summary>
     /// Creates a plugin for an OpenAI plugin exposed through OpenAI's ChatGPT format and imports it into the <paramref name="kernel"/>'s plugin collection.
@@ -46,10 +48,14 @@ public static class OpenAIPluginKernelExtensions
         OpenAIFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
-        KernelPlugin plugin = await kernel.CreatePluginFromOpenAIAsync(pluginName, filePath, executionParameters, cancellationToken).ConfigureAwait(false);
+        KernelPlugin plugin = await kernel.CreatePluginFromOpenAIAsync(pluginName, filePath, executionParameters, cancellationToken).
+            ConfigureAwait(false);
+
         kernel.Plugins.Add(plugin);
+
         return plugin;
     }
+
 
     /// <summary>
     /// Creates a plugin for an OpenAI plugin exposed through OpenAI's ChatGPT format and imports it into the <paramref name="kernel"/>'s plugin collection.
@@ -67,10 +73,14 @@ public static class OpenAIPluginKernelExtensions
         OpenAIFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
-        KernelPlugin plugin = await kernel.CreatePluginFromOpenAIAsync(pluginName, uri, executionParameters, cancellationToken).ConfigureAwait(false);
+        KernelPlugin plugin = await kernel.CreatePluginFromOpenAIAsync(pluginName, uri, executionParameters, cancellationToken).
+            ConfigureAwait(false);
+
         kernel.Plugins.Add(plugin);
+
         return plugin;
     }
+
 
     /// <summary>
     /// Creates a plugin for an OpenAI plugin exposed through OpenAI's ChatGPT format and imports it into the <paramref name="kernel"/>'s plugin collection.
@@ -88,10 +98,14 @@ public static class OpenAIPluginKernelExtensions
         OpenAIFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
-        KernelPlugin plugin = await kernel.CreatePluginFromOpenAIAsync(pluginName, stream, executionParameters, cancellationToken).ConfigureAwait(false);
+        KernelPlugin plugin = await kernel.CreatePluginFromOpenAIAsync(pluginName, stream, executionParameters, cancellationToken).
+            ConfigureAwait(false);
+
         kernel.Plugins.Add(plugin);
+
         return plugin;
     }
+
 
     /// <summary>
     /// Creates a plugin for an OpenAI plugin exposed through OpenAI's ChatGPT format.
@@ -113,17 +127,20 @@ public static class OpenAIPluginKernelExtensions
         Verify.ValidPluginName(pluginName, kernel.Plugins);
 
         var openAIManifest = await DocumentLoader.LoadDocumentFromFilePathAsync(
-            filePath,
-            kernel.LoggerFactory.CreateLogger(typeof(OpenAIPluginKernelExtensions)) ?? NullLogger.Instance,
-            cancellationToken).ConfigureAwait(false);
+                filePath,
+                kernel.LoggerFactory.CreateLogger(typeof(OpenAIPluginKernelExtensions)) ?? NullLogger.Instance,
+                cancellationToken).
+            ConfigureAwait(false);
 
         return await CreateAsync(
-            kernel,
-            openAIManifest,
-            pluginName,
-            executionParameters,
-            cancellationToken: cancellationToken).ConfigureAwait(false);
+                kernel,
+                openAIManifest,
+                pluginName,
+                executionParameters,
+                cancellationToken: cancellationToken).
+            ConfigureAwait(false);
     }
+
 
     /// <summary>
     /// Creates a plugin for an OpenAI plugin exposed through OpenAI's ChatGPT format.
@@ -149,20 +166,23 @@ public static class OpenAIPluginKernelExtensions
 #pragma warning restore CA2000
 
         var openAIManifest = await DocumentLoader.LoadDocumentFromUriAsync(
-            uri,
-            kernel.LoggerFactory.CreateLogger(typeof(OpenAIPluginKernelExtensions)) ?? NullLogger.Instance,
-            httpClient,
-            null, // auth is not needed when loading the manifest
-            executionParameters?.UserAgent,
-            cancellationToken).ConfigureAwait(false);
+                uri,
+                kernel.LoggerFactory.CreateLogger(typeof(OpenAIPluginKernelExtensions)) ?? NullLogger.Instance,
+                httpClient,
+                null, // auth is not needed when loading the manifest
+                executionParameters?.UserAgent,
+                cancellationToken).
+            ConfigureAwait(false);
 
         return await CreateAsync(
-            kernel,
-            openAIManifest,
-            pluginName,
-            executionParameters,
-            cancellationToken).ConfigureAwait(false);
+                kernel,
+                openAIManifest,
+                pluginName,
+                executionParameters,
+                cancellationToken).
+            ConfigureAwait(false);
     }
+
 
     /// <summary>
     /// Creates a plugin for an OpenAI plugin exposed through OpenAI's ChatGPT format.
@@ -183,15 +203,18 @@ public static class OpenAIPluginKernelExtensions
         Verify.NotNull(kernel);
         Verify.ValidPluginName(pluginName, kernel.Plugins);
 
-        var openAIManifest = await DocumentLoader.LoadDocumentFromStreamAsync(stream).ConfigureAwait(false);
+        var openAIManifest = await DocumentLoader.LoadDocumentFromStreamAsync(stream).
+            ConfigureAwait(false);
 
         return await CreateAsync(
-            kernel,
-            openAIManifest,
-            pluginName,
-            executionParameters,
-            cancellationToken: cancellationToken).ConfigureAwait(false);
+                kernel,
+                openAIManifest,
+                pluginName,
+                executionParameters,
+                cancellationToken: cancellationToken).
+            ConfigureAwait(false);
     }
+
 
     #region private
 
@@ -204,10 +227,13 @@ public static class OpenAIPluginKernelExtensions
     {
         JsonNode pluginJson;
         OpenAIAuthenticationConfig openAIAuthConfig;
+
         try
         {
             pluginJson = JsonNode.Parse(openAIManifest)!;
-            openAIAuthConfig = pluginJson["auth"].Deserialize<OpenAIAuthenticationConfig>(s_jsonOptionsCache)!;
+
+            openAIAuthConfig = pluginJson["auth"].
+                Deserialize<OpenAIAuthenticationConfig>(s_jsonOptionsCache)!;
         }
         catch (JsonException ex)
         {
@@ -217,28 +243,36 @@ public static class OpenAIPluginKernelExtensions
         if (executionParameters?.AuthCallback is not null)
         {
             var callback = executionParameters.AuthCallback;
+
             ((OpenApiFunctionExecutionParameters)executionParameters).AuthCallback = async (request, ct) =>
             {
-                await callback(request, pluginName, openAIAuthConfig, ct).ConfigureAwait(false);
+                await callback(request, pluginName, openAIAuthConfig, ct).
+                    ConfigureAwait(false);
             };
         }
 
         return await kernel.CreatePluginFromOpenApiAsync(
-            pluginName,
-            ParseOpenAIManifestForOpenApiSpecUrl(pluginJson),
-            executionParameters,
-            cancellationToken).ConfigureAwait(false);
+                pluginName,
+                ParseOpenAIManifestForOpenApiSpecUrl(pluginJson),
+                executionParameters,
+                cancellationToken).
+            ConfigureAwait(false);
     }
+
 
     private static Uri ParseOpenAIManifestForOpenApiSpecUrl(JsonNode pluginJson)
     {
-        string? apiType = pluginJson?["api"]?["type"]?.ToString();
+        string? apiType = pluginJson?["api"]?["type"]?.
+            ToString();
+
         if (string.IsNullOrWhiteSpace(apiType) || apiType != "openapi")
         {
             throw new KernelException($"Unexpected API type '{apiType}' found in Open AI manifest.");
         }
 
-        string? apiUrl = pluginJson?["api"]?["url"]?.ToString();
+        string? apiUrl = pluginJson?["api"]?["url"]?.
+            ToString();
+
         if (string.IsNullOrWhiteSpace(apiUrl))
         {
             throw new KernelException("No Open API spec URL found in Open AI manifest.");
@@ -255,4 +289,6 @@ public static class OpenAIPluginKernelExtensions
     }
 
     #endregion
+
+
 }

@@ -3,6 +3,20 @@
 <Suppressions>
     <Suppression>
         <DiagnosticId>CP0002</DiagnosticId>
+        <Target>F:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAIFilePurpose.Assistants</Target>
+        <Left>lib/net8.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+        <Right>lib/net8.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+        <IsBaselineSuppression>true</IsBaselineSuppression>
+    </Suppression>
+    <Suppression>
+        <DiagnosticId>CP0002</DiagnosticId>
+        <Target>F:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAIFilePurpose.FineTune</Target>
+        <Left>lib/net8.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+        <Right>lib/net8.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+        <IsBaselineSuppression>true</IsBaselineSuppression>
+    </Suppression>
+    <Suppression>
+        <DiagnosticId>CP0002</DiagnosticId>
         <Target>
             M:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAIFileService.GetFileContent(System.String,System.Threading.CancellationToken)
         </Target>
@@ -39,6 +53,20 @@
     </Suppression>
     <Suppression>
         <DiagnosticId>CP0002</DiagnosticId>
+        <Target>F:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAIFilePurpose.Assistants</Target>
+        <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+        <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+        <IsBaselineSuppression>true</IsBaselineSuppression>
+    </Suppression>
+    <Suppression>
+        <DiagnosticId>CP0002</DiagnosticId>
+        <Target>F:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAIFilePurpose.FineTune</Target>
+        <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+        <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+        <IsBaselineSuppression>true</IsBaselineSuppression>
+    </Suppression>
+    <Suppression>
+        <DiagnosticId>CP0002</DiagnosticId>
         <Target>
             M:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAIFileService.GetFileContent(System.String,System.Threading.CancellationToken)
         </Target>
@@ -69,6 +97,34 @@
         <Target>
             M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddOpenAITextToImage(Microsoft.SemanticKernel.IKernelBuilder,System.String,System.String,System.String,System.Net.Http.HttpClient)
         </Target>
+        <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+        <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+        <IsBaselineSuppression>true</IsBaselineSuppression>
+    </Suppression>
+    <Suppression>
+        <DiagnosticId>CP0007</DiagnosticId>
+        <Target>T:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAIFilePurpose</Target>
+        <Left>lib/net8.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+        <Right>lib/net8.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+        <IsBaselineSuppression>true</IsBaselineSuppression>
+    </Suppression>
+    <Suppression>
+        <DiagnosticId>CP0007</DiagnosticId>
+        <Target>T:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAIFilePurpose</Target>
+        <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+        <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+        <IsBaselineSuppression>true</IsBaselineSuppression>
+    </Suppression>
+    <Suppression>
+        <DiagnosticId>CP0008</DiagnosticId>
+        <Target>T:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAIFilePurpose</Target>
+        <Left>lib/net8.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+        <Right>lib/net8.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+        <IsBaselineSuppression>true</IsBaselineSuppression>
+    </Suppression>
+    <Suppression>
+        <DiagnosticId>CP0008</DiagnosticId>
+        <Target>T:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAIFilePurpose</Target>
         <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
         <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
         <IsBaselineSuppression>true</IsBaselineSuppression>

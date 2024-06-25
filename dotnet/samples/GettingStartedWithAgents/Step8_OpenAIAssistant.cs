@@ -22,7 +22,7 @@ public class Step8_OpenAIAssistant(ITestOutputHelper output) : BaseTest(output)
 
 
     [Fact]
-    public async Task RunAsync()
+    public async Task UseSingleOpenAIAssistantAgentAsync()
     {
         // Define the agent
         OpenAIAssistantAgent agent =

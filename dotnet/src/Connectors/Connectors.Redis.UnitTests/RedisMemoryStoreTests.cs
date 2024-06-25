@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Connectors.UnitTests.Redis;
+namespace SemanticKernel.Connectors.Redis.UnitTests;
 
 using System;
 using System.Collections.Generic;

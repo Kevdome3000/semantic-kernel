@@ -21,7 +21,7 @@ public class Step2_Plugins(ITestOutputHelper output) : BaseTest(output)
 
 
     [Fact]
-    public async Task RunAsync()
+    public async Task UseChatCompletionWithPluginAgentAsync()
     {
         // Define the agent
         ChatCompletionAgent agent =

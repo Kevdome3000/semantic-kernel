@@ -6,17 +6,17 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 
 
-public class OpenAIPlugins(ITestOutputHelper output) : BaseTest(output)
+public class CreatePluginFromOpenApiSpec_Klarna(ITestOutputHelper output) : BaseTest(output)
 {
 
     /// <summary>
-    /// This sample shows how to invoke an OpenAI plugin.
+    /// This sample shows how to invoke an OpenApi plugin.
     /// </summary>
     /// <remarks>
     /// You must provide the plugin name and a URI to the Open API manifest before running this sample.
     /// </remarks>
     [Fact(Skip = "Run it only after filling the template below")]
-    public async Task InvokeOpenAIPluginAsync()
+    public async Task InvokeOpenApiPluginAsync()
     {
         Kernel kernel = new();
 
@@ -24,7 +24,7 @@ public class OpenAIPlugins(ITestOutputHelper output) : BaseTest(output)
         using HttpClient httpClient = new();
 
         // Import an Open AI plugin via URI
-        var plugin = await kernel.ImportPluginFromOpenAIAsync("<plugin name>", new Uri("<OpenAI-plugin>"), new OpenAIFunctionExecutionParameters(httpClient));
+        var plugin = await kernel.ImportPluginFromOpenApiAsync("<plugin name>", new Uri("<OpenApi-plugin>"), new OpenApiFunctionExecutionParameters(httpClient));
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
         var arguments = new KernelArguments { ["<parameter-name>"] = "<parameter-value>" };
@@ -42,11 +42,11 @@ public class OpenAIPlugins(ITestOutputHelper output) : BaseTest(output)
     /// This sample shows how to invoke the Klarna Get Products function as an OpenAPI plugin.
     /// </summary>
     [Fact]
-    public async Task InvokeKlarnaGetProductsAsOpenAPIPluginAsync()
+    public async Task InvokeKlarnaGetProductsAsOpenApiPluginAsync()
     {
         Kernel kernel = new();
 
-        var plugin = await kernel.ImportPluginFromOpenAIAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"));
+        var plugin = await kernel.ImportPluginFromOpenApiAsync("Klarna", new Uri("https://www.klarna.com/us/shopping/public/openai/v0/api-docs/"));
 
         var arguments = new KernelArguments
         {
@@ -74,7 +74,7 @@ public class OpenAIPlugins(ITestOutputHelper output) : BaseTest(output)
     /// The <see cref="OpenApiKernelFunctionContext"/> contains the <see cref="Kernel"/>, <see cref="KernelFunction"/> and <see cref="KernelArguments"/>.
     /// </remarks>
     [Fact]
-    public async Task UseDelegatingHandlerWhenInvokingAnOpenAPIFunctionAsync()
+    public async Task UseDelegatingHandlerWhenInvokingAnOpenApiFunctionAsync()
     {
         using var httpHandler = new HttpClientHandler();
         using var customHandler = new CustomHandler(httpHandler);
@@ -82,7 +82,7 @@ public class OpenAIPlugins(ITestOutputHelper output) : BaseTest(output)
 
         Kernel kernel = new();
 
-        var plugin = await kernel.ImportPluginFromOpenAIAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenAIFunctionExecutionParameters(httpClient));
+        var plugin = await kernel.ImportPluginFromOpenApiAsync("Klarna", new Uri("https://www.klarna.com/us/shopping/public/openai/v0/api-docs/"), new OpenApiFunctionExecutionParameters(httpClient));
 
         var arguments = new KernelArguments
         {

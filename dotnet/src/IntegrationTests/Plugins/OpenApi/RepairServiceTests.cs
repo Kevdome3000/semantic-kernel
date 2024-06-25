@@ -1,5 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace SemanticKernel.IntegrationTests.Plugins;
+namespace SemanticKernel.IntegrationTests.Plugins.OpenApi;
 
 using System.Net.Http;
 using System.Text.Json;
@@ -25,7 +25,7 @@ public class RepairServiceTests
         var plugin = await kernel.ImportPluginFromOpenApiAsync(
             "RepairService",
             stream,
-            new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = false });
+            new OpenApiFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = false });
 
         var arguments = new KernelArguments
         {
@@ -86,7 +86,7 @@ public class RepairServiceTests
         var plugin = await kernel.ImportPluginFromOpenApiAsync(
             "RepairService",
             stream,
-            new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = false });
+            new OpenApiFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = false });
 
         var arguments = new KernelArguments
         {
@@ -131,7 +131,7 @@ public class RepairServiceTests
         var plugin = await kernel.ImportPluginFromOpenApiAsync(
             "RepairService",
             stream,
-            new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = false });
+            new OpenApiFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = false });
 
         // List All Repairs
         var result = await plugin["listRepairs"].

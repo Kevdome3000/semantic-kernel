@@ -18,8 +18,10 @@ using TestPlugins;
 using Xunit;
 
 
+[Obsolete("OpenAI plugins are deprecated and will be removed in a future version.")]
 public sealed class KernelOpenAIPluginExtensionsTests : IDisposable
 {
+
     /// <summary>
     /// OpenAPI document stream.
     /// </summary>
@@ -61,12 +63,14 @@ public sealed class KernelOpenAIPluginExtensionsTests : IDisposable
         //Arrange
         using var reader = new StreamReader(ResourcePluginsProvider.LoadFromResource(resourceName), Encoding.UTF8);
         JsonNode openAIDocumentContent = JsonNode.Parse(await reader.ReadToEndAsync())!;
+
         var actualOpenAIAuthConfig =
-            openAIDocumentContent["auth"].Deserialize<OpenAIAuthenticationConfig>(
-                new JsonSerializerOptions
-                {
-                    Converters = { new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower) },
-                })!;
+            openAIDocumentContent["auth"].
+                Deserialize<OpenAIAuthenticationConfig>(
+                    new JsonSerializerOptions
+                    {
+                        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower) },
+                    })!;
 
         using var openAiDocument = ResourcePluginsProvider.LoadFromResource(resourceName);
         using var messageHandlerStub = new HttpMessageHandlerStub(this._openApiDocument);
@@ -97,4 +101,5 @@ public sealed class KernelOpenAIPluginExtensionsTests : IDisposable
     {
         this._openApiDocument.Dispose();
     }
+
 }

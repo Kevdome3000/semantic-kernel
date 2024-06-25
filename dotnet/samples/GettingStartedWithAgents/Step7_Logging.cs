@@ -42,7 +42,7 @@ public class Step7_Logging(ITestOutputHelper output) : BaseTest(output)
 
 
     [Fact]
-    public async Task RunAsync()
+    public async Task UseLoggerFactoryWithAgentGroupChatAsync()
     {
         // Define the agents
         ChatCompletionAgent agentReviewer =
@@ -51,6 +51,7 @@ public class Step7_Logging(ITestOutputHelper output) : BaseTest(output)
                 Instructions = ReviewerInstructions,
                 Name = ReviewerName,
                 Kernel = this.CreateKernelWithChatCompletion(),
+                LoggerFactory = this.LoggerFactory,
             };
 
         ChatCompletionAgent agentWriter =
@@ -59,6 +60,7 @@ public class Step7_Logging(ITestOutputHelper output) : BaseTest(output)
                 Instructions = CopyWriterInstructions,
                 Name = CopyWriterName,
                 Kernel = this.CreateKernelWithChatCompletion(),
+                LoggerFactory = this.LoggerFactory,
             };
 
         // Create a chat for agent interaction.

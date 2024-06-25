@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Plugins.OpenApi;
+
+using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
 /// Represents a delegate that defines the method signature for asynchronously authenticating an HTTP request.
@@ -14,4 +16,9 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 /// <param name="openAIAuthConfig">The <see cref="OpenAIAuthenticationConfig"/> used to authenticate.</param>
 /// <param name="cancellationToken">The cancellation token.</param>
 /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-public delegate Task OpenAIAuthenticateRequestAsyncCallback(HttpRequestMessage request, string pluginName, OpenAIAuthenticationConfig openAIAuthConfig, CancellationToken cancellationToken = default);
+[Obsolete("This delegate is deprecated and will be removed in a future version.")]
+public delegate Task OpenAIAuthenticateRequestAsyncCallback(
+    HttpRequestMessage request,
+    string pluginName,
+    OpenAIAuthenticationConfig openAIAuthConfig,
+    CancellationToken cancellationToken = default);

@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Connectors.UnitTests.Qdrant;
+namespace SemanticKernel.Connectors.Qdrant.UnitTests;
 
 using System;
 using System.Collections.Generic;

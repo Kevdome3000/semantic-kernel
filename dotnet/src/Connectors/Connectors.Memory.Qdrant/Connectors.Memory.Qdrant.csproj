@@ -22,7 +22,11 @@
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
-  <ItemGroup>
+    <ItemGroup>
+        <InternalsVisibleTo Include="Microsoft.SemanticKernel.Connectors.Qdrant.UnitTests"/>
+    </ItemGroup>
+
+    <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
 

@@ -19,7 +19,7 @@ public class Step1_Agent(ITestOutputHelper output) : BaseTest(output)
 
 
     [Fact]
-    public async Task RunAsync()
+    public async Task UseSingleChatCompletionAgentAsync()
     {
         // Define the agent
         ChatCompletionAgent agent =

@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Connectors.UnitTests.Qdrant;
+namespace SemanticKernel.Connectors.Qdrant.UnitTests;
 
 using System;
 using System.Net.Http;
@@ -11,7 +11,9 @@ using Xunit;
 
 public sealed class QdrantVectorDbClientTests : IDisposable
 {
+
     private readonly HttpMessageHandlerStub _messageHandlerStub;
+
     private readonly HttpClient _httpClient;
 
 
@@ -60,4 +62,5 @@ public sealed class QdrantVectorDbClientTests : IDisposable
         this._httpClient.Dispose();
         this._messageHandlerStub.Dispose();
     }
+
 }

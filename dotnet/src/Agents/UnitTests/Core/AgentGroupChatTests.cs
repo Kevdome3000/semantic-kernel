@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
@@ -245,7 +244,7 @@ public class AgentGroupChatTests
 
         ChatMessageContent[] messages = [new ChatMessageContent(AuthorRole.Assistant, "test")];
 
-        agent.Setup(a => a.InvokeAsync(It.IsAny<IReadOnlyList<ChatMessageContent>>(), It.IsAny<ILogger>(), It.IsAny<CancellationToken>())).
+        agent.Setup(a => a.InvokeAsync(It.IsAny<IReadOnlyList<ChatMessageContent>>(), It.IsAny<CancellationToken>())).
             Returns(() => messages.ToAsyncEnumerable());
 
         return agent;
