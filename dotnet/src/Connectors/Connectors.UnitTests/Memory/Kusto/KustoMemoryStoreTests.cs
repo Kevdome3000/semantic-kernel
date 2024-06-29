@@ -31,6 +31,8 @@ public class KustoMemoryStoreTests
 
     private readonly Mock<ICslAdminProvider> _cslAdminProviderMock;
 
+    private readonly string _normalisedCollectionName = CslSyntaxGenerator.NormalizeName(CollectionName);
+
 
     public KustoMemoryStoreTests()
     {
@@ -149,7 +151,7 @@ public class KustoMemoryStoreTests
         // Assert
         this._cslAdminProviderMock.Verify(client => client.ExecuteControlCommandAsync(
             DatabaseName,
-            It.Is<string>(s => s.StartsWith($".ingest inline into table {CollectionName}", StringComparison.Ordinal) && s.Contains(actualMemoryRecordKey, StringComparison.Ordinal)),
+            It.Is<string>(s => s.StartsWith($".ingest inline into table {this._normalisedCollectionName}", StringComparison.Ordinal) && s.Contains(actualMemoryRecordKey, StringComparison.Ordinal)),
             It.IsAny<ClientRequestProperties>()), Times.Once());
 
         Assert.Equal(expectedMemoryRecord.Key, actualMemoryRecordKey);
@@ -179,7 +181,7 @@ public class KustoMemoryStoreTests
         this._cslAdminProviderMock.Verify(client => client.ExecuteControlCommandAsync(
             DatabaseName,
             It.Is<string>(s =>
-                s.StartsWith($".ingest inline into table {CollectionName}", StringComparison.Ordinal) &&
+                s.StartsWith($".ingest inline into table {this._normalisedCollectionName}", StringComparison.Ordinal) &&
                 batchUpsertMemoryRecords.All(r => s.Contains(r.Key, StringComparison.Ordinal))),
             It.IsAny<ClientRequestProperties>()
         ), Times.Once());
@@ -329,7 +331,7 @@ public class KustoMemoryStoreTests
         this._cslAdminProviderMock.Verify(client => client.ExecuteControlCommandAsync(
             DatabaseName,
             It.Is<string>(s => s.Replace("  ", " ").
-                StartsWith($".delete table {CollectionName}") && s.Contains(MemoryRecordKey)), // Replace double spaces with single space to account for the fact that the query is formatted with double spaces and to be future proof
+                StartsWith($".delete table {this._normalisedCollectionName}") && s.Contains(MemoryRecordKey)), // Replace double spaces with single space to account for the fact that the query is formatted with double spaces and to be future proof
             It.IsAny<ClientRequestProperties>()
         ), Times.Once());
     }
@@ -349,7 +351,7 @@ public class KustoMemoryStoreTests
         this._cslAdminProviderMock.Verify(client => client.ExecuteControlCommandAsync(
             DatabaseName,
             It.Is<string>(s => s.Replace("  ", " ").
-                StartsWith($".delete table {CollectionName}") && memoryRecordKeys.All(r => s.Contains(r, StringComparison.OrdinalIgnoreCase))),
+                StartsWith($".delete table {this._normalisedCollectionName}") && memoryRecordKeys.All(r => s.Contains(r, StringComparison.OrdinalIgnoreCase))),
             It.IsAny<ClientRequestProperties>()
         ), Times.Once());
     }

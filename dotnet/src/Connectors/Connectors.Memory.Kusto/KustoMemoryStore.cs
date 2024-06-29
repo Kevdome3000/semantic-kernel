@@ -416,7 +416,7 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
     /// <param name="normalized">Boolean flag that indicates if table name normalization is needed.</param>
     private static string GetTableName(string collectionName, bool normalized = true)
         => normalized
-            ? CslSyntaxGenerator.NormalizeTableName(collectionName)
+            ? CslSyntaxGenerator.NormalizeName(collectionName)
             : collectionName;
 
 

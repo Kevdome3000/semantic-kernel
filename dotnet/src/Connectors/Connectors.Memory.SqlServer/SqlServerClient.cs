@@ -2,6 +2,18 @@
 
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
+using Data.SqlClient;
+
+
 /// <summary>
 /// Implementation of database client managing SQL Server or Azure SQL database operations.
 /// </summary>
@@ -26,10 +38,31 @@ internal sealed class SqlServerClient : ISqlServerClient
     }
 
 
+    private async Task<bool> HasJsonNativeTypeAsync(CancellationToken cancellationToken = default)
+    {
+        using (await this.OpenConnectionAsync(cancellationToken).
+                   ConfigureAwait(false))
+        {
+            using var cmd = this._connection.CreateCommand();
+            cmd.CommandText = "select [name] from sys.types where system_type_id = 244 and user_type_id = 244";
+
+            var typeName = (string)await cmd.ExecuteScalarAsync(cancellationToken).
+                ConfigureAwait(false);
+
+            return string.Equals(typeName, "json", StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+
     /// <inheritdoc/>
     public async Task CreateTableAsync(string tableName, CancellationToken cancellationToken = default)
     {
         var fullTableName = this.GetSanitizedFullTableName(tableName);
+
+        var metadataType = await this.HasJsonNativeTypeAsync(cancellationToken).
+            ConfigureAwait(false)
+            ? "json"
+            : "nvarchar(max)";
 
         using (await this.OpenConnectionAsync(cancellationToken).
                    ConfigureAwait(false))
@@ -40,7 +73,7 @@ internal sealed class SqlServerClient : ISqlServerClient
                                IF OBJECT_ID(N'{fullTableName}', N'U') IS NULL
                                CREATE TABLE {fullTableName} (
                                    [key] nvarchar(255) collate latin1_general_bin2 not null,
-                                   [metadata] nvarchar(max) not null,
+                                   [metadata] {metadataType} not null,
                                    [embedding] varbinary(8000),
                                    [timestamp] datetimeoffset,
                                    PRIMARY KEY NONCLUSTERED ([key]),
@@ -174,9 +207,10 @@ internal sealed class SqlServerClient : ISqlServerClient
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var queryColumns = withEmbeddings
-            ? "[key], [metadata], [timestamp], VECTOR_TO_JSON_ARRAY([embedding]) AS [embedding]"
-            : "[key], [metadata], [timestamp]";
+        var queryColumns = "[key], [metadata], [timestamp]" +
+                           (withEmbeddings
+                               ? ", VECTOR_TO_JSON_ARRAY([embedding]) AS [embedding]"
+                               : string.Empty);
 
         var fullTableName = this.GetSanitizedFullTableName(tableName);
         var keysList = keys.ToList();
@@ -248,9 +282,10 @@ internal sealed class SqlServerClient : ISqlServerClient
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var queryColumns = withEmbeddings
-            ? "[key], [metadata], [timestamp], 1 - VECTOR_DISTANCE('cosine', [embedding], JSON_ARRAY_TO_VECTOR(@e)) AS [cosine_similarity], VECTOR_TO_JSON_ARRAY([embedding]) AS [embedding]"
-            : "[key], [metadata], [timestamp], 1 - VECTOR_DISTANCE('cosine', [embedding], JSON_ARRAY_TO_VECTOR(@e)) AS [cosine_similarity]";
+        var queryColumns = "[key], [metadata], [timestamp], 1 - VECTOR_DISTANCE('cosine', [embedding], JSON_ARRAY_TO_VECTOR(@e)) AS [cosine_similarity]" +
+                           (withEmbeddings
+                               ? ", VECTOR_TO_JSON_ARRAY([embedding]) AS [embedding]"
+                               : string.Empty);
 
         var fullTableName = this.GetSanitizedFullTableName(tableName);
 
