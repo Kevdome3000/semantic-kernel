@@ -359,7 +359,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
                 }
 
                 context.RenderedPrompt = renderedPrompt;
-            }).
+            }, cancellationToken).
             ConfigureAwait(false);
 
         if (!string.IsNullOrWhiteSpace(renderingContext.RenderedPrompt) &&

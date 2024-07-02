@@ -219,7 +219,7 @@ public abstract class KernelFunction : IKernelFunction
                     // Invoking the function and updating context with result.
                     context.Result = functionResult = await InvokeCoreAsync(kernel, context.Arguments, cancellationToken).
                         ConfigureAwait(false);
-                }).
+                }, cancellationToken).
                 ConfigureAwait(false);
 
             // Apply any changes from the function filters context to final result.
@@ -363,7 +363,7 @@ public abstract class KernelFunction : IKernelFunction
                         context.Result = new FunctionResult(this, enumerable, kernel.Culture);
 
                         return Task.CompletedTask;
-                    }).
+                    }, cancellationToken).
                     ConfigureAwait(false);
 
                 // Apply changes from the function filters to final result.

@@ -3,6 +3,7 @@
 namespace Microsoft.SemanticKernel;
 
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 
 
 /// <summary>
@@ -35,6 +36,12 @@ public class FunctionInvocationContext
         this.Result = result;
     }
 
+
+    /// <summary>
+    /// The <see cref="System.Threading.CancellationToken"/> to monitor for cancellation requests.
+    /// The default is <see cref="System.Threading.CancellationToken.None"/>.
+    /// </summary>
+    public CancellationToken CancellationToken { get; init; }
 
     /// <summary>
     /// Gets the <see cref="Microsoft.SemanticKernel.Kernel"/> containing services, plugins, and other state for use throughout the operation.

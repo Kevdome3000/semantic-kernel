@@ -572,7 +572,8 @@ internal abstract class ClientCore
                     Arguments = functionArgs,
                     RequestSequenceIndex = requestIndex - 1,
                     FunctionSequenceIndex = toolCallIndex,
-                    FunctionCount = result.ToolCalls.Count
+                    FunctionCount = result.ToolCalls.Count,
+                    CancellationToken = cancellationToken
                 };
 
                 s_inflightAutoInvokes.Value++;
@@ -907,7 +908,8 @@ internal abstract class ClientCore
                     Arguments = functionArgs,
                     RequestSequenceIndex = requestIndex - 1,
                     FunctionSequenceIndex = toolCallIndex,
-                    FunctionCount = toolCalls.Length
+                    FunctionCount = toolCalls.Length,
+                    CancellationToken = cancellationToken
                 };
 
                 s_inflightAutoInvokes.Value++;

@@ -3,6 +3,7 @@
 namespace Microsoft.SemanticKernel;
 
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using ChatCompletion;
 
 
@@ -37,6 +38,12 @@ public class AutoFunctionInvocationContext
         this.ChatHistory = chatHistory;
     }
 
+
+    /// <summary>
+    /// The <see cref="System.Threading.CancellationToken"/> to monitor for cancellation requests.
+    /// The default is <see cref="System.Threading.CancellationToken.None"/>.
+    /// </summary>
+    public CancellationToken CancellationToken { get; init; }
 
     /// <summary>
     /// Gets the arguments associated with the operation.
