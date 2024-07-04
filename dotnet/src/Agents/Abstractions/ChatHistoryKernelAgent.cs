@@ -4,6 +4,7 @@ namespace Microsoft.SemanticKernel.Agents;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using ChatCompletion;
 using Microsoft.Extensions.Logging;
 
 
@@ -35,7 +36,13 @@ public abstract class ChatHistoryKernelAgent : KernelAgent, IChatHistoryHandler
 
     /// <inheritdoc/>
     public abstract IAsyncEnumerable<ChatMessageContent> InvokeAsync(
-        IReadOnlyList<ChatMessageContent> history,
+        ChatHistory history,
+        CancellationToken cancellationToken = default);
+
+
+    /// <inheritdoc/>
+    public abstract IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
+        ChatHistory history,
         CancellationToken cancellationToken = default);
 
 }

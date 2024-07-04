@@ -28,6 +28,10 @@ internal sealed class GeminiRequest
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IList<GeminiTool>? Tools { get; set; }
 
+    [JsonPropertyName("systemInstruction")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public GeminiContent? SystemInstruction { get; set; }
+
 
     public void AddFunction(GeminiFunction function)
     {
@@ -107,8 +111,10 @@ internal sealed class GeminiRequest
     {
         GeminiRequest obj = new()
         {
-            Contents = chatHistory.Select(CreateGeminiContentFromChatMessage).
-                ToList()
+            Contents = chatHistory.Where(message => message.Role != AuthorRole.System).
+                Select(CreateGeminiContentFromChatMessage).
+                ToList(),
+            SystemInstruction = CreateSystemMessages(chatHistory)
         };
 
         return obj;
@@ -125,12 +131,49 @@ internal sealed class GeminiRequest
     }
 
 
+    private static GeminiContent? CreateSystemMessages(ChatHistory chatHistory)
+    {
+        var contents = chatHistory.Where(message => message.Role == AuthorRole.System).
+            ToList();
+
+        if (contents.Count == 0)
+        {
+            return null;
+        }
+
+        return new GeminiContent
+        {
+            Parts = CreateGeminiParts(contents)
+        };
+    }
+
+
     public void AddChatMessage(ChatMessageContent message)
     {
         Verify.NotNull(this.Contents);
         Verify.NotNull(message);
 
         this.Contents.Add(CreateGeminiContentFromChatMessage(message));
+    }
+
+
+    private static List<GeminiPart> CreateGeminiParts(IEnumerable<ChatMessageContent> contents)
+    {
+        List<GeminiPart>? parts = null;
+
+        foreach (var content in contents)
+        {
+            if (parts == null)
+            {
+                parts = CreateGeminiParts(content);
+            }
+            else
+            {
+                parts.AddRange(CreateGeminiParts(content));
+            }
+        }
+
+        return parts!;
     }
 
 

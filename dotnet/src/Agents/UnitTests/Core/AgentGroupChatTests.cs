@@ -244,7 +244,7 @@ public class AgentGroupChatTests
 
         ChatMessageContent[] messages = [new ChatMessageContent(AuthorRole.Assistant, "test")];
 
-        agent.Setup(a => a.InvokeAsync(It.IsAny<IReadOnlyList<ChatMessageContent>>(), It.IsAny<CancellationToken>())).
+        agent.Setup(a => a.InvokeAsync(It.IsAny<ChatHistory>(), It.IsAny<CancellationToken>())).
             Returns(() => messages.ToAsyncEnumerable());
 
         return agent;

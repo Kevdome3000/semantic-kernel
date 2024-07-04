@@ -507,7 +507,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
     {
         MilvusCollection collection = this.Client.GetCollection(collectionName);
 
-        SearchResults results = await collection.SearchAsync(EmbeddingFieldName, [embedding], SimilarityMetricType.Ip, limit,
+        SearchResults results = await collection.SearchAsync(EmbeddingFieldName, [embedding], this._metricType, limit,
                 this._searchParameters, cancellationToken).
             ConfigureAwait(false);
 
