@@ -61,7 +61,7 @@ public abstract class KernelFunction : IKernelFunction
     /// </remarks>\
     [JsonPropertyName("name")]
     [JsonInclude]
-    public string Name => Metadata.Name;
+    public string Name { get; init; }
 
     /// <summary>
     /// Gets the name of the plugin this function was added to.
@@ -70,7 +70,7 @@ public abstract class KernelFunction : IKernelFunction
     /// The plugin name will be null if the function has not been added to a plugin.
     /// When a function is added to a plugin it will be cloned and the plugin name will be set.
     /// </remarks>
-    public string? PluginName => Metadata.PluginName;
+    public string? PluginName { get; init; }
 
     /// <summary>
     /// Gets a description of the function.
@@ -81,7 +81,7 @@ public abstract class KernelFunction : IKernelFunction
     /// </remarks>
     [JsonPropertyName("description")]
     [JsonInclude]
-    public string Description => Metadata.Description;
+    public string Description { get; init; }
 
     /// <summary>
     /// Gets the metadata describing the function.
@@ -156,6 +156,10 @@ public abstract class KernelFunction : IKernelFunction
             ReturnParameter = returnParameter ?? KernelReturnParameterMetadata.Empty,
             AdditionalProperties = additionalMetadata ?? KernelFunctionMetadata.s_emptyDictionary
         };
+
+        Name = Metadata.Name;
+        PluginName = Metadata.PluginName;
+        Description = Metadata.Description;
 
         if (executionSettings is not null)
         {

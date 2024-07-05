@@ -18,16 +18,16 @@ public interface IKernelFunction
     /// <remarks>
     /// This property represents the name of the kernel function.
     /// </remarks>
-    string Name { get; }
+    string Name { get; init; }
 
     /// Gets the name of the plugin associated with the kernel function.
     /// /
-    string? PluginName { get; }
+    string? PluginName { get; init; }
 
     /// <summary>
     /// Gets the description of the kernel function.
     /// </summary>
-    string Description { get; }
+    string Description { get; init; }
 
     /// <summary>
     /// Provides read-only metadata for a <see cref="KernelFunction"/>.
