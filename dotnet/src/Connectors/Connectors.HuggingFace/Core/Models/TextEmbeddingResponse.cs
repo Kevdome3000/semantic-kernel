@@ -9,4 +9,5 @@ using System.Collections.Generic;
 /// <summary>
 /// Represents the response from the Hugging Face text embedding API.
 /// </summary>
-internal sealed class TextEmbeddingResponse : List<List<List<ReadOnlyMemory<float>>>>;
+/// <returns> List&lt;ReadOnlyMemory&lt;float&gt;&gt;</returns>
+internal sealed class TextEmbeddingResponse : List<ReadOnlyMemory<float>>;

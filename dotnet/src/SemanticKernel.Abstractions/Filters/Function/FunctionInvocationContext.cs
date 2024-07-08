@@ -2,14 +2,12 @@
 
 namespace Microsoft.SemanticKernel;
 
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
 
 /// <summary>
 /// Class with data related to function invocation.
 /// </summary>
-[Experimental("SKEXP0001")]
 public class FunctionInvocationContext
 {
 

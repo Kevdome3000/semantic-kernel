@@ -3,7 +3,6 @@
 namespace Microsoft.SemanticKernel;
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 #pragma warning disable CA1716 // Identifiers should not match keywords (Func<PromptRenderContext, Task> next)
@@ -12,7 +11,6 @@ using System.Threading.Tasks;
 /// <summary>
 /// Interface for filtering actions during prompt rendering.
 /// </summary>
-[Experimental("SKEXP0001")]
 public interface IPromptRenderFilter
 {
 
