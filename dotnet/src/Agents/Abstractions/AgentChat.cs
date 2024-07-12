@@ -89,8 +89,7 @@ public abstract class AgentChat
     {
         this.SetActivityOrThrow(); // Disallow concurrent access to chat history
 
-        this.Logger.LogDebug("[{MethodName}] Source: {MessageSourceType}/{MessageSourceId}", nameof(GetChatMessagesAsync), agent?.GetType().
-            Name ?? "primary", agent?.Id ?? "primary");
+        this.Logger.LogAgentChatGetChatMessages(nameof(GetChatMessagesAsync), agent);
 
         try
         {
@@ -177,10 +176,7 @@ public abstract class AgentChat
             }
         }
 
-        if (this.Logger.IsEnabled(LogLevel.Debug)) // Avoid boxing if not enabled
-        {
-            this.Logger.LogDebug("[{MethodName}] Adding Messages: {MessageCount}", nameof(AddChatMessages), messages.Count);
-        }
+        this.Logger.LogAgentChatAddingMessages(nameof(AddChatMessages), messages.Count);
 
         try
         {
@@ -192,10 +188,7 @@ public abstract class AgentChat
             var channelRefs = this._agentChannels.Select(kvp => new ChannelReference(kvp.Value, kvp.Key));
             this._broadcastQueue.Enqueue(channelRefs, messages);
 
-            if (this.Logger.IsEnabled(LogLevel.Information)) // Avoid boxing if not enabled
-            {
-                this.Logger.LogInformation("[{MethodName}] Added Messages: {MessageCount}", nameof(AddChatMessages), messages.Count);
-            }
+            this.Logger.LogAgentChatAddedMessages(nameof(AddChatMessages), messages.Count);
         }
         finally
         {
@@ -220,7 +213,7 @@ public abstract class AgentChat
     {
         this.SetActivityOrThrow(); // Disallow concurrent access to chat history
 
-        this.Logger.LogDebug("[{MethodName}] Invoking agent {AgentType}: {AgentId}", nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
+        this.Logger.LogAgentChatInvokingAgent(nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
 
         try
         {
@@ -235,7 +228,7 @@ public abstract class AgentChat
             await foreach (ChatMessageContent message in channel.InvokeAsync(agent, cancellationToken).
                                ConfigureAwait(false))
             {
-                this.Logger.LogTrace("[{MethodName}] Agent message {AgentType}: {Message}", nameof(InvokeAgentAsync), agent.GetType(), message);
+                this.Logger.LogAgentChatInvokedAgentMessage(nameof(InvokeAgentAsync), agent.GetType(), agent.Id, message);
 
                 // Add to primary history
                 this.History.Add(message);
@@ -260,7 +253,7 @@ public abstract class AgentChat
             this._broadcastQueue.Enqueue(channelRefs, messages.Where(m => m.Role != AuthorRole.Tool).
                 ToArray());
 
-            this.Logger.LogInformation("[{MethodName}] Invoked agent {AgentType}: {AgentId}", nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
+            this.Logger.LogAgentChatInvokedAgent(nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
         }
         finally
         {
@@ -276,7 +269,7 @@ public abstract class AgentChat
 
             if (channel is null)
             {
-                this.Logger.LogDebug("[{MethodName}] Creating channel for {AgentType}: {AgentId}", nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
+                this.Logger.LogAgentChatCreatingChannel(nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
 
                 channel = await agent.CreateChannelAsync(cancellationToken).
                     ConfigureAwait(false);
@@ -289,7 +282,7 @@ public abstract class AgentChat
                         ConfigureAwait(false);
                 }
 
-                this.Logger.LogInformation("[{MethodName}] Created channel for {AgentType}: {AgentId}", nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
+                this.Logger.LogAgentChatCreatedChannel(nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
             }
 
             return channel;

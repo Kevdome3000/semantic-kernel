@@ -160,7 +160,7 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(outp
         Console.WriteLine(">>>> AGGREGATED CHAT");
         Console.WriteLine(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 
-        await foreach (var content in chat.GetChatMessagesAsync(personalShopperAgent).
+        await foreach (ChatMessageContent content in chat.GetChatMessagesAsync(personalShopperAgent).
                            Reverse())
         {
             Console.WriteLine($">>>> {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
@@ -172,7 +172,7 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(outp
 
             Console.WriteLine($"# {AuthorRole.User}: '{input}'");
 
-            await foreach (var content in chat.InvokeAsync(personalShopperAgent))
+            await foreach (ChatMessageContent content in chat.InvokeAsync(personalShopperAgent))
             {
                 Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
             }
