@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.MistralAI.Client;
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -15,13 +13,14 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using ChatCompletion;
-using Diagnostics;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
-using Http;
-using Text;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.Text;
 
+namespace Microsoft.SemanticKernel.Connectors.MistralAI.Client;
 
 /// <summary>
 /// The Mistral client.
@@ -157,7 +156,9 @@ internal sealed class MistralClient
             // history: if they don't want it, they can remove it, but this makes the data available,
             // including metadata like usage.
             chatRequest.AddMessage(chatChoice.Message!);
-            chatHistory.Add(this.ToChatMessageContent(modelId, responseData, chatChoice));
+
+            var chatMessageContent = this.ToChatMessageContent(modelId, responseData, chatChoice);
+            chatHistory.Add(chatMessageContent);
 
             // We must send back a response for every tool call, regardless of whether we successfully executed it or not.
             // If we successfully execute it, we'll add the result. If we don't, we'll add an error.
@@ -198,8 +199,10 @@ internal sealed class MistralClient
                 // Now, invoke the function, and add the resulting tool call message to the chat options.
                 FunctionResult functionResult = new(function) { Culture = kernel.Culture };
 
-                AutoFunctionInvocationContext invocationContext = new(kernel, function, functionResult, chatHistory)
+                AutoFunctionInvocationContext invocationContext = new(kernel, function, functionResult, chatHistory,
+                    chatMessageContent)
                 {
+                    ToolCallId = toolCall.Id,
                     Arguments = functionArgs,
                     RequestSequenceIndex = requestIndex - 1,
                     FunctionSequenceIndex = toolCallIndex,
@@ -467,8 +470,10 @@ internal sealed class MistralClient
                 // Now, invoke the function, and add the resulting tool call message to the chat options.
                 FunctionResult functionResult = new(function) { Culture = kernel.Culture };
 
-                AutoFunctionInvocationContext invocationContext = new(kernel, function, functionResult, chatHistory)
+                AutoFunctionInvocationContext invocationContext = new(kernel, function, functionResult, chatHistory,
+                    chatHistory.Last())
                 {
+                    ToolCallId = toolCall.Id,
                     Arguments = functionArgs,
                     RequestSequenceIndex = requestIndex - 1,
                     FunctionSequenceIndex = toolCallIndex,

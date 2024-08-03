@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Functions.UnitTests.OpenApi;
-
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -12,9 +10,10 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
-using TestPlugins;
+using SemanticKernel.Functions.UnitTests.OpenApi.TestPlugins;
 using Xunit;
 
+namespace SemanticKernel.Functions.UnitTests.OpenApi;
 
 public sealed class OpenApiDocumentParserV31Tests : IDisposable
 {
@@ -45,13 +44,13 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
     public async Task ItCanParsePutOperationBodySuccessfullyAsync()
     {
         // Act
-        var operations = await this._sut.ParseAsync(this._openApiDocument);
+        var restApi = await this._sut.ParseAsync(this._openApiDocument);
 
         // Assert
-        Assert.NotNull(operations);
-        Assert.True(operations.Any());
+        Assert.NotNull(restApi.Operations);
+        Assert.True(restApi.Operations.Any());
 
-        var putOperation = operations.Single(o => o.Id == "SetSecret");
+        var putOperation = restApi.Operations.Single(o => o.Id == "SetSecret");
         Assert.NotNull(putOperation);
 
         var payload = putOperation.Payload;
@@ -112,13 +111,13 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
     public async Task ItCanParsePutOperationMetadataSuccessfullyAsync()
     {
         // Act
-        var operations = await this._sut.ParseAsync(this._openApiDocument);
+        var restApi = await this._sut.ParseAsync(this._openApiDocument);
 
         // Assert
-        Assert.NotNull(operations);
-        Assert.True(operations.Any());
+        Assert.NotNull(restApi.Operations);
+        Assert.True(restApi.Operations.Any());
 
-        var putOperation = operations.Single(o => o.Id == "SetSecret");
+        var putOperation = restApi.Operations.Single(o => o.Id == "SetSecret");
         Assert.NotNull(putOperation);
         Assert.Equal("Sets a secret in a specified key vault.", putOperation.Description);
         Assert.Equal("https://my-key-vault.vault.azure.net/", putOperation.ServerUrl?.AbsoluteUri);
@@ -173,13 +172,13 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
     public async Task ItCanUseOperationSummaryAsync()
     {
         // Act
-        var operations = await this._sut.ParseAsync(this._openApiDocument);
+        var restApi = await this._sut.ParseAsync(this._openApiDocument);
 
         // Assert
-        Assert.NotNull(operations);
-        Assert.True(operations.Any());
+        Assert.NotNull(restApi.Operations);
+        Assert.True(restApi.Operations.Any());
 
-        var operation = operations.Single(o => o.Id == "Excuses");
+        var operation = restApi.Operations.Single(o => o.Id == "Excuses");
         Assert.NotNull(operation);
         Assert.Equal("Turn a scenario into a creative or humorous excuse to send your boss", operation.Description);
     }
@@ -189,10 +188,10 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
     public async Task ItCanExtractSimpleTypeHeaderParameterMetadataSuccessfullyAsync()
     {
         // Act
-        var operations = await this._sut.ParseAsync(this._openApiDocument);
+        var restApi = await this._sut.ParseAsync(this._openApiDocument);
 
         //Assert string header parameter metadata
-        var accept = GetParameterMetadata(operations, "SetSecret", RestApiOperationParameterLocation.Header, "Accept");
+        var accept = GetParameterMetadata(restApi.Operations, "SetSecret", RestApiOperationParameterLocation.Header, "Accept");
 
         Assert.Equal("string", accept.Type);
         Assert.Equal("application/json", accept.DefaultValue);
@@ -200,7 +199,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.False(accept.IsRequired);
 
         //Assert integer header parameter metadata
-        var apiVersion = GetParameterMetadata(operations, "SetSecret", RestApiOperationParameterLocation.Header, "X-API-Version");
+        var apiVersion = GetParameterMetadata(restApi.Operations, "SetSecret", RestApiOperationParameterLocation.Header, "X-API-Version");
 
         Assert.Equal("integer", apiVersion.Type);
         Assert.Equal(10, apiVersion.DefaultValue);
@@ -213,10 +212,10 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
     public async Task ItCanExtractCsvStyleHeaderParameterMetadataSuccessfullyAsync()
     {
         // Act
-        var operations = await this._sut.ParseAsync(this._openApiDocument);
+        var restApi = await this._sut.ParseAsync(this._openApiDocument);
 
         //Assert header parameters metadata
-        var acceptParameter = GetParameterMetadata(operations, "SetSecret", RestApiOperationParameterLocation.Header, "X-Operation-Csv-Ids");
+        var acceptParameter = GetParameterMetadata(restApi.Operations, "SetSecret", RestApiOperationParameterLocation.Header, "X-Operation-Csv-Ids");
 
         Assert.Null(acceptParameter.DefaultValue);
         Assert.False(acceptParameter.IsRequired);
@@ -231,12 +230,12 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
     public async Task ItCanExtractHeadersSuccessfullyAsync()
     {
         // Act
-        var operations = await this._sut.ParseAsync(this._openApiDocument);
+        var restApi = await this._sut.ParseAsync(this._openApiDocument);
 
         // Assert
-        Assert.True(operations.Any());
+        Assert.True(restApi.Operations.Any());
 
-        var operation = operations.Single(o => o.Id == "SetSecret");
+        var operation = restApi.Operations.Single(o => o.Id == "SetSecret");
 
         var headerParameters = operation.Parameters.Where(p => p.Location == RestApiOperationParameterLocation.Header);
 
@@ -253,10 +252,10 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
     public async Task ItCanExtractAllPathsAsOperationsAsync()
     {
         // Act
-        var operations = await this._sut.ParseAsync(this._openApiDocument);
+        var restApi = await this._sut.ParseAsync(this._openApiDocument);
 
         // Assert
-        Assert.Equal(5, operations.Count);
+        Assert.Equal(5, restApi.Operations.Count);
     }
 
 
@@ -264,13 +263,13 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
     public async Task ItCanParseOperationHavingTextPlainBodySuccessfullyAsync()
     {
         // Act
-        var operations = await this._sut.ParseAsync(this._openApiDocument);
+        var restApi = await this._sut.ParseAsync(this._openApiDocument);
 
         // Assert
-        Assert.NotNull(operations);
-        Assert.True(operations.Any());
+        Assert.NotNull(restApi.Operations);
+        Assert.True(restApi.Operations.Any());
 
-        var operation = operations.Single(o => o.Id == "Excuses");
+        var operation = restApi.Operations.Single(o => o.Id == "Excuses");
         Assert.NotNull(operation);
 
         var payload = operation.Payload;
@@ -295,10 +294,10 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         });
 
         //Act
-        var operations = await this._sut.ParseAsync(stream);
+        var restApi = await this._sut.ParseAsync(stream);
 
         //Assert
-        Assert.All(operations, (op) => Assert.Null(op.ServerUrl));
+        Assert.All(restApi.Operations, (op) => Assert.Null(op.ServerUrl));
     }
 
 
@@ -312,10 +311,10 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         });
 
         //Act
-        var operations = await this._sut.ParseAsync(stream);
+        var restApi = await this._sut.ParseAsync(stream);
 
         //Assert
-        Assert.All(operations, (op) => Assert.Null(op.ServerUrl));
+        Assert.All(restApi.Operations, (op) => Assert.Null(op.ServerUrl));
     }
 
 
@@ -325,12 +324,12 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
     public async Task ItShouldSupportsAmpersandSeparatedParametersForFormStyleArrayQueryStringParametersAsync(string parameterName)
     {
         //Act
-        var operations = await this._sut.ParseAsync(this._openApiDocument);
+        var restApi = await this._sut.ParseAsync(this._openApiDocument);
 
         //Assert
-        Assert.True(operations.Any());
+        Assert.True(restApi.Operations.Any());
 
-        var operation = operations.Single(o => o.Id == "GetSecret");
+        var operation = restApi.Operations.Single(o => o.Id == "GetSecret");
 
         var explodeFormParam = operation.Parameters.Single(p => p.Name == parameterName);
 
@@ -342,12 +341,12 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
     public async Task ItShouldSupportsCommaSeparatedValuesForFormStyleArrayQueryStringParametersAsync()
     {
         //Act
-        var operations = await this._sut.ParseAsync(this._openApiDocument);
+        var restApi = await this._sut.ParseAsync(this._openApiDocument);
 
         //Assert
-        Assert.True(operations.Any());
+        Assert.True(restApi.Operations.Any());
 
-        var operation = operations.Single(o => o.Id == "GetSecret");
+        var operation = restApi.Operations.Single(o => o.Id == "GetSecret");
 
         var explodeFormParam = operation.Parameters.Single(p => p.Name == "nonExplodeFormParam");
 
@@ -359,13 +358,13 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
     public async Task ItCanParseResponsesSuccessfullyAsync()
     {
         //Act
-        var operations = await this._sut.ParseAsync(this._openApiDocument);
+        var restApi = await this._sut.ParseAsync(this._openApiDocument);
 
         //Assert
-        Assert.NotNull(operations);
-        Assert.True(operations.Any());
+        Assert.NotNull(restApi.Operations);
+        Assert.True(restApi.Operations.Any());
 
-        var operation = operations.Single(o => o.Id == "Excuses");
+        var operation = restApi.Operations.Single(o => o.Id == "Excuses");
         Assert.NotNull(operation);
 
         operation.Responses.TryGetValue("200", out var response);
@@ -387,13 +386,13 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
     public async Task ItCanWorkWithDefaultParametersOfVariousTypesAsync()
     {
         //Act
-        var operations = await this._sut.ParseAsync(this._openApiDocument);
+        var restApi = await this._sut.ParseAsync(this._openApiDocument);
 
         //Assert
-        Assert.NotNull(operations);
-        Assert.True(operations.Any());
+        Assert.NotNull(restApi.Operations);
+        Assert.True(restApi.Operations.Any());
 
-        var operation = operations.Single(o => o.Id == "TestDefaultValues");
+        var operation = restApi.Operations.Single(o => o.Id == "TestDefaultValues");
         Assert.NotNull(operation);
 
         var parameters = operation.GetParameters();
@@ -442,6 +441,21 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         var passwordParameter = parameters.Single(p => p.Name == "password-parameter");
         Assert.True(passwordParameter.DefaultValue is string);
         Assert.Equal("password-value", passwordParameter.DefaultValue);
+    }
+
+
+    [Fact]
+    public async Task ItCanParseRestApiInfoAsync()
+    {
+        //Act
+        var restApi = await this._sut.ParseAsync(this._openApiDocument);
+
+        //Assert
+        Assert.NotNull(restApi.Info);
+        Assert.NotNull(restApi.Info.Title);
+        Assert.NotEmpty(restApi.Info.Title);
+        Assert.NotNull(restApi.Info.Description);
+        Assert.NotEmpty(restApi.Info.Description);
     }
 
 

@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.IntegrationTests.Plugins.OpenApi;
-
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -9,11 +7,12 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Xunit;
 
+namespace SemanticKernel.IntegrationTests.Plugins.OpenApi;
 
 public class PluginTests
 {
 
-    [Theory]
+    [Theory(Skip = "Add a valid plugin endpoint.")]
     [InlineData("https://www.klarna.com/us/shopping/public/openai/v0/api-docs/", "Klarna", "productsUsingGET", "Laptop",
         3, 200, "US")]
     public async Task QueryKlarnaOpenApiPluginRunAsync(

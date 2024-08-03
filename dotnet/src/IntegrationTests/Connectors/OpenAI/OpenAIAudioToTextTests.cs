@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
-
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -9,9 +7,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AudioToText;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using TestSettings;
+using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 
+namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
 public sealed class OpenAIAudioToTextTests()
 {
@@ -51,7 +50,7 @@ public sealed class OpenAIAudioToTextTests()
     }
 
 
-    [Fact]
+    [Fact(Skip = "Re-enable when Azure OpenAPI service is available.")]
     public async Task AzureOpenAIAudioToTextTestAsync()
     {
         // Arrange

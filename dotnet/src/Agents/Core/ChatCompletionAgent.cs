@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace Microsoft.SemanticKernel.Agents;
-
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using ChatCompletion;
+using Microsoft.SemanticKernel.ChatCompletion;
 
+namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
 /// A <see cref="KernelAgent"/> specialization based on <see cref="IChatCompletionService"/>.
@@ -89,6 +88,14 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
         this.Logger.LogAgentChatServiceInvokedStreamingAgent(nameof(InvokeAsync), this.Id, chatCompletionService.GetType());
 
+        await foreach (StreamingChatMessageContent message in messages.ConfigureAwait(false))
+        {
+            // TODO: MESSAGE SOURCE - ISSUE #5731
+            message.AuthorName = this.Name;
+
+            yield return message;
+        }
+
         // Capture mutated messages related function calling / tools
         for (int messageIndex = messageCount; messageIndex < chat.Count; messageIndex++)
         {
@@ -97,14 +104,6 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
             message.AuthorName = this.Name;
 
             history.Add(message);
-        }
-
-        await foreach (StreamingChatMessageContent message in messages.ConfigureAwait(false))
-        {
-            // TODO: MESSAGE SOURCE - ISSUE #5731
-            message.AuthorName = this.Name;
-
-            yield return message;
         }
     }
 

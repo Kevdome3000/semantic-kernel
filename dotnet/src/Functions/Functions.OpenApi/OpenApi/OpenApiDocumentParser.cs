@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Plugins.OpenApi;
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -13,15 +11,16 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Readers;
 using Microsoft.OpenApi.Writers;
-using Text;
+using Microsoft.SemanticKernel.Text;
 
+namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
 /// Parser for OpenAPI documents.
@@ -30,7 +29,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
 {
 
     /// <inheritdoc/>
-    public async Task<IList<RestApiOperation>> ParseAsync(
+    public async Task<RestApiSpecification> ParseAsync(
         Stream stream,
         bool ignoreNonCompliantErrors = false,
         IList<string>? operationsToExclude = null,
@@ -46,7 +45,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
 
         this.AssertReadingSuccessful(result, ignoreNonCompliantErrors);
 
-        return ExtractRestApiOperations(result.OpenApiDocument, operationsToExclude, this._logger);
+        return new(ExtractRestApiInfo(result.OpenApiDocument), ExtractRestApiOperations(result.OpenApiDocument, operationsToExclude, this._logger));
     }
 
 
@@ -141,6 +140,22 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
 
         return await JsonSerializer.DeserializeAsync<JsonObject>(memoryStream, cancellationToken: cancellationToken).
             ConfigureAwait(false);
+    }
+
+
+    /// <summary>
+    /// Parses an OpenAPI document and extracts REST API information.
+    /// </summary>
+    /// <param name="document">The OpenAPI document.</param>
+    /// <returns>Rest API information.</returns>
+    private static RestApiInfo ExtractRestApiInfo(OpenApiDocument document)
+    {
+        return new()
+        {
+            Title = document.Info.Title,
+            Description = document.Info.Description,
+            Version = document.Info.Version,
+        };
     }
 
 

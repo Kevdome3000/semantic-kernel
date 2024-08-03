@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Memory;
-
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
 using Microsoft.SemanticKernel.Connectors.Chroma;
@@ -20,6 +18,7 @@ using Microsoft.SemanticKernel.Plugins.Memory;
 using Npgsql;
 using StackExchange.Redis;
 
+namespace Memory;
 
 public class TextMemoryPlugin_MultipleMemoryStore(ITestOutputHelper output) : BaseTest(output)
 {
@@ -90,7 +89,7 @@ public class TextMemoryPlugin_MultipleMemoryStore(ITestOutputHelper output) : Ba
 
     private async Task<IMemoryStore> CreateSampleDuckDbMemoryStoreAsync()
     {
-        IMemoryStore store = await DuckDBMemoryStore.ConnectAsync("memories.duckdb");
+        IMemoryStore store = await DuckDBMemoryStore.ConnectAsync("memories.duckdb", 1536);
 
         return store;
     }

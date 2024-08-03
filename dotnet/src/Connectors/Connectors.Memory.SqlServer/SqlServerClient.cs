@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.SqlServer;
-
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -11,8 +9,9 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Data.SqlClient;
+using Microsoft.Data.SqlClient;
 
+namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
 /// <summary>
 /// Implementation of database client managing SQL Server or Azure SQL database operations.
@@ -72,7 +71,7 @@ internal sealed class SqlServerClient : ISqlServerClient
             cmd.CommandText = $"""
                                IF OBJECT_ID(N'{fullTableName}', N'U') IS NULL
                                CREATE TABLE {fullTableName} (
-                                   [key] nvarchar(255) collate latin1_general_bin2 not null,
+                                   [key] nvarchar(255) collate Latin1_General_100_BIN2 not null,
                                    [metadata] {metadataType} not null,
                                    [embedding] varbinary(8000),
                                    [timestamp] datetimeoffset,

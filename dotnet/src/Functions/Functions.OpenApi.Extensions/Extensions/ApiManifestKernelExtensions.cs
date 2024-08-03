@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Plugins.OpenApi.Extensions;
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,14 +8,15 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.OpenApi.ApiManifest;
 using Microsoft.OpenApi.Readers;
 using Microsoft.OpenApi.Services;
+using Microsoft.SemanticKernel.Http;
 
+namespace Microsoft.SemanticKernel.Plugins.OpenApi.Extensions;
 
 /// <summary>
 /// Provides extension methods for the <see cref="Kernel"/> class related to OpenAPI functionality.
@@ -176,7 +175,7 @@ public static class ApiManifestKernelExtensions
                         {
                             logger.LogTrace("Registering Rest function {0}.{1}", pluginName, operation.Id);
 
-                            functions.Add(OpenApiKernelExtensions.CreateRestApiFunction(pluginName, runner, operation, openApiFunctionExecutionParameters,
+                            functions.Add(OpenApiKernelPluginFactory.CreateRestApiFunction(pluginName, runner, operation, openApiFunctionExecutionParameters,
                                 new Uri(serverUrl), loggerFactory));
                         }
                         catch (Exception ex) when (!ex.IsCriticalException())

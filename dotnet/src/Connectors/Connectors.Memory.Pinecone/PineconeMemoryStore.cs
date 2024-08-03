@@ -1,17 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Pinecone;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
-using Memory;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Memory;
 
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> for Pinecone Vector database.
@@ -492,9 +491,20 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         IEnumerable<string> keys,
         CancellationToken cancellationToken = default)
     {
-        await Task.WhenAll(keys.Select(async k => await this.RemoveFromNamespaceAsync(indexName, indexNamespace, k, cancellationToken).
-                ConfigureAwait(false))).
-            ConfigureAwait(false);
+        try
+        {
+            await this._pineconeClient.DeleteAsync(indexName,
+                    keys,
+                    indexNamespace,
+                    cancellationToken: cancellationToken).
+                ConfigureAwait(false);
+        }
+        catch (HttpOperationException ex)
+        {
+            this._logger.LogError(ex, "Failed to remove vector data from Pinecone: {Message}", ex.Message);
+
+            throw;
+        }
     }
 
 

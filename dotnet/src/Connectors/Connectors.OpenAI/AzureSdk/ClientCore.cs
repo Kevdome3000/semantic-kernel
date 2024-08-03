@@ -1,9 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable CA2208 // Instantiate argument exceptions correctly
-
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -19,12 +15,15 @@ using Azure;
 using Azure.AI.OpenAI;
 using Azure.Core;
 using Azure.Core.Pipeline;
-using ChatCompletion;
-using Diagnostics;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
-using Http;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Http;
 
+#pragma warning disable CA2208 // Instantiate argument exceptions correctly
+
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
 /// Base class for AI clients that provides common functionality for interacting with OpenAI services.
@@ -567,8 +566,10 @@ internal abstract class ClientCore
                 // Now, invoke the function, and add the resulting tool call message to the chat options.
                 FunctionResult functionResult = new(function) { Culture = kernel.Culture };
 
-                AutoFunctionInvocationContext invocationContext = new(kernel, function, functionResult, chat)
+                AutoFunctionInvocationContext invocationContext = new(kernel, function, functionResult, chat,
+                    result)
                 {
+                    ToolCallId = toolCall.Id,
                     Arguments = functionArgs,
                     RequestSequenceIndex = requestIndex - 1,
                     FunctionSequenceIndex = toolCallIndex,
@@ -807,8 +808,7 @@ internal abstract class ClientCore
 
                     // Translate all entries into FunctionCallContent instances for diagnostics purposes.
                     functionCallContents = this.GetFunctionCallContents(toolCalls).
-                            ToArray()
-                        ;
+                        ToArray();
                 }
                 finally
                 {
@@ -847,8 +847,10 @@ internal abstract class ClientCore
             // to understand the tool call responses.
             chatOptions.Messages.Add(GetRequestMessage(streamedRole ?? default, content, streamedName, toolCalls));
 
-            chat.Add(this.GetChatMessage(streamedRole ?? default, content, toolCalls,
-                functionCallContents, metadata, streamedName));
+            var chatMessageContent = this.GetChatMessage(streamedRole ?? default, content, toolCalls, functionCallContents,
+                metadata, streamedName);
+
+            chat.Add(chatMessageContent);
 
             // Respond to each tooling request.
             for (int toolCallIndex = 0; toolCallIndex < toolCalls.Length; toolCallIndex++)
@@ -903,8 +905,10 @@ internal abstract class ClientCore
                 // Now, invoke the function, and add the resulting tool call message to the chat options.
                 FunctionResult functionResult = new(function) { Culture = kernel.Culture };
 
-                AutoFunctionInvocationContext invocationContext = new(kernel, function, functionResult, chat)
+                AutoFunctionInvocationContext invocationContext = new(kernel, function, functionResult, chat,
+                    chatMessageContent)
                 {
+                    ToolCallId = toolCall.Id,
                     Arguments = functionArgs,
                     RequestSequenceIndex = requestIndex - 1,
                     FunctionSequenceIndex = toolCallIndex,
@@ -1395,8 +1399,8 @@ internal abstract class ClientCore
         {
             var asstMessage = new ChatRequestAssistantMessage(message.Content) { Name = message.AuthorName };
 
-            // Handling function calls supplied via either:
-            // ChatCompletionsToolCall.ToolCalls collection items or
+            // Handling function calls supplied via either:  
+            // ChatCompletionsToolCall.ToolCalls collection items or  
             // ChatMessageContent.Metadata collection item with 'ChatResponseMessage.FunctionToolCalls' key.
             IEnumerable<ChatCompletionsToolCall>? tools = (message as OpenAIChatMessageContent)?.ToolCalls;
 
@@ -1626,7 +1630,7 @@ internal abstract class ClientCore
 
         if (toolCall is ChatCompletionsFunctionToolCall functionCall)
         {
-            // Add an item of type FunctionResultContent to the ChatMessageContent.Items collection in addition to the function result stored as a string in the ChatMessageContent.Content property.
+            // Add an item of type FunctionResultContent to the ChatMessageContent.Items collection in addition to the function result stored as a string in the ChatMessageContent.Content property.  
             // This will enable migration to the new function calling model and facilitate the deprecation of the current one in the future.
             var functionName = FunctionName.Parse(functionCall.Name, OpenAIFunction.NameSeparator);
             message.Items.Add(new FunctionResultContent(functionName.Name, functionName.PluginName, functionCall.Id, result));
@@ -1709,16 +1713,16 @@ internal abstract class ClientCore
             return stringResult;
         }
 
-        // This is an optimization to use ChatMessageContent content directly
-        // without unnecessary serialization of the whole message content class.
+        // This is an optimization to use ChatMessageContent content directly  
+        // without unnecessary serialization of the whole message content class.  
         if (functionResult is ChatMessageContent chatMessageContent)
         {
             return chatMessageContent.ToString();
         }
 
-        // For polymorphic serialization of unknown in advance child classes of the KernelContent class,
-        // a corresponding JsonTypeInfoResolver should be provided via the JsonSerializerOptions.TypeInfoResolver property.
-        // For more details about the polymorphic serialization, see the article at:
+        // For polymorphic serialization of unknown in advance child classes of the KernelContent class,  
+        // a corresponding JsonTypeInfoResolver should be provided via the JsonSerializerOptions.TypeInfoResolver property.  
+        // For more details about the polymorphic serialization, see the article at:  
         // https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/polymorphism?pivots=dotnet-8-0
 #pragma warning disable CS0618 // Type or member is obsolete
         return JsonSerializer.Serialize(functionResult, toolCallBehavior?.ToolCallResultSerializerOptions);

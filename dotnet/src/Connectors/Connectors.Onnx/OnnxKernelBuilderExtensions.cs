@@ -1,11 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel;
-
 using System.IO;
-using Connectors.Onnx;
-using Embeddings;
-using Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.Onnx;
+using Microsoft.SemanticKernel.Embeddings;
+
+namespace Microsoft.SemanticKernel;
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
 
@@ -15,6 +17,30 @@ using Extensions.DependencyInjection;
 /// </summary>
 public static class OnnxKernelBuilderExtensions
 {
+
+    /// <summary>
+    /// Add OnnxRuntimeGenAI Chat Completion services to the kernel builder.
+    /// </summary>
+    /// <param name="builder">The kernel builder.</param>
+    /// <param name="modelId">Model Id.</param>
+    /// <param name="modelPath">The generative AI ONNX model path.</param>
+    /// <param name="serviceId">The optional service ID.</param>
+    /// <returns>The updated kernel builder.</returns>
+    public static IKernelBuilder AddOnnxRuntimeGenAIChatCompletion(
+        this IKernelBuilder builder,
+        string modelId,
+        string modelPath,
+        string? serviceId = null)
+    {
+        builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
+            new OnnxRuntimeGenAIChatCompletionService(
+                modelId,
+                modelPath: modelPath,
+                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
+
+        return builder;
+    }
+
 
     /// <summary>Adds a text embedding generation service using a BERT ONNX model.</summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>

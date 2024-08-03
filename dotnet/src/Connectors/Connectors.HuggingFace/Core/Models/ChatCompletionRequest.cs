@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
-
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
-using ChatCompletion;
+using Microsoft.SemanticKernel.ChatCompletion;
 
+namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
 
 /// <summary>
 /// HuggingFace text generation request object.
@@ -108,7 +107,7 @@ internal sealed class ChatCompletionRequest
     /// <param name="executionSettings">Execution settings to be used for the request.</param>
     /// <param name="modelId">Model id to use if value in prompt execution settings is not set.</param>
     /// <returns>TexGenerationRequest object.</returns>
-    internal static ChatCompletionRequest FromChatHistoryAndExecutionSettings(ChatHistory chatHistory, HuggingFacePromptExecutionSettings executionSettings, string modelId)
+    internal static ChatCompletionRequest FromChatHistoryAndExecutionSettings(ChatHistory chatHistory, HuggingFacePromptExecutionSettings executionSettings, string? modelId)
     {
         return new ChatCompletionRequest
         {

@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel;
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,10 +8,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
-using TemplateEngine;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.TemplateEngine;
 
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Given a prompt, that might contain references to variables and functions:
@@ -79,11 +78,6 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
     private List<Block> ExtractBlocks(PromptTemplateConfig config, ILoggerFactory loggerFactory)
     {
         string templateText = config.Template;
-
-        if (this._logger.IsEnabled(LogLevel.Trace))
-        {
-            this._logger.LogTrace("Extracting blocks from template: {0}", templateText);
-        }
 
         var blocks = new TemplateTokenizer(loggerFactory).Tokenize(templateText);
 

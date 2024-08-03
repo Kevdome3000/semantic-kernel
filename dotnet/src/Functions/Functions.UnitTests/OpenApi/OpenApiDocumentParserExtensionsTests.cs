@@ -1,15 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Functions.UnitTests.OpenApi;
-
 using System;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
-using TestPlugins;
+using SemanticKernel.Functions.UnitTests.OpenApi.TestPlugins;
 using Xunit;
 
+namespace SemanticKernel.Functions.UnitTests.OpenApi;
 
 /// <summary>
 /// Contains tests for the open api schema extensions functionality of the <see cref="OpenApiDocumentParser"/> class.
@@ -43,13 +42,13 @@ public class OpenApiDocumentParserExtensionsTests
         using var openApiDocument = ResourcePluginsProvider.LoadFromResource(documentName);
 
         // Act.
-        var operations = await this._sut.ParseAsync(openApiDocument);
+        var restApi = await this._sut.ParseAsync(openApiDocument);
 
         // Assert.
-        Assert.NotNull(operations);
-        Assert.True(operations.Any());
+        Assert.NotNull(restApi.Operations);
+        Assert.True(restApi.Operations.Any());
 
-        var operation = operations.Single(o => o.Id == "OpenApiExtensions");
+        var operation = restApi.Operations.Single(o => o.Id == "OpenApiExtensions");
         Assert.NotNull(operation);
 
         // Check the different extension types.

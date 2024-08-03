@@ -1,6 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace SemanticKernel.Agents.UnitTests.Internal;
-
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -11,6 +9,7 @@ using Microsoft.SemanticKernel.Agents.Internal;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 
+namespace SemanticKernel.Agents.UnitTests.Internal;
 
 /// <summary>
 /// Unit testing of <see cref="BroadcastQueue"/>.
@@ -153,13 +152,13 @@ public class BroadcastQueueTests
         }
 
 
-        protected internal override IAsyncEnumerable<ChatMessageContent> InvokeAsync(Agent agent, CancellationToken cancellationToken = default)
+        protected internal override IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(Agent agent, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
 
-        protected internal override async Task ReceiveAsync(IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
+        protected internal override async Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken = default)
         {
             this.ReceivedMessages.AddRange(history);
             this.ReceiveCount++;
@@ -182,13 +181,13 @@ public class BroadcastQueueTests
         }
 
 
-        protected internal override IAsyncEnumerable<ChatMessageContent> InvokeAsync(Agent agent, CancellationToken cancellationToken = default)
+        protected internal override IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(Agent agent, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
 
-        protected internal override async Task ReceiveAsync(IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
+        protected internal override async Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken = default)
         {
             await Task.Delay(this.ReceiveDuration, cancellationToken);
 

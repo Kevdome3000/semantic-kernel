@@ -1,11 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel;
-
 using System.IO;
-using Connectors.Onnx;
-using Embeddings;
-using Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.Onnx;
+using Microsoft.SemanticKernel.Embeddings;
+
+namespace Microsoft.SemanticKernel;
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
 
@@ -15,6 +17,30 @@ using Extensions.DependencyInjection;
 /// </summary>
 public static class OnnxServiceCollectionExtensions
 {
+
+    /// <summary>
+    /// Add OnnxRuntimeGenAI Chat Completion services to the specified service collection.
+    /// </summary>
+    /// <param name="services">The service collection to add the OnnxRuntimeGenAI Text Generation service to.</param>
+    /// <param name="modelId">The name of the model.</param>
+    /// <param name="modelPath">The generative AI ONNX model path.</param>
+    /// <param name="serviceId">Optional service ID.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddOnnxRuntimeGenAIChatCompletion(
+        this IServiceCollection services,
+        string modelId,
+        string modelPath,
+        string? serviceId = null)
+    {
+        services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
+            new OnnxRuntimeGenAIChatCompletionService(
+                modelId,
+                modelPath,
+                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
+
+        return services;
+    }
+
 
     /// <summary>Adds a text embedding generation service using a BERT ONNX model.</summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>

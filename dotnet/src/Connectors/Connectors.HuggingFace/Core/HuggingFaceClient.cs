@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,12 +10,13 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Diagnostics;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
-using Http;
-using Text;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.Text;
 
+namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
 
 internal sealed class HuggingFaceClient
 {
@@ -26,7 +25,7 @@ internal sealed class HuggingFaceClient
 
     internal string ModelProvider => "huggingface";
 
-    internal string ModelId { get; }
+    internal string? ModelId { get; }
 
     internal string? ApiKey { get; }
 
@@ -38,14 +37,18 @@ internal sealed class HuggingFaceClient
 
 
     internal HuggingFaceClient(
-        string modelId,
         HttpClient httpClient,
+        string? modelId = null,
         Uri? endpoint = null,
         string? apiKey = null,
         ILogger? logger = null)
     {
-        Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(httpClient);
+
+        if (string.IsNullOrWhiteSpace(modelId) && endpoint is null)
+        {
+            throw new InvalidOperationException("A valid model id or endpoint must be provided.");
+        }
 
         endpoint ??= new Uri("https://api-inference.huggingface.co");
 
@@ -153,13 +156,13 @@ internal sealed class HuggingFaceClient
         PromptExecutionSettings? executionSettings,
         CancellationToken cancellationToken)
     {
-        string modelId = executionSettings?.ModelId ?? this.ModelId;
+        string? modelId = executionSettings?.ModelId ?? this.ModelId;
         var endpoint = this.GetTextGenerationEndpoint(modelId);
 
         var huggingFaceExecutionSettings = HuggingFacePromptExecutionSettings.FromExecutionSettings(executionSettings);
         var request = this.CreateTextRequest(prompt, huggingFaceExecutionSettings);
 
-        using var activity = ModelDiagnostics.StartCompletionActivity(endpoint, modelId, this.ModelProvider, prompt,
+        using var activity = ModelDiagnostics.StartCompletionActivity(endpoint, modelId ?? string.Empty, this.ModelProvider, prompt,
             huggingFaceExecutionSettings);
 
         using var httpRequestMessage = this.CreatePost(request, endpoint, this.ApiKey);
@@ -194,14 +197,14 @@ internal sealed class HuggingFaceClient
         PromptExecutionSettings? executionSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        string modelId = executionSettings?.ModelId ?? this.ModelId;
+        string? modelId = executionSettings?.ModelId ?? this.ModelId;
         var endpoint = this.GetTextGenerationEndpoint(modelId);
 
         var huggingFaceExecutionSettings = HuggingFacePromptExecutionSettings.FromExecutionSettings(executionSettings);
         var request = this.CreateTextRequest(prompt, huggingFaceExecutionSettings);
         request.Stream = true;
 
-        using var activity = ModelDiagnostics.StartCompletionActivity(endpoint, modelId, this.ModelProvider, prompt,
+        using var activity = ModelDiagnostics.StartCompletionActivity(endpoint, modelId ?? string.Empty, this.ModelProvider, prompt,
             huggingFaceExecutionSettings);
 
         HttpResponseMessage? httpResponseMessage = null;
@@ -269,7 +272,7 @@ internal sealed class HuggingFaceClient
     }
 
 
-    private async IAsyncEnumerable<StreamingTextContent> ProcessTextResponseStreamAsync(Stream stream, string modelId, [EnumeratorCancellation] CancellationToken cancellationToken)
+    private async IAsyncEnumerable<StreamingTextContent> ProcessTextResponseStreamAsync(Stream stream, string? modelId, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         await foreach (var content in this.ParseTextResponseStreamAsync(stream, cancellationToken).
                            ConfigureAwait(false))
@@ -283,7 +286,7 @@ internal sealed class HuggingFaceClient
         => SseJsonParser.ParseAsync<TextGenerationStreamResponse>(responseStream, cancellationToken);
 
 
-    private static StreamingTextContent GetStreamingTextContentFromStreamResponse(TextGenerationStreamResponse response, string modelId)
+    private static StreamingTextContent GetStreamingTextContentFromStreamResponse(TextGenerationStreamResponse response, string? modelId)
         => new(
             text: response.Token?.Text,
             modelId: modelId,
@@ -302,13 +305,13 @@ internal sealed class HuggingFaceClient
     }
 
 
-    private static List<TextContent> GetTextContentsFromResponse(TextGenerationResponse response, string modelId)
+    private static List<TextContent> GetTextContentsFromResponse(TextGenerationResponse response, string? modelId)
         => response.Select(r => new TextContent(r.GeneratedText, modelId, r, Encoding.UTF8,
                 new HuggingFaceTextGenerationMetadata(response))).
             ToList();
 
 
-    private static List<TextContent> GetTextContentsFromResponse(ImageToTextGenerationResponse response, string modelId)
+    private static List<TextContent> GetTextContentsFromResponse(ImageToTextGenerationResponse response, string? modelId)
         => response.Select(r => new TextContent(r.GeneratedText, modelId, r, Encoding.UTF8)).
             ToList();
 
@@ -324,8 +327,10 @@ internal sealed class HuggingFaceClient
     }
 
 
-    private Uri GetTextGenerationEndpoint(string modelId)
-        => new($"{this.Endpoint}{this.Separator}models/{modelId}");
+    private Uri GetTextGenerationEndpoint(string? modelId)
+        => string.IsNullOrWhiteSpace(modelId)
+            ? this.Endpoint
+            : new($"{this.Endpoint}{this.Separator}models/{modelId}");
 
     #endregion
 
@@ -361,8 +366,10 @@ internal sealed class HuggingFaceClient
     }
 
 
-    private Uri GetEmbeddingGenerationEndpoint(string modelId)
-        => new($"{this.Endpoint}{this.Separator}pipeline/feature-extraction/{modelId}");
+    private Uri GetEmbeddingGenerationEndpoint(string? modelId)
+        => string.IsNullOrWhiteSpace(modelId)
+            ? this.Endpoint
+            : new($"{this.Endpoint}{this.Separator}pipeline/feature-extraction/{modelId}");
 
     #endregion
 
@@ -406,8 +413,10 @@ internal sealed class HuggingFaceClient
     }
 
 
-    private Uri GetImageToTextGenerationEndpoint(string modelId)
-        => new($"{this.Endpoint}{this.Separator}models/{modelId}");
+    private Uri GetImageToTextGenerationEndpoint(string? modelId)
+        => string.IsNullOrWhiteSpace(modelId)
+            ? this.Endpoint
+            : new($"{this.Endpoint}{this.Separator}models/{modelId}");
 
     #endregion
 

@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace Microsoft.SemanticKernel.Agents.OpenAI;
-
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using global::Azure.AI.OpenAI.Assistants;
+using Azure.AI.OpenAI.Assistants;
 
+namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
 /// <summary>
 /// A <see cref="AgentChannel"/> specialization for use with <see cref="OpenAIAssistantAgent"/>.
@@ -20,7 +19,7 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
 
 
     /// <inheritdoc/>
-    protected override async Task ReceiveAsync(IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken)
+    protected override async Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken)
     {
         foreach (ChatMessageContent message in history)
         {
@@ -33,7 +32,7 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
 
 
     /// <inheritdoc/>
-    protected override IAsyncEnumerable<ChatMessageContent> InvokeAsync(
+    protected override IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(
         OpenAIAssistantAgent agent,
         CancellationToken cancellationToken)
     {

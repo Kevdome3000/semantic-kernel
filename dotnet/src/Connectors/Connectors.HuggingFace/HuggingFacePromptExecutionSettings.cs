@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.HuggingFace;
-
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Text;
+using Microsoft.SemanticKernel.Text;
 
+namespace Microsoft.SemanticKernel.Connectors.HuggingFace;
 
 /// <summary>
 /// HuggingFace Execution Settings.
@@ -293,6 +292,36 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     }
 
     /// <summary>
+    /// (Default: True). Bool. If set to False, the return results will not contain the original query making it easier for prompting.
+    /// </summary>
+    [JsonPropertyName("return_full_text")]
+    public bool? ReturnFullText
+    {
+        get => this._returnFullText;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._returnFullText = value;
+        }
+    }
+
+    /// <summary>
+    /// (Optional: True). Bool. Whether or not to use sampling, use greedy decoding otherwise.
+    /// </summary>
+    [JsonPropertyName("do_sample")]
+    public bool? DoSample
+    {
+        get => this._doSample;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._doSample = value;
+        }
+    }
+
+    /// <summary>
     /// Show details of the generation. Including usage.
     /// </summary>
     public bool? Details
@@ -332,7 +361,9 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
             Stop = this.Stop is not null
                 ? new List<string>(this.Stop)
                 : null,
-            TopLogProbs = this.TopLogProbs
+            TopLogProbs = this.TopLogProbs,
+            ReturnFullText = this.ReturnFullText,
+            DoSample = this.DoSample,
         };
     }
 
@@ -368,5 +399,9 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     private bool _waitForModel = false;
 
     private bool? _details;
+
+    private bool? _returnFullText;
+
+    private bool? _doSample;
 
 }

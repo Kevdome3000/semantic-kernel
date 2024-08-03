@@ -1,8 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel;
-
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -12,10 +11,11 @@ using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using Diagnostics;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Diagnostics;
 
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Represents a function that can be invoked as part of a Semantic Kernel workload.
@@ -24,16 +24,16 @@ public abstract class KernelFunction : IKernelFunction
 {
 
     /// <summary>The measurement tag name for the function name.</summary>
-    protected private const string MeasurementFunctionTagName = "semantic_kernel.function.name";
+    private protected const string MeasurementFunctionTagName = "semantic_kernel.function.name";
 
     /// <summary>The measurement tag name for the function error type.</summary>
-    protected private const string MeasurementErrorTagName = "error.type";
+    private protected const string MeasurementErrorTagName = "error.type";
 
     /// <summary><see cref="ActivitySource"/> for function-related activities.</summary>
     private static readonly ActivitySource s_activitySource = new("Microsoft.SemanticKernel");
 
     /// <summary><see cref="Meter"/> for function-related metrics.</summary>
-    protected private static readonly Meter s_meter = new("Microsoft.SemanticKernel");
+    private protected static readonly Meter s_meter = new("Microsoft.SemanticKernel");
 
     /// <summary><see cref="Histogram{T}"/> to record function invocation duration.</summary>
     private static readonly Histogram<double> s_invocationDuration = s_meter.CreateHistogram<double>(
@@ -492,8 +492,15 @@ public abstract class KernelFunction : IKernelFunction
         // visible to a consumer if that's needed.
         if (ex is OperationCanceledException cancelEx)
         {
-            throw new KernelFunctionCanceledException(kernel, kernelFunction, arguments, result,
+            KernelFunctionCanceledException kernelEx = new(kernel, kernelFunction, arguments, result,
                 cancelEx);
+
+            foreach (DictionaryEntry entry in cancelEx.Data)
+            {
+                kernelEx.Data.Add(entry.Key, entry.Value);
+            }
+
+            throw kernelEx;
         }
     }
 
