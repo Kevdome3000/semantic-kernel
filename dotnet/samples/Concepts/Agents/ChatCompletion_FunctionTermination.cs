@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.ComponentModel;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -22,8 +23,8 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
             new()
             {
                 Instructions = "Answer questions about the menu.",
-                Kernel = CreateKernelWithChatCompletion(),
-                ExecutionSettings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions },
+                Kernel = CreateKernelWithFilter(),
+                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions }),
             };
 
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
@@ -77,8 +78,8 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
             new()
             {
                 Instructions = "Answer questions about the menu.",
-                Kernel = CreateKernelWithChatCompletion(),
-                ExecutionSettings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions },
+                Kernel = CreateKernelWithFilter(),
+                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions }),
             };
 
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
@@ -127,6 +128,30 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
     }
 
 
+    private Kernel CreateKernelWithFilter()
+    {
+        IKernelBuilder builder = Kernel.CreateBuilder();
+
+        if (this.UseOpenAIConfig)
+        {
+            builder.AddOpenAIChatCompletion(
+                TestConfiguration.OpenAI.ChatModelId,
+                TestConfiguration.OpenAI.ApiKey);
+        }
+        else
+        {
+            builder.AddAzureOpenAIChatCompletion(
+                TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.Endpoint,
+                TestConfiguration.AzureOpenAI.ApiKey);
+        }
+
+        builder.Services.AddSingleton<IAutoFunctionInvocationFilter>(new AutoInvocationFilter());
+
+        return builder.Build();
+    }
+
+
     private sealed class MenuPlugin
     {
 
@@ -134,11 +159,12 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "Too smart")]
         public string GetSpecials()
         {
-            return @"
-Special Soup: Clam Chowder
-Special Salad: Cobb Salad
-Special Drink: Chai Tea
-";
+            return
+                """
+                Special Soup: Clam Chowder
+                Special Salad: Cobb Salad
+                Special Drink: Chai Tea
+                """;
         }
 
 

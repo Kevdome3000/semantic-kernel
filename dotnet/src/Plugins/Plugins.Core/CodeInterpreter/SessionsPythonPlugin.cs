@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Plugins.Core.CodeInterpreter;
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -11,10 +9,11 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
-using Http;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Http;
 
+namespace Microsoft.SemanticKernel.Plugins.Core.CodeInterpreter;
 
 /// <summary>
 /// A plugin for running Python code in an Azure Container Apps dynamic sessions code interpreter.
@@ -57,7 +56,7 @@ public partial class SessionsPythonPlugin
 
         this._settings = settings;
 
-        // Ensure the endpoint won't change by reference
+        // Ensure the endpoint won't change by reference 
         this._poolManagementEndpoint = GetBaseEndpoint(settings.Endpoint);
 
         this._authTokenProvider = authTokenProvider;
@@ -177,7 +176,7 @@ public partial class SessionsPythonPlugin
 
         using var fileContent = new ByteArrayContent(File.ReadAllBytes(localFilePath));
 
-        using var request = new HttpRequestMessage(HttpMethod.Post, $"{this._poolManagementEndpoint}python/uploadFile?identifier={this._settings.SessionId}&api-version={ApiVersion}")
+        using var request = new HttpRequestMessage(HttpMethod.Post, $"{this._poolManagementEndpoint}files/upload?identifier={this._settings.SessionId}&api-version={ApiVersion}")
         {
             Content = new MultipartFormDataContent
             {
@@ -199,7 +198,8 @@ public partial class SessionsPythonPlugin
         var JsonElementResult = JsonSerializer.Deserialize<JsonElement>(await response.Content.ReadAsStringAsync().
             ConfigureAwait(false));
 
-        return JsonSerializer.Deserialize<SessionsRemoteFileMetadata>(JsonElementResult.GetProperty("$values")[0].
+        return JsonSerializer.Deserialize<SessionsRemoteFileMetadata>(JsonElementResult.GetProperty("value")[0].
+            GetProperty("properties").
             GetRawText())!;
     }
 
@@ -270,7 +270,7 @@ public partial class SessionsPythonPlugin
         await this.AddHeadersAsync(httpClient).
             ConfigureAwait(false);
 
-        var response = await httpClient.GetAsync(new Uri($"{this._poolManagementEndpoint}python/files?identifier={this._settings.SessionId}&api-version={ApiVersion}")).
+        var response = await httpClient.GetAsync(new Uri($"{this._poolManagementEndpoint}/files?identifier={this._settings.SessionId}&api-version={ApiVersion}")).
             ConfigureAwait(false);
 
         if (!response.IsSuccessStatusCode)
@@ -281,13 +281,14 @@ public partial class SessionsPythonPlugin
         var jsonElementResult = JsonSerializer.Deserialize<JsonElement>(await response.Content.ReadAsStringAsync().
             ConfigureAwait(false));
 
-        var files = jsonElementResult.GetProperty("$values");
+        var files = jsonElementResult.GetProperty("value");
 
         var result = new SessionsRemoteFileMetadata[files.GetArrayLength()];
 
         for (var i = 0; i < result.Length; i++)
         {
             result[i] = JsonSerializer.Deserialize<SessionsRemoteFileMetadata>(files[i].
+                GetProperty("properties").
                 GetRawText())!;
         }
 

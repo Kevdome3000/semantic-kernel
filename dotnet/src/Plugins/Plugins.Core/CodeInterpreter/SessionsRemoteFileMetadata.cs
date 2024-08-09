@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Plugins.Core.CodeInterpreter;
-
 using System;
 using System.ComponentModel;
 using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel.Plugins.Core.CodeInterpreter;
 
 /// <summary>
 /// Metadata for a file in the session.
@@ -42,7 +41,7 @@ public class SessionsRemoteFileMetadata
     /// The last modified time.
     /// </summary>
     [Description("Last modified time.")]
-    [JsonPropertyName("last_modified_time")]
+    [JsonPropertyName("lastModifiedTime")]
     public DateTime? LastModifiedTime { get; set; }
 
     /// <summary>

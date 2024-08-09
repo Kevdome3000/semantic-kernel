@@ -1,15 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace SemanticKernel.Agents.UnitTests;
-
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Moq;
 using Xunit;
 
+namespace SemanticKernel.Agents.UnitTests;
 
 /// <summary>
 /// Unit testing of <see cref="AggregatorAgent"/>.
@@ -25,14 +22,9 @@ public class AggregatorAgentTests
     [InlineData(AggregatorMode.Flat, 2)]
     public async Task VerifyAggregatorAgentUsageAsync(AggregatorMode mode, int modeOffset)
     {
-        Agent agent1 = CreateMockAgent().
-            Object;
-
-        Agent agent2 = CreateMockAgent().
-            Object;
-
-        Agent agent3 = CreateMockAgent().
-            Object;
+        Agent agent1 = CreateMockAgent();
+        Agent agent2 = CreateMockAgent();
+        Agent agent3 = CreateMockAgent();
 
         AgentGroupChat groupChat =
             new(agent1, agent2, agent3)
@@ -109,16 +101,6 @@ public class AggregatorAgentTests
     }
 
 
-    private static Mock<ChatHistoryKernelAgent> CreateMockAgent()
-    {
-        Mock<ChatHistoryKernelAgent> agent = new();
-
-        ChatMessageContent[] messages = [new ChatMessageContent(AuthorRole.Assistant, "test agent")];
-
-        agent.Setup(a => a.InvokeAsync(It.IsAny<ChatHistory>(), It.IsAny<CancellationToken>())).
-            Returns(() => messages.ToAsyncEnumerable());
-
-        return agent;
-    }
+    private static MockAgent CreateMockAgent() => new() { Response = [new(AuthorRole.Assistant, "test")] };
 
 }

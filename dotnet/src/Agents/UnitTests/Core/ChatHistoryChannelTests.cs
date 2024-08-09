@@ -1,6 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace SemanticKernel.Agents.UnitTests;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +8,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Xunit;
 
+namespace SemanticKernel.Agents.UnitTests.Core;
 
 /// <summary>
 /// Unit testing of <see cref="ChatHistoryChannel"/>.

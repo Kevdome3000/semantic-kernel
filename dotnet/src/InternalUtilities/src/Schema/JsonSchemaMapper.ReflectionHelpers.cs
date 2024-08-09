@@ -1,17 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace JsonSchemaMapper;
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
+
+namespace JsonSchemaMapper;
 
 #if EXPOSE_JSON_SCHEMA_MAPPER
     public
@@ -27,7 +26,7 @@ internal
     {
         Debug.Assert(typeInfo.Kind is JsonTypeInfoKind.Enumerable or JsonTypeInfoKind.Dictionary);
 
-        return (Type)typeof(JsonTypeInfo).GetProperty("ElementType", BindingFlags.Instance | BindingFlags.NonPublic)?.
+        return (Type)typeof(JsonTypeInfo).GetProperty("ElementType", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)?.
             GetValue(typeInfo)!;
     }
 
@@ -156,7 +155,7 @@ internal
 
         if (typeInfo.Properties.Count > 0 &&
             typeInfo.CreateObject is null && // Ensure that a default constructor isn't being used
-            typeInfo.Type.TryGetDeserializationConstructor(true, out ConstructorInfo? ctor))
+            typeInfo.Type.TryGetDeserializationConstructor(useDefaultCtorInAnnotatedStructs: true, out ConstructorInfo? ctor))
         {
             ParameterInfo[]? parameters = ctor?.GetParameters();
 
@@ -170,11 +169,11 @@ internal
                     {
                         // We don't care about null parameter names or conflicts since they
                         // would have already been rejected by JsonTypeInfo configuration.
-                        dict[new ParameterLookupKey(parameter.Name, parameter.ParameterType)] = parameter;
+                        dict[new(parameter.Name, parameter.ParameterType)] = parameter;
                     }
                 }
 
-                return prop => dict.TryGetValue(new ParameterLookupKey(prop.Name, prop.PropertyType), out ParameterInfo? parameter)
+                return prop => dict.TryGetValue(new(prop.Name, prop.PropertyType), out ParameterInfo? parameter)
                     ? parameter
                     : null;
             }

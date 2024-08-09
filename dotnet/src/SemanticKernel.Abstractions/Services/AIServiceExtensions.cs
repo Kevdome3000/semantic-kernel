@@ -1,13 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Linq;
+using System.Text;
+using Microsoft.Extensions.DependencyInjection;
+
 #pragma warning disable CA1716 // Identifiers should not match keywords
 
 namespace Microsoft.SemanticKernel.Services;
-
-using System.Linq;
-using System.Text;
-using Extensions.DependencyInjection;
-
 
 /// <summary>
 /// Extension methods for <see cref="IAIService"/>.
@@ -83,7 +82,7 @@ public static class AIServiceExtensions
     /// <param name="arguments">The function arguments.</param>
     /// <returns>A tuple of the selected service and the settings associated with the service (the settings may be null).</returns>
     /// <exception cref="KernelException">An appropriate service could not be found.</exception>
-    public static (T?, PromptExecutionSettings?) SelectAIService<T>(
+    public static (T, PromptExecutionSettings?) SelectAIService<T>(
         this IAIServiceSelector selector,
         Kernel kernel,
         KernelFunction function,

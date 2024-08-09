@@ -1,6 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace SemanticKernel.Agents.UnitTests.Core;
-
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,6 +9,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Moq;
 using Xunit;
 
+namespace SemanticKernel.Agents.UnitTests.Core;
 
 /// <summary>
 /// Unit testing of <see cref="ChatCompletionAgent"/>.
@@ -36,7 +35,7 @@ public class ChatCompletionAgentTests
         Assert.Equal("test instructions", agent.Instructions);
         Assert.Equal("test description", agent.Description);
         Assert.Equal("test name", agent.Name);
-        Assert.Null(agent.ExecutionSettings);
+        Assert.Null(agent.Arguments);
     }
 
 
@@ -61,7 +60,7 @@ public class ChatCompletionAgentTests
             {
                 Instructions = "test instructions",
                 Kernel = CreateKernel(mockService.Object),
-                ExecutionSettings = new(),
+                Arguments = [],
             };
 
         var result = await agent.InvokeAsync([]).
@@ -107,7 +106,7 @@ public class ChatCompletionAgentTests
             {
                 Instructions = "test instructions",
                 Kernel = CreateKernel(mockService.Object),
-                ExecutionSettings = new(),
+                Arguments = [],
             };
 
         var result = await agent.InvokeStreamingAsync([]).

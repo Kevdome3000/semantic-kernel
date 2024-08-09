@@ -3,13 +3,14 @@
 ## Status
 
 - Python <br/>
-[![Python package](https://img.shields.io/pypi/v/semantic-kernel)](https://pypi.org/project/semantic-kernel/)
+  [![Python package](https://img.shields.io/pypi/v/semantic-kernel)](https://pypi.org/project/semantic-kernel/)
 - .NET <br/>
   [![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.SemanticKernel)](https://www.nuget.org/packages/Microsoft.SemanticKernel/)[![dotnet Docker](https://github.com/microsoft/semantic-kernel/actions/workflows/dotnet-ci-docker.yml/badge.svg?branch=main)](https://github.com/microsoft/semantic-kernel/actions/workflows/dotnet-ci-docker.yml)[![dotnet Windows](https://github.com/microsoft/semantic-kernel/actions/workflows/dotnet-ci-windows.yml/badge.svg?branch=main)](https://github.com/microsoft/semantic-kernel/actions/workflows/dotnet-ci-windows.yml)
 - Java <br/>
   [![Java CICD Builds](https://github.com/microsoft/semantic-kernel/actions/workflows/java-build.yml/badge.svg?branch=java-development)](https://github.com/microsoft/semantic-kernel/actions/workflows/java-build.yml)[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.microsoft.semantic-kernel/semantickernel-api/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.microsoft.semantic-kernel/semantickernel-api)
 
 ## Overview
+
 [![License: MIT](https://img.shields.io/github/license/microsoft/semantic-kernel)](https://github.com/microsoft/semantic-kernel/blob/main/LICENSE)
 [![Discord](https://img.shields.io/discord/1063152441819942922?label=Discord&logo=discord&logoColor=white&color=d82679)](https://aka.ms/SKDiscord)
 
@@ -101,10 +102,10 @@ from either OpenAI or Azure OpenAI and to run one of the C#, Python, and Java co
 ### For Python:
 
 1. Go to the Quick start
-   page [here](https://learn.microsoft.com/en-us/semantic-kernel/get-started/quick-start-guide?pivots=programming-language-csharp)
+   page [here](https://learn.microsoft.com/en-us/semantic-kernel/get-started/quick-start-guide?pivots=programming-language-python)
    and follow the steps to dive in.
 2. You'll need to ensure that you toggle to C# in the the Choose a programming language table at the top of the page.
-   ![csharpmap](https://learn.microsoft.com/en-us/semantic-kernel/media/pythonmap.png)
+   ![pythonmap](https://learn.microsoft.com/en-us/semantic-kernel/media/pythonmap.png)
 
 ### For Java:
 
@@ -133,7 +134,7 @@ on our Learn site. Each sample comes with a completed C# and Python project that
 Finally, refer to our API references for more details on the C# and Python APIs:
 
 - [C# API reference](https://learn.microsoft.com/en-us/dotnet/api/microsoft.semantickernel?view=semantic-kernel-dotnet)
-- Python API reference (coming soon)
+- [Python API reference](https://learn.microsoft.com/en-us/python/api/semantic-kernel/semantic_kernel?view=semantic-kernel-python)
 - Java API reference (coming soon)
 
 ## Visual Studio Code extension: design semantic functions with ease

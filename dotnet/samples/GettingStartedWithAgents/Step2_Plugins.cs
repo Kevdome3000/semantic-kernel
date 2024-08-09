@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace GettingStarted;
-
 using System.ComponentModel;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
+namespace GettingStarted;
 
 /// <summary>
 /// Demonstrate creation of <see cref="ChatCompletionAgent"/> with a <see cref="KernelPlugin"/>,
@@ -30,7 +29,7 @@ public class Step2_Plugins(ITestOutputHelper output) : BaseTest(output)
                 Instructions = HostInstructions,
                 Name = HostName,
                 Kernel = this.CreateKernelWithChatCompletion(),
-                ExecutionSettings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions },
+                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions }),
             };
 
         // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).

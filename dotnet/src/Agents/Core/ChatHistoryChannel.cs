@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.Extensions;
+using Microsoft.SemanticKernel.Agents.History;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents;
@@ -12,14 +13,14 @@ namespace Microsoft.SemanticKernel.Agents;
 /// <summary>
 /// A <see cref="AgentChannel"/> specialization for that acts upon a <see cref="IChatHistoryHandler"/>.
 /// </summary>
-public class ChatHistoryChannel : AgentChannel
+public sealed class ChatHistoryChannel : AgentChannel
 {
 
     private readonly ChatHistory _history;
 
 
     /// <inheritdoc/>
-    protected internal sealed override async IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(
+    protected override async IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(
         Agent agent,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -27,6 +28,10 @@ public class ChatHistoryChannel : AgentChannel
         {
             throw new KernelException($"Invalid channel binding for agent: {agent.Id} ({agent.GetType().FullName})");
         }
+
+        // Pre-process history reduction.
+        await this._history.ReduceAsync(historyHandler.HistoryReducer, cancellationToken).
+            ConfigureAwait(false);
 
         // Capture the current message count to evaluate history mutation.
         int messageCount = this._history.Count;
@@ -37,7 +42,7 @@ public class ChatHistoryChannel : AgentChannel
 
         ChatMessageContent? yieldMessage = null;
 
-        await foreach (ChatMessageContent responseMessage in historyHandler.InvokeAsync(this._history, cancellationToken).
+        await foreach (ChatMessageContent responseMessage in historyHandler.InvokeAsync(this._history, null, null, cancellationToken).
                            ConfigureAwait(false))
         {
             // Capture all messages that have been included in the mutated the history.
@@ -80,7 +85,7 @@ public class ChatHistoryChannel : AgentChannel
 
 
     /// <inheritdoc/>
-    protected internal sealed override Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken)
+    protected override Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken)
     {
         this._history.AddRange(history);
 
@@ -89,7 +94,7 @@ public class ChatHistoryChannel : AgentChannel
 
 
     /// <inheritdoc/>
-    protected internal sealed override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken)
+    protected override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken)
     {
         return this._history.ToDescendingAsync();
     }
