@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace JsonSchemaMapper;
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -13,24 +11,22 @@ using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 
+namespace JsonSchemaMapper;
+
 #if EXPOSE_JSON_SCHEMA_MAPPER
     public
 #else
 internal
 #endif
-    static partial class JsonSchemaMapper
+static partial class JsonSchemaMapper
 {
-
     // Uses reflection to determine the element type of an enumerable or dictionary type
     // Workaround for https://github.com/dotnet/runtime/issues/77306#issuecomment-2007887560
     private static Type GetElementType(JsonTypeInfo typeInfo)
     {
         Debug.Assert(typeInfo.Kind is JsonTypeInfoKind.Enumerable or JsonTypeInfoKind.Dictionary);
-
-        return (Type)typeof(JsonTypeInfo).GetProperty("ElementType", BindingFlags.Instance | BindingFlags.NonPublic)?.
-            GetValue(typeInfo)!;
+        return (Type)typeof(JsonTypeInfo).GetProperty("ElementType", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)?.GetValue(typeInfo)!;
     }
-
 
     // The source generator currently doesn't populate attribute providers for properties
     // cf. https://github.com/dotnet/runtime/issues/100095
@@ -49,16 +45,13 @@ internal
 
         PropertyInfo memberNameProperty = typeof(JsonPropertyInfo).GetProperty("MemberName", BindingFlags.Instance | BindingFlags.NonPublic)!;
         var memberName = (string?)memberNameProperty.GetValue(propertyInfo);
-
         if (memberName is not null)
         {
-            return typeInfo.Type.GetMember(memberName, MemberTypes.Property | MemberTypes.Field, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).
-                FirstOrDefault();
+            return typeInfo.Type.GetMember(memberName, MemberTypes.Property | MemberTypes.Field, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).FirstOrDefault();
         }
 
         return null;
     }
-
 
     // Uses reflection to determine any custom converters specified for the element of a nullable type.
 #if NETCOREAPP
@@ -72,17 +65,14 @@ internal
         // There is unfortunately no way in which we can obtain the element converter from a nullable converter without resorting to private reflection
         // https://github.com/dotnet/runtime/blob/5fda47434cecc590095e9aef3c4e560b7b7ebb47/src/libraries/System.Text.Json/src/System/Text/Json/Serialization/Converters/Value/NullableConverter.cs#L15-L17
         Type? converterType = converter?.GetType();
-
         if (converterType?.Name == "NullableConverter`1")
         {
             FieldInfo elementConverterField = converterType.GetPrivateFieldWithPotentiallyTrimmedMetadata("_elementConverter");
-
             return (JsonConverter)elementConverterField!.GetValue(converter)!;
         }
 
         return null;
     }
-
 
     // Uses reflection to determine serialization configuration for enum types
     // cf. https://github.com/dotnet/runtime/blob/5fda47434cecc590095e9aef3c4e560b7b7ebb47/src/libraries/System.Text.Json/src/System/Text/Json/Serialization/Converters/Value/EnumConverter.cs#L23-L25
@@ -105,7 +95,6 @@ internal
 
         const int EnumConverterOptionsAllowStrings = 1;
         var converterOptions = (int)converterOptionsField!.GetValue(converter)!;
-
         if ((converterOptions & EnumConverterOptionsAllowStrings) != 0)
         {
             if (typeInfo.Type.GetCustomAttribute<FlagsAttribute>() is not null)
@@ -118,7 +107,6 @@ internal
                 var namingPolicy = (JsonNamingPolicy?)namingPolicyField!.GetValue(converter)!;
                 string[] names = Enum.GetNames(typeInfo.Type);
                 values = [];
-
                 foreach (string name in names)
                 {
                     string effectiveName = namingPolicy?.ConvertName(name) ?? name;
@@ -130,20 +118,17 @@ internal
         }
 
         values = null;
-
         return false;
     }
-
 
 #if NETCOREAPP
     [RequiresUnreferencedCode("Resolves unreferenced member metadata.")]
 #endif
     private static FieldInfo GetPrivateFieldWithPotentiallyTrimmedMetadata(this Type type, string fieldName) =>
         type.GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic) ??
-        throw new InvalidOperationException(
-            $"Could not resolve metadata for field '{fieldName}' in type '{type}'. " +
-            "If running Native AOT ensure that the 'IlcTrimMetadata' property has been disabled.");
-
+            throw new InvalidOperationException(
+                $"Could not resolve metadata for field '{fieldName}' in type '{type}'. " +
+                "If running Native AOT ensure that the 'IlcTrimMetadata' property has been disabled.");
 
     // Resolves the parameters of the deserialization constructor for a type, if they exist.
 #if NETCOREAPP
@@ -156,58 +141,46 @@ internal
 
         if (typeInfo.Properties.Count > 0 &&
             typeInfo.CreateObject is null && // Ensure that a default constructor isn't being used
-            typeInfo.Type.TryGetDeserializationConstructor(true, out ConstructorInfo? ctor))
+            typeInfo.Type.TryGetDeserializationConstructor(useDefaultCtorInAnnotatedStructs: true, out ConstructorInfo? ctor))
         {
             ParameterInfo[]? parameters = ctor?.GetParameters();
-
             if (parameters?.Length > 0)
             {
                 Dictionary<ParameterLookupKey, ParameterInfo> dict = new(parameters.Length);
-
                 foreach (ParameterInfo parameter in parameters)
                 {
                     if (parameter.Name is not null)
                     {
                         // We don't care about null parameter names or conflicts since they
                         // would have already been rejected by JsonTypeInfo configuration.
-                        dict[new ParameterLookupKey(parameter.Name, parameter.ParameterType)] = parameter;
+                        dict[new(parameter.Name, parameter.ParameterType)] = parameter;
                     }
                 }
 
-                return prop => dict.TryGetValue(new ParameterLookupKey(prop.Name, prop.PropertyType), out ParameterInfo? parameter)
-                    ? parameter
-                    : null;
+                return prop => dict.TryGetValue(new(prop.Name, prop.PropertyType), out ParameterInfo? parameter) ? parameter : null;
             }
         }
 
         return static _ => null;
     }
 
-
     // Parameter to property matching semantics as declared in
     // https://github.com/dotnet/runtime/blob/12d96ccfaed98e23c345188ee08f8cfe211c03e7/src/libraries/System.Text.Json/src/System/Text/Json/Serialization/Metadata/JsonTypeInfo.cs#L1007-L1030
     private readonly struct ParameterLookupKey : IEquatable<ParameterLookupKey>
     {
-
         public ParameterLookupKey(string name, Type type)
         {
             Name = name;
             Type = type;
         }
 
-
         public string Name { get; }
-
         public Type Type { get; }
 
         public override int GetHashCode() => StringComparer.OrdinalIgnoreCase.GetHashCode(Name);
-
         public bool Equals(ParameterLookupKey other) => Type == other.Type && string.Equals(Name, other.Name, StringComparison.OrdinalIgnoreCase);
-
         public override bool Equals(object? obj) => obj is ParameterLookupKey key && Equals(key);
-
     }
-
 
     // Resolves the deserialization constructor for a type using logic copied from
     // https://github.com/dotnet/runtime/blob/e12e2fa6cbdd1f4b0c8ad1b1e2d960a480c21703/src/libraries/System.Text.Json/Common/ReflectionExtensions.cs#L227-L286
@@ -237,14 +210,12 @@ internal
                 if (ctorWithAttribute is not null)
                 {
                     deserializationCtor = null;
-
                     return false;
                 }
 
                 ctorWithAttribute = constructor;
             }
-            else if (constructor.GetParameters().
-                         Length == 0)
+            else if (constructor.GetParameters().Length == 0)
             {
                 publicParameterlessCtor = constructor;
             }
@@ -258,7 +229,6 @@ internal
                 if (ctorWithAttribute is not null)
                 {
                     deserializationCtor = null;
-
                     return false;
                 }
 
@@ -270,35 +240,28 @@ internal
         if (useDefaultCtorInAnnotatedStructs && type.IsValueType && ctorWithAttribute is null)
         {
             deserializationCtor = null;
-
             return true;
         }
 
         deserializationCtor = ctorWithAttribute ?? publicParameterlessCtor ?? lonePublicCtor;
-
         return true;
 
         static bool HasJsonConstructorAttribute(ConstructorInfo constructorInfo) =>
             constructorInfo.GetCustomAttribute<JsonConstructorAttribute>() is not null;
     }
 
-
     private static bool IsBuiltInConverter(JsonConverter converter) =>
-        converter.GetType().
-            Assembly == typeof(JsonConverter).Assembly;
-
+        converter.GetType().Assembly == typeof(JsonConverter).Assembly;
 
     // Resolves the nullable reference type annotations for a property or field,
     // additionally addressing a few known bugs of the NullabilityInfo pre .NET 9.
     private static NullabilityInfo GetMemberNullability(this NullabilityInfoContext context, MemberInfo memberInfo)
     {
         Debug.Assert(memberInfo is PropertyInfo or FieldInfo);
-
         return memberInfo is PropertyInfo prop
             ? context.Create(prop)
             : context.Create((FieldInfo)memberInfo);
     }
-
 
     private static NullabilityState GetParameterNullability(this NullabilityInfoContext context, ParameterInfo parameterInfo)
     {
@@ -332,17 +295,13 @@ internal
 #endif
             static byte[]? GetNullableFlags(MemberInfo member)
             {
-                Attribute? attr = member.GetCustomAttributes().
-                    FirstOrDefault(attr =>
-                    {
-                        Type attrType = attr.GetType();
+                Attribute? attr = member.GetCustomAttributes().FirstOrDefault(attr =>
+                {
+                    Type attrType = attr.GetType();
+                    return attrType.Namespace == "System.Runtime.CompilerServices" && attrType.Name == "NullableAttribute";
+                });
 
-                        return attrType.Namespace == "System.Runtime.CompilerServices" && attrType.Name == "NullableAttribute";
-                    });
-
-                return (byte[])attr?.GetType().
-                    GetField("NullableFlags")?.
-                    GetValue(attr)!;
+                return (byte[])attr?.GetType().GetField("NullableFlags")?.GetValue(attr)!;
             }
 
 #if NETCOREAPP
@@ -351,17 +310,13 @@ internal
 #endif
             static byte? GetNullableContextFlag(MemberInfo member)
             {
-                Attribute? attr = member.GetCustomAttributes().
-                    FirstOrDefault(attr =>
-                    {
-                        Type attrType = attr.GetType();
+                Attribute? attr = member.GetCustomAttributes().FirstOrDefault(attr =>
+                {
+                    Type attrType = attr.GetType();
+                    return attrType.Namespace == "System.Runtime.CompilerServices" && attrType.Name == "NullableContextAttribute";
+                });
 
-                        return attrType.Namespace == "System.Runtime.CompilerServices" && attrType.Name == "NullableContextAttribute";
-                    });
-
-                return (byte?)attr?.GetType().
-                    GetField("Flag")?.
-                    GetValue(attr)!;
+                return (byte?)attr?.GetType().GetField("Flag")?.GetValue(attr)!;
             }
 
             static NullabilityState TranslateByte(byte b) =>
@@ -373,24 +328,20 @@ internal
                 };
         }
 
-        return context.Create(parameterInfo).
-            WriteState;
+        return context.Create(parameterInfo).WriteState;
     }
-
 
     private static ParameterInfo GetGenericParameterDefinition(this ParameterInfo parameter)
     {
         if (parameter.Member is { DeclaringType.IsConstructedGenericType: true }
-            or MethodInfo { IsGenericMethod: true, IsGenericMethodDefinition: false })
+                             or MethodInfo { IsGenericMethod: true, IsGenericMethodDefinition: false })
         {
             var genericMethod = (MethodBase)parameter.Member.GetGenericMemberDefinition()!;
-
             return genericMethod.GetParameters()[parameter.Position];
         }
 
         return parameter;
     }
-
 
 #if NETCOREAPP
     [UnconditionalSuppressMessage("Trimming", "IL2075:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.",
@@ -400,9 +351,7 @@ internal
     {
         if (member is Type type)
         {
-            return type.IsConstructedGenericType
-                ? type.GetGenericTypeDefinition()
-                : type;
+            return type.IsConstructedGenericType ? type.GetGenericTypeDefinition() : type;
         }
 
         if (member.DeclaringType!.IsConstructedGenericType)
@@ -411,9 +360,9 @@ internal
                 BindingFlags.Static | BindingFlags.Instance |
                 BindingFlags.Public | BindingFlags.NonPublic;
 
-            return member.DeclaringType.GetGenericTypeDefinition().
-                GetMember(member.Name, AllMemberFlags).
-                First(m => m.MetadataToken == member.MetadataToken);
+            return member.DeclaringType.GetGenericTypeDefinition()
+                .GetMember(member.Name, AllMemberFlags)
+                .First(m => m.MetadataToken == member.MetadataToken);
         }
 
         if (member is MethodInfo { IsGenericMethod: true, IsGenericMethodDefinition: false } method)
@@ -423,7 +372,6 @@ internal
 
         return member;
     }
-
 
     // Taken from https://github.com/dotnet/runtime/blob/903bc019427ca07080530751151ea636168ad334/src/libraries/System.Text.Json/Common/ReflectionExtensions.cs#L288-L317
     private static object? GetNormalizedDefaultValue(this ParameterInfo parameterInfo)
@@ -456,5 +404,4 @@ internal
 
         return defaultValue;
     }
-
 }

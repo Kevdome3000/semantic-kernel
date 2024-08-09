@@ -18,14 +18,24 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// <summary>
 /// A <see cref="KernelAgent"/> specialization based on Open AI Assistant / GPT.
 /// </summary>
-public sealed partial class OpenAIAssistantAgent : KernelAgent
+public sealed class OpenAIAssistantAgent : KernelAgent
 {
+    /// <summary>
+    /// Metadata key that identifies code-interpreter content.
+    /// </summary>
+    public const string CodeInterpreterMetadataKey = "code";
 
     private readonly Assistant _assistant;
-
     private readonly AssistantsClient _client;
-
     private readonly OpenAIAssistantConfiguration _config;
+
+    /// <summary>
+    /// Optional arguments for the agent.
+    /// </summary>
+    /// <remarks>
+    /// This property is not currently used by the agent, but is provided for future extensibility.
+    /// </remarks>
+    public KernelArguments? Arguments { get; init; }
 
     /// <summary>
     /// A list of previously uploaded file IDs to attach to the assistant.
@@ -49,7 +59,6 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// An assistant removed by other means will result in an exception when invoked.
     /// </summary>
     public bool IsDeleted { get; private set; }
-
 
     /// <summary>
     /// Define a new <see cref="OpenAIAssistantAgent"/>.
@@ -75,9 +84,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
 
         // Create the assistant
         AssistantCreationOptions assistantCreationOptions = CreateAssistantCreationOptions(definition);
-
-        Assistant model = await client.CreateAssistantAsync(assistantCreationOptions, cancellationToken).
-            ConfigureAwait(false);
+        Assistant model = await client.CreateAssistantAsync(assistantCreationOptions, cancellationToken).ConfigureAwait(false);
 
         // Instantiate the agent
         return
@@ -86,7 +93,6 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
                 Kernel = kernel,
             };
     }
-
 
     /// <summary>
     /// Retrieve a list of assistant definitions: <see cref="OpenAIAssistantDefinition"/>.
@@ -109,12 +115,9 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         PageableList<Assistant> assistants;
 
         int resultCount = 0;
-
         do
         {
-            assistants = await client.GetAssistantsAsync(limit: Math.Min(maxResults, 100), ListSortOrder.Descending, after: lastId, cancellationToken: cancellationToken).
-                ConfigureAwait(false);
-
+            assistants = await client.GetAssistantsAsync(limit: Math.Min(maxResults, 100), ListSortOrder.Descending, after: lastId, cancellationToken: cancellationToken).ConfigureAwait(false);
             foreach (Assistant assistant in assistants)
             {
                 if (resultCount >= maxResults)
@@ -140,9 +143,9 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
 
                 lastId = assistant.Id;
             }
-        } while (assistants.HasMore && resultCount < maxResults);
+        }
+        while (assistants.HasMore && resultCount < maxResults);
     }
-
 
     /// <summary>
     /// Retrieve a <see cref="OpenAIAssistantAgent"/> by identifier.
@@ -162,8 +165,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         AssistantsClient client = CreateClient(config);
 
         // Retrieve the assistant
-        Assistant model = await client.GetAssistantAsync(id, cancellationToken).
-            ConfigureAwait(false);
+        Assistant model = await client.GetAssistantAsync(id, cancellationToken).ConfigureAwait(false);
 
         // Instantiate the agent
         return
@@ -173,7 +175,6 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
             };
     }
 
-
     /// <summary>
     /// Create a new assistant thread.
     /// </summary>
@@ -181,12 +182,10 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <returns>The thread identifier</returns>
     public async Task<string> CreateThreadAsync(CancellationToken cancellationToken = default)
     {
-        AssistantThread thread = await this._client.CreateThreadAsync(cancellationToken).
-            ConfigureAwait(false);
+        AssistantThread thread = await this._client.CreateThreadAsync(cancellationToken).ConfigureAwait(false);
 
         return thread.Id;
     }
-
 
     /// <summary>
     /// Create a new assistant thread.
@@ -201,10 +200,8 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         // Validate input
         Verify.NotNullOrWhiteSpace(threadId, nameof(threadId));
 
-        return await this._client.DeleteThreadAsync(threadId, cancellationToken).
-            ConfigureAwait(false);
+        return await this._client.DeleteThreadAsync(threadId, cancellationToken).ConfigureAwait(false);
     }
-
 
     /// <summary>
     /// Adds a message to the specified thread.
@@ -219,7 +216,6 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         return AssistantThreadActions.CreateMessageAsync(this._client, threadId, message, cancellationToken);
     }
 
-
     /// <summary>
     /// Gets messages for a specified thread.
     /// </summary>
@@ -233,7 +229,6 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         return AssistantThreadActions.GetMessagesAsync(this._client, threadId, cancellationToken);
     }
 
-
     /// <summary>
     /// Delete the assistant definition.
     /// </summary>
@@ -246,29 +241,35 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     {
         if (!this.IsDeleted)
         {
-            this.IsDeleted = (await this._client.DeleteAssistantAsync(this.Id, cancellationToken).
-                ConfigureAwait(false)).Value;
+            this.IsDeleted = (await this._client.DeleteAssistantAsync(this.Id, cancellationToken).ConfigureAwait(false)).Value;
         }
 
         return this.IsDeleted;
     }
 
-
     /// <summary>
     /// Invoke the assistant on the specified thread.
     /// </summary>
     /// <param name="threadId">The thread identifier</param>
+    /// <param name="arguments">Optional arguments to pass to the agents's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use by the agent.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
+    /// <remarks>
+    /// The `arguments` parameter is not currently used by the agent, but is provided for future extensibility.
+    /// </remarks>
     public async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         string threadId,
+        KernelArguments? arguments = null,
+        Kernel? kernel = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         this.ThrowIfDeleted();
 
-        await foreach ((bool isVisible, ChatMessageContent message) in AssistantThreadActions.InvokeAsync(this, this._client, threadId, this._config.Polling,
-                               this.Logger, cancellationToken).
-                           ConfigureAwait(false))
+        kernel ??= this.Kernel;
+        arguments ??= this.Arguments;
+
+        await foreach ((bool isVisible, ChatMessageContent message) in AssistantThreadActions.InvokeAsync(this, this._client, threadId, this._config.Polling, this.Logger, kernel, arguments, cancellationToken).ConfigureAwait(false))
         {
             if (isVisible)
             {
@@ -276,7 +277,6 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
             }
         }
     }
-
 
     /// <inheritdoc/>
     protected override IEnumerable<string> GetChannelKeys()
@@ -308,14 +308,12 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         }
     }
 
-
     /// <inheritdoc/>
     protected override async Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
     {
         this.Logger.LogOpenAIAssistantAgentCreatingChannel(nameof(CreateChannelAsync), nameof(OpenAIAssistantChannel));
 
-        AssistantThread thread = await this._client.CreateThreadAsync(cancellationToken).
-            ConfigureAwait(false);
+        AssistantThread thread = await this._client.CreateThreadAsync(cancellationToken).ConfigureAwait(false);
 
         OpenAIAssistantChannel channel =
             new(this._client, thread.Id, this._config.Polling)
@@ -328,7 +326,6 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         return channel;
     }
 
-
     internal void ThrowIfDeleted()
     {
         if (this.IsDeleted)
@@ -336,7 +333,6 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
             throw new KernelException($"Agent Failure - {nameof(OpenAIAssistantAgent)} agent is deleted: {this.Id}.");
         }
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIAssistantAgent"/> class.
@@ -355,7 +351,6 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         this.Name = this._assistant.Name;
         this.Instructions = this._assistant.Instructions;
     }
-
 
     private static AssistantCreationOptions CreateAssistantCreationOptions(OpenAIAssistantDefinition definition)
     {
@@ -383,7 +378,6 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         return assistantCreationOptions;
     }
 
-
     private static AssistantsClient CreateClient(OpenAIAssistantConfiguration config)
     {
         AssistantsClientOptions clientOptions = CreateClientOptions(config);
@@ -399,13 +393,12 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         return new AssistantsClient(config.ApiKey, clientOptions);
     }
 
-
     private static AssistantsClientOptions CreateClientOptions(OpenAIAssistantConfiguration config)
     {
         AssistantsClientOptions options =
-            config.Version.HasValue
-                ? new(config.Version.Value)
-                : new();
+            config.Version.HasValue ?
+                new(config.Version.Value) :
+                new();
 
         options.Diagnostics.ApplicationId = HttpHeaderConstant.Values.UserAgent;
         options.AddPolicy(new AddHeaderRequestPolicy(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(OpenAIAssistantAgent))), HttpPipelinePosition.PerCall);
@@ -419,5 +412,4 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
 
         return options;
     }
-
 }
