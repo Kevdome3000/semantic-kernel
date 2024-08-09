@@ -11,7 +11,6 @@ namespace Microsoft.SemanticKernel.Agents;
 /// </summary>
 public interface IChatHistoryHandler
 {
-
     /// <summary>
     /// An optional history reducer to apply to the chat history prior processing.
     /// </summary>
@@ -32,7 +31,6 @@ public interface IChatHistoryHandler
         Kernel? kernel = null,
         CancellationToken cancellationToken = default);
 
-
     /// <summary>
     /// Entry point for calling into an agent from a <see cref="ChatHistoryChannel"/> for streaming content.
     /// </summary>
@@ -46,5 +44,4 @@ public interface IChatHistoryHandler
         KernelArguments? arguments = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default);
-
 }
