@@ -110,7 +110,7 @@ public sealed class KernelPluginCollection : ICollection<KernelPlugin>, IReadOnl
     /// </summary>
     /// <param name="plugin"></param>
     /// <returns></returns>
-    public bool TryAdd(KernelPlugin plugin)
+    public bool TryAddPlugin(KernelPlugin plugin)
     {
         Verify.NotNull(plugin);
 
