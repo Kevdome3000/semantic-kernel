@@ -1,16 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable RCS1168 // Parameter name differs from base name.
-#pragma warning disable CA1725 // Parameter names should match base declaration
-
-namespace Microsoft.SemanticKernel;
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
+#pragma warning disable RCS1168 // Parameter name differs from base name.
+#pragma warning disable CA1725 // Parameter names should match base declaration
+
+namespace Microsoft.SemanticKernel;
 
 /// <summary>Provides a collection of <see cref="KernelPlugin"/>s.</summary>
 /// <remarks>
@@ -103,6 +102,29 @@ public sealed class KernelPluginCollection : ICollection<KernelPlugin>, IReadOnl
         }
 
         return false;
+    }
+
+
+    /// <summary>
+    ///  Adds the plugin to the collection if it does not already exist.
+    /// </summary>
+    /// <param name="plugin"></param>
+    /// <returns></returns>
+    public bool TryAdd(KernelPlugin plugin)
+    {
+        Verify.NotNull(plugin);
+
+        string name = plugin.Name;
+        Verify.NotNull(name, "plugin.Name");
+
+        if (this._plugins.ContainsKey(name))
+        {
+            return false;
+        }
+
+        this._plugins.Add(name, plugin);
+
+        return true;
     }
 
 
