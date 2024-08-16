@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Connectors.MistralAI.UnitTests.Client;
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -17,13 +15,13 @@ using Microsoft.SemanticKernel.Connectors.MistralAI;
 using Microsoft.SemanticKernel.Connectors.MistralAI.Client;
 using Xunit;
 
+namespace SemanticKernel.Connectors.MistralAI.UnitTests.Client;
 
 /// <summary>
 /// Unit tests for <see cref="MistralClient"/>.
 /// </summary>
 public sealed class MistralClientTests : MistralTestBase
 {
-
     [Fact]
     public void ValidateRequiredArguments()
     {
@@ -38,7 +36,6 @@ public sealed class MistralClientTests : MistralTestBase
         Assert.Throws<ArgumentNullException>(() => new MistralClient("model", new HttpClient(), null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
     }
-
 
     [Fact]
     public async Task ValidateChatMessageRequestAsync()
@@ -68,7 +65,6 @@ public sealed class MistralClientTests : MistralTestBase
         Assert.Equal("What is the best French cheese?", chatRequest.Messages[0].Content);
     }
 
-
     [Fact]
     public async Task ValidateGetChatMessageContentsAsync()
     {
@@ -80,7 +76,6 @@ public sealed class MistralClientTests : MistralTestBase
         {
             new ChatMessageContent(AuthorRole.User, "What is the best French cheese?")
         };
-
         var response = await client.GetChatMessageContentsAsync(chatHistory, default);
 
         // Assert
@@ -92,7 +87,6 @@ public sealed class MistralClientTests : MistralTestBase
         Assert.NotNull(response[0].Metadata);
         Assert.Equal(7, response[0].Metadata?.Count);
     }
-
 
     [Fact]
     public async Task ValidateGenerateEmbeddingsAsync()
@@ -111,7 +105,6 @@ public sealed class MistralClientTests : MistralTestBase
         Assert.Equal(1024, response[1].Length);
     }
 
-
     [Fact]
     public async Task ValidateGetStreamingChatMessageContentsAsync()
     {
@@ -126,7 +119,6 @@ public sealed class MistralClientTests : MistralTestBase
         // Act
         var response = client.GetStreamingChatMessageContentsAsync(chatHistory, default);
         var chunks = new List<StreamingChatMessageContent>();
-
         await foreach (var chunk in response)
         {
             chunks.Add(chunk);
@@ -135,7 +127,6 @@ public sealed class MistralClientTests : MistralTestBase
         // Assert
         Assert.NotNull(response);
         Assert.Equal(124, chunks.Count);
-
         foreach (var chunk in chunks)
         {
             Assert.NotNull(chunk);
@@ -145,7 +136,6 @@ public sealed class MistralClientTests : MistralTestBase
             Assert.NotNull(chunk.Metadata);
         }
     }
-
 
     [Fact]
     public async Task ValidateChatHistoryFirstSystemOrUserMessageAsync()
@@ -163,7 +153,6 @@ public sealed class MistralClientTests : MistralTestBase
         await Assert.ThrowsAsync<ArgumentException>(async () => await client.GetChatMessageContentsAsync(chatHistory, default));
     }
 
-
     [Fact]
     public async Task ValidateEmptyChatHistoryAsync()
     {
@@ -174,7 +163,6 @@ public sealed class MistralClientTests : MistralTestBase
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(async () => await client.GetChatMessageContentsAsync(chatHistory, default));
     }
-
 
     [Fact]
     public async Task ValidateChatMessageRequestWithToolsAsync()
@@ -205,13 +193,8 @@ public sealed class MistralClientTests : MistralTestBase
         Assert.Single(chatRequest.Tools);
         Assert.NotNull(chatRequest.Tools[0].Function.Parameters);
         Assert.Equal(["location"], chatRequest.Tools[0].Function.Parameters?.Required);
-
-        Assert.Equal("string", chatRequest.Tools[0].
-            Function.Parameters?.Properties["location"].
-            RootElement.GetProperty("type").
-            GetString());
+        Assert.Equal("string", chatRequest.Tools[0].Function.Parameters?.Properties["location"].RootElement.GetProperty("type").GetString());
     }
-
 
     [Fact]
     public async Task ValidateGetStreamingChatMessageContentsWithToolsAsync()
@@ -231,7 +214,6 @@ public sealed class MistralClientTests : MistralTestBase
         var executionSettings = new MistralAIPromptExecutionSettings { ToolCallBehavior = MistralAIToolCallBehavior.AutoInvokeKernelFunctions };
         var response = client.GetStreamingChatMessageContentsAsync(chatHistory, default, executionSettings, kernel);
         var chunks = new List<StreamingChatMessageContent>();
-
         await foreach (var chunk in response)
         {
             chunks.Add(chunk);
@@ -249,13 +231,8 @@ public sealed class MistralClientTests : MistralTestBase
         Assert.Single(chatRequest.Tools);
         Assert.NotNull(chatRequest.Tools[0].Function.Parameters);
         Assert.Equal(["location"], chatRequest.Tools[0].Function.Parameters?.Required);
-
-        Assert.Equal("string", chatRequest.Tools[0].
-            Function.Parameters?.Properties["location"].
-            RootElement.GetProperty("type").
-            GetString());
+        Assert.Equal("string", chatRequest.Tools[0].Function.Parameters?.Properties["location"].RootElement.GetProperty("type").GetString());
     }
-
 
     [Fact]
     public async Task ValidateGetChatMessageContentsWithFunctionCallAsync()
@@ -272,12 +249,10 @@ public sealed class MistralClientTests : MistralTestBase
 
         // Act
         var executionSettings = new MistralAIPromptExecutionSettings { ToolCallBehavior = MistralAIToolCallBehavior.AutoInvokeKernelFunctions };
-
         var chatHistory = new ChatHistory
         {
             new ChatMessageContent(AuthorRole.User, "What is the weather like in Paris?")
         };
-
         var response = await client.GetChatMessageContentsAsync(chatHistory, default, executionSettings, kernel);
 
         // Assert
@@ -288,7 +263,6 @@ public sealed class MistralClientTests : MistralTestBase
         Assert.Equal(2, this.DelegatingHandler!.SendAsyncCallCount);
         Assert.Equal(3, chatHistory.Count);
     }
-
 
     [Fact]
     public async Task ValidateGetChatMessageContentsWithFunctionCallNoneAsync()
@@ -301,12 +275,10 @@ public sealed class MistralClientTests : MistralTestBase
 
         // Act
         var executionSettings = new MistralAIPromptExecutionSettings { ToolCallBehavior = MistralAIToolCallBehavior.NoKernelFunctions };
-
         var chatHistory = new ChatHistory
         {
             new ChatMessageContent(AuthorRole.User, "What is the weather like in Paris?")
         };
-
         var response = await client.GetChatMessageContentsAsync(chatHistory, default, executionSettings, kernel);
 
         // Assert
@@ -315,7 +287,6 @@ public sealed class MistralClientTests : MistralTestBase
         Assert.Equal("Sure, let me check the weather for you.\n\n[{\"name\": \"WeatherPlugin-GetWeather\", \"arguments\": {\"location\": \"Paris, 75\"}}}]", response[0].Content);
         Assert.Equal("mistral-large-latest", response[0].ModelId);
     }
-
 
     [Fact]
     public async Task ValidateGetChatMessageContentsWithFunctionCallRequiredAsync()
@@ -332,12 +303,10 @@ public sealed class MistralClientTests : MistralTestBase
 
         // Act
         var executionSettings = new MistralAIPromptExecutionSettings { ToolCallBehavior = MistralAIToolCallBehavior.RequiredFunctions(plugin, true) };
-
         var chatHistory = new ChatHistory
         {
             new ChatMessageContent(AuthorRole.User, "What is the weather like in Paris?")
         };
-
         var response = await client.GetChatMessageContentsAsync(chatHistory, default, executionSettings, kernel);
 
         // Assert
@@ -348,7 +317,6 @@ public sealed class MistralClientTests : MistralTestBase
         Assert.Equal(2, this.DelegatingHandler!.SendAsyncCallCount);
         Assert.Equal(3, chatHistory.Count);
     }
-
 
     [Fact]
     public async Task ValidateGetChatMessageContentsWithFunctionInvocationFilterAsync()
@@ -364,23 +332,19 @@ public sealed class MistralClientTests : MistralTestBase
         kernel.Plugins.AddFromType<WeatherPlugin>();
 
         var invokedFunctions = new List<string>();
-
         var filter = new FakeFunctionFilter(async (context, next) =>
         {
             invokedFunctions.Add(context.Function.Name);
             await next(context);
         });
-
         kernel.FunctionInvocationFilters.Add(filter);
 
         // Act
         var executionSettings = new MistralAIPromptExecutionSettings { ToolCallBehavior = MistralAIToolCallBehavior.AutoInvokeKernelFunctions };
-
         var chatHistory = new ChatHistory
         {
             new ChatMessageContent(AuthorRole.User, "What is the weather like in Paris?")
         };
-
         var response = await client.GetChatMessageContentsAsync(chatHistory, default, executionSettings, kernel);
 
         // Assert
@@ -392,7 +356,6 @@ public sealed class MistralClientTests : MistralTestBase
         Assert.Equal(3, chatHistory.Count);
         Assert.Contains("GetWeather", invokedFunctions);
     }
-
 
     [Fact]
     public async Task ValidateGetChatMessageContentsWithAutoFunctionInvocationFilterTerminateAsync()
@@ -408,24 +371,20 @@ public sealed class MistralClientTests : MistralTestBase
         kernel.Plugins.AddFromType<WeatherPlugin>();
 
         var invokedFunctions = new List<string>();
-
         var filter = new FakeAutoFunctionFilter(async (context, next) =>
         {
             invokedFunctions.Add(context.Function.Name);
             await next(context);
             context.Terminate = true;
         });
-
         kernel.AutoFunctionInvocationFilters.Add(filter);
 
         // Act
         var executionSettings = new MistralAIPromptExecutionSettings { ToolCallBehavior = MistralAIToolCallBehavior.AutoInvokeKernelFunctions };
-
         var chatHistory = new ChatHistory
         {
             new ChatMessageContent(AuthorRole.User, "What is the weather like in Paris?")
         };
-
         var response = await client.GetChatMessageContentsAsync(chatHistory, default, executionSettings, kernel);
 
         // Assert
@@ -437,7 +396,6 @@ public sealed class MistralClientTests : MistralTestBase
         Assert.Equal(3, chatHistory.Count);
         Assert.Contains("GetWeather", invokedFunctions);
     }
-
 
     [Fact]
     public async Task ValidateGetStreamingChatMessageContentWithAutoFunctionInvocationFilterTerminateAsync()
@@ -453,11 +411,9 @@ public sealed class MistralClientTests : MistralTestBase
             await next(context);
             context.Terminate = true;
         });
-
         kernel.AutoFunctionInvocationFilters.Add(filter);
 
         var executionSettings = new MistralAIPromptExecutionSettings { ToolCallBehavior = MistralAIToolCallBehavior.AutoInvokeKernelFunctions };
-
         var chatHistory = new ChatHistory
         {
             new ChatMessageContent(AuthorRole.User, "What is the weather like in Paris?")
@@ -482,7 +438,6 @@ public sealed class MistralClientTests : MistralTestBase
         Assert.Equal(AuthorRole.Tool, lastMessageContent.Role);
     }
 
-
     [Theory]
     [InlineData("system", "System Content")]
     [InlineData("user", "User Content")]
@@ -492,7 +447,6 @@ public sealed class MistralClientTests : MistralTestBase
         // Arrange
         using var httpClient = new HttpClient();
         var client = new MistralClient("mistral-large-latest", httpClient, "key");
-
         var chatMessage = new ChatMessageContent()
         {
             Role = new AuthorRole(roleLabel),
@@ -507,14 +461,12 @@ public sealed class MistralClientTests : MistralTestBase
         Assert.Single(messages);
     }
 
-
     [Fact]
     public void ValidateToMistralChatMessagesWithFunctionCallContent()
     {
         // Arrange
         using var httpClient = new HttpClient();
         var client = new MistralClient("mistral-large-latest", httpClient, "key");
-
         var content = new ChatMessageContent()
         {
             Role = AuthorRole.Assistant,
@@ -529,14 +481,12 @@ public sealed class MistralClientTests : MistralTestBase
         Assert.Single(messages);
     }
 
-
     [Fact]
     public void ValidateToMistralChatMessagesWithFunctionResultContent()
     {
         // Arrange
         using var httpClient = new HttpClient();
         var client = new MistralClient("mistral-large-latest", httpClient, "key");
-
         var content = new ChatMessageContent()
         {
             Role = AuthorRole.Tool,
@@ -551,50 +501,32 @@ public sealed class MistralClientTests : MistralTestBase
         Assert.Equal(2, messages.Count);
     }
 
-
     public sealed class WeatherPlugin
     {
-
         [KernelFunction]
         [Description("Get the current weather in a given location.")]
         public string GetWeather(
             [Description("The city and department, e.g. Marseille, 13")]
             string location
         ) => "12°C\nWind: 11 KMPH\nHumidity: 48%\nMostly cloudy";
-
     }
 
-
-    internal enum TemperatureUnit
-    {
-
-        Celsius,
-
-        Fahrenheit
-
-    }
-
+    internal enum TemperatureUnit { Celsius, Fahrenheit }
 
     public class WidgetFactory
     {
-
         [KernelFunction]
         [Description("Creates a new widget of the specified type and colors")]
         public string CreateWidget([Description("The colors of the widget to be created")] WidgetColor[] widgetColors)
         {
-            var colors = string.Join('-', widgetColors.Select(c => c.GetDisplayName()).
-                ToArray());
-
+            var colors = string.Join('-', widgetColors.Select(c => c.GetDisplayName()).ToArray());
             return $"Widget created with colors: {colors}";
         }
-
     }
-
 
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum WidgetColor
     {
-
         [Description("Use when creating a red item.")]
         Red,
 
@@ -603,59 +535,41 @@ public sealed class MistralClientTests : MistralTestBase
 
         [Description("Use when creating a blue item.")]
         Blue
-
     }
-
 
     private sealed class FakeFunctionFilter(
         Func<FunctionInvocationContext, Func<FunctionInvocationContext, Task>, Task>? onFunctionInvocation = null) : IFunctionInvocationFilter
     {
-
         private readonly Func<FunctionInvocationContext, Func<FunctionInvocationContext, Task>, Task>? _onFunctionInvocation = onFunctionInvocation;
-
 
         public Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next) =>
             this._onFunctionInvocation?.Invoke(context, next) ?? Task.CompletedTask;
-
     }
-
 
     private sealed class FakeAutoFunctionFilter(
         Func<AutoFunctionInvocationContext, Func<AutoFunctionInvocationContext, Task>, Task>? onAutoFunctionInvocation = null) : IAutoFunctionInvocationFilter
     {
-
         private readonly Func<AutoFunctionInvocationContext, Func<AutoFunctionInvocationContext, Task>, Task>? _onAutoFunctionInvocation = onAutoFunctionInvocation;
-
 
         public Task OnAutoFunctionInvocationAsync(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next) =>
             this._onAutoFunctionInvocation?.Invoke(context, next) ?? Task.CompletedTask;
-
     }
-
 
     private MistralClient CreateMistralClient(string modelId, string requestUri, params string[] responseData)
     {
-        var responses = responseData.Select(this.GetTestResponseAsString).
-            ToArray();
-
+        var responses = responseData.Select(this.GetTestResponseAsString).ToArray();
         this.DelegatingHandler = new AssertingDelegatingHandler(requestUri, responses);
         this.HttpClient = new HttpClient(this.DelegatingHandler, false);
         var client = new MistralClient(modelId, this.HttpClient, "key");
-
         return client;
     }
-
 
     private MistralClient CreateMistralClientStreaming(string modelId, string requestUri, params string[] responseData)
     {
-        var responses = responseData.Select(this.GetTestResponseAsBytes).
-            ToArray();
-
-        this.DelegatingHandler = new AssertingDelegatingHandler(requestUri, responses);
+        var responses = responseData.Select(this.GetTestResponseAsBytes).ToArray();
+        this.DelegatingHandler = new AssertingDelegatingHandler(requestUri, true, responses);
         this.HttpClient = new HttpClient(this.DelegatingHandler, false);
         var client = new MistralClient(modelId, this.HttpClient, "key");
-
         return client;
     }
-
 }

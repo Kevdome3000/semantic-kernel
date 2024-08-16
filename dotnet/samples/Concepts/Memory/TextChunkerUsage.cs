@@ -1,17 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Memory;
-
 using System.Diagnostics;
 using Microsoft.ML.Tokenizers;
 using Microsoft.SemanticKernel.Text;
 
+namespace Memory;
 
 public class TextChunkerUsage(ITestOutputHelper output) : BaseTest(output)
 {
-
-    private static readonly Tokenizer s_tokenizer = Tokenizer.CreateTiktokenForModel("gpt-4");
-
+    private static readonly Tokenizer s_tokenizer = TiktokenTokenizer.CreateForModel("gpt-4");
 
     [Fact]
     public void RunExample()
@@ -23,7 +20,6 @@ public class TextChunkerUsage(ITestOutputHelper output) : BaseTest(output)
 
         WriteParagraphsToConsole(paragraphs);
     }
-
 
     [Fact]
     public void RunExampleWithTokenCounter()
@@ -41,7 +37,6 @@ public class TextChunkerUsage(ITestOutputHelper output) : BaseTest(output)
         WriteParagraphsToConsole(paragraphs);
     }
 
-
     [Fact]
     public void RunExampleWithHeader()
     {
@@ -52,7 +47,6 @@ public class TextChunkerUsage(ITestOutputHelper output) : BaseTest(output)
 
         WriteParagraphsToConsole(paragraphs);
     }
-
 
     private void WriteParagraphsToConsole(List<string> paragraphs)
     {
@@ -66,7 +60,6 @@ public class TextChunkerUsage(ITestOutputHelper output) : BaseTest(output)
             }
         }
     }
-
 
     private const string Text = """
                                 The city of Venice, located in the northeastern part of Italy,
@@ -87,5 +80,4 @@ public class TextChunkerUsage(ITestOutputHelper output) : BaseTest(output)
                                 biggest single structure made by living organisms. This reef structure is composed of and built by billions of tiny organisms,
                                 known as coral polyps.
                                 """;
-
 }

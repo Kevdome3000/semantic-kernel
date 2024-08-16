@@ -1,86 +1,67 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using static Microsoft.SemanticKernel.Text.TextChunker;
-
-namespace SemanticKernel.UnitTests.Text;
-
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.ML.Tokenizers;
 using Microsoft.SemanticKernel.Text;
 using VerifyXunit;
 using Xunit;
+using static Microsoft.SemanticKernel.Text.TextChunker;
 
+namespace SemanticKernel.UnitTests.Text;
 
 public sealed class TextChunkerInternationalTests
 {
-
     public sealed class StatefulTokenCounter
     {
-
         private readonly Dictionary<string, int> _callStats = [];
-
-        private readonly Tokenizer _tokenizer = Tokenizer.CreateTiktokenForModel("gpt-4");
-
+        private readonly Tokenizer _tokenizer = TiktokenTokenizer.CreateForModel("gpt-4");
 
         public int Count(string input)
         {
             this.CallCount++;
-
-            this._callStats[input] = this._callStats.TryGetValue(input, out int value)
-                ? value + 1
-                : 1;
-
+            this._callStats[input] = this._callStats.TryGetValue(input, out int value) ? value + 1 : 1;
             return this._tokenizer.CountTokens(input);
         }
 
-
         public int CallCount { get; private set; } = 0;
-
     }
-
 
     private static TokenCounter StatelessTokenCounter => (string input) =>
     {
-        var tokenizer = Tokenizer.CreateTiktokenForModel("gpt-4");
-
+        var tokenizer = TiktokenTokenizer.CreateForModel("gpt-4");
         return tokenizer.CountTokens(input);
     };
-
 
     [Fact]
     public void TokenCounterCountStateful()
     {
         var counter = new StatefulTokenCounter();
-        var lines = TextChunker.SplitPlainTextLines("This is a test", 40, counter.Count);
+        var lines = SplitPlainTextLines("This is a test", 40, counter.Count);
     }
-
 
     [Fact]
     public void TokenCounterCountStateless()
     {
         var counter = new StatefulTokenCounter();
-        var lines = TextChunker.SplitPlainTextLines("This is a test", 40, StatelessTokenCounter);
+        var lines = SplitPlainTextLines("This is a test", 40, StatelessTokenCounter);
     }
-
 
     [Fact]
     public void CanSplitParagraphsWithIdeographicPunctuationAndGptTokenCounter()
     {
         var counter = new StatefulTokenCounter();
         const string Input = "田中の猫はかわいいですね。日本語上手。";
-
         var expected = new[]
         {
             "田中の猫はかわいいですね。",
             "日本語上手。"
         };
 
-        var result = TextChunker.SplitPlainTextLines(Input, 16, counter.Count);
+        var result = SplitPlainTextLines(Input, 16, counter.Count);
 
         Assert.Equal(expected, result);
     }
-
 
     /**
      * The following stories were generated with GPT-4 with the prompt
@@ -103,17 +84,14 @@ public sealed class TextChunkerInternationalTests
     public async Task VerifyShortStoryInLanguageAsync(string language, string story)
     {
         var counter = new StatefulTokenCounter();
-        var result = TextChunker.SplitPlainTextLines(story, 20, counter.Count);
+        var result = SplitPlainTextLines(story, 20, counter.Count);
         Assert.True(counter.CallCount > 0);
         Assert.True(counter.CallCount < story.Length / 2);
-
         foreach (var line in result)
         {
             Assert.True(counter.Count(line) <= 20);
         }
 
-        await Verifier.Verify(result).
-            UseParameters(language);
+        await Verifier.Verify(result).UseParameters(language);
     }
-
 }

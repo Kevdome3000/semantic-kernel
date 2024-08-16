@@ -1,19 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace ChatCompletion;
-
+using Azure.Identity;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
+namespace ChatCompletion;
 
 // The following example shows how to use Semantic Kernel with OpenAI ChatGPT API
 public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 {
-
     [Fact]
     public async Task OpenAIChatSampleAsync()
     {
-        Console.WriteLine("======== Open AI - ChatGPT ========");
+        Console.WriteLine("======== Open AI - Chat Completion ========");
 
         OpenAIChatCompletionService chatCompletionService = new(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
 
@@ -48,11 +47,10 @@ public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
         */
     }
 
-
     [Fact]
     public async Task AzureOpenAIChatSampleAsync()
     {
-        Console.WriteLine("======== Azure Open AI - ChatGPT ========");
+        Console.WriteLine("======== Azure Open AI - Chat Completion ========");
 
         AzureOpenAIChatCompletionService chatCompletionService = new(
             deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
@@ -63,6 +61,23 @@ public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
         await StartChatAsync(chatCompletionService);
     }
 
+    /// <summary>
+    /// Sample showing how to use Azure Open AI Chat Completion with Azure Default Credential.
+    /// If local auth is disabled in the Azure Open AI deployment, you can use Azure Default Credential to authenticate.
+    /// </summary>
+    [Fact]
+    public async Task AzureOpenAIWithDefaultAzureCredentialSampleAsync()
+    {
+        Console.WriteLine("======== Azure Open AI - Chat Completion with Azure Default Credential ========");
+
+        AzureOpenAIChatCompletionService chatCompletionService = new(
+            deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+            endpoint: TestConfiguration.AzureOpenAI.Endpoint,
+            credentials: new DefaultAzureCredential(),
+            modelId: TestConfiguration.AzureOpenAI.ChatModelId);
+
+        await StartChatAsync(chatCompletionService);
+    }
 
     private async Task StartChatAsync(IChatCompletionService chatGPT)
     {
@@ -90,7 +105,6 @@ public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
         await MessageOutputAsync(chatHistory);
     }
 
-
     /// <summary>
     /// Outputs the last message of the chat history
     /// </summary>
@@ -103,5 +117,4 @@ public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 
         return Task.CompletedTask;
     }
-
 }

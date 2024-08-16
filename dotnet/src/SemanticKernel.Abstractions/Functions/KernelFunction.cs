@@ -22,7 +22,6 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public abstract class KernelFunction : IKernelFunction
 {
-
     /// <summary>The measurement tag name for the function name.</summary>
     private protected const string MeasurementFunctionTagName = "semantic_kernel.function.name";
 
@@ -99,7 +98,6 @@ public abstract class KernelFunction : IKernelFunction
     [JsonIgnore]
     public IReadOnlyDictionary<string, PromptExecutionSettings>? ExecutionSettings { get; }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunction"/> class.
     /// </summary>
@@ -121,7 +119,6 @@ public abstract class KernelFunction : IKernelFunction
             returnParameter, executionSettings)
     {
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunction"/> class.
@@ -175,7 +172,6 @@ public abstract class KernelFunction : IKernelFunction
         }
     }
 
-
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/>.
     /// </summary>
@@ -191,8 +187,8 @@ public abstract class KernelFunction : IKernelFunction
     {
         Verify.NotNull(kernel);
 
-        using var activity = s_activitySource.StartActivity(Name);
-        ILogger logger = kernel.LoggerFactory.CreateLogger(Name) ?? NullLogger.Instance;
+        using var activity = s_activitySource.StartActivity(this.Name);
+        ILogger logger = kernel.LoggerFactory.CreateLogger(typeof(KernelFunction)) ?? NullLogger.Instance;
 
         // Ensure arguments are initialized.
         arguments ??= [];
@@ -219,12 +215,10 @@ public abstract class KernelFunction : IKernelFunction
             }
 
             var invocationContext = await kernel.OnFunctionInvocationAsync(this, arguments, functionResult, async context =>
-                {
-                    // Invoking the function and updating context with result.
-                    context.Result = functionResult = await InvokeCoreAsync(kernel, context.Arguments, cancellationToken).
-                        ConfigureAwait(false);
-                }, cancellationToken).
-                ConfigureAwait(false);
+            {
+                // Invoking the function and updating context with result.
+                context.Result = functionResult = await InvokeCoreAsync(kernel, context.Arguments, cancellationToken).ConfigureAwait(false);
+            }, cancellationToken).ConfigureAwait(false);
 
             // Apply any changes from the function filters context to final result.
             functionResult = invocationContext.Result;
@@ -266,7 +260,6 @@ public abstract class KernelFunction : IKernelFunction
         }
     }
 
-
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/>.
     /// </summary>
@@ -282,12 +275,10 @@ public abstract class KernelFunction : IKernelFunction
         KernelArguments? arguments = null,
         CancellationToken cancellationToken = default)
     {
-        FunctionResult result = await InvokeAsync(kernel, arguments, cancellationToken).
-            ConfigureAwait(false);
+        FunctionResult result = await InvokeAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 
         return result.GetValue<TResult>();
     }
-
 
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/> and streams its results.
@@ -305,7 +296,6 @@ public abstract class KernelFunction : IKernelFunction
         KernelArguments? arguments = null,
         CancellationToken cancellationToken = default) =>
         InvokeStreamingAsync<StreamingKernelContent>(kernel, arguments, cancellationToken);
-
 
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/> and streams its results.
@@ -359,16 +349,15 @@ public abstract class KernelFunction : IKernelFunction
                 FunctionResult functionResult = new(this, culture: kernel.Culture);
 
                 var invocationContext = await kernel.OnFunctionInvocationAsync(this, arguments, functionResult, context =>
-                    {
-                        // Invoke the function and get its streaming enumerable.
-                        var enumerable = InvokeStreamingCoreAsync<TResult>(kernel, context.Arguments, cancellationToken);
+                {
+                    // Invoke the function and get its streaming enumerable.
+                    var enumerable = InvokeStreamingCoreAsync<TResult>(kernel, context.Arguments, cancellationToken);
 
-                        // Update context with enumerable as result value.
-                        context.Result = new FunctionResult(this, enumerable, kernel.Culture);
+                    // Update context with enumerable as result value.
+                    context.Result = new FunctionResult(this, enumerable, kernel.Culture);
 
-                        return Task.CompletedTask;
-                    }, cancellationToken).
-                    ConfigureAwait(false);
+                    return Task.CompletedTask;
+                }, cancellationToken).ConfigureAwait(false);
 
                 // Apply changes from the function filters to final result.
                 var enumerable = invocationContext.Result.GetValue<IAsyncEnumerable<TResult>>() ?? AsyncEnumerable.Empty<TResult>();
@@ -394,8 +383,7 @@ public abstract class KernelFunction : IKernelFunction
                     try
                     {
                         // Move to the next streaming result.
-                        if (!await enumerator.MoveNextAsync().
-                                ConfigureAwait(false))
+                        if (!await enumerator.MoveNextAsync().ConfigureAwait(false))
                         {
                             break;
                         }
@@ -422,7 +410,6 @@ public abstract class KernelFunction : IKernelFunction
         }
     }
 
-
     /// <summary>
     /// Creates a new <see cref="KernelFunction"/> object that is a copy of the current instance
     /// but the <see cref="KernelFunctionMetadata"/> has the plugin name set.
@@ -434,12 +421,10 @@ public abstract class KernelFunction : IKernelFunction
     /// </remarks>
     public abstract KernelFunction Clone(string pluginName);
 
-
     /// <inheritdoc/>
     public override string ToString() => string.IsNullOrWhiteSpace(PluginName)
         ? Name
         : $"{PluginName}.{Name}";
-
 
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/>.
@@ -453,7 +438,6 @@ public abstract class KernelFunction : IKernelFunction
         KernelArguments arguments,
         CancellationToken cancellationToken);
 
-
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/> and streams its results.
     /// </summary>
@@ -465,7 +449,6 @@ public abstract class KernelFunction : IKernelFunction
         Kernel kernel,
         KernelArguments arguments,
         CancellationToken cancellationToken);
-
 
     /// <summary>Handles special-cases for exception handling when invoking a function.</summary>
     private static void HandleException(
@@ -479,8 +462,7 @@ public abstract class KernelFunction : IKernelFunction
         ref TagList tags)
     {
         // Log the exception and add its type to the tags that'll be included with recording the invocation duration.
-        tags.Add(MeasurementErrorTagName, ex.GetType().
-            FullName);
+        tags.Add(MeasurementErrorTagName, ex.GetType().FullName);
 
         activity?.SetError(ex);
         logger.LogFunctionError(ex, ex.Message);
@@ -503,5 +485,4 @@ public abstract class KernelFunction : IKernelFunction
             throw kernelEx;
         }
     }
-
 }

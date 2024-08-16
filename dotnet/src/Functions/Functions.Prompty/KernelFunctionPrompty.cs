@@ -1,24 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Prompty;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Core;
-using Extensions.Logging;
-using PromptTemplates.Handlebars;
-using PromptTemplates.Liquid;
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
+using Microsoft.SemanticKernel.PromptTemplates.Liquid;
+using Microsoft.SemanticKernel.Prompty.Core;
 using YamlDotNet.Serialization;
 
+namespace Microsoft.SemanticKernel.Prompty;
 
 /// <summary>
 /// Factory methods for creating <seealso cref="KernelFunction"/> instances.
 /// </summary>
 public static partial class KernelFunctionPrompty
 {
-
     /// <summary>Default template factory to use when none is provided.</summary>
     internal static readonly AggregatorPromptTemplateFactory s_defaultTemplateFactory =
         new(new LiquidPromptTemplateFactory(), new HandlebarsPromptTemplateFactory());
@@ -36,9 +34,9 @@ public static partial class KernelFunctionPrompty
     private static partial Regex PromptyRegex();
 #else
     private static Regex PromptyRegex() => s_promptyRegex;
+
     private static readonly Regex s_promptyRegex = new(PromptyPattern, RegexOptions.Multiline | RegexOptions.Singleline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
 #endif
-
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt function using the specified markdown text.
@@ -62,7 +60,6 @@ public static partial class KernelFunctionPrompty
             promptTemplateFactory ?? s_defaultTemplateFactory,
             loggerFactory);
     }
-
 
     /// <summary>
     /// Create a <see cref="PromptTemplateConfig"/> from a prompty template.
@@ -107,8 +104,7 @@ public static partial class KernelFunctionPrompty
         // ... (rest of the prompty content)
 
         // Parse the YAML frontmatter and content from the prompty template
-        Match m = PromptyRegex().
-            Match(promptyTemplate);
+        Match m = PromptyRegex().Match(promptyTemplate);
 
         if (!m.Success)
         {
@@ -118,8 +114,7 @@ public static partial class KernelFunctionPrompty
         var header = m.Groups["header"].Value;
         var content = m.Groups["content"].Value;
 
-        var prompty = new DeserializerBuilder().Build().
-                          Deserialize<PromptyYaml>(header) ??
+        var prompty = new DeserializerBuilder().Build().Deserialize<PromptyYaml>(header) ??
                       throw new ArgumentException("Invalid prompty template. Header could not be parsed.");
 
         // Step 2:
@@ -179,7 +174,7 @@ public static partial class KernelFunctionPrompty
                 extensionData.Add("stop_sequences", stop);
             }
 
-            if (prompty.Model?.Parameters?.ResponseFormat == "json_object")
+            if (prompty.Model?.Parameters?.ResponseFormat?.Type == "json_object")
             {
                 extensionData.Add("response_format", "json_object");
             }
@@ -210,8 +205,7 @@ public static partial class KernelFunctionPrompty
             // PromptTemplateConfig supports only a single output variable. If the prompty template
             // contains one and only one, use it. Otherwise, ignore any outputs.
             if (prompty.Outputs.Count == 1 &&
-                prompty.Outputs.First().
-                    Value is string description)
+                prompty.Outputs.First().Value is string description)
             {
                 promptTemplateConfig.OutputVariable = new() { Description = description };
             }
@@ -223,5 +217,4 @@ public static partial class KernelFunctionPrompty
 
         return promptTemplateConfig;
     }
-
 }

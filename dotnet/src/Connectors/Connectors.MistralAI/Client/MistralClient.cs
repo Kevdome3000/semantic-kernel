@@ -27,7 +27,6 @@ namespace Microsoft.SemanticKernel.Connectors.MistralAI.Client;
 /// </summary>
 internal sealed class MistralClient
 {
-
     internal MistralClient(
         string modelId,
         HttpClient httpClient,
@@ -47,41 +46,28 @@ internal sealed class MistralClient
         this._streamJsonParser = new StreamJsonParser();
     }
 
-
-    internal async Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(
-        ChatHistory chatHistory,
-        CancellationToken cancellationToken,
-        PromptExecutionSettings? executionSettings = null,
-        Kernel? kernel = null)
+    internal async Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, CancellationToken cancellationToken, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null)
     {
         this.ValidateChatHistory(chatHistory);
 
         string modelId = executionSettings?.ModelId ?? this._modelId;
         var mistralExecutionSettings = MistralAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
-
-        var chatRequest = this.CreateChatCompletionRequest(modelId, stream: false, chatHistory, mistralExecutionSettings,
-            kernel);
-
         var endpoint = this.GetEndpoint(mistralExecutionSettings, path: "chat/completions");
         var autoInvoke = kernel is not null && mistralExecutionSettings.ToolCallBehavior?.MaximumAutoInvokeAttempts > 0 && s_inflightAutoInvokes.Value < MaxInflightAutoInvokes;
 
         for (int requestIndex = 1;; requestIndex++)
         {
+            var chatRequest = this.CreateChatCompletionRequest(modelId, stream: false, chatHistory, mistralExecutionSettings, kernel);
+
             ChatCompletionResponse? responseData = null;
             List<ChatMessageContent> responseContent;
-
-            using (var activity = ModelDiagnostics.StartCompletionActivity(this._endpoint, this._modelId, ModelProvider, chatHistory,
-                       mistralExecutionSettings))
+            using (var activity = ModelDiagnostics.StartCompletionActivity(this._endpoint, this._modelId, ModelProvider, chatHistory, mistralExecutionSettings))
             {
                 try
                 {
                     using var httpRequestMessage = this.CreatePost(chatRequest, endpoint, this._apiKey, stream: false);
-
-                    responseData = await this.SendRequestAsync<ChatCompletionResponse>(httpRequestMessage, cancellationToken).
-                        ConfigureAwait(false);
-
+                    responseData = await this.SendRequestAsync<ChatCompletionResponse>(httpRequestMessage, cancellationToken).ConfigureAwait(false);
                     this.LogUsage(responseData?.Usage);
-
                     if (responseData is null || responseData.Choices is null || responseData.Choices.Count == 0)
                     {
                         throw new KernelException("Chat completions not found");
@@ -133,7 +119,6 @@ internal sealed class MistralClient
             // may return a FinishReason of "stop" even if there are tool calls to be made, in particular if a required tool
             // is specified.
             MistralChatChoice chatChoice = responseData.Choices[0]; // TODO Handle multiple choices
-
             if (!chatChoice.IsToolCall)
             {
                 return responseContent;
@@ -151,12 +136,8 @@ internal sealed class MistralClient
 
             Debug.Assert(kernel is not null);
 
-            // Add the original assistant message to the chatRequest; this is required for the service
-            // to understand the tool call responses. Also add the result message to the caller's chat
-            // history: if they don't want it, they can remove it, but this makes the data available,
-            // including metadata like usage.
-            chatRequest.AddMessage(chatChoice.Message!);
-
+            // Add the result message to the caller's chat history;
+            // this is required for the service to understand the tool call responses.
             var chatMessageContent = this.ToChatMessageContent(modelId, responseData, chatChoice);
             chatHistory.Add(chatMessageContent);
 
@@ -169,9 +150,7 @@ internal sealed class MistralClient
                 // We currently only know about function tool calls. If it's anything else, we'll respond with an error.
                 if (toolCall.Function is null)
                 {
-                    this.AddResponseMessage(chatRequest, chatHistory, toolCall, result: null,
-                        "Error: Tool call was not a function call.");
-
+                    this.AddResponseMessage(chatHistory, toolCall, result: null, "Error: Tool call was not a function call.");
                     continue;
                 }
 
@@ -181,26 +160,20 @@ internal sealed class MistralClient
                 if (mistralExecutionSettings.ToolCallBehavior?.AllowAnyRequestedKernelFunction is not true &&
                     !IsRequestableTool(chatRequest, toolCall.Function!))
                 {
-                    this.AddResponseMessage(chatRequest, chatHistory, toolCall, result: null,
-                        "Error: Function call chatRequest for a function that wasn't defined.");
-
+                    this.AddResponseMessage(chatHistory, toolCall, result: null, "Error: Function call chatRequest for a function that wasn't defined.");
                     continue;
                 }
 
                 // Find the function in the kernel and populate the arguments.
                 if (!kernel!.Plugins.TryGetFunctionAndArguments(toolCall.Function, out KernelFunction? function, out KernelArguments? functionArgs))
                 {
-                    this.AddResponseMessage(chatRequest, chatHistory, toolCall, result: null,
-                        "Error: Requested function could not be found.");
-
+                    this.AddResponseMessage(chatHistory, toolCall, result: null, "Error: Requested function could not be found.");
                     continue;
                 }
 
                 // Now, invoke the function, and add the resulting tool call message to the chat options.
                 FunctionResult functionResult = new(function) { Culture = kernel.Culture };
-
-                AutoFunctionInvocationContext invocationContext = new(kernel, function, functionResult, chatHistory,
-                    chatMessageContent)
+                AutoFunctionInvocationContext invocationContext = new(kernel, function, functionResult, chatHistory, chatMessageContent)
                 {
                     ToolCallId = toolCall.Id,
                     Arguments = functionArgs,
@@ -209,34 +182,28 @@ internal sealed class MistralClient
                     FunctionCount = chatChoice.ToolCalls.Count,
                     CancellationToken = cancellationToken
                 };
-
                 s_inflightAutoInvokes.Value++;
-
                 try
                 {
                     invocationContext = await OnAutoFunctionInvocationAsync(kernel, invocationContext, async (context) =>
+                    {
+                        // Check if filter requested termination.
+                        if (context.Terminate)
                         {
-                            // Check if filter requested termination.
-                            if (context.Terminate)
-                            {
-                                return;
-                            }
+                            return;
+                        }
 
-                            // Note that we explicitly do not use executionSettings here; those pertain to the all-up operation and not necessarily to any
-                            // further calls made as part of this function invocation. In particular, we must not use function calling settings naively here,
-                            // as the called function could in turn telling the model about itself as a possible candidate for invocation.
-                            context.Result = await function.InvokeAsync(kernel, invocationContext.Arguments, cancellationToken: cancellationToken).
-                                ConfigureAwait(false);
-                        }).
-                        ConfigureAwait(false);
+                        // Note that we explicitly do not use executionSettings here; those pertain to the all-up operation and not necessarily to any
+                        // further calls made as part of this function invocation. In particular, we must not use function calling settings naively here,
+                        // as the called function could in turn telling the model about itself as a possible candidate for invocation.
+                        context.Result = await function.InvokeAsync(kernel, invocationContext.Arguments, cancellationToken: cancellationToken).ConfigureAwait(false);
+                    }).ConfigureAwait(false);
                 }
 #pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception e)
 #pragma warning restore CA1031
                 {
-                    this.AddResponseMessage(chatRequest, chatHistory, toolCall, result: null,
-                        $"Error: Exception while invoking function. {e.Message}");
-
+                    this.AddResponseMessage(chatHistory, toolCall, result: null, $"Error: Exception while invoking function. {e.Message}");
                     continue;
                 }
                 finally
@@ -250,8 +217,7 @@ internal sealed class MistralClient
                 object functionResultValue = functionResult.GetValue<object>() ?? string.Empty;
                 var stringResult = ProcessFunctionResult(functionResultValue, mistralExecutionSettings.ToolCallBehavior);
 
-                this.AddResponseMessage(chatRequest, chatHistory, toolCall, result: stringResult,
-                    errorMessage: null);
+                this.AddResponseMessage(chatHistory, toolCall, result: stringResult, errorMessage: null);
 
                 // If filter requested termination, returning latest function result.
                 if (invocationContext.Terminate)
@@ -291,7 +257,6 @@ internal sealed class MistralClient
             if (requestIndex >= mistralExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts)
             {
                 autoInvoke = false;
-
                 if (this._logger.IsEnabled(LogLevel.Debug))
                 {
                     this._logger.LogDebug("Maximum auto-invoke ({MaximumAutoInvoke}) reached.", mistralExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts);
@@ -300,58 +265,40 @@ internal sealed class MistralClient
         }
     }
 
-
-    internal async IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(
-        ChatHistory chatHistory,
-        [EnumeratorCancellation] CancellationToken cancellationToken,
-        PromptExecutionSettings? executionSettings = null,
-        Kernel? kernel = null)
+    internal async IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, [EnumeratorCancellation] CancellationToken cancellationToken, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null)
     {
         this.ValidateChatHistory(chatHistory);
 
         var mistralExecutionSettings = MistralAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
         string modelId = mistralExecutionSettings.ModelId ?? this._modelId;
-
-        var chatRequest = this.CreateChatCompletionRequest(modelId, stream: true, chatHistory, mistralExecutionSettings,
-            kernel);
-
         var autoInvoke = kernel is not null && mistralExecutionSettings.ToolCallBehavior?.MaximumAutoInvokeAttempts > 0 && s_inflightAutoInvokes.Value < MaxInflightAutoInvokes;
 
         List<MistralToolCall>? toolCalls = null;
-
         for (int requestIndex = 1;; requestIndex++)
         {
+            var chatRequest = this.CreateChatCompletionRequest(modelId, stream: true, chatHistory, mistralExecutionSettings, kernel);
+
             // Reset state
             toolCalls?.Clear();
 
             // Stream the responses
-            using (var activity = ModelDiagnostics.StartCompletionActivity(this._endpoint, this._modelId, ModelProvider, chatHistory,
-                       mistralExecutionSettings))
+            using (var activity = ModelDiagnostics.StartCompletionActivity(this._endpoint, this._modelId, ModelProvider, chatHistory, mistralExecutionSettings))
             {
                 // Make the request.
                 IAsyncEnumerable<StreamingChatMessageContent> response;
-
                 try
                 {
-                    response = this.StreamChatMessageContentsAsync(chatHistory, mistralExecutionSettings, chatRequest, modelId,
-                        cancellationToken);
+                    response = this.StreamChatMessageContentsAsync(chatHistory, mistralExecutionSettings, chatRequest, modelId, cancellationToken);
                 }
                 catch (Exception e) when (activity is not null)
                 {
                     activity.SetError(e);
-
                     throw;
                 }
 
-                var responseEnumerator = response.ConfigureAwait(false).
-                    GetAsyncEnumerator();
-
-                List<StreamingKernelContent>? streamedContents = activity is not null
-                    ? []
-                    : null;
-
+                var responseEnumerator = response.ConfigureAwait(false).GetAsyncEnumerator();
+                List<StreamingKernelContent>? streamedContents = activity is not null ? [] : null;
                 string? streamedRole = null;
-
                 try
                 {
                     while (true)
@@ -366,7 +313,6 @@ internal sealed class MistralClient
                         catch (Exception ex) when (activity is not null)
                         {
                             activity.SetError(ex);
-
                             throw;
                         }
 
@@ -382,23 +328,17 @@ internal sealed class MistralClient
 
                             MistralChatCompletionChoice chatChoice = completionChunk!.Choices![0]; // TODO Handle multiple choices
                             streamedRole ??= chatChoice.Delta!.Role;
-
                             if (chatChoice.IsToolCall)
                             {
                                 // Create a copy of the tool calls to avoid modifying the original list
                                 toolCalls = new List<MistralToolCall>(chatChoice.ToolCalls!);
 
-                                // Add the original assistant message to the chatRequest; this is required for the service
-                                // to understand the tool call responses. Also add the result message to the caller's chat
-                                // history: if they don't want it, they can remove it, but this makes the data available,
-                                // including metadata like usage.
-                                chatRequest.AddMessage(new MistralChatMessage(streamedRole, completionChunk.GetContent(0)) { ToolCalls = chatChoice.ToolCalls });
+                                // Add the result message to the caller's chat history; this is required for the service to understand the tool call responses.
                                 chatHistory.Add(this.ToChatMessageContent(modelId, streamedRole!, completionChunk, chatChoice));
                             }
                         }
 
                         streamedContents?.Add(update);
-
                         yield return update;
                     }
                 }
@@ -440,9 +380,7 @@ internal sealed class MistralClient
                 // We currently only know about function tool calls. If it's anything else, we'll respond with an error.
                 if (toolCall.Function is null)
                 {
-                    this.AddResponseMessage(chatRequest, chatHistory, toolCall, result: null,
-                        "Error: Tool call was not a function call.");
-
+                    this.AddResponseMessage(chatHistory, toolCall, result: null, "Error: Tool call was not a function call.");
                     continue;
                 }
 
@@ -452,26 +390,20 @@ internal sealed class MistralClient
                 if (mistralExecutionSettings.ToolCallBehavior?.AllowAnyRequestedKernelFunction is not true &&
                     !IsRequestableTool(chatRequest, toolCall.Function!))
                 {
-                    this.AddResponseMessage(chatRequest, chatHistory, toolCall, result: null,
-                        "Error: Function call chatRequest for a function that wasn't defined.");
-
+                    this.AddResponseMessage(chatHistory, toolCall, result: null, "Error: Function call chatRequest for a function that wasn't defined.");
                     continue;
                 }
 
                 // Find the function in the kernel and populate the arguments.
                 if (!kernel!.Plugins.TryGetFunctionAndArguments(toolCall.Function, out KernelFunction? function, out KernelArguments? functionArgs))
                 {
-                    this.AddResponseMessage(chatRequest, chatHistory, toolCall, result: null,
-                        "Error: Requested function could not be found.");
-
+                    this.AddResponseMessage(chatHistory, toolCall, result: null, "Error: Requested function could not be found.");
                     continue;
                 }
 
                 // Now, invoke the function, and add the resulting tool call message to the chat options.
                 FunctionResult functionResult = new(function) { Culture = kernel.Culture };
-
-                AutoFunctionInvocationContext invocationContext = new(kernel, function, functionResult, chatHistory,
-                    chatHistory.Last())
+                AutoFunctionInvocationContext invocationContext = new(kernel, function, functionResult, chatHistory, chatHistory.Last())
                 {
                     ToolCallId = toolCall.Id,
                     Arguments = functionArgs,
@@ -480,34 +412,28 @@ internal sealed class MistralClient
                     FunctionCount = toolCalls.Count,
                     CancellationToken = cancellationToken
                 };
-
                 s_inflightAutoInvokes.Value++;
-
                 try
                 {
                     invocationContext = await OnAutoFunctionInvocationAsync(kernel, invocationContext, async (context) =>
+                    {
+                        // Check if filter requested termination.
+                        if (context.Terminate)
                         {
-                            // Check if filter requested termination.
-                            if (context.Terminate)
-                            {
-                                return;
-                            }
+                            return;
+                        }
 
-                            // Note that we explicitly do not use executionSettings here; those pertain to the all-up operation and not necessarily to any
-                            // further calls made as part of this function invocation. In particular, we must not use function calling settings naively here,
-                            // as the called function could in turn telling the model about itself as a possible candidate for invocation.
-                            context.Result = await function.InvokeAsync(kernel, invocationContext.Arguments, cancellationToken: cancellationToken).
-                                ConfigureAwait(false);
-                        }).
-                        ConfigureAwait(false);
+                        // Note that we explicitly do not use executionSettings here; those pertain to the all-up operation and not necessarily to any
+                        // further calls made as part of this function invocation. In particular, we must not use function calling settings naively here,
+                        // as the called function could in turn telling the model about itself as a possible candidate for invocation.
+                        context.Result = await function.InvokeAsync(kernel, invocationContext.Arguments, cancellationToken: cancellationToken).ConfigureAwait(false);
+                    }).ConfigureAwait(false);
                 }
 #pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception e)
 #pragma warning restore CA1031
                 {
-                    this.AddResponseMessage(chatRequest, chatHistory, toolCall, result: null,
-                        $"Error: Exception while invoking function. {e.Message}");
-
+                    this.AddResponseMessage(chatHistory, toolCall, result: null, $"Error: Exception while invoking function. {e.Message}");
                     continue;
                 }
                 finally
@@ -521,8 +447,7 @@ internal sealed class MistralClient
                 object functionResultValue = functionResult.GetValue<object>() ?? string.Empty;
                 var stringResult = ProcessFunctionResult(functionResultValue, mistralExecutionSettings.ToolCallBehavior);
 
-                this.AddResponseMessage(chatRequest, chatHistory, toolCall, result: stringResult,
-                    errorMessage: null);
+                this.AddResponseMessage(chatHistory, toolCall, result: stringResult, errorMessage: null);
 
                 // If filter requested termination, returning latest function result and breaking request iteration loop.
                 if (invocationContext.Terminate)
@@ -535,7 +460,6 @@ internal sealed class MistralClient
                     var lastChatMessage = chatHistory.Last();
 
                     yield return new StreamingChatMessageContent(lastChatMessage.Role, lastChatMessage.Content);
-
                     yield break;
                 }
             }
@@ -566,7 +490,6 @@ internal sealed class MistralClient
             if (requestIndex >= mistralExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts)
             {
                 autoInvoke = false;
-
                 if (this._logger.IsEnabled(LogLevel.Debug))
                 {
                     this._logger.LogDebug("Maximum auto-invoke ({MaximumAutoInvoke}) reached.", mistralExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts);
@@ -575,32 +498,19 @@ internal sealed class MistralClient
         }
     }
 
-
-    private async IAsyncEnumerable<StreamingChatMessageContent> StreamChatMessageContentsAsync(
-        ChatHistory chatHistory,
-        MistralAIPromptExecutionSettings executionSettings,
-        ChatCompletionRequest chatRequest,
-        string modelId,
-        [EnumeratorCancellation] CancellationToken cancellationToken)
+    private async IAsyncEnumerable<StreamingChatMessageContent> StreamChatMessageContentsAsync(ChatHistory chatHistory, MistralAIPromptExecutionSettings executionSettings, ChatCompletionRequest chatRequest, string modelId, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         this.ValidateChatHistory(chatHistory);
 
         var endpoint = this.GetEndpoint(executionSettings, path: "chat/completions");
         using var httpRequestMessage = this.CreatePost(chatRequest, endpoint, this._apiKey, stream: true);
-
-        using var response = await this.SendStreamingRequestAsync(httpRequestMessage, cancellationToken).
-            ConfigureAwait(false);
-
-        using var responseStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync().
-            ConfigureAwait(false);
-
-        await foreach (var streamingChatContent in this.ProcessChatResponseStreamAsync(responseStream, modelId, cancellationToken).
-                           ConfigureAwait(false))
+        using var response = await this.SendStreamingRequestAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+        using var responseStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
+        await foreach (var streamingChatContent in this.ProcessChatResponseStreamAsync(responseStream, modelId, cancellationToken).ConfigureAwait(false))
         {
             yield return streamingChatContent;
         }
     }
-
 
     private async IAsyncEnumerable<StreamingChatMessageContent> ProcessChatResponseStreamAsync(Stream stream, string modelId, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
@@ -612,9 +522,7 @@ internal sealed class MistralClient
             responseEnumerator = responseEnumerable.GetAsyncEnumerator(cancellationToken);
 
             string? currentRole = null;
-
-            while (await responseEnumerator.MoveNextAsync().
-                       ConfigureAwait(false))
+            while (await responseEnumerator.MoveNextAsync().ConfigureAwait(false))
             {
                 var chunk = responseEnumerator.Current!;
 
@@ -636,54 +544,38 @@ internal sealed class MistralClient
         {
             if (responseEnumerator != null)
             {
-                await responseEnumerator.DisposeAsync().
-                    ConfigureAwait(false);
+                await responseEnumerator.DisposeAsync().ConfigureAwait(false);
             }
         }
     }
 
-
     private async IAsyncEnumerable<MistralChatCompletionChunk> ParseChatResponseStreamAsync(Stream responseStream, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        await foreach (var json in this._streamJsonParser.ParseAsync(responseStream, cancellationToken: cancellationToken).
-                           ConfigureAwait(false))
+        await foreach (var json in this._streamJsonParser.ParseAsync(responseStream, cancellationToken: cancellationToken).ConfigureAwait(false))
         {
             yield return DeserializeResponse<MistralChatCompletionChunk>(json);
         }
     }
 
-
-    internal async Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
-        IList<string> data,
-        CancellationToken cancellationToken,
-        PromptExecutionSettings? executionSettings = null,
-        Kernel? kernel = null)
+    internal async Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(IList<string> data, CancellationToken cancellationToken, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null)
     {
         var request = new TextEmbeddingRequest(this._modelId, data);
         var mistralExecutionSettings = MistralAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
         var endpoint = this.GetEndpoint(mistralExecutionSettings, path: "embeddings");
         using var httpRequestMessage = this.CreatePost(request, endpoint, this._apiKey, false);
 
-        var response = await this.SendRequestAsync<TextEmbeddingResponse>(httpRequestMessage, cancellationToken).
-            ConfigureAwait(false);
+        var response = await this.SendRequestAsync<TextEmbeddingResponse>(httpRequestMessage, cancellationToken).ConfigureAwait(false);
 
-        return response.Data!.Select(item => new ReadOnlyMemory<float>([.. item.Embedding])).
-            ToList();
+        return response.Data!.Select(item => new ReadOnlyMemory<float>([.. item.Embedding])).ToList();
     }
-
 
     #region private
 
     private readonly string _modelId;
-
     private readonly string _apiKey;
-
     private readonly Uri? _endpoint;
-
     private readonly HttpClient _httpClient;
-
     private readonly ILogger _logger;
-
     private readonly StreamJsonParser _streamJsonParser;
 
     /// <summary>Provider name used for diagnostics.</summary>
@@ -744,14 +636,12 @@ internal sealed class MistralClient
             unit: "{token}",
             description: "Number of tokens used");
 
-
     /// <summary>Log token usage to the logger and metrics.</summary>
     private void LogUsage(MistralUsage? usage)
     {
         if (usage is null || usage.PromptTokens is null || usage.CompletionTokens is null || usage.TotalTokens is null)
         {
             this._logger.LogDebug("Usage information unavailable.");
-
             return;
         }
 
@@ -769,7 +659,6 @@ internal sealed class MistralClient
         s_totalTokensCounter.Add(usage.TotalTokens.Value);
     }
 
-
     /// <summary>
     /// Messages are required and the first prompt role should be user or system.
     /// </summary>
@@ -782,22 +671,14 @@ internal sealed class MistralClient
             throw new ArgumentException("Chat history must contain at least one message", nameof(chatHistory));
         }
 
-        var firstRole = chatHistory[0].
-            Role.ToString();
-
+        var firstRole = chatHistory[0].Role.ToString();
         if (firstRole is not "system" and not "user")
         {
             throw new ArgumentException("The first message in chat history must have either the system or user role", nameof(chatHistory));
         }
     }
 
-
-    private ChatCompletionRequest CreateChatCompletionRequest(
-        string modelId,
-        bool stream,
-        ChatHistory chatHistory,
-        MistralAIPromptExecutionSettings executionSettings,
-        Kernel? kernel = null)
+    private ChatCompletionRequest CreateChatCompletionRequest(string modelId, bool stream, ChatHistory chatHistory, MistralAIPromptExecutionSettings executionSettings, Kernel? kernel = null)
     {
         if (this._logger.IsEnabled(LogLevel.Trace))
         {
@@ -809,8 +690,7 @@ internal sealed class MistralClient
         var request = new ChatCompletionRequest(modelId)
         {
             Stream = stream,
-            Messages = chatHistory.SelectMany(chatMessage => this.ToMistralChatMessages(chatMessage, executionSettings?.ToolCallBehavior)).
-                ToList(),
+            Messages = chatHistory.SelectMany(chatMessage => this.ToMistralChatMessages(chatMessage, executionSettings?.ToolCallBehavior)).ToList(),
             Temperature = executionSettings.Temperature,
             TopP = executionSettings.TopP,
             MaxTokens = executionSettings.MaxTokens,
@@ -823,7 +703,6 @@ internal sealed class MistralClient
         return request;
     }
 
-
     internal List<MistralChatMessage> ToMistralChatMessages(ChatMessageContent content, MistralAIToolCallBehavior? toolCallBehavior)
     {
         if (content.Role == AuthorRole.Assistant)
@@ -831,7 +710,6 @@ internal sealed class MistralClient
             // Handling function calls supplied via ChatMessageContent.Items collection elements of the FunctionCallContent type.
             var message = new MistralChatMessage(content.Role.ToString(), content.Content ?? string.Empty);
             Dictionary<string, MistralToolCall> toolCalls = [];
-
             foreach (var item in content.Items)
             {
                 if (item is not FunctionCallContent callRequest)
@@ -845,7 +723,6 @@ internal sealed class MistralClient
                 }
 
                 var arguments = JsonSerializer.Serialize(callRequest.Arguments);
-
                 var toolCall = new MistralToolCall()
                 {
                     Id = callRequest.Id,
@@ -856,7 +733,6 @@ internal sealed class MistralClient
                         Arguments = arguments
                     }
                 };
-
                 toolCalls.Add(callRequest.Id, toolCall);
             }
 
@@ -871,7 +747,6 @@ internal sealed class MistralClient
         if (content.Role == AuthorRole.Tool)
         {
             List<MistralChatMessage>? messages = null;
-
             foreach (var item in content.Items)
             {
                 if (item is not FunctionResultContent resultContent)
@@ -896,12 +771,7 @@ internal sealed class MistralClient
         return [new MistralChatMessage(content.Role.ToString(), content.Content ?? string.Empty)];
     }
 
-
-    private HttpRequestMessage CreatePost(
-        object requestData,
-        Uri endpoint,
-        string apiKey,
-        bool stream)
+    private HttpRequestMessage CreatePost(object requestData, Uri endpoint, string apiKey, bool stream)
     {
         var httpRequestMessage = HttpRequest.CreatePostRequest(endpoint, requestData);
         this.SetRequestHeaders(httpRequestMessage, apiKey, stream);
@@ -909,57 +779,40 @@ internal sealed class MistralClient
         return httpRequestMessage;
     }
 
-
     private void SetRequestHeaders(HttpRequestMessage request, string apiKey, bool stream)
     {
         request.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
         request.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(this.GetType()));
-
-        request.Headers.Add("Accept", stream
-            ? "text/event-stream"
-            : "application/json");
-
+        request.Headers.Add("Accept", stream ? "text/event-stream" : "application/json");
         request.Headers.Add("Authorization", $"Bearer {apiKey}");
         request.Content!.Headers.ContentType = new MediaTypeHeaderValue("application/json");
     }
 
-
     private async Task<T> SendRequestAsync<T>(HttpRequestMessage httpRequestMessage, CancellationToken cancellationToken)
     {
-        using var response = await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).
-            ConfigureAwait(false);
+        using var response = await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
 
-        var body = await response.Content.ReadAsStringWithExceptionMappingAsync().
-            ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
 
         return DeserializeResponse<T>(body);
     }
 
-
     private async Task<HttpResponseMessage> SendStreamingRequestAsync(HttpRequestMessage httpRequestMessage, CancellationToken cancellationToken)
     {
-        return await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken).
-            ConfigureAwait(false);
+        return await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
     }
-
 
     private Uri GetEndpoint(MistralAIPromptExecutionSettings executionSettings, string path)
     {
         var endpoint = this._endpoint ?? new Uri($"https://api.mistral.ai/{executionSettings.ApiVersion}");
-
-        var separator = endpoint.AbsolutePath.EndsWith("/", StringComparison.InvariantCulture)
-            ? string.Empty
-            : "/";
-
+        var separator = endpoint.AbsolutePath.EndsWith("/", StringComparison.InvariantCulture) ? string.Empty : "/";
         return new Uri($"{endpoint}{separator}{path}");
     }
-
 
     /// <summary>Checks if a tool call is for a function that was defined.</summary>
     private static bool IsRequestableTool(ChatCompletionRequest request, MistralFunction func)
     {
         var tools = request.Tools;
-
         for (int i = 0; i < tools?.Count; i++)
         {
             if (string.Equals(tools[i].Function.Name, func.Name, StringComparison.OrdinalIgnoreCase))
@@ -971,13 +824,11 @@ internal sealed class MistralClient
         return false;
     }
 
-
     private static T DeserializeResponse<T>(string body)
     {
         try
         {
             T? deserializedResponse = JsonSerializer.Deserialize<T>(body);
-
             return deserializedResponse ?? throw new JsonException("Response is null");
         }
         catch (JsonException exc)
@@ -989,18 +840,14 @@ internal sealed class MistralClient
         }
     }
 
-
     private List<ChatMessageContent> ToChatMessageContent(string modelId, ChatCompletionResponse response)
     {
-        return response.Choices!.Select(chatChoice => this.ToChatMessageContent(modelId, response, chatChoice)).
-            ToList();
+        return response.Choices!.Select(chatChoice => this.ToChatMessageContent(modelId, response, chatChoice)).ToList();
     }
-
 
     private ChatMessageContent ToChatMessageContent(string modelId, ChatCompletionResponse response, MistralChatChoice chatChoice)
     {
-        var message = new ChatMessageContent(new AuthorRole(chatChoice.Message!.Role!), chatChoice.Message!.Content, modelId, chatChoice,
-            Encoding.UTF8, GetChatChoiceMetadata(response, chatChoice));
+        var message = new ChatMessageContent(new AuthorRole(chatChoice.Message!.Role!), chatChoice.Message!.Content, modelId, chatChoice, Encoding.UTF8, GetChatChoiceMetadata(response, chatChoice));
 
         if (chatChoice.IsToolCall)
         {
@@ -1013,15 +860,9 @@ internal sealed class MistralClient
         return message;
     }
 
-
-    private ChatMessageContent ToChatMessageContent(
-        string modelId,
-        string streamedRole,
-        MistralChatCompletionChunk chunk,
-        MistralChatCompletionChoice chatChoice)
+    private ChatMessageContent ToChatMessageContent(string modelId, string streamedRole, MistralChatCompletionChunk chunk, MistralChatCompletionChoice chatChoice)
     {
-        var message = new ChatMessageContent(new AuthorRole(streamedRole), chatChoice.Delta!.Content, modelId, chatChoice,
-            Encoding.UTF8, GetChatChoiceMetadata(chunk, chatChoice));
+        var message = new ChatMessageContent(new AuthorRole(streamedRole), chatChoice.Delta!.Content, modelId, chatChoice, Encoding.UTF8, GetChatChoiceMetadata(chunk, chatChoice));
 
         if (chatChoice.IsToolCall)
         {
@@ -1033,7 +874,6 @@ internal sealed class MistralClient
 
         return message;
     }
-
 
     private void AddFunctionCallContent(ChatMessageContent message, MistralToolCall toolCall)
     {
@@ -1046,22 +886,18 @@ internal sealed class MistralClient
         // This allows consumers to work with functions in an LLM-agnostic way.
         Exception? exception = null;
         KernelArguments? arguments = null;
-
         if (toolCall.Function.Arguments is not null)
         {
             try
             {
                 arguments = JsonSerializer.Deserialize<KernelArguments>(toolCall.Function.Arguments);
-
                 if (arguments is not null)
                 {
                     // Iterate over copy of the names to avoid mutating the dictionary while enumerating it
                     var names = arguments.Names.ToArray();
-
                     foreach (var name in names)
                     {
-                        arguments[name] = arguments[name]?.
-                            ToString();
+                        arguments[name] = arguments[name]?.ToString();
                     }
                 }
             }
@@ -1089,13 +925,7 @@ internal sealed class MistralClient
         message.Items.Add(functionCallContent);
     }
 
-
-    private void AddResponseMessage(
-        ChatCompletionRequest chatRequest,
-        ChatHistory chat,
-        MistralToolCall toolCall,
-        string? result,
-        string? errorMessage)
+    private void AddResponseMessage(ChatHistory chat, MistralToolCall toolCall, string? result, string? errorMessage)
     {
         // Log any error
         if (errorMessage is not null && this._logger.IsEnabled(LogLevel.Debug))
@@ -1104,9 +934,7 @@ internal sealed class MistralClient
             this._logger.LogDebug("Failed to handle tool request ({ToolId}). {Error}", toolCall.Function?.Name, errorMessage);
         }
 
-        // Add the tool response message to both the chat options
         result ??= errorMessage ?? string.Empty;
-        chatRequest.AddMessage(new MistralChatMessage(AuthorRole.Tool.ToString(), result));
 
         // Add the tool response message to the chat history
         var message = new ChatMessageContent(AuthorRole.Tool, result, metadata: new Dictionary<string, object?> { { nameof(MistralToolCall.Function), toolCall.Function } });
@@ -1125,7 +953,6 @@ internal sealed class MistralClient
         chat.Add(message);
     }
 
-
     private static Dictionary<string, object?> GetChatChoiceMetadata(ChatCompletionResponse completionResponse, MistralChatChoice chatChoice)
     {
         return new Dictionary<string, object?>(6)
@@ -1140,7 +967,6 @@ internal sealed class MistralClient
         };
     }
 
-
     private static Dictionary<string, object?> GetChatChoiceMetadata(MistralChatCompletionChunk completionChunk, MistralChatCompletionChoice chatChoice)
     {
         return new Dictionary<string, object?>(7)
@@ -1154,7 +980,6 @@ internal sealed class MistralClient
             { nameof(chatChoice.FinishReason), chatChoice.FinishReason },
         };
     }
-
 
     /// <summary>
     /// Processes the function result.
@@ -1183,7 +1008,6 @@ internal sealed class MistralClient
         return JsonSerializer.Serialize(functionResult, toolCallBehavior?.ToolCallResultSerializerOptions);
     }
 
-
     /// <summary>
     /// Executes auto function invocation filters and/or function itself.
     /// This method can be moved to <see cref="Kernel"/> when auto function invocation logic will be extracted to common place.
@@ -1193,12 +1017,10 @@ internal sealed class MistralClient
         AutoFunctionInvocationContext context,
         Func<AutoFunctionInvocationContext, Task> functionCallCallback)
     {
-        await InvokeFilterOrFunctionAsync(kernel.AutoFunctionInvocationFilters, functionCallCallback, context).
-            ConfigureAwait(false);
+        await InvokeFilterOrFunctionAsync(kernel.AutoFunctionInvocationFilters, functionCallCallback, context).ConfigureAwait(false);
 
         return context;
     }
-
 
     /// <summary>
     /// This method will execute auto function invocation filters and function recursively.
@@ -1215,19 +1037,14 @@ internal sealed class MistralClient
     {
         if (autoFunctionInvocationFilters is { Count: > 0 } && index < autoFunctionInvocationFilters.Count)
         {
-            await autoFunctionInvocationFilters[index].
-                OnAutoFunctionInvocationAsync(context,
-                    (context) => InvokeFilterOrFunctionAsync(autoFunctionInvocationFilters, functionCallCallback, context, index + 1)).
-                ConfigureAwait(false);
+            await autoFunctionInvocationFilters[index].OnAutoFunctionInvocationAsync(context,
+                (context) => InvokeFilterOrFunctionAsync(autoFunctionInvocationFilters, functionCallCallback, context, index + 1)).ConfigureAwait(false);
         }
         else
         {
-            await functionCallCallback(context).
-                ConfigureAwait(false);
+            await functionCallCallback(context).ConfigureAwait(false);
         }
     }
 
     #endregion
-
-
 }

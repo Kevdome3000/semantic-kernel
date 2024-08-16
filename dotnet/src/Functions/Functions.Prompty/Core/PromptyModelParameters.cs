@@ -1,17 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Prompty.Core;
-
 using System.Collections.Generic;
 
+namespace Microsoft.SemanticKernel.Prompty.Core;
 
 /// <summary>Parameters to be sent to the model.</summary>
 internal sealed class PromptyModelParameters
 {
-
     /// <summary>Specify the format for model output (e.g., JSON mode).</summary>
     [YamlMember(Alias = "response_format")]
-    public string? ResponseFormat { get; set; }
+    public PromptyResponseFormat? ResponseFormat { get; set; }
 
     /// <summary>Seed for deterministic sampling (Beta feature).</summary>
     [YamlMember(Alias = "seed")]
@@ -48,5 +46,4 @@ internal sealed class PromptyModelParameters
     /// <summary>Nucleus sampling probability (0 means no tokens generated).</summary>
     [YamlMember(Alias = "top_p")]
     public double? TopP { get; set; }
-
 }

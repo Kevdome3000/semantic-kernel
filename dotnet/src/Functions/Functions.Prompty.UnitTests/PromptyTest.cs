@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Functions.Prompty.UnitTests;
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,10 +9,10 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Xunit;
 
+namespace SemanticKernel.Functions.Prompty.UnitTests;
 
 public sealed class PromptyTest
 {
-
     [Fact]
     public void ChatPromptyTest()
     {
@@ -33,7 +31,6 @@ public sealed class PromptyTest
         // chat prompty doesn't contain input parameters
         Assert.Empty(kernelFunction.Metadata.Parameters);
     }
-
 
     [Fact]
     public void ChatPromptyShouldSupportCreatingOpenAIExecutionSettings()
@@ -68,6 +65,38 @@ public sealed class PromptyTest
         Assert.Null(executionSettings.Seed);
     }
 
+    [Fact]
+    public void ChatPromptyShouldSupportCreatingOpenAIExecutionSettingsWithJsonObject()
+    {
+        // Arrange
+        Kernel kernel = new();
+        var chatPromptyPath = Path.Combine("TestData", "chatJsonObject.prompty");
+
+        // Act
+        var kernelFunction = kernel.CreateFunctionFromPromptyFile(chatPromptyPath);
+
+        // Assert
+        // kernel function created from chat.prompty should have a single execution setting
+        Assert.Single(kernelFunction.ExecutionSettings!);
+        Assert.True(kernelFunction.ExecutionSettings!.ContainsKey("default"));
+
+        // Arrange
+        var defaultExecutionSetting = kernelFunction.ExecutionSettings["default"];
+
+        // Act
+        var executionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(defaultExecutionSetting);
+
+        // Assert
+        Assert.NotNull(executionSettings);
+        Assert.Equal("gpt-4o", executionSettings.ModelId);
+        Assert.Equal(0, executionSettings.Temperature);
+        Assert.Equal(1.0, executionSettings.TopP);
+        Assert.Null(executionSettings.StopSequences);
+        Assert.Equal("json_object", executionSettings.ResponseFormat?.ToString());
+        Assert.Null(executionSettings.TokenSelectionBiases);
+        Assert.Equal(3000, executionSettings.MaxTokens);
+        Assert.Null(executionSettings.Seed);
+    }
 
     [Fact]
     public void ItShouldCreateFunctionFromPromptYamlWithNoExecutionSettings()
@@ -87,7 +116,6 @@ public sealed class PromptyTest
         Assert.Equal("prompt", kernelFunction.Metadata.Parameters[0].Name);
         Assert.Empty(kernelFunction.ExecutionSettings!);
     }
-
 
     [Fact]
     public void ItFailsToParseAnEmptyHeader()
@@ -116,7 +144,6 @@ public sealed class PromptyTest
                                                                                 Hello
                                                                                 """));
     }
-
 
     [Theory]
     [InlineData("""
@@ -152,7 +179,6 @@ public sealed class PromptyTest
         Assert.Throws<ArgumentException>(() => kernel.CreateFunctionFromPrompty(prompt));
     }
 
-
     [Fact]
     public async Task ItSupportsSeparatorInContentAsync()
     {
@@ -184,7 +210,6 @@ public sealed class PromptyTest
                      """, await kernelFunction.InvokeAsync<string>(kernel));
     }
 
-
     [Fact]
     public void ItCreatesInputVariablesForSimpleVariables()
     {
@@ -205,7 +230,6 @@ public sealed class PromptyTest
         Assert.NotNull(kernelFunction);
         Assert.Equal(expectedVariables, kernelFunction.Metadata.Parameters.Select(p => p.Name));
     }
-
 
     [Theory]
     [InlineData("""
@@ -244,7 +268,6 @@ public sealed class PromptyTest
         Assert.Empty(kernelFunction.Metadata.Parameters.Select(p => p.Name));
     }
 
-
     [Fact]
     public void ItCreatesInputVariablesOnlyWhenNoneAreExplicitlySet()
     {
@@ -268,12 +291,9 @@ public sealed class PromptyTest
         Assert.Equal(expectedVariables, kernelFunction.Metadata.Parameters.Select(p => p.Name));
     }
 
-
     private sealed class EchoTextGenerationService : ITextGenerationService
     {
-
         public IReadOnlyDictionary<string, object?> Attributes { get; } = new Dictionary<string, object?>();
-
 
         public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(
             string prompt,
@@ -281,7 +301,6 @@ public sealed class PromptyTest
             Kernel? kernel = null,
             CancellationToken cancellationToken = default) =>
             Task.FromResult<IReadOnlyList<TextContent>>([new TextContent(prompt)]);
-
 
         public async IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(
             string prompt,
@@ -293,7 +312,5 @@ public sealed class PromptyTest
 
             yield return new StreamingTextContent(prompt);
         }
-
     }
-
 }
