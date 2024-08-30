@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.SemanticKernel;

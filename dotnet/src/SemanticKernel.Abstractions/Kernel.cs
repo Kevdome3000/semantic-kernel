@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -63,22 +61,22 @@ public sealed class Kernel
         KernelPluginCollection? plugins = null)
     {
         // Store the provided services, or an empty singleton if there aren't any.
-        Services = services ?? EmptyServiceProvider.Instance;
+        this.Services = services ?? EmptyServiceProvider.Instance;
 
         // Store the provided plugins. If there weren't any, look in DI to see if there's a plugin collection.
-        _plugins = plugins ?? Services.GetService<KernelPluginCollection>();
+        this._plugins = plugins ?? this.Services.GetService<KernelPluginCollection>();
 
-        if (_plugins is null)
+        if (this._plugins is null)
         {
             // Otherwise, enumerate any plugins that may have been registered directly.
-            IEnumerable<KernelPlugin> registeredPlugins = Services.GetServices<KernelPlugin>();
+            IEnumerable<KernelPlugin> registeredPlugins = this.Services.GetServices<KernelPlugin>();
 
             // It'll be common not to have any plugins directly registered as a service.
             // If we can efficiently tell there aren't any, avoid proactively allocating
             // the plugins collection.
             if (IsNotEmpty(registeredPlugins))
             {
-                _plugins = new KernelPluginCollection(registeredPlugins);
+                this._plugins = new KernelPluginCollection(registeredPlugins);
             }
         }
 
@@ -114,8 +112,8 @@ public sealed class Kernel
     /// </list>
     /// </remarks>
     public Kernel Clone() =>
-        new(Services, _plugins is { Count: > 0 }
-            ? new KernelPluginCollection(_plugins)
+        new(this.Services, this._plugins is { Count: > 0 }
+            ? new KernelPluginCollection(this._plugins)
             : null)
         {
             FunctionInvoking = FunctionInvoking,
@@ -131,19 +129,19 @@ public sealed class Kernel
             _autoFunctionInvocationFilters = this._autoFunctionInvocationFilters is { Count: > 0 }
                 ? new NonNullCollection<IAutoFunctionInvocationFilter>(this._autoFunctionInvocationFilters)
                 : null,
-            _data = _data is { Count: > 0 }
-                ? new Dictionary<string, object?>(_data)
+            _data = this._data is { Count: > 0 }
+                ? new Dictionary<string, object?>(this._data)
                 : null,
-            _culture = _culture
+            _culture = this._culture
         };
 
     /// <summary>
     /// Gets the collection of plugins available through the kernel.
     /// </summary>
     public KernelPluginCollection Plugins =>
-        _plugins ??
-        Interlocked.CompareExchange(ref _plugins, [], null) ??
-        _plugins;
+        this._plugins ??
+        Interlocked.CompareExchange(ref this._plugins, [], null) ??
+        this._plugins;
 
     /// <summary>
     /// Gets the collection of function filters available through the kernel.
@@ -187,8 +185,8 @@ public sealed class Kernel
     [AllowNull]
     public CultureInfo Culture
     {
-        get => _culture;
-        set => _culture = value ?? CultureInfo.InvariantCulture;
+        get => this._culture;
+        set => this._culture = value ?? CultureInfo.InvariantCulture;
     }
 
     /// <summary>
@@ -199,14 +197,14 @@ public sealed class Kernel
     /// none, it returns an <see cref="ILoggerFactory"/> that won't perform any logging.
     /// </remarks>
     public ILoggerFactory LoggerFactory =>
-        Services.GetService<ILoggerFactory>() ??
+        this.Services.GetService<ILoggerFactory>() ??
         NullLoggerFactory.Instance;
 
     /// <summary>
     /// Gets the <see cref="IAIServiceSelector"/> associated with this <see cref="Kernel"/>.
     /// </summary>
     public IAIServiceSelector ServiceSelector =>
-        Services.GetService<IAIServiceSelector>() ??
+        this.Services.GetService<IAIServiceSelector>() ??
         OrderedAIServiceSelector.Instance;
 
     /// <summary>
@@ -216,9 +214,9 @@ public sealed class Kernel
     /// This may be used to flow arbitrary data in and out of operations performed with this kernel instance.
     /// </remarks>
     public IDictionary<string, object?> Data =>
-        _data ??
-        Interlocked.CompareExchange(ref _data, [], null) ??
-        _data;
+        this._data ??
+        Interlocked.CompareExchange(ref this._data, [], null) ??
+        this._data;
 
     #region GetServices
 
@@ -233,10 +231,10 @@ public sealed class Kernel
 
         if (serviceKey is not null)
         {
-            if (Services is IKeyedServiceProvider)
+            if (this.Services is IKeyedServiceProvider)
             {
                 // We were given a service ID, so we need to use the keyed service lookup.
-                service = Services.GetKeyedService<T>(serviceKey);
+                service = this.Services.GetKeyedService<T>(serviceKey);
             }
         }
         else
@@ -245,11 +243,11 @@ public sealed class Kernel
             // a service registered without an ID. If we can't find one, then we try to match with
             // a service registered with an ID. In both cases, if there were multiple, this will match
             // with whichever was registered last.
-            service = Services.GetService<T>();
+            service = this.Services.GetService<T>();
 
-            if (service is null && Services is IKeyedServiceProvider)
+            if (service is null && this.Services is IKeyedServiceProvider)
             {
-                service = GetAllServices<T>().
+                service = this.GetAllServices<T>().
                     LastOrDefault();
             }
         }
@@ -259,7 +257,7 @@ public sealed class Kernel
         {
             string message =
                 serviceKey is null ? $"Service of type '{typeof(T)}' not registered." :
-                Services is not IKeyedServiceProvider ? $"Key '{serviceKey}' specified but service provider '{Services}' is not a {nameof(IKeyedServiceProvider)}." :
+                this.Services is not IKeyedServiceProvider ? $"Key '{serviceKey}' specified but service provider '{this.Services}' is not a {nameof(IKeyedServiceProvider)}." :
                 $"Service of type '{typeof(T)}' and key '{serviceKey}' not registered.";
 
             throw new KernelException(message);
@@ -275,13 +273,13 @@ public sealed class Kernel
     /// <remarks>There is no guaranteed ordering on the results.</remarks>
     public IEnumerable<T> GetAllServices<T>() where T : class
     {
-        if (Services is IKeyedServiceProvider)
+        if (this.Services is IKeyedServiceProvider)
         {
             // M.E.DI doesn't support querying for a service without a key, and it also doesn't
             // support AnyKey currently: https://github.com/dotnet/runtime/issues/91466
             // As a workaround, KernelBuilder injects a service containing the type-to-all-keys
             // mapping. We can query for that service and then use it to try to get a service.
-            if (Services.GetKeyedService<Dictionary<Type, HashSet<object?>>>(KernelServiceTypeToKeyMappings) is { } typeToKeyMappings)
+            if (this.Services.GetKeyedService<Dictionary<Type, HashSet<object?>>>(KernelServiceTypeToKeyMappings) is { } typeToKeyMappings)
             {
                 if (typeToKeyMappings.TryGetValue(typeof(T), out HashSet<object?>? keys))
                 {
@@ -292,7 +290,7 @@ public sealed class Kernel
             }
         }
 
-        return Services.GetServices<T>();
+        return this.Services.GetServices<T>();
     }
 
     #endregion
@@ -481,7 +479,7 @@ public sealed class Kernel
     {
         Verify.NotNullOrWhiteSpace(functionName);
 
-        var function = Plugins.GetFunction(pluginName, functionName);
+        var function = this.Plugins.GetFunction(pluginName, functionName);
 
         return function.InvokeAsync(this, arguments, cancellationToken);
     }
@@ -505,7 +503,7 @@ public sealed class Kernel
         KernelArguments? arguments = null,
         CancellationToken cancellationToken = default)
     {
-        FunctionResult result = await InvokeAsync(function, arguments, cancellationToken).
+        FunctionResult result = await this.InvokeAsync(function, arguments, cancellationToken).
             ConfigureAwait(false);
 
         return result.GetValue<TResult>();
@@ -534,7 +532,7 @@ public sealed class Kernel
         KernelArguments? arguments = null,
         CancellationToken cancellationToken = default)
     {
-        FunctionResult result = await InvokeAsync(pluginName, functionName, arguments, cancellationToken).
+        FunctionResult result = await this.InvokeAsync(pluginName, functionName, arguments, cancellationToken).
             ConfigureAwait(false);
 
         return result.GetValue<TResult>();
@@ -589,7 +587,7 @@ public sealed class Kernel
     {
         Verify.NotNullOrWhiteSpace(functionName);
 
-        var function = Plugins.GetFunction(pluginName, functionName);
+        var function = this.Plugins.GetFunction(pluginName, functionName);
 
         return function.InvokeStreamingAsync<StreamingKernelContent>(this, arguments, cancellationToken);
     }
@@ -639,7 +637,7 @@ public sealed class Kernel
     {
         Verify.NotNullOrWhiteSpace(functionName);
 
-        var function = Plugins.GetFunction(pluginName, functionName);
+        var function = this.Plugins.GetFunction(pluginName, functionName);
 
         return function.InvokeStreamingAsync<T>(this, arguments, cancellationToken);
     }

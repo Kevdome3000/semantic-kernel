@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (c) Microsoft.All rights reserved.
+
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;

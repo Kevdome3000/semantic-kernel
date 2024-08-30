@@ -17,8 +17,8 @@ public class DataEntryBase
     [JsonConstructor]
     public DataEntryBase(string? key = null, DateTimeOffset? timestamp = null)
     {
-        Key = key ?? string.Empty;
-        Timestamp = timestamp;
+        this.Key = key ?? string.Empty;
+        this.Timestamp = timestamp;
     }
 
     /// <summary>
@@ -37,5 +37,5 @@ public class DataEntryBase
     /// <c>true</c> if the data has a timestamp.
     /// </summary>
     [JsonIgnore]
-    public bool HasTimestamp => Timestamp.HasValue;
+    public bool HasTimestamp => this.Timestamp.HasValue;
 }

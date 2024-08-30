@@ -73,7 +73,6 @@ internal static partial class KernelFunctionLogMessages
             eventId: 0,
             "Function result: {ResultValue}");
 
-
     [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "By design. See comment below.")]
     public static void LogFunctionResultValue(this ILogger logger, FunctionResult? resultValue)
     {

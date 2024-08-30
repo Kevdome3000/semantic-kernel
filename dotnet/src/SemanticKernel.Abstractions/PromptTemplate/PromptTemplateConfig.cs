@@ -50,9 +50,8 @@ public sealed class PromptTemplateConfig
     /// <exception cref="ArgumentNullException"><paramref name="template"/> is null.</exception>
     public PromptTemplateConfig(string template)
     {
-        Template = template;
+        this.Template = template;
     }
-
 
     /// <summary>
     /// Creates a <see cref="PromptTemplateConfig"/> from the specified JSON.
@@ -139,8 +138,8 @@ public sealed class PromptTemplateConfig
     [AllowNull]
     public string TemplateFormat
     {
-        get => _templateFormat ?? SemanticKernelTemplateFormat;
-        set => _templateFormat = value;
+        get => this._templateFormat ?? SemanticKernelTemplateFormat;
+        set => this._templateFormat = value;
     }
 
     /// <summary>
@@ -150,11 +149,11 @@ public sealed class PromptTemplateConfig
     [JsonPropertyName("template")]
     public string Template
     {
-        get => _template;
+        get => this._template;
         set
         {
             Verify.NotNull(value);
-            _template = value;
+            this._template = value;
         }
     }
 
@@ -164,11 +163,11 @@ public sealed class PromptTemplateConfig
     [JsonPropertyName("input_variables")]
     public List<InputVariable> InputVariables
     {
-        get => _inputVariables ??= [];
+        get => this._inputVariables ??= [];
         set
         {
             Verify.NotNull(value);
-            _inputVariables = value;
+            this._inputVariables = value;
         }
     }
 
@@ -188,7 +187,7 @@ public sealed class PromptTemplateConfig
     [JsonPropertyName("execution_settings")]
     public Dictionary<string, PromptExecutionSettings> ExecutionSettings
     {
-        get => _executionSettings ??= [];
+        get => this._executionSettings ??= [];
         set
         {
             Verify.NotNull(value);
@@ -228,7 +227,7 @@ public sealed class PromptTemplateConfig
     /// <remarks>
     /// If no default is specified, this will return null.
     /// </remarks>
-    public PromptExecutionSettings? DefaultExecutionSettings => _executionSettings?.TryGetValue(PromptExecutionSettings.DefaultServiceId, out PromptExecutionSettings? settings) is true
+    public PromptExecutionSettings? DefaultExecutionSettings => this._executionSettings?.TryGetValue(PromptExecutionSettings.DefaultServiceId, out PromptExecutionSettings? settings) is true
         ? settings
         : null;
 
@@ -252,12 +251,12 @@ public sealed class PromptTemplateConfig
 
         var key = serviceId ?? settings.ServiceId ?? PromptExecutionSettings.DefaultServiceId;
 
-        if (ExecutionSettings.ContainsKey(key))
+        if (this.ExecutionSettings.ContainsKey(key))
         {
             throw new ArgumentException($"Execution settings for service id '{key}' already exists.", nameof(serviceId));
         }
 
-        ExecutionSettings[key] = settings;
+        this.ExecutionSettings[key] = settings;
     }
 
     /// <summary>
@@ -267,7 +266,7 @@ public sealed class PromptTemplateConfig
     {
         KernelParameterMetadata[] result = [];
 
-        if (_inputVariables is { } inputVariables)
+        if (this._inputVariables is { } inputVariables)
         {
             result = new KernelParameterMetadata[inputVariables.Count];
 
@@ -297,7 +296,7 @@ public sealed class PromptTemplateConfig
     /// Converts any <see cref="OutputVariable"/> into a <see cref="KernelReturnParameterMetadata"/>.
     /// </summary>
     public KernelReturnParameterMetadata? GetKernelReturnParameterMetadata() =>
-        OutputVariable is OutputVariable outputVariable
+        this.OutputVariable is OutputVariable outputVariable
             ? new KernelReturnParameterMetadata
             {
                 Description = outputVariable.Description,

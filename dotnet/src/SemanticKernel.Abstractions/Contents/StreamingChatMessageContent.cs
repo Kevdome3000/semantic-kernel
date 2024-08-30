@@ -146,22 +146,21 @@ public class StreamingChatMessageContent : StreamingKernelContent
 
     private StreamingKernelContentItemCollection? _items;
 
-
-/* Unmerged change from project 'SemanticKernel.Abstractions(netstandard2.0)'
-Before:
-    private string? _authorName;
-After:
+    /* Unmerged change from project 'SemanticKernel.Abstractions(netstandard2.0)'
+    Before:
+        private string? _authorName;
+    After:
+        private Encoding _encoding;
+    */
     private Encoding _encoding;
-*/
-    private Encoding _encoding;
 
     private string? _authorName;
 
-/* Unmerged change from project 'SemanticKernel.Abstractions(netstandard2.0)'
-Before:
-}
-After:
-    private string? _authorName;
-}
-*/
+    /* Unmerged change from project 'SemanticKernel.Abstractions(netstandard2.0)'
+    Before:
+    }
+    After:
+        private string? _authorName;
+    }
+    */
 }

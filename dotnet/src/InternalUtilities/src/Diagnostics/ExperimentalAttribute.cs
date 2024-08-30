@@ -36,9 +36,8 @@ internal sealed class ExperimentalAttribute : Attribute
     /// <param name="diagnosticId">The ID that the compiler will use when reporting a use of the API the attribute applies to.</param>
     public ExperimentalAttribute(string diagnosticId)
     {
-        DiagnosticId = diagnosticId;
+        this.DiagnosticId = diagnosticId;
     }
-
 
     /// <summary>
     ///  Gets the ID that the compiler will use when reporting a use of the API the attribute applies to.
