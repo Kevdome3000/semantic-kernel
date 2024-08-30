@@ -1,18 +1,15 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel.Memory;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Text.Json.Serialization;
-using Text;
+using Microsoft.SemanticKernel.Text;
 
-
+namespace Microsoft.SemanticKernel.Memory;
 /// <summary>
 /// Copy of metadata associated with a memory entry.
 /// </summary>
 public class MemoryQueryResult
 {
-
     /// <summary>
     /// Whether the source data used to calculate embeddings are stored in the local
     /// storage provider or is available through an external service, such as web site, MS Graph, etc.
@@ -29,7 +26,6 @@ public class MemoryQueryResult
     /// </summary>
     [JsonConverter(typeof(ReadOnlyMemoryConverter))]
     public ReadOnlyMemory<float>? Embedding { get; }
-
 
     /// <summary>
     /// Create a new instance of MemoryQueryResult
@@ -51,7 +47,6 @@ public class MemoryQueryResult
         Embedding = embedding;
     }
 
-
     /// <summary>
     /// Creates instance of <see cref="MemoryQueryResult"/> based on <see cref="MemoryRecord"/> and search relevance.
     /// </summary>
@@ -65,5 +60,4 @@ public class MemoryQueryResult
         record.Embedding.IsEmpty
             ? null
             : record.Embedding);
-
 }

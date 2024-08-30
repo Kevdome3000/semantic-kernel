@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -14,7 +14,6 @@ namespace Microsoft.SemanticKernel.Data;
 [Experimental("SKEXP0001")]
 public sealed class VectorStoreRecordDataProperty : VectorStoreRecordProperty
 {
-
     /// <summary>
     /// Initializes a new instance of the <see cref="VectorStoreRecordDataProperty"/> class.
     /// </summary>
@@ -24,7 +23,6 @@ public sealed class VectorStoreRecordDataProperty : VectorStoreRecordProperty
         : base(propertyName, propertyType)
     {
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VectorStoreRecordDataProperty"/> class by cloning the given source.
@@ -36,7 +34,6 @@ public sealed class VectorStoreRecordDataProperty : VectorStoreRecordProperty
         this.IsFilterable = source.IsFilterable;
         this.IsFullTextSearchable = source.IsFullTextSearchable;
     }
-
 
     /// <summary>
     /// Gets or sets a value indicating whether this data property is filterable.
@@ -53,5 +50,4 @@ public sealed class VectorStoreRecordDataProperty : VectorStoreRecordProperty
     /// Default is <see langword="false" />.
     /// </remarks>
     public bool IsFullTextSearchable { get; init; }
-
 }

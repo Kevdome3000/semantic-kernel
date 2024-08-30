@@ -1,16 +1,13 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Collections.Generic;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>Provides an <see cref="EventArgs"/> for operations related to <see cref="Kernel"/>-based operations.</summary>
 [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/GettingStarted/Step7_Observability.cs of Semantic Kernel repository.")]
 public abstract class KernelEventArgs : EventArgs
 {
-
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelEventArgs"/> class.
     /// </summary>
@@ -27,7 +24,6 @@ public abstract class KernelEventArgs : EventArgs
         this.Metadata = metadata;
     }
 
-
     /// <summary>
     /// Gets the <see cref="KernelFunction"/> with which this event is associated.
     /// </summary>
@@ -42,5 +38,4 @@ public abstract class KernelEventArgs : EventArgs
     /// Gets a dictionary of metadata related to the event.
     /// </summary>
     public IReadOnlyDictionary<string, object?>? Metadata { get; }
-
 }

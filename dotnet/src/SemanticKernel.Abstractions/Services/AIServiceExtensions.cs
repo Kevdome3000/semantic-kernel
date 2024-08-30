@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Linq;
 using System.Text;
@@ -13,7 +13,6 @@ namespace Microsoft.SemanticKernel.Services;
 /// </summary>
 public static class AIServiceExtensions
 {
-
     /// <summary>
     /// Gets the key used to store the model identifier in the <see cref="IAIService.Attributes"/> dictionary.
     /// </summary>
@@ -29,14 +28,12 @@ public static class AIServiceExtensions
     /// </summary>
     public static string ApiVersionKey => "ApiVersion";
 
-
     /// <summary>
     /// Gets the model identifier from <paramref name="service"/>'s <see cref="IAIService.Attributes"/>.
     /// </summary>
     /// <param name="service">The service from which to get the model identifier.</param>
     /// <returns>The model identifier if it was specified in the service's attributes; otherwise, null.</returns>
     public static string? GetModelId(this IAIService service) => service.GetAttribute(ModelIdKey);
-
 
     /// <summary>
     /// Gets the endpoint from <paramref name="service"/>'s <see cref="IAIService.Attributes"/>.
@@ -45,14 +42,12 @@ public static class AIServiceExtensions
     /// <returns>The endpoint if it was specified in the service's attributes; otherwise, null.</returns>
     public static string? GetEndpoint(this IAIService service) => service.GetAttribute(EndpointKey);
 
-
     /// <summary>
     /// Gets the API version from <paramref name="service"/>'s <see cref="IAIService.Attributes"/>
     /// </summary>
     /// <param name="service">The service from which to get the API version.</param>
     /// <returns>The API version if it was specified in the service's attributes; otherwise, null.</returns>
     public static string? GetApiVersion(this IAIService service) => service.GetAttribute(ApiVersionKey);
-
 
     /// <summary>
     /// Gets the specified attribute.
@@ -65,7 +60,6 @@ public static class AIServiceExtensions
             ? value as string
             : null;
     }
-
 
     /// <summary>
     /// Resolves an <see cref="IAIService"/> and associated <see cref="PromptExecutionSettings"/> from the specified
@@ -127,5 +121,4 @@ public static class AIServiceExtensions
 
         throw new KernelException(message.ToString());
     }
-
 }

@@ -1,6 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel.Diagnostics;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -9,9 +7,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
-using ChatCompletion;
+using Microsoft.SemanticKernel.ChatCompletion;
 
-
+namespace Microsoft.SemanticKernel.Diagnostics;
 /// <summary>
 /// Model diagnostics helper class that provides a set of methods to trace model activities with the OTel semantic conventions.
 /// This class contains experimental features and may change in the future.
@@ -25,7 +23,6 @@ using ChatCompletion;
 [ExcludeFromCodeCoverage]
 internal static class ModelDiagnostics
 {
-
     private static readonly string s_namespace = typeof(ModelDiagnostics).Namespace!;
 
     private static readonly ActivitySource s_activitySource = new(s_namespace);
@@ -42,7 +39,6 @@ internal static class ModelDiagnostics
 
     private static readonly bool s_enableSensitiveEvents = AppContextSwitchHelper.GetConfigValue(EnableSensitiveEventsSwitch, EnableSensitiveEventsEnvVar);
 
-
     /// <summary>
     /// Start a text completion activity for a given model.
     /// The activity will be tagged with the a set of attributes specified by the semantic conventions.
@@ -56,7 +52,6 @@ internal static class ModelDiagnostics
     ) where TPromptExecutionSettings : PromptExecutionSettings
         => StartCompletionActivity(endpoint, modelName, modelProvider, prompt,
             executionSettings, prompt => prompt);
-
 
     /// <summary>
     /// Start a chat completion activity for a given model.
@@ -72,7 +67,6 @@ internal static class ModelDiagnostics
         => StartCompletionActivity(endpoint, modelName, modelProvider, chatHistory,
             executionSettings, ToOpenAIFormat);
 
-
     /// <summary>
     /// Set the text completion response for a given activity.
     /// The activity will be enriched with the response attributes specified by the semantic conventions.
@@ -85,7 +79,6 @@ internal static class ModelDiagnostics
         => SetCompletionResponse(activity, completions, promptTokens, completionTokens,
             completions => $"[{string.Join(", ", completions)}]");
 
-
     /// <summary>
     /// Set the chat completion response for a given activity.
     /// The activity will be enriched with the response attributes specified by the semantic conventions.
@@ -97,7 +90,6 @@ internal static class ModelDiagnostics
         int? completionTokens = null)
         => SetCompletionResponse(activity, completions, promptTokens, completionTokens,
             ToOpenAIFormat);
-
 
     /// <summary>
     /// Notify the end of streaming for a given activity.
@@ -118,7 +110,6 @@ internal static class ModelDiagnostics
         }
     }
 
-
     /// <summary>
     /// Set the response id for a given activity.
     /// </summary>
@@ -126,7 +117,6 @@ internal static class ModelDiagnostics
     /// <param name="responseId">The response id</param>
     /// <returns>The activity with the response id set for chaining</returns>
     public static Activity SetResponseId(this Activity activity, string responseId) => activity.SetTag(ModelDiagnosticsTags.ResponseId, responseId);
-
 
     /// <summary>
     /// Set the prompt token usage for a given activity.
@@ -136,7 +126,6 @@ internal static class ModelDiagnostics
     /// <returns>The activity with the prompt token usage set for chaining</returns>
     public static Activity SetPromptTokenUsage(this Activity activity, int promptTokens) => activity.SetTag(ModelDiagnosticsTags.PromptToken, promptTokens);
 
-
     /// <summary>
     /// Set the completion token usage for a given activity.
     /// </summary>
@@ -144,7 +133,6 @@ internal static class ModelDiagnostics
     /// <param name="completionTokens">The number of completion tokens used</param>
     /// <returns>The activity with the completion token usage set for chaining</returns>
     public static Activity SetCompletionTokenUsage(this Activity activity, int completionTokens) => activity.SetTag(ModelDiagnosticsTags.CompletionToken, completionTokens);
-
 
     /// <summary>
     /// Check if model diagnostics is enabled
@@ -155,13 +143,11 @@ internal static class ModelDiagnostics
         return (s_enableDiagnostics || s_enableSensitiveEvents) && s_activitySource.HasListeners();
     }
 
-
     /// <summary>
     /// Check if sensitive events are enabled.
     /// Sensitive events are enabled if EnableSensitiveEvents is set to true and there are listeners.
     /// </summary>
     public static bool IsSensitiveEventsEnabled() => s_enableSensitiveEvents && s_activitySource.HasListeners();
-
 
     #region Private
 
@@ -193,7 +179,6 @@ internal static class ModelDiagnostics
         TryAddTag("temperature", ModelDiagnosticsTags.Temperature);
         TryAddTag("top_p", ModelDiagnosticsTags.TopP);
     }
-
 
     /// <summary>
     /// Convert chat history to a string aligned with the OpenAI format
@@ -235,7 +220,6 @@ internal static class ModelDiagnostics
         return sb.ToString();
     }
 
-
     /// <summary>
     /// Helper method to convert tool calls to a string aligned with the OpenAI format
     /// </summary>
@@ -266,7 +250,6 @@ internal static class ModelDiagnostics
 
         sb.Append(']');
     }
-
 
     /// <summary>
     /// Start a completion activity and return the activity.
@@ -323,7 +306,6 @@ internal static class ModelDiagnostics
         return activity;
     }
 
-
     /// <summary>
     /// Set the completion response for a given activity.
     /// The `formatCompletions` delegate won't be invoked if events are disabled.
@@ -362,7 +344,6 @@ internal static class ModelDiagnostics
                 ]);
         }
     }
-
 
     /// <summary>
     /// Set the streaming completion response for a given activity.
@@ -426,7 +407,6 @@ internal static class ModelDiagnostics
         }
     }
 
-
     // Returns an activity for chaining
     private static Activity SetFinishReasons(this Activity activity, IEnumerable<KernelContent> completions)
     {
@@ -448,7 +428,6 @@ internal static class ModelDiagnostics
         return activity;
     }
 
-
     // Returns an activity for chaining
     private static Activity SetResponseId(this Activity activity, KernelContent? completion)
     {
@@ -459,7 +438,6 @@ internal static class ModelDiagnostics
 
         return activity;
     }
-
 
     /// <summary>
     /// Organize streaming content by choice index
@@ -487,13 +465,11 @@ internal static class ModelDiagnostics
         return choices;
     }
 
-
     /// <summary>
     /// Tags used in model diagnostics
     /// </summary>
     private static class ModelDiagnosticsTags
     {
-
         // Activity tags
         public const string System = "gen_ai.system";
 
@@ -533,10 +509,8 @@ internal static class ModelDiagnostics
         public const string CompletionEvent = "gen_ai.content.completion";
 
         public const string CompletionEventCompletion = "gen_ai.completion";
-
     }
 
     # endregion
-
 
 }

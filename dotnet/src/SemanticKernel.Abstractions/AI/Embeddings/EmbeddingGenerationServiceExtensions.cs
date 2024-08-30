@@ -1,19 +1,16 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel.Embeddings;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-
+namespace Microsoft.SemanticKernel.Embeddings;
 /// <summary>
 /// Provides a collection of static methods for operating on <see cref="IEmbeddingGenerationService{TValue,TEmbedding}"/> objects.
 /// </summary>
 public static class EmbeddingGenerationExtensions
 {
-
     /// <summary>
     /// Generates an embedding from the given <paramref name="value"/>.
     /// </summary>
@@ -36,5 +33,4 @@ public static class EmbeddingGenerationExtensions
         return (await generator.GenerateEmbeddingsAsync([value], kernel, cancellationToken).
             ConfigureAwait(false)).FirstOrDefault();
     }
-
 }

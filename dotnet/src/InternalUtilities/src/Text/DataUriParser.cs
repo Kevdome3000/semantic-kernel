@@ -1,16 +1,14 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-#pragma warning disable CA1307 // Specify StringComparison
-#pragma warning disable CA1847 // Use StringBuilder.Append when concatenating strings
-
-namespace Microsoft.SemanticKernel.Text;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
+#pragma warning disable CA1307 // Specify StringComparison
+#pragma warning disable CA1847 // Use StringBuilder.Append when concatenating strings
 
+namespace Microsoft.SemanticKernel.Text;
 /// <summary>
 /// Data Uri Scheme Parser based on RFC 2397.
 /// https://datatracker.ietf.org/doc/html/rfc2397
@@ -18,7 +16,6 @@ using System.Linq;
 [ExcludeFromCodeCoverage]
 internal static class DataUriParser
 {
-
     private const string Scheme = "data:";
 
     private static readonly char[] s_base64Chars =
@@ -27,7 +24,6 @@ internal static class DataUriParser
         'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'
     };
-
 
     /// <summary>
     /// Extension method to test whether the value is a base64 string
@@ -75,7 +71,6 @@ internal static class DataUriParser
         // If we got here, then the value is a valid base64 string
         return true;
     }
-
 
     internal static DataUri Parse(string? dataUri)
     {
@@ -154,13 +149,11 @@ internal static class DataUriParser
         return model;
     }
 
-
     /// <summary>
     /// Represents the data URI parts.
     /// </summary>
     internal sealed class DataUri
     {
-
         /// <summary>
         /// The mime type of the data.
         /// </summary>
@@ -180,7 +173,5 @@ internal static class DataUriParser
         /// The data content.
         /// </summary>
         public string? Data { get; set; }
-
     }
-
 }

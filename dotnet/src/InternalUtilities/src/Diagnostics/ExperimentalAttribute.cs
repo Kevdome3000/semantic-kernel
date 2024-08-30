@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 // This is a copy of:
 // https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Diagnostics/CodeAnalysis/ExperimentalAttribute.cs
@@ -29,13 +29,15 @@ namespace System.Diagnostics.CodeAnalysis;
                 AttributeTargets.Delegate, Inherited = false)]
 internal sealed class ExperimentalAttribute : Attribute
 {
-
     /// <summary>
     ///  Initializes a new instance of the <see cref="ExperimentalAttribute"/> class, specifying the ID that the compiler will use
     ///  when reporting a use of the API the attribute applies to.
     /// </summary>
     /// <param name="diagnosticId">The ID that the compiler will use when reporting a use of the API the attribute applies to.</param>
-    public ExperimentalAttribute(string diagnosticId) => DiagnosticId = diagnosticId;
+    public ExperimentalAttribute(string diagnosticId)
+    {
+        DiagnosticId = diagnosticId;
+    }
 
 
     /// <summary>
@@ -55,6 +57,5 @@ internal sealed class ExperimentalAttribute : Attribute
     /// <value>The format string that represents a URL to corresponding documentation.</value>
     /// <remarks>An example format string is <c>https://contoso.com/obsoletion-warnings/{0}</c>.</remarks>
     public string? UrlFormat { get; set; }
-
 }
 #endif

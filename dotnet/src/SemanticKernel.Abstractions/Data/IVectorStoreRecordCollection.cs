@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -19,12 +19,10 @@ public interface IVectorStoreRecordCollection<TKey, TRecord>
     where TKey : notnull
     where TRecord : class
 {
-
     /// <summary>
     /// Gets the name of the collection.
     /// </summary>
     public string CollectionName { get; }
-
 
     /// <summary>
     /// Check if the collection exists in the vector store.
@@ -33,14 +31,12 @@ public interface IVectorStoreRecordCollection<TKey, TRecord>
     /// <returns><see langword="true"/> if the collection exists, <see langword="false"/> otherwise.</returns>
     Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default);
 
-
     /// <summary>
     /// Create this collection in the vector store.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A <see cref="Task"/> that completes when the collection has been created.</returns>
     Task CreateCollectionAsync(CancellationToken cancellationToken = default);
-
 
     /// <summary>
     /// Create this collection in the vector store if it does not already exist.
@@ -49,14 +45,12 @@ public interface IVectorStoreRecordCollection<TKey, TRecord>
     /// <returns>A <see cref="Task"/> that completes when the collection has been created.</returns>
     Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default);
 
-
     /// <summary>
     /// Delete the collection from the vector store.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A <see cref="Task"/> that completes when the collection has been deleted.</returns>
     Task DeleteCollectionAsync(CancellationToken cancellationToken = default);
-
 
     /// <summary>
     /// Gets a record from the vector store. Does not guarantee that the collection exists.
@@ -69,7 +63,6 @@ public interface IVectorStoreRecordCollection<TKey, TRecord>
     /// <exception cref="VectorStoreOperationException">Throw when the command fails to execute for any reason.</exception>
     /// <exception cref="VectorStoreRecordMappingException">Throw when mapping between the storage model and record data model fails.</exception>
     Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = default, CancellationToken cancellationToken = default);
-
 
     /// <summary>
     /// Gets a batch of records from the vector store. Does not guarantee that the collection exists.
@@ -85,7 +78,6 @@ public interface IVectorStoreRecordCollection<TKey, TRecord>
     /// <exception cref="VectorStoreRecordMappingException">Throw when mapping between the storage model and record data model fails.</exception>
     IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<TKey> keys, GetRecordOptions? options = default, CancellationToken cancellationToken = default);
 
-
     /// <summary>
     /// Deletes a record from the vector store. Does not guarantee that the collection exists.
     /// </summary>
@@ -95,7 +87,6 @@ public interface IVectorStoreRecordCollection<TKey, TRecord>
     /// <returns>The unique identifier for the record.</returns>
     /// <exception cref="VectorStoreOperationException">Throw when the command fails to execute for any reason other than that the record does not exit.</exception>
     Task DeleteAsync(TKey key, DeleteRecordOptions? options = default, CancellationToken cancellationToken = default);
-
 
     /// <summary>
     /// Deletes a batch of records from the vector store. Does not guarantee that the collection exists.
@@ -110,7 +101,6 @@ public interface IVectorStoreRecordCollection<TKey, TRecord>
     /// <exception cref="VectorStoreOperationException">Throw when the command fails to execute for any reason other than that a record does not exist.</exception>
     Task DeleteBatchAsync(IEnumerable<TKey> keys, DeleteRecordOptions? options = default, CancellationToken cancellationToken = default);
 
-
     /// <summary>
     /// Upserts a record into the vector store. Does not guarantee that the collection exists.
     ///     If the record already exists, it will be updated.
@@ -123,7 +113,6 @@ public interface IVectorStoreRecordCollection<TKey, TRecord>
     /// <exception cref="VectorStoreOperationException">Throw when the command fails to execute for any reason.</exception>
     /// <exception cref="VectorStoreRecordMappingException">Throw when mapping between the storage model and record data model fails.</exception>
     Task<TKey> UpsertAsync(TRecord record, UpsertRecordOptions? options = default, CancellationToken cancellationToken = default);
-
 
     /// <summary>
     /// Upserts a group of records into the vector store. Does not guarantee that the collection exists.
@@ -138,5 +127,4 @@ public interface IVectorStoreRecordCollection<TKey, TRecord>
     /// <exception cref="VectorStoreOperationException">Throw when the command fails to execute for any reason.</exception>
     /// <exception cref="VectorStoreRecordMappingException">Throw when mapping between the storage model and record data model fails.</exception>
     IAsyncEnumerable<TKey> UpsertBatchAsync(IEnumerable<TRecord> records, UpsertRecordOptions? options = default, CancellationToken cancellationToken = default);
-
 }

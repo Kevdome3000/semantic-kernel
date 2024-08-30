@@ -1,6 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel.Text;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -12,9 +10,9 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 
+namespace Microsoft.SemanticKernel.Text;
 #pragma warning disable CA1812 // Internal class that is apparently never instantiated
 #pragma warning disable CA1846 // Prefer 'AsSpan' over 'Substring' when span-based overloads are available
-
 
 /// <summary>
 /// Internal class for parsing a stream of text which contains a series of discrete JSON strings into en enumerable containing each separate JSON string.
@@ -27,7 +25,6 @@ using System.Threading.Tasks;
 [ExcludeFromCodeCoverage]
 internal sealed class StreamJsonParser
 {
-
     /// <summary>
     /// Parses a Stream containing JSON data and yields the individual JSON objects.
     /// </summary>
@@ -51,10 +48,8 @@ internal sealed class StreamJsonParser
         }
     }
 
-
     private sealed class ChunkParser
     {
-
         private readonly StringBuilder _jsonBuilder = new();
 
         private readonly StreamReader _reader;
@@ -73,12 +68,10 @@ internal sealed class StreamJsonParser
 
         private string? _lastLine;
 
-
         internal ChunkParser(StreamReader reader)
         {
             this._reader = reader;
         }
-
 
         internal async Task<string?> ExtractNextChunkAsync(
             bool validateJson,
@@ -110,7 +103,6 @@ internal sealed class StreamJsonParser
 
             return null;
         }
-
 
         private bool ProcessLineUntilCompleteJson(string line)
         {
@@ -149,7 +141,6 @@ internal sealed class StreamJsonParser
             return false;
         }
 
-
         private void ResetState()
         {
             this._jsonBuilder.Clear();
@@ -160,7 +151,6 @@ internal sealed class StreamJsonParser
             this._isCompleteJson = false;
             this._currentCharacter = default;
         }
-
 
         private void AppendLine(string line)
         {
@@ -176,7 +166,6 @@ internal sealed class StreamJsonParser
                     break;
             }
         }
-
 
         private string GetJsonString(bool validateJson)
         {
@@ -195,15 +184,12 @@ internal sealed class StreamJsonParser
             return json;
         }
 
-
         private void MarkJsonAsComplete()
         {
             this._isCompleteJson = true;
         }
 
-
         private void ResetEscapeFlag() => this._isEscaping = false;
-
 
         private void HandleCurrentCharacterOutsideQuotes(int index)
         {
@@ -236,7 +222,6 @@ internal sealed class StreamJsonParser
             }
         }
 
-
         private void DetermineIfQuoteStartOrEnd()
         {
             if (this is { _currentCharacter: '\"', _isEscaping: false })
@@ -244,7 +229,6 @@ internal sealed class StreamJsonParser
                 this._insideQuotes = !this._insideQuotes;
             }
         }
-
 
         private bool IsEscapedCharacterInsideQuotes()
         {
@@ -257,7 +241,5 @@ internal sealed class StreamJsonParser
 
             return false;
         }
-
     }
-
 }

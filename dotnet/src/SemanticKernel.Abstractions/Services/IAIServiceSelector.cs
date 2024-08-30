@@ -1,11 +1,10 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
-using Extensions.DependencyInjection;
-using Services;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel.Services;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents a selector which will return a tuple containing instances of <see cref="IAIService"/> and <see cref="PromptExecutionSettings"/> from the specified provider based on the model settings.
 /// </summary>

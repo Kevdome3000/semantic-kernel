@@ -1,12 +1,10 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace JsonSchemaMapper;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 
-
+namespace JsonSchemaMapper;
 /// <summary>
 /// Controls the behavior of the <see cref="JsonSchemaMapper"/> class.
 /// </summary>
@@ -18,7 +16,6 @@ internal
 #endif
     class JsonSchemaMapperConfiguration
 {
-
     /// <summary>
     /// Gets the default configuration object used by <see cref="JsonSchemaMapper"/>.
     /// </summary>
@@ -93,5 +90,4 @@ internal
             _maxDepth = value;
         }
     }
-
 }

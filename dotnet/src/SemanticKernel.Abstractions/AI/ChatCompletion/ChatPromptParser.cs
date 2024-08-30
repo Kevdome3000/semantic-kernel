@@ -1,19 +1,16 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel.ChatCompletion;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
-
+namespace Microsoft.SemanticKernel.ChatCompletion;
 /// <summary>
 /// Chat Prompt parser.
 /// </summary>
 internal static class ChatPromptParser
 {
-
     private const string MessageTagName = "message";
 
     private const string RoleAttributeName = "role";
@@ -21,7 +18,6 @@ internal static class ChatPromptParser
     private const string ImageTagName = "image";
 
     private const string TextTagName = "text";
-
 
     /// <summary>
     /// Parses a prompt for an XML representation of a <see cref="ChatHistory"/>.
@@ -53,7 +49,6 @@ internal static class ChatPromptParser
         return false;
     }
 
-
     /// <summary>
     /// Parses collection of <see cref="PromptNode"/> instances and sets output as <see cref="ChatHistory"/>.
     /// </summary>
@@ -71,7 +66,6 @@ internal static class ChatPromptParser
 
         return chatHistory is not null;
     }
-
 
     /// <summary>
     /// Parses a chat node and constructs a <see cref="ChatMessageContent"/> object.
@@ -107,7 +101,6 @@ internal static class ChatPromptParser
             : new ChatMessageContent(authorRole, node.Content);
     }
 
-
     /// <summary>
     /// Checks if <see cref="PromptNode"/> is valid chat message.
     /// </summary>
@@ -127,12 +120,10 @@ internal static class ChatPromptParser
             IsValidChildNodes(node);
     }
 
-
     private static bool IsValidChildNodes(PromptNode node)
     {
         var textTagsCount = node.ChildNodes.Count(n => n.TagName.Equals(TextTagName, StringComparison.OrdinalIgnoreCase));
 
         return textTagsCount == 1 || (textTagsCount == 0 && node.Content is not null);
     }
-
 }

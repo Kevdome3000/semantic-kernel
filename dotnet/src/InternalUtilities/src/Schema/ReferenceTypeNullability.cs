@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 namespace JsonSchemaMapper;
 
@@ -12,7 +12,6 @@ internal
 #endif
     enum ReferenceTypeNullability
 {
-
     /// <summary>
     /// Always treat reference types as nullable. Follows the built-in behavior
     /// of the serializer (cf. https://github.com/dotnet/runtime/issues/1256).
@@ -28,5 +27,4 @@ internal
     /// Always treat reference types as non-nullable.
     /// </summary>
     NeverNullable,
-
 }

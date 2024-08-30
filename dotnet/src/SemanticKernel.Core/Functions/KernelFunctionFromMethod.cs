@@ -1,6 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Collections.Concurrent;
@@ -19,18 +17,17 @@ using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Extensions.DependencyInjection;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides factory methods for creating <see cref="KernelFunction"/> instances backed by a .NET method.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 internal sealed partial class KernelFunctionFromMethod : KernelFunction
 {
-
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
     /// and an optional target object if the method is an instance method.
@@ -66,6 +63,27 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
     }
 
 
+/* Unmerged change from project 'SemanticKernel.Core(netstandard2.0)'
+Before:
+    /// <summary>
+After:
+    /// <summary>
+*/
+
+/* Unmerged change from project 'SemanticKernel.Core(netstandard2.0)'
+Before:
+    /// <inheritdoc/>
+After:
+    /// <inheritdoc/>
+*/
+
+
+/* Unmerged change from project 'SemanticKernel.Core(netstandard2.0)'
+Before:
+    /// <inheritdoc/>
+After:
+    /// <inheritdoc/>
+*/
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
     /// and an optional target object if the method is an instance method.
@@ -105,7 +123,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         return result;
     }
 
-
     /// <inheritdoc/>
     protected override ValueTask<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
@@ -114,7 +131,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
     {
         return this._function(kernel, this, arguments, cancellationToken);
     }
-
 
     /// <inheritdoc/>
     protected override async IAsyncEnumerable<TResult> InvokeStreamingCoreAsync<TResult>(
@@ -160,8 +176,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
 
         throw new NotSupportedException($"Streaming function {this.Name} does not support type {typeof(TResult)}");
     }
-
-
     /// <inheritdoc/>
     public override KernelFunction Clone(string pluginName)
     {
@@ -177,7 +191,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
             this.Metadata.AdditionalProperties);
     }
 
-
     /// <summary>Delegate used to invoke the underlying delegate.</summary>
     private delegate ValueTask<FunctionResult> ImplementationFunc(
         Kernel kernel,
@@ -185,11 +198,9 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         KernelArguments arguments,
         CancellationToken cancellationToken);
 
-
     private static readonly object[] s_cancellationTokenNoneArray = [CancellationToken.None];
 
     private readonly ImplementationFunc _function;
-
 
     private record struct MethodDetails(
         string Name,
@@ -197,7 +208,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         ImplementationFunc Function,
         List<KernelParameterMetadata> Parameters,
         KernelReturnParameterMetadata ReturnParameter);
-
 
     private KernelFunctionFromMethod(
         ImplementationFunc implementationFunc,
@@ -210,7 +220,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
             parameters, returnParameter, additionalMetadata)
     {
     }
-
 
     private KernelFunctionFromMethod(
         ImplementationFunc implementationFunc,
@@ -227,7 +236,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
 
         this._function = implementationFunc;
     }
-
 
     private static MethodDetails GetMethodDetails(string? functionName, MethodInfo method, object? target)
     {
@@ -330,7 +338,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         };
     }
 
-
     /// <summary>Gets whether a method has a known async return type.</summary>
     private static bool IsAsyncMethod(MethodInfo method)
     {
@@ -353,7 +360,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
 
         return false;
     }
-
 
     /// <summary>
     /// Gets a delegate for handling the marshaling of a parameter.
@@ -543,7 +549,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         return (parameterFunc, parameterView);
     }
 
-
     /// <summary>
     /// Tries to deserialize the given value into an object of the specified target type.
     /// </summary>
@@ -584,7 +589,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
 
         return false;
     }
-
 
     /// <summary>
     /// Gets a delegate for handling the result value of a method, converting it into the <see cref="Task{FunctionResult}"/> to return from the invocation.
@@ -770,7 +774,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
             throw new KernelException("Function returned null unexpectedly.");
     }
 
-
     /// <summary>Invokes the MethodInfo with the specified target object and arguments.</summary>
     private static object? Invoke(MethodInfo method, object? target, object?[]? arguments)
     {
@@ -795,12 +798,10 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         return result;
     }
 
-
     /// <summary>Gets an exception that can be thrown indicating an invalid signature.</summary>
     [DoesNotReturn]
     private static Exception GetExceptionForInvalidSignature(MethodInfo method, string reason) =>
         throw new KernelException($"Function '{method.Name}' is not supported by the kernel. {reason}");
-
 
     /// <summary>Throws an exception indicating an invalid KernelFunctionFactory signature if the specified condition is not met.</summary>
     private static void ThrowForInvalidSignatureIf([DoesNotReturnIf(true)] bool condition, MethodInfo method, string reason)
@@ -810,7 +811,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
             throw GetExceptionForInvalidSignature(method, reason);
         }
     }
-
 
     /// <summary>
     /// Gets a converter for type to ty conversion. For example, string to int, string to Guid, double to int, CustomType to string, etc.
@@ -895,12 +895,10 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
             return null;
         });
 
-
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay => string.IsNullOrWhiteSpace(this.Description)
         ? this.Name
         : $"{this.Name} ({this.Description})";
-
 
     /// <summary>
     /// Remove characters from method name that are valid in metadata but invalid for SK.
@@ -909,7 +907,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         InvalidNameCharsRegex().
             Replace(methodName, "_");
 
-
     /// <summary>Regex that flags any character other than ASCII digits or letters or the underscore.</summary>
 #if NET
     [GeneratedRegex("[^0-9A-Za-z_]")]
@@ -917,11 +914,9 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
 #else
     private static Regex InvalidNameCharsRegex() => s_invalidNameCharsRegex;
 
-
     private static readonly Regex s_invalidNameCharsRegex = new("[^0-9A-Za-z_]", RegexOptions.Compiled);
 #endif
 
     /// <summary>Parser functions for converting strings to parameter types.</summary>
     private static readonly ConcurrentDictionary<Type, Func<object?, CultureInfo, object?>?> s_parsers = new();
-
 }

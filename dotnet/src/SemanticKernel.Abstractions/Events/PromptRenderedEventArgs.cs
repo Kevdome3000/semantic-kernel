@@ -1,20 +1,16 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides a <see cref="CancelKernelEventArgs"/> used in events raised just after a prompt has been rendered.
 /// </summary>
 [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/GettingStarted/Step7_Observability.cs of Semantic Kernel repository.")]
 public sealed class PromptRenderedEventArgs : CancelKernelEventArgs
 {
-
     private string _renderedPrompt;
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptRenderedEventArgs"/> class.
@@ -27,7 +23,6 @@ public sealed class PromptRenderedEventArgs : CancelKernelEventArgs
     {
         this.RenderedPrompt = renderedPrompt;
     }
-
 
     /// <summary>Gets or sets the rendered prompt.</summary>
     /// <remarks>
@@ -46,5 +41,4 @@ public sealed class PromptRenderedEventArgs : CancelKernelEventArgs
             this._renderedPrompt = value;
         }
     }
-
 }

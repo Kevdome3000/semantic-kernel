@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,7 +12,6 @@ namespace Microsoft.SemanticKernel;
 [Experimental("SKEXP0001")]
 public static class ServiceCollectionExtensions
 {
-
     /// <summary>
     /// Register a Volatile <see cref="IVectorStore"/> with the specified service ID.
     /// </summary>
@@ -25,5 +24,4 @@ public static class ServiceCollectionExtensions
 
         return services;
     }
-
 }

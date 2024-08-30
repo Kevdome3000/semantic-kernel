@@ -1,10 +1,9 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
+
+
+using System.Diagnostics.CodeAnalysis;
 
 namespace System;
-
-using Diagnostics.CodeAnalysis;
-
-
 [ExcludeFromCodeCoverage]
 internal static class EnvExtensions
 {

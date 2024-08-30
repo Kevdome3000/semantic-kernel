@@ -1,15 +1,13 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Text;
+using Microsoft.SemanticKernel.Text;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides the configuration information necessary to create a prompt template.
 /// </summary>
@@ -26,7 +24,6 @@ using Text;
 /// </remarks>
 public sealed class PromptTemplateConfig
 {
-
     /// <summary>The format of the prompt template.</summary>
     private string? _templateFormat;
 
@@ -39,7 +36,6 @@ public sealed class PromptTemplateConfig
     /// <summary>Lazily-initialized execution settings. The key is the service ID, or <see cref="PromptExecutionSettings.DefaultServiceId"/> for the default execution settings.</summary>
     private Dictionary<string, PromptExecutionSettings>? _executionSettings;
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptTemplateConfig"/> class.
     /// </summary>
@@ -47,13 +43,15 @@ public sealed class PromptTemplateConfig
     {
     }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptTemplateConfig"/> class using the specified prompt template string.
     /// </summary>
     /// <param name="template">The prompt template string that defines the prompt.</param>
     /// <exception cref="ArgumentNullException"><paramref name="template"/> is null.</exception>
-    public PromptTemplateConfig(string template) => Template = template;
+    public PromptTemplateConfig(string template)
+    {
+        Template = template;
+    }
 
 
     /// <summary>
@@ -110,7 +108,6 @@ public sealed class PromptTemplateConfig
             config ??
             throw new ArgumentException($"Unable to deserialize {nameof(PromptTemplateConfig)} from the specified JSON.", nameof(json), innerException);
     }
-
 
     /// <summary>
     /// Gets or sets the function name to use by default when creating prompt functions using this configuration.
@@ -235,7 +232,6 @@ public sealed class PromptTemplateConfig
         ? settings
         : null;
 
-
     /// <summary>
     /// Adds the specified <see cref="PromptExecutionSettings"/> to the <see cref="ExecutionSettings"/> dictionary.
     /// </summary>
@@ -263,7 +259,6 @@ public sealed class PromptTemplateConfig
 
         ExecutionSettings[key] = settings;
     }
-
 
     /// <summary>
     /// Converts the <see cref="InputVariable"/> collection into a collection of <see cref="KernelParameterMetadata"/>.
@@ -298,7 +293,6 @@ public sealed class PromptTemplateConfig
         return result;
     }
 
-
     /// <summary>
     /// Converts any <see cref="OutputVariable"/> into a <see cref="KernelReturnParameterMetadata"/>.
     /// </summary>
@@ -310,5 +304,4 @@ public sealed class PromptTemplateConfig
                 Schema = KernelJsonSchema.ParseOrNull(outputVariable.JsonSchema)
             }
             : null;
-
 }

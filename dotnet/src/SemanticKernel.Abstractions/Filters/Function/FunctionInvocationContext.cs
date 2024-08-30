@@ -1,16 +1,13 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Threading;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Class with data related to function invocation.
 /// </summary>
 public class FunctionInvocationContext
 {
-
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionInvocationContext"/> class.
     /// </summary>
@@ -33,7 +30,6 @@ public class FunctionInvocationContext
         this.Arguments = arguments;
         this.Result = result;
     }
-
 
     /// <summary>
     /// The <see cref="System.Threading.CancellationToken"/> to monitor for cancellation requests.
@@ -60,5 +56,4 @@ public class FunctionInvocationContext
     /// Gets or sets the result of the function's invocation.
     /// </summary>
     public FunctionResult Result { get; set; }
-
 }

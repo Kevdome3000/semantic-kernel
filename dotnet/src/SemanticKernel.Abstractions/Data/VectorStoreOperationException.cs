@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -11,14 +11,12 @@ namespace Microsoft.SemanticKernel.Data;
 [Experimental("SKEXP0001")]
 public class VectorStoreOperationException : VectorStoreException
 {
-
     /// <summary>
     /// Initializes a new instance of the <see cref="VectorStoreOperationException"/> class.
     /// </summary>
     public VectorStoreOperationException()
     {
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VectorStoreOperationException"/> class with a specified error message.
@@ -28,7 +26,6 @@ public class VectorStoreOperationException : VectorStoreException
     {
     }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="VectorStoreOperationException"/> class with a specified error message and a reference to the inner exception that is the cause of this exception.
     /// </summary>
@@ -37,5 +34,4 @@ public class VectorStoreOperationException : VectorStoreException
     public VectorStoreOperationException(string? message, Exception? innerException) : base(message, innerException)
     {
     }
-
 }

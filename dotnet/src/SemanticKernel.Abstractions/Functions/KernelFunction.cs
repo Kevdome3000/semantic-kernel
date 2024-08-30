@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Collections;
@@ -422,9 +422,13 @@ public abstract class KernelFunction : IKernelFunction
     public abstract KernelFunction Clone(string pluginName);
 
     /// <inheritdoc/>
-    public override string ToString() => string.IsNullOrWhiteSpace(PluginName)
-        ? Name
-        : $"{PluginName}.{Name}";
+    public override string ToString()
+    {
+        return string.IsNullOrWhiteSpace(PluginName)
+            ? Name
+            : $"{PluginName}.{Name}";
+    }
+
 
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/>.

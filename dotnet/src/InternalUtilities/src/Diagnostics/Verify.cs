@@ -1,6 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -10,15 +8,13 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
-
+namespace Microsoft.SemanticKernel;
 [ExcludeFromCodeCoverage]
 internal static partial class Verify
 {
-
 #if NET
     [GeneratedRegex("^[0-9A-Za-z_]*$")]
     private static partial Regex AsciiLettersDigitsUnderscoresRegex();
-
 
     [GeneratedRegex("^[^.]+\\.[^.]+$")]
     private static partial Regex FilenameRegex();
@@ -31,7 +27,6 @@ internal static partial class Verify
 
     private static readonly Regex s_filenameRegex = new("^[^.]+\\.[^.]+$", RegexOptions.Compiled);
 #endif
-
 
     /// <summary>
     /// Equivalent of ArgumentNullException.ThrowIfNull
@@ -49,7 +44,6 @@ internal static partial class Verify
 #endif
     }
 
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void NotNullOrWhiteSpace([NotNull] string? str, [CallerArgumentExpression(nameof(str))] string? paramName = null)
     {
@@ -65,7 +59,6 @@ internal static partial class Verify
 #endif
     }
 
-
     internal static void NotNullOrEmpty<T>(IList<T> list, [CallerArgumentExpression(nameof(list))] string? paramName = null)
     {
         NotNull(list, paramName);
@@ -76,7 +69,6 @@ internal static partial class Verify
         }
     }
 
-
     public static void True(bool condition, string message, [CallerArgumentExpression(nameof(condition))] string? paramName = null)
     {
         if (!condition)
@@ -84,7 +76,6 @@ internal static partial class Verify
             throw new ArgumentException(message, paramName);
         }
     }
-
 
     internal static void ValidPluginName([NotNull] string? pluginName, IReadOnlyKernelPluginCollection? plugins = null, [CallerArgumentExpression(nameof(pluginName))] string? paramName = null)
     {
@@ -102,7 +93,6 @@ internal static partial class Verify
         }
     }
 
-
     internal static void ValidFunctionName([NotNull] string? functionName, [CallerArgumentExpression(nameof(functionName))] string? paramName = null)
     {
         NotNullOrWhiteSpace(functionName);
@@ -114,7 +104,6 @@ internal static partial class Verify
         }
     }
 
-
     internal static void ValidFilename([NotNull] string? filename, [CallerArgumentExpression(nameof(filename))] string? paramName = null)
     {
         NotNullOrWhiteSpace(filename);
@@ -125,7 +114,6 @@ internal static partial class Verify
             throw new ArgumentException($"Invalid filename format: '{filename}'. Filename should consist of an actual name and a file extension.", paramName);
         }
     }
-
 
     public static void ValidateUrl(string url, bool allowQuery = false, [CallerArgumentExpression(nameof(url))] string? paramName = null)
     {
@@ -147,7 +135,6 @@ internal static partial class Verify
         }
     }
 
-
     internal static void StartsWith(
         [NotNull] string? text,
         string prefix,
@@ -165,7 +152,6 @@ internal static partial class Verify
         }
     }
 
-
     internal static void DirectoryExists(string path)
     {
         if (!Directory.Exists(path))
@@ -173,7 +159,6 @@ internal static partial class Verify
             throw new DirectoryNotFoundException($"Directory '{path}' could not be found.");
         }
     }
-
 
     /// <summary>
     /// Make sure every function parameter name is unique
@@ -213,24 +198,19 @@ internal static partial class Verify
         }
     }
 
-
     [DoesNotReturn]
     private static void ThrowArgumentInvalidName(string kind, string name, string? paramName) =>
         throw new ArgumentException($"A {kind} can contain only ASCII letters, digits, and underscores: '{name}' is not a valid name.", paramName);
-
 
     [DoesNotReturn]
     internal static void ThrowArgumentNullException(string? paramName) =>
         throw new ArgumentNullException(paramName);
 
-
     [DoesNotReturn]
     internal static void ThrowArgumentWhiteSpaceException(string? paramName) =>
         throw new ArgumentException("The value cannot be an empty string or composed entirely of whitespace.", paramName);
 
-
     [DoesNotReturn]
     internal static void ThrowArgumentOutOfRangeException<T>(string? paramName, T actualValue, string message) =>
         throw new ArgumentOutOfRangeException(paramName, actualValue, message);
-
 }

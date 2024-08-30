@@ -1,23 +1,19 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents an input variable for prompt functions.
 /// </summary>
 public sealed class InputVariable
 {
-
     /// <summary>The name of the variable.</summary>
     private string _name = string.Empty;
 
     /// <summary>The description of the variable.</summary>
     private string _description = string.Empty;
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="InputVariable"/> class.
@@ -25,7 +21,6 @@ public sealed class InputVariable
     public InputVariable()
     {
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="InputVariable"/> class from an existing instance.
@@ -42,7 +37,6 @@ public sealed class InputVariable
         this.JsonSchema = inputVariable.JsonSchema;
         this.AllowDangerouslySetContent = inputVariable.AllowDangerouslySetContent;
     }
-
 
     /// <summary>
     /// Gets or sets the name of the variable.
@@ -108,5 +102,4 @@ public sealed class InputVariable
     [Experimental("SKEXP0001")]
     [JsonPropertyName("allow_dangerously_set_content")]
     public bool AllowDangerouslySetContent { get; set; } = false;
-
 }

@@ -1,12 +1,10 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel.Http;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net.Http;
 
-
+namespace Microsoft.SemanticKernel.Http;
 /// <summary>
 /// Associate a response stream with its parent response for parity in life-cycle management.
 /// </summary>
@@ -14,7 +12,6 @@ using System.Net.Http;
 [ExcludeFromCodeCoverage]
 internal sealed class HttpResponseStream(Stream stream, HttpResponseMessage response) : Stream
 {
-
     private readonly Stream _stream = stream;
 
     private readonly HttpResponseMessage _response = response;
@@ -33,36 +30,30 @@ internal sealed class HttpResponseStream(Stream stream, HttpResponseMessage resp
         set => this._stream.Position = value;
     }
 
-
     public override void Flush()
     {
         this._stream.Flush();
     }
-
 
     public override int Read(byte[] buffer, int offset, int count)
     {
         return this._stream.Read(buffer, offset, count);
     }
 
-
     public override long Seek(long offset, SeekOrigin origin)
     {
         return this._stream.Seek(offset, origin);
     }
-
 
     public override void SetLength(long value)
     {
         this._stream.SetLength(value);
     }
 
-
     public override void Write(byte[] buffer, int offset, int count)
     {
         this._stream.Write(buffer, offset, count);
     }
-
 
     protected override void Dispose(bool disposing)
     {
@@ -74,5 +65,4 @@ internal sealed class HttpResponseStream(Stream stream, HttpResponseMessage resp
             this._response.Dispose();
         }
     }
-
 }

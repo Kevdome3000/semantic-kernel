@@ -1,6 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Collections.Concurrent;
@@ -8,14 +6,13 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides internal utility methods for converting types to strings with consideration for CultureInfo.
 /// </summary>
 [ExcludeFromCodeCoverage]
 internal static class InternalTypeConverter
 {
-
     /// <summary>
     /// Converts the given object value to a string representation using the appropriate CultureInfo.
     /// </summary>
@@ -34,7 +31,6 @@ internal static class InternalTypeConverter
             ? value.ToString()
             : converterDelegate(value, culture ?? CultureInfo.InvariantCulture);
     }
-
 
     /// <summary>
     /// Retrieves a type-to-string converter delegate for the specified source type.
@@ -62,8 +58,6 @@ internal static class InternalTypeConverter
             return null;
         });
 
-
     /// <summary>Converter functions for converting types to strings.</summary>
     private static readonly ConcurrentDictionary<Type, Func<object?, CultureInfo, string?>?> s_converters = new();
-
 }

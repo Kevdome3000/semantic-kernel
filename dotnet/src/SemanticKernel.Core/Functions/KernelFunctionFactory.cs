@@ -1,6 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -8,17 +6,15 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
-using Extensions.Logging;
+using Microsoft.Extensions.Logging;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides factory methods for creating commonly-used implementations of <see cref="KernelFunction"/>, such as
 /// those backed by a prompt to be submitted to an LLM or those backed by a .NET method.
 /// </summary>
 public static class KernelFunctionFactory
 {
-
-
     #region FromMethod
 
     /// <summary>
@@ -41,7 +37,6 @@ public static class KernelFunctionFactory
         CreateFromMethod(method.Method, method.Target, functionName, description,
             parameters, returnParameter, loggerFactory);
 
-
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via a delegate.
     /// </summary>
@@ -52,7 +47,6 @@ public static class KernelFunctionFactory
         Delegate method,
         KernelFunctionFromMethodOptions? options) =>
         CreateFromMethod(method.Method, method.Target, options);
-
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
@@ -77,7 +71,6 @@ public static class KernelFunctionFactory
         KernelFunctionFromMethod.Create(method, target, functionName, description,
             parameters, returnParameter, loggerFactory);
 
-
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
     /// and an optional target object if the method is an instance method.
@@ -93,7 +86,6 @@ public static class KernelFunctionFactory
         KernelFunctionFromMethod.Create(method, target, options);
 
     #endregion
-
 
     #region FromPrompt
 
@@ -130,7 +122,6 @@ public static class KernelFunctionFactory
             promptTemplateFactory,
             loggerFactory);
 
-
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template.
     /// </summary>
@@ -156,7 +147,6 @@ public static class KernelFunctionFactory
         KernelFunctionFromPrompt.Create(promptTemplate, CreateSettingsDictionary(executionSettings), functionName, description,
             templateFormat, promptTemplateFactory, loggerFactory);
 
-
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template configuration.
     /// </summary>
@@ -172,7 +162,6 @@ public static class KernelFunctionFactory
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null) => KernelFunctionFromPrompt.Create(promptConfig, promptTemplateFactory, loggerFactory);
 
-
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template and prompt template configuration.
     /// </summary>
@@ -187,12 +176,10 @@ public static class KernelFunctionFactory
 
     #endregion
 
-
     /// <summary>
     /// Wraps the specified settings into a dictionary with the default service ID as the key.
     /// </summary>
     [return: NotNullIfNotNull(nameof(settings))]
     private static Dictionary<string, PromptExecutionSettings>? CreateSettingsDictionary(IEnumerable<PromptExecutionSettings>? settings) =>
         settings?.ToDictionary(s => s.ServiceId ?? PromptExecutionSettings.DefaultServiceId, s => s);
-
 }

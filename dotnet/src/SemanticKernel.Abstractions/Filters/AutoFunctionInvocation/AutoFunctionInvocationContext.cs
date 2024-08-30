@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
@@ -12,7 +12,6 @@ namespace Microsoft.SemanticKernel;
 [Experimental("SKEXP0001")]
 public class AutoFunctionInvocationContext
 {
-
     /// <summary>
     /// Initializes a new instance of the <see cref="AutoFunctionInvocationContext"/> class.
     /// </summary>
@@ -40,7 +39,6 @@ public class AutoFunctionInvocationContext
         this.ChatHistory = chatHistory;
         this.ChatMessageContent = chatMessageContent;
     }
-
 
     /// <summary>
     /// The <see cref="System.Threading.CancellationToken"/> to monitor for cancellation requests.
@@ -105,5 +103,4 @@ public class AutoFunctionInvocationContext
     /// Automatic function invocation process will be terminated and result of last executed function will be returned to the caller.
     /// </summary>
     public bool Terminate { get; set; }
-
 }

@@ -1,10 +1,8 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents a factory for prompt templates for one or more prompt template formats.
 /// </summary>

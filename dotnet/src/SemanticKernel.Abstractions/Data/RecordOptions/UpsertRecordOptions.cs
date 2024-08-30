@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
 
@@ -14,14 +14,12 @@ namespace Microsoft.SemanticKernel.Data;
 [Experimental("SKEXP0001")]
 public class UpsertRecordOptions
 {
-
     /// <summary>
     /// Initializes a new instance of the <see cref="UpsertRecordOptions"/> class.
     /// </summary>
     public UpsertRecordOptions()
     {
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UpsertRecordOptions"/> class by cloning the given options.
@@ -30,5 +28,4 @@ public class UpsertRecordOptions
     public UpsertRecordOptions(UpsertRecordOptions source)
     {
     }
-
 }

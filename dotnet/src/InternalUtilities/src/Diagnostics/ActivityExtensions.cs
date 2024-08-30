@@ -1,17 +1,14 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel.Diagnostics;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
-
+namespace Microsoft.SemanticKernel.Diagnostics;
 [ExcludeFromCodeCoverage]
 internal static class ActivityExtensions
 {
-
     /// <summary>
     /// Starts an activity with the specified name and tags.
     /// </summary>
@@ -21,7 +18,6 @@ internal static class ActivityExtensions
         IEnumerable<KeyValuePair<string, object?>> tags,
         ActivityKind kind = ActivityKind.Internal)
         => source.StartActivity(name, kind, default(ActivityContext), tags);
-
 
     /// <summary>
     /// Adds tags to the activity.
@@ -38,7 +34,6 @@ internal static class ActivityExtensions
         return activity;
     }
 
-
     /// <summary>
     /// Adds an event to the activity. Should only be used for events that contain sensitive data.
     /// </summary>
@@ -52,7 +47,6 @@ internal static class ActivityExtensions
         return activity;
     }
 
-
     /// <summary>
     /// Sets the error status and type on the activity.
     /// </summary>
@@ -65,5 +59,4 @@ internal static class ActivityExtensions
 
         return activity;
     }
-
 }

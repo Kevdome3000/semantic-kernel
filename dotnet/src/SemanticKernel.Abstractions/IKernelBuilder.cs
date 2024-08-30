@@ -1,10 +1,9 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
+
+
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.SemanticKernel;
-
-using Extensions.DependencyInjection;
-
-
 /// <summary>Provides a builder for constructing instances of <see cref="Kernel"/>.</summary>
 public interface IKernelBuilder
 {
@@ -14,7 +13,6 @@ public interface IKernelBuilder
     /// <summary>Gets a builder for adding collections as singletons to <see cref="Services"/>.</summary>
     IKernelBuilderPlugins Plugins { get; }
 }
-
 
 /// <summary>Provides a builder for adding plugins as singletons to a service collection.</summary>
 public interface IKernelBuilderPlugins

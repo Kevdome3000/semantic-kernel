@@ -1,23 +1,20 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
+
+
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.SemanticKernel;
-
-using Extensions.DependencyInjection;
-
-
 /// <summary>Provides a builder for constructing instances of <see cref="Kernel"/>.</summary>
 internal sealed class KernelBuilder : IKernelBuilder, IKernelBuilderPlugins
 {
     /// <summary>The collection of services to be available through the <see cref="Kernel"/>.</summary>
     private IServiceCollection? _services;
 
-
     /// <summary>Initializes a new instance of the <see cref="KernelBuilder"/>.</summary>
     public KernelBuilder()
     {
         this.AllowBuild = true;
     }
-
 
     /// <summary>Initializes a new instance of the <see cref="KernelBuilder"/>.</summary>
     /// <param name="services">
@@ -29,7 +26,6 @@ internal sealed class KernelBuilder : IKernelBuilder, IKernelBuilderPlugins
 
         this._services = services;
     }
-
 
     /// <summary>Whether to allow a call to Build.</summary>
     /// <remarks>As a minor aid to help avoid misuse, we try to prevent Build from being called on instances returned from AddKernel.</remarks>

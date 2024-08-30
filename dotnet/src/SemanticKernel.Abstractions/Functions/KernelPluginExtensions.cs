@@ -1,15 +1,12 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>Provides extension methods for working with <see cref="KernelPlugin"/>s and collections of them.</summary>
 public static class KernelPluginExtensions
 {
-
     /// <summary>Gets whether the plugins collection contains a plugin with the specified name.</summary>
     /// <param name="plugins">The plugins collections.</param>
     /// <param name="pluginName">The name of the plugin.</param>
@@ -21,7 +18,6 @@ public static class KernelPluginExtensions
 
         return plugins.TryGetPlugin(pluginName, out _);
     }
-
 
     /// <summary>Gets a function from the collection by plugin and function names.</summary>
     /// <param name="plugins">The collection.</param>
@@ -40,7 +36,6 @@ public static class KernelPluginExtensions
 
         return function;
     }
-
 
     /// <summary>Gets a function from the collection by plugin and function names.</summary>
     /// <param name="plugins">The collection.</param>
@@ -85,7 +80,6 @@ public static class KernelPluginExtensions
         return false;
     }
 
-
     /// <summary>Gets a collection of <see cref="KernelFunctionMetadata"/> instances, one for every function in every plugin in the plugins collection.</summary>
     /// <param name="plugins">The plugins collection.</param>
     /// <returns>A list of metadata over every function in the plugins collection</returns>
@@ -102,5 +96,4 @@ public static class KernelPluginExtensions
 
         return metadata;
     }
-
 }

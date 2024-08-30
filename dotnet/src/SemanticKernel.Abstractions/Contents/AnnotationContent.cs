@@ -1,18 +1,16 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-namespace Microsoft.SemanticKernel.Agents.OpenAI;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-
+namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// <summary>
 /// Content type to support message annotations.
 /// </summary>
 [Experimental("SKEXP0110")]
 public class AnnotationContent : KernelContent
 {
-
     /// <summary>
     /// The file identifier.
     /// </summary>
@@ -35,7 +33,6 @@ public class AnnotationContent : KernelContent
     /// </summary>
     public int EndIndex { get; init; }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="AnnotationContent"/> class.
     /// </summary>
@@ -43,7 +40,6 @@ public class AnnotationContent : KernelContent
     public AnnotationContent()
     {
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AnnotationContent"/> class.
@@ -58,5 +54,4 @@ public class AnnotationContent : KernelContent
         : base(innerContent, modelId, metadata)
     {
     }
-
 }

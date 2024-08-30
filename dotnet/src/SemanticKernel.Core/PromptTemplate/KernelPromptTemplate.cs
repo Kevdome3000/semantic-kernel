@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -26,7 +26,6 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 internal sealed class KernelPromptTemplate : IPromptTemplate
 {
-
     /// <summary>
     /// Constructor for <see cref="KernelPromptTemplate"/>.
     /// </summary>
@@ -50,7 +49,6 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
             Select(iv => iv.Name));
     }
 
-
     /// <inheritdoc/>
     public Task<string> RenderAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
     {
@@ -58,7 +56,6 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
 
         return this.RenderAsync(this._blocks, kernel, arguments, cancellationToken);
     }
-
 
     #region private
 
@@ -69,7 +66,6 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
     private readonly bool _allowDangerouslySetContent;
 
     private readonly HashSet<string> _safeBlocks;
-
 
     /// <summary>
     /// Given a prompt template string, extract all the blocks (text, variables, function calls)
@@ -91,7 +87,6 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
 
         return blocks;
     }
-
 
     /// <summary>
     /// Given a list of blocks render each block and compose the final result.
@@ -145,7 +140,6 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
 
         return result.ToString();
     }
-
 
     /// <summary>
     /// Augments <paramref name="config"/>'s <see cref="PromptTemplateConfig.InputVariables"/> with any variables
@@ -205,7 +199,6 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
         }
     }
 
-
     private static bool ShouldEncodeTags(bool disableTagEncoding, HashSet<string> safeBlocks, Block block)
     {
         if (block is VarBlock varBlock)
@@ -217,6 +210,5 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
     }
 
     #endregion
-
 
 }

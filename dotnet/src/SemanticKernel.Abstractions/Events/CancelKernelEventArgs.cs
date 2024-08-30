@@ -1,11 +1,9 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Collections.Generic;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides an <see cref="EventArgs"/> for cancelable operations related
 /// to <see cref="Kernel"/>-based operations.
@@ -13,7 +11,6 @@ using System.Collections.Generic;
 [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/GettingStarted/Step7_Observability.cs of Semantic Kernel repository.")]
 public abstract class CancelKernelEventArgs : KernelEventArgs
 {
-
     /// <summary>
     /// Initializes a new instance of the <see cref="CancelKernelEventArgs"/> class.
     /// </summary>
@@ -24,7 +21,6 @@ public abstract class CancelKernelEventArgs : KernelEventArgs
         base(function, arguments, metadata)
     {
     }
-
 
     /// <summary>
     /// Gets or sets a value indicating whether the operation associated with
@@ -39,5 +35,4 @@ public abstract class CancelKernelEventArgs : KernelEventArgs
     /// be considered by the component raising the event.
     /// </remarks>
     public bool Cancel { get; set; }
-
 }

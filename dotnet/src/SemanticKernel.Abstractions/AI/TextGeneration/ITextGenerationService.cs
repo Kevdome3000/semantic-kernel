@@ -1,14 +1,12 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel.TextGeneration;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Services;
+using Microsoft.SemanticKernel.Services;
 
-
+namespace Microsoft.SemanticKernel.TextGeneration;
 /// <summary>
 /// Interface for text generation services
 /// </summary>
@@ -27,7 +25,6 @@ public interface ITextGenerationService : IAIService
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default);
-
 
     /// <summary>
     /// Get streaming results for the prompt using the specified execution settings.

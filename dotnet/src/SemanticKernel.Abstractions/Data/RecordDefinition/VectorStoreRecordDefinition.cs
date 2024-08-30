@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -14,7 +14,6 @@ namespace Microsoft.SemanticKernel.Data;
 [Experimental("SKEXP0001")]
 public sealed class VectorStoreRecordDefinition
 {
-
     /// <summary>Empty static list for initialization purposes.</summary>
     private static readonly List<VectorStoreRecordProperty> s_emptyFields = new();
 
@@ -22,5 +21,4 @@ public sealed class VectorStoreRecordDefinition
     /// The list of properties that are stored in the record.
     /// </summary>
     public IReadOnlyList<VectorStoreRecordProperty> Properties { get; init; } = s_emptyFields;
-
 }

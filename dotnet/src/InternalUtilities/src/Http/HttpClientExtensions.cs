@@ -1,6 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel.Http;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -9,7 +7,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-
+namespace Microsoft.SemanticKernel.Http;
 [ExcludeFromCodeCoverage]
 internal static class HttpClientExtensions
 {
@@ -59,7 +57,6 @@ internal static class HttpClientExtensions
 
         return response;
     }
-
 
     /// <summary>
     /// Sends an HTTP request using the provided <see cref="HttpClient"/> instance and checks for a successful response.

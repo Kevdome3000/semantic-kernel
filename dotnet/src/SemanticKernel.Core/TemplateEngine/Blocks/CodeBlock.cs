@@ -1,23 +1,19 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel.TemplateEngine;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Extensions.Logging;
+using Microsoft.Extensions.Logging;
 
+namespace Microsoft.SemanticKernel.TemplateEngine;
 #pragma warning disable CA2254 // error strings are used also internally, not just for logging
 #pragma warning disable CA1031 // IsCriticalException is an internal utility and should not be used by extensions
-
 
 // ReSharper disable TemplateIsNotCompileTimeConstantProblem
 internal sealed class CodeBlock : Block, ICodeRendering
 {
-
     internal override BlockTypes Type => BlockTypes.Code;
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CodeBlock"/> class.
@@ -28,7 +24,6 @@ internal sealed class CodeBlock : Block, ICodeRendering
         : this(new CodeTokenizer(loggerFactory).Tokenize(content), content?.Trim(), loggerFactory)
     {
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CodeBlock"/> class.
@@ -42,12 +37,10 @@ internal sealed class CodeBlock : Block, ICodeRendering
         this.Blocks = tokens;
     }
 
-
     /// <summary>
     /// Gets the list of blocks.
     /// </summary>
     public List<Block> Blocks { get; }
-
 
     /// <inheritdoc/>
     public override bool IsValid(out string errorMsg)
@@ -82,7 +75,6 @@ internal sealed class CodeBlock : Block, ICodeRendering
         return true;
     }
 
-
     /// <inheritdoc/>
     public ValueTask<object?> RenderCodeAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
     {
@@ -104,11 +96,9 @@ internal sealed class CodeBlock : Block, ICodeRendering
         };
     }
 
-
     #region private ================================================================================
 
     private bool _validated;
-
 
     private async ValueTask<object?> RenderFunctionCallAsync(
         FunctionIdBlock fBlock,
@@ -141,7 +131,6 @@ internal sealed class CodeBlock : Block, ICodeRendering
             throw;
         }
     }
-
 
     private bool IsValidFunctionCall(out string errorMsg)
     {
@@ -176,7 +165,6 @@ internal sealed class CodeBlock : Block, ICodeRendering
 
         return true;
     }
-
 
     /// <summary>
     /// Adds function arguments. If the first argument is not a named argument, it is added to the arguments collection as the 'input' argument.
@@ -255,7 +243,6 @@ internal sealed class CodeBlock : Block, ICodeRendering
     }
 
     #endregion
-
 
 }
 // ReSharper restore TemplateIsNotCompileTimeConstantProblem

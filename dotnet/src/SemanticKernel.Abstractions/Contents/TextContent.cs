@@ -1,19 +1,16 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
-using TextGeneration;
+using Microsoft.SemanticKernel.TextGeneration;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents text content return from a <see cref="ITextGenerationService" /> service.
 /// </summary>
 public sealed class TextContent : KernelContent
 {
-
     /// <summary>
     /// The text content.
     /// </summary>
@@ -25,7 +22,6 @@ public sealed class TextContent : KernelContent
     [JsonIgnore]
     public Encoding Encoding { get; set; }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="TextContent"/> class.
     /// </summary>
@@ -34,7 +30,6 @@ public sealed class TextContent : KernelContent
     {
         this.Encoding = Encoding.UTF8;
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TextContent"/> class.
@@ -56,11 +51,9 @@ public sealed class TextContent : KernelContent
         this.Encoding = encoding ?? Encoding.UTF8;
     }
 
-
     /// <inheritdoc/>
     public override string ToString()
     {
         return this.Text ?? string.Empty;
     }
-
 }

@@ -1,20 +1,17 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel.Memory;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Net.Http;
-using Embeddings;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Embeddings;
 
-
+namespace Microsoft.SemanticKernel.Memory;
 /// <summary>
 /// A builder for Memory plugin.
 /// </summary>
 public sealed class MemoryBuilder
 {
-
     private Func<IMemoryStore>? _memoryStoreFactory;
 
     private Func<ITextEmbeddingGenerationService>? _embeddingGenerationFactory;
@@ -22,7 +19,6 @@ public sealed class MemoryBuilder
     private HttpClient? _httpClient;
 
     private ILoggerFactory _loggerFactory = NullLoggerFactory.Instance;
-
 
     /// <summary>
     /// Build a new instance of <see cref="ISemanticTextMemory"/> using the settings passed so far.
@@ -39,7 +35,6 @@ public sealed class MemoryBuilder
         return new SemanticTextMemory(memoryStore, embeddingGeneration);
     }
 
-
     /// <summary>
     /// Add a logger factory.
     /// </summary>
@@ -52,7 +47,6 @@ public sealed class MemoryBuilder
 
         return this;
     }
-
 
     /// <summary>
     /// Add an HttpClient.
@@ -67,7 +61,6 @@ public sealed class MemoryBuilder
         return this;
     }
 
-
     /// <summary>
     /// Add memory store.
     /// </summary>
@@ -80,7 +73,6 @@ public sealed class MemoryBuilder
 
         return this;
     }
-
 
     /// <summary>
     /// Add memory store factory.
@@ -95,7 +87,6 @@ public sealed class MemoryBuilder
         return this;
     }
 
-
     /// <summary>
     /// Add memory store factory.
     /// </summary>
@@ -108,7 +99,6 @@ public sealed class MemoryBuilder
 
         return this;
     }
-
 
     /// <summary>
     /// Add text embedding generation.
@@ -123,7 +113,6 @@ public sealed class MemoryBuilder
         return this;
     }
 
-
     /// <summary>
     /// Add text embedding generation.
     /// </summary>
@@ -137,5 +126,4 @@ public sealed class MemoryBuilder
 
         return this;
     }
-
 }

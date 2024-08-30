@@ -1,13 +1,11 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Factory for creating TypeConverter instances based on a provided type.
 /// </summary>

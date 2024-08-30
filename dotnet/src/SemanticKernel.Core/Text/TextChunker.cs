@@ -1,6 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel.Text;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -8,7 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-
+namespace Microsoft.SemanticKernel.Text;
 /// <summary>
 /// Split text in chunks, attempting to leave meaning intact.
 /// For plain text, split looking at new lines first, then periods, and so on.
@@ -16,21 +14,17 @@ using System.Text;
 /// </summary>
 public static class TextChunker
 {
-
     /// <summary>
     /// Represents a list of strings with token count.
     /// Used to reduce the number of calls to the tokenizer.
     /// </summary>
-    private sealed class StringListWithTokenCount(TextChunker.TokenCounter? tokenCounter)
+    private sealed class StringListWithTokenCount(TokenCounter? tokenCounter)
     {
-
         private readonly TokenCounter? _tokenCounter = tokenCounter;
-
 
         public void Add(string value) => this.Values.Add((value, this._tokenCounter is null
             ? GetDefaultTokenCount(value.Length)
             : this._tokenCounter(value)));
-
 
         public void Add(string value, int tokenCount) => this.Values.Add((value, tokenCount));
 
@@ -40,19 +34,15 @@ public static class TextChunker
 
         public int Count => this.Values.Count;
 
-
         public List<string> ToStringList() => this.Values.Select(v => v.Value).
             ToList();
-
 
         private List<(string Value, int TokenCount)> Values { get; } = [];
 
         public string ValueAt(int i) => this.Values[i].Value;
 
         public int TokenCountAt(int i) => this.Values[i].TokenCount;
-
     }
-
 
     /// <summary>
     /// Delegate for counting tokens in a string.
@@ -61,13 +51,11 @@ public static class TextChunker
     /// <returns>The number of tokens in the input string.</returns>
     public delegate int TokenCounter(string input);
 
-
     private static readonly char[] s_spaceChar = [' '];
 
     private static readonly string?[] s_plaintextSplitOptions = ["\n\r", ".。．", "?!", ";", ":", ",，、", ")]}", " ", "-", null];
 
     private static readonly string?[] s_markdownSplitOptions = [".\u3002\uFF0E", "?!", ";", ":", ",\uFF0C\u3001", ")]}", " ", "-", "\n\r", null];
-
 
     /// <summary>
     /// Split plain text into lines.
@@ -80,7 +68,6 @@ public static class TextChunker
         InternalSplitLines(text, maxTokensPerLine, trim: true, s_plaintextSplitOptions,
             tokenCounter);
 
-
     /// <summary>
     /// Split markdown text into lines.
     /// </summary>
@@ -91,7 +78,6 @@ public static class TextChunker
     public static List<string> SplitMarkDownLines(string text, int maxTokensPerLine, TokenCounter? tokenCounter = null) =>
         InternalSplitLines(text, maxTokensPerLine, trim: true, s_markdownSplitOptions,
             tokenCounter);
-
 
     /// <summary>
     /// Split plain text into paragraphs.
@@ -112,7 +98,6 @@ public static class TextChunker
             static (text, maxTokens, tokenCounter) => InternalSplitLines(text, maxTokens, trim: false, s_plaintextSplitOptions,
                 tokenCounter), tokenCounter);
 
-
     /// <summary>
     /// Split markdown text into paragraphs.
     /// </summary>
@@ -131,7 +116,6 @@ public static class TextChunker
         InternalSplitTextParagraphs(lines, maxTokensPerParagraph, overlapTokens, chunkHeader,
             static (text, maxTokens, tokenCounter) => InternalSplitLines(text, maxTokens, trim: false, s_markdownSplitOptions,
                 tokenCounter), tokenCounter);
-
 
     private static List<string> InternalSplitTextParagraphs(
         IEnumerable<string> lines,
@@ -174,7 +158,6 @@ public static class TextChunker
         return processedParagraphs;
     }
 
-
     private static List<string> BuildParagraph(IEnumerable<string> truncatedLines, int maxTokensPerParagraph, TokenCounter? tokenCounter)
     {
         StringBuilder paragraphBuilder = new();
@@ -216,7 +199,6 @@ public static class TextChunker
 
         return paragraphs;
     }
-
 
     private static List<string> ProcessParagraphs(
         List<string> paragraphs,
@@ -289,7 +271,6 @@ public static class TextChunker
         return processedParagraphs;
     }
 
-
     private static List<string> InternalSplitLines(
         string text,
         int maxTokensPerLine,
@@ -321,7 +302,6 @@ public static class TextChunker
         return result.ToStringList();
     }
 
-
     private static (StringListWithTokenCount, bool) Split(
         StringListWithTokenCount input,
         int maxTokens,
@@ -345,7 +325,6 @@ public static class TextChunker
 
         return (result, inputWasSplit);
     }
-
 
     private static (StringListWithTokenCount, bool) Split(
         ReadOnlySpan<char> input,
@@ -439,11 +418,9 @@ public static class TextChunker
         return (result, inputWasSplit);
     }
 
-
     private static int GetTokenCount(string input, TokenCounter? tokenCounter) => tokenCounter is null
         ? GetDefaultTokenCount(input.Length)
         : tokenCounter(input);
-
 
     private static int GetDefaultTokenCount(int length)
     {
@@ -451,5 +428,4 @@ public static class TextChunker
 
         return length >> 2;
     }
-
 }

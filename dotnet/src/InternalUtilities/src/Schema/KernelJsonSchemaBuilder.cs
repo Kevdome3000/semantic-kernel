@@ -1,6 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Text.Json;
@@ -9,6 +7,7 @@ using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using JsonSchemaMapper;
 
+namespace Microsoft.SemanticKernel;
 // TODO: The JSON schema should match the JsonSerializerOptions used for actually performing
 // the serialization, e.g. whether public fields should be included in the schema should
 // match whether public fields will be serialized/deserialized. For now we can assume the
@@ -17,14 +16,11 @@ using JsonSchemaMapper;
 // 2) Check when the schema is being used (e.g. function calling) whether the JSO being used is equivalent to
 //    whichever was used to build the schema, and if it's not, generate a new schema for that JSO
 
-
 internal static class KernelJsonSchemaBuilder
 {
-
     private static readonly JsonSerializerOptions s_options = CreateDefaultOptions();
 
     private static readonly JsonSchemaMapperConfiguration s_config = new() { IncludeSchemaVersion = false };
-
 
     public static KernelJsonSchema Build(JsonSerializerOptions? options, Type type, string? description = null)
     {
@@ -40,7 +36,6 @@ internal static class KernelJsonSchemaBuilder
         return KernelJsonSchema.Parse(JsonSerializer.Serialize(jsonObj, options));
     }
 
-
     private static JsonSerializerOptions CreateDefaultOptions()
     {
         JsonSerializerOptions options = new()
@@ -53,5 +48,4 @@ internal static class KernelJsonSchemaBuilder
 
         return options;
     }
-
 }

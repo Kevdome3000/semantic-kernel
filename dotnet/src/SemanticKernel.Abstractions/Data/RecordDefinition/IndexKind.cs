@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
 
@@ -15,7 +15,6 @@ namespace Microsoft.SemanticKernel.Data;
 [Experimental("SKEXP0001")]
 public static class IndexKind
 {
-
     /// <summary>
     /// Hierarchical Navigable Small World, which performs an approximate nearest neighbour (ANN) search.
     /// </summary>
@@ -34,5 +33,4 @@ public static class IndexKind
     /// Better with smaller datasets.
     /// </remarks>
     public const string Flat = nameof(Flat);
-
 }

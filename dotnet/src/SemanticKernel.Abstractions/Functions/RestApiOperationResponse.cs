@@ -1,18 +1,15 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.ComponentModel;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// The REST API operation response.
 /// </summary>
 [TypeConverterAttribute(typeof(RestApiOperationResponseConverter))]
 public sealed class RestApiOperationResponse
 {
-
     /// <summary>
     /// Gets the content of the response.
     /// </summary>
@@ -43,7 +40,6 @@ public sealed class RestApiOperationResponse
     /// </summary>
     public object? RequestPayload { get; init; }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="RestApiOperationResponse"/> class.
     /// </summary>
@@ -57,8 +53,6 @@ public sealed class RestApiOperationResponse
         this.ExpectedSchema = expectedSchema;
     }
 
-
     /// <inheritdoc/>
     public override string ToString() => this.Content?.ToString() ?? string.Empty;
-
 }

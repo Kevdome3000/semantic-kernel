@@ -1,12 +1,10 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel.Text;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
 
+namespace Microsoft.SemanticKernel.Text;
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes
-
 
 /// <summary>
 /// Represents a single Server-Sent Events (SSE) data object.
@@ -14,7 +12,6 @@ using System.Diagnostics.CodeAnalysis;
 [ExcludeFromCodeCoverage]
 internal sealed class SseData
 {
-
     /// <summary>
     /// The name of the sse event.
     /// </summary>
@@ -30,7 +27,6 @@ internal sealed class SseData
     /// </summary>
     public object Data { get; }
 
-
     /// <summary>
     /// Represents a single Server-Sent Events (SSE) data object.
     /// </summary>
@@ -44,5 +40,4 @@ internal sealed class SseData
         this.DataType = data.GetType();
         this.Data = data;
     }
-
 }

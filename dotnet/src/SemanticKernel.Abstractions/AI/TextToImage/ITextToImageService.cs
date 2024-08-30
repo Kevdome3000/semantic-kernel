@@ -1,18 +1,15 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel.TextToImage;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Threading;
 using System.Threading.Tasks;
-using Services;
+using Microsoft.SemanticKernel.Services;
 
-
+namespace Microsoft.SemanticKernel.TextToImage;
 /// <summary>
 /// Interface for text to image services
 /// </summary>
 public interface ITextToImageService : IAIService
 {
-
     /// <summary>
     /// Generate an image matching the given description
     /// </summary>
@@ -28,5 +25,4 @@ public interface ITextToImageService : IAIService
         int height,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default);
-
 }

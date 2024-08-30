@@ -1,19 +1,16 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel.TextToAudio;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Services;
+using Microsoft.SemanticKernel.Services;
 
-
+namespace Microsoft.SemanticKernel.TextToAudio;
 /// <summary>
 /// Interface for text-to-audio services.
 /// </summary>
 public interface ITextToAudioService : IAIService
 {
-
     /// <summary>
     /// Get audio contents from text.
     /// </summary>
@@ -27,5 +24,4 @@ public interface ITextToAudioService : IAIService
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default);
-
 }

@@ -1,6 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel.Text;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -8,7 +6,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-
+namespace Microsoft.SemanticKernel.Text;
 /// <summary>
 /// Provides a reader for Server-Sent Events (SSE) data.
 /// </summary>
@@ -18,13 +16,11 @@ using System.Threading.Tasks;
 [ExcludeFromCodeCoverage]
 internal sealed class SseReader(Stream stream) : IDisposable
 {
-
     private readonly Stream _stream = stream;
 
     private readonly StreamReader _reader = new(stream);
 
     private string? _lastEventName;
-
 
     public SseLine? ReadSingleDataEvent()
     {
@@ -65,7 +61,6 @@ internal sealed class SseReader(Stream stream) : IDisposable
 
         return null;
     }
-
 
     public async Task<SseLine?> ReadSingleDataEventAsync(CancellationToken cancellationToken)
     {
@@ -108,7 +103,6 @@ internal sealed class SseReader(Stream stream) : IDisposable
         return null;
     }
 
-
     private SseLine? ReadLine()
     {
         string? lineText = this._reader.ReadLine();
@@ -130,7 +124,6 @@ internal sealed class SseReader(Stream stream) : IDisposable
 
         return null;
     }
-
 
     private async Task<SseLine?> ReadLineAsync(CancellationToken cancellationToken)
     {
@@ -159,7 +152,6 @@ internal sealed class SseReader(Stream stream) : IDisposable
         return null;
     }
 
-
     private bool TryParseLine(string lineText, out SseLine line)
     {
         if (lineText.Length == 0)
@@ -182,11 +174,9 @@ internal sealed class SseReader(Stream stream) : IDisposable
         return true;
     }
 
-
     public void Dispose()
     {
         this._reader.Dispose();
         this._stream.Dispose();
     }
-
 }

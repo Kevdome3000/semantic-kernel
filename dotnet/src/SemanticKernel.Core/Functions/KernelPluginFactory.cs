@@ -1,6 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -8,16 +6,15 @@ using System.ComponentModel;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
-using Extensions.DependencyInjection;
-using Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides static factory methods for creating commonly-used plugin implementations.
 /// </summary>
 public static partial class KernelPluginFactory
 {
-
     /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/>.</summary>
     /// <typeparam name="T">Specifies the type of the object to wrap.</typeparam>
     /// <param name="pluginName">
@@ -38,7 +35,6 @@ public static partial class KernelPluginFactory
 
         return CreateFromObject(ActivatorUtilities.CreateInstance<T>(serviceProvider)!, pluginName, serviceProvider?.GetService<ILoggerFactory>());
     }
-
 
     /// <summary>Creates a plugin that wraps the specified target object.</summary>
     /// <param name="target">The instance of the class to be wrapped.</param>
@@ -87,9 +83,8 @@ public static partial class KernelPluginFactory
             GetCustomAttribute<DescriptionAttribute>(inherit: true)?.
             Description;
 
-        return KernelPluginFactory.CreateFromFunctions(pluginName, description, functions);
+        return CreateFromFunctions(pluginName, description, functions);
     }
-
 
     /// <summary>Initializes the new plugin from the provided name and function collection.</summary>
     /// <param name="pluginName">The name for the plugin.</param>
@@ -102,7 +97,6 @@ public static partial class KernelPluginFactory
     public static KernelPlugin CreateFromFunctions(string pluginName, IEnumerable<KernelFunction>? functions) =>
         CreateFromFunctions(pluginName, description: null, functions);
 
-
     /// <summary>Initializes the new plugin from the provided name, description, and function collection.</summary>
     /// <param name="pluginName">The name for the plugin.</param>
     /// <param name="description">A description of the plugin.</param>
@@ -114,7 +108,6 @@ public static partial class KernelPluginFactory
     /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
     public static KernelPlugin CreateFromFunctions(string pluginName, string? description = null, IEnumerable<KernelFunction>? functions = null) =>
         new DefaultKernelPlugin(pluginName, description, functions);
-
 
     /// <summary>Creates a name for a plugin based on its type name.</summary>
     private static string CreatePluginName(Type type)
@@ -158,7 +151,6 @@ public static partial class KernelPluginFactory
 
         return name;
     }
-
 
 #if NET
     [GeneratedRegex("[^0-9A-Za-z_]")]

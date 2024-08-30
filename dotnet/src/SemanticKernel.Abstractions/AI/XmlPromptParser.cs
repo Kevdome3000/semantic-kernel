@@ -1,6 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -9,13 +7,12 @@ using System.Linq;
 using System.Web;
 using System.Xml;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Class to parse text prompt from XML format.
 /// </summary>
 internal static class XmlPromptParser
 {
-
     /// <summary>
     /// Parses text prompt and sets output as collection of <see cref="PromptNode"/> instances.
     /// </summary>
@@ -71,7 +68,6 @@ internal static class XmlPromptParser
         return result is not null;
     }
 
-
     /// <summary>
     /// Gets an instance of <see cref="PromptNode"/> from <see cref="XmlNode"/> and child nodes recursively.
     /// </summary>
@@ -121,5 +117,4 @@ internal static class XmlPromptParser
 
         return promptNode;
     }
-
 }

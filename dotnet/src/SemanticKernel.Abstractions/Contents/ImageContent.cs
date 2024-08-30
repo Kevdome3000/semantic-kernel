@@ -1,17 +1,14 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Text.Json.Serialization;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents image content.
 /// </summary>
 public class ImageContent : BinaryContent
 {
-
     /// <summary>
     /// Initializes a new instance of the <see cref="ImageContent"/> class.
     /// </summary>
@@ -19,7 +16,6 @@ public class ImageContent : BinaryContent
     public ImageContent()
     {
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ImageContent"/> class.
@@ -29,7 +25,6 @@ public class ImageContent : BinaryContent
     {
     }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="ImageContent"/> class.
     /// </summary>
@@ -37,7 +32,6 @@ public class ImageContent : BinaryContent
     public ImageContent(string dataUri) : base(dataUri)
     {
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ImageContent"/> class.
@@ -47,5 +41,4 @@ public class ImageContent : BinaryContent
     public ImageContent(ReadOnlyMemory<byte> data, string? mimeType) : base(data, mimeType)
     {
     }
-
 }

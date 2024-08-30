@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -12,7 +12,6 @@ namespace Microsoft.SemanticKernel.Data;
 [ExcludeFromCodeCoverage]
 internal static class VectorStoreErrorHandler
 {
-
     /// <summary>
     /// Run the given model conversion and wrap any exceptions with <see cref="VectorStoreRecordMappingException"/>.
     /// </summary>
@@ -43,5 +42,4 @@ internal static class VectorStoreErrorHandler
             };
         }
     }
-
 }

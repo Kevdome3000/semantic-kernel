@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -15,7 +15,6 @@ namespace Microsoft.SemanticKernel.Data;
 [Experimental("SKEXP0001")]
 public interface IVectorStore
 {
-
     /// <summary>
     /// Get a collection from the vector store.
     /// </summary>
@@ -35,12 +34,10 @@ public interface IVectorStore
         where TKey : notnull
         where TRecord : class;
 
-
     /// <summary>
     /// Retrieve the names of all the collections in the vector store.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The list of names of all the collections in the vector store.</returns>
     IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default);
-
 }

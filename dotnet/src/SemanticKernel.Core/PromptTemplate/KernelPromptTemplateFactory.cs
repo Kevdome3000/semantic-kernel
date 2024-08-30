@@ -1,12 +1,12 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
+
+
+using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.SemanticKernel;
-
-using System.Diagnostics.CodeAnalysis;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
-
-
 /// <summary>
 /// Provides an implementation of <see cref="IPromptTemplateFactory"/> for the <see cref="PromptTemplateConfig.SemanticKernelTemplateFormat"/> template format.
 /// </summary>
@@ -15,7 +15,6 @@ using Extensions.Logging.Abstractions;
 /// </remarks>
 public sealed class KernelPromptTemplateFactory : IPromptTemplateFactory
 {
-
     private readonly ILoggerFactory _loggerFactory;
 
     /// <summary>
@@ -30,7 +29,6 @@ public sealed class KernelPromptTemplateFactory : IPromptTemplateFactory
     [Experimental("SKEXP0001")]
     public bool AllowDangerouslySetContent { get; init; } = false;
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelPromptTemplateFactory"/> class.
     /// </summary>
@@ -40,13 +38,12 @@ public sealed class KernelPromptTemplateFactory : IPromptTemplateFactory
         this._loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
     }
 
-
     /// <inheritdoc/>
     public bool TryCreate(PromptTemplateConfig templateConfig, [NotNullWhen(true)] out IPromptTemplate? result)
     {
         Verify.NotNull(templateConfig);
 
-        if (templateConfig.TemplateFormat.Equals(PromptTemplateConfig.SemanticKernelTemplateFormat, System.StringComparison.Ordinal))
+        if (templateConfig.TemplateFormat.Equals(PromptTemplateConfig.SemanticKernelTemplateFormat, StringComparison.Ordinal))
         {
             result = new KernelPromptTemplate(templateConfig, this.AllowDangerouslySetContent, this._loggerFactory);
 
@@ -57,5 +54,4 @@ public sealed class KernelPromptTemplateFactory : IPromptTemplateFactory
 
         return false;
     }
-
 }

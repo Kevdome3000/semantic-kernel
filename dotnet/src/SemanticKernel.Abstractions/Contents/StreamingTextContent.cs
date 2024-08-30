@@ -1,19 +1,16 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
-using TextGeneration;
+using Microsoft.SemanticKernel.TextGeneration;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Abstraction of text content chunks when using streaming from <see cref="ITextGenerationService"/> interface.
 /// </summary>
 public class StreamingTextContent : StreamingKernelContent
 {
-
     /// <summary>
     /// Text associated to the update
     /// </summary>
@@ -24,7 +21,6 @@ public class StreamingTextContent : StreamingKernelContent
     /// </summary>
     [JsonIgnore]
     public Encoding Encoding { get; set; }
-
 
     /// <summary>
     /// Create a new instance of the <see cref="StreamingTextContent"/> class.
@@ -48,18 +44,15 @@ public class StreamingTextContent : StreamingKernelContent
         this.Encoding = encoding ?? Encoding.UTF8;
     }
 
-
     /// <inheritdoc/>
     public override string ToString()
     {
         return this.Text ?? string.Empty;
     }
 
-
     /// <inheritdoc/>
     public override byte[] ToByteArray()
     {
         return this.Encoding.GetBytes(this.ToString());
     }
-
 }

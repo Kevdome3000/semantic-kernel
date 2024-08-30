@@ -1,6 +1,6 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-namespace Microsoft.SemanticKernel;
+
 
 using System;
 using System.Collections.Generic;
@@ -10,12 +10,12 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Extensions.DependencyInjection;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
-using Services;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Services;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides state for use throughout a Semantic Kernel workload.
 /// </summary>
@@ -25,7 +25,6 @@ using Services;
 /// </remarks>
 public sealed class Kernel
 {
-
     /// <summary>Key used by <see cref="IKernelBuilder"/> to store type information into the service provider.</summary>
     internal const string KernelServiceTypeToKeyMappings = nameof(KernelServiceTypeToKeyMappings);
 
@@ -46,7 +45,6 @@ public sealed class Kernel
 
     /// <summary>The collection of automatic function invocation filters, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
     private NonNullCollection<IAutoFunctionInvocationFilter>? _autoFunctionInvocationFilters;
-
 
     /// <summary>
     /// Initializes a new instance of <see cref="Kernel"/>.
@@ -87,11 +85,9 @@ public sealed class Kernel
         this.AddFilters();
     }
 
-
     /// <summary>Creates a builder for constructing <see cref="Kernel"/> instances.</summary>
     /// <returns>A new <see cref="IKernelBuilder"/> instance.</returns>
     public static IKernelBuilder CreateBuilder() => new KernelBuilder();
-
 
     /// <summary>
     /// Clone the <see cref="Kernel"/> object to create a new instance that may be mutated without affecting the current instance.
@@ -140,7 +136,6 @@ public sealed class Kernel
                 : null,
             _culture = _culture
         };
-
 
     /// <summary>
     /// Gets the collection of plugins available through the kernel.
@@ -225,7 +220,6 @@ public sealed class Kernel
         Interlocked.CompareExchange(ref _data, [], null) ??
         _data;
 
-
     #region GetServices
 
     /// <summary>Gets a required service from the <see cref="Services"/> provider.</summary>
@@ -275,7 +269,6 @@ public sealed class Kernel
         return service;
     }
 
-
     /// <summary>Gets all services of the specified type.</summary>
     /// <typeparam name="T">Specifies the type of the services to retrieve.</typeparam>
     /// <returns>An enumerable of all instances of the specified service that are registered.</returns>
@@ -303,7 +296,6 @@ public sealed class Kernel
     }
 
     #endregion
-
 
     #region Filters
 
@@ -334,7 +326,6 @@ public sealed class Kernel
         }
     }
 
-
     internal async Task<FunctionInvocationContext> OnFunctionInvocationAsync(
         KernelFunction function,
         KernelArguments arguments,
@@ -352,7 +343,6 @@ public sealed class Kernel
 
         return context;
     }
-
 
     /// <summary>
     /// This method will execute filters and kernel function recursively.
@@ -381,7 +371,6 @@ public sealed class Kernel
         }
     }
 
-
     internal async Task<PromptRenderContext> OnPromptRenderAsync(
         KernelFunction function,
         KernelArguments arguments,
@@ -398,7 +387,6 @@ public sealed class Kernel
 
         return context;
     }
-
 
     /// <summary>
     /// This method will execute prompt filters and prompt rendering recursively.
@@ -429,7 +417,6 @@ public sealed class Kernel
 
     #endregion
 
-
     #region InvokeAsync
 
     /// <summary>
@@ -454,7 +441,6 @@ public sealed class Kernel
         return function.InvokeAsync(this, arguments, cancellationToken);
     }
 
-
     /// <summary>
     /// Invoke the <see cref="IKernelFunction"/> with the specified arguments.
     /// </summary>
@@ -471,7 +457,6 @@ public sealed class Kernel
 
         return function.InvokeAsync(this, arguments, cancellationToken);
     }
-
 
     /// <summary>
     /// Invokes a function from <see cref="Kernel.Plugins"/> using the specified arguments.
@@ -501,7 +486,6 @@ public sealed class Kernel
         return function.InvokeAsync(this, arguments, cancellationToken);
     }
 
-
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/>.
     /// </summary>
@@ -526,7 +510,6 @@ public sealed class Kernel
 
         return result.GetValue<TResult>();
     }
-
 
     /// <summary>
     /// Invokes a function from <see cref="Plugins"/> using the specified arguments.
@@ -559,7 +542,6 @@ public sealed class Kernel
 
     #endregion
 
-
     #region InvokeStreamingAsync
 
     /// <summary>
@@ -584,7 +566,6 @@ public sealed class Kernel
         return function.InvokeStreamingAsync<StreamingKernelContent>(this, arguments, cancellationToken);
     }
 
-
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/> and streams its results.
     /// </summary>
@@ -613,7 +594,6 @@ public sealed class Kernel
         return function.InvokeStreamingAsync<StreamingKernelContent>(this, arguments, cancellationToken);
     }
 
-
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/> and streams its results.
     /// </summary>
@@ -635,7 +615,6 @@ public sealed class Kernel
 
         return function.InvokeStreamingAsync<T>(this, arguments, cancellationToken);
     }
-
 
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/> and streams its results.
@@ -667,14 +646,12 @@ public sealed class Kernel
 
     #endregion
 
-
     #region Private
 
     private static bool IsNotEmpty<T>(IEnumerable<T> enumerable) =>
         enumerable is not ICollection<T> collection || collection.Count != 0;
 
     #endregion
-
 
     #region Obsolete
 
@@ -706,7 +683,6 @@ public sealed class Kernel
     [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/GettingStarted/Step7_Observability.cs of Semantic Kernel repository.")]
     public event EventHandler<PromptRenderedEventArgs>? PromptRendered;
 
-
     [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/GettingStarted/Step7_Observability.cs of Semantic Kernel repository.")]
     internal FunctionInvokingEventArgs? OnFunctionInvoking(KernelFunction function, KernelArguments arguments)
     {
@@ -720,7 +696,6 @@ public sealed class Kernel
 
         return eventArgs;
     }
-
 
     [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/GettingStarted/Step7_Observability.cs of Semantic Kernel repository.")]
     internal FunctionInvokedEventArgs? OnFunctionInvoked(KernelFunction function, KernelArguments arguments, FunctionResult result)
@@ -736,7 +711,6 @@ public sealed class Kernel
         return eventArgs;
     }
 
-
     [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/GettingStarted/Step7_Observability.cs of Semantic Kernel repository.")]
     internal PromptRenderingEventArgs? OnPromptRendering(KernelFunction function, KernelArguments arguments)
     {
@@ -750,7 +724,6 @@ public sealed class Kernel
 
         return eventArgs;
     }
-
 
     [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/GettingStarted/Step7_Observability.cs of Semantic Kernel repository.")]
     internal PromptRenderedEventArgs? OnPromptRendered(KernelFunction function, KernelArguments arguments, string renderedPrompt)
@@ -767,6 +740,5 @@ public sealed class Kernel
     }
 
     #endregion
-
 
 }

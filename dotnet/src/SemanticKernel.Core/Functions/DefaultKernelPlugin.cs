@@ -1,21 +1,17 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides an <see cref="KernelPlugin"/> implementation around a collection of functions.
 /// </summary>
 internal sealed class DefaultKernelPlugin : KernelPlugin
 {
-
     /// <summary>The collection of functions associated with this plugin.</summary>
     private readonly Dictionary<string, KernelFunction> _functions;
-
 
     /// <summary>Initializes the new plugin from the provided name, description, and function collection.</summary>
     /// <param name="name">The name for the plugin.</param>
@@ -41,17 +37,13 @@ internal sealed class DefaultKernelPlugin : KernelPlugin
         }
     }
 
-
     /// <inheritdoc/>
     public override int FunctionCount => this._functions.Count;
-
 
     /// <inheritdoc/>
     public override bool TryGetFunction(string name, [NotNullWhen(true)] out KernelFunction? function) =>
         this._functions.TryGetValue(name, out function);
 
-
     /// <inheritdoc/>
     public override IEnumerator<KernelFunction> GetEnumerator() => this._functions.Values.GetEnumerator();
-
 }

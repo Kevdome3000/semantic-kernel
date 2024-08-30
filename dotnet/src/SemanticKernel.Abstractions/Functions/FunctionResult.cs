@@ -1,20 +1,17 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-#pragma warning disable IDE0130
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
-
+#pragma warning disable IDE0130
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents the result of a <see cref="KernelFunction"/> invocation.
 /// </summary>
 public sealed class FunctionResult
 {
-
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionResult"/> class.
     /// </summary>
@@ -36,7 +33,6 @@ public sealed class FunctionResult
         this.Metadata = metadata;
     }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionResult"/> class.
     /// </summary>
@@ -52,7 +48,6 @@ public sealed class FunctionResult
         this.Metadata = result.Metadata;
         this.RenderedPrompt = result.RenderedPrompt;
     }
-
 
     /// <summary>
     /// Gets the <see cref="KernelFunction"/> whose result is represented by this instance.
@@ -83,7 +78,6 @@ public sealed class FunctionResult
     /// </summary>
     [Experimental("SKEXP0001")]
     public string? RenderedPrompt { get; internal set; }
-
 
     /// <summary>
     /// Returns function result value.
@@ -118,15 +112,12 @@ public sealed class FunctionResult
         throw new InvalidCastException($"Cannot cast {this.Value.GetType()} to {typeof(T)}");
     }
 
-
     /// <inheritdoc/>
     public override string ToString() =>
         InternalTypeConverter.ConvertToString(this.Value, this.Culture) ?? string.Empty;
-
 
     /// <summary>
     /// Function result object.
     /// </summary>
     public object? Value { get; }
-
 }
