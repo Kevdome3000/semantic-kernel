@@ -1,16 +1,13 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Collections.Generic;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Class that contains information about node in prompt.
 /// </summary>
 internal sealed class PromptNode(string tagName)
 {
-
     private Dictionary<string, string>? _attributes;
 
     private List<PromptNode>? _childNodes;
@@ -42,5 +39,4 @@ internal sealed class PromptNode(string tagName)
         get => this._childNodes ??= [];
         set => this._childNodes = value;
     }
-
 }

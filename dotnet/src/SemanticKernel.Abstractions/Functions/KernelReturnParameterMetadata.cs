@@ -1,12 +1,10 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using static KernelParameterMetadata;
+using static Microsoft.SemanticKernel.KernelParameterMetadata;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides read-only metadata for a <see cref="KernelFunction"/>'s return parameter.
 /// </summary>
@@ -23,12 +21,10 @@ public sealed class KernelReturnParameterMetadata
     /// <summary>The schema of the return parameter, potentially lazily-initialized.</summary>
     private InitializedSchema? _schema;
 
-
     /// <summary>Initializes the <see cref="KernelReturnParameterMetadata"/>.</summary>
     public KernelReturnParameterMetadata()
     {
     }
-
 
     /// <summary>Initializes a <see cref="KernelReturnParameterMetadata"/> as a copy of another <see cref="KernelReturnParameterMetadata"/>.</summary>
     public KernelReturnParameterMetadata(KernelReturnParameterMetadata metadata)
@@ -37,7 +33,6 @@ public sealed class KernelReturnParameterMetadata
         this._parameterType = metadata._parameterType;
         this._schema = metadata._schema;
     }
-
 
     /// <summary>Gets a description of the return parameter, suitable for use in describing the purpose to a model.</summary>
     [AllowNull]

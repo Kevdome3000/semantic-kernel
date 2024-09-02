@@ -1,15 +1,13 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
-using ChatCompletion;
+using Microsoft.SemanticKernel.ChatCompletion;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Abstraction of chat message content chunks when using streaming from <see cref="IChatCompletionService"/> interface.
 /// </summary>
@@ -18,7 +16,6 @@ using ChatCompletion;
 /// </remarks>
 public class StreamingChatMessageContent : StreamingKernelContent
 {
-
     /// <summary>
     /// A convenience property to get or set the text of the first item in the <see cref="Items" /> collection of <see cref="StreamingTextContent"/> type.
     /// </summary>
@@ -115,7 +112,6 @@ public class StreamingChatMessageContent : StreamingKernelContent
         }
     }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="StreamingChatMessageContent"/> class.
     /// </summary>
@@ -142,19 +138,29 @@ public class StreamingChatMessageContent : StreamingKernelContent
         this._encoding = encoding ?? Encoding.UTF8;
     }
 
-
     /// <inheritdoc/>
     public override string ToString() => this.Content ?? string.Empty;
-
 
     /// <inheritdoc/>
     public override byte[] ToByteArray() => this.Encoding.GetBytes(this.ToString());
 
-
     private StreamingKernelContentItemCollection? _items;
 
+    /* Unmerged change from project 'SemanticKernel.Abstractions(netstandard2.0)'
+    Before:
+        private string? _authorName;
+    After:
+        private Encoding _encoding;
+    */
     private Encoding _encoding;
 
     private string? _authorName;
 
+    /* Unmerged change from project 'SemanticKernel.Abstractions(netstandard2.0)'
+    Before:
+    }
+    After:
+        private string? _authorName;
+    }
+    */
 }

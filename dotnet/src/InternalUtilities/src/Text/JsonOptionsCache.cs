@@ -1,12 +1,10 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel.Text;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
-
+namespace Microsoft.SemanticKernel.Text;
 /// <summary>Caches common configurations of <see cref="JsonSerializerOptions"/>.</summary>\
 /// <remarks>
 /// All of the instances include a converter for <see cref="ReadOnlyMemory{T}"/>.

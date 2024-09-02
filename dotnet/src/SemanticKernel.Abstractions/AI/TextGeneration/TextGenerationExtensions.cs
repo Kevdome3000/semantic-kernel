@@ -1,6 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel.TextGeneration;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -8,15 +6,14 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using ChatCompletion;
+using Microsoft.SemanticKernel.ChatCompletion;
 
-
+namespace Microsoft.SemanticKernel.TextGeneration;
 /// <summary>
 /// Class sponsor that holds extension methods for <see cref ="ITextGenerationService" /> interface.
 /// </summary>
 public static class TextGenerationExtensions
 {
-
     /// <summary>
     /// Get a single text generation result for the prompt and settings.
     /// </summary>
@@ -34,7 +31,6 @@ public static class TextGenerationExtensions
         CancellationToken cancellationToken = default)
         => (await textGenerationService.GetTextContentsAsync(prompt, executionSettings, kernel, cancellationToken).
             ConfigureAwait(false)).Single();
-
 
     /// <summary>
     /// Get a text generation results for the standardized prompt and settings.
@@ -68,7 +64,6 @@ public static class TextGenerationExtensions
             ConfigureAwait(false);
     }
 
-
     /// <summary>
     /// Get streaming results for the standardized prompt using the specified settings.
     /// Each modality may support for different types of streaming contents.
@@ -93,8 +88,7 @@ public static class TextGenerationExtensions
         if (textGenerationService is IChatCompletionService chatCompletion
             && ChatPromptParser.TryParse(prompt, out var chatHistory))
         {
-            await foreach (var chatMessage in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken).
-                               ConfigureAwait(false))
+            await foreach (var chatMessage in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken).ConfigureAwait(false).ConfigureAwait(false))
             {
                 yield return new StreamingTextContent(chatMessage.Content, chatMessage.ChoiceIndex, chatMessage.ModelId, chatMessage,
                     chatMessage.Encoding, chatMessage.Metadata);
@@ -110,5 +104,4 @@ public static class TextGenerationExtensions
             yield return textChunk;
         }
     }
-
 }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
 
@@ -15,7 +15,6 @@ namespace Microsoft.SemanticKernel.Data;
 [Experimental("SKEXP0001")]
 public static class DistanceFunction
 {
-
     /// <summary>
     /// The cosine (angular) similarity between two vectors.
     /// </summary>
@@ -59,5 +58,4 @@ public static class DistanceFunction
     /// Measures the Manhattan distance between two vectors.
     /// </summary>
     public const string ManhattanDistance = nameof(ManhattanDistance);
-
 }

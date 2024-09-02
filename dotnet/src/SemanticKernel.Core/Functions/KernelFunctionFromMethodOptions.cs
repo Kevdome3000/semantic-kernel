@@ -1,21 +1,18 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Reflection;
-using Extensions.Logging;
+using Microsoft.Extensions.Logging;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Optional options that can be provided when creating a <see cref="KernelFunction"/> from a method.
 /// </summary>
 public sealed class KernelFunctionFromMethodOptions
 {
-
     /// <summary>
     /// The name to use for the function. If null, it will default to one derived from the method represented by the passed <see cref="Delegate"/> or <see cref="MethodInfo"/>.
     /// </summary>
@@ -46,5 +43,4 @@ public sealed class KernelFunctionFromMethodOptions
     /// Optional metadata in addition to the named values already provided in other arguments.
     /// </summary>
     public ReadOnlyDictionary<string, object?>? AdditionalMetadata { get; init; }
-
 }

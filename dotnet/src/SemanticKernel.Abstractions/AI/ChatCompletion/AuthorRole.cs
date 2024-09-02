@@ -1,18 +1,15 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel.ChatCompletion;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-
+namespace Microsoft.SemanticKernel.ChatCompletion;
 /// <summary>
 /// A description of the intended purpose of a message within a chat completions interaction.
 /// </summary>
 public readonly struct AuthorRole : IEquatable<AuthorRole>
 {
-
     /// <summary>
     /// The role that instructs or sets the behavior of the assistant.
     /// </summary>
@@ -41,7 +38,6 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
     /// </remarks>
     public string Label { get; }
 
-
     /// <summary>
     /// Creates a new <see cref="AuthorRole"/> instance with the provided label.
     /// </summary>
@@ -53,7 +49,6 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
         this.Label = label!;
     }
 
-
     /// <summary>
     /// Returns a value indicating whether two <see cref="AuthorRole"/> instances are equivalent, as determined by a
     /// case-insensitive comparison of their labels.
@@ -63,7 +58,6 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
     /// <returns> true if left and right are both null or have equivalent labels; false otherwise </returns>
     public static bool operator ==(AuthorRole left, AuthorRole right)
         => left.Equals(right);
-
 
     /// <summary>
     /// Returns a value indicating whether two <see cref="AuthorRole"/> instances are not equivalent, as determined by a
@@ -75,23 +69,18 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
     public static bool operator !=(AuthorRole left, AuthorRole right)
         => !(left == right);
 
-
     /// <inheritdoc/>
     public override bool Equals([NotNullWhen(true)] object? obj)
         => obj is AuthorRole otherRole && this == otherRole;
-
 
     /// <inheritdoc/>
     public bool Equals(AuthorRole other)
         => string.Equals(this.Label, other.Label, StringComparison.OrdinalIgnoreCase);
 
-
     /// <inheritdoc/>
     public override int GetHashCode()
         => StringComparer.OrdinalIgnoreCase.GetHashCode(this.Label);
 
-
     /// <inheritdoc/>
     public override string ToString() => this.Label;
-
 }

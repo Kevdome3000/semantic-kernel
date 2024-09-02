@@ -1,18 +1,15 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel.ImageToText;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-
+namespace Microsoft.SemanticKernel.ImageToText;
 /// <summary>
 /// Class sponsor that holds extension methods for <see cref ="IImageToTextService" /> interface.
 /// </summary>
 public static class ImageToTextExtensions
 {
-
     /// <summary>
     /// Get a single text generation result for the prompt and settings.
     /// </summary>
@@ -30,5 +27,4 @@ public static class ImageToTextExtensions
         CancellationToken cancellationToken = default)
         => (await imageToTextService.GetTextContentsAsync(content, executionSettings, kernel, cancellationToken).
             ConfigureAwait(false)).Single();
-
 }

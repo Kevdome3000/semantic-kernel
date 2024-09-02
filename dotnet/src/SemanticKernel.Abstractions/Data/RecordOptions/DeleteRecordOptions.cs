@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
 
@@ -13,14 +13,12 @@ namespace Microsoft.SemanticKernel.Data;
 [Experimental("SKEXP0001")]
 public class DeleteRecordOptions
 {
-
     /// <summary>
     /// Initializes a new instance of the <see cref="DeleteRecordOptions"/> class.
     /// </summary>
     public DeleteRecordOptions()
     {
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DeleteRecordOptions"/> class by cloning the given options.
@@ -29,5 +27,4 @@ public class DeleteRecordOptions
     public DeleteRecordOptions(DeleteRecordOptions source)
     {
     }
-
 }

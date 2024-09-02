@@ -1,17 +1,14 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents a single update to a streaming content.
 /// </summary>
 public abstract class StreamingKernelContent
 {
-
     /// <summary>
     /// In a scenario of multiple choices per request, this represents zero-based index of the choice in the streaming sequence
     /// </summary>
@@ -36,7 +33,6 @@ public abstract class StreamingKernelContent
     /// </summary>
     public IReadOnlyDictionary<string, object?>? Metadata { get; set; }
 
-
     /// <summary>
     /// Abstract string representation of the chunk in a way it could compose/append with previous chunks.
     /// </summary>
@@ -45,7 +41,6 @@ public abstract class StreamingKernelContent
     /// </remarks>
     /// <returns>String representation of the chunk</returns>
     public abstract override string ToString();
-
 
     /// <summary>
     /// Abstract byte[] representation of the chunk in a way it could be composed/appended with previous chunks.
@@ -56,14 +51,12 @@ public abstract class StreamingKernelContent
     /// <returns>Byte array representation of the chunk</returns>
     public abstract byte[] ToByteArray();
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="StreamingKernelContent"/> class.
     /// </summary>
     protected StreamingKernelContent()
     {
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StreamingKernelContent"/> class.
@@ -83,5 +76,4 @@ public abstract class StreamingKernelContent
         this.ChoiceIndex = choiceIndex;
         this.Metadata = metadata;
     }
-
 }

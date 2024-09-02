@@ -1,16 +1,13 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
-
+namespace Microsoft.SemanticKernel;
 [ExcludeFromCodeCoverage]
 internal static class IListExtensions
 {
-
     /// <summary>
     /// Adds a range of elements from the specified <see cref="IEnumerable{T}"/> source to the target <see cref="IList{T}"/>.
     /// </summary>
@@ -34,5 +31,4 @@ internal static class IListExtensions
             }
         }
     }
-
 }

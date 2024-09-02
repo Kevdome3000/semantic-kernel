@@ -1,19 +1,16 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel.Memory;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-
+namespace Microsoft.SemanticKernel.Memory;
 /// <summary>
 /// An interface for storing and retrieving indexed <see cref="MemoryRecord"/> objects in a data store.
 /// </summary>
 public interface IMemoryStore
 {
-
     /// <summary>
     /// Creates a new collection in the data store.
     /// </summary>
@@ -21,14 +18,12 @@ public interface IMemoryStore
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     Task CreateCollectionAsync(string collectionName, CancellationToken cancellationToken = default);
 
-
     /// <summary>
     /// Gets all collection names in the data store.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A group of collection names.</returns>
     IAsyncEnumerable<string> GetCollectionsAsync(CancellationToken cancellationToken = default);
-
 
     /// <summary>
     /// Determines if a collection exists in the data store.
@@ -38,14 +33,12 @@ public interface IMemoryStore
     /// <returns>True if given collection exists, false if not.</returns>
     Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancellationToken = default);
 
-
     /// <summary>
     /// Deletes a collection from the data store.
     /// </summary>
     /// <param name="collectionName">The name associated with a collection of embeddings.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     Task DeleteCollectionAsync(string collectionName, CancellationToken cancellationToken = default);
-
 
     /// <summary>
     /// Upserts a memory record into the data store. Does not guarantee that the collection exists.
@@ -58,7 +51,6 @@ public interface IMemoryStore
     /// <returns>The unique identifier for the memory record.</returns>
     Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default);
 
-
     /// <summary>
     /// Upserts a group of memory records into the data store. Does not guarantee that the collection exists.
     ///     If the record already exists, it will be updated.
@@ -69,7 +61,6 @@ public interface IMemoryStore
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The unique identifiers for the memory records.</returns>
     IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> records, CancellationToken cancellationToken = default);
-
 
     /// <summary>
     /// Gets a memory record from the data store. Does not guarantee that the collection exists.
@@ -85,7 +76,6 @@ public interface IMemoryStore
         bool withEmbedding = false,
         CancellationToken cancellationToken = default);
 
-
     /// <summary>
     /// Gets a batch of memory records from the data store. Does not guarantee that the collection exists.
     /// </summary>
@@ -100,7 +90,6 @@ public interface IMemoryStore
         bool withEmbeddings = false,
         CancellationToken cancellationToken = default);
 
-
     /// <summary>
     /// Removes a memory record from the data store. Does not guarantee that the collection exists.
     /// </summary>
@@ -109,7 +98,6 @@ public interface IMemoryStore
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default);
 
-
     /// <summary>
     /// Removes a batch of memory records from the data store. Does not guarantee that the collection exists.
     /// </summary>
@@ -117,7 +105,6 @@ public interface IMemoryStore
     /// <param name="keys">The unique ids associated with the memory record to remove.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default);
-
 
     /// <summary>
     /// Gets the nearest matches to an embedding of type <see cref="float"/>. Does not guarantee that the collection exists.
@@ -137,7 +124,6 @@ public interface IMemoryStore
         bool withEmbeddings = false,
         CancellationToken cancellationToken = default);
 
-
     /// <summary>
     /// Gets the nearest match to an embedding of type <see cref="float"/>. Does not guarantee that the collection exists.
     /// </summary>
@@ -153,5 +139,4 @@ public interface IMemoryStore
         double minRelevanceScore = 0.0,
         bool withEmbedding = false,
         CancellationToken cancellationToken = default);
-
 }

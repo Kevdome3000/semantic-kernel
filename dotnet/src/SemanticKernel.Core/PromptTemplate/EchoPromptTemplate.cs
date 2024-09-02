@@ -1,21 +1,38 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿
+/* Unmerged change from project 'SemanticKernel.Core(netstandard2.0)'
+Before:
+// Copyright (c) Microsoft. All rights reserved.
+After:
+// Copyright (c) Microsoft.All rights reserved.
 
-namespace Microsoft.SemanticKernel;
+using System.Threading;
+using System.Threading.Tasks;
+*/
+// Copyright (c) Microsoft.All rights reserved.
 
+/* Unmerged change from project 'SemanticKernel.Core(netstandard2.0)'
+Before:
 using System.Threading;
 using System.Threading.Tasks;
 
 
 /// <summary>
+After:
+/// <summary>
+*/
+
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace Microsoft.SemanticKernel;
+/// <summary>
 /// Implementation of <see cref="IPromptTemplate"/> that just returns the prompt template.
 /// </summary>
 internal sealed class EchoPromptTemplate : IPromptTemplate
 {
-
     private readonly PromptTemplateConfig _promptConfig;
 
     private readonly Task<string> _renderResult;
-
 
     /// <summary>
     /// Constructor for <see cref="EchoPromptTemplate"/>.
@@ -29,7 +46,6 @@ internal sealed class EchoPromptTemplate : IPromptTemplate
         this._promptConfig = promptConfig;
         this._renderResult = Task.FromResult(this._promptConfig.Template);
     }
-
 
     /// <inheritdoc/>
 #pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -14,7 +14,6 @@ namespace Microsoft.SemanticKernel.Data;
 [Experimental("SKEXP0001")]
 public sealed class VectorStoreRecordVectorProperty : VectorStoreRecordProperty
 {
-
     /// <summary>
     /// Initializes a new instance of the <see cref="VectorStoreRecordVectorProperty"/> class.
     /// </summary>
@@ -24,7 +23,6 @@ public sealed class VectorStoreRecordVectorProperty : VectorStoreRecordProperty
         : base(propertyName, propertyType)
     {
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VectorStoreRecordVectorProperty"/> class by cloning the given source.
@@ -37,7 +35,6 @@ public sealed class VectorStoreRecordVectorProperty : VectorStoreRecordProperty
         this.IndexKind = source.IndexKind;
         this.DistanceFunction = source.DistanceFunction;
     }
-
 
     /// <summary>
     /// Gets or sets the number of dimensions that the vector has.
@@ -65,5 +62,4 @@ public sealed class VectorStoreRecordVectorProperty : VectorStoreRecordProperty
     /// Default varies by database type. See the documentation of your chosen database connector for more information.
     /// </remarks>
     public string? DistanceFunction { get; init; }
-
 }

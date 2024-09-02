@@ -1,18 +1,15 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel.Memory;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-
+namespace Microsoft.SemanticKernel.Memory;
 /// <summary>
 /// An interface for semantic memory that creates and recalls memories associated with text.
 /// </summary>
 public interface ISemanticTextMemory
 {
-
     /// <summary>
     /// Save some information into the semantic memory, keeping a copy of the source information.
     /// </summary>
@@ -32,7 +29,6 @@ public interface ISemanticTextMemory
         string? additionalMetadata = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default);
-
 
     /// <summary>
     /// Save some information into the semantic memory, keeping only a reference to the source information.
@@ -56,7 +52,6 @@ public interface ISemanticTextMemory
         Kernel? kernel = null,
         CancellationToken cancellationToken = default);
 
-
     /// <summary>
     /// Fetch a memory by key.
     /// For local memories the key is the "id" used when saving the record.
@@ -75,7 +70,6 @@ public interface ISemanticTextMemory
         Kernel? kernel = null,
         CancellationToken cancellationToken = default);
 
-
     /// <summary>
     /// Remove a memory by key.
     /// For local memories the key is the "id" used when saving the record.
@@ -90,7 +84,6 @@ public interface ISemanticTextMemory
         string key,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default);
-
 
     /// <summary>
     /// Find some information in memory
@@ -112,7 +105,6 @@ public interface ISemanticTextMemory
         Kernel? kernel = null,
         CancellationToken cancellationToken = default);
 
-
     /// <summary>
     /// Gets a group of all available collection names.
     /// </summary>
@@ -120,5 +112,4 @@ public interface ISemanticTextMemory
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A group of collection names.</returns>
     public Task<IList<string>> GetCollectionsAsync(Kernel? kernel = null, CancellationToken cancellationToken = default);
-
 }

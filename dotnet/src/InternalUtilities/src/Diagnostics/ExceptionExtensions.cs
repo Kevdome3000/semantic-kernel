@@ -1,11 +1,9 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
+
+using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 
 namespace System;
-
-using Diagnostics.CodeAnalysis;
-using Threading;
-
-
 /// <summary>
 /// Exception extension methods.
 /// </summary>

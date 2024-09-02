@@ -1,17 +1,14 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides a <see cref="CancelKernelEventArgs"/> used in events just after a function is invoked.
 /// </summary>
 [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/GettingStarted/Step7_Observability.cs of Semantic Kernel repository.")]
 public sealed class FunctionInvokedEventArgs : CancelKernelEventArgs
 {
-
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionInvokedEventArgs"/> class.
     /// </summary>
@@ -25,13 +22,11 @@ public sealed class FunctionInvokedEventArgs : CancelKernelEventArgs
         this.ResultValue = result.Value;
     }
 
-
     /// <summary>Gets the result of the function's invocation.</summary>
     public FunctionResult Result { get; }
 
     /// <summary>Gets the raw result of the function's invocation.</summary>
     internal object? ResultValue { get; private set; }
-
 
     /// <summary>Sets an object to use as the overridden new result for the function's invocation.</summary>
     /// <param name="value">The value to use as the new result of the function's invocation.</param>
@@ -39,5 +34,4 @@ public sealed class FunctionInvokedEventArgs : CancelKernelEventArgs
     {
         this.ResultValue = value;
     }
-
 }

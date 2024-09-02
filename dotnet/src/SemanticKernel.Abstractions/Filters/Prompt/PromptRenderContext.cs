@@ -1,18 +1,14 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Threading;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Class with data related to prompt rendering.
 /// </summary>
 public sealed class PromptRenderContext
 {
-
     private string? _renderedPrompt;
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptRenderContext"/> class.
@@ -30,7 +26,6 @@ public sealed class PromptRenderContext
         this.Function = function;
         this.Arguments = arguments;
     }
-
 
     /// <summary>
     /// The <see cref="System.Threading.CancellationToken"/> to monitor for cancellation requests.
@@ -77,5 +72,4 @@ public sealed class PromptRenderContext
     /// Setting <see cref="Result"/> to a non-<c>null</c> value will skip function invocation and return the result.
     /// </summary>
     public FunctionResult? Result { get; set; }
-
 }

@@ -1,12 +1,10 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using Agents.OpenAI;
+using Microsoft.SemanticKernel.Agents.OpenAI;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Base class for all AI non-streaming results
 /// </summary>
@@ -23,7 +21,6 @@ using Agents.OpenAI;
 #pragma warning disable SKEXP0110
 public abstract class KernelContent
 {
-
     /// <summary>
     /// MIME type of the content.
     /// </summary>
@@ -51,14 +48,12 @@ public abstract class KernelContent
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyDictionary<string, object?>? Metadata { get; set; }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelContent"/> class.
     /// </summary>
     protected KernelContent()
     {
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelContent"/> class.
@@ -72,5 +67,4 @@ public abstract class KernelContent
         this.InnerContent = innerContent;
         this.Metadata = metadata;
     }
-
 }

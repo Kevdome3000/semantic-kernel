@@ -1,21 +1,40 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel.TemplateEngine;
+﻿
+/* Unmerged change from project 'SemanticKernel.Core(netstandard2.0)'
+Before:
+// Copyright (c) Microsoft. All rights reserved.
+After:
+// Copyright (c) Microsoft.All rights reserved.
 
 using System.Linq;
 using System.Text.RegularExpressions;
-using Extensions.Logging;
+
+*/
+// Copyright (c) Microsoft.All rights reserved.
+
+/* Unmerged change from project 'SemanticKernel.Core(netstandard2.0)'
+Before:
+using System.Linq;
+using System.Text.RegularExpressions;
+
 
 
 internal sealed partial class FunctionIdBlock : Block, ITextRendering
-{
+After:
+internal sealed partial class FunctionIdBlock : Block, ITextRendering
+*/
 
+using System.Linq;
+using System.Text.RegularExpressions;
+using Microsoft.Extensions.Logging;
+
+namespace Microsoft.SemanticKernel.TemplateEngine;
+internal sealed partial class FunctionIdBlock : Block, ITextRendering
+{
     internal override BlockTypes Type => BlockTypes.FunctionId;
 
     internal string PluginName { get; } = string.Empty;
 
     internal string FunctionName { get; } = string.Empty;
-
 
     public FunctionIdBlock(string? text, ILoggerFactory? loggerFactory = null)
         : base(text?.Trim(), loggerFactory)
@@ -40,7 +59,6 @@ internal sealed partial class FunctionIdBlock : Block, ITextRendering
         this.FunctionName = this.Content;
     }
 
-
     public override bool IsValid(out string errorMsg)
     {
         if (!ValidContentRegex().
@@ -63,13 +81,11 @@ internal sealed partial class FunctionIdBlock : Block, ITextRendering
         return true;
     }
 
-
     /// <inheritdoc/>
     public object? Render(KernelArguments? arguments)
     {
         return this.Content;
     }
-
 
     private static bool HasMoreThanOneDot(string? value)
     {
@@ -79,7 +95,6 @@ internal sealed partial class FunctionIdBlock : Block, ITextRendering
 
         return value.Any(t => t == '.' && ++count > 1);
     }
-
 
 #if NET
     [GeneratedRegex("^[a-zA-Z0-9_.]*$")]

@@ -1,23 +1,20 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Content type to support file references.
 /// </summary>
 [Experimental("SKEXP0110")]
 public class FileReferenceContent : KernelContent
 {
-
     /// <summary>
     /// The file identifier.
     /// </summary>
     public string FileId { get; init; } = string.Empty;
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FileReferenceContent"/> class.
@@ -26,7 +23,6 @@ public class FileReferenceContent : KernelContent
     public FileReferenceContent()
     {
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FileReferenceContent"/> class.
@@ -44,5 +40,4 @@ public class FileReferenceContent : KernelContent
     {
         this.FileId = fileId;
     }
-
 }

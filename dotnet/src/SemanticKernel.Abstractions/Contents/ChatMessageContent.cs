@@ -1,6 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -8,15 +6,14 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
-using ChatCompletion;
+using Microsoft.SemanticKernel.ChatCompletion;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents chat message content return from a <see cref="IChatCompletionService" /> service.
 /// </summary>
 public class ChatMessageContent : KernelContent
 {
-
     /// <summary>
     /// Name of the author of the message
     /// </summary>
@@ -67,7 +64,7 @@ public class ChatMessageContent : KernelContent
                         encoding: this.Encoding,
                         metadata: this.Metadata
                     )
-                    { MimeType = this.MimeType });
+                { MimeType = this.MimeType });
             }
         }
     }
@@ -124,7 +121,6 @@ public class ChatMessageContent : KernelContent
     [JsonIgnore]
     public object? Source { get; set; }
 
-
     /// <summary>
     /// Creates a new instance of the <see cref="ChatMessageContent"/> class
     /// </summary>
@@ -133,7 +129,6 @@ public class ChatMessageContent : KernelContent
     {
         this._encoding = Encoding.UTF8;
     }
-
 
     /// <summary>
     /// Creates a new instance of the <see cref="ChatMessageContent"/> class
@@ -158,7 +153,6 @@ public class ChatMessageContent : KernelContent
         this.Content = content;
     }
 
-
     /// <summary>
     /// Creates a new instance of the <see cref="ChatMessageContent"/> class
     /// </summary>
@@ -182,18 +176,29 @@ public class ChatMessageContent : KernelContent
         this._items = items;
     }
 
-
     /// <inheritdoc/>
     public override string ToString()
     {
         return this.Content ?? string.Empty;
     }
 
-
     private ChatMessageContentItemCollection? _items;
 
+    /* Unmerged change from project 'SemanticKernel.Abstractions(netstandard2.0)'
+    Before:
+        private string? _authorName;
+    After:
+        private Encoding _encoding;
+    */
     private Encoding _encoding;
 
     private string? _authorName;
 
+    /* Unmerged change from project 'SemanticKernel.Abstractions(netstandard2.0)'
+    Before:
+    }
+    After:
+        private string? _authorName;
+    }
+    */
 }

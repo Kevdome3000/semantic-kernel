@@ -1,23 +1,19 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel.Services;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 
-
+namespace Microsoft.SemanticKernel.Services;
 /// <summary>
 /// Implementation of <see cref="IAIServiceSelector"/> that selects the AI service based on the order of the execution settings.
 /// Uses the service id or model id to select the preferred service provider and then returns the service and associated execution settings.
 /// </summary>
 internal sealed class OrderedAIServiceSelector : IAIServiceSelector
 {
-
     public static OrderedAIServiceSelector Instance { get; } = new();
-
 
     /// <inheritdoc/>
     public bool TrySelectAIService<T>(
@@ -76,7 +72,7 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
 
                 if (!string.IsNullOrEmpty(settings.ModelId))
                 {
-                    service = GetServiceByModelId<T>(kernel, settings.ModelId!);
+                    service = this.GetServiceByModelId<T>(kernel, settings.ModelId!);
 
                     if (service is not null)
                     {
@@ -115,7 +111,6 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
                 kernel.Services.GetService<T>();
     }
 
-
     private T? GetServiceByModelId<T>(Kernel kernel, string modelId) where T : class, IAIService
     {
         foreach (T? service in kernel.GetAllServices<T>())
@@ -130,5 +125,4 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
 
         return null;
     }
-
 }

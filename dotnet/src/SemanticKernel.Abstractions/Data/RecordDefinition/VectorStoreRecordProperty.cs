@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -14,7 +14,6 @@ namespace Microsoft.SemanticKernel.Data;
 [Experimental("SKEXP0001")]
 public abstract class VectorStoreRecordProperty
 {
-
     /// <summary>
     /// Initializes a new instance of the <see cref="VectorStoreRecordProperty"/> class.
     /// </summary>
@@ -29,14 +28,12 @@ public abstract class VectorStoreRecordProperty
         this.PropertyType = propertyType;
     }
 
-
     private protected VectorStoreRecordProperty(VectorStoreRecordProperty source)
     {
         this.DataModelPropertyName = source.DataModelPropertyName;
         this.StoragePropertyName = source.StoragePropertyName;
         this.PropertyType = source.PropertyType;
     }
-
 
     /// <summary>
     /// Gets or sets the name of the property on the data model.
@@ -56,5 +53,4 @@ public abstract class VectorStoreRecordProperty
     /// Gets or sets the type of the property.
     /// </summary>
     public Type PropertyType { get; private set; }
-
 }

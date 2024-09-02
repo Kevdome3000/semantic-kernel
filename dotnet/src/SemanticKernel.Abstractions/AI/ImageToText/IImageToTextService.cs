@@ -1,19 +1,16 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel.ImageToText;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Services;
+using Microsoft.SemanticKernel.Services;
 
-
+namespace Microsoft.SemanticKernel.ImageToText;
 /// <summary>
 /// Interface for image-to-text services.
 /// </summary>
 public interface IImageToTextService : IAIService
 {
-
     /// <summary>
     /// Get text content from image content.
     /// </summary>
@@ -27,5 +24,4 @@ public interface IImageToTextService : IAIService
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default);
-
 }

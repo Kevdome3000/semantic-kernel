@@ -1,20 +1,17 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel.ChatCompletion;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Collections;
 using System.Collections.Generic;
 
+namespace Microsoft.SemanticKernel.ChatCompletion;
 #pragma warning disable CA1033 // Interface methods should be callable by child types
-
 
 /// <summary>
 /// Contains collection of chat message content items of type <see cref="KernelContent"/>.
 /// </summary>
 public class ChatMessageContentItemCollection : IList<KernelContent>, IReadOnlyList<KernelContent>
 {
-
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatMessageContentItemCollection"/> class.
     /// </summary>
@@ -22,7 +19,6 @@ public class ChatMessageContentItemCollection : IList<KernelContent>, IReadOnlyL
     {
         this._items = [];
     }
-
 
     /// <summary>
     /// Gets or sets the content item at the specified index in the collection.
@@ -46,7 +42,6 @@ public class ChatMessageContentItemCollection : IList<KernelContent>, IReadOnlyL
     /// </summary>
     public int Count => this._items.Count;
 
-
     /// <summary>
     /// Adds a content item to the collection.
     /// </summary>
@@ -58,12 +53,10 @@ public class ChatMessageContentItemCollection : IList<KernelContent>, IReadOnlyL
         this._items.Add(item);
     }
 
-
     /// <summary>
     /// Removes all content items from the collection.
     /// </summary>
     public void Clear() => this._items.Clear();
-
 
     /// <summary>
     /// Determines whether a content item is in the collection.
@@ -78,7 +71,6 @@ public class ChatMessageContentItemCollection : IList<KernelContent>, IReadOnlyL
         return this._items.Contains(item);
     }
 
-
     /// <summary>
     /// Copies all of the content items in the collection to an array, starting at the specified destination array index.
     /// </summary>
@@ -88,7 +80,6 @@ public class ChatMessageContentItemCollection : IList<KernelContent>, IReadOnlyL
     /// <exception cref="ArgumentException">The number of content items in the collection is greater than the available space from <paramref name="arrayIndex"/> to the end of <paramref name="array"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="arrayIndex"/> is less than 0.</exception>
     public void CopyTo(KernelContent[] array, int arrayIndex) => this._items.CopyTo(array, arrayIndex);
-
 
     /// <summary>
     /// Searches for the specified content item and returns the index of the first occurrence.
@@ -103,7 +94,6 @@ public class ChatMessageContentItemCollection : IList<KernelContent>, IReadOnlyL
         return this._items.IndexOf(item);
     }
 
-
     /// <summary>
     /// Inserts a content item into the collection at the specified index.
     /// </summary>
@@ -115,7 +105,6 @@ public class ChatMessageContentItemCollection : IList<KernelContent>, IReadOnlyL
         Verify.NotNull(item);
         this._items.Insert(index, item);
     }
-
 
     /// <summary>
     /// Removes the first occurrence of the specified content item from the collection.
@@ -130,13 +119,11 @@ public class ChatMessageContentItemCollection : IList<KernelContent>, IReadOnlyL
         return this._items.Remove(item);
     }
 
-
     /// <summary>
     /// Removes the content item at the specified index from the collection.
     /// </summary>
     /// <param name="index">The index of the content item to remove.</param>
     public void RemoveAt(int index) => this._items.RemoveAt(index);
-
 
     bool ICollection<KernelContent>.IsReadOnly => false;
 
@@ -144,12 +131,10 @@ public class ChatMessageContentItemCollection : IList<KernelContent>, IReadOnlyL
 
     IEnumerator<KernelContent> IEnumerable<KernelContent>.GetEnumerator() => this._items.GetEnumerator();
 
-
     #region private
 
     private readonly List<KernelContent> _items;
 
     #endregion
-
 
 }

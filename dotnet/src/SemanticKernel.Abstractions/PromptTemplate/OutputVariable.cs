@@ -1,11 +1,9 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents an output variable returned from a prompt function.
 /// </summary>

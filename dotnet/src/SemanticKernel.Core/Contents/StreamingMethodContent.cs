@@ -1,22 +1,18 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Collections.Generic;
 using System.Text;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents a manufactured streaming content from a single function result.
 /// </summary>
 public sealed class StreamingMethodContent : StreamingKernelContent
 {
-
     /// <summary>
     /// Gets the result of the function invocation.
     /// </summary>
     public object Content { get; }
-
 
     /// <inheritdoc/>
     public override byte[] ToByteArray()
@@ -32,13 +28,11 @@ public sealed class StreamingMethodContent : StreamingKernelContent
             : [];
     }
 
-
     /// <inheritdoc/>
     public override string ToString()
     {
         return this.Content.ToString() ?? string.Empty;
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StreamingMethodContent"/> class.
@@ -49,5 +43,4 @@ public sealed class StreamingMethodContent : StreamingKernelContent
     {
         this.Content = innerContent;
     }
-
 }

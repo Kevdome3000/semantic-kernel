@@ -1,18 +1,15 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Helper class to get app context switch value
 /// </summary>
 [ExcludeFromCodeCoverage]
 internal static class AppContextSwitchHelper
 {
-
     /// <summary>
     /// Returns the value of the specified app switch or environment variable if it is set.
     /// If the switch or environment variable is not set, return false.
@@ -37,5 +34,4 @@ internal static class AppContextSwitchHelper
 
         return false;
     }
-
 }

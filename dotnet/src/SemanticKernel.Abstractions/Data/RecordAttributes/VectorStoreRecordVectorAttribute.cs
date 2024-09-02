@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -15,14 +15,12 @@ namespace Microsoft.SemanticKernel.Data;
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
 public sealed class VectorStoreRecordVectorAttribute : Attribute
 {
-
     /// <summary>
     /// Initializes a new instance of the <see cref="VectorStoreRecordVectorAttribute"/> class.
     /// </summary>
     public VectorStoreRecordVectorAttribute()
     {
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VectorStoreRecordVectorAttribute"/> class.
@@ -32,7 +30,6 @@ public sealed class VectorStoreRecordVectorAttribute : Attribute
     {
         this.Dimensions = Dimensions;
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VectorStoreRecordVectorAttribute"/> class.
@@ -46,7 +43,6 @@ public sealed class VectorStoreRecordVectorAttribute : Attribute
         this.IndexKind = IndexKind;
         this.DistanceFunction = DistanceFunction;
     }
-
 
     /// <summary>
     /// Gets or sets the number of dimensions that the vector has.
@@ -80,5 +76,4 @@ public sealed class VectorStoreRecordVectorAttribute : Attribute
     /// E.g. the property name might be "MyProperty" but the storage name might be "my_property".
     /// </summary>
     public string? StoragePropertyName { get; set; }
-
 }

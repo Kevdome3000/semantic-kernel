@@ -1,11 +1,9 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Class with data related to function after invocation.
 /// </summary>
@@ -13,7 +11,6 @@ using System.Diagnostics.CodeAnalysis;
 [Obsolete("This class is deprecated in favor of FunctionInvocationContext class, which is used in IFunctionInvocationFilter interface.")]
 public sealed class FunctionInvokedContext : FunctionFilterContext
 {
-
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionInvokedContext"/> class.
     /// </summary>
@@ -26,7 +23,6 @@ public sealed class FunctionInvokedContext : FunctionFilterContext
         this.ResultValue = result.Value;
     }
 
-
     /// <summary>
     /// Gets the result of the function's invocation.
     /// </summary>
@@ -37,7 +33,6 @@ public sealed class FunctionInvokedContext : FunctionFilterContext
     /// </summary>
     internal object? ResultValue { get; private set; }
 
-
     /// <summary>
     /// Sets an object to use as the overridden new result for the function's invocation.
     /// </summary>
@@ -46,5 +41,4 @@ public sealed class FunctionInvokedContext : FunctionFilterContext
     {
         this.ResultValue = value;
     }
-
 }

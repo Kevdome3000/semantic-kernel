@@ -1,18 +1,15 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel.TextToAudio;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-
+namespace Microsoft.SemanticKernel.TextToAudio;
 /// <summary>
 /// Class with extension methods for <see cref="ITextToAudioService"/> interface.
 /// </summary>
 public static class TextToAudioServiceExtensions
 {
-
     /// <summary>
     /// Get audio content from text.
     /// </summary>
@@ -30,5 +27,4 @@ public static class TextToAudioServiceExtensions
         CancellationToken cancellationToken = default)
         => (await textToAudioService.GetAudioContentsAsync(text, executionSettings, kernel, cancellationToken).
             ConfigureAwait(false)).Single();
-
 }

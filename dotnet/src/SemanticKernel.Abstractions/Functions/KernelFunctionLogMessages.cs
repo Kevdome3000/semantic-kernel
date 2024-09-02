@@ -1,14 +1,13 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
+
+using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
+using Microsoft.Extensions.Logging;
 
 #pragma warning disable SYSLIB1006 // Multiple logging methods cannot use the same event id within a class
 
 namespace Microsoft.SemanticKernel;
-
-using System;
-using System.Text.Json;
-using Extensions.Logging;
-
-
 /// <summary>
 /// Extensions for logging <see cref="KernelFunction"/> invocations.
 /// This extension uses the <see cref="LoggerMessageAttribute"/> to
@@ -16,7 +15,6 @@ using Extensions.Logging;
 /// </summary>
 internal static partial class KernelFunctionLogMessages
 {
-
     /// <summary>
     /// Logs invocation of a <see cref="KernelFunction"/>.
     /// </summary>
@@ -28,7 +26,6 @@ internal static partial class KernelFunctionLogMessages
         this ILogger logger,
         string functionName);
 
-
     /// <summary>
     /// Logs arguments to a <see cref="KernelFunction"/>.
     /// The action provides the benefit of caching the template parsing result for better performance.
@@ -39,7 +36,6 @@ internal static partial class KernelFunctionLogMessages
             logLevel: LogLevel.Trace, // Sensitive data, logging as trace, disabled by default
             eventId: 0,
             "Function arguments: {Arguments}");
-
 
     public static void LogFunctionArguments(this ILogger logger, KernelArguments arguments)
     {
@@ -57,7 +53,6 @@ internal static partial class KernelFunctionLogMessages
         }
     }
 
-
     /// <summary>
     /// Logs successful invocation of a <see cref="KernelFunction"/>.
     /// </summary>
@@ -66,7 +61,6 @@ internal static partial class KernelFunctionLogMessages
         Level = LogLevel.Information,
         Message = "Function {FunctionName} succeeded.")]
     public static partial void LogFunctionInvokedSuccess(this ILogger logger, string functionName);
-
 
     /// <summary>
     /// Logs result of a <see cref="KernelFunction"/>.
@@ -79,8 +73,7 @@ internal static partial class KernelFunctionLogMessages
             eventId: 0,
             "Function result: {ResultValue}");
 
-
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "By design. See comment below.")]
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "By design. See comment below.")]
     public static void LogFunctionResultValue(this ILogger logger, FunctionResult? resultValue)
     {
         if (logger.IsEnabled(LogLevel.Trace))
@@ -106,7 +99,6 @@ internal static partial class KernelFunctionLogMessages
         }
     }
 
-
     /// <summary>
     /// Logs <see cref="KernelFunction"/> error.
     /// </summary>
@@ -119,7 +111,6 @@ internal static partial class KernelFunctionLogMessages
         Exception exception,
         string message);
 
-
     /// <summary>
     /// Logs <see cref="KernelFunction"/> complete.
     /// </summary>
@@ -130,7 +121,6 @@ internal static partial class KernelFunctionLogMessages
     public static partial void LogFunctionComplete(
         this ILogger logger,
         double duration);
-
 
     /// <summary>
     /// Logs streaming invocation of a <see cref="KernelFunction"/>.
@@ -143,7 +133,6 @@ internal static partial class KernelFunctionLogMessages
         this ILogger logger,
         string functionName);
 
-
     /// <summary>
     /// Logs <see cref="KernelFunction"/> streaming complete.
     /// </summary>
@@ -154,5 +143,4 @@ internal static partial class KernelFunctionLogMessages
     public static partial void LogFunctionStreamingComplete(
         this ILogger logger,
         double duration);
-
 }

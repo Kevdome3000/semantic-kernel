@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -14,7 +14,6 @@ namespace Microsoft.SemanticKernel.Data;
 [Experimental("SKEXP0001")]
 public sealed class VectorStoreRecordKeyProperty : VectorStoreRecordProperty
 {
-
     /// <summary>
     /// Initializes a new instance of the <see cref="VectorStoreRecordKeyProperty"/> class.
     /// </summary>
@@ -25,7 +24,6 @@ public sealed class VectorStoreRecordKeyProperty : VectorStoreRecordProperty
     {
     }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="VectorStoreRecordKeyProperty"/> class by cloning the given source.
     /// </summary>
@@ -34,5 +32,4 @@ public sealed class VectorStoreRecordKeyProperty : VectorStoreRecordProperty
         : base(source)
     {
     }
-
 }

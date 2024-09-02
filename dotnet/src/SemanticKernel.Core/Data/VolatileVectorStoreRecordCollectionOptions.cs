@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
 
@@ -10,7 +10,6 @@ namespace Microsoft.SemanticKernel.Data;
 [Experimental("SKEXP0001")]
 public sealed class VolatileVectorStoreRecordCollectionOptions
 {
-
     /// <summary>
     /// Gets or sets an optional record definition that defines the schema of the record type.
     /// </summary>
@@ -20,5 +19,4 @@ public sealed class VolatileVectorStoreRecordCollectionOptions
     /// See <see cref="VectorStoreRecordKeyAttribute"/>, <see cref="VectorStoreRecordDataAttribute"/> and <see cref="VectorStoreRecordVectorAttribute"/>.
     /// </remarks>
     public VectorStoreRecordDefinition? VectorStoreRecordDefinition { get; init; } = null;
-
 }

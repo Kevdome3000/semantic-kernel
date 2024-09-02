@@ -1,18 +1,15 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents a function streaming call requested by LLM.
 /// </summary>
 [Experimental("SKEXP0001")]
 public class StreamingFunctionCallUpdateContent : StreamingKernelContent
 {
-
     /// <summary>
     /// The function call ID.
     /// </summary>
@@ -33,7 +30,6 @@ public class StreamingFunctionCallUpdateContent : StreamingKernelContent
     /// </summary>
     public int FunctionCallIndex { get; init; }
 
-
     /// <summary>
     /// Creates a new instance of the <see cref="StreamingFunctionCallUpdateContent"/> class.
     /// </summary>
@@ -53,18 +49,15 @@ public class StreamingFunctionCallUpdateContent : StreamingKernelContent
         this.FunctionCallIndex = functionCallIndex;
     }
 
-
     /// <inheritdoc />
     public override string ToString()
     {
         return nameof(StreamingFunctionCallUpdateContent);
     }
 
-
     /// <inheritdoc />
     public override byte[] ToByteArray()
     {
         return Encoding.UTF8.GetBytes(this.ToString());
     }
-
 }

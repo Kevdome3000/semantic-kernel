@@ -1,6 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -10,14 +8,13 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents a function call requested by LLM.
 /// </summary>
 [Experimental("SKEXP0001")]
 public sealed class FunctionCallContent : KernelContent
 {
-
     /// <summary>
     /// The function call ID.
     /// </summary>
@@ -47,7 +44,6 @@ public sealed class FunctionCallContent : KernelContent
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public Exception? Exception { get; init; }
 
-
     /// <summary>
     /// Creates a new instance of the <see cref="FunctionCallContent"/> class.
     /// </summary>
@@ -69,7 +65,6 @@ public sealed class FunctionCallContent : KernelContent
         this.PluginName = pluginName;
         this.Arguments = arguments;
     }
-
 
     /// <summary>
     /// Invokes the function represented by the function call content type.
@@ -97,7 +92,6 @@ public sealed class FunctionCallContent : KernelContent
         throw new KeyNotFoundException($"The plugin collection does not contain a plugin and/or function with the specified names. Plugin name - '{this.PluginName}', function name - '{this.FunctionName}'.");
     }
 
-
     /// <summary>
     /// Returns list of function calls provided via <see cref="ChatMessageContent.Items"/> collection.
     /// </summary>
@@ -107,5 +101,4 @@ public sealed class FunctionCallContent : KernelContent
     {
         return messageContent.Items.OfType<FunctionCallContent>();
     }
-
 }

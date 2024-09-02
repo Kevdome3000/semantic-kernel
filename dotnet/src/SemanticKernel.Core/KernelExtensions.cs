@@ -1,6 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -10,17 +8,15 @@ using System.Reflection;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Extensions.DependencyInjection;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
-using Text;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Text;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>Provides extension methods for interacting with <see cref="Kernel"/> and related types.</summary>
 public static class KernelExtensions
 {
-
-
     #region CreateFunctionFromMethod
 
     /// <summary>
@@ -47,7 +43,6 @@ public static class KernelExtensions
         return KernelFunctionFactory.CreateFromMethod(method.Method, method.Target, functionName, description,
             parameters, returnParameter, kernel.LoggerFactory);
     }
-
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
@@ -78,7 +73,6 @@ public static class KernelExtensions
     }
 
     #endregion
-
 
     #region CreateFunctionFromPrompt
 
@@ -118,7 +112,6 @@ public static class KernelExtensions
             kernel.LoggerFactory);
     }
 
-
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template.
     /// </summary>
@@ -155,7 +148,6 @@ public static class KernelExtensions
             kernel.LoggerFactory);
     }
 
-
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template configuration.
     /// </summary>
@@ -179,7 +171,6 @@ public static class KernelExtensions
 
     #endregion
 
-
     #region CreatePluginFromType
 
     /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/>.</summary>
@@ -201,7 +192,6 @@ public static class KernelExtensions
     }
 
     #endregion
-
 
     #region CreatePluginFromObject
 
@@ -225,7 +215,6 @@ public static class KernelExtensions
 
     #endregion
 
-
     #region CreatePluginFromFunctions
 
     /// <summary>Creates a plugin that contains the specified functions.</summary>
@@ -239,7 +228,6 @@ public static class KernelExtensions
     /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
     public static KernelPlugin CreatePluginFromFunctions(this Kernel kernel, string pluginName, IEnumerable<KernelFunction>? functions) =>
         CreatePluginFromFunctions(kernel, pluginName, description: null, functions);
-
 
     /// <summary>Creates a plugin that contains the specified functions.</summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
@@ -264,7 +252,6 @@ public static class KernelExtensions
 
     #endregion
 
-
     #region ImportPlugin/AddFromType
 
     /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/> and imports it into the <paramref name="kernel"/>'s plugin collection.</summary>
@@ -285,7 +272,6 @@ public static class KernelExtensions
 
         return plugin;
     }
-
 
     /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/> and adds it into the plugin collection.</summary>
     /// <typeparam name="T">Specifies the type of the object to wrap.</typeparam>
@@ -309,7 +295,6 @@ public static class KernelExtensions
         return plugin;
     }
 
-
     /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/> and adds it into the plugin collection.</summary>
     /// <typeparam name="T">Specifies the type of the object to wrap.</typeparam>
     /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
@@ -330,7 +315,6 @@ public static class KernelExtensions
         return plugins;
     }
 
-
     /// <summary>Adds the <paramref name="plugin"/> to the <paramref name="plugins"/>.</summary>
     /// <param name="plugins">The plugin collection to which the plugin should be added.</param>
     /// <param name="plugin">The plugin to add.</param>
@@ -346,7 +330,6 @@ public static class KernelExtensions
     }
 
     #endregion
-
 
     #region ImportPlugin/AddFromObject
 
@@ -368,7 +351,6 @@ public static class KernelExtensions
 
         return plugin;
     }
-
 
     /// <summary>Creates a plugin that wraps the specified target object and adds it into the plugin collection.</summary>
     /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
@@ -396,7 +378,6 @@ public static class KernelExtensions
         return plugin;
     }
 
-
     /// <summary>Creates a plugin that wraps the specified target object and adds it into the plugin collection.</summary>
     /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
     /// <param name="target">The instance of the class to be wrapped.</param>
@@ -419,7 +400,6 @@ public static class KernelExtensions
 
     #endregion
 
-
     #region ImportPlugin/AddFromFunctions
 
     /// <summary>Creates a plugin that contains the specified functions and imports it into the <paramref name="kernel"/>'s plugin collection.</summary>
@@ -433,7 +413,6 @@ public static class KernelExtensions
     /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
     public static KernelPlugin ImportPluginFromFunctions(this Kernel kernel, string pluginName, IEnumerable<KernelFunction>? functions) =>
         ImportPluginFromFunctions(kernel, pluginName, description: null, functions);
-
 
     /// <summary>Creates a plugin that contains the specified functions and imports it into the <paramref name="kernel"/>'s plugin collection.</summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
@@ -457,7 +436,6 @@ public static class KernelExtensions
         return plugin;
     }
 
-
     /// <summary>Creates a plugin that contains the specified functions and adds it into the plugin collection.</summary>
     /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
     /// <param name="pluginName">The name for the plugin.</param>
@@ -469,7 +447,6 @@ public static class KernelExtensions
     /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
     public static KernelPlugin AddFromFunctions(this ICollection<KernelPlugin> plugins, string pluginName, IEnumerable<KernelFunction>? functions) =>
         AddFromFunctions(plugins, pluginName, description: null, functions);
-
 
     /// <summary>Creates a plugin that contains the specified functions and adds it into the plugin collection.</summary>
     /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
@@ -495,7 +472,6 @@ public static class KernelExtensions
         return plugin;
     }
 
-
     /// <summary>Creates a plugin that wraps the specified target object and adds it into the plugin collection.</summary>
     /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
     /// <param name="pluginName">The name for the plugin.</param>
@@ -507,7 +483,6 @@ public static class KernelExtensions
     /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
     public static IKernelBuilderPlugins AddFromFunctions(this IKernelBuilderPlugins plugins, string pluginName, IEnumerable<KernelFunction>? functions) =>
         AddFromFunctions(plugins, pluginName, description: null, functions);
-
 
     /// <summary>Creates a plugin that wraps the specified target object and adds it into the plugin collection.</summary>
     /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
@@ -533,7 +508,6 @@ public static class KernelExtensions
     }
 
     #endregion
-
 
     #region CreatePluginFromDirectory
 
@@ -581,7 +555,6 @@ public static class KernelExtensions
 
         return CreatePluginFromPromptDirectory(pluginDirectory, pluginName, promptTemplateFactory, kernel.Services);
     }
-
 
     /// <summary>Creates a plugin containing one function per child directory of the specified <paramref name="pluginDirectory"/>.</summary>
     private static KernelPlugin CreatePluginFromPromptDirectory(
@@ -646,7 +619,6 @@ public static class KernelExtensions
 
     #endregion
 
-
     #region ImportPlugin/AddFromPromptDirectory
 
     /// <summary>
@@ -697,7 +669,6 @@ public static class KernelExtensions
 
         return plugin;
     }
-
 
     /// <summary>
     /// Creates a plugin containing one function per child directory of the specified <paramref name="pluginDirectory"/>
@@ -752,7 +723,6 @@ public static class KernelExtensions
 
     #endregion
 
-
     #region InvokePromptAsync
 
     /// <summary>
@@ -794,7 +764,6 @@ public static class KernelExtensions
         return kernel.InvokeAsync(function, arguments, cancellationToken);
     }
 
-
     /// <summary>
     /// Invokes a prompt specified via a prompt template and returns the results of type <typeparamref name="T"/>.
     /// </summary>
@@ -834,7 +803,6 @@ public static class KernelExtensions
         return kernel.InvokeAsync<T>(function, arguments, cancellationToken);
     }
 
-
     /// <summary>
     /// Invokes a prompt specified via a prompt template and returns the results of type <typeparamref name="T"/>.
     /// </summary>
@@ -870,7 +838,6 @@ public static class KernelExtensions
     }
 
     #endregion
-
 
     #region InvokePromptStreamingAsync
 
@@ -915,7 +882,6 @@ public static class KernelExtensions
         return function.InvokeStreamingAsync<StreamingKernelContent>(kernel, arguments, cancellationToken);
     }
 
-
     /// <summary>
     /// Invokes a prompt specified via a prompt template and streams its results of type <typeparamref name="T"/>.
     /// </summary>
@@ -958,7 +924,6 @@ public static class KernelExtensions
     }
 
     #endregion
-
 
     #region Build for IKernelBuilder
 
@@ -1013,6 +978,5 @@ public static class KernelExtensions
     }
 
     #endregion
-
 
 }

@@ -1,6 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -11,20 +9,19 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using ChatCompletion;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
-using Services;
-using TextGeneration;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Services;
+using Microsoft.SemanticKernel.TextGeneration;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// A Semantic Kernel "Semantic" prompt function.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 internal sealed class KernelFunctionFromPrompt : KernelFunction
 {
-
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template.
     /// </summary>
@@ -76,7 +73,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             loggerFactory: loggerFactory);
     }
 
-
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template configuration.
     /// </summary>
@@ -96,7 +92,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             promptConfig: promptConfig,
             loggerFactory: loggerFactory);
     }
-
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template and a prompt template configuration.
@@ -118,7 +113,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             promptConfig: promptConfig,
             logger: loggerFactory?.CreateLogger(typeof(KernelFunctionFactory)) ?? NullLogger.Instance);
     }
-
 
     /// <inheritdoc/>
     protected override async ValueTask<FunctionResult> InvokeCoreAsync(
@@ -156,7 +150,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             _ => throw new NotSupportedException($"The AI service {promptRenderingResult.AIService.GetType()} is not supported. Supported services are {typeof(IChatCompletionService)} and {typeof(ITextGenerationService)}")
         };
     }
-
 
     /// <inheritdoc/>
     protected override async IAsyncEnumerable<TResult> InvokeStreamingCoreAsync<TResult>(
@@ -217,7 +210,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         // There is no post cancellation check to override the result as the stream data was already sent.
     }
 
-
     /// <inheritdoc/>
     public override KernelFunction Clone(string pluginName)
     {
@@ -235,7 +227,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             this._logger);
     }
 
-
     private KernelFunctionFromPrompt(
         IPromptTemplate template,
         PromptTemplateConfig promptConfig,
@@ -251,7 +242,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         logger)
     {
     }
-
 
     private KernelFunctionFromPrompt(
         IPromptTemplate template,
@@ -277,7 +267,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         this._inputVariables = inputVariables.Select(iv => new InputVariable(iv)).
             ToList();
     }
-
 
     #region private
 
@@ -307,7 +296,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         unit: "{token}",
         description: "Measures the completion token usage");
 
-
     /// <summary>Add default values to the arguments if an argument is not defined</summary>
     private void AddDefaultValues(KernelArguments arguments)
     {
@@ -319,7 +307,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             }
         }
     }
-
 
     private async Task<PromptRenderingResult> RenderPromptAsync(Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
     {
@@ -397,10 +384,8 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         };
     }
 
-
     /// <summary>Create a random, valid function name.</summary>
     internal static string CreateRandomFunctionName(string? prefix = "Function") => $"{prefix}_{Guid.NewGuid():N}";
-
 
     /// <summary>
     /// Captures usage details, including token information.
@@ -473,7 +458,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         }
     }
 
-
     private async Task<FunctionResult> GetChatCompletionResultAsync(
         IChatCompletionService chatCompletion,
         Kernel kernel,
@@ -505,7 +489,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         // Otherwise, return multiple results
         return new FunctionResult(this, chatContents, kernel.Culture) { RenderedPrompt = promptRenderingResult.RenderedPrompt };
     }
-
 
     private async Task<FunctionResult> GetTextGenerationResultAsync(
         ITextGenerationService textGeneration,
@@ -540,6 +523,5 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     }
 
     #endregion
-
 
 }

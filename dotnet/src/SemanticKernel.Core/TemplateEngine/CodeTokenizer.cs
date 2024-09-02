@@ -1,14 +1,13 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-namespace Microsoft.SemanticKernel.TemplateEngine;
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
-
+namespace Microsoft.SemanticKernel.TemplateEngine;
 /// <summary>
 /// Simple tokenizer used for default SK template code language.
 ///
@@ -35,10 +34,8 @@ using Extensions.Logging.Abstractions;
 /// </summary>
 internal sealed class CodeTokenizer(ILoggerFactory? loggerFactory = null)
 {
-
     private enum TokenTypes
     {
-
         None = 0,
 
         Value = 1,
@@ -48,12 +45,9 @@ internal sealed class CodeTokenizer(ILoggerFactory? loggerFactory = null)
         FunctionId = 3,
 
         NamedArg = 4,
-
     }
 
-
     private readonly ILoggerFactory _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
-
 
     /// <summary>
     /// Tokenize a code block, without checking for syntax errors
@@ -190,7 +184,7 @@ internal sealed class CodeTokenizer(ILoggerFactory? loggerFactory = null)
 
                     // This isn't an expected block at this point but the TemplateTokenizer should throw an error when
                     // a named arg is used without a function call
-                    if (CodeTokenizer.IsValidNamedArg(tokenContent))
+                    if (IsValidNamedArg(tokenContent))
                     {
                         blocks.Add(new NamedArgBlock(tokenContent, this._loggerFactory));
                     }
@@ -295,7 +289,7 @@ internal sealed class CodeTokenizer(ILoggerFactory? loggerFactory = null)
 
                 // This isn't an expected block at this point but the TemplateTokenizer should throw an error when
                 // a named arg is used without a function call
-                if (CodeTokenizer.IsValidNamedArg(tokenContent))
+                if (IsValidNamedArg(tokenContent))
                 {
                     blocks.Add(new NamedArgBlock(tokenContent, this._loggerFactory));
                 }
@@ -318,30 +312,25 @@ internal sealed class CodeTokenizer(ILoggerFactory? loggerFactory = null)
         return blocks;
     }
 
-
     private static bool IsVarPrefix(char c)
     {
         return (c == Symbols.VarPrefix);
     }
-
 
     private static bool IsBlankSpace(char c)
     {
         return c is Symbols.Space or Symbols.NewLine or Symbols.CarriageReturn or Symbols.Tab;
     }
 
-
     private static bool IsQuote(char c)
     {
         return c is Symbols.DblQuote or Symbols.SglQuote;
     }
 
-
     private static bool CanBeEscaped(char c)
     {
         return c is Symbols.DblQuote or Symbols.SglQuote or Symbols.EscapeChar;
     }
-
 
     [SuppressMessage("Design", "CA1031:Modify to catch a more specific allowed exception type, or rethrow exception",
         Justification = "Does not throw an exception by design.")]
@@ -356,5 +345,4 @@ internal sealed class CodeTokenizer(ILoggerFactory? loggerFactory = null)
 
         return false;
     }
-
 }

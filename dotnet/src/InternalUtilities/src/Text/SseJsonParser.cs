@@ -1,6 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel.Text;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -11,7 +9,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-
+namespace Microsoft.SemanticKernel.Text;
 /// <summary>
 /// Internal class for parsing Server-Sent Events (SSE) data from a stream.
 /// </summary>
@@ -24,7 +22,6 @@ using System.Threading.Tasks;
 [ExcludeFromCodeCoverage]
 internal static class SseJsonParser
 {
-
     /// <summary>
     /// Parses Server-Sent Events (SSE) data asynchronously from a stream.
     /// </summary>
@@ -79,7 +76,6 @@ internal static class SseJsonParser
         }
     }
 
-
     /// <summary>
     /// Parses Server-Sent Events (SSE) data asynchronously from a stream and deserializes the data into the specified type.
     /// </summary>
@@ -102,5 +98,4 @@ internal static class SseJsonParser
             return new SseData(sseLine.EventName, obj!);
         }
     }
-
 }

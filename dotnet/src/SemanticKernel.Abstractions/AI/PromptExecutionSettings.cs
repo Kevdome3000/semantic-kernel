@@ -1,16 +1,14 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
-using ChatCompletion;
-using TextGeneration;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.TextGeneration;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides execution settings for an AI request.
 /// </summary>
@@ -21,7 +19,6 @@ using TextGeneration;
 /// </remarks>
 public class PromptExecutionSettings
 {
-
     /// <summary>
     /// Gets the default service identifier.
     /// </summary>
@@ -58,12 +55,12 @@ public class PromptExecutionSettings
     [JsonPropertyName("model_id")]
     public string? ModelId
     {
-        get => _modelId;
+        get => this._modelId;
 
         set
         {
-            ThrowIfFrozen();
-            _modelId = value;
+            this.ThrowIfFrozen();
+            this._modelId = value;
         }
     }
 
@@ -77,12 +74,12 @@ public class PromptExecutionSettings
     [JsonIgnore]
     public IDictionary<string, object>? ExtensionData
     {
-        get => _extensionData;
+        get => this._extensionData;
 
         set
         {
-            ThrowIfFrozen();
-            _extensionData = value;
+            this.ThrowIfFrozen();
+            this._extensionData = value;
         }
     }
 
@@ -92,38 +89,35 @@ public class PromptExecutionSettings
     [JsonIgnore]
     public bool IsFrozen { get; protected set; }
 
-
     /// <summary>
     /// Makes the current <see cref="PromptExecutionSettings"/> unmodifiable and sets its IsFrozen property to true.
     /// </summary>
     public virtual void Freeze()
     {
-        if (IsFrozen)
+        if (this.IsFrozen)
         {
             return;
         }
 
-        IsFrozen = true;
+        this.IsFrozen = true;
 
-        if (_extensionData is not null)
+        if (this._extensionData is not null)
         {
-            _extensionData = new ReadOnlyDictionary<string, object>(_extensionData);
+            this._extensionData = new ReadOnlyDictionary<string, object>(this._extensionData);
         }
     }
-
 
     /// <summary>
     /// Creates a new <see cref="PromptExecutionSettings"/> object that is a copy of the current instance.
     /// </summary>
     public virtual PromptExecutionSettings Clone() => new()
     {
-        ModelId = ModelId,
+        ModelId = this.ModelId,
         ServiceId = this.ServiceId,
-        ExtensionData = ExtensionData is not null
-            ? new Dictionary<string, object>(ExtensionData)
+        ExtensionData = this.ExtensionData is not null
+            ? new Dictionary<string, object>(this.ExtensionData)
             : null
     };
-
 
     /// <summary>
     /// Throws an <see cref="InvalidOperationException"/> if the <see cref="PromptExecutionSettings"/> are frozen.
@@ -131,12 +125,11 @@ public class PromptExecutionSettings
     /// <exception cref="InvalidOperationException"></exception>
     protected void ThrowIfFrozen()
     {
-        if (IsFrozen)
+        if (this.IsFrozen)
         {
             throw new InvalidOperationException("PromptExecutionSettings are frozen and cannot be modified.");
         }
     }
-
 
     #region private ================================================================================
 
@@ -147,6 +140,5 @@ public class PromptExecutionSettings
     private string? _serviceId;
 
     #endregion
-
 
 }

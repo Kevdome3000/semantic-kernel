@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Collections.Concurrent;
@@ -24,7 +24,6 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
     where TKey : notnull
     where TRecord : class
 {
-
     /// <summary>Internal storage for the record collection.</summary>
     private readonly ConcurrentDictionary<string, ConcurrentDictionary<object, object>> _internalCollection;
 
@@ -36,7 +35,6 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 
     /// <summary>A property info object that points at the key property for the current model, allowing easy reading and writing of this property.</summary>
     private readonly PropertyInfo _keyPropertyInfo;
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VolatileVectorStoreRecordCollection{TKey,TRecord}"/> class.
@@ -66,7 +64,6 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
         this._keyPropertyInfo = typeof(TRecord).GetProperty(keyProperty.DataModelPropertyName) ?? throw new ArgumentException($"Key property {keyProperty.DataModelPropertyName} not found on {typeof(TRecord).Name}");
     }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="VolatileVectorStoreRecordCollection{TKey,TRecord}"/> class.
     /// </summary>
@@ -79,10 +76,8 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
         this._internalCollection = internalCollection;
     }
 
-
     /// <inheritdoc />
     public string CollectionName => this._collectionName;
-
 
     /// <inheritdoc />
     public Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
@@ -92,7 +87,6 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
             : Task.FromResult(false);
     }
 
-
     /// <inheritdoc />
     public Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
@@ -100,7 +94,6 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         return Task.CompletedTask;
     }
-
 
     /// <inheritdoc />
     public async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
@@ -113,7 +106,6 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
         }
     }
 
-
     /// <inheritdoc />
     public Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
     {
@@ -121,7 +113,6 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         return Task.CompletedTask;
     }
-
 
     /// <inheritdoc />
     public Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
@@ -135,7 +126,6 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         return Task.FromResult<TRecord?>(null);
     }
-
 
     /// <inheritdoc />
     public async IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -152,7 +142,6 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
         }
     }
 
-
     /// <inheritdoc />
     public Task DeleteAsync(TKey key, DeleteRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
@@ -162,7 +151,6 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         return Task.CompletedTask;
     }
-
 
     /// <inheritdoc />
     public Task DeleteBatchAsync(IEnumerable<TKey> keys, DeleteRecordOptions? options = null, CancellationToken cancellationToken = default)
@@ -177,7 +165,6 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
         return Task.CompletedTask;
     }
 
-
     /// <inheritdoc />
     public Task<TKey> UpsertAsync(TRecord record, UpsertRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
@@ -189,7 +176,6 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
         return Task.FromResult(key!);
     }
 
-
     /// <inheritdoc />
     public async IAsyncEnumerable<TKey> UpsertBatchAsync(IEnumerable<TRecord> records, UpsertRecordOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -199,7 +185,6 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
                 ConfigureAwait(false);
         }
     }
-
 
     /// <summary>
     /// Get the collection dictionary from the internal storage, throws if it does not exist.
@@ -214,5 +199,4 @@ public sealed class VolatileVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         return collectionDictionary;
     }
-
 }

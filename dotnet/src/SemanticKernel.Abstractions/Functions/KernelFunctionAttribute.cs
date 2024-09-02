@@ -1,15 +1,13 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
 using System.Threading;
-using Extensions.Logging;
+using Microsoft.Extensions.Logging;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Specifies that a method on a class imported as a plugin should be included as a <see cref="KernelFunction"/> in the resulting <see cref="KernelPlugin"/>.
 /// </summary>
@@ -82,20 +80,16 @@ using Extensions.Logging;
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
 public sealed class KernelFunctionAttribute : Attribute
 {
-
     /// <summary>Initializes the attribute.</summary>
     public KernelFunctionAttribute()
     {
     }
 
-
     /// <summary>Initializes the attribute.</summary>
     /// <param name="name">The name to use for the function.</param>
     public KernelFunctionAttribute(string? name) => this.Name = name;
 
-
     /// <summary>Gets the function's name.</summary>
     /// <remarks>If null, a name will based on the name of the attributed method will be used.</remarks>
     public string? Name { get; }
-
 }

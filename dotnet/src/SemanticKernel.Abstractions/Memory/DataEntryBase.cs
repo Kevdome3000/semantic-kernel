@@ -1,17 +1,14 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel.Memory;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Text.Json.Serialization;
 
-
+namespace Microsoft.SemanticKernel.Memory;
 /// <summary>
 /// A base class for data entries.
 /// </summary>
 public class DataEntryBase
 {
-
     /// <summary>
     /// Creates an instance of a <see cref="DataEntryBase"/>.
     /// </summary>
@@ -20,10 +17,9 @@ public class DataEntryBase
     [JsonConstructor]
     public DataEntryBase(string? key = null, DateTimeOffset? timestamp = null)
     {
-        Key = key ?? string.Empty;
-        Timestamp = timestamp;
+        this.Key = key ?? string.Empty;
+        this.Timestamp = timestamp;
     }
-
 
     /// <summary>
     /// Gets the key of the data.
@@ -41,6 +37,5 @@ public class DataEntryBase
     /// <c>true</c> if the data has a timestamp.
     /// </summary>
     [JsonIgnore]
-    public bool HasTimestamp => Timestamp.HasValue;
-
+    public bool HasTimestamp => this.Timestamp.HasValue;
 }

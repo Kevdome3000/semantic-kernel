@@ -1,11 +1,9 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel.Text;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-
+namespace Microsoft.SemanticKernel.Text;
 /// <summary>
 /// Represents a line of a Server-Sent Events (SSE) stream.
 /// </summary>
@@ -15,7 +13,6 @@ using System.Diagnostics.CodeAnalysis;
 [ExcludeFromCodeCoverage]
 internal readonly struct SseLine : IEquatable<SseLine>
 {
-
     private readonly string _original;
 
     private readonly int _colonIndex;
@@ -29,7 +26,6 @@ internal readonly struct SseLine : IEquatable<SseLine>
     /// The <see cref="Empty"/> property is a static instance of the <see cref="SseLine"/> struct.
     /// </remarks>
     internal static SseLine Empty { get; } = new(string.Empty, 0, false, null);
-
 
     internal SseLine(
         string original,
@@ -53,7 +49,6 @@ internal readonly struct SseLine : IEquatable<SseLine>
 
         EventName = lastEventName;
     }
-
 
     /// <summary>
     /// The name of the last event for the Server-Sent Events (SSE) line.
@@ -89,32 +84,25 @@ internal readonly struct SseLine : IEquatable<SseLine>
         ? _original.AsMemory(_valueIndex)
         : string.Empty.AsMemory();
 
-
     /// <inheritdoc />
     public override string ToString() => _original;
-
 
     /// <inheritdoc />
     public bool Equals(SseLine other) => _original.Equals(other._original, StringComparison.Ordinal);
 
-
     /// <inheritdoc />
     public override bool Equals(object? obj) => obj is SseLine other && Equals(other);
 
-
     /// <inheritdoc />
     public override int GetHashCode() => StringComparer.Ordinal.GetHashCode(_original);
-
 
     /// <summary>
     /// Defines the equality operator for comparing two instances of the SseLine class.
     /// </summary>
     public static bool operator ==(SseLine left, SseLine right) => left.Equals(right);
 
-
     /// <summary>
     /// Represents the inequality operator for comparing two SseLine objects.
     /// </summary>
     public static bool operator !=(SseLine left, SseLine right) => !left.Equals(right);
-
 }

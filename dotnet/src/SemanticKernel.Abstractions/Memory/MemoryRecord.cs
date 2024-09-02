@@ -1,19 +1,16 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel.Memory;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Text;
+using Microsoft.SemanticKernel.Text;
 
-
+namespace Microsoft.SemanticKernel.Memory;
 /// <summary>
 /// IMPORTANT: this is a storage schema. Changing the fields will invalidate existing metadata stored in persistent vector DBs.
 /// </summary>
 public class MemoryRecord : DataEntryBase
 {
-
     /// <summary>
     /// Source content embeddings.
     /// </summary>
@@ -27,7 +24,6 @@ public class MemoryRecord : DataEntryBase
     [JsonPropertyName("metadata")]
     public MemoryRecordMetadata Metadata { get; }
 
-
     /// <summary>
     /// Constructor, use <see cref="ReferenceRecord"/> or <see cref="LocalRecord"/>
     /// </summary>
@@ -38,10 +34,9 @@ public class MemoryRecord : DataEntryBase
         string? key,
         DateTimeOffset? timestamp = null) : base(key, timestamp)
     {
-        Metadata = metadata;
-        Embedding = embedding;
+        this.Metadata = metadata;
+        this.Embedding = embedding;
     }
-
 
     /// <summary>
     /// Prepare an instance about a memory which source is stored externally.
@@ -77,7 +72,6 @@ public class MemoryRecord : DataEntryBase
         timestamp
     );
 
-
     /// <summary>
     /// Prepare an instance for a memory stored in the internal storage provider.
     /// </summary>
@@ -111,7 +105,6 @@ public class MemoryRecord : DataEntryBase
         timestamp
     );
 
-
     /// <summary>
     /// Create a memory record from a serialized metadata string.
     /// </summary>
@@ -134,7 +127,6 @@ public class MemoryRecord : DataEntryBase
             : throw new KernelException("Unable to create memory record from serialized metadata");
     }
 
-
     /// <summary>
     /// Create a memory record from a memory record's metadata.
     /// </summary>
@@ -149,11 +141,12 @@ public class MemoryRecord : DataEntryBase
         string? key = null,
         DateTimeOffset? timestamp = null) => new(metadata, embedding, key, timestamp);
 
-
     /// <summary>
     /// Serialize the metadata of a memory record.
     /// </summary>
     /// <returns>The memory record's metadata serialized to a json string.</returns>
-    public string GetSerializedMetadata() => JsonSerializer.Serialize(Metadata);
-
+    public string GetSerializedMetadata()
+    {
+        return JsonSerializer.Serialize(this.Metadata);
+    }
 }

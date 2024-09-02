@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Collections;
@@ -18,13 +18,11 @@ namespace Microsoft.SemanticKernel.Data;
 [ExcludeFromCodeCoverage]
 internal static class VectorStoreRecordPropertyReader
 {
-
     /// <summary>Cache of property enumerations so that we don't incur reflection costs with each invocation.</summary>
     private static readonly ConcurrentDictionary<Type, (PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties)> s_singleVectorPropertiesCache = new();
 
     /// <summary>Cache of property enumerations so that we don't incur reflection costs with each invocation.</summary>
     private static readonly ConcurrentDictionary<Type, (PropertyInfo keyProperty, List<PropertyInfo> dataProperties, List<PropertyInfo> vectorProperties)> s_multipleVectorsPropertiesCache = new();
-
 
     /// <summary>
     /// Split the given <paramref name="definition"/> into key, data and vector properties and verify that we have the expected numbers of each type.
@@ -74,7 +72,6 @@ internal static class VectorStoreRecordPropertyReader
 
         return (keyProperty, dataProperties, vectorProperties);
     }
-
 
     /// <summary>
     /// Find the properties with <see cref="VectorStoreRecordKeyAttribute"/>, <see cref="VectorStoreRecordDataAttribute"/> and <see cref="VectorStoreRecordVectorAttribute"/> attributes
@@ -158,7 +155,6 @@ internal static class VectorStoreRecordPropertyReader
 
         return (keyProperty, dataProperties, vectorProperties);
     }
-
 
     /// <summary>
     /// Find the properties listed in the <paramref name="vectorStoreRecordDefinition"/> on the <paramref name="type"/> and verify
@@ -252,7 +248,6 @@ internal static class VectorStoreRecordPropertyReader
         return (keyProperty!, dataProperties, vectorProperties);
     }
 
-
     /// <summary>
     /// Create a <see cref="VectorStoreRecordDefinition"/> by reading the attributes on the properties of the given type.
     /// </summary>
@@ -304,7 +299,6 @@ internal static class VectorStoreRecordPropertyReader
         return new VectorStoreRecordDefinition { Properties = definitionProperties };
     }
 
-
     /// <summary>
     /// Verify that the given properties are of the supported types.
     /// </summary>
@@ -325,7 +319,6 @@ internal static class VectorStoreRecordPropertyReader
 
         VerifyPropertyTypes(properties, supportedTypes, supportedEnumerableTypes, propertyCategoryDescription);
     }
-
 
     /// <summary>
     /// Verify that the given properties are of the supported types.
@@ -348,7 +341,6 @@ internal static class VectorStoreRecordPropertyReader
         }
     }
 
-
     /// <summary>
     /// Verify that the given properties are of the supported types.
     /// </summary>
@@ -370,7 +362,6 @@ internal static class VectorStoreRecordPropertyReader
         VerifyPropertyTypes(properties, supportedTypes, supportedEnumerableTypes, propertyCategoryDescription);
     }
 
-
     /// <summary>
     /// Verify that the given properties are of the supported types.
     /// </summary>
@@ -391,7 +382,6 @@ internal static class VectorStoreRecordPropertyReader
                 propertyCategoryDescription);
         }
     }
-
 
     /// <summary>
     /// Verify that the given property is of the supported types.
@@ -445,7 +435,6 @@ internal static class VectorStoreRecordPropertyReader
         }
     }
 
-
     /// <summary>
     /// Get the JSON property name of a property by using the <see cref="JsonPropertyNameAttribute"/> if available, otherwise
     /// using the <see cref="JsonNamingPolicy"/> if available, otherwise falling back to the property name.
@@ -478,7 +467,6 @@ internal static class VectorStoreRecordPropertyReader
         return property.DataModelPropertyName;
     }
 
-
     /// <summary>
     /// Get the JSON property name of a property by using the <see cref="JsonPropertyNameAttribute"/> if available, otherwise
     /// using the <see cref="JsonNamingPolicy"/> if available, otherwise falling back to the property name.
@@ -502,7 +490,6 @@ internal static class VectorStoreRecordPropertyReader
 
         return property.Name;
     }
-
 
     /// <summary>
     /// Build a map of property names to the names under which they should be saved in storage if using JSON serialization.
@@ -532,7 +519,6 @@ internal static class VectorStoreRecordPropertyReader
         return jsonPropertyNameMap;
     }
 
-
     /// <summary>
     /// Build a map of property names to the names under which they should be saved in storage if using JSON serialization.
     /// </summary>
@@ -561,7 +547,6 @@ internal static class VectorStoreRecordPropertyReader
         return jsonPropertyNameMap;
     }
 
-
     /// <summary>
     /// Build a map of property names to the names under which they should be saved in storage, for the given properties.
     /// </summary>
@@ -584,5 +569,4 @@ internal static class VectorStoreRecordPropertyReader
 
         return storagePropertyNameMap;
     }
-
 }

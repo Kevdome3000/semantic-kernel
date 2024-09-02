@@ -1,18 +1,15 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents a function name.
 /// </summary>
 [ExcludeFromCodeCoverage]
 internal sealed class FunctionName
 {
-
     /// <summary>
     /// The plugin name.
     /// </summary>
@@ -22,7 +19,6 @@ internal sealed class FunctionName
     /// The function name.
     /// </summary>
     public string Name { get; }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionName"/> class.
@@ -37,7 +33,6 @@ internal sealed class FunctionName
         PluginName = pluginName;
     }
 
-
     /// <summary>
     /// Gets the fully-qualified name of the function.
     /// </summary>
@@ -51,7 +46,6 @@ internal sealed class FunctionName
             ? functionName
             : $"{pluginName}{functionNameSeparator}{functionName}";
     }
-
 
     /// <summary>
     /// Creates a new instance of the <see cref="FunctionName"/> class.
@@ -80,5 +74,4 @@ internal sealed class FunctionName
 
         return new FunctionName(name: functionName, pluginName: pluginName);
     }
-
 }

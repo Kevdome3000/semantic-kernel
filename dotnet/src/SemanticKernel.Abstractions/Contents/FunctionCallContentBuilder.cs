@@ -1,6 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -9,20 +7,18 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// A builder class for creating <see cref="FunctionCallContent"/> objects from incremental function call updates represented by <see cref="StreamingFunctionCallUpdateContent"/>.
 /// </summary>
 [Experimental("SKEXP0001")]
 public sealed class FunctionCallContentBuilder
 {
-
     private Dictionary<int, string>? _functionCallIdsByIndex = null;
 
     private Dictionary<int, string>? _functionNamesByIndex = null;
 
     private Dictionary<int, StringBuilder>? _functionArgumentBuildersByIndex = null;
-
 
     /// <summary>
     /// Extracts function call updates from the content and track them for later building.
@@ -40,7 +36,6 @@ public sealed class FunctionCallContentBuilder
                 ref this._functionArgumentBuildersByIndex);
         }
     }
-
 
     /// <summary>
     /// Builds a list of <see cref="FunctionCallContent"/> out of function call updates tracked by the <see cref="Append"/> method.
@@ -63,7 +58,7 @@ public sealed class FunctionCallContentBuilder
 
                 if (this._functionNamesByIndex?.TryGetValue(functionCallIndexAndId.Key, out string? fqn) ?? false)
                 {
-                    var functionFullyQualifiedName = Microsoft.SemanticKernel.FunctionName.Parse(fqn);
+                    var functionFullyQualifiedName = FunctionName.Parse(fqn);
                     pluginName = functionFullyQualifiedName.PluginName;
                     functionName = functionFullyQualifiedName.Name;
                 }
@@ -83,7 +78,6 @@ public sealed class FunctionCallContentBuilder
 
         return functionCalls ?? [];
     }
-
 
     /// <summary>
     /// Gets function arguments for a given function call index.
@@ -131,7 +125,6 @@ public sealed class FunctionCallContentBuilder
         return (arguments, exception);
     }
 
-
     /// <summary>
     /// Tracks streaming function call update contents.
     /// </summary>
@@ -175,5 +168,4 @@ public sealed class FunctionCallContentBuilder
             arguments.Append(argumentsUpdate);
         }
     }
-
 }

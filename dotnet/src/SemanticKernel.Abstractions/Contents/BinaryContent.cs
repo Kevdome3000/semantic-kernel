@@ -1,26 +1,23 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-#pragma warning disable CA1056 // URI-like properties should not be strings
-#pragma warning disable CA1055 // URI-like parameters should not be strings
-#pragma warning disable CA1054 // URI-like parameters should not be strings
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json.Serialization;
-using Text;
+using Microsoft.SemanticKernel.Text;
 
+#pragma warning disable CA1056 // URI-like properties should not be strings
+#pragma warning disable CA1055 // URI-like parameters should not be strings
+#pragma warning disable CA1054 // URI-like parameters should not be strings
 
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides access to binary content.
 /// </summary>
 [Experimental("SKEXP0001")]
 public class BinaryContent : KernelContent
 {
-
     private string? _dataUri;
 
     private ReadOnlyMemory<byte>? _data;
@@ -72,7 +69,6 @@ public class BinaryContent : KernelContent
         => this._data is not null
            || this._dataUri is not null;
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="BinaryContent"/> class with no content.
     /// </summary>
@@ -84,7 +80,6 @@ public class BinaryContent : KernelContent
     {
     }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="BinaryContent"/> class referring to an external uri.
     /// </summary>
@@ -92,7 +87,6 @@ public class BinaryContent : KernelContent
     {
         this.Uri = uri;
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BinaryContent"/> class for a UriData or Uri referred content.
@@ -105,7 +99,6 @@ public class BinaryContent : KernelContent
     {
         this.DataUri = dataUri;
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BinaryContent"/> class from a byte array.
@@ -127,7 +120,6 @@ public class BinaryContent : KernelContent
         this.Data = data;
     }
 
-
     #region Private
 
     /// <summary>
@@ -144,14 +136,12 @@ public class BinaryContent : KernelContent
         this._referencedUri = uri;
     }
 
-
     /// <summary>
     /// Gets the Uri of the content.
     /// </summary>
     /// <returns>Uri of the content</returns>
     private Uri? GetUri()
         => this._referencedUri;
-
 
     /// <summary>
     /// Sets the DataUri of the content.
@@ -197,7 +187,6 @@ public class BinaryContent : KernelContent
         this._data = null;
     }
 
-
     private void UpdateDataUriParametersToMetadata(DataUriParser.DataUri parsedDataUri)
     {
         if (parsedDataUri.Parameters.Count == 0)
@@ -230,7 +219,6 @@ public class BinaryContent : KernelContent
         this.Metadata = newMetadata;
     }
 
-
     private string GetDataUriParametersFromMetadata()
     {
         var metadata = this.Metadata;
@@ -253,7 +241,6 @@ public class BinaryContent : KernelContent
         return parameters.ToString();
     }
 
-
     /// <summary>
     /// Sets the byte array data content.
     /// </summary>
@@ -265,7 +252,6 @@ public class BinaryContent : KernelContent
         this._data = data;
     }
 
-
     /// <summary>
     /// Gets the byte array data content.
     /// </summary>
@@ -274,7 +260,6 @@ public class BinaryContent : KernelContent
     {
         return this.GetCachedByteArrayContent();
     }
-
 
     /// <summary>
     /// Gets the DataUri of the content.
@@ -302,7 +287,6 @@ public class BinaryContent : KernelContent
         return this.GetCachedUriDataFromByteArray(this.GetCachedByteArrayContent());
     }
 
-
     private string? GetCachedUriDataFromByteArray(ReadOnlyMemory<byte>? cachedByteArray)
     {
         if (cachedByteArray is null)
@@ -321,7 +305,6 @@ public class BinaryContent : KernelContent
 
         return this._dataUri;
     }
-
 
     private ReadOnlyMemory<byte>? GetCachedByteArrayContent()
     {
@@ -344,6 +327,5 @@ public class BinaryContent : KernelContent
     }
 
     #endregion
-
 
 }

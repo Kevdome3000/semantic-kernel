@@ -1,19 +1,16 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides read-only metadata for a <see cref="KernelFunction"/>.
 /// </summary>
 public sealed class KernelFunctionMetadata
 {
-
     /// <summary>The name of the function.</summary>
     private string _name = string.Empty;
 
@@ -32,7 +29,6 @@ public sealed class KernelFunctionMetadata
     /// <summary>A static empty dictionary to default to when none is provided.</summary>
     internal static readonly ReadOnlyDictionary<string, object?> s_emptyDictionary = new(new Dictionary<string, object?>());
 
-
     /// <summary>Initializes the <see cref="KernelFunctionMetadata"/> for a function with the specified name.</summary>
     /// <param name="name">The name of the function.</param>
     /// <exception cref="ArgumentNullException">The <paramref name="name"/> was null.</exception>
@@ -41,7 +37,6 @@ public sealed class KernelFunctionMetadata
     {
         this.Name = name;
     }
-
 
     /// <summary>Initializes a <see cref="KernelFunctionMetadata"/> as a copy of another <see cref="KernelFunctionMetadata"/>.</summary>
     /// <exception cref="ArgumentNullException">The <paramref name="metadata"/> was null.</exception>
@@ -59,7 +54,6 @@ public sealed class KernelFunctionMetadata
         this.ReturnParameter = metadata.ReturnParameter;
         this.AdditionalProperties = metadata.AdditionalProperties;
     }
-
 
     /// <summary>Gets the name of the function.</summary>
     public string Name
@@ -118,5 +112,4 @@ public sealed class KernelFunctionMetadata
             this._additionalProperties = value;
         }
     }
-
 }

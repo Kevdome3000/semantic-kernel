@@ -1,11 +1,9 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Net;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents an exception specific to HTTP operations.
 /// </summary>
@@ -15,14 +13,12 @@ using System.Net;
 /// </remarks>
 public class HttpOperationException : Exception
 {
-
     /// <summary>
     /// Initializes a new instance of the <see cref="HttpOperationException"/> class.
     /// </summary>
     public HttpOperationException()
     {
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HttpOperationException"/> class with its message set to <paramref name="message"/>.
@@ -32,7 +28,6 @@ public class HttpOperationException : Exception
     {
     }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="HttpOperationException"/> class with its message set to <paramref name="message"/>.
     /// </summary>
@@ -41,7 +36,6 @@ public class HttpOperationException : Exception
     public HttpOperationException(string? message, Exception? innerException) : base(message, innerException)
     {
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HttpOperationException"/> class with its message
@@ -61,7 +55,6 @@ public class HttpOperationException : Exception
         this.StatusCode = statusCode;
         this.ResponseContent = responseContent;
     }
-
 
     /// <summary>
     /// Gets or sets the HTTP status code. If the property is null, it indicates that no response was received.
@@ -99,5 +92,4 @@ public class HttpOperationException : Exception
     /// </remarks>
     [Obsolete("This property is obsolete and will be removed in a future version. Use the Exception.Data['Data'] instead.")]
     public object? RequestPayload { get; set; }
-
 }

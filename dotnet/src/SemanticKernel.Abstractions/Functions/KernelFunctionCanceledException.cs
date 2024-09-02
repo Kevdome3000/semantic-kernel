@@ -1,12 +1,10 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
+
+using System;
 
 #pragma warning disable RCS1194 // Implement exception constructors.
 
 namespace Microsoft.SemanticKernel;
-
-using System;
-
-
 /// <summary>
 /// Provides an <see cref="OperationCanceledException"/>-derived exception type
 /// that's thrown from a <see cref="KernelFunction"/> invocation when a <see cref="Kernel"/>
@@ -14,7 +12,6 @@ using System;
 /// </summary>
 public sealed class KernelFunctionCanceledException : OperationCanceledException
 {
-
     /// <summary>Initializes the exception instance.</summary>
     /// <param name="kernel">The <see cref="Kernel"/> passed to the invocation of <paramref name="function"/>.</param>
     /// <param name="function">The <see cref="KernelFunction"/> whose invocation was canceled.</param>
@@ -38,7 +35,6 @@ public sealed class KernelFunctionCanceledException : OperationCanceledException
         this.FunctionResult = functionResult;
     }
 
-
     /// <summary>Gets the <see cref="Kernel"/> that was passed to the invocation of <see cref="Function"/>.</summary>
     public Kernel Kernel { get; }
 
@@ -50,5 +46,4 @@ public sealed class KernelFunctionCanceledException : OperationCanceledException
 
     /// <summary>Gets the result of the <see cref="KernelFunction"/> if it had completed execution before cancellation was requested.</summary>
     public FunctionResult? FunctionResult { get; }
-
 }

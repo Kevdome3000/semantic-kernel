@@ -1,19 +1,16 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel.TemplateEngine;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Text.RegularExpressions;
-using Extensions.Logging;
+using Microsoft.Extensions.Logging;
 
-
+namespace Microsoft.SemanticKernel.TemplateEngine;
 /// <summary>
 /// A <see cref="Block"/> that represents a named argument for a function call.
 /// For example, in the template {{ MyPlugin.MyFunction var1="foo" }}, var1="foo" is a named arg block.
 /// </summary>
 internal sealed class NamedArgBlock : Block, ITextRendering
 {
-
     /// <summary>
     /// Returns the <see cref="BlockTypes"/>.
     /// </summary>
@@ -29,7 +26,6 @@ internal sealed class NamedArgBlock : Block, ITextRendering
     /// </summary>
     internal VarBlock? VarBlock { get; }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="NamedArgBlock"/> class.
     /// </summary>
@@ -37,7 +33,7 @@ internal sealed class NamedArgBlock : Block, ITextRendering
     /// <param name="logger">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <exception cref="KernelException"></exception>
     public NamedArgBlock(string? text, ILoggerFactory? logger = null)
-        : base(NamedArgBlock.TrimWhitespace(text), logger)
+        : base(TrimWhitespace(text), logger)
     {
         if (!TryGetNameAndValue(this.Content, out string argName, out string argValue))
         {
@@ -58,7 +54,6 @@ internal sealed class NamedArgBlock : Block, ITextRendering
             this._valBlock = new ValBlock(argValue);
         }
     }
-
 
     /// <summary>
     /// Attempts to extract the name and value of a named argument block from a string
@@ -88,7 +83,6 @@ internal sealed class NamedArgBlock : Block, ITextRendering
         return false;
     }
 
-
     /// <summary>
     /// Gets the rendered value of the function argument. If the value is a <see cref="ValBlock"/>, the value stays the same.
     /// If the value is a <see cref="VarBlock"/>, the value of the variable is determined by the arguments passed in.
@@ -114,13 +108,11 @@ internal sealed class NamedArgBlock : Block, ITextRendering
         return string.Empty;
     }
 
-
     /// <inheritdoc/>
     public object? Render(KernelArguments? arguments)
     {
         return this.Content;
     }
-
 
     /// <summary>
     /// Returns whether the named arg block has valid syntax.
@@ -175,13 +167,11 @@ internal sealed class NamedArgBlock : Block, ITextRendering
     }
 #pragma warning restore CA2254
 
-
     #region private ================================================================================
 
     private readonly VarBlock _argNameAsVarBlock;
 
     private readonly ValBlock? _valBlock;
-
 
     private static string? TrimWhitespace(string? text)
     {
@@ -190,7 +180,7 @@ internal sealed class NamedArgBlock : Block, ITextRendering
             return text;
         }
 
-        string[] trimmedParts = NamedArgBlock.GetTrimmedParts(text);
+        string[] trimmedParts = GetTrimmedParts(text);
 
         return (trimmedParts?.Length) switch
         {
@@ -199,7 +189,6 @@ internal sealed class NamedArgBlock : Block, ITextRendering
             _ => null,
         };
     }
-
 
     private static string[] GetTrimmedParts(string? text)
     {
@@ -227,6 +216,5 @@ internal sealed class NamedArgBlock : Block, ITextRendering
     }
 
     #endregion
-
 
 }

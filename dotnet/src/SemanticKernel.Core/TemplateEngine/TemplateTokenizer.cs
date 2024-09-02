@@ -1,12 +1,11 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-namespace Microsoft.SemanticKernel.TemplateEngine;
 
 using System.Collections.Generic;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
-
+namespace Microsoft.SemanticKernel.TemplateEngine;
 /// <summary>
 /// Simple tokenizer used for default SK template language.
 ///
@@ -33,7 +32,6 @@ using Extensions.Logging.Abstractions;
 /// </summary>
 internal sealed class TemplateTokenizer(ILoggerFactory? loggerFactory = null)
 {
-
     /// <summary>
     /// Extract blocks from the given text
     /// </summary>
@@ -197,25 +195,21 @@ internal sealed class TemplateTokenizer(ILoggerFactory? loggerFactory = null)
         return blocks;
     }
 
-
     #region private ================================================================================
 
     private readonly ILoggerFactory _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
 
     private readonly CodeTokenizer _codeTokenizer = new(loggerFactory);
 
-
     private static string SubStr(string text, int startIndex, int stopIndex)
     {
         return text.Substring(startIndex, stopIndex - startIndex);
     }
 
-
     private static bool IsQuote(char c)
     {
         return c is Symbols.DblQuote or Symbols.SglQuote;
     }
-
 
     private static bool CanBeEscaped(char c)
     {
@@ -223,6 +217,5 @@ internal sealed class TemplateTokenizer(ILoggerFactory? loggerFactory = null)
     }
 
     #endregion
-
 
 }

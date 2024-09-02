@@ -1,14 +1,12 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel.Embeddings;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Services;
+using Microsoft.SemanticKernel.Services;
 
-
+namespace Microsoft.SemanticKernel.Embeddings;
 /// <summary>
 /// Represents a generator of embeddings.
 /// </summary>
@@ -17,7 +15,6 @@ using Services;
 public interface IEmbeddingGenerationService<TValue, TEmbedding> : IAIService
     where TEmbedding : unmanaged
 {
-
     /// <summary>
     /// Generates an embedding from the given <paramref name="data"/>.
     /// </summary>
@@ -29,5 +26,4 @@ public interface IEmbeddingGenerationService<TValue, TEmbedding> : IAIService
         IList<TValue> data,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default);
-
 }

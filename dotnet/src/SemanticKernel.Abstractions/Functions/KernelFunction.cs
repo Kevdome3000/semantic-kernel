@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Collections;
@@ -147,7 +147,7 @@ public abstract class KernelFunction : IKernelFunction
         Verify.NotNull(name);
         Verify.ParametersUniqueness(parameters);
 
-        Metadata = new KernelFunctionMetadata(name)
+        this.Metadata = new KernelFunctionMetadata(name)
         {
             PluginName = pluginName,
             Description = description,
@@ -156,13 +156,13 @@ public abstract class KernelFunction : IKernelFunction
             AdditionalProperties = additionalMetadata ?? KernelFunctionMetadata.s_emptyDictionary
         };
 
-        Name = Metadata.Name;
-        PluginName = Metadata.PluginName;
-        Description = Metadata.Description;
+        this.Name = this.Metadata.Name;
+        this.PluginName = this.Metadata.PluginName;
+        this.Description = this.Metadata.Description;
 
         if (executionSettings is not null)
         {
-            ExecutionSettings = executionSettings.ToDictionary(
+            this.ExecutionSettings = executionSettings.ToDictionary(
                 entry => entry.Key,
                 entry =>
                 {
@@ -195,10 +195,10 @@ public abstract class KernelFunction : IKernelFunction
 
         // Ensure arguments are initialized.
         arguments ??= [];
-        logger.LogFunctionInvoking(Name);
+        logger.LogFunctionInvoking(this.Name);
         logger.LogFunctionArguments(arguments);
 
-        TagList tags = new() { { MeasurementFunctionTagName, Name } };
+        TagList tags = new() { { MeasurementFunctionTagName, this.Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
         FunctionResult functionResult = new(this, culture: kernel.Culture);
 
@@ -220,7 +220,7 @@ public abstract class KernelFunction : IKernelFunction
             var invocationContext = await kernel.OnFunctionInvocationAsync(this, arguments, functionResult, async context =>
             {
                 // Invoking the function and updating context with result.
-                context.Result = functionResult = await InvokeCoreAsync(kernel, context.Arguments, cancellationToken).ConfigureAwait(false);
+                context.Result = functionResult = await this.InvokeCoreAsync(kernel, context.Arguments, cancellationToken).ConfigureAwait(false);
             }, cancellationToken).ConfigureAwait(false);
 
             // Apply any changes from the function filters context to final result.
@@ -242,7 +242,7 @@ public abstract class KernelFunction : IKernelFunction
                 throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.FunctionInvoked)} event handler requested cancellation after function invocation.");
             }
 
-            logger.LogFunctionInvokedSuccess(Name);
+            logger.LogFunctionInvokedSuccess(this.Name);
             logger.LogFunctionResultValue(functionResult);
 
             return functionResult;
@@ -279,7 +279,7 @@ public abstract class KernelFunction : IKernelFunction
         KernelArguments? arguments = null,
         CancellationToken cancellationToken = default)
     {
-        FunctionResult result = await InvokeAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+        FunctionResult result = await this.InvokeAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 
         return result.GetValue<TResult>();
     }
@@ -300,7 +300,7 @@ public abstract class KernelFunction : IKernelFunction
         Kernel kernel,
         KernelArguments? arguments = null,
         CancellationToken cancellationToken = default) =>
-        InvokeStreamingAsync<StreamingKernelContent>(kernel, arguments, cancellationToken);
+        this.InvokeStreamingAsync<StreamingKernelContent>(kernel, arguments, cancellationToken);
 
 
     /// <summary>
@@ -323,14 +323,14 @@ public abstract class KernelFunction : IKernelFunction
     {
         Verify.NotNull(kernel);
 
-        using var activity = s_activitySource.StartActivity(Name);
-        ILogger logger = kernel.LoggerFactory.CreateLogger(Name) ?? NullLogger.Instance;
+        using var activity = s_activitySource.StartActivity(this.Name);
+        ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name) ?? NullLogger.Instance;
 
         arguments ??= [];
-        logger.LogFunctionStreamingInvoking(Name);
+        logger.LogFunctionStreamingInvoking(this.Name);
         logger.LogFunctionArguments(arguments);
 
-        TagList tags = new() { { MeasurementFunctionTagName, Name } };
+        TagList tags = new() { { MeasurementFunctionTagName, this.Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
 
         try
@@ -357,7 +357,7 @@ public abstract class KernelFunction : IKernelFunction
                 var invocationContext = await kernel.OnFunctionInvocationAsync(this, arguments, functionResult, context =>
                 {
                     // Invoke the function and get its streaming enumerable.
-                    var enumerable = InvokeStreamingCoreAsync<TResult>(kernel, context.Arguments, cancellationToken);
+                    var enumerable = this.InvokeStreamingCoreAsync<TResult>(kernel, context.Arguments, cancellationToken);
 
                     // Update context with enumerable as result value.
                     context.Result = new FunctionResult(this, enumerable, kernel.Culture);
@@ -430,9 +430,12 @@ public abstract class KernelFunction : IKernelFunction
 
 
     /// <inheritdoc/>
-    public override string ToString() => string.IsNullOrWhiteSpace(PluginName)
-        ? Name
-        : $"{PluginName}.{Name}";
+    public override string ToString()
+    {
+        return string.IsNullOrWhiteSpace(this.PluginName)
+            ? this.Name
+            : $"{this.PluginName}.{this.Name}";
+    }
 
 
     /// <summary>

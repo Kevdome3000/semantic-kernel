@@ -1,10 +1,8 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides a <see cref="IPromptTemplateFactory"/> which aggregates multiple prompt template factories.
 /// </summary>
@@ -16,7 +14,6 @@ using System.Diagnostics.CodeAnalysis;
 public sealed class AggregatorPromptTemplateFactory : IPromptTemplateFactory
 {
     private readonly IPromptTemplateFactory?[] _promptTemplateFactories;
-
 
     /// <summary>Initializes the instance.</summary>
     /// <param name="promptTemplateFactories">Ordered <see cref="IPromptTemplateFactory"/> instances to aggregate.</param>
@@ -31,7 +28,6 @@ public sealed class AggregatorPromptTemplateFactory : IPromptTemplateFactory
 
         this._promptTemplateFactories = promptTemplateFactories;
     }
-
 
     /// <inheritdoc/>
     public bool TryCreate(PromptTemplateConfig templateConfig, [NotNullWhen(true)] out IPromptTemplate? result)

@@ -1,10 +1,8 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
+
+using Microsoft.SemanticKernel;
 
 namespace Microsoft.Extensions.DependencyInjection;
-
-using SemanticKernel;
-
-
 /// <summary>Extension methods for interacting with <see cref="Kernel"/>.</summary>
 public static class KernelServiceCollectionExtensions
 {

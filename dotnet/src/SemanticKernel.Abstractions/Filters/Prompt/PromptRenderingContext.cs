@@ -1,11 +1,9 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Class with data related to prompt before rendering.
 /// </summary>
@@ -13,7 +11,6 @@ using System.Diagnostics.CodeAnalysis;
 [Obsolete("This class is deprecated in favor of PromptRenderContext class, which is used in IPromptRenderFilter interface.")]
 public sealed class PromptRenderingContext : PromptFilterContext
 {
-
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptRenderingContext"/> class.
     /// </summary>
@@ -23,5 +20,4 @@ public sealed class PromptRenderingContext : PromptFilterContext
         : base(function, arguments, metadata: null)
     {
     }
-
 }

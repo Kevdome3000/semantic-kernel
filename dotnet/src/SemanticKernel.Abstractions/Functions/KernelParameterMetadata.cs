@@ -1,17 +1,14 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides read-only metadata for a <see cref="KernelFunction"/> parameter.
 /// </summary>
 public sealed class KernelParameterMetadata
 {
-
     /// <summary>The name of the parameter.</summary>
     private string _name = string.Empty;
 
@@ -27,13 +24,11 @@ public sealed class KernelParameterMetadata
     /// <summary>The schema of the parameter, potentially lazily-initialized.</summary>
     private InitializedSchema? _schema;
 
-
     /// <summary>Initializes the <see cref="KernelParameterMetadata"/> for a parameter with the specified name.</summary>
     /// <param name="name">The name of the parameter.</param>
     /// <exception cref="ArgumentNullException">The <paramref name="name"/> was null.</exception>
     /// <exception cref="ArgumentException">The <paramref name="name"/> was empty or composed entirely of whitespace.</exception>
     public KernelParameterMetadata(string name) => this.Name = name;
-
 
     /// <summary>Initializes a <see cref="KernelParameterMetadata"/> as a copy of another <see cref="KernelParameterMetadata"/>.</summary>
     /// <exception cref="ArgumentNullException">The <paramref name="metadata"/> was null.</exception>
@@ -48,7 +43,6 @@ public sealed class KernelParameterMetadata
         this._parameterType = metadata._parameterType;
         this._schema = metadata._schema;
     }
-
 
     /// <summary>Gets the name of the function.</summary>
     public string Name
@@ -121,7 +115,6 @@ public sealed class KernelParameterMetadata
             : new() { Inferred = false, Schema = value };
     }
 
-
     /// <summary>Infers a JSON schema from a <see cref="Type"/> and description.</summary>
     /// <param name="parameterType">The parameter type. If null, no schema can be inferred.</param>
     /// <param name="defaultValue">The parameter's default value, if any.</param>
@@ -171,17 +164,13 @@ public sealed class KernelParameterMetadata
         return new InitializedSchema { Inferred = true, Schema = schema };
     }
 
-
     /// <summary>A wrapper for a <see cref="KernelJsonSchema"/> and whether it was inferred or set explicitly by the user.</summary>
     internal sealed class InitializedSchema
     {
-
         /// <summary>true if the <see cref="Schema"/> was inferred; false if it was set explicitly by the user.</summary>
         public bool Inferred { get; set; }
 
         /// <summary>The schema, if one exists.</summary>
         public KernelJsonSchema? Schema { get; set; }
-
     }
-
 }
