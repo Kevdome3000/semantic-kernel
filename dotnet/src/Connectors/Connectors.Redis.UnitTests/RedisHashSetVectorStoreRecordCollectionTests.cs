@@ -34,8 +34,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
 
         var batchMock = new Mock<IBatch>();
 
-        this._redisDatabaseMock.Setup(x => x.CreateBatch(It.IsAny<object>())).
-            Returns(batchMock.Object);
+        this._redisDatabaseMock.Setup(x => x.CreateBatch(It.IsAny<object>())).Returns(batchMock.Object);
     }
 
 
@@ -92,15 +91,15 @@ public class RedisHashSetVectorStoreRecordCollectionTests
             1,
             "testcollection:",
             "SCHEMA",
-            "$.OriginalNameData",
+            "OriginalNameData",
             "AS",
             "OriginalNameData",
             "TAG",
-            "$.data_storage_name",
+            "data_storage_name",
             "AS",
             "data_storage_name",
             "TAG",
-            "$.vector_storage_name",
+            "vector_storage_name",
             "AS",
             "vector_storage_name",
             "VECTOR",
@@ -153,12 +152,10 @@ public class RedisHashSetVectorStoreRecordCollectionTests
         {
             new("OriginalNameData", "data 1"),
             new("data_storage_name", "data 1"),
-            new("vector_storage_name", MemoryMarshal.AsBytes(new ReadOnlySpan<float>(new float[] { 1, 2, 3, 4 })).
-                ToArray())
+            new("vector_storage_name", MemoryMarshal.AsBytes(new ReadOnlySpan<float>(new float[] { 1, 2, 3, 4 })).ToArray())
         };
 
-        this._redisDatabaseMock.Setup(x => x.HashGetAllAsync(It.IsAny<RedisKey>(), CommandFlags.None)).
-            ReturnsAsync(hashEntries);
+        this._redisDatabaseMock.Setup(x => x.HashGetAllAsync(It.IsAny<RedisKey>(), CommandFlags.None)).ReturnsAsync(hashEntries);
 
         var sut = this.CreateRecordCollection(useDefinition);
 
@@ -186,8 +183,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
         // Arrange
         var redisValues = new RedisValue[] { new("data 1"), new("data 1") };
 
-        this._redisDatabaseMock.Setup(x => x.HashGetAsync(It.IsAny<RedisKey>(), It.IsAny<RedisValue[]>(), CommandFlags.None)).
-            ReturnsAsync(redisValues);
+        this._redisDatabaseMock.Setup(x => x.HashGetAsync(It.IsAny<RedisKey>(), It.IsAny<RedisValue[]>(), CommandFlags.None)).ReturnsAsync(redisValues);
 
         var sut = this.CreateRecordCollection(useDefinition);
 
@@ -218,36 +214,32 @@ public class RedisHashSetVectorStoreRecordCollectionTests
         {
             new("OriginalNameData", "data 1"),
             new("data_storage_name", "data 1"),
-            new("vector_storage_name", MemoryMarshal.AsBytes(new ReadOnlySpan<float>(new float[] { 1, 2, 3, 4 })).
-                ToArray())
+            new("vector_storage_name", MemoryMarshal.AsBytes(new ReadOnlySpan<float>(new float[] { 1, 2, 3, 4 })).ToArray())
         };
 
         var hashEntries2 = new HashEntry[]
         {
             new("OriginalNameData", "data 2"),
             new("data_storage_name", "data 2"),
-            new("vector_storage_name", MemoryMarshal.AsBytes(new ReadOnlySpan<float>(new float[] { 5, 6, 7, 8 })).
-                ToArray())
+            new("vector_storage_name", MemoryMarshal.AsBytes(new ReadOnlySpan<float>(new float[] { 5, 6, 7, 8 })).ToArray())
         };
 
-        this._redisDatabaseMock.Setup(x => x.HashGetAllAsync(It.IsAny<RedisKey>(), CommandFlags.None)).
-            Returns((RedisKey key, CommandFlags flags) =>
+        this._redisDatabaseMock.Setup(x => x.HashGetAllAsync(It.IsAny<RedisKey>(), CommandFlags.None)).Returns((RedisKey key, CommandFlags flags) =>
+        {
+            return key switch
             {
-                return key switch
-                {
-                    RedisKey k when k == TestRecordKey1 => Task.FromResult(hashEntries1),
-                    RedisKey k when k == TestRecordKey2 => Task.FromResult(hashEntries2),
-                    _ => throw new ArgumentException("Unexpected key."),
-                };
-            });
+                RedisKey k when k == TestRecordKey1 => Task.FromResult(hashEntries1),
+                RedisKey k when k == TestRecordKey2 => Task.FromResult(hashEntries2),
+                _ => throw new ArgumentException("Unexpected key."),
+            };
+        });
 
         var sut = this.CreateRecordCollection(useDefinition);
 
         // Act
         var actual = await sut.GetBatchAsync(
-                [TestRecordKey1, TestRecordKey2],
-                new() { IncludeVectors = true }).
-            ToListAsync();
+            [TestRecordKey1, TestRecordKey2],
+            new() { IncludeVectors = true }).ToListAsync();
 
         // Assert
         this._redisDatabaseMock.Verify(x => x.HashGetAllAsync(TestRecordKey1, CommandFlags.None), Times.Once);
@@ -274,21 +266,18 @@ public class RedisHashSetVectorStoreRecordCollectionTests
         {
             new("OriginalNameData", "data 1"),
             new("data_storage_name", "data 1"),
-            new("vector_storage_name", MemoryMarshal.AsBytes(new ReadOnlySpan<float>(new float[] { 1, 2, 3, 4 })).
-                ToArray())
+            new("vector_storage_name", MemoryMarshal.AsBytes(new ReadOnlySpan<float>(new float[] { 1, 2, 3, 4 })).ToArray())
         };
 
-        this._redisDatabaseMock.Setup(x => x.HashGetAllAsync(It.IsAny<RedisKey>(), CommandFlags.None)).
-            ReturnsAsync(hashEntries);
+        this._redisDatabaseMock.Setup(x => x.HashGetAllAsync(It.IsAny<RedisKey>(), CommandFlags.None)).ReturnsAsync(hashEntries);
 
         // Arrange mapper mock from JsonNode to data model.
         var mapperMock = new Mock<IVectorStoreRecordMapper<SinglePropsModel, (string key, HashEntry[] hashEntries)>>(MockBehavior.Strict);
 
         mapperMock.Setup(
-                x => x.MapFromStorageToDataModel(
-                    It.IsAny<(string key, HashEntry[] hashEntries)>(),
-                    It.IsAny<StorageToDataModelMapperOptions>())).
-            Returns(CreateModel(TestRecordKey1, true));
+            x => x.MapFromStorageToDataModel(
+                It.IsAny<(string key, HashEntry[] hashEntries)>(),
+                It.IsAny<StorageToDataModelMapperOptions>())).Returns(CreateModel(TestRecordKey1, true));
 
         // Arrange target with custom mapper.
         var sut = new RedisHashSetVectorStoreRecordCollection<SinglePropsModel>(
@@ -325,8 +314,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
     public async Task CanDeleteRecordAsync(bool useDefinition)
     {
         // Arrange
-        this._redisDatabaseMock.Setup(x => x.KeyDeleteAsync(It.IsAny<RedisKey>(), CommandFlags.None)).
-            ReturnsAsync(true);
+        this._redisDatabaseMock.Setup(x => x.KeyDeleteAsync(It.IsAny<RedisKey>(), CommandFlags.None)).ReturnsAsync(true);
 
         var sut = this.CreateRecordCollection(useDefinition);
 
@@ -344,8 +332,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
     public async Task CanDeleteManyRecordsWithVectorsAsync(bool useDefinition)
     {
         // Arrange
-        this._redisDatabaseMock.Setup(x => x.KeyDeleteAsync(It.IsAny<RedisKey>(), CommandFlags.None)).
-            ReturnsAsync(true);
+        this._redisDatabaseMock.Setup(x => x.KeyDeleteAsync(It.IsAny<RedisKey>(), CommandFlags.None)).ReturnsAsync(true);
 
         var sut = this.CreateRecordCollection(useDefinition);
 
@@ -364,8 +351,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
     public async Task CanUpsertRecordAsync(bool useDefinition)
     {
         // Arrange
-        this._redisDatabaseMock.Setup(x => x.HashSetAsync(It.IsAny<RedisKey>(), It.IsAny<HashEntry[]>(), CommandFlags.None)).
-            Returns(Task.CompletedTask);
+        this._redisDatabaseMock.Setup(x => x.HashSetAsync(It.IsAny<RedisKey>(), It.IsAny<HashEntry[]>(), CommandFlags.None)).Returns(Task.CompletedTask);
 
         var sut = this.CreateRecordCollection(useDefinition);
         var model = CreateModel(TestRecordKey1, true);
@@ -389,8 +375,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
     public async Task CanUpsertManyRecordsAsync(bool useDefinition)
     {
         // Arrange
-        this._redisDatabaseMock.Setup(x => x.HashSetAsync(It.IsAny<RedisKey>(), It.IsAny<HashEntry[]>(), CommandFlags.None)).
-            Returns(Task.CompletedTask);
+        this._redisDatabaseMock.Setup(x => x.HashSetAsync(It.IsAny<RedisKey>(), It.IsAny<HashEntry[]>(), CommandFlags.None)).Returns(Task.CompletedTask);
 
         var sut = this.CreateRecordCollection(useDefinition);
 
@@ -398,8 +383,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
         var model2 = CreateModel(TestRecordKey2, true);
 
         // Act
-        var actual = await sut.UpsertBatchAsync([model1, model2]).
-            ToListAsync();
+        var actual = await sut.UpsertBatchAsync([model1, model2]).ToListAsync();
 
         // Assert
         Assert.NotNull(actual);
@@ -427,8 +411,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
     public async Task CanUpsertRecordWithCustomMapperAsync()
     {
         // Arrange.
-        this._redisDatabaseMock.Setup(x => x.HashSetAsync(It.IsAny<RedisKey>(), It.IsAny<HashEntry[]>(), CommandFlags.None)).
-            Returns(Task.CompletedTask);
+        this._redisDatabaseMock.Setup(x => x.HashSetAsync(It.IsAny<RedisKey>(), It.IsAny<HashEntry[]>(), CommandFlags.None)).Returns(Task.CompletedTask);
 
         // Arrange mapper mock from data model to JsonNode.
         var mapperMock = new Mock<IVectorStoreRecordMapper<SinglePropsModel, (string key, HashEntry[] hashEntries)>>(MockBehavior.Strict);
@@ -441,8 +424,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
             new("NotAnnotated", RedisValue.Null)
         };
 
-        mapperMock.Setup(x => x.MapFromDataToStorageModel(It.IsAny<SinglePropsModel>())).
-            Returns((TestRecordKey1, hashEntries));
+        mapperMock.Setup(x => x.MapFromDataToStorageModel(It.IsAny<SinglePropsModel>())).Returns((TestRecordKey1, hashEntries));
 
         // Arrange target with custom mapper.
         var sut = new RedisHashSetVectorStoreRecordCollection<SinglePropsModel>(
@@ -510,37 +492,32 @@ public class RedisHashSetVectorStoreRecordCollectionTests
     private static void SetupExecuteMock(Mock<IDatabase> redisDatabaseMock, Exception exception)
     {
         redisDatabaseMock.Setup(
-                x => x.ExecuteAsync(
-                    It.IsAny<string>(),
-                    It.IsAny<object[]>())).
-            ThrowsAsync(exception);
+            x => x.ExecuteAsync(
+                It.IsAny<string>(),
+                It.IsAny<object[]>())).ThrowsAsync(exception);
     }
 
 
     private static void SetupExecuteMock(Mock<IDatabase> redisDatabaseMock, IEnumerable<string> redisResultStrings)
     {
-        var results = redisResultStrings.Select(x => RedisResult.Create(new RedisValue(x))).
-            ToArray();
+        var results = redisResultStrings.Select(x => RedisResult.Create(new RedisValue(x))).ToArray();
 
         redisDatabaseMock.Setup(
-                x => x.ExecuteAsync(
-                    It.IsAny<string>(),
-                    It.IsAny<object[]>())).
-            ReturnsAsync(RedisResult.Create(results));
+            x => x.ExecuteAsync(
+                It.IsAny<string>(),
+                It.IsAny<object[]>())).ReturnsAsync(RedisResult.Create(results));
     }
 
 
     private static void SetupExecuteMock(Mock<IDatabase> redisDatabaseMock, string redisResultString)
     {
         redisDatabaseMock.Setup(
-                x => x.ExecuteAsync(
-                    It.IsAny<string>(),
-                    It.IsAny<object[]>())).
-            Callback((string command, object[] args) =>
-            {
-                Console.WriteLine(args);
-            }).
-            ReturnsAsync(RedisResult.Create(new RedisValue(redisResultString)));
+            x => x.ExecuteAsync(
+                It.IsAny<string>(),
+                It.IsAny<object[]>())).Callback((string command, object[] args) =>
+        {
+            Console.WriteLine(args);
+        }).ReturnsAsync(RedisResult.Create(new RedisValue(redisResultString)));
     }
 
 

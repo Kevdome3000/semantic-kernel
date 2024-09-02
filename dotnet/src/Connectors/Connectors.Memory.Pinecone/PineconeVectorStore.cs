@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using Grpc.Core;
 using Microsoft.SemanticKernel.Data;
 using Sdk = Pinecone;
 
@@ -36,8 +37,8 @@ public sealed class PineconeVectorStore : IVectorStore
     {
         Verify.NotNull(pineconeClient);
 
-        this._pineconeClient = pineconeClient;
-        this._options = options ?? new PineconeVectorStoreOptions();
+        _pineconeClient = pineconeClient;
+        _options = options ?? new PineconeVectorStoreOptions();
     }
 
 
@@ -51,13 +52,13 @@ public sealed class PineconeVectorStore : IVectorStore
             throw new NotSupportedException("Only string keys are supported.");
         }
 
-        if (this._options.VectorStoreCollectionFactory is not null)
+        if (_options.VectorStoreCollectionFactory is not null)
         {
-            return this._options.VectorStoreCollectionFactory.CreateVectorStoreRecordCollection<TKey, TRecord>(this._pineconeClient, name, vectorStoreRecordDefinition);
+            return _options.VectorStoreCollectionFactory.CreateVectorStoreRecordCollection<TKey, TRecord>(_pineconeClient, name, vectorStoreRecordDefinition);
         }
 
         return (new PineconeVectorStoreRecordCollection<TRecord>(
-            this._pineconeClient,
+            _pineconeClient,
             name,
             new PineconeVectorStoreRecordCollectionOptions<TRecord>() { VectorStoreRecordDefinition = vectorStoreRecordDefinition }) as IVectorStoreRecordCollection<TKey, TRecord>)!;
     }
@@ -66,11 +67,11 @@ public sealed class PineconeVectorStore : IVectorStore
     /// <inheritdoc />
     public async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        IndexDetails[] collections;
+        Sdk.IndexDetails[] collections;
 
         try
         {
-            collections = await this._pineconeClient.ListIndexes(cancellationToken).
+            collections = await _pineconeClient.ListIndexes(cancellationToken).
                 ConfigureAwait(false);
         }
         catch (RpcException ex)

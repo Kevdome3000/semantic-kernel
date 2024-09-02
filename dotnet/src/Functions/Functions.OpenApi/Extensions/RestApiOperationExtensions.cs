@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Plugins.OpenApi;
-
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
+namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
 /// Class for extensions methods for the <see cref="RestApiOperation"/> class.
@@ -43,8 +42,7 @@ internal static partial class RestApiOperationExtensions
         // Create a property alternative name without special symbols that are not supported by SK template language.
         foreach (var parameter in parameters)
         {
-            parameter.AlternativeName = InvalidSymbolsRegex().
-                Replace(parameter.Name, "_");
+            parameter.AlternativeName = InvalidSymbolsRegex().Replace(parameter.Name, "_");
         }
 
         return parameters;
@@ -186,14 +184,15 @@ internal static partial class RestApiOperationExtensions
             if (!property.Properties.Any())
             {
                 parameters.Add(new RestApiOperationParameter(
-                    parameterName,
-                    property.Type,
-                    property.IsRequired,
+                    name: parameterName,
+                    type: property.Type,
+                    isRequired: property.IsRequired,
                     expand: false,
-                    RestApiOperationParameterLocation.Body,
-                    RestApiOperationParameterStyle.Simple,
+                    location: RestApiOperationParameterLocation.Body,
+                    style: RestApiOperationParameterStyle.Simple,
                     defaultValue: property.DefaultValue,
                     description: property.Description,
+                    format: property.Format,
                     schema: property.Schema));
             }
 

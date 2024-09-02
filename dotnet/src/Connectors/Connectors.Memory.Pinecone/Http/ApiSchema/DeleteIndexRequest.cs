@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Pinecone;
-
 using System.Net.Http;
 
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// Deletes an index and all its data.
@@ -20,7 +19,7 @@ internal sealed class DeleteIndexRequest
     public HttpRequestMessage Build()
     {
         HttpRequestMessage request = HttpRequest.CreateDeleteRequest(
-            $"/databases/{this._indexName}");
+            $"/databases/{_indexName}");
 
         request.Headers.Add("accept", "text/plain");
 
@@ -35,7 +34,7 @@ internal sealed class DeleteIndexRequest
 
     private DeleteIndexRequest(string indexName)
     {
-        this._indexName = indexName;
+        _indexName = indexName;
     }
 
     #endregion

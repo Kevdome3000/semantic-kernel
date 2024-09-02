@@ -60,15 +60,15 @@ public sealed class RedisVectorStore : IVectorStore
 
         if (this._options.StorageType == RedisStorageType.HashSet)
         {
-            var directlyCreatedStore = new RedisHashSetVectorStoreRecordCollection<TRecord>(this._database, name, new RedisHashSetVectorStoreRecordCollectionOptions<TRecord>() { VectorStoreRecordDefinition = vectorStoreRecordDefinition }) as IVectorStoreRecordCollection<TKey, TRecord>;
+            var recordCollection = new RedisHashSetVectorStoreRecordCollection<TRecord>(this._database, name, new RedisHashSetVectorStoreRecordCollectionOptions<TRecord>() { VectorStoreRecordDefinition = vectorStoreRecordDefinition }) as IVectorStoreRecordCollection<TKey, TRecord>;
 
-            return directlyCreatedStore!;
+            return recordCollection!;
         }
         else
         {
-            var directlyCreatedStore = new RedisJsonVectorStoreRecordCollection<TRecord>(this._database, name, new RedisJsonVectorStoreRecordCollectionOptions<TRecord>() { VectorStoreRecordDefinition = vectorStoreRecordDefinition }) as IVectorStoreRecordCollection<TKey, TRecord>;
+            var recordCollection = new RedisJsonVectorStoreRecordCollection<TRecord>(this._database, name, new RedisJsonVectorStoreRecordCollectionOptions<TRecord>() { VectorStoreRecordDefinition = vectorStoreRecordDefinition }) as IVectorStoreRecordCollection<TKey, TRecord>;
 
-            return directlyCreatedStore!;
+            return recordCollection!;
         }
     }
 
@@ -81,9 +81,7 @@ public sealed class RedisVectorStore : IVectorStore
 
         try
         {
-            listResult = await this._database.FT().
-                _ListAsync().
-                ConfigureAwait(false);
+            listResult = await this._database.FT()._ListAsync().ConfigureAwait(false);
         }
         catch (RedisException ex)
         {

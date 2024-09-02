@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Sqlite;
+using Microsoft.Data.Sqlite;
 
-using Data.Sqlite;
+namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 
 
 internal static class SqliteExtensions

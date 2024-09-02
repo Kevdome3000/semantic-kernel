@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Plugins.OpenApi;
-
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using Http;
+using Microsoft.SemanticKernel.Http;
 
+namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
 /// OpenAPI function execution parameters.
@@ -60,6 +59,17 @@ public class OpenApiFunctionExecutionParameters
     /// Optional list of HTTP operations to skip when importing the OpenAPI document.
     /// </summary>
     public IList<string> OperationsToExclude { get; set; }
+
+    /// <summary>
+    /// A custom HTTP response content reader. It can be useful when the internal reader
+    /// for a specific content type is either missing, insufficient, or when custom behavior is desired.
+    /// For instance, the internal reader for "application/json" HTTP content reads the content as a string.
+    /// This may not be sufficient in cases where the JSON content is large, streamed chunk by chunk, and needs to be accessed
+    /// as soon as the first chunk is available. To handle such cases, a custom reader can be provided to read the content
+    /// as a stream rather than as a string.
+    /// If the custom reader is not provided, or the reader returns null, the internal reader is used.
+    /// </summary>
+    public HttpResponseContentReader? HttpResponseContentReader { get; set; }
 
 
     /// <summary>

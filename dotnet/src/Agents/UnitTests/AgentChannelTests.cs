@@ -16,7 +16,6 @@ namespace SemanticKernel.Agents.UnitTests;
 /// </summary>
 public class AgentChannelTests
 {
-
     /// <summary>
     /// Verify a <see cref="AgentChannel{TAgent}"/> throws if passed
     /// an agent type that does not match declared agent type (TAgent).
@@ -27,15 +26,10 @@ public class AgentChannelTests
         TestChannel channel = new();
         Assert.Equal(0, channel.InvokeCount);
 
-        var messages = channel.InvokeAgentAsync(new TestAgent()).
-            ToArrayAsync();
-
+        var messages = channel.InvokeAgentAsync(new TestAgent()).ToArrayAsync();
         Assert.Equal(1, channel.InvokeCount);
 
-        await Assert.ThrowsAsync<KernelException>(() => channel.InvokeAgentAsync(new NextAgent()).
-            ToArrayAsync().
-            AsTask());
-
+        await Assert.ThrowsAsync<KernelException>(() => channel.InvokeAgentAsync(new NextAgent()).ToArrayAsync().AsTask());
         Assert.Equal(1, channel.InvokeCount);
     }
 
@@ -45,7 +39,6 @@ public class AgentChannelTests
     /// </summary>
     private sealed class TestChannel : AgentChannel<TestAgent>
     {
-
         public int InvokeCount { get; private set; }
 
 
@@ -74,6 +67,11 @@ public class AgentChannelTests
             throw new NotImplementedException();
         }
 
+
+        protected internal override Task ResetAsync(CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
     }
 
 
@@ -82,7 +80,6 @@ public class AgentChannelTests
 
     private class TestAgent : KernelAgent
     {
-
         protected internal override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
@@ -93,7 +90,5 @@ public class AgentChannelTests
         {
             throw new NotImplementedException();
         }
-
     }
-
 }

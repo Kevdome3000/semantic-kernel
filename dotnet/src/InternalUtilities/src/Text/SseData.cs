@@ -40,9 +40,9 @@ internal sealed class SseData
     {
         Verify.NotNull(data);
 
-        this.EventName = eventName;
-        this.DataType = data.GetType();
-        this.Data = data;
+        EventName = eventName;
+        DataType = data.GetType();
+        Data = data;
     }
 
 }

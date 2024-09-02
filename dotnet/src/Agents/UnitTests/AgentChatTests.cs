@@ -41,8 +41,7 @@ public class AgentChatTests
         // Invoke with input & verify (agent joins chat)
         chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, "hi"));
 
-        await chat.InvokeAsync().
-            ToArrayAsync();
+        await chat.InvokeAsync().ToArrayAsync();
 
         Assert.Equal(1, chat.Agent.InvokeCount);
 
@@ -51,14 +50,21 @@ public class AgentChatTests
         await this.VerifyHistoryAsync(expectedCount: 4, chat.GetChatMessagesAsync(chat.Agent)); // Agent history
 
         // Invoke without input & verify
-        await chat.InvokeAsync().
-            ToArrayAsync();
+        await chat.InvokeAsync().ToArrayAsync();
 
         Assert.Equal(2, chat.Agent.InvokeCount);
 
         // Verify final history
         await this.VerifyHistoryAsync(expectedCount: 5, chat.GetChatMessagesAsync()); // Primary history
         await this.VerifyHistoryAsync(expectedCount: 5, chat.GetChatMessagesAsync(chat.Agent)); // Agent history
+
+        // Reset verify
+        await chat.ResetAsync();
+        Assert.Equal(2, chat.Agent.InvokeCount);
+
+        // Verify final history
+        await this.VerifyHistoryAsync(expectedCount: 0, chat.GetChatMessagesAsync()); // Primary history
+        await this.VerifyHistoryAsync(expectedCount: 0, chat.GetChatMessagesAsync(chat.Agent)); // Agent history
     }
 
 
@@ -111,9 +117,7 @@ public class AgentChatTests
             } while (isReady == 0);
 
             // Rush invocation
-            await chat.InvokeAsync().
-                ToArrayAsync().
-                AsTask();
+            await chat.InvokeAsync().ToArrayAsync().AsTask();
         }
     }
 

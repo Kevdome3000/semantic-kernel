@@ -1,6 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace SemanticKernel.Agents.UnitTests.Core.Chat;
-
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
@@ -8,6 +6,7 @@ using Microsoft.SemanticKernel.Agents.Chat;
 using Moq;
 using Xunit;
 
+namespace SemanticKernel.Agents.UnitTests.Core.Chat;
 
 /// <summary>
 /// Unit testing of <see cref="SequentialSelectionStrategy"/>.
@@ -27,25 +26,47 @@ public class SequentialSelectionStrategyTests
         Agent[] agents = [agent1.Object, agent2.Object];
         SequentialSelectionStrategy strategy = new();
 
-        await VerifyNextAgent(agent1.Object);
-        await VerifyNextAgent(agent2.Object);
-        await VerifyNextAgent(agent1.Object);
-        await VerifyNextAgent(agent2.Object);
-        await VerifyNextAgent(agent1.Object);
+        await VerifyNextAgentAsync(agent1.Object, agents, strategy);
+        await VerifyNextAgentAsync(agent2.Object, agents, strategy);
+        await VerifyNextAgentAsync(agent1.Object, agents, strategy);
+        await VerifyNextAgentAsync(agent2.Object, agents, strategy);
+        await VerifyNextAgentAsync(agent1.Object, agents, strategy);
 
         strategy.Reset();
-        await VerifyNextAgent(agent1.Object);
+        await VerifyNextAgentAsync(agent1.Object, agents, strategy);
 
         // Verify index does not exceed current bounds.
         agents = [agent1.Object];
-        await VerifyNextAgent(agent1.Object);
+        await VerifyNextAgentAsync(agent1.Object, agents, strategy);
+    }
 
-        async Task VerifyNextAgent(Agent agent1)
-        {
-            Agent? nextAgent = await strategy.NextAsync(agents, []);
-            Assert.NotNull(nextAgent);
-            Assert.Equal(agent1.Id, nextAgent.Id);
-        }
+
+    /// <summary>
+    /// Verify <see cref="SequentialSelectionStrategy"/> provides agents in expected order.
+    /// </summary>
+    [Fact]
+    public async Task VerifySequentialSelectionStrategyInitialAgentAsync()
+    {
+        Mock<Agent> agent1 = new();
+        Mock<Agent> agent2 = new();
+
+        Agent[] agents = [agent1.Object, agent2.Object];
+        SequentialSelectionStrategy strategy =
+            new()
+            {
+                InitialAgent = agent2.Object
+            };
+
+        await VerifyNextAgentAsync(agent2.Object, agents, strategy);
+        await VerifyNextAgentAsync(agent1.Object, agents, strategy);
+    }
+
+
+    private static async Task VerifyNextAgentAsync(Agent expectedAgent, Agent[] agents, SequentialSelectionStrategy strategy)
+    {
+        Agent? nextAgent = await strategy.NextAsync(agents, []);
+        Assert.NotNull(nextAgent);
+        Assert.Equal(expectedAgent.Id, nextAgent.Id);
     }
 
 

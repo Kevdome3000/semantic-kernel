@@ -101,8 +101,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
         // Lookup storage property names.
         this._storagePropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToJsonPropertyNameMap(properties, typeof(TRecord), this._jsonSerializerOptions);
 
-        this._dataStoragePropertyNames = properties.DataProperties.Select(x => this._storagePropertyNames[x.DataModelPropertyName]).
-            ToArray();
+        this._dataStoragePropertyNames = properties.DataProperties.Select(x => this._storagePropertyNames[x.DataModelPropertyName]).ToArray();
 
         // Assign Mapper.
         if (this._options.JsonNodeCustomMapper is not null)
@@ -125,9 +124,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
     {
         try
         {
-            await this._database.FT().
-                InfoAsync(this._collectionName).
-                ConfigureAwait(false);
+            await this._database.FT().InfoAsync(this._collectionName).ConfigureAwait(false);
 
             return true;
         }
@@ -151,27 +148,23 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
     public Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
         // Map the record definition to a schema.
-        var schema = RedisVectorStoreCollectionCreateMapping.MapToSchema(this._vectorStoreRecordDefinition.Properties, this._storagePropertyNames);
+        var schema = RedisVectorStoreCollectionCreateMapping.MapToSchema(this._vectorStoreRecordDefinition.Properties, this._storagePropertyNames, useDollarPrefix: true);
 
         // Create the index creation params.
         // Add the collection name and colon as the index prefix, which means that any record where the key is prefixed with this text will be indexed by this index
-        var createParams = new FTCreateParams().AddPrefix($"{this._collectionName}:").
-            On(IndexDataType.JSON);
+        var createParams = new FTCreateParams().AddPrefix($"{this._collectionName}:").On(IndexDataType.JSON);
 
         // Create the index.
-        return this.RunOperationAsync("FT.CREATE", () => this._database.FT().
-            CreateAsync(this._collectionName, createParams, schema));
+        return this.RunOperationAsync("FT.CREATE", () => this._database.FT().CreateAsync(this._collectionName, createParams, schema));
     }
 
 
     /// <inheritdoc />
     public async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
     {
-        if (!await this.CollectionExistsAsync(cancellationToken).
-                ConfigureAwait(false))
+        if (!await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
         {
-            await this.CreateCollectionAsync(cancellationToken).
-                ConfigureAwait(false);
+            await this.CreateCollectionAsync(cancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -179,8 +172,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
     /// <inheritdoc />
     public Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
     {
-        return this.RunOperationAsync("FT.DROPINDEX", () => this._database.FT().
-            DropIndexAsync(this._collectionName));
+        return this.RunOperationAsync("FT.DROPINDEX", () => this._database.FT().DropIndexAsync(this._collectionName));
     }
 
 
@@ -195,13 +187,10 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
 
         // Get the Redis value.
         var redisResult = await this.RunOperationAsync(
-                "GET",
-                () => options?.IncludeVectors is true
-                    ? this._database.JSON().
-                        GetAsync(maybePrefixedKey)
-                    : this._database.JSON().
-                        GetAsync(maybePrefixedKey, this._dataStoragePropertyNames)).
-            ConfigureAwait(false);
+            "GET",
+            () => options?.IncludeVectors is true
+                ? this._database.JSON().GetAsync(maybePrefixedKey)
+                : this._database.JSON().GetAsync(maybePrefixedKey, this._dataStoragePropertyNames)).ConfigureAwait(false);
 
         // Check if the key was found before trying to parse the result.
         if (redisResult.IsNull || redisResult is null)
@@ -240,17 +229,14 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
         // Create Options
         var maybePrefixedKeys = keysList.Select(key => this.PrefixKeyIfNeeded(key));
 
-        var redisKeys = maybePrefixedKeys.Select(x => new RedisKey(x)).
-            ToArray();
+        var redisKeys = maybePrefixedKeys.Select(x => new RedisKey(x)).ToArray();
 
         var includeVectors = options?.IncludeVectors ?? false;
 
         // Get the list of Redis results.
         var redisResults = await this.RunOperationAsync(
-                "MGET",
-                () => this._database.JSON().
-                    MGetAsync(redisKeys, "$")).
-            ConfigureAwait(false);
+            "MGET",
+            () => this._database.JSON().MGetAsync(redisKeys, "$")).ConfigureAwait(false);
 
         // Loop through each key and result and convert to the caller's data model.
         for (int i = 0; i < keysList.Count; i++)
@@ -298,8 +284,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
         // Remove.
         return this.RunOperationAsync(
             "DEL",
-            () => this._database.JSON().
-                DelAsync(maybePrefixedKey));
+            () => this._database.JSON().DelAsync(maybePrefixedKey));
     }
 
 
@@ -337,13 +322,11 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
         var maybePrefixedKey = this.PrefixKeyIfNeeded(redisJsonRecord.Key);
 
         await this.RunOperationAsync(
-                "SET",
-                () => this._database.JSON().
-                    SetAsync(
-                        maybePrefixedKey,
-                        "$",
-                        redisJsonRecord.SerializedRecord)).
-            ConfigureAwait(false);
+            "SET",
+            () => this._database.JSON().SetAsync(
+                maybePrefixedKey,
+                "$",
+                redisJsonRecord.SerializedRecord)).ConfigureAwait(false);
 
         return redisJsonRecord.Key;
     }
@@ -376,14 +359,11 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
         }
 
         // Upsert.
-        var keyPathValues = redisRecords.Select(x => new KeyPathValue(x.maybePrefixedKey, "$", x.serializedRecord)).
-            ToArray();
+        var keyPathValues = redisRecords.Select(x => new KeyPathValue(x.maybePrefixedKey, "$", x.serializedRecord)).ToArray();
 
         await this.RunOperationAsync(
-                "MSET",
-                () => this._database.JSON().
-                    MSetAsync(keyPathValues)).
-            ConfigureAwait(false);
+            "MSET",
+            () => this._database.JSON().MSetAsync(keyPathValues)).ConfigureAwait(false);
 
         // Return keys of upserted records.
         foreach (var record in redisRecords)
@@ -419,8 +399,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
     {
         try
         {
-            await operation.Invoke().
-                ConfigureAwait(false);
+            await operation.Invoke().ConfigureAwait(false);
         }
         catch (RedisException ex)
         {
@@ -445,8 +424,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
     {
         try
         {
-            return await operation.Invoke().
-                ConfigureAwait(false);
+            return await operation.Invoke().ConfigureAwait(false);
         }
         catch (RedisException ex)
         {

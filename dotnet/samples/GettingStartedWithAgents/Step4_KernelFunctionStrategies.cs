@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace GettingStarted;
-
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
 using Microsoft.SemanticKernel.ChatCompletion;
 
+namespace GettingStarted;
 
 /// <summary>
 /// Demonstrate usage of <see cref="KernelFunctionTerminationStrategy"/> and <see cref="KernelFunctionSelectionStrategy"/>
@@ -13,7 +12,6 @@ using Microsoft.SemanticKernel.ChatCompletion;
 /// </summary>
 public class Step4_KernelFunctionStrategies(ITestOutputHelper output) : BaseTest(output)
 {
-
     private const string ReviewerName = "ArtDirector";
 
     private const string ReviewerInstructions =
@@ -77,7 +75,6 @@ public class Step4_KernelFunctionStrategies(ITestOutputHelper output) : BaseTest
                    - {{{CopyWriterName}}}
 
                    Always follow these rules when selecting the next participant:
-                   - After user input, it is {{{CopyWriterName}}}'a turn.
                    - After {{{CopyWriterName}}} replies, it is {{{ReviewerName}}}'s turn.
                    - After {{{ReviewerName}}} provides feedback, it is {{{CopyWriterName}}}'s turn.
 
@@ -100,8 +97,7 @@ public class Step4_KernelFunctionStrategies(ITestOutputHelper output) : BaseTest
                                 // Only the art-director may approve.
                                 Agents = [agentReviewer],
                                 // Customer result parser to determine if the response is "yes"
-                                ResultParser = (result) => result.GetValue<string>()?.
-                                    Contains("yes", StringComparison.OrdinalIgnoreCase) ?? false,
+                                ResultParser = (result) => result.GetValue<string>()?.Contains("yes", StringComparison.OrdinalIgnoreCase) ?? false,
                                 // The prompt variable name for the history argument.
                                 HistoryVariableName = "history",
                                 // Limit total number of turns
@@ -111,6 +107,8 @@ public class Step4_KernelFunctionStrategies(ITestOutputHelper output) : BaseTest
                         SelectionStrategy =
                             new KernelFunctionSelectionStrategy(selectionFunction, CreateKernelWithChatCompletion())
                             {
+                                // Always start with the writer agent.
+                                InitialAgent = agentWriter,
                                 // Returns the entire result value as a string.
                                 ResultParser = (result) => result.GetValue<string>() ?? CopyWriterName,
                                 // The prompt variable name for the agents argument.
@@ -133,5 +131,4 @@ public class Step4_KernelFunctionStrategies(ITestOutputHelper output) : BaseTest
 
         Console.WriteLine($"# IS COMPLETE: {chat.IsComplete}");
     }
-
 }

@@ -19,48 +19,48 @@ internal sealed class HttpResponseStream(Stream stream, HttpResponseMessage resp
 
     private readonly HttpResponseMessage _response = response;
 
-    public override bool CanRead => this._stream.CanRead;
+    public override bool CanRead => _stream.CanRead;
 
-    public override bool CanSeek => this._stream.CanSeek;
+    public override bool CanSeek => _stream.CanSeek;
 
-    public override bool CanWrite => this._stream.CanWrite;
+    public override bool CanWrite => _stream.CanWrite;
 
-    public override long Length => this._stream.Length;
+    public override long Length => _stream.Length;
 
     public override long Position
     {
-        get => this._stream.Position;
-        set => this._stream.Position = value;
+        get => _stream.Position;
+        set => _stream.Position = value;
     }
 
 
     public override void Flush()
     {
-        this._stream.Flush();
+        _stream.Flush();
     }
 
 
     public override int Read(byte[] buffer, int offset, int count)
     {
-        return this._stream.Read(buffer, offset, count);
+        return _stream.Read(buffer, offset, count);
     }
 
 
     public override long Seek(long offset, SeekOrigin origin)
     {
-        return this._stream.Seek(offset, origin);
+        return _stream.Seek(offset, origin);
     }
 
 
     public override void SetLength(long value)
     {
-        this._stream.SetLength(value);
+        _stream.SetLength(value);
     }
 
 
     public override void Write(byte[] buffer, int offset, int count)
     {
-        this._stream.Write(buffer, offset, count);
+        _stream.Write(buffer, offset, count);
     }
 
 
@@ -70,8 +70,8 @@ internal sealed class HttpResponseStream(Stream stream, HttpResponseMessage resp
 
         if (disposing)
         {
-            this._stream.Dispose();
-            this._response.Dispose();
+            _stream.Dispose();
+            _response.Dispose();
         }
     }
 

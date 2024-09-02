@@ -2,6 +2,7 @@
 
 using System;
 using Microsoft.SemanticKernel.Data;
+using Pinecone;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 

@@ -16,7 +16,6 @@ namespace SemanticKernel.Agents.UnitTests.Internal;
 /// </summary>
 public class BroadcastQueueTests
 {
-
     /// <summary>
     /// Verify the default configuration.
     /// </summary>
@@ -41,7 +40,6 @@ public class BroadcastQueueTests
             {
                 BlockDuration = TimeSpan.FromSeconds(0.08),
             };
-
         TestChannel channel = new();
         ChannelReference reference = new(channel, "test");
 
@@ -78,7 +76,6 @@ public class BroadcastQueueTests
             {
                 BlockDuration = TimeSpan.FromSeconds(0.08),
             };
-
         BadChannel channel = new();
         ChannelReference reference = new(channel, "test");
 
@@ -103,7 +100,6 @@ public class BroadcastQueueTests
             {
                 BlockDuration = TimeSpan.FromSeconds(0.08),
             };
-
         TestChannel channel = new();
         ChannelReference reference = new(channel, "test");
 
@@ -125,11 +121,7 @@ public class BroadcastQueueTests
     }
 
 
-    private static async Task VerifyReceivingStateAsync(
-        int receiveCount,
-        BroadcastQueue queue,
-        TestChannel channel,
-        string hash)
+    private static async Task VerifyReceivingStateAsync(int receiveCount, BroadcastQueue queue, TestChannel channel, string hash)
     {
         await queue.EnsureSynchronizedAsync(new ChannelReference(channel, hash));
         Assert.Equal(receiveCount, channel.ReceiveCount);
@@ -138,7 +130,6 @@ public class BroadcastQueueTests
 
     private sealed class TestChannel : AgentChannel
     {
-
         public TimeSpan ReceiveDuration { get; set; } = TimeSpan.FromSeconds(0.3);
 
         public int ReceiveCount { get; private set; }
@@ -166,12 +157,16 @@ public class BroadcastQueueTests
             await Task.Delay(this.ReceiveDuration, cancellationToken);
         }
 
+
+        protected internal override Task ResetAsync(CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
     }
 
 
     private sealed class BadChannel : AgentChannel
     {
-
         public TimeSpan ReceiveDuration { get; set; } = TimeSpan.FromSeconds(0.1);
 
 
@@ -194,6 +189,10 @@ public class BroadcastQueueTests
             throw new InvalidOperationException("Test");
         }
 
-    }
 
+        protected internal override Task ResetAsync(CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

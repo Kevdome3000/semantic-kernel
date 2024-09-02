@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Pinecone;
-
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using Text;
+using Microsoft.SemanticKernel.Text;
 
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// Query parameters for use in a query request.
@@ -64,7 +63,7 @@ public sealed class Query
     /// <param name="vector">Vector dense data. This should be the same length as the dimension of the index being queried.</param>
     public Query WithVector(ReadOnlyMemory<float> vector)
     {
-        this.Vector = vector;
+        Vector = vector;
         return this;
     }
 
@@ -75,7 +74,7 @@ public sealed class Query
     /// <param name="indexNamespace">The namespace of the index to query. If not specified, the default namespace is used.</param>
     public Query InNamespace(string? indexNamespace)
     {
-        this.Namespace = indexNamespace;
+        Namespace = indexNamespace;
         return this;
     }
 
@@ -86,7 +85,7 @@ public sealed class Query
     /// <param name="filter">If this parameter is present, the operation only affects vectors that satisfy the filter.</param>
     public Query WithFilter(Dictionary<string, object>? filter)
     {
-        this.Filter = filter;
+        Filter = filter;
         return this;
     }
 
@@ -97,7 +96,7 @@ public sealed class Query
     /// <param name="sparseVector">Vector sparse data. Represented as a list of indices and a list of corresponded values, which must be the same length.</param>
     public Query WithSparseVector(SparseVectorData? sparseVector)
     {
-        this.SparseVector = sparseVector;
+        SparseVector = sparseVector;
         return this;
     }
 
@@ -108,7 +107,7 @@ public sealed class Query
     /// <param name="id">The unique ID of a vector.</param>
     public Query WithId(string id)
     {
-        this.Id = id;
+        Id = id;
         return this;
     }
 

@@ -23,6 +23,12 @@ public sealed class RestApiOperationParameter
     public string Type { get; }
 
     /// <summary>
+    /// The parameter type modifier that refines the generic parameter type to a more specific one.
+    /// More details can be found at https://swagger.io/docs/specification/data-models/data-types
+    /// </summary>
+    public string? Format { get; }
+
+    /// <summary>
     /// The parameter description.
     /// </summary>
     public string? Description { get; }
@@ -75,6 +81,8 @@ public sealed class RestApiOperationParameter
     /// <param name="arrayItemType">Type of array item for parameters of "array" type.</param>
     /// <param name="defaultValue">The parameter default value.</param>
     /// <param name="description">The parameter description.</param>
+    /// <param name="format">The parameter type modifier that refines the generic parameter type to a more specific one.
+    /// More details can be found at https://swagger.io/docs/specification/data-models/data-types</param>
     /// <param name="schema">The parameter schema.</param>
     public RestApiOperationParameter(
         string name,
@@ -86,6 +94,7 @@ public sealed class RestApiOperationParameter
         string? arrayItemType = null,
         object? defaultValue = null,
         string? description = null,
+        string? format = null,
         KernelJsonSchema? schema = null)
     {
         this.Name = name;
@@ -97,6 +106,7 @@ public sealed class RestApiOperationParameter
         this.ArrayItemType = arrayItemType;
         this.DefaultValue = defaultValue;
         this.Description = description;
+        this.Format = format;
         this.Schema = schema;
     }
 }

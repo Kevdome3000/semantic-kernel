@@ -1,37 +1,45 @@
 ## AI Service Settings used across SK:
 
-| Service | Class | Constructor Settings | Environment Variable | Required? | Settings Class |
-| --- | --- | --- | --- | --- | --- |
-OpenAI | [OpenAIChatCompletion](../../../semantic_kernel/connectors/ai/open_ai/services/open_ai_chat_completion.py) |  |  |  | [OpenAISettings](../../../semantic_kernel/connectors/ai/open_ai/settings/open_ai_settings.py)
-|  |  |  ai_model_id | OPENAI_CHAT_MODEL_ID | Yes 
-|  |  |  api_key | OPENAI_API_KEY | Yes
-|  |  |  org_id | OPENAI_ORG_ID | No 
-|  | [OpenAITextCompletion](../../../semantic_kernel/connectors/ai/open_ai/services/open_ai_text_completion.py)
-|  |  |  ai_model_id | OPENAI_TEXT_MODEL_ID | Yes
-|  |  |  api_key | OPENAI_API_KEY | Yes
-|  |  |  org_id | OPENAI_ORG_ID | No
-|  | [OpenAITextEmbedding](../../../semantic_kernel/connectors/ai/open_ai/services/open_ai_text_embedding.py)
-|  |  |  ai_model_id | OPENAI_EMBEDDING_MODEL_ID | Yes
-|  |  |  api_key | OPENAI_API_KEY | Yes
-|  |  |  org_id | OPENAI_ORG_ID | No
-Azure OpenAI | [AzureOpenAIChatCompletion](../../../semantic_kernel/connectors/ai/open_ai/services/azure_chat_completion.py) |  |  |  | [AzureOpenAISettings](../../../semantic_kernel/connectors/ai/open_ai/settings/azure_open_ai_settings.py)
-| | | deployment_name | AZURE_OPENAI_CHAT_DEPLOYMENT_NAME | Yes
-| | | api_key | AZURE_OPENAI_API_KEY | Yes
-| | | endpoint | AZURE_OPENAI_ENDPOINT | Yes
-| | | api_version | AZURE_OPENAI_API_VERSION | Yes
-| | | base_url | AZURE_OPENAI_BASE_URL | Yes
-|  | [AzureOpenAITextCompletion](../../../semantic_kernel/connectors/ai/open_ai/services/azure_text_completion.py)
-| | | deployment_name | AZURE_OPENAI_TEXT_DEPLOYMENT_NAME | Yes
-| | | api_key | AZURE_OPENAI_API_KEY | Yes
-| | | endpoint | AZURE_OPENAI_ENDPOINT | Yes
-| | | api_version | AZURE_OPENAI_API_VERSION | Yes
-| | | base_url | AZURE_OPENAI_BASE_URL | Yes
-|  | [AzureOpenAITextEmbedding](../../../semantic_kernel/connectors/ai/open_ai/services/azure_text_embedding.py)
-| | | deployment_name | AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME | Yes
-| | | api_key | AZURE_OPENAI_API_KEY | Yes
-| | | endpoint | AZURE_OPENAI_ENDPOINT | Yes
-| | | api_version | AZURE_OPENAI_API_VERSION | Yes
-| | | base_url | AZURE_OPENAI_BASE_URL | Yes
+| Service      | Class                                                                                                         | Constructor Settings | Environment Variable                       | Required? | Settings Class                                                                                           |
+|--------------|---------------------------------------------------------------------------------------------------------------|----------------------|--------------------------------------------|-----------|----------------------------------------------------------------------------------------------------------|
+ OpenAI       | [OpenAIChatCompletion](../../../semantic_kernel/connectors/ai/open_ai/services/open_ai_chat_completion.py)    |                      |                                            |           | [OpenAISettings](../../../semantic_kernel/connectors/ai/open_ai/settings/open_ai_settings.py)
+|              |                                                                                                               | ai_model_id          | OPENAI_CHAT_MODEL_ID                       | Yes
+|              |                                                                                                               | api_key              | OPENAI_API_KEY                             | Yes
+|              |                                                                                                               | org_id               | OPENAI_ORG_ID                              | No
+|              | [OpenAITextCompletion](../../../semantic_kernel/connectors/ai/open_ai/services/open_ai_text_completion.py)
+|              |                                                                                                               | ai_model_id          | OPENAI_TEXT_MODEL_ID                       | Yes
+|              |                                                                                                               | api_key              | OPENAI_API_KEY                             | Yes
+|              |                                                                                                               | org_id               | OPENAI_ORG_ID                              | No
+|              | [OpenAITextEmbedding](../../../semantic_kernel/connectors/ai/open_ai/services/open_ai_text_embedding.py)
+|              |                                                                                                               | ai_model_id          | OPENAI_EMBEDDING_MODEL_ID                  | Yes
+|              |                                                                                                               | api_key              | OPENAI_API_KEY                             | Yes
+|              |                                                                                                               | org_id               | OPENAI_ORG_ID                              | No
+|              | [OpenAITextToImage](../../../semantic_kernel/connectors/ai/open_ai/services/open_ai_text_to_image.py)
+|              |                                                                                                               | ai_model_id          | OPENAI_TEXT_TO_IMAGE_MODEL_ID              | Yes
+|              |                                                                                                               | api_key              | OPENAI_API_KEY                             | Yes
+|              |                                                                                                               | org_id               | OPENAI_ORG_ID                              | No
+ Azure OpenAI | [AzureOpenAIChatCompletion](../../../semantic_kernel/connectors/ai/open_ai/services/azure_chat_completion.py) |                      |                                            |           | [AzureOpenAISettings](../../../semantic_kernel/connectors/ai/open_ai/settings/azure_open_ai_settings.py)
+|              |                                                                                                               | deployment_name      | AZURE_OPENAI_CHAT_DEPLOYMENT_NAME          | Yes
+|              |                                                                                                               | api_key              | AZURE_OPENAI_API_KEY                       | Yes
+|              |                                                                                                               | endpoint             | AZURE_OPENAI_ENDPOINT                      | Yes
+|              |                                                                                                               | api_version          | AZURE_OPENAI_API_VERSION                   | Yes
+|              |                                                                                                               | base_url             | AZURE_OPENAI_BASE_URL                      | Yes
+|              | [AzureOpenAITextCompletion](../../../semantic_kernel/connectors/ai/open_ai/services/azure_text_completion.py)
+|              |                                                                                                               | deployment_name      | AZURE_OPENAI_TEXT_DEPLOYMENT_NAME          | Yes
+|              |                                                                                                               | api_key              | AZURE_OPENAI_API_KEY                       | Yes
+|              |                                                                                                               | endpoint             | AZURE_OPENAI_ENDPOINT                      | Yes
+|              |                                                                                                               | api_version          | AZURE_OPENAI_API_VERSION                   | Yes
+|              |                                                                                                               | base_url             | AZURE_OPENAI_BASE_URL                      | Yes
+|              | [AzureOpenAITextEmbedding](../../../semantic_kernel/connectors/ai/open_ai/services/azure_text_embedding.py)
+|              |                                                                                                               | deployment_name      | AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME     | Yes
+|              |                                                                                                               | api_key              | AZURE_OPENAI_API_KEY                       | Yes
+|              |                                                                                                               | endpoint             | AZURE_OPENAI_ENDPOINT                      | Yes
+|              |                                                                                                               | api_version          | AZURE_OPENAI_API_VERSION                   | Yes
+|              |                                                                                                               | base_url             | AZURE_OPENAI_BASE_URL                      | Yes
+|              | [AzureTextToImage](../../../semantic_kernel/connectors/ai/open_ai/services/azure_text_to_image.py)
+|              |                                                                                                               | deployment_name      | AZURE_OPENAI_TEXT_TO_IMAGE_DEPLOYMENT_NAME | Yes
+|              |                                                                                                               | api_key              | AZURE_OPENAI_API_KEY                       | Yes
+|              |                                                                                                               | endpoint             | AZURE_OPENAI_ENDPOINT                      | Yes
 
 ## Memory Service Settings used across SK:
 

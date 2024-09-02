@@ -28,11 +28,11 @@ internal sealed class SseReader(Stream stream) : IDisposable
 
     public SseLine? ReadSingleDataEvent()
     {
-        while (this.ReadLine() is { } line)
+        while (ReadLine() is { } line)
         {
             if (line.IsEmpty)
             {
-                this._lastEventName = null;
+                _lastEventName = null;
 
                 continue;
             }
@@ -45,7 +45,7 @@ internal sealed class SseReader(Stream stream) : IDisposable
             if (line.FieldName.Span.SequenceEqual("event".AsSpan()))
             {
                 // Save the last event name
-                this._lastEventName = line.FieldValue.ToString();
+                _lastEventName = line.FieldValue.ToString();
 
                 continue;
             }
@@ -69,12 +69,12 @@ internal sealed class SseReader(Stream stream) : IDisposable
 
     public async Task<SseLine?> ReadSingleDataEventAsync(CancellationToken cancellationToken)
     {
-        while (await this.ReadLineAsync(cancellationToken).
+        while (await ReadLineAsync(cancellationToken).
                    ConfigureAwait(false) is { } line)
         {
             if (line.IsEmpty)
             {
-                this._lastEventName = null;
+                _lastEventName = null;
 
                 continue;
             }
@@ -87,7 +87,7 @@ internal sealed class SseReader(Stream stream) : IDisposable
             if (line.FieldName.Span.SequenceEqual("event".AsSpan()))
             {
                 // Save the last event name
-                this._lastEventName = line.FieldValue.ToString();
+                _lastEventName = line.FieldValue.ToString();
 
                 continue;
             }
@@ -111,7 +111,7 @@ internal sealed class SseReader(Stream stream) : IDisposable
 
     private SseLine? ReadLine()
     {
-        string? lineText = this._reader.ReadLine();
+        string? lineText = _reader.ReadLine();
 
         if (lineText is null)
         {
@@ -123,7 +123,7 @@ internal sealed class SseReader(Stream stream) : IDisposable
             return SseLine.Empty;
         }
 
-        if (this.TryParseLine(lineText, out SseLine line))
+        if (TryParseLine(lineText, out SseLine line))
         {
             return line;
         }
@@ -134,7 +134,7 @@ internal sealed class SseReader(Stream stream) : IDisposable
 
     private async Task<SseLine?> ReadLineAsync(CancellationToken cancellationToken)
     {
-        string? lineText = await this._reader.ReadLineAsync(
+        string? lineText = await _reader.ReadLineAsync(
 #if NET
                 cancellationToken
 #endif
@@ -151,7 +151,7 @@ internal sealed class SseReader(Stream stream) : IDisposable
             return SseLine.Empty;
         }
 
-        if (this.TryParseLine(lineText, out SseLine line))
+        if (TryParseLine(lineText, out SseLine line))
         {
             return line;
         }
@@ -177,7 +177,7 @@ internal sealed class SseReader(Stream stream) : IDisposable
             : string.Empty.AsSpan();
 
         bool hasSpace = fieldValue.Length > 0 && fieldValue[0] == ' ';
-        line = new SseLine(lineText, colonIndex, hasSpace, this._lastEventName);
+        line = new SseLine(lineText, colonIndex, hasSpace, _lastEventName);
 
         return true;
     }
@@ -185,8 +185,8 @@ internal sealed class SseReader(Stream stream) : IDisposable
 
     public void Dispose()
     {
-        this._reader.Dispose();
-        this._stream.Dispose();
+        _reader.Dispose();
+        _stream.Dispose();
     }
 
 }

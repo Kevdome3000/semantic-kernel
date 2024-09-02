@@ -1,10 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Pinecone;
-
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// Index parameters.
@@ -24,10 +23,10 @@ public class IndexStats
         float indexFullness = default,
         long totalVectorCount = default)
     {
-        this.Namespaces = namespaces;
-        this.Dimension = dimension;
-        this.IndexFullness = indexFullness;
-        this.TotalVectorCount = totalVectorCount;
+        Namespaces = namespaces;
+        Dimension = dimension;
+        IndexFullness = indexFullness;
+        TotalVectorCount = totalVectorCount;
     }
 
 

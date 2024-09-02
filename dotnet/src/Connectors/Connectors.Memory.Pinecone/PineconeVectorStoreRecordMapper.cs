@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.SemanticKernel.Data;
+using Pinecone;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
@@ -77,32 +78,32 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
         VectorStoreRecordPropertyReader.VerifyPropertyTypes(propertiesInfo.VectorProperties, s_supportedVectorTypes, "Vector");
 
         // Assign.
-        this._keyPropertyInfo = propertiesInfo.KeyProperty;
-        this._dataPropertiesInfo = propertiesInfo.DataProperties;
-        this._vectorPropertyInfo = propertiesInfo.VectorProperties[0];
+        _keyPropertyInfo = propertiesInfo.KeyProperty;
+        _dataPropertiesInfo = propertiesInfo.DataProperties;
+        _vectorPropertyInfo = propertiesInfo.VectorProperties[0];
 
         // Get storage names and store for later use.
         var properties = VectorStoreRecordPropertyReader.SplitDefinitionAndVerify(typeof(TRecord).Name, vectorStoreRecordDefinition, supportsMultipleVectors: false, requiresAtLeastOneVector: true);
-        this._jsonPropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToJsonPropertyNameMap(properties, typeof(TRecord), JsonSerializerOptions.Default);
-        this._storagePropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToStorageNameMap(properties);
+        _jsonPropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToJsonPropertyNameMap(properties, typeof(TRecord), JsonSerializerOptions.Default);
+        _storagePropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToStorageNameMap(properties);
     }
 
 
     /// <inheritdoc />
     public Vector MapFromDataToStorageModel(TRecord dataModel)
     {
-        var keyObject = this._keyPropertyInfo.GetValue(dataModel);
+        var keyObject = _keyPropertyInfo.GetValue(dataModel);
 
         if (keyObject is null)
         {
-            throw new VectorStoreRecordMappingException($"Key property {this._keyPropertyInfo.Name} on provided record of type {typeof(TRecord).FullName} may not be null.");
+            throw new VectorStoreRecordMappingException($"Key property {_keyPropertyInfo.Name} on provided record of type {typeof(TRecord).FullName} may not be null.");
         }
 
         var metadata = new MetadataMap();
 
-        foreach (var dataPropertyInfo in this._dataPropertiesInfo)
+        foreach (var dataPropertyInfo in _dataPropertiesInfo)
         {
-            var propertyName = this._storagePropertyNames[dataPropertyInfo.Name];
+            var propertyName = _storagePropertyNames[dataPropertyInfo.Name];
             var propertyValue = dataPropertyInfo.GetValue(dataModel);
 
             if (propertyValue != null)
@@ -111,11 +112,11 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
             }
         }
 
-        var valuesObject = this._vectorPropertyInfo.GetValue(dataModel);
+        var valuesObject = _vectorPropertyInfo.GetValue(dataModel);
 
         if (valuesObject is not ReadOnlyMemory<float> values)
         {
-            throw new VectorStoreRecordMappingException($"Vector property {this._vectorPropertyInfo.Name} on provided record of type {typeof(TRecord).FullName} may not be null.");
+            throw new VectorStoreRecordMappingException($"Vector property {_vectorPropertyInfo.Name} on provided record of type {typeof(TRecord).FullName} may not be null.");
         }
 
         // TODO: what about sparse values?
@@ -134,7 +135,7 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
     /// <inheritdoc />
     public TRecord MapFromStorageToDataModel(Vector storageModel, StorageToDataModelMapperOptions options)
     {
-        var keyJsonName = this._jsonPropertyNames[this._keyPropertyInfo.Name];
+        var keyJsonName = _jsonPropertyNames[_keyPropertyInfo.Name];
 
         var outputJsonObject = new JsonObject
         {
@@ -143,8 +144,8 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 
         if (options?.IncludeVectors is true)
         {
-            var propertyName = this._storagePropertyNames[this._vectorPropertyInfo.Name];
-            var jsonName = this._jsonPropertyNames[this._vectorPropertyInfo.Name];
+            var propertyName = _storagePropertyNames[_vectorPropertyInfo.Name];
+            var jsonName = _jsonPropertyNames[_vectorPropertyInfo.Name];
 
             outputJsonObject.Add(jsonName, new JsonArray(storageModel.Values.Select(x => JsonValue.Create(x)).
                 ToArray()));
@@ -152,10 +153,10 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 
         if (storageModel.Metadata != null)
         {
-            foreach (var dataProperty in this._dataPropertiesInfo)
+            foreach (var dataProperty in _dataPropertiesInfo)
             {
-                var propertyName = this._storagePropertyNames[dataProperty.Name];
-                var jsonName = this._jsonPropertyNames[dataProperty.Name];
+                var propertyName = _storagePropertyNames[dataProperty.Name];
+                var jsonName = _jsonPropertyNames[dataProperty.Name];
 
                 if (storageModel.Metadata.TryGetValue(propertyName, out var value))
                 {

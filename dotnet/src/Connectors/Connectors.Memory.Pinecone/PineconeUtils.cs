@@ -277,8 +277,8 @@ public static class PineconeUtils
         /// <param name="value">Filtering value.</param>
         public PineconeOperator(string op, object value)
         {
-            this.Operator = op;
-            this.Value = value;
+            Operator = op;
+            Value = value;
         }
 
 
@@ -290,7 +290,7 @@ public static class PineconeUtils
             return new Dictionary<string, object>
             {
                 {
-                    this.Operator, this.Value
+                    Operator, Value
                 }
             };
         }

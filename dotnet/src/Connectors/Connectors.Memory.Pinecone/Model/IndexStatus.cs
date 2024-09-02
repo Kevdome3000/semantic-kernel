@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Pinecone;
-
 using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// Status of the index.
@@ -20,10 +19,10 @@ public class IndexStatus
     [JsonConstructor]
     public IndexStatus(string host, int port = default, IndexState? state = default, bool ready = false)
     {
-        this.Host = host;
-        this.Port = port;
-        this.State = state;
-        this.Ready = ready;
+        Host = host;
+        Port = port;
+        State = state;
+        Ready = ready;
     }
 
 

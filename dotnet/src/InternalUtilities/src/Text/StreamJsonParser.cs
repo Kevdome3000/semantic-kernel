@@ -76,7 +76,7 @@ internal sealed class StreamJsonParser
 
         internal ChunkParser(StreamReader reader)
         {
-            this._reader = reader;
+            _reader = reader;
         }
 
 
@@ -84,28 +84,28 @@ internal sealed class StreamJsonParser
             bool validateJson,
             CancellationToken cancellationToken)
         {
-            this.ResetState();
+            ResetState();
             string? line;
 
-            while ((line = await this._reader.ReadLineAsync(
+            while ((line = await _reader.ReadLineAsync(
 #if NET
                            cancellationToken
 #endif
                        ).
-                       ConfigureAwait(false)) is not null || this._lastLine is not null)
+                       ConfigureAwait(false)) is not null || _lastLine is not null)
             {
-                if (this._lastLine is not null)
+                if (_lastLine is not null)
                 {
-                    line = this._lastLine + line;
-                    this._lastLine = null;
+                    line = _lastLine + line;
+                    _lastLine = null;
                 }
 
-                if (this.ProcessLineUntilCompleteJson(line!))
+                if (ProcessLineUntilCompleteJson(line!))
                 {
-                    return this.GetJsonString(validateJson);
+                    return GetJsonString(validateJson);
                 }
 
-                this.AppendLine(line!);
+                AppendLine(line!);
             }
 
             return null;
@@ -116,34 +116,34 @@ internal sealed class StreamJsonParser
         {
             for (int i = 0; i < line!.Length; i++)
             {
-                this._currentCharacter = line[i];
+                _currentCharacter = line[i];
 
-                if (this.IsEscapedCharacterInsideQuotes())
+                if (IsEscapedCharacterInsideQuotes())
                 {
                     continue;
                 }
 
-                this.DetermineIfQuoteStartOrEnd();
-                this.HandleCurrentCharacterOutsideQuotes(i);
+                DetermineIfQuoteStartOrEnd();
+                HandleCurrentCharacterOutsideQuotes(i);
 
-                if (this._isCompleteJson)
+                if (_isCompleteJson)
                 {
                     int nextIndex = i + 1;
 
                     if (nextIndex < line.Length)
                     {
-                        this._lastLine = line.Substring(nextIndex);
-                        this.AppendLine(line.Substring(0, nextIndex));
+                        _lastLine = line.Substring(nextIndex);
+                        AppendLine(line.Substring(0, nextIndex));
                     }
                     else
                     {
-                        this.AppendLine(line);
+                        AppendLine(line);
                     }
 
                     return true;
                 }
 
-                this.ResetEscapeFlag();
+                ResetEscapeFlag();
             }
 
             return false;
@@ -152,26 +152,26 @@ internal sealed class StreamJsonParser
 
         private void ResetState()
         {
-            this._jsonBuilder.Clear();
-            this._bracketsCount = 0;
-            this._startBracketIndex = -1;
-            this._insideQuotes = false;
-            this._isEscaping = false;
-            this._isCompleteJson = false;
-            this._currentCharacter = default;
+            _jsonBuilder.Clear();
+            _bracketsCount = 0;
+            _startBracketIndex = -1;
+            _insideQuotes = false;
+            _isEscaping = false;
+            _isCompleteJson = false;
+            _currentCharacter = default;
         }
 
 
         private void AppendLine(string line)
         {
-            switch (this._jsonBuilder)
+            switch (_jsonBuilder)
             {
-                case { Length: 0 } when this._startBracketIndex >= 0:
-                    this._jsonBuilder.Append(line.Substring(this._startBracketIndex));
+                case { Length: 0 } when _startBracketIndex >= 0:
+                    _jsonBuilder.Append(line.Substring(_startBracketIndex));
 
                     break;
                 case { Length: > 0 }:
-                    this._jsonBuilder.Append(line);
+                    _jsonBuilder.Append(line);
 
                     break;
             }
@@ -180,12 +180,12 @@ internal sealed class StreamJsonParser
 
         private string GetJsonString(bool validateJson)
         {
-            if (!this._isCompleteJson)
+            if (!_isCompleteJson)
             {
                 throw new InvalidOperationException("Cannot get JSON string when JSON is not complete.");
             }
 
-            var json = this._jsonBuilder.ToString();
+            var json = _jsonBuilder.ToString();
 
             if (validateJson)
             {
@@ -198,38 +198,38 @@ internal sealed class StreamJsonParser
 
         private void MarkJsonAsComplete()
         {
-            this._isCompleteJson = true;
+            _isCompleteJson = true;
         }
 
 
-        private void ResetEscapeFlag() => this._isEscaping = false;
+        private void ResetEscapeFlag() => _isEscaping = false;
 
 
         private void HandleCurrentCharacterOutsideQuotes(int index)
         {
-            if (this._insideQuotes)
+            if (_insideQuotes)
             {
                 return;
             }
 
-            switch (this._currentCharacter)
+            switch (_currentCharacter)
             {
                 case '{':
-                    if (++this._bracketsCount == 1)
+                    if (++_bracketsCount == 1)
                     {
-                        this._startBracketIndex = index;
+                        _startBracketIndex = index;
                     }
 
                     break;
                 case '}':
-                    if (--this._bracketsCount < 0)
+                    if (--_bracketsCount < 0)
                     {
                         throw new InvalidOperationException("Invalid JSON in stream.");
                     }
 
-                    if (this._bracketsCount == 0)
+                    if (_bracketsCount == 0)
                     {
-                        this.MarkJsonAsComplete();
+                        MarkJsonAsComplete();
                     }
 
                     break;
@@ -241,7 +241,7 @@ internal sealed class StreamJsonParser
         {
             if (this is { _currentCharacter: '\"', _isEscaping: false })
             {
-                this._insideQuotes = !this._insideQuotes;
+                _insideQuotes = !_insideQuotes;
             }
         }
 
@@ -250,7 +250,7 @@ internal sealed class StreamJsonParser
         {
             if (this is { _currentCharacter: '\\', _isEscaping: false, _insideQuotes: true })
             {
-                this._isEscaping = true;
+                _isEscaping = true;
 
                 return true;
             }

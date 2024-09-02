@@ -29,6 +29,16 @@ public abstract class AgentChannel
 
 
     /// <summary>
+    /// Reset any persistent state associated with the channel.
+    /// </summary>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <remarks>
+    /// The channel wont' be reused; rather, it will be discarded and a new one created.
+    /// </remarks>
+    protected internal abstract Task ResetAsync(CancellationToken cancellationToken = default);
+
+
+    /// <summary>
     /// Perform a discrete incremental interaction between a single <see cref="Agent"/> and <see cref="AgentChat"/>.
     /// </summary>
     /// <param name="agent">The agent actively interacting with the chat.</param>

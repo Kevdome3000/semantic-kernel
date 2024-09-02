@@ -1,13 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Pinecone;
-
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// DeleteRequest
@@ -67,7 +66,7 @@ internal sealed class DeleteRequest
 
     public DeleteRequest FilterBy(Dictionary<string, object>? filter)
     {
-        this.Filter = filter;
+        Filter = filter;
 
         return this;
     }
@@ -75,7 +74,7 @@ internal sealed class DeleteRequest
 
     public DeleteRequest FromNamespace(string? indexNamespace)
     {
-        this.Namespace = indexNamespace;
+        Namespace = indexNamespace;
 
         return this;
     }
@@ -83,7 +82,7 @@ internal sealed class DeleteRequest
 
     public DeleteRequest Clear(bool deleteAll)
     {
-        this.DeleteAll = deleteAll;
+        DeleteAll = deleteAll;
 
         return this;
     }
@@ -91,9 +90,9 @@ internal sealed class DeleteRequest
 
     public HttpRequestMessage Build()
     {
-        if (this.Filter is not null)
+        if (Filter is not null)
         {
-            this.Filter = PineconeUtils.ConvertFilterToPineconeFilter(this.Filter);
+            Filter = PineconeUtils.ConvertFilterToPineconeFilter(Filter);
         }
 
         HttpRequestMessage? request = HttpRequest.CreatePostRequest(
@@ -113,29 +112,29 @@ internal sealed class DeleteRequest
 
         sb.Append("DeleteRequest: ");
 
-        if (this.Ids is not null)
+        if (Ids is not null)
         {
-            sb.Append($"Deleting {this.Ids.Count()} vectors, {string.Join(", ", this.Ids)},");
+            sb.Append($"Deleting {Ids.Count()} vectors, {string.Join(", ", Ids)},");
         }
 
-        if (this.DeleteAll is not null)
+        if (DeleteAll is not null)
         {
             sb.Append("Deleting All vectors,");
         }
 
-        if (this.Namespace is not null)
+        if (Namespace is not null)
         {
-            sb.Append($"From Namespace: {this.Namespace}, ");
+            sb.Append($"From Namespace: {Namespace}, ");
         }
 
-        if (this.Filter is null)
+        if (Filter is null)
         {
             return sb.ToString();
         }
 
         sb.Append("With Filter: ");
 
-        foreach (var pair in this.Filter)
+        foreach (var pair in Filter)
         {
             sb.Append($"{pair.Key}={pair.Value}, ");
         }
@@ -148,14 +147,14 @@ internal sealed class DeleteRequest
 
     private DeleteRequest(IEnumerable<string>? ids)
     {
-        this.Ids = ids ?? [];
+        Ids = ids ?? [];
     }
 
 
     private DeleteRequest(bool clear)
     {
-        this.Ids = [];
-        this.DeleteAll = clear;
+        Ids = [];
+        DeleteAll = clear;
     }
 
     #endregion

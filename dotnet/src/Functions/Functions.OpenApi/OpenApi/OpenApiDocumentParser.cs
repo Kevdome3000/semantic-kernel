@@ -13,12 +13,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.OpenApi;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Readers;
 using Microsoft.OpenApi.Writers;
 using Microsoft.SemanticKernel.Text;
+using SharpYaml.Serialization;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
@@ -27,7 +29,6 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 /// </summary>
 internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null) : IOpenApiDocumentParser
 {
-
     /// <inheritdoc/>
     public async Task<RestApiSpecification> ParseAsync(
         Stream stream,
@@ -35,13 +36,11 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
         IList<string>? operationsToExclude = null,
         CancellationToken cancellationToken = default)
     {
-        var jsonObject = await this.DowngradeDocumentVersionToSupportedOneAsync(stream, cancellationToken).
-            ConfigureAwait(false);
+        var jsonObject = await this.DowngradeDocumentVersionToSupportedOneAsync(stream, cancellationToken).ConfigureAwait(false);
 
         using var memoryStream = new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(jsonObject, JsonOptionsCache.WriteIndented));
 
-        var result = await this._openApiReader.ReadAsync(memoryStream, cancellationToken).
-            ConfigureAwait(false);
+        var result = await this._openApiReader.ReadAsync(memoryStream, cancellationToken).ConfigureAwait(false);
 
         this.AssertReadingSuccessful(result, ignoreNonCompliantErrors);
 
@@ -76,7 +75,6 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     ];
 
     private readonly OpenApiStreamReader _openApiReader = new();
-
     private readonly ILogger _logger = loggerFactory?.CreateLogger(typeof(OpenApiDocumentParser)) ?? NullLogger.Instance;
 
 
@@ -92,8 +90,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     /// <returns>OpenAPI document with downgraded document version.</returns>
     private async Task<JsonObject> DowngradeDocumentVersionToSupportedOneAsync(Stream stream, CancellationToken cancellationToken)
     {
-        var jsonObject = await ConvertContentToJsonAsync(stream, cancellationToken).
-            ConfigureAwait(false) ?? throw new KernelException("Parsing of OpenAPI document failed.");
+        var jsonObject = await ConvertContentToJsonAsync(stream, cancellationToken).ConfigureAwait(false) ?? throw new KernelException("Parsing of OpenAPI document failed.");
 
         if (!jsonObject.TryGetPropertyValue(OpenApiVersionPropertyName, out var propertyNode))
         {
@@ -132,14 +129,13 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     /// <returns>JSON content stream.</returns>
     private static async Task<JsonObject?> ConvertContentToJsonAsync(Stream stream, CancellationToken cancellationToken = default)
     {
-        var serializer = new SharpYaml.Serialization.Serializer();
+        var serializer = new Serializer();
 
         var obj = serializer.Deserialize(stream);
 
         using var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(obj)));
 
-        return await JsonSerializer.DeserializeAsync<JsonObject>(memoryStream, cancellationToken: cancellationToken).
-            ConfigureAwait(false);
+        return await JsonSerializer.DeserializeAsync<JsonObject>(memoryStream, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
 
@@ -170,13 +166,11 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     {
         var result = new List<RestApiOperation>();
 
-        var serverUrl = document.Servers.FirstOrDefault()?.
-            Url;
+        var server = document.Servers.FirstOrDefault();
 
         foreach (var pathPair in document.Paths)
         {
-            var operations = CreateRestApiOperations(serverUrl, pathPair.Key, pathPair.Value, operationsToExclude,
-                logger);
+            var operations = CreateRestApiOperations(server, pathPair.Key, pathPair.Value, operationsToExclude, logger);
 
             result.AddRange(operations);
         }
@@ -188,20 +182,16 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     /// <summary>
     /// Creates REST API operation.
     /// </summary>
-    /// <param name="serverUrl">The server url.</param>
+    /// <param name="server">Rest server.</param>
     /// <param name="path">Rest resource path.</param>
     /// <param name="pathItem">Rest resource metadata.</param>
     /// <param name="operationsToExclude">Optional list of operations not to import, e.g. in case they are not supported</param>
     /// <param name="logger">Used to perform logging.</param>
     /// <returns>Rest operation.</returns>
-    internal static List<RestApiOperation> CreateRestApiOperations(
-        string? serverUrl,
-        string path,
-        OpenApiPathItem pathItem,
-        IList<string>? operationsToExclude,
-        ILogger logger)
+    internal static List<RestApiOperation> CreateRestApiOperations(OpenApiServer? server, string path, OpenApiPathItem pathItem, IList<string>? operationsToExclude, ILogger logger)
     {
         var operations = new List<RestApiOperation>();
+        var operationServer = CreateRestApiOperationServer(server);
 
         foreach (var operationPair in pathItem.Operations)
         {
@@ -216,18 +206,13 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
 
             var operation = new RestApiOperation(
                 operationItem.OperationId,
-                string.IsNullOrEmpty(serverUrl)
-                    ? null
-                    : new Uri(serverUrl),
+                operationServer,
                 path,
                 new HttpMethod(method),
-                string.IsNullOrEmpty(operationItem.Description)
-                    ? operationItem.Summary
-                    : operationItem.Description,
+                string.IsNullOrEmpty(operationItem.Description) ? operationItem.Summary : operationItem.Description,
                 CreateRestApiOperationParameters(operationItem.OperationId, operationItem.Parameters),
                 CreateRestApiOperationPayload(operationItem.OperationId, operationItem.RequestBody),
-                CreateRestApiOperationExpectedResponses(operationItem.Responses).
-                    ToDictionary(item => item.Item1, item => item.Item2)
+                CreateRestApiOperationExpectedResponses(operationItem.Responses).ToDictionary(item => item.Item1, item => item.Item2)
             )
             {
                 Extensions = CreateRestApiOperationExtensions(operationItem.Extensions, logger)
@@ -237,6 +222,17 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
         }
 
         return operations;
+    }
+
+
+    /// <summary>
+    /// Build a <see cref="RestApiOperationServer"/> object from the given <see cref="OpenApiServer"/> object.
+    /// </summary>
+    /// <param name="server">Represents the server which hosts the REST API.</param>
+    private static RestApiOperationServer CreateRestApiOperationServer(OpenApiServer? server)
+    {
+        var variables = server?.Variables.ToDictionary(item => item.Key, item => new RestApiOperationServerVariable(item.Value.Default, item.Value.Description, item.Value.Enum));
+        return new(server?.Url, variables);
     }
 
 
@@ -271,7 +267,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
                 {
                     var schemaBuilder = new StringBuilder();
                     var jsonWriter = new OpenApiJsonWriter(new StringWriter(schemaBuilder, CultureInfo.InvariantCulture), new OpenApiJsonWriterSettings() { Terse = true });
-                    extension.Value.Write(jsonWriter, Microsoft.OpenApi.OpenApiSpecVersion.OpenApi3_0);
+                    extension.Value.Write(jsonWriter, OpenApiSpecVersion.OpenApi3_0);
                     object? extensionValueObj = schemaBuilder.ToString();
                     result.Add(extension.Key, extensionValueObj);
                 }
@@ -318,6 +314,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
                 parameter.Schema.Items?.Type,
                 GetParameterValue(parameter.Schema.Default, "parameter", parameter.Name),
                 parameter.Description,
+                parameter.Schema.Format,
                 parameter.Schema.ToJsonSchema()
             );
 
@@ -405,6 +402,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
                 requiredProperties.Contains(propertyName),
                 GetPayloadProperties(operationId, propertySchema, requiredProperties, level + 1),
                 propertySchema.Description,
+                propertySchema.Format,
                 propertySchema.ToJsonSchema(),
                 GetParameterValue(propertySchema.Default, "payload property", propertyName));
 

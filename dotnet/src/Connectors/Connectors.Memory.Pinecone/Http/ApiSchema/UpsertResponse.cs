@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Pinecone;
-
 using System.Text.Json.Serialization;
+
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 #pragma warning disable CA1812 // remove class never instantiated (used by System.Text.Json)
 
@@ -19,7 +19,7 @@ internal sealed class UpsertResponse
     /// <param name="upsertedCount">upsertedCount.</param>
     public UpsertResponse(int upsertedCount = default)
     {
-        this.UpsertedCount = upsertedCount;
+        UpsertedCount = upsertedCount;
     }
 
 

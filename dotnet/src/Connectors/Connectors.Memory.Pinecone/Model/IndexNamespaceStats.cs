@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Pinecone;
-
 using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// Index namespace parameters.
@@ -16,7 +15,7 @@ public class IndexNamespaceStats
     /// <param name="vectorCount">vectorCount.</param>
     public IndexNamespaceStats(long vectorCount = default)
     {
-        this.VectorCount = vectorCount;
+        VectorCount = vectorCount;
     }
 
 

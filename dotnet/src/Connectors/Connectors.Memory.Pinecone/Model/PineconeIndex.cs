@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Pinecone;
-
 using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// Index entity.
@@ -18,8 +17,8 @@ public sealed class PineconeIndex
     [JsonConstructor]
     public PineconeIndex(IndexDefinition configuration, IndexStatus status)
     {
-        this.Configuration = configuration;
-        this.Status = status;
+        Configuration = configuration;
+        Status = status;
     }
 
 

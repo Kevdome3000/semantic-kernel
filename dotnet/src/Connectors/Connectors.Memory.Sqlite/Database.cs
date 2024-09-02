@@ -1,14 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Sqlite;
-
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Data.Sqlite;
+using Microsoft.Data.Sqlite;
 
+namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 
 internal struct DatabaseEntry
 {
@@ -54,8 +54,7 @@ internal sealed class Database
 
     public async Task CreateCollectionAsync(SqliteConnection conn, string collectionName, CancellationToken cancellationToken = default)
     {
-        if (await this.DoesCollectionExistsAsync(conn, collectionName, cancellationToken).
-                ConfigureAwait(false))
+        if (await this.DoesCollectionExistsAsync(conn, collectionName, cancellationToken).ConfigureAwait(false))
         {
             // Collection already exists
             return;
@@ -69,8 +68,7 @@ internal sealed class Database
 
         cmd.Parameters.AddWithValue("@collection", collectionName);
 
-        await cmd.ExecuteNonQueryAsync(cancellationToken).
-            ConfigureAwait(false);
+        await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 
 
@@ -95,8 +93,7 @@ internal sealed class Database
         cmd.Parameters.AddWithValue("@embedding", embedding ?? string.Empty);
         cmd.Parameters.AddWithValue("@timestamp", timestamp ?? string.Empty);
 
-        await cmd.ExecuteNonQueryAsync(cancellationToken).
-            ConfigureAwait(false);
+        await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 
 
@@ -105,9 +102,7 @@ internal sealed class Database
         string collectionName,
         CancellationToken cancellationToken = default)
     {
-        var collections = await this.GetCollectionsAsync(conn, cancellationToken).
-            ToListAsync(cancellationToken).
-            ConfigureAwait(false);
+        var collections = await this.GetCollectionsAsync(conn, cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
 
         return collections.Contains(collectionName);
     }
@@ -123,11 +118,9 @@ internal sealed class Database
             SELECT DISTINCT(collection)
             FROM {TableName}";
 
-        using var dataReader = await cmd.ExecuteReaderAsync(cancellationToken).
-            ConfigureAwait(false);
+        using var dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
 
-        while (await dataReader.ReadAsync(cancellationToken).
-                   ConfigureAwait(false))
+        while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
             yield return dataReader.GetString("collection");
         }
@@ -147,11 +140,9 @@ internal sealed class Database
 
         cmd.Parameters.AddWithValue("@collection", collectionName);
 
-        using var dataReader = await cmd.ExecuteReaderAsync(cancellationToken).
-            ConfigureAwait(false);
+        using var dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
 
-        while (await dataReader.ReadAsync(cancellationToken).
-                   ConfigureAwait(false))
+        while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
             string key = dataReader.GetString("key");
             string metadata = dataReader.GetString("metadata");
@@ -179,11 +170,9 @@ internal sealed class Database
         cmd.Parameters.AddWithValue("@collection", collectionName);
         cmd.Parameters.AddWithValue("@key", key);
 
-        using var dataReader = await cmd.ExecuteReaderAsync(cancellationToken).
-            ConfigureAwait(false);
+        using var dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
 
-        if (await dataReader.ReadAsync(cancellationToken).
-                ConfigureAwait(false))
+        if (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
             string metadata = dataReader.GetString(dataReader.GetOrdinal("metadata"));
             string embedding = dataReader.GetString(dataReader.GetOrdinal("embedding"));
@@ -199,6 +188,45 @@ internal sealed class Database
         }
 
         return null;
+    }
+
+
+    public async IAsyncEnumerable<DatabaseEntry> ReadBatchAsync(
+        SqliteConnection conn,
+        string collectionName,
+        string[] keys,
+        bool withEmbeddings = false,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        using SqliteCommand cmd = conn.CreateCommand();
+        var keyParameters = keys.Select((key, index) => $"@key{index}");
+        var parameters = string.Join(", ", keyParameters);
+
+        var selectFieldQuery = withEmbeddings ? "*" : "key, metadata, timestamp";
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
+        cmd.CommandText = $@"
+             SELECT {selectFieldQuery} FROM {TableName}
+             WHERE collection=@collection
+                AND key IN ({parameters})";
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
+
+        cmd.Parameters.Add(new SqliteParameter("@collection", collectionName));
+
+        for (int i = 0; i < keys.Length; i++)
+        {
+            cmd.Parameters.Add(new SqliteParameter($"@key{i}", keys[i]));
+        }
+
+        using var dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+
+        while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        {
+            string key = dataReader.GetString("key");
+            string metadata = dataReader.GetString("metadata");
+            string embedding = withEmbeddings ? dataReader.GetString("embedding") : string.Empty;
+            string timestamp = dataReader.GetString("timestamp");
+            yield return new DatabaseEntry() { Key = key, MetadataString = metadata, EmbeddingString = embedding, Timestamp = timestamp };
+        }
     }
 
 

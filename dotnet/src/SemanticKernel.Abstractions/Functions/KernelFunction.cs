@@ -38,7 +38,7 @@ public abstract class KernelFunction : IKernelFunction
     private static readonly Histogram<double> s_invocationDuration = s_meter.CreateHistogram<double>(
         "semantic_kernel.function.invocation.duration",
         "s",
-        "Measures the duration of a function’s execution");
+        "Measures the duration of a function's execution");
 
     /// <summary><see cref="Histogram{T}"/> to record function streaming duration.</summary>
     /// <remarks>
@@ -48,7 +48,7 @@ public abstract class KernelFunction : IKernelFunction
     private static readonly Histogram<double> s_streamingDuration = s_meter.CreateHistogram<double>(
         "semantic_kernel.function.streaming.duration",
         "s",
-        "Measures the duration of a function’s streaming execution");
+        "Measures the duration of a function's streaming execution");
 
     /// <summary>
     /// Gets the name of the function.
@@ -98,6 +98,7 @@ public abstract class KernelFunction : IKernelFunction
     [JsonIgnore]
     public IReadOnlyDictionary<string, PromptExecutionSettings>? ExecutionSettings { get; }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunction"/> class.
     /// </summary>
@@ -119,6 +120,7 @@ public abstract class KernelFunction : IKernelFunction
             returnParameter, executionSettings)
     {
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunction"/> class.
@@ -171,6 +173,7 @@ public abstract class KernelFunction : IKernelFunction
                 });
         }
     }
+
 
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/>.
@@ -260,6 +263,7 @@ public abstract class KernelFunction : IKernelFunction
         }
     }
 
+
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/>.
     /// </summary>
@@ -280,6 +284,7 @@ public abstract class KernelFunction : IKernelFunction
         return result.GetValue<TResult>();
     }
 
+
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/> and streams its results.
     /// </summary>
@@ -296,6 +301,7 @@ public abstract class KernelFunction : IKernelFunction
         KernelArguments? arguments = null,
         CancellationToken cancellationToken = default) =>
         InvokeStreamingAsync<StreamingKernelContent>(kernel, arguments, cancellationToken);
+
 
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/> and streams its results.
@@ -410,6 +416,7 @@ public abstract class KernelFunction : IKernelFunction
         }
     }
 
+
     /// <summary>
     /// Creates a new <see cref="KernelFunction"/> object that is a copy of the current instance
     /// but the <see cref="KernelFunctionMetadata"/> has the plugin name set.
@@ -421,10 +428,12 @@ public abstract class KernelFunction : IKernelFunction
     /// </remarks>
     public abstract KernelFunction Clone(string pluginName);
 
+
     /// <inheritdoc/>
     public override string ToString() => string.IsNullOrWhiteSpace(PluginName)
         ? Name
         : $"{PluginName}.{Name}";
+
 
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/>.
@@ -438,6 +447,7 @@ public abstract class KernelFunction : IKernelFunction
         KernelArguments arguments,
         CancellationToken cancellationToken);
 
+
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/> and streams its results.
     /// </summary>
@@ -449,6 +459,7 @@ public abstract class KernelFunction : IKernelFunction
         Kernel kernel,
         KernelArguments arguments,
         CancellationToken cancellationToken);
+
 
     /// <summary>Handles special-cases for exception handling when invoking a function.</summary>
     private static void HandleException(

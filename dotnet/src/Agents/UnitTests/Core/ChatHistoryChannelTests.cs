@@ -17,7 +17,7 @@ public class ChatHistoryChannelTests
 {
     /// <summary>
     /// Verify a <see cref="ChatHistoryChannel"/> throws if passed an agent that
-    /// does not implement <see cref="IChatHistoryHandler"/>.
+    /// does not implement <see cref="ChatHistoryKernelAgent"/>.
     /// </summary>
     [Fact]
     public async Task VerifyAgentWithoutIChatHistoryHandlerAsync()
@@ -27,12 +27,14 @@ public class ChatHistoryChannelTests
         await Assert.ThrowsAsync<KernelException>(() => channel.InvokeAsync(agent).ToArrayAsync().AsTask());
     }
 
+
     private sealed class TestAgent : KernelAgent
     {
         protected internal override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
+
 
         protected internal override IEnumerable<string> GetChannelKeys()
         {

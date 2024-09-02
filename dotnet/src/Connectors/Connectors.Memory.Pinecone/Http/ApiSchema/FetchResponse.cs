@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Pinecone;
-
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
+
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 #pragma warning disable CA1812 // remove class never instantiated (used by System.Text.Json)
 
@@ -23,8 +23,8 @@ internal sealed class FetchResponse
     [JsonConstructor]
     public FetchResponse(Dictionary<string, PineconeDocument> vectors, string nameSpace = "")
     {
-        this.Vectors = vectors;
-        this.Namespace = nameSpace;
+        Vectors = vectors;
+        Namespace = nameSpace;
     }
 
 
@@ -37,7 +37,7 @@ internal sealed class FetchResponse
 
     public IEnumerable<PineconeDocument> WithoutEmbeddings()
     {
-        return this.Vectors.Values.Select(v => PineconeDocument.Create(v.Id).WithMetadata(v.Metadata));
+        return Vectors.Values.Select(v => PineconeDocument.Create(v.Id).WithMetadata(v.Metadata));
     }
 
 

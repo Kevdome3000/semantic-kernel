@@ -49,7 +49,7 @@ public class SparseVectorData
     [JsonConstructor]
     public SparseVectorData(List<long> indices, ReadOnlyMemory<float> values)
     {
-        this.Indices = indices;
-        this.Values = values;
+        Indices = indices;
+        Values = values;
     }
 }

@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Pinecone;
-
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// FetchRequest
@@ -36,7 +35,7 @@ internal sealed class FetchRequest
 
     public FetchRequest FromNamespace(string indexNamespace)
     {
-        this.Namespace = indexNamespace;
+        Namespace = indexNamespace;
         return this;
     }
 
@@ -44,13 +43,13 @@ internal sealed class FetchRequest
     public HttpRequestMessage Build()
     {
         string path = "/vectors/fetch?";
-        string ids = string.Join("&", this.Ids.Select(id => "ids=" + id));
+        string ids = string.Join("&", Ids.Select(id => "ids=" + id));
 
         path += ids;
 
-        if (!string.IsNullOrEmpty(this.Namespace))
+        if (!string.IsNullOrEmpty(Namespace))
         {
-            path += $"&namespace={this.Namespace}";
+            path += $"&namespace={Namespace}";
         }
 
         HttpRequestMessage request = HttpRequest.CreateGetRequest(path);
@@ -68,7 +67,7 @@ internal sealed class FetchRequest
     /// </summary>
     private FetchRequest(IEnumerable<string> ids)
     {
-        this.Ids = ids.ToList();
+        Ids = ids.ToList();
     }
 
     #endregion

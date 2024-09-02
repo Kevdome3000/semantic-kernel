@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Pinecone;
-
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// UpsertRequest
@@ -39,7 +38,7 @@ internal sealed class UpsertRequest
 
     public UpsertRequest ToNamespace(string? indexNamespace)
     {
-        this.Namespace = indexNamespace;
+        Namespace = indexNamespace;
 
         return this;
     }
@@ -63,7 +62,7 @@ internal sealed class UpsertRequest
     [JsonConstructor]
     private UpsertRequest()
     {
-        this.Vectors = [];
+        Vectors = [];
     }
 
     #endregion

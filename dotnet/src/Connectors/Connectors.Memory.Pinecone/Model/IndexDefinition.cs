@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Pinecone;
-
 using System.Net.Http;
 using System.Text;
 using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// Used to create a new index.
@@ -90,7 +89,7 @@ public class IndexDefinition
     /// <param name="dimension">The number of dimensions in the vector representation.</param>
     public IndexDefinition WithDimension(int dimension)
     {
-        this.Dimension = dimension;
+        Dimension = dimension;
 
         return this;
     }
@@ -102,7 +101,7 @@ public class IndexDefinition
     /// <param name="metric">The index metric to use for similarity search.</param>
     public IndexDefinition WithMetric(IndexMetric metric)
     {
-        this.Metric = metric;
+        Metric = metric;
 
         return this;
     }
@@ -114,7 +113,7 @@ public class IndexDefinition
     /// <param name="pods">The number of pods for the index to use, including replicas.</param>
     public IndexDefinition NumberOfPods(int pods)
     {
-        this.Pods = pods;
+        Pods = pods;
 
         return this;
     }
@@ -126,7 +125,7 @@ public class IndexDefinition
     /// <param name="replicas">The number of replicas. Replicas duplicate index. They provide higher availability and throughput.</param>
     public IndexDefinition NumberOfReplicas(int replicas)
     {
-        this.Replicas = replicas;
+        Replicas = replicas;
 
         return this;
     }
@@ -138,7 +137,7 @@ public class IndexDefinition
     /// <param name="podType">The type of pod to use for the index.</param>
     public IndexDefinition WithPodType(PodType podType)
     {
-        this.PodType = podType;
+        PodType = podType;
 
         return this;
     }
@@ -150,7 +149,7 @@ public class IndexDefinition
     /// <param name="config">The metadata index configuration.</param>
     public IndexDefinition WithMetadataIndex(MetadataIndexConfig? config = default)
     {
-        this.MetadataConfig = config;
+        MetadataConfig = config;
 
         return this;
     }
@@ -162,7 +161,7 @@ public class IndexDefinition
     /// <param name="sourceCollection">The unique name of a collection.</param>
     public IndexDefinition FromSourceCollection(string sourceCollection)
     {
-        this.SourceCollection = sourceCollection;
+        SourceCollection = sourceCollection;
 
         return this;
     }
@@ -189,13 +188,7 @@ public class IndexDefinition
     {
         string indexName = name ?? PineconeUtils.DefaultIndexName;
 
-        return Create(indexName).
-            WithDimension(PineconeUtils.DefaultDimension).
-            WithMetric(PineconeUtils.DefaultIndexMetric).
-            NumberOfPods(1).
-            NumberOfReplicas(1).
-            WithPodType(PineconeUtils.DefaultPodType).
-            WithMetadataIndex(MetadataIndexConfig.Default);
+        return Create(indexName).WithDimension(PineconeUtils.DefaultDimension).WithMetric(PineconeUtils.DefaultIndexMetric).NumberOfPods(1).NumberOfReplicas(1).WithPodType(PineconeUtils.DefaultPodType).WithMetadataIndex(MetadataIndexConfig.Default);
     }
 
 
@@ -205,21 +198,21 @@ public class IndexDefinition
         StringBuilder builder = new();
 
         builder.Append("Configuration :");
-        builder.AppendLine($"Name: {this.Name}, ");
-        builder.AppendLine($"Dimension: {this.Dimension}, ");
-        builder.AppendLine($"Metric: {this.Metric}, ");
-        builder.AppendLine($"Pods: {this.Pods}, ");
-        builder.AppendLine($"Replicas: {this.Replicas}, ");
-        builder.AppendLine($"PodType: {this.PodType}, ");
+        builder.AppendLine($"Name: {Name}, ");
+        builder.AppendLine($"Dimension: {Dimension}, ");
+        builder.AppendLine($"Metric: {Metric}, ");
+        builder.AppendLine($"Pods: {Pods}, ");
+        builder.AppendLine($"Replicas: {Replicas}, ");
+        builder.AppendLine($"PodType: {PodType}, ");
 
-        if (this.MetadataConfig is not null)
+        if (MetadataConfig is not null)
         {
-            builder.AppendLine($"MetaIndex: {string.Join(",", this.MetadataConfig)}, ");
+            builder.AppendLine($"MetaIndex: {string.Join(",", MetadataConfig)}, ");
         }
 
-        if (this.SourceCollection is not null)
+        if (SourceCollection is not null)
         {
-            builder.AppendLine($"SourceCollection: {this.SourceCollection}, ");
+            builder.AppendLine($"SourceCollection: {SourceCollection}, ");
         }
 
         return builder.ToString();
@@ -232,7 +225,7 @@ public class IndexDefinition
     [JsonConstructor]
     public IndexDefinition(string name)
     {
-        this.Name = name;
+        Name = name;
     }
 
 }

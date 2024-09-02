@@ -1,17 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Functions.UnitTests.OpenApi;
-
 using System;
 using System.Linq;
 using System.Net.Http;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Xunit;
 
+namespace SemanticKernel.Functions.UnitTests.OpenApi;
 
 public class RestApiOperationExtensionsTests
 {
-
     [Theory]
     [InlineData("PUT")]
     [InlineData("POST")]
@@ -265,7 +263,7 @@ public class RestApiOperationExtensionsTests
     {
         return new RestApiOperation(
             id: "fake-id",
-            serverUrl: url,
+            server: new(url?.AbsoluteUri),
             path: "fake-path",
             method: new HttpMethod(method),
             description: "fake-description",
@@ -332,5 +330,4 @@ public class RestApiOperationExtensionsTests
     {
         return new RestApiOperationPayload("text/plain", []);
     }
-
 }

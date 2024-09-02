@@ -18,7 +18,6 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 /// </remarks>
 public sealed class QdrantVectorStore : IVectorStore
 {
-
     /// <summary>The name of this database for telemetry purposes.</summary>
     private const string DatabaseName = "Qdrant";
 
@@ -69,10 +68,9 @@ public sealed class QdrantVectorStore : IVectorStore
             return this._options.VectorStoreCollectionFactory.CreateVectorStoreRecordCollection<TKey, TRecord>(this._qdrantClient.QdrantClient, name, vectorStoreRecordDefinition);
         }
 
-        var directlyCreatedStore = new QdrantVectorStoreRecordCollection<TRecord>(this._qdrantClient, name, new QdrantVectorStoreRecordCollectionOptions<TRecord>() { VectorStoreRecordDefinition = vectorStoreRecordDefinition });
-        var castCreatedStore = directlyCreatedStore as IVectorStoreRecordCollection<TKey, TRecord>;
-
-        return castCreatedStore!;
+        var recordCollection = new QdrantVectorStoreRecordCollection<TRecord>(this._qdrantClient, name, new QdrantVectorStoreRecordCollectionOptions<TRecord>() { VectorStoreRecordDefinition = vectorStoreRecordDefinition });
+        var castRecordCollection = recordCollection as IVectorStoreRecordCollection<TKey, TRecord>;
+        return castRecordCollection!;
     }
 
 
@@ -83,8 +81,7 @@ public sealed class QdrantVectorStore : IVectorStore
 
         try
         {
-            collections = await this._qdrantClient.ListCollectionsAsync(cancellationToken).
-                ConfigureAwait(false);
+            collections = await this._qdrantClient.ListCollectionsAsync(cancellationToken).ConfigureAwait(false);
         }
         catch (RpcException ex)
         {
@@ -100,5 +97,4 @@ public sealed class QdrantVectorStore : IVectorStore
             yield return collection;
         }
     }
-
 }

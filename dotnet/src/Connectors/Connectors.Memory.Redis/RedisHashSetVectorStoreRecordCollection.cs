@@ -112,9 +112,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
         // Lookup storage property names.
         this._storagePropertyNames = VectorStoreRecordPropertyReader.BuildPropertyNameToStorageNameMap(properties);
 
-        this._dataStoragePropertyNames = properties.DataProperties.Select(x => this._storagePropertyNames[x.DataModelPropertyName]).
-            Select(RedisValue.Unbox).
-            ToArray();
+        this._dataStoragePropertyNames = properties.DataProperties.Select(x => this._storagePropertyNames[x.DataModelPropertyName]).Select(RedisValue.Unbox).ToArray();
 
         // Assign Mapper.
         if (this._options.HashEntriesCustomMapper is not null)
@@ -137,9 +135,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
     {
         try
         {
-            await this._database.FT().
-                InfoAsync(this._collectionName).
-                ConfigureAwait(false);
+            await this._database.FT().InfoAsync(this._collectionName).ConfigureAwait(false);
 
             return true;
         }
@@ -163,27 +159,23 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
     public Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
         // Map the record definition to a schema.
-        var schema = RedisVectorStoreCollectionCreateMapping.MapToSchema(this._vectorStoreRecordDefinition.Properties, this._storagePropertyNames);
+        var schema = RedisVectorStoreCollectionCreateMapping.MapToSchema(this._vectorStoreRecordDefinition.Properties, this._storagePropertyNames, useDollarPrefix: false);
 
         // Create the index creation params.
         // Add the collection name and colon as the index prefix, which means that any record where the key is prefixed with this text will be indexed by this index
-        var createParams = new FTCreateParams().AddPrefix($"{this._collectionName}:").
-            On(IndexDataType.HASH);
+        var createParams = new FTCreateParams().AddPrefix($"{this._collectionName}:").On(IndexDataType.HASH);
 
         // Create the index.
-        return this.RunOperationAsync("FT.CREATE", () => this._database.FT().
-            CreateAsync(this._collectionName, createParams, schema));
+        return this.RunOperationAsync("FT.CREATE", () => this._database.FT().CreateAsync(this._collectionName, createParams, schema));
     }
 
 
     /// <inheritdoc />
     public async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
     {
-        if (!await this.CollectionExistsAsync(cancellationToken).
-                ConfigureAwait(false))
+        if (!await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
         {
-            await this.CreateCollectionAsync(cancellationToken).
-                ConfigureAwait(false);
+            await this.CreateCollectionAsync(cancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -191,8 +183,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
     /// <inheritdoc />
     public Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
     {
-        return this.RunOperationAsync("FT.DROPINDEX", () => this._database.FT().
-            DropIndexAsync(this._collectionName));
+        return this.RunOperationAsync("FT.DROPINDEX", () => this._database.FT().DropIndexAsync(this._collectionName));
     }
 
 
@@ -215,22 +206,18 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
         if (includeVectors)
         {
             retrievedHashEntries = await this.RunOperationAsync(
-                    operationName,
-                    () => this._database.HashGetAllAsync(maybePrefixedKey)).
-                ConfigureAwait(false);
+                operationName,
+                () => this._database.HashGetAllAsync(maybePrefixedKey)).ConfigureAwait(false);
         }
         else
         {
             var fieldKeys = this._dataStoragePropertyNames;
 
             var retrievedValues = await this.RunOperationAsync(
-                    operationName,
-                    () => this._database.HashGetAsync(maybePrefixedKey, fieldKeys)).
-                ConfigureAwait(false);
+                operationName,
+                () => this._database.HashGetAsync(maybePrefixedKey, fieldKeys)).ConfigureAwait(false);
 
-            retrievedHashEntries = fieldKeys.Zip(retrievedValues, (field, value) => new HashEntry(field, value)).
-                Where(x => x.Value.HasValue).
-                ToArray();
+            retrievedHashEntries = fieldKeys.Zip(retrievedValues, (field, value) => new HashEntry(field, value)).Where(x => x.Value.HasValue).ToArray();
         }
 
         // Return null if we found nothing.
@@ -259,8 +246,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
         // Get records in parallel.
         var tasks = keys.Select(x => this.GetAsync(x, options, cancellationToken));
 
-        var results = await Task.WhenAll(tasks).
-            ConfigureAwait(false);
+        var results = await Task.WhenAll(tasks).ConfigureAwait(false);
 
         foreach (var result in results)
         {
@@ -315,11 +301,10 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
         var maybePrefixedKey = this.PrefixKeyIfNeeded(redisHashSetRecord.Key);
 
         await this.RunOperationAsync(
-                "HSET",
-                () => this._database.HashSetAsync(
-                    maybePrefixedKey,
-                    redisHashSetRecord.HashEntries)).
-            ConfigureAwait(false);
+            "HSET",
+            () => this._database.HashSetAsync(
+                maybePrefixedKey,
+                redisHashSetRecord.HashEntries)).ConfigureAwait(false);
 
         return redisHashSetRecord.Key;
     }
@@ -333,8 +318,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
         // Upsert records in parallel.
         var tasks = records.Select(x => this.UpsertAsync(x, options, cancellationToken));
 
-        var results = await Task.WhenAll(tasks).
-            ConfigureAwait(false);
+        var results = await Task.WhenAll(tasks).ConfigureAwait(false);
 
         foreach (var result in results)
         {
@@ -373,8 +357,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
     {
         try
         {
-            return await operation.Invoke().
-                ConfigureAwait(false);
+            return await operation.Invoke().ConfigureAwait(false);
         }
         catch (RedisConnectionException ex)
         {
@@ -398,8 +381,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
     {
         try
         {
-            await operation.Invoke().
-                ConfigureAwait(false);
+            await operation.Invoke().ConfigureAwait(false);
         }
         catch (RedisConnectionException ex)
         {

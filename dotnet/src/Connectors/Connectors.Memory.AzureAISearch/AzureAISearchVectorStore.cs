@@ -59,29 +59,33 @@ public sealed class AzureAISearchVectorStore : IVectorStore
             return this._options.VectorStoreCollectionFactory.CreateVectorStoreRecordCollection<TKey, TRecord>(this._searchIndexClient, name, vectorStoreRecordDefinition);
         }
 
-        var directlyCreatedStore = new AzureAISearchVectorStoreRecordCollection<TRecord>(this._searchIndexClient, name, new AzureAISearchVectorStoreRecordCollectionOptions<TRecord>() { VectorStoreRecordDefinition = vectorStoreRecordDefinition }) as IVectorStoreRecordCollection<TKey, TRecord>;
+        var recordCollection = new AzureAISearchVectorStoreRecordCollection<TRecord>(
+            this._searchIndexClient,
+            name,
+            new AzureAISearchVectorStoreRecordCollectionOptions<TRecord>()
+            {
+                JsonSerializerOptions = this._options.JsonSerializerOptions,
+                VectorStoreRecordDefinition = vectorStoreRecordDefinition
+            }) as IVectorStoreRecordCollection<TKey, TRecord>;
 
-        return directlyCreatedStore!;
+        return recordCollection!;
     }
 
 
     /// <inheritdoc />
     public async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var indexNamesEnumerable = this._searchIndexClient.GetIndexNamesAsync(cancellationToken).
-            ConfigureAwait(false);
+        var indexNamesEnumerable = this._searchIndexClient.GetIndexNamesAsync(cancellationToken).ConfigureAwait(false);
 
         var indexNamesEnumerator = indexNamesEnumerable.GetAsyncEnumerator();
 
-        var nextResult = await GetNextIndexNameAsync(indexNamesEnumerator).
-            ConfigureAwait(false);
+        var nextResult = await GetNextIndexNameAsync(indexNamesEnumerator).ConfigureAwait(false);
 
         while (nextResult.more)
         {
             yield return nextResult.name;
 
-            nextResult = await GetNextIndexNameAsync(indexNamesEnumerator).
-                ConfigureAwait(false);
+            nextResult = await GetNextIndexNameAsync(indexNamesEnumerator).ConfigureAwait(false);
         }
     }
 

@@ -33,8 +33,8 @@ internal sealed class FunctionName
     {
         Verify.NotNull(name);
 
-        this.Name = name;
-        this.PluginName = pluginName;
+        Name = name;
+        PluginName = pluginName;
     }
 
 

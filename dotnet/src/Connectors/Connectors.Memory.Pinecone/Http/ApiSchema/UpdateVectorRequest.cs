@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Pinecone;
-
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// The Update operation updates vector in a namespace.
@@ -65,28 +64,28 @@ internal sealed class UpdateVectorRequest
 
     public UpdateVectorRequest InNamespace(string? indexNamespace)
     {
-        this.Namespace = indexNamespace;
+        Namespace = indexNamespace;
         return this;
     }
 
 
     public UpdateVectorRequest SetMetadata(Dictionary<string, object>? setMetadata)
     {
-        this.Metadata = setMetadata;
+        Metadata = setMetadata;
         return this;
     }
 
 
     public UpdateVectorRequest UpdateSparseValues(SparseVectorData? sparseValues)
     {
-        this.SparseValues = sparseValues;
+        SparseValues = sparseValues;
         return this;
     }
 
 
     public UpdateVectorRequest UpdateValues(ReadOnlyMemory<float> values)
     {
-        this.Values = values;
+        Values = values;
         return this;
     }
 
@@ -110,8 +109,8 @@ internal sealed class UpdateVectorRequest
     [JsonConstructor]
     private UpdateVectorRequest(string id, ReadOnlyMemory<float> values = default)
     {
-        this.Id = id;
-        this.Values = values;
+        Id = id;
+        Values = values;
     }
 
     #endregion

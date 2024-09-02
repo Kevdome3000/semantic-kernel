@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Pinecone;
-
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// QueryRequest
@@ -80,7 +79,7 @@ internal sealed class QueryRequest
 
     public QueryRequest WithMetadata(bool includeMetadata)
     {
-        this.IncludeMetadata = includeMetadata;
+        IncludeMetadata = includeMetadata;
 
         return this;
     }
@@ -88,7 +87,7 @@ internal sealed class QueryRequest
 
     public QueryRequest WithEmbeddings(bool includeValues)
     {
-        this.IncludeValues = includeValues;
+        IncludeValues = includeValues;
 
         return this;
     }
@@ -96,9 +95,9 @@ internal sealed class QueryRequest
 
     public HttpRequestMessage Build()
     {
-        if (this.Filter is not null)
+        if (Filter is not null)
         {
-            this.Filter = PineconeUtils.ConvertFilterToPineconeFilter(this.Filter);
+            Filter = PineconeUtils.ConvertFilterToPineconeFilter(Filter);
         }
 
         HttpRequestMessage? request = HttpRequest.CreatePostRequest(
@@ -117,7 +116,7 @@ internal sealed class QueryRequest
     [JsonConstructor]
     private QueryRequest(ReadOnlyMemory<float> values)
     {
-        this.Vector = values;
+        Vector = values;
     }
 
 }

@@ -54,7 +54,7 @@ public class PineconeDocument
     ///  The text of the document, if the document was created from text.
     /// </summary>
     [JsonIgnore]
-    public string? Text => this.Metadata?.TryGetValue("text", out var text) == true
+    public string? Text => Metadata?.TryGetValue("text", out var text) == true
         ? text.ToString()
         : null;
 
@@ -67,7 +67,7 @@ public class PineconeDocument
     ///  to identify the document itself.
     /// </remarks>
     [JsonIgnore]
-    public string? DocumentId => this.Metadata?.TryGetValue("document_Id", out var docId) == true
+    public string? DocumentId => Metadata?.TryGetValue("document_Id", out var docId) == true
         ? docId.ToString()
         : null;
 
@@ -79,7 +79,7 @@ public class PineconeDocument
     ///  may be Medium, Twitter, etc. while the source ID would be the ID of the Medium post, Twitter tweet, etc.
     /// </remarks>
     [JsonIgnore]
-    public string? SourceId => this.Metadata?.TryGetValue("source_Id", out var sourceId) == true
+    public string? SourceId => Metadata?.TryGetValue("source_Id", out var sourceId) == true
         ? sourceId.ToString()
         : null;
 
@@ -87,7 +87,7 @@ public class PineconeDocument
     /// The timestamp, used to identify when document was created.
     /// </summary>
     [JsonIgnore]
-    public string? CreatedAt => this.Metadata?.TryGetValue("created_at", out var createdAt) == true
+    public string? CreatedAt => Metadata?.TryGetValue("created_at", out var createdAt) == true
         ? createdAt.ToString()
         : null;
 
@@ -108,13 +108,13 @@ public class PineconeDocument
         SparseVectorData? sparseValues = null,
         float? score = null)
     {
-        this.Id = id ?? Guid.NewGuid().
+        Id = id ?? Guid.NewGuid().
             ToString();
 
-        this.Values = values;
-        this.Metadata = metadata ?? [];
-        this.SparseValues = sparseValues;
-        this.Score = score;
+        Values = values;
+        Metadata = metadata ?? [];
+        SparseValues = sparseValues;
+        Score = score;
     }
 
 
@@ -135,7 +135,7 @@ public class PineconeDocument
     /// <param name="sparseValues">Vector sparse data. Represented as a list of indices and a list of corresponded values, which must be the same length.</param>
     public PineconeDocument WithSparseValues(SparseVectorData? sparseValues)
     {
-        this.SparseValues = sparseValues;
+        SparseValues = sparseValues;
 
         return this;
     }
@@ -147,7 +147,7 @@ public class PineconeDocument
     /// <param name="metadata">The metadata associated with the document.</param>
     public PineconeDocument WithMetadata(Dictionary<string, object>? metadata)
     {
-        this.Metadata = metadata;
+        Metadata = metadata;
 
         return this;
     }
@@ -160,14 +160,14 @@ public class PineconeDocument
     {
         // return a dictionary from the metadata without the text, document_Id, and source_Id properties
 
-        if (this.Metadata is null)
+        if (Metadata is null)
         {
             return string.Empty;
         }
 
         var propertiesToSkip = new HashSet<string>() { "text", "document_Id", "source_Id", "created_at" };
 
-        var distinctMetadata = this.Metadata.Where(x => !propertiesToSkip.Contains(x.Key)).
+        var distinctMetadata = Metadata.Where(x => !propertiesToSkip.Contains(x.Key)).
             ToDictionary(x => x.Key, x => x.Value);
 
         return JsonSerializer.Serialize(distinctMetadata, JsonOptionsCache.Default);

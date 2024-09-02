@@ -19,7 +19,7 @@ internal sealed class CallerArgumentExpressionAttribute : Attribute
 
     public CallerArgumentExpressionAttribute(string parameterName)
     {
-        this.ParameterName = parameterName;
+        ParameterName = parameterName;
     }
 
 

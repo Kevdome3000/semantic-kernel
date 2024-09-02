@@ -104,8 +104,7 @@ public abstract class AgentChat
                 // Retrieve the requested channel, if exists, and block until channel is synchronized.
                 string channelKey = this.GetAgentHash(agent);
 
-                AgentChannel? channel = await this.SynchronizeChannelAsync(channelKey, cancellationToken).
-                    ConfigureAwait(false);
+                AgentChannel? channel = await this.SynchronizeChannelAsync(channelKey, cancellationToken).ConfigureAwait(false);
 
                 if (channel is not null)
                 {
@@ -218,14 +217,12 @@ public abstract class AgentChat
         {
             // Get or create the required channel and block until channel is synchronized.
             // Will throw exception when propagating a processing failure.
-            AgentChannel channel = await GetOrCreateChannelAsync().
-                ConfigureAwait(false);
+            AgentChannel channel = await GetOrCreateChannelAsync().ConfigureAwait(false);
 
             // Invoke agent & process response
             List<ChatMessageContent> messages = [];
 
-            await foreach ((bool isVisible, ChatMessageContent message) in channel.InvokeAsync(agent, cancellationToken).
-                               ConfigureAwait(false))
+            await foreach ((bool isVisible, ChatMessageContent message) in channel.InvokeAsync(agent, cancellationToken).ConfigureAwait(false))
             {
                 this.Logger.LogAgentChatInvokedAgentMessage(nameof(InvokeAgentAsync), agent.GetType(), agent.Id, message);
 
@@ -244,8 +241,7 @@ public abstract class AgentChat
             // Broadcast message to other channels (in parallel)
             // Note: Able to queue messages without synchronizing channels.
             var channelRefs =
-                this._agentChannels.Where(kvp => kvp.Value != channel).
-                    Select(kvp => new ChannelReference(kvp.Value, kvp.Key));
+                this._agentChannels.Where(kvp => kvp.Value != channel).Select(kvp => new ChannelReference(kvp.Value, kvp.Key));
 
             this._broadcastQueue.Enqueue(channelRefs, messages);
 
@@ -260,29 +256,50 @@ public abstract class AgentChat
         {
             string channelKey = this.GetAgentHash(agent);
 
-            AgentChannel? channel = await this.SynchronizeChannelAsync(channelKey, cancellationToken).
-                ConfigureAwait(false);
+            AgentChannel? channel = await this.SynchronizeChannelAsync(channelKey, cancellationToken).ConfigureAwait(false);
 
             if (channel is null)
             {
                 this.Logger.LogAgentChatCreatingChannel(nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
 
-                channel = await agent.CreateChannelAsync(cancellationToken).
-                    ConfigureAwait(false);
+                channel = await agent.CreateChannelAsync(cancellationToken).ConfigureAwait(false);
 
                 this._agentChannels.Add(channelKey, channel);
 
                 if (this.History.Count > 0)
                 {
                     // Sync channel with existing history
-                    await channel.ReceiveAsync(this.History, cancellationToken).
-                        ConfigureAwait(false);
+                    await channel.ReceiveAsync(this.History, cancellationToken).ConfigureAwait(false);
                 }
 
                 this.Logger.LogAgentChatCreatedChannel(nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
             }
 
             return channel;
+        }
+    }
+
+
+    /// <summary>
+    /// Reset the chat, clearing all history and persisted state.
+    /// All agents will remain present.
+    /// </summary>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    public async Task ResetAsync(CancellationToken cancellationToken = default)
+    {
+        this.SetActivityOrThrow(); // Disallow concurrent access to chat
+
+        try
+        {
+            Task[] resetTasks = this._agentChannels.Values.Select(c => c.ResetAsync(cancellationToken)).ToArray();
+            await Task.WhenAll(resetTasks).ConfigureAwait(false);
+            this._agentChannels.Clear();
+            this._channelMap.Clear();
+            this.History.Clear();
+        }
+        finally
+        {
+            this.ClearActivitySignal();
         }
     }
 
@@ -338,8 +355,7 @@ public abstract class AgentChat
         if (this._agentChannels.TryGetValue(channelKey, out AgentChannel? channel))
         {
             await this._broadcastQueue.EnsureSynchronizedAsync(
-                    new ChannelReference(channel, channelKey), cancellationToken).
-                ConfigureAwait(false);
+                new ChannelReference(channel, channelKey), cancellationToken).ConfigureAwait(false);
         }
 
         return channel;

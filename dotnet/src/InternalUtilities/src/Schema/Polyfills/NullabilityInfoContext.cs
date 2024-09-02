@@ -750,7 +750,7 @@ namespace System.Reflection
 
             public NullableAttributeStateParser(object? nullableAttributeArgument)
             {
-                this._nullableAttributeArgument = nullableAttributeArgument;
+                _nullableAttributeArgument = nullableAttributeArgument;
             }
 
 
@@ -759,7 +759,7 @@ namespace System.Reflection
 
             public bool ParseNullableState(int index, ref NullabilityState state)
             {
-                switch (this._nullableAttributeArgument)
+                switch (_nullableAttributeArgument)
                 {
                     case byte b:
                         state = TranslateByte(b);

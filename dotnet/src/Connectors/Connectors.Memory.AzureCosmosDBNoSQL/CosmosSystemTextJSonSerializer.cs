@@ -1,8 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 // Taken from https://github.com/Azure/azure-cosmos-dotnet-v3/pull/4332
-
-namespace Microsoft.Azure.Cosmos;
+// TODO: Remove when https://github.com/Azure/azure-cosmos-dotnet-v3/pull/4589 will be released.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -11,6 +10,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+namespace Microsoft.Azure.Cosmos;
 
 /// <summary>
 /// This class provides a default implementation of System.Text.Json Cosmos Linq Serializer.

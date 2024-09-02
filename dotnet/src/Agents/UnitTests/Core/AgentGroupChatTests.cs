@@ -17,7 +17,6 @@ namespace SemanticKernel.Agents.UnitTests.Core;
 /// </summary>
 public class AgentGroupChatTests
 {
-
     /// <summary>
     /// Verify the default state of <see cref="AgentChat"/>.
     /// </summary>
@@ -51,14 +50,7 @@ public class AgentGroupChatTests
         chat.AddAgent(agent3);
         Assert.Equal(3, chat.Agents.Count);
 
-        var messages = await chat.InvokeAsync(agent4, isJoining: false).
-            ToArrayAsync();
-
-        Assert.Equal(3, chat.Agents.Count);
-
-        messages = await chat.InvokeAsync(agent4).
-            ToArrayAsync();
-
+        ChatMessageContent[] messages = await chat.InvokeAsync(agent4).ToArrayAsync();
         Assert.Equal(4, chat.Agents.Count);
     }
 
@@ -88,15 +80,10 @@ public class AgentGroupChatTests
                 IsComplete = true
             };
 
-        await Assert.ThrowsAsync<KernelException>(() => chat.InvokeAsync(CancellationToken.None).
-            ToArrayAsync().
-            AsTask());
+        await Assert.ThrowsAsync<KernelException>(() => chat.InvokeAsync(CancellationToken.None).ToArrayAsync().AsTask());
 
         chat.ExecutionSettings.TerminationStrategy.AutomaticReset = true;
-
-        var messages = await chat.InvokeAsync(CancellationToken.None).
-            ToArrayAsync();
-
+        var messages = await chat.InvokeAsync(CancellationToken.None).ToArrayAsync();
         Assert.Equal(9, messages.Length);
         Assert.False(chat.IsComplete);
 
@@ -106,15 +93,12 @@ public class AgentGroupChatTests
             {
                 case 0:
                     Assert.Equal(agent1.Name, messages[index].AuthorName);
-
                     break;
                 case 1:
                     Assert.Equal(agent2.Name, messages[index].AuthorName);
-
                     break;
                 case 2:
                     Assert.Equal(agent3.Name, messages[index].AuthorName);
-
                     break;
             }
         }
@@ -144,9 +128,7 @@ public class AgentGroupChatTests
         // Remove max-limit in order to isolate the target behavior.
         chat.ExecutionSettings.TerminationStrategy.MaximumIterations = int.MaxValue;
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => chat.InvokeAsync().
-            ToArrayAsync().
-            AsTask());
+        await Assert.ThrowsAsync<InvalidOperationException>(() => chat.InvokeAsync().ToArrayAsync().AsTask());
     }
 
 
@@ -169,9 +151,7 @@ public class AgentGroupChatTests
                     }
             };
 
-        var messages = await chat.InvokeAsync(CancellationToken.None).
-            ToArrayAsync();
-
+        var messages = await chat.InvokeAsync(CancellationToken.None).ToArrayAsync();
         Assert.Single(messages);
         Assert.True(chat.IsComplete);
     }
@@ -200,9 +180,7 @@ public class AgentGroupChatTests
                     }
             };
 
-        var messages = await chat.InvokeAsync(agent1).
-            ToArrayAsync();
-
+        var messages = await chat.InvokeAsync(agent1).ToArrayAsync();
         Assert.Single(messages);
         Assert.True(chat.IsComplete);
     }
@@ -223,23 +201,18 @@ public class AgentGroupChatTests
 
     private sealed class TestTerminationStrategy(bool shouldTerminate) : TerminationStrategy
     {
-
         protected override Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken)
         {
             return Task.FromResult(shouldTerminate);
         }
-
     }
 
 
     private sealed class FailedSelectionStrategy : SelectionStrategy
     {
-
-        public override Task<Agent> NextAsync(IReadOnlyList<Agent> agents, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
+        protected override Task<Agent> SelectAgentAsync(IReadOnlyList<Agent> agents, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
         {
             throw new InvalidOperationException();
         }
-
     }
-
 }

@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Pinecone;
-
 using System.Net.Http;
 
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// Get information about an index.
@@ -26,7 +25,7 @@ internal sealed class DescribeIndexRequest
     public HttpRequestMessage Build()
     {
         HttpRequestMessage request = HttpRequest.CreateGetRequest(
-            $"/databases/{this.IndexName}");
+            $"/databases/{IndexName}");
 
         request.Headers.Add("accept", "application/json");
 
@@ -38,7 +37,7 @@ internal sealed class DescribeIndexRequest
 
     private DescribeIndexRequest(string indexName)
     {
-        this.IndexName = indexName;
+        IndexName = indexName;
     }
 
     #endregion

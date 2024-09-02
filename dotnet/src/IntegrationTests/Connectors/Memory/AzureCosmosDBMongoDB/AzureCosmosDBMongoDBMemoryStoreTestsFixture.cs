@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.IntegrationTests.Connectors.AzureCosmosDBMongoDB;
-
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,33 +7,30 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 using Xunit;
 
+namespace SemanticKernel.IntegrationTests.Connectors.AzureCosmosDBMongoDB;
 
 public class AzureCosmosDBMongoDBMemoryStoreTestsFixture : IAsyncLifetime
 {
-
     public AzureCosmosDBMongoDBMemoryStore MemoryStore { get; }
-
     public string DatabaseName { get; }
-
     public string CollectionName { get; }
 
 
     public AzureCosmosDBMongoDBMemoryStoreTestsFixture()
     {
         // Load Configuration
-        var configuration = new ConfigurationBuilder().AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true).
-            AddJsonFile(
+        var configuration = new ConfigurationBuilder()
+            .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile(
                 path: "testsettings.development.json",
                 optional: false,
                 reloadOnChange: true
-            ).
-            AddEnvironmentVariables().
-            Build();
-
+            )
+            .AddEnvironmentVariables()
+            .Build();
         var connectionString = GetSetting(configuration, "ConnectionString");
         this.DatabaseName = "DotNetSKTestDB";
         this.CollectionName = "DotNetSKTestCollection";
-
         this.MemoryStore = new AzureCosmosDBMongoDBMemoryStore(
             connectionString,
             this.DatabaseName,
@@ -47,9 +42,9 @@ public class AzureCosmosDBMongoDBMemoryStoreTestsFixture : IAsyncLifetime
     public async Task InitializeAsync()
     {
         await this.MemoryStore.CreateCollectionAsync(this.CollectionName);
-
-        await this.MemoryStore.UpsertBatchAsync(this.CollectionName, DataHelper.VectorSearchTestRecords).
-            ToListAsync();
+        await this
+            .MemoryStore.UpsertBatchAsync(this.CollectionName, DataHelper.VectorSearchTestRecords)
+            .ToListAsync();
     }
 
 
@@ -62,7 +57,7 @@ public class AzureCosmosDBMongoDBMemoryStoreTestsFixture : IAsyncLifetime
 
     private static string GetSetting(IConfigurationRoot configuration, string settingName)
     {
-        var settingValue = configuration[$"AzureCosmosDB:{settingName}"];
+        var settingValue = configuration[$"AzureCosmosDBMongoDB:{settingName}"];
 
         if (string.IsNullOrWhiteSpace(settingValue))
         {
@@ -71,5 +66,4 @@ public class AzureCosmosDBMongoDBMemoryStoreTestsFixture : IAsyncLifetime
 
         return settingValue;
     }
-
 }

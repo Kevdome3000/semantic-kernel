@@ -25,7 +25,7 @@ internal sealed class NonNullCollection<T> : IList<T>, IReadOnlyList<T>
     /// <summary>
     /// Initializes a new instance of the <see cref="NonNullCollection{T}"/> class.
     /// </summary>
-    public NonNullCollection() => this._items = [];
+    public NonNullCollection() => _items = [];
 
 
     /// <summary>
@@ -35,7 +35,7 @@ internal sealed class NonNullCollection<T> : IList<T>, IReadOnlyList<T>
     public NonNullCollection(IEnumerable<T> items)
     {
         Verify.NotNull(items);
-        this._items = new(items);
+        _items = new(items);
     }
 
 
@@ -48,18 +48,18 @@ internal sealed class NonNullCollection<T> : IList<T>, IReadOnlyList<T>
     /// <exception cref="ArgumentOutOfRangeException">The <paramref name="index"/> was not valid for this collection.</exception>
     public T this[int index]
     {
-        get => this._items[index];
+        get => _items[index];
         set
         {
             Verify.NotNull(value);
-            this._items[index] = value;
+            _items[index] = value;
         }
     }
 
     /// <summary>
     /// Gets the number of items in the collection.
     /// </summary>
-    public int Count => this._items.Count;
+    public int Count => _items.Count;
 
 
     /// <summary>
@@ -70,14 +70,14 @@ internal sealed class NonNullCollection<T> : IList<T>, IReadOnlyList<T>
     public void Add(T item)
     {
         Verify.NotNull(item);
-        this._items.Add(item);
+        _items.Add(item);
     }
 
 
     /// <summary>
     /// Removes all items from the collection.
     /// </summary>
-    public void Clear() => this._items.Clear();
+    public void Clear() => _items.Clear();
 
 
     /// <summary>
@@ -90,7 +90,7 @@ internal sealed class NonNullCollection<T> : IList<T>, IReadOnlyList<T>
     {
         Verify.NotNull(item);
 
-        return this._items.Contains(item);
+        return _items.Contains(item);
     }
 
 
@@ -102,7 +102,7 @@ internal sealed class NonNullCollection<T> : IList<T>, IReadOnlyList<T>
     /// <exception cref="ArgumentNullException"><paramref name="array"/> is null.</exception>
     /// <exception cref="ArgumentException">The number of items in the collection is greater than the available space from <paramref name="arrayIndex"/> to the end of <paramref name="array"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="arrayIndex"/> is less than 0.</exception>
-    public void CopyTo(T[] array, int arrayIndex) => this._items.CopyTo(array, arrayIndex);
+    public void CopyTo(T[] array, int arrayIndex) => _items.CopyTo(array, arrayIndex);
 
 
     /// <summary>
@@ -114,7 +114,7 @@ internal sealed class NonNullCollection<T> : IList<T>, IReadOnlyList<T>
     {
         Verify.NotNull(item);
 
-        return this._items.IndexOf(item);
+        return _items.IndexOf(item);
     }
 
 
@@ -127,7 +127,7 @@ internal sealed class NonNullCollection<T> : IList<T>, IReadOnlyList<T>
     public void Insert(int index, T item)
     {
         Verify.NotNull(item);
-        this._items.Insert(index, item);
+        _items.Insert(index, item);
     }
 
 
@@ -141,7 +141,7 @@ internal sealed class NonNullCollection<T> : IList<T>, IReadOnlyList<T>
     {
         Verify.NotNull(item);
 
-        return this._items.Remove(item);
+        return _items.Remove(item);
     }
 
 
@@ -149,13 +149,13 @@ internal sealed class NonNullCollection<T> : IList<T>, IReadOnlyList<T>
     /// Removes the item at the specified index from the collection.
     /// </summary>
     /// <param name="index">The index of the item to remove.</param>
-    public void RemoveAt(int index) => this._items.RemoveAt(index);
+    public void RemoveAt(int index) => _items.RemoveAt(index);
 
 
     bool ICollection<T>.IsReadOnly => false;
 
-    IEnumerator IEnumerable.GetEnumerator() => this._items.GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => _items.GetEnumerator();
 
-    IEnumerator<T> IEnumerable<T>.GetEnumerator() => this._items.GetEnumerator();
+    IEnumerator<T> IEnumerable<T>.GetEnumerator() => _items.GetEnumerator();
 
 }

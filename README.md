@@ -60,7 +60,9 @@ entire codebase.
 
 ## Getting started with Semantic Kernel
 
-The Semantic Kernel SDK is available in C#, Python, and Java. To get started, choose your preferred language below. See the [Feature Matrix](https://learn.microsoft.com/en-us/semantic-kernel/get-started/supported-languages) to see a breakdown of
+The Semantic Kernel SDK is available in C#, Python, and Java. To get started, choose your preferred language below. See
+the [Feature Matrix](https://learn.microsoft.com/en-us/semantic-kernel/get-started/supported-languages) for a breakdown
+of
 feature parity between our currently supported languages.
 
 <table width=100%>
@@ -104,7 +106,8 @@ from either OpenAI or Azure OpenAI and to run one of the C#, Python, and Java co
 1. Go to the Quick start
    page [here](https://learn.microsoft.com/en-us/semantic-kernel/get-started/quick-start-guide?pivots=programming-language-python)
    and follow the steps to dive in.
-2. You'll need to ensure that you toggle to C# in the the Choose a programming language table at the top of the page.
+2. You'll need to ensure that you toggle to Python in the the Choose a programming language table at the top of the
+   page.
    ![pythonmap](https://learn.microsoft.com/en-us/semantic-kernel/media/pythonmap.png)
 
 ### For Java:
