@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.SemanticKernel;
 /// <summary>Provides a builder for constructing instances of <see cref="Kernel"/>.</summary>
-internal sealed class KernelBuilder : IKernelBuilder, IKernelBuilderPlugins
+public sealed class KernelBuilder : IKernelBuilder, IKernelBuilderPlugins
 {
     /// <summary>The collection of services to be available through the <see cref="Kernel"/>.</summary>
     private IServiceCollection? _services;
@@ -24,6 +24,7 @@ internal sealed class KernelBuilder : IKernelBuilder, IKernelBuilderPlugins
         Verify.NotNull(services);
 
         this._services = services;
+        AllowBuild = true;
     }
 
     /// <summary>Whether to allow a call to Build.</summary>
