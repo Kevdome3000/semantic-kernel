@@ -11,16 +11,15 @@ namespace Microsoft.SemanticKernel.Agents;
 /// </summary>
 internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<AggregatorAgent>
 {
-
     private readonly AgentChat _chat = chat;
 
-
+    /// <inheritdoc/>
     protected internal override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken = default)
     {
         return this._chat.GetChatMessagesAsync(cancellationToken);
     }
 
-
+    /// <inheritdoc/>
     protected internal override async IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(AggregatorAgent agent, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         ChatMessageContent? lastMessage = null;
@@ -41,8 +40,7 @@ internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<Aggregato
         if (agent.Mode == AggregatorMode.Nested && lastMessage is not null)
         {
             ChatMessageContent message =
-                new(lastMessage.Role, lastMessage.Items, lastMessage.ModelId, lastMessage.InnerContent,
-                    lastMessage.Encoding, lastMessage.Metadata)
+                new(lastMessage.Role, lastMessage.Items, lastMessage.ModelId, lastMessage.InnerContent, lastMessage.Encoding, lastMessage.Metadata)
                 {
                     AuthorName = agent.Name
                 };
@@ -50,7 +48,6 @@ internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<Aggregato
             yield return (IsVisible: true, message);
         }
     }
-
 
     /// <inheritdoc/>
     protected internal override Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken = default)
@@ -60,7 +57,6 @@ internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<Aggregato
 
         return Task.CompletedTask;
     }
-
 
     /// <inheritdoc/>
     protected internal override Task ResetAsync(CancellationToken cancellationToken = default) =>

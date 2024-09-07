@@ -1,23 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.IntegrationTests.CrossLanguage;
-
 using System;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
-using UnitTests;
+using SemanticKernel.UnitTests;
 
+namespace SemanticKernel.IntegrationTests.CrossLanguage;
 
 /// <summary>
 /// A helper class to trace the HTTP requests made by the kernel.
 /// </summary>
 internal sealed class KernelRequestTracer : IDisposable
 {
-
     private const string DummyResponse = @"{
     ""id"": ""chatcmpl-abc123"",
     ""object"": ""chat.completion"",
@@ -41,37 +40,28 @@ internal sealed class KernelRequestTracer : IDisposable
     ]
    }";
 
+    private MemoryStream? _memoryDummyResponse;
     private HttpClient? _httpClient;
-
     private HttpMessageHandlerStub? _httpMessageHandlerStub;
-
 
     public Kernel GetNewKernel()
     {
         this.ResetHttpComponents();
 
-        return Kernel.CreateBuilder().
-            AddOpenAIChatCompletion(
-                modelId: "Dummy",
-                apiKey: "Not used in this test",
-                httpClient: this._httpClient).
-            Build();
+        return Kernel.CreateBuilder()
+                     .AddOpenAIChatCompletion(
+                        modelId: "Dummy",
+                        apiKey: "Not used in this test",
+                        httpClient: this._httpClient)
+                     .Build();
     }
-
 
     public string GetRequestContent()
     {
         return System.Text.Encoding.UTF8.GetString(this._httpMessageHandlerStub?.RequestContent ?? Array.Empty<byte>());
     }
 
-
-    public static async Task RunPromptAsync(
-        Kernel kernel,
-        bool isInline,
-        bool isStreaming,
-        string templateFormat,
-        string prompt,
-        KernelArguments? args = null)
+    public static async Task RunPromptAsync(Kernel kernel, bool isInline, bool isStreaming, string templateFormat, string prompt, KernelArguments? args = null)
     {
         if (isInline)
         {
@@ -97,29 +87,24 @@ internal sealed class KernelRequestTracer : IDisposable
         else
         {
             var promptTemplateFactory = new AggregatorPromptTemplateFactory(
-                new KernelPromptTemplateFactory(),
-                new HandlebarsPromptTemplateFactory());
+                                                new KernelPromptTemplateFactory(),
+                                                new HandlebarsPromptTemplateFactory());
 
             var function = kernel.CreateFunctionFromPrompt(
-                promptConfig: new PromptTemplateConfig()
-                {
-                    Template = prompt,
-                    TemplateFormat = templateFormat,
-                    Name = "MyFunction",
-                },
-                promptTemplateFactory: promptTemplateFactory
-            );
+                                promptConfig: new PromptTemplateConfig()
+                                {
+                                    Template = prompt,
+                                    TemplateFormat = templateFormat,
+                                    Name = "MyFunction",
+                                },
+                                promptTemplateFactory: promptTemplateFactory
+                            );
 
             await RunFunctionAsync(kernel, isStreaming, function, args);
         }
     }
 
-
-    public static async Task RunFunctionAsync(
-        Kernel kernel,
-        bool isStreaming,
-        KernelFunction function,
-        KernelArguments? args = null)
+    public static async Task RunFunctionAsync(Kernel kernel, bool isStreaming, KernelFunction function, KernelArguments? args = null)
     {
         if (isStreaming)
         {
@@ -141,34 +126,28 @@ internal sealed class KernelRequestTracer : IDisposable
         }
     }
 
-
     public void Dispose()
     {
         this.DisposeHttpResources();
         GC.SuppressFinalize(this);
     }
 
-
     private void DisposeHttpResources()
     {
         this._httpClient?.Dispose();
         this._httpMessageHandlerStub?.Dispose();
+        this._memoryDummyResponse?.Dispose();
     }
-
 
     private void ResetHttpComponents()
     {
         this.DisposeHttpResources();
-
+        this._memoryDummyResponse = new MemoryStream(Encoding.UTF8.GetBytes(DummyResponse));
         this._httpMessageHandlerStub = new HttpMessageHandlerStub();
-
         this._httpMessageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
         {
-            Content = new StringContent(DummyResponse,
-                Encoding.UTF8, "application/json")
+            Content = new StreamContent(this._memoryDummyResponse)
         };
-
         this._httpClient = new HttpClient(this._httpMessageHandlerStub);
     }
-
 }

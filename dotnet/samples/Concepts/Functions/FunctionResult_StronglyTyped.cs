@@ -4,8 +4,8 @@ namespace Functions;
 
 using System.Diagnostics;
 using System.Text.Json;
-using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel;
+using OpenAI.Chat;
 
 
 // The following example shows how to receive the results from the kernel in a strongly typed object
@@ -93,11 +93,11 @@ public class FunctionResult_StronglyTyped(ITestOutputHelper output) : BaseTest(o
 
         private TokenCounts? ParseTokenCounts()
         {
-            CompletionsUsage? usage = FunctionResult.Metadata?["Usage"] as CompletionsUsage;
+            var usage = FunctionResult.Metadata?["Usage"] as ChatTokenUsage;
 
             return new TokenCounts(
-                completionTokens: usage?.CompletionTokens ?? 0,
-                promptTokens: usage?.PromptTokens ?? 0,
+                completionTokens: usage?.OutputTokens ?? 0,
+                promptTokens: usage?.InputTokens ?? 0,
                 totalTokens: usage?.TotalTokens ?? 0);
         }
 

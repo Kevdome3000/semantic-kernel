@@ -5,10 +5,8 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Moq;
 using Xunit;
 
 
@@ -24,17 +22,26 @@ public class KernelFunctionTerminationStrategyTests
     [Fact]
     public async Task VerifyKernelFunctionTerminationStrategyDefaultsAsync()
     {
+        // Arrange
         KernelPlugin plugin = KernelPluginFactory.CreateFromObject(new TestPlugin());
 
-        KernelFunctionTerminationStrategy strategy = new(plugin.Single(), new());
+        KernelFunctionTerminationStrategy strategy =
+            new(plugin.Single(), new())
+            {
+                AgentVariableName = "agent",
+                HistoryVariableName = "history",
+            };
 
+        // Assert
         Assert.Null(strategy.Arguments);
         Assert.NotNull(strategy.Kernel);
         Assert.NotNull(strategy.ResultParser);
+        Assert.NotEqual("agent", KernelFunctionTerminationStrategy.DefaultAgentVariableName);
+        Assert.NotEqual("history", KernelFunctionTerminationStrategy.DefaultHistoryVariableName);
 
-        Mock<Agent> mockAgent = new();
-
-        bool isTerminating = await strategy.ShouldTerminateAsync(mockAgent.Object, []);
+        // Act
+        MockAgent mockAgent = new();
+        bool isTerminating = await strategy.ShouldTerminateAsync(mockAgent, []);
 
         Assert.True(isTerminating);
     }
@@ -55,9 +62,9 @@ public class KernelFunctionTerminationStrategyTests
                 ResultParser = (result) => string.Equals("test", result.GetValue<string>(), StringComparison.OrdinalIgnoreCase)
             };
 
-        Mock<Agent> mockAgent = new();
+        MockAgent mockAgent = new();
 
-        bool isTerminating = await strategy.ShouldTerminateAsync(mockAgent.Object, []);
+        bool isTerminating = await strategy.ShouldTerminateAsync(mockAgent, []);
 
         Assert.True(isTerminating);
     }

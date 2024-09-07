@@ -12,7 +12,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 /// Demonstrate that two different agent types are able to participate in the same conversation.
 /// In this case a <see cref="ChatCompletionAgent"/> and <see cref="OpenAIAssistantAgent"/> participate.
 /// </summary>
-public class MixedChat_Agents(ITestOutputHelper output) : BaseTest(output)
+public class MixedChat_Agents(ITestOutputHelper output) : BaseAgentsTest(output)
 {
 
     private const string ReviewerName = "ArtDirector";
@@ -53,12 +53,12 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseTest(output)
         OpenAIAssistantAgent agentWriter =
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: new(),
-                config: new(this.ApiKey, this.Endpoint),
-                definition: new()
+                clientProvider: this.GetClientProvider(),
+                definition: new(this.Model)
                 {
                     Instructions = CopyWriterInstructions,
                     Name = CopyWriterName,
-                    ModelId = this.Model,
+                    Metadata = AssistantSampleMetadata,
                 });
 
         // Create a chat for agent interaction.
@@ -82,16 +82,16 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseTest(output)
             };
 
         // Invoke chat and display messages.
-        string input = "concept: maps made out of egg cartons.";
-        chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
-        Console.WriteLine($"# {AuthorRole.User}: '{input}'");
+        ChatMessageContent input = new(AuthorRole.User, "concept: maps made out of egg cartons.");
+        chat.AddChatMessage(input);
+        this.WriteAgentChatMessage(input);
 
-        await foreach (ChatMessageContent content in chat.InvokeAsync())
+        await foreach (ChatMessageContent response in chat.InvokeAsync())
         {
-            Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+            this.WriteAgentChatMessage(response);
         }
 
-        Console.WriteLine($"# IS COMPLETE: {chat.IsComplete}");
+        Console.WriteLine($"\n[IS COMPLETED: {chat.IsComplete}]");
     }
 
 

@@ -18,11 +18,15 @@ public class KernelExtensionsTests
     [Fact]
     public void VerifyGetKernelFunctionLookup()
     {
+        // Arrange
         Kernel kernel = new();
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<TestPlugin>();
         kernel.Plugins.Add(plugin);
 
+        // Act
         KernelFunction function = kernel.GetKernelFunction($"{nameof(TestPlugin)}-{nameof(TestPlugin.TestFunction)}", '-');
+
+        // Assert
         Assert.NotNull(function);
         Assert.Equal(nameof(TestPlugin.TestFunction), function.Name);
     }
@@ -34,10 +38,12 @@ public class KernelExtensionsTests
     [Fact]
     public void VerifyGetKernelFunctionInvalid()
     {
+        // Arrange
         Kernel kernel = new();
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<TestPlugin>();
         kernel.Plugins.Add(plugin);
 
+        // Act and Assert
         Assert.Throws<KernelException>(() => kernel.GetKernelFunction("a", '-'));
         Assert.Throws<KernelException>(() => kernel.GetKernelFunction("a-b", ':'));
         Assert.Throws<KernelException>(() => kernel.GetKernelFunction("a-b-c", '-'));

@@ -1,30 +1,25 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace Microsoft.SemanticKernel.Agents.OpenAI;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using global::Azure.AI.OpenAI.Assistants;
+using OpenAI.Assistants;
 
+namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
 internal static class KernelFunctionExtensions
 {
-
     /// <summary>
     /// Convert <see cref="KernelFunction"/> to an OpenAI tool model.
     /// </summary>
     /// <param name="function">The source function</param>
     /// <param name="pluginName">The plugin name</param>
-    /// <param name="delimiter">The delimiter character</param>
     /// <returns>An OpenAI tool definition</returns>
-    public static FunctionToolDefinition ToToolDefinition(this KernelFunction function, string pluginName, string delimiter)
+    public static FunctionToolDefinition ToToolDefinition(this KernelFunction function, string pluginName)
     {
         var metadata = function.Metadata;
-
         if (metadata.Parameters.Count > 0)
         {
             var required = new List<string>(metadata.Parameters.Count);
-
             var parameters =
                 metadata.Parameters.ToDictionary(
                     p => p.Name,
@@ -51,12 +46,18 @@ internal static class KernelFunctionExtensions
                     required,
                 };
 
-            return new FunctionToolDefinition(FunctionName.ToFullyQualifiedName(function.Name, pluginName, delimiter), function.Description, BinaryData.FromObjectAsJson(spec));
+            return new FunctionToolDefinition(FunctionName.ToFullyQualifiedName(function.Name, pluginName))
+            {
+                Description = function.Description,
+                Parameters = BinaryData.FromObjectAsJson(spec)
+            };
         }
 
-        return new FunctionToolDefinition(FunctionName.ToFullyQualifiedName(function.Name, pluginName, delimiter), function.Description);
+        return new FunctionToolDefinition(FunctionName.ToFullyQualifiedName(function.Name, pluginName))
+        {
+            Description = function.Description
+        };
     }
-
 
     private static string ConvertType(Type? type)
     {
@@ -83,13 +84,12 @@ internal static class KernelFunctionExtensions
         return Type.GetTypeCode(type) switch
         {
             TypeCode.SByte or TypeCode.Byte or
-                TypeCode.Int16 or TypeCode.UInt16 or
-                TypeCode.Int32 or TypeCode.UInt32 or
-                TypeCode.Int64 or TypeCode.UInt64 or
-                TypeCode.Single or TypeCode.Double or TypeCode.Decimal => "number",
+            TypeCode.Int16 or TypeCode.UInt16 or
+            TypeCode.Int32 or TypeCode.UInt32 or
+            TypeCode.Int64 or TypeCode.UInt64 or
+            TypeCode.Single or TypeCode.Double or TypeCode.Decimal => "number",
 
             _ => "object",
         };
     }
-
 }

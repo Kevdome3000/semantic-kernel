@@ -18,7 +18,10 @@ public class AgentGroupChatSettingsTests
     [Fact]
     public void VerifyChatExecutionSettingsDefault()
     {
+        // Arrange
         AgentGroupChatSettings settings = new();
+
+        // Assert
         Assert.IsType<AgentGroupChatSettings.DefaultTerminationStrategy>(settings.TerminationStrategy);
         Assert.Equal(1, settings.TerminationStrategy.MaximumIterations);
         Assert.IsType<SequentialSelectionStrategy>(settings.SelectionStrategy);
@@ -31,6 +34,7 @@ public class AgentGroupChatSettingsTests
     [Fact]
     public void VerifyChatExecutionContinuationStrategyDefault()
     {
+        // Arrange
         Mock<TerminationStrategy> strategyMock = new();
 
         AgentGroupChatSettings settings =
@@ -39,6 +43,7 @@ public class AgentGroupChatSettingsTests
                 TerminationStrategy = strategyMock.Object
             };
 
+        // Assert
         Assert.Equal(strategyMock.Object, settings.TerminationStrategy);
     }
 
@@ -49,6 +54,7 @@ public class AgentGroupChatSettingsTests
     [Fact]
     public void VerifyChatExecutionSelectionStrategyDefault()
     {
+        // Arrange
         Mock<SelectionStrategy> strategyMock = new();
 
         AgentGroupChatSettings settings =
@@ -57,6 +63,7 @@ public class AgentGroupChatSettingsTests
                 SelectionStrategy = strategyMock.Object
             };
 
+        // Assert
         Assert.NotNull(settings.SelectionStrategy);
         Assert.Equal(strategyMock.Object, settings.SelectionStrategy);
     }

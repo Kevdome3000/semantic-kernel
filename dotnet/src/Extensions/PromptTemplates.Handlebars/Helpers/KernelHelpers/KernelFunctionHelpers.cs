@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.PromptTemplates.Handlebars.Helpers;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,13 +10,13 @@ using System.Web;
 using HandlebarsDotNet;
 using HandlebarsDotNet.Compiler;
 
+namespace Microsoft.SemanticKernel.PromptTemplates.Handlebars.Helpers;
 
 /// <summary>
 /// Utility class for registering kernel functions as helpers in Handlebars.
 /// </summary>
 internal static class KernelFunctionHelpers
 {
-
     /// <summary>
     /// Register all (default) or specific categories.
     /// </summary>
@@ -40,11 +38,9 @@ internal static class KernelFunctionHelpers
     {
         foreach (var function in kernel.Plugins.GetFunctionsMetadata())
         {
-            RegisterFunctionAsHelper(kernel, executionContext, handlebarsInstance, function,
-                allowDangerouslySetContent || promptConfig.AllowDangerouslySetContent, nameDelimiter, cancellationToken);
+            RegisterFunctionAsHelper(kernel, executionContext, handlebarsInstance, function, allowDangerouslySetContent || promptConfig.AllowDangerouslySetContent, nameDelimiter, cancellationToken);
         }
     }
-
 
     #region private
 
@@ -67,8 +63,7 @@ internal static class KernelFunctionHelpers
                 // Get the parameters from the template arguments
                 if (handlebarsArguments.Length is not 0)
                 {
-                    if (handlebarsArguments[0].
-                            GetType() == typeof(HashParameterDictionary))
+                    if (handlebarsArguments[0].GetType() == typeof(HashParameterDictionary))
                     {
                         ProcessHashArguments(functionMetadata, executionContext, (IDictionary<string, object>)handlebarsArguments[0], nameDelimiter);
                     }
@@ -96,7 +91,6 @@ internal static class KernelFunctionHelpers
             });
     }
 
-
     /// <summary>
     /// Checks if handlebars argument is a valid type for the function parameter.
     /// Must satisfy one of the following:
@@ -107,24 +101,28 @@ internal static class KernelFunctionHelpers
     /// </summary>
     /// <param name="parameterMetadata">Function parameter metadata.</param>
     /// <param name="argument">Handlebar argument.</param>
-    private static bool IsExpectedParameterType(KernelParameterMetadata parameterMetadata, object argument)
+    private static bool IsExpectedParameterType(KernelParameterMetadata parameterMetadata, object? argument)
     {
+        if (argument == null)
+        {
+            return false;
+        }
+
         var actualParameterType = parameterMetadata.ParameterType is Type parameterType && Nullable.GetUnderlyingType(parameterType) is Type underlyingType
             ? underlyingType
             : parameterMetadata.ParameterType;
 
         bool parameterIsNumeric = KernelHelpersUtils.IsNumericType(actualParameterType)
-                                  || (parameterMetadata.Schema?.RootElement.TryGetProperty("type", out JsonElement typeProperty) == true && typeProperty.GetString() == "number");
+            || (parameterMetadata.Schema?.RootElement.TryGetProperty("type", out JsonElement typeProperty) == true && typeProperty.GetString() == "number");
 
         bool argIsNumeric = KernelHelpersUtils.IsNumericType(argument.GetType())
-                            || KernelHelpersUtils.TryParseAnyNumber(argument.ToString());
+            || KernelHelpersUtils.TryParseAnyNumber(argument.ToString());
 
         return actualParameterType is null
-               || actualParameterType == argument.GetType()
-               || (argIsNumeric && parameterIsNumeric)
-               || actualParameterType == typeof(string); // The kernel should handle this conversion
+            || actualParameterType == argument.GetType()
+            || (argIsNumeric && parameterIsNumeric)
+            || actualParameterType == typeof(string); // The kernel should handle this conversion
     }
-
 
     /// <summary>
     /// Processes the hash arguments passed to a Handlebars helper function.
@@ -144,18 +142,16 @@ internal static class KernelFunctionHelpers
         foreach (var param in functionMetadata.Parameters)
         {
             var fullyQualifiedParamName = functionMetadata.Name + nameDelimiter + param.Name;
-
             if (handlebarsArguments is not null && (handlebarsArguments.TryGetValue(fullyQualifiedParamName, out var value) || handlebarsArguments.TryGetValue(param.Name, out value)))
             {
                 value = KernelHelpersUtils.GetArgumentValue(value, executionContext);
-
-                if (value is not null && IsExpectedParameterType(param, value))
+                if (IsExpectedParameterType(param, value))
                 {
                     executionContext[param.Name] = value;
                 }
                 else
                 {
-                    throw new KernelException($"Invalid argument type for function {functionMetadata.Name}. Parameter {param.Name} expects type {param.ParameterType ?? (object?)param.Schema} but received {value?.GetType()}.");
+                    throw new KernelException($"Invalid argument type for function {functionMetadata.Name}. Parameter {param.Name} expects type {param.ParameterType ?? (object?)param.Schema} but received {value?.GetType().ToString() ?? "<null>"}.");
                 }
             }
             else if (param.IsRequired)
@@ -164,7 +160,6 @@ internal static class KernelFunctionHelpers
             }
         }
     }
-
 
     /// <summary>
     /// Processes the positional arguments passed to a Handlebars helper function.
@@ -175,25 +170,22 @@ internal static class KernelFunctionHelpers
     /// <exception cref="KernelException">Thrown when a required parameter is missing.</exception>
     private static void ProcessPositionalArguments(KernelFunctionMetadata functionMetadata, KernelArguments executionContext, Arguments handlebarsArguments)
     {
-        var requiredParameters = functionMetadata.Parameters.Where(p => p.IsRequired).
-            ToList();
+        var requiredParameters = functionMetadata.Parameters.Where(p => p.IsRequired).ToList();
 
         if (requiredParameters.Count <= handlebarsArguments.Length && handlebarsArguments.Length <= functionMetadata.Parameters.Count)
         {
             var argIndex = 0;
             var arguments = KernelHelpersUtils.ProcessArguments(handlebarsArguments, executionContext);
-
             foreach (var arg in arguments)
             {
                 var param = functionMetadata.Parameters[argIndex++];
-
                 if (IsExpectedParameterType(param, arg))
                 {
                     executionContext[param.Name] = arg;
                 }
                 else
                 {
-                    throw new KernelException($"Invalid parameter type for function {functionMetadata.Name}. Parameter {param.Name} expects type {param.ParameterType ?? (object?)param.Schema} but received {arg.GetType()}.");
+                    throw new KernelException($"Invalid parameter type for function {functionMetadata.Name}. Parameter {param.Name} expects type {param.ParameterType ?? (object?)param.Schema} but received {arg?.GetType().ToString() ?? "<null>"}.");
                 }
             }
         }
@@ -202,7 +194,6 @@ internal static class KernelFunctionHelpers
             throw new KernelException($"Invalid parameter count for function {functionMetadata.Name}. {handlebarsArguments.Length} were specified but {functionMetadata.Parameters.Count} are required.");
         }
     }
-
 
     /// <summary>
     /// Invokes an SK function and returns a typed result, if specified.
@@ -214,14 +205,11 @@ internal static class KernelFunctionHelpers
         CancellationToken cancellationToken)
     {
 #pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
-        FunctionResult result = function.InvokeAsync(kernel, executionContext, cancellationToken: cancellationToken).
-            GetAwaiter().
-            GetResult();
+        FunctionResult result = function.InvokeAsync(kernel, executionContext, cancellationToken: cancellationToken).GetAwaiter().GetResult();
 #pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
 
         return ParseResult(result);
     }
-
 
     /// <summary>
     /// Parse the <see cref="FunctionResult"/> into an object, extracting wrapped content as necessary.
@@ -244,7 +232,6 @@ internal static class KernelFunctionHelpers
             if (restApiOperationResponse.ContentType?.IndexOf("application/json", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 var parsedJson = JsonValue.Parse(restApiOperationResponse.Content?.ToString() ?? string.Empty);
-
                 return KernelHelpersUtils.DeserializeJsonNode(parsedJson);
             }
 
@@ -255,14 +242,10 @@ internal static class KernelFunctionHelpers
         {
             // Serialize then deserialize the result to ensure it is parsed as the correct type with appropriate property casing
             var serializedResult = JsonSerializer.Serialize(resultAsObject);
-
             return JsonSerializer.Deserialize(serializedResult, result.ValueType);
         }
 
         return resultAsObject;
     }
-
     #endregion
-
-
 }

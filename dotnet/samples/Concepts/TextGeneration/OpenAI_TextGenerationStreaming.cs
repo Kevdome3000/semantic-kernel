@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace TextGeneration;
-
+using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.TextGeneration;
 
+namespace TextGeneration;
 
 /**
  * The following example shows how to use Semantic Kernel with streaming text generation.
@@ -18,32 +18,29 @@ using Microsoft.SemanticKernel.TextGeneration;
  */
 public class OpenAI_TextGenerationStreaming(ITestOutputHelper output) : BaseTest(output)
 {
-
     [Fact]
     public Task AzureOpenAITextGenerationStreamAsync()
     {
         Console.WriteLine("======== Azure OpenAI - Text Generation - Raw Streaming ========");
 
-        var textGeneration = new AzureOpenAITextGenerationService(
-            deploymentName: TestConfiguration.AzureOpenAI.DeploymentName,
+        var textGeneration = new AzureOpenAIChatCompletionService(
+            deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
             endpoint: TestConfiguration.AzureOpenAI.Endpoint,
             apiKey: TestConfiguration.AzureOpenAI.ApiKey,
-            modelId: TestConfiguration.AzureOpenAI.ModelId);
+            modelId: TestConfiguration.AzureOpenAI.ChatModelId);
 
         return this.TextGenerationStreamAsync(textGeneration);
     }
-
 
     [Fact]
     public Task OpenAITextGenerationStreamAsync()
     {
         Console.WriteLine("======== Open AI - Text Generation - Raw Streaming ========");
 
-        var textGeneration = new OpenAITextGenerationService("gpt-3.5-turbo-instruct", TestConfiguration.OpenAI.ApiKey);
+        var textGeneration = new OpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
 
         return this.TextGenerationStreamAsync(textGeneration);
     }
-
 
     private async Task TextGenerationStreamAsync(ITextGenerationService textGeneration)
     {
@@ -59,7 +56,6 @@ public class OpenAI_TextGenerationStreaming(ITestOutputHelper output) : BaseTest
         var prompt = "Write one paragraph why AI is awesome";
 
         Console.WriteLine("Prompt: " + prompt);
-
         await foreach (var content in textGeneration.GetStreamingTextContentsAsync(prompt, executionSettings))
         {
             Console.Write(content);
@@ -67,5 +63,4 @@ public class OpenAI_TextGenerationStreaming(ITestOutputHelper output) : BaseTest
 
         Console.WriteLine();
     }
-
 }

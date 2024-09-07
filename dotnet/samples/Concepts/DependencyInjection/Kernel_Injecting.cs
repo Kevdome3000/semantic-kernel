@@ -1,25 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace DependencyInjection;
-
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 
+namespace DependencyInjection;
 
 // The following examples show how to use SK SDK in applications using DI/IoC containers.
 public class Kernel_Injecting(ITestOutputHelper output) : BaseTest(output)
 {
-
     [Fact]
     public async Task RunAsync()
     {
         ServiceCollection collection = new();
-
-        collection.AddLogging(c => c.AddConsole().
-            SetMinimumLevel(LogLevel.Information));
-
-        collection.AddOpenAITextGeneration(TestConfiguration.OpenAI.ModelId, TestConfiguration.OpenAI.ApiKey);
+        collection.AddLogging(c => c.AddConsole().SetMinimumLevel(LogLevel.Information));
+        collection.AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
         collection.AddSingleton<Kernel>();
 
         // Registering class that uses Kernel to execute a plugin
@@ -36,17 +31,13 @@ public class Kernel_Injecting(ITestOutputHelper output) : BaseTest(output)
         await kernelClient.SummarizeAsync("What's the tallest building in South America?");
     }
 
-
     /// <summary>
     /// Class that uses/references Kernel.
     /// </summary>
     private sealed class KernelClient(Kernel kernel, ILoggerFactory loggerFactory)
     {
-
         private readonly Kernel _kernel = kernel;
-
         private readonly ILogger _logger = loggerFactory.CreateLogger(nameof(KernelClient));
-
 
         public async Task SummarizeAsync(string ask)
         {
@@ -58,7 +49,5 @@ public class Kernel_Injecting(ITestOutputHelper output) : BaseTest(output)
 
             this._logger.LogWarning("Result - {0}", result.GetValue<string>());
         }
-
     }
-
 }

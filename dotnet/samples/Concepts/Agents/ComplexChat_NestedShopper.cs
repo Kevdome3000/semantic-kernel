@@ -1,26 +1,21 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace Agents;
-
-using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using OpenAI.Chat;
 using Resources;
 
+namespace Agents;
 
 /// <summary>
 /// Demonstrate usage of <see cref="KernelFunctionTerminationStrategy"/> and <see cref="KernelFunctionSelectionStrategy"/>
 /// to manage <see cref="AgentGroupChat"/> execution.
 /// </summary>
-public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(output)
+public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseAgentsTest(output)
 {
-
-    protected override bool ForceOpenAI => true;
-
     private const string InternalLeaderName = "InternalLeader";
-
     private const string InternalLeaderInstructions =
         """
         Your job is to clearly and directly communicate the current assistant response to the user.
@@ -33,9 +28,8 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(outp
         """;
 
     private const string InternalGiftIdeaAgentName = "InternalGiftIdeas";
-
     private const string InternalGiftIdeaAgentInstructions =
-        """
+        """        
         You are a personal shopper that provides gift ideas.
 
         Only provide ideas when the following is known about the gift recipient:
@@ -50,7 +44,6 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(outp
         """;
 
     private const string InternalGiftReviewerName = "InternalGiftReviewer";
-
     private const string InternalGiftReviewerInstructions =
         """
         Review the most recent shopping response.
@@ -60,51 +53,50 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(outp
 
     private const string InnerSelectionInstructions =
         $$$"""
-           Select which participant will take the next turn based on the conversation history.
-
-           Only choose from these participants:
-           - {{{InternalGiftIdeaAgentName}}}
-           - {{{InternalGiftReviewerName}}}
-           - {{{InternalLeaderName}}}
-
-           Choose the next participant according to the action of the most recent participant:
-           - After user input, it is {{{InternalGiftIdeaAgentName}}}'a turn.
-           - After {{{InternalGiftIdeaAgentName}}} replies with ideas, it is {{{InternalGiftReviewerName}}}'s turn.
-           - After {{{InternalGiftIdeaAgentName}}} requests additional information, it is {{{InternalLeaderName}}}'s turn.
-           - After {{{InternalGiftReviewerName}}} provides feedback or instruction, it is {{{InternalGiftIdeaAgentName}}}'s turn.
-           - After {{{InternalGiftReviewerName}}} states the {{{InternalGiftIdeaAgentName}}}'s response is adequate, it is {{{InternalLeaderName}}}'s turn.
-                   
-           Respond in JSON format.  The JSON schema can include only:
-           {
-               "name": "string (the name of the assistant selected for the next turn)",
-               "reason": "string (the reason for the participant was selected)"
-           }
-
-           History:
-           {{${{{KernelFunctionSelectionStrategy.DefaultHistoryVariableName}}}}}
-           """;
+        Select which participant will take the next turn based on the conversation history.
+        
+        Only choose from these participants:
+        - {{{InternalGiftIdeaAgentName}}}
+        - {{{InternalGiftReviewerName}}}
+        - {{{InternalLeaderName}}}
+        
+        Choose the next participant according to the action of the most recent participant:
+        - After user input, it is {{{InternalGiftIdeaAgentName}}}'a turn.
+        - After {{{InternalGiftIdeaAgentName}}} replies with ideas, it is {{{InternalGiftReviewerName}}}'s turn.
+        - After {{{InternalGiftIdeaAgentName}}} requests additional information, it is {{{InternalLeaderName}}}'s turn.
+        - After {{{InternalGiftReviewerName}}} provides feedback or instruction, it is {{{InternalGiftIdeaAgentName}}}'s turn.
+        - After {{{InternalGiftReviewerName}}} states the {{{InternalGiftIdeaAgentName}}}'s response is adequate, it is {{{InternalLeaderName}}}'s turn.
+                
+        Respond in JSON format.  The JSON schema can include only:
+        {
+            "name": "string (the name of the assistant selected for the next turn)",
+            "reason": "string (the reason for the participant was selected)"
+        }
+        
+        History:
+        {{${{{KernelFunctionSelectionStrategy.DefaultHistoryVariableName}}}}}
+        """;
 
     private const string OuterTerminationInstructions =
         $$$"""
-           Determine if user request has been fully answered.
-
-           Respond in JSON format.  The JSON schema can include only:
-           {
-               "isAnswered": "bool (true if the user request has been fully answered)",
-               "reason": "string (the reason for your determination)"
-           }
-
-           History:
-           {{${{{KernelFunctionTerminationStrategy.DefaultHistoryVariableName}}}}}
-           """;
-
+        Determine if user request has been fully answered.
+        
+        Respond in JSON format.  The JSON schema can include only:
+        {
+            "isAnswered": "bool (true if the user request has been fully answered)",
+            "reason": "string (the reason for your determination)"
+        }
+        
+        History:
+        {{${{{KernelFunctionTerminationStrategy.DefaultHistoryVariableName}}}}}
+        """;
 
     [Fact]
     public async Task NestedChatWithAggregatorAgentAsync()
     {
         Console.WriteLine($"! {Model}");
 
-        OpenAIPromptExecutionSettings jsonSettings = new() { ResponseFormat = ChatCompletionsResponseFormat.JsonObject };
+        OpenAIPromptExecutionSettings jsonSettings = new() { ResponseFormat = ChatResponseFormat.JsonObject };
         OpenAIPromptExecutionSettings autoInvokeSettings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
         ChatCompletionAgent internalLeaderAgent = CreateAgent(InternalLeaderName, InternalLeaderInstructions);
@@ -160,21 +152,20 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(outp
         Console.WriteLine(">>>> AGGREGATED CHAT");
         Console.WriteLine(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 
-        await foreach (ChatMessageContent content in chat.GetChatMessagesAsync(personalShopperAgent).
-                           Reverse())
+        await foreach (ChatMessageContent message in chat.GetChatMessagesAsync(personalShopperAgent).Reverse())
         {
-            Console.WriteLine($">>>> {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+            this.WriteAgentChatMessage(message);
         }
 
         async Task InvokeChatAsync(string input)
         {
-            chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
+            ChatMessageContent message = new(AuthorRole.User, input);
+            chat.AddChatMessage(message);
+            this.WriteAgentChatMessage(message);
 
-            Console.WriteLine($"# {AuthorRole.User}: '{input}'");
-
-            await foreach (ChatMessageContent content in chat.InvokeAsync(personalShopperAgent))
+            await foreach (ChatMessageContent response in chat.InvokeAsync(personalShopperAgent))
             {
-                Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+                this.WriteAgentChatMessage(response);
             }
 
             Console.WriteLine($"\n# IS COMPLETE: {chat.IsComplete}");
@@ -189,56 +180,48 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(outp
             };
 
         AgentGroupChat CreateChat() =>
-            new(internalLeaderAgent, internalGiftReviewerAgent, internalGiftIdeaAgent)
-            {
-                ExecutionSettings =
-                    new()
-                    {
-                        SelectionStrategy =
-                            new KernelFunctionSelectionStrategy(innerSelectionFunction, CreateKernelWithChatCompletion())
-                            {
-                                ResultParser =
-                                    (result) =>
-                                    {
-                                        AgentSelectionResult? jsonResult = JsonResultTranslator.Translate<AgentSelectionResult>(result.GetValue<string>());
+                new(internalLeaderAgent, internalGiftReviewerAgent, internalGiftIdeaAgent)
+                {
+                    ExecutionSettings =
+                        new()
+                        {
+                            SelectionStrategy =
+                                new KernelFunctionSelectionStrategy(innerSelectionFunction, CreateKernelWithChatCompletion())
+                                {
+                                    ResultParser =
+                                        (result) =>
+                                        {
+                                            AgentSelectionResult? jsonResult = JsonResultTranslator.Translate<AgentSelectionResult>(result.GetValue<string>());
 
-                                        string? agentName = string.IsNullOrWhiteSpace(jsonResult?.name)
-                                            ? null
-                                            : jsonResult?.name;
+                                            string? agentName = string.IsNullOrWhiteSpace(jsonResult?.name) ? null : jsonResult?.name;
+                                            agentName ??= InternalGiftIdeaAgentName;
 
-                                        agentName ??= InternalGiftIdeaAgentName;
+                                            Console.WriteLine($"\t>>>> INNER TURN: {agentName}");
 
-                                        Console.WriteLine($"\t>>>> INNER TURN: {agentName}");
-
-                                        return agentName;
-                                    }
-                            },
-                        TerminationStrategy =
-                            new AgentTerminationStrategy()
-                            {
-                                Agents = [internalLeaderAgent],
-                                MaximumIterations = 7,
-                                AutomaticReset = true,
-                            },
-                    }
-            };
+                                            return agentName;
+                                        }
+                                },
+                            TerminationStrategy =
+                                new AgentTerminationStrategy()
+                                {
+                                    Agents = [internalLeaderAgent],
+                                    MaximumIterations = 7,
+                                    AutomaticReset = true,
+                                },
+                        }
+                };
     }
-
 
     private sealed record OuterTerminationResult(bool isAnswered, string reason);
 
     private sealed record AgentSelectionResult(string name, string reason);
 
-
     private sealed class AgentTerminationStrategy : TerminationStrategy
     {
-
         /// <inheritdoc/>
         protected override Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(true);
         }
-
     }
-
 }

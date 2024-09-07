@@ -1,18 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace ChatCompletion;
-
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
+namespace ChatCompletion;
 
 /// <summary>
 /// These examples demonstrate the ways different content types are streamed by OpenAI LLM via the chat completion service.
 /// </summary>
 public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest(output)
 {
-
     /// <summary>
     /// This example demonstrates chat completion streaming using OpenAI.
     /// </summary>
@@ -25,7 +24,6 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 
         return this.StartStreamingChatAsync(chatCompletionService);
     }
-
 
     /// <summary>
     /// This example demonstrates chat completion streaming using Azure OpenAI.
@@ -43,7 +41,6 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 
         return this.StartStreamingChatAsync(chatCompletionService);
     }
-
 
     /// <summary>
     /// This example demonstrates how the chat completion service streams text content.
@@ -74,11 +71,9 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
             Console.Write(chatUpdate.Content);
 
             // Alternatively, the response update can be accessed via the StreamingChatMessageContent.Items property
-            Console.Write(chatUpdate.Items.OfType<StreamingTextContent>().
-                FirstOrDefault());
+            Console.Write(chatUpdate.Items.OfType<StreamingTextContent>().FirstOrDefault());
         }
     }
-
 
     /// <summary>
     /// This example demonstrates how the chat completion service streams raw function call content.
@@ -95,7 +90,6 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
 
         // Create kernel with helper plugin.
         Kernel kernel = new();
-
         kernel.ImportPluginFromFunctions("HelperFunctions",
         [
             kernel.CreateFunctionFromMethod((string longTestString) => DateTime.UtcNow.ToString("R"), "GetCurrentUtcTime", "Retrieves the current time in UTC."),
@@ -105,7 +99,7 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
 
         // Create chat history with initial user question
-        ChatHistory chatHistory = new();
+        ChatHistory chatHistory = [];
         chatHistory.AddUserMessage("Hi, what is the current time?");
 
         // Start streaming chat based on the chat history
@@ -121,7 +115,6 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
             }
         }
     }
-
 
     private async Task StartStreamingChatAsync(IChatCompletionService chatCompletionService)
     {
@@ -146,7 +139,6 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
         await StreamMessageOutputAsync(chatCompletionService, chatHistory, AuthorRole.Assistant);
     }
 
-
     private async Task StreamMessageOutputAsync(IChatCompletionService chatCompletionService, ChatHistory chatHistory, AuthorRole authorRole)
     {
         bool roleWritten = false;
@@ -170,17 +162,4 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
         Console.WriteLine("\n------------------------");
         chatHistory.AddMessage(authorRole, fullMessage);
     }
-
-
-    /// <summary>
-    /// Outputs the last message of the chat history
-    /// </summary>
-    private void OutputLastMessage(ChatHistory chatHistory)
-    {
-        var message = chatHistory.Last();
-
-        Console.WriteLine($"{message.Role}: {message.Content}");
-        Console.WriteLine("------------------------");
-    }
-
 }

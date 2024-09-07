@@ -19,7 +19,6 @@ namespace Microsoft.SemanticKernel.Agents.History;
 /// </remarks>
 public class ChatHistorySummarizationReducer : IChatHistoryReducer
 {
-
     /// <summary>
     /// Metadata key to indicate a summary message.
     /// </summary>
@@ -64,7 +63,6 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
     /// </remarks>
     public bool UseSingleSummary { get; init; } = true;
 
-
     /// <inheritdoc/>
     public async Task<IEnumerable<ChatMessageContent>?> ReduceAsync(IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
@@ -81,20 +79,15 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
             // Second pass to extract history for summarization
             IEnumerable<ChatMessageContent> summarizedHistory =
                 history.Extract(
-                    this.UseSingleSummary
-                        ? 0
-                        : insertionPoint,
-                    truncationIndex,
+                    this.UseSingleSummary ? 0 : insertionPoint,
+                    truncationIndex - 1,
                     (m) => m.Items.Any(i => i is FunctionCallContent || i is FunctionResultContent));
 
             try
             {
                 // Summarize
                 ChatHistory summarizationRequest = [.. summarizedHistory, new ChatMessageContent(AuthorRole.System, this.SummarizationInstructions)];
-
-                ChatMessageContent summary = await this._service.GetChatMessageContentAsync(summarizationRequest, cancellationToken: cancellationToken).
-                    ConfigureAwait(false);
-
+                ChatMessageContent summary = await this._service.GetChatMessageContentAsync(summarizationRequest, cancellationToken: cancellationToken).ConfigureAwait(false);
                 summary.Metadata = new Dictionary<string, object?> { { SummaryMetadataKey, true } };
 
                 // Assembly the summarized history
@@ -134,7 +127,6 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
         }
     }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatHistorySummarizationReducer"/> class.
     /// </summary>
@@ -156,27 +148,21 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
         this._thresholdCount = thresholdCount ?? 0;
     }
 
-
     /// <inheritdoc/>
     public override bool Equals(object? obj)
     {
         ChatHistorySummarizationReducer? other = obj as ChatHistorySummarizationReducer;
-
         return other != null &&
                this._thresholdCount == other._thresholdCount &&
-               this._targetCount == other._targetCount;
+               this._targetCount == other._targetCount &&
+               this.UseSingleSummary == other.UseSingleSummary &&
+               string.Equals(this.SummarizationInstructions, other.SummarizationInstructions, StringComparison.Ordinal);
     }
 
-
     /// <inheritdoc/>
-    public override int GetHashCode() => HashCode.Combine(nameof(ChatHistorySummarizationReducer), this._thresholdCount, this._targetCount, this.SummarizationInstructions,
-        this.UseSingleSummary);
-
+    public override int GetHashCode() => HashCode.Combine(nameof(ChatHistorySummarizationReducer), this._thresholdCount, this._targetCount, this.SummarizationInstructions, this.UseSingleSummary);
 
     private readonly IChatCompletionService _service;
-
     private readonly int _thresholdCount;
-
     private readonly int _targetCount;
-
 }

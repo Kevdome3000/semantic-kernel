@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Agents.OpenAI.Internal;
+using OpenAI.Assistants;
+
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
-using System.Diagnostics.CodeAnalysis;
-using global::Azure.AI.OpenAI.Assistants;
-using Microsoft.Extensions.Logging;
-
 #pragma warning disable SYSLIB1006 // Multiple logging methods cannot use the same event id within a class
-
 
 /// <summary>
 /// Extensions for logging <see cref="AssistantThreadActions"/>.
@@ -18,7 +18,6 @@ using Microsoft.Extensions.Logging;
 [ExcludeFromCodeCoverage]
 internal static partial class AssistantThreadActionsLogMessages
 {
-
     /// <summary>
     /// Logs <see cref="AssistantThreadActions"/> creating run (started).
     /// </summary>
@@ -30,7 +29,6 @@ internal static partial class AssistantThreadActionsLogMessages
         this ILogger logger,
         string methodName,
         string threadId);
-
 
     /// <summary>
     /// Logs <see cref="AssistantThreadActions"/> created run (complete).
@@ -45,7 +43,6 @@ internal static partial class AssistantThreadActionsLogMessages
         string runId,
         string threadId);
 
-
     /// <summary>
     /// Logs <see cref="AssistantThreadActions"/> completed run (complete).
     /// </summary>
@@ -59,7 +56,6 @@ internal static partial class AssistantThreadActionsLogMessages
         string runId,
         string threadId);
 
-
     /// <summary>
     /// Logs <see cref="AssistantThreadActions"/> processing run steps (started).
     /// </summary>
@@ -72,7 +68,6 @@ internal static partial class AssistantThreadActionsLogMessages
         string methodName,
         string runId,
         string threadId);
-
 
     /// <summary>
     /// Logs <see cref="AssistantThreadActions"/> processed run steps (complete).
@@ -88,7 +83,6 @@ internal static partial class AssistantThreadActionsLogMessages
         string runId,
         string threadId);
 
-
     /// <summary>
     /// Logs <see cref="AssistantThreadActions"/> processing run messages (started).
     /// </summary>
@@ -101,7 +95,6 @@ internal static partial class AssistantThreadActionsLogMessages
         string methodName,
         string runId,
         string threadId);
-
 
     /// <summary>
     /// Logs <see cref="AssistantThreadActions"/> processed run messages (complete).
@@ -117,7 +110,6 @@ internal static partial class AssistantThreadActionsLogMessages
         string runId,
         string threadId);
 
-
     /// <summary>
     /// Logs <see cref="AssistantThreadActions"/> polling run status (started).
     /// </summary>
@@ -130,7 +122,6 @@ internal static partial class AssistantThreadActionsLogMessages
         string methodName,
         string runId,
         string threadId);
-
 
     /// <summary>
     /// Logs <see cref="AssistantThreadActions"/> polled run status (complete).
@@ -145,5 +136,4 @@ internal static partial class AssistantThreadActionsLogMessages
         RunStatus runStatus,
         string runId,
         string threadId);
-
 }

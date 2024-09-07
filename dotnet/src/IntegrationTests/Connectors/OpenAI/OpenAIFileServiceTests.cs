@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,22 +8,22 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using TestSettings;
+using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
-using Xunit.Abstractions;
+
+namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
 #pragma warning disable xUnit1004 // Contains test methods used in manual verification. Disable warning for this file only.
 
-
-public sealed class OpenAIFileServiceTests(ITestOutputHelper output) : IDisposable
+[Obsolete("This class is deprecated and will be removed in a future version.")]
+public sealed class OpenAIFileServiceTests
 {
-
-    private readonly IConfigurationRoot _configuration = new ConfigurationBuilder().AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true).
-        AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true).
-        AddEnvironmentVariables().
-        AddUserSecrets<OpenAICompletionTests>().
-        Build();
-
+    private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
+        .AddJsonFile(path: "testsettings.json", optional: true, reloadOnChange: true)
+        .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
+        .AddEnvironmentVariables()
+        .AddUserSecrets<OpenAIFileServiceTests>()
+        .Build();
 
     [Theory(Skip = "OpenAI will often throttle requests. This test is for manual verification.")]
     [InlineData("test_image_001.jpg", "image/jpeg")]
@@ -39,7 +37,6 @@ public sealed class OpenAIFileServiceTests(ITestOutputHelper output) : IDisposab
         await this.VerifyFileServiceLifecycleAsync(fileService, fileName, mimeType);
     }
 
-
     [Theory]
     [InlineData("test_image_001.jpg", "image/jpeg")]
     [InlineData("test_content.txt", "text/plain")]
@@ -51,7 +48,6 @@ public sealed class OpenAIFileServiceTests(ITestOutputHelper output) : IDisposab
         // Act & Assert
         await this.VerifyFileServiceLifecycleAsync(fileService, fileName, mimeType);
     }
-
 
     private async Task VerifyFileServiceLifecycleAsync(OpenAIFileService fileService, string fileName, string mimeType)
     {
@@ -68,7 +64,6 @@ public sealed class OpenAIFileServiceTests(ITestOutputHelper output) : IDisposab
 
         // Upload file
         OpenAIFileReference fileReference = await fileService.UploadContentAsync(sourceContent, new(fileName, OpenAIFilePurpose.FineTune));
-
         try
         {
             AssertFileReferenceEquals(fileReference, fileName, sourceData.Length, OpenAIFilePurpose.FineTune);
@@ -109,71 +104,44 @@ public sealed class OpenAIFileServiceTests(ITestOutputHelper output) : IDisposab
         }
     }
 
-
-    private static void AssertFileReferenceEquals(
-        OpenAIFileReference fileReference,
-        string expectedFileName,
-        int expectedSize,
-        OpenAIFilePurpose expectedPurpose)
+    private static void AssertFileReferenceEquals(OpenAIFileReference fileReference, string expectedFileName, int expectedSize, OpenAIFilePurpose expectedPurpose)
     {
         Assert.Equal(expectedFileName, fileReference.FileName);
         Assert.Equal(expectedPurpose, fileReference.Purpose);
         Assert.Equal(expectedSize, fileReference.SizeInBytes);
     }
 
-
     private static async Task<Dictionary<string, OpenAIFileReference>> GetFilesAsync(OpenAIFileService fileService, OpenAIFilePurpose? purpose = null)
     {
         IEnumerable<OpenAIFileReference> files = await fileService.GetFilesAsync(purpose);
-
-        Dictionary<string, OpenAIFileReference> fileIds = files.DistinctBy(f => f.Id).
-            ToDictionary(f => f.Id);
-
+        Dictionary<string, OpenAIFileReference> fileIds = files.DistinctBy(f => f.Id).ToDictionary(f => f.Id);
         return fileIds;
     }
 
-
     #region internals
-
-    private readonly XunitLogger<OpenAIFileService> _logger = new(output);
-
-    private readonly RedirectOutput _testOutputHelper = new(output);
-
-
-    public void Dispose()
-    {
-        this._logger.Dispose();
-        this._testOutputHelper.Dispose();
-    }
-
 
     private OpenAIFileService CreateOpenAIFileService()
     {
-        var openAIConfiguration = this._configuration.GetSection("OpenAI").
-            Get<OpenAIConfiguration>();
+        var openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
 
         Assert.NotNull(openAIConfiguration);
         Assert.NotNull(openAIConfiguration.ApiKey);
         Assert.NotNull(openAIConfiguration.ServiceId);
 
-        return new(openAIConfiguration.ApiKey, openAIConfiguration.ServiceId, loggerFactory: this._logger);
+        return new(openAIConfiguration.ApiKey, openAIConfiguration.ServiceId);
     }
-
 
     private OpenAIFileService CreateAzureOpenAIFileService()
     {
-        var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").
-            Get<AzureOpenAIConfiguration>();
+        var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
 
         Assert.NotNull(azureOpenAIConfiguration);
         Assert.NotNull(azureOpenAIConfiguration.Endpoint);
         Assert.NotNull(azureOpenAIConfiguration.ApiKey);
         Assert.NotNull(azureOpenAIConfiguration.ServiceId);
 
-        return new(new Uri(azureOpenAIConfiguration.Endpoint), azureOpenAIConfiguration.ApiKey, azureOpenAIConfiguration.ServiceId, loggerFactory: this._logger);
+        return new(new Uri(azureOpenAIConfiguration.Endpoint), azureOpenAIConfiguration.ApiKey, azureOpenAIConfiguration.ServiceId);
     }
 
     #endregion
-
-
 }

@@ -1,13 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using Microsoft.SemanticKernel.ChatCompletion;
+using OpenAI.Assistants;
+
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
-
-using ChatCompletion;
-using global::Azure.AI.OpenAI.Assistants;
-
 
 internal static class AuthorRoleExtensions
 {
-
     /// <summary>
     /// Convert an <see cref="AuthorRole"/> to a <see cref="MessageRole"/>
     /// within <see cref="OpenAIAssistantChannel"/>.  A thread message may only be of
@@ -19,8 +17,7 @@ internal static class AuthorRoleExtensions
     /// system message, it will be converted to assistant role.
     /// </remarks>
     public static MessageRole ToMessageRole(this AuthorRole authorRole) =>
-        authorRole == AuthorRole.User
-            ? MessageRole.User
-            : MessageRole.Assistant;
-
+        authorRole == AuthorRole.User ?
+            MessageRole.User :
+            MessageRole.Assistant;
 }
