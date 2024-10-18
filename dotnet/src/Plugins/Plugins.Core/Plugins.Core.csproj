@@ -26,4 +26,8 @@
       <PackageReference Include="Microsoft.Extensions.Http"/>
   </ItemGroup>
 
+    <ItemGroup>
+        <Compile Remove="..\..\InternalUtilities\src\Data\**"/>
+    </ItemGroup>
+
 </Project>
