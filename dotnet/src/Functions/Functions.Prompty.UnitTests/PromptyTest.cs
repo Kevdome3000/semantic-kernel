@@ -3,10 +3,15 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.TextGeneration;
 using Xunit;
 
 namespace SemanticKernel.Functions.Prompty.UnitTests;
@@ -118,58 +123,121 @@ public sealed class PromptyTest
     }
 
     [Fact]
+    public void ItShouldCreateFunctionFromPromptYamlWithEmbeddedFileProvider()
+    {
+        // Arrange
+        Kernel kernel = new();
+        var chatPromptyPath = Path.Combine("TestData", "chat.prompty");
+        ManifestEmbeddedFileProvider manifestEmbeddedProvider = new(typeof(PromptyTest).Assembly);
+
+        // Act
+        var kernelFunction = kernel.CreateFunctionFromPromptyFile(chatPromptyPath,
+            fileProvider: manifestEmbeddedProvider);
+
+        // Assert
+        Assert.NotNull(kernelFunction);
+
+        var executionSettings = kernelFunction.ExecutionSettings;
+        Assert.Single(executionSettings!);
+        Assert.True(executionSettings!.ContainsKey("default"));
+    }
+
+    [Fact]
+    public void ItShouldCreateFunctionFromPromptYamlWithFileProvider()
+    {
+        // Arrange
+        Kernel kernel = new();
+        var currentDirectory = Directory.GetCurrentDirectory();
+        var chatPromptyPath = Path.Combine("TestData", "chat.prompty");
+        using PhysicalFileProvider fileProvider = new(currentDirectory);
+
+        // Act
+        var kernelFunction = kernel.CreateFunctionFromPromptyFile(chatPromptyPath,
+            fileProvider);
+
+        // Assert
+        Assert.NotNull(kernelFunction);
+
+        var executionSettings = kernelFunction.ExecutionSettings;
+        Assert.Single(executionSettings!);
+        Assert.True(executionSettings!.ContainsKey("default"));
+    }
+
+    [Fact]
+    public void ItShouldCreateFunctionFromPromptYamlWithFileInfo()
+    {
+        // Arrange
+        Kernel kernel = new();
+        var currentDirectory = Directory.GetCurrentDirectory();
+        var chatPromptyPath = Path.Combine("TestData", "chat.prompty");
+        using PhysicalFileProvider fileProvider = new(currentDirectory);
+        var fileInfo = fileProvider.GetFileInfo(chatPromptyPath);
+
+        // Act
+        var kernelFunction = kernel.CreateFunctionFromPromptyFile(
+            fileInfo: fileInfo);
+
+        // Assert
+        Assert.NotNull(kernelFunction);
+
+        var executionSettings = kernelFunction.ExecutionSettings;
+        Assert.Single(executionSettings!);
+        Assert.True(executionSettings!.ContainsKey("default"));
+    }
+
+    [Fact]
     public void ItFailsToParseAnEmptyHeader()
     {
         Kernel kernel = new();
 
         Assert.NotNull(kernel.CreateFunctionFromPrompty("""
-                                                        ---
-                                                        name: MyPrompt
-                                                        ---
-                                                        Hello
-                                                        """));
+            ---
+            name: MyPrompt
+            ---
+            Hello
+            """));
 
         Assert.Throws<ArgumentException>(() => kernel.CreateFunctionFromPrompty("""
-                                                                                ---
-                                                                                ---
-                                                                                Hello
-                                                                                """));
+            ---
+            ---
+            Hello
+            """));
 
         Assert.Throws<ArgumentException>(() => kernel.CreateFunctionFromPrompty("""
-                                                                                ---
+            ---
 
 
 
-                                                                                ---
-                                                                                Hello
-                                                                                """));
+            ---
+            Hello
+            """));
     }
 
     [Theory]
     [InlineData("""
-                 ---
-                name: SomePrompt
-                ---
-                Abc
-                """)]
+         ---
+        name: SomePrompt
+        ---
+        Abc
+        """)]
     [InlineData("""
-                ---
-                name: SomePrompt
-                 ---
-                Abc
-                """)]
+        ---
+        name: SomePrompt
+         ---
+        Abc
+        """)]
     [InlineData("""
-                ---a
-                name: SomePrompt
-                ---
-                Abc
-                """)]
+        ---a
+        name: SomePrompt
+        ---
+        Abc
+        """)]
     [InlineData("""
-                ---
-                name: SomePrompt
-                ---b
-                Abc
-                """)]
+        ---
+        name: SomePrompt
+        ---b
+        Abc
+        """)]
     public void ItRequiresStringSeparatorPlacement(string prompt)
     {
         // Arrange
@@ -189,25 +257,24 @@ public sealed class PromptyTest
 
         // Act
         var kernelFunction = kernel.CreateFunctionFromPrompty("""
-                                                              ---
-                                                              name: SomePrompt
-                                                              description: This is the description.
-                                                              ---
-                                                              Abc---def
-                                                              ---
-                                                              Efg
-                                                              """);
+            ---
+            name: SomePrompt
+            description: This is the description.
+            ---
+            Abc---def
+            ---
+            Efg
+            """);
 
         // Assert
         Assert.NotNull(kernelFunction);
         Assert.Equal("SomePrompt", kernelFunction.Name);
         Assert.Equal("This is the description.", kernelFunction.Description);
-
         Assert.Equal("""
-                     Abc---def
-                     ---
-                     Efg
-                     """, await kernelFunction.InvokeAsync<string>(kernel));
+            Abc---def
+            ---
+            Efg
+            """, await kernelFunction.InvokeAsync<string>(kernel));
     }
 
     [Fact]
@@ -215,12 +282,11 @@ public sealed class PromptyTest
     {
         // Arrange
         const string Prompty = """
-                               ---
-                               name: MyPrompt
-                               ---
-                               {{a}} {{b}} {{c}}
-                               """;
-
+            ---
+            name: MyPrompt
+            ---
+            {{a}} {{b}} {{c}}
+            """;
         string[] expectedVariables = ["a", "b", "c"];
 
         // Act
@@ -233,31 +299,31 @@ public sealed class PromptyTest
 
     [Theory]
     [InlineData("""
-                ---
-                name: MyPrompt
-                ---
-                {{a}}
-                {% for item in items %}
-                {% endfor %}
-                """)]
+        ---
+        name: MyPrompt
+        ---
+        {{a}}
+        {% for item in items %}
+        {% endfor %}
+        """)]
     [InlineData("""
-                ---
-                name: MyPrompt
-                ---
-                {{a}} {{b}} {{c.d}}
-                """)]
+        ---
+        name: MyPrompt
+        ---
+        {{a}} {{b}} {{c.d}}
+        """)]
     [InlineData("""
-                ---
-                name: MyPrompt
-                ---
-                {{a.b}}
-                """)]
+        ---
+        name: MyPrompt
+        ---
+        {{a.b}}
+        """)]
     [InlineData("""
-                ---
-                name: MyPrompt
-                ---
-                {{a}} {{b}} {{a.c}}
-                """)]
+        ---
+        name: MyPrompt
+        ---
+        {{a}} {{b}} {{a.c}}
+        """)]
     public void ItAvoidsCreatingInputVariablesIfAnythingComplex(string prompty)
     {
         // Act
@@ -273,14 +339,13 @@ public sealed class PromptyTest
     {
         // Arrange
         const string Prompty = """
-                               ---
-                               name: MyPrompt
-                               inputs:
-                                 question: What is the color of the sky?
-                               ---
-                               {{a}} {{b}} {{c}}
-                               """;
-
+            ---
+            name: MyPrompt
+            inputs:
+              question: What is the color of the sky?
+            ---
+            {{a}} {{b}} {{c}}
+            """;
         string[] expectedVariables = ["question"];
 
         // Act
@@ -295,21 +360,12 @@ public sealed class PromptyTest
     {
         public IReadOnlyDictionary<string, object?> Attributes { get; } = new Dictionary<string, object?>();
 
-        public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(
-            string prompt,
-            PromptExecutionSettings? executionSettings = null,
-            Kernel? kernel = null,
-            CancellationToken cancellationToken = default) =>
+        public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default) =>
             Task.FromResult<IReadOnlyList<TextContent>>([new TextContent(prompt)]);
 
-        public async IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(
-            string prompt,
-            PromptExecutionSettings? executionSettings = null,
-            Kernel? kernel = null,
-            [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        public async IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             await Task.Delay(0, cancellationToken);
-
             yield return new StreamingTextContent(prompt);
         }
     }

@@ -2,7 +2,6 @@
 
 using System;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Memory;
 /// <summary>
@@ -24,7 +23,6 @@ public class MemoryQueryResult
     /// <summary>
     /// Nullable embedding associated with the metadata returned for by a query.
     /// </summary>
-    [JsonConverter(typeof(ReadOnlyMemoryConverter))]
     public ReadOnlyMemory<float>? Embedding { get; }
 
     /// <summary>

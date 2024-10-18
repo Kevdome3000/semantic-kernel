@@ -15,6 +15,8 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Planning;
 using OpenAI.Chat;
 
+using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
+
 namespace Planners;
 
 /// <summary>
@@ -56,7 +58,7 @@ public class AutoFunctionCallingPlanning(ITestOutputHelper output) : BaseTest(ou
         // 1.2 Plan execution using Auto Function Calling.
         var functionCallingChatHistory = new ChatHistory();
         var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
-        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var executionSettings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 
         functionCallingChatHistory.AddUserMessage(Goal);
 
@@ -91,7 +93,7 @@ public class AutoFunctionCallingPlanning(ITestOutputHelper output) : BaseTest(ou
     {
         var kernel = GetKernel();
 
-        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var executionSettings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 
         // If result is the only thing that is needed without generated plan, it's possible to create and execute a plan using Kernel object.
         var kernelResult = await kernel.InvokePromptAsync(Goal, new(executionSettings));
@@ -123,7 +125,7 @@ public class AutoFunctionCallingPlanning(ITestOutputHelper output) : BaseTest(ou
     {
         var kernel = GetKernel(enableLogging: true);
 
-        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var executionSettings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 
         var result = await kernel.InvokePromptAsync(Goal, new(executionSettings));
 
@@ -166,7 +168,7 @@ public class AutoFunctionCallingPlanning(ITestOutputHelper output) : BaseTest(ou
     public async Task PlanCachingForReusabilityAsync()
     {
         var kernel = GetKernel();
-        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var executionSettings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 
         // Wrap chat completion service from Kernel in caching decorator.
         var chatCompletionService = new CachedChatCompletionService(kernel.GetRequiredService<IChatCompletionService>());
@@ -212,7 +214,7 @@ public class AutoFunctionCallingPlanning(ITestOutputHelper output) : BaseTest(ou
 
         kernel.FunctionInvocationFilters.Add(new PlanExecutionFilter());
 
-        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var executionSettings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 
         var result = await kernel.InvokePromptAsync(Goal, new(executionSettings));
 
@@ -352,7 +354,7 @@ public class AutoFunctionCallingPlanning(ITestOutputHelper output) : BaseTest(ou
                 usage is ChatTokenUsage completionsUsage &&
                 completionsUsage is not null)
             {
-                tokens += completionsUsage.TotalTokens;
+                tokens += completionsUsage.TotalTokenCount;
             }
         }
 

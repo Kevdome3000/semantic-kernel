@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel;
 /// <summary>
-/// Represents a function call requested by LLM.
+/// Represents a function call requested by AI model.
 /// </summary>
 public sealed class FunctionCallContent : KernelContent
 {
@@ -37,7 +37,7 @@ public sealed class FunctionCallContent : KernelContent
     public KernelArguments? Arguments { get; }
 
     /// <summary>
-    /// The exception that occurred while mapping original LLM function call to the model class.
+    /// The exception that occurred while mapping original AI model function call to the model class.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public Exception? Exception { get; init; }
@@ -76,7 +76,7 @@ public sealed class FunctionCallContent : KernelContent
 
         if (this.Exception is not null)
         {
-            return new FunctionResultContent(this, this.Exception.Message);
+            throw this.Exception;
         }
 
         if (kernel.Plugins.TryGetFunction(this.PluginName, this.FunctionName, out KernelFunction? function))

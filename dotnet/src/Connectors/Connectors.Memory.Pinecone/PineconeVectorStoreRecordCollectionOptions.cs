@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
+using Pinecone;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
@@ -8,9 +9,7 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 /// Options when creating a <see cref="PineconeVectorStoreRecordCollection{TRecord}"/>.
 /// </summary>
 public sealed class PineconeVectorStoreRecordCollectionOptions<TRecord>
-    where TRecord : class
 {
-
     /// <summary>
     /// Gets or sets an optional custom mapper to use when converting between the data model and the Pinecone vector.
     /// </summary>
@@ -46,5 +45,4 @@ public sealed class PineconeVectorStoreRecordCollectionOptions<TRecord>
     /// This option is only used when creating a new Pinecone index. Default value is 'us-east-1'.
     /// </remarks>
     public string ServerlessIndexRegion { get; init; } = "us-east-1";
-
 }

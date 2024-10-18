@@ -5,7 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using NRedisStack.Search;
 
 namespace Microsoft.SemanticKernel.Connectors.Redis;
@@ -15,7 +15,6 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 /// </summary>
 internal static class RedisVectorStoreCollectionCreateMapping
 {
-
     /// <summary>A set of number types that are supported for filtering.</summary>
     public static readonly HashSet<Type> s_supportedFilterableNumericDataTypes =
     [
@@ -44,7 +43,6 @@ internal static class RedisVectorStoreCollectionCreateMapping
         typeof(decimal?),
     ];
 
-
     /// <summary>
     /// Map from the given list of <see cref="VectorStoreRecordProperty"/> items to the Redis <see cref="Schema"/>.
     /// </summary>
@@ -53,7 +51,7 @@ internal static class RedisVectorStoreCollectionCreateMapping
     /// <param name="useDollarPrefix">A value indicating whether to include $. prefix for field names as required in JSON mode.</param>
     /// <returns>The mapped Redis <see cref="Schema"/>.</returns>
     /// <exception cref="InvalidOperationException">Thrown if there are missing required or unsupported configuration options set.</exception>
-    public static Schema MapToSchema(IEnumerable<VectorStoreRecordProperty> properties, Dictionary<string, string> storagePropertyNames, bool useDollarPrefix)
+    public static Schema MapToSchema(IEnumerable<VectorStoreRecordProperty> properties, IReadOnlyDictionary<string, string> storagePropertyNames, bool useDollarPrefix)
     {
         var schema = new Schema();
         var fieldNamePrefix = useDollarPrefix ? "$." : string.Empty;
@@ -102,7 +100,7 @@ internal static class RedisVectorStoreCollectionCreateMapping
                     {
                         schema.AddTagField(new FieldName($"{fieldNamePrefix}{storageName}.*", storageName));
                     }
-                    else if (s_supportedFilterableNumericDataTypes.Contains(dataProperty.PropertyType))
+                    else if (RedisVectorStoreCollectionCreateMapping.s_supportedFilterableNumericDataTypes.Contains(dataProperty.PropertyType))
                     {
                         schema.AddNumericField(new FieldName($"{fieldNamePrefix}{storageName}", storageName));
                     }
@@ -125,12 +123,12 @@ internal static class RedisVectorStoreCollectionCreateMapping
 
                 var storageName = storagePropertyNames[vectorProperty.DataModelPropertyName];
                 var indexKind = GetSDKIndexKind(vectorProperty);
-                var distanceAlgorithm = GetSDKDistanceAlgorithm(vectorProperty);
+                var vectorType = GetSDKVectorType(vectorProperty);
                 var dimensions = vectorProperty.Dimensions.Value.ToString(CultureInfo.InvariantCulture);
-
+                var distanceAlgorithm = GetSDKDistanceAlgorithm(vectorProperty);
                 schema.AddVectorField(new FieldName($"{fieldNamePrefix}{storageName}", storageName), indexKind, new Dictionary<string, object>()
                 {
-                    ["TYPE"] = "FLOAT32",
+                    ["TYPE"] = vectorType,
                     ["DIM"] = dimensions,
                     ["DISTANCE_METRIC"] = distanceAlgorithm
                 });
@@ -139,7 +137,6 @@ internal static class RedisVectorStoreCollectionCreateMapping
 
         return schema;
     }
-
 
     /// <summary>
     /// Get the configured <see cref="Schema.VectorField.VectorAlgo"/> from the given <paramref name="vectorProperty"/>.
@@ -162,7 +159,6 @@ internal static class RedisVectorStoreCollectionCreateMapping
             _ => throw new InvalidOperationException($"Index kind '{vectorProperty.IndexKind}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.DataModelPropertyName}' is not supported by the Redis VectorStore.")
         };
     }
-
 
     /// <summary>
     /// Get the configured distance metric from the given <paramref name="vectorProperty"/>.
@@ -187,6 +183,23 @@ internal static class RedisVectorStoreCollectionCreateMapping
         };
     }
 
+    /// <summary>
+    /// Get the vector type to pass to the SDK based on the data type of the vector property.
+    /// </summary>
+    /// <param name="vectorProperty">The vector property definition.</param>
+    /// <returns>The SDK required vector type.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the property data type is not supported by the connector.</exception>
+    public static string GetSDKVectorType(VectorStoreRecordVectorProperty vectorProperty)
+    {
+        return vectorProperty.PropertyType switch
+        {
+            Type t when t == typeof(ReadOnlyMemory<float>) => "FLOAT32",
+            Type t when t == typeof(ReadOnlyMemory<float>?) => "FLOAT32",
+            Type t when t == typeof(ReadOnlyMemory<double>) => "FLOAT64",
+            Type t when t == typeof(ReadOnlyMemory<double>?) => "FLOAT64",
+            _ => throw new InvalidOperationException($"Vector data type '{vectorProperty.PropertyType.FullName}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.DataModelPropertyName}' is not supported by the Redis VectorStore.")
+        };
+    }
 
     /// <summary>
     /// Gets the type of object stored in the given enumerable type.
@@ -217,5 +230,4 @@ internal static class RedisVectorStoreCollectionCreateMapping
 
         throw new InvalidOperationException($"Data type '{type}' for {nameof(VectorStoreRecordDataProperty)} is not supported by the Redis VectorStore.");
     }
-
 }

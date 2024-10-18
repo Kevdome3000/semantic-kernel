@@ -5,7 +5,8 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Grpc.Core;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
+using Pinecone;
 using Sdk = Pinecone;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
@@ -18,15 +19,11 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 /// </remarks>
 public sealed class PineconeVectorStore : IVectorStore
 {
-
     private const string DatabaseName = "Pinecone";
-
     private const string ListCollectionsName = "ListCollections";
 
     private readonly Sdk.PineconeClient _pineconeClient;
-
     private readonly PineconeVectorStoreOptions _options;
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PineconeVectorStore"/> class.
@@ -37,42 +34,38 @@ public sealed class PineconeVectorStore : IVectorStore
     {
         Verify.NotNull(pineconeClient);
 
-        _pineconeClient = pineconeClient;
-        _options = options ?? new PineconeVectorStoreOptions();
+        this._pineconeClient = pineconeClient;
+        this._options = options ?? new PineconeVectorStoreOptions();
     }
-
 
     /// <inheritdoc />
     public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
-        where TRecord : class
     {
         if (typeof(TKey) != typeof(string))
         {
             throw new NotSupportedException("Only string keys are supported.");
         }
 
-        if (_options.VectorStoreCollectionFactory is not null)
+        if (this._options.VectorStoreCollectionFactory is not null)
         {
-            return _options.VectorStoreCollectionFactory.CreateVectorStoreRecordCollection<TKey, TRecord>(_pineconeClient, name, vectorStoreRecordDefinition);
+            return this._options.VectorStoreCollectionFactory.CreateVectorStoreRecordCollection<TKey, TRecord>(this._pineconeClient, name, vectorStoreRecordDefinition);
         }
 
         return (new PineconeVectorStoreRecordCollection<TRecord>(
-            _pineconeClient,
+            this._pineconeClient,
             name,
             new PineconeVectorStoreRecordCollectionOptions<TRecord>() { VectorStoreRecordDefinition = vectorStoreRecordDefinition }) as IVectorStoreRecordCollection<TKey, TRecord>)!;
     }
 
-
     /// <inheritdoc />
     public async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        Sdk.IndexDetails[] collections;
+        IndexDetails[] collections;
 
         try
         {
-            collections = await _pineconeClient.ListIndexes(cancellationToken).
-                ConfigureAwait(false);
+            collections = await this._pineconeClient.ListIndexes(cancellationToken).ConfigureAwait(false);
         }
         catch (RpcException ex)
         {
@@ -88,5 +81,4 @@ public sealed class PineconeVectorStore : IVectorStore
             yield return collection.Name;
         }
     }
-
 }

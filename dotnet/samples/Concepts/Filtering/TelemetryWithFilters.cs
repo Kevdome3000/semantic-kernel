@@ -58,7 +58,7 @@ public class TelemetryWithFilters(ITestOutputHelper output) : BaseTest(output)
         // Enable automatic function calling.
         var executionSettings = new OpenAIPromptExecutionSettings
         {
-            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions,
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
             ModelId = "gpt-4"
         };
 

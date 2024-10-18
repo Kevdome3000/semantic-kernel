@@ -111,7 +111,7 @@ public sealed class TransformPlugin(ITestOutputHelper output) : BaseTest(output)
         Kernel kernel = kernelBuilder.Build();
 
         // Invoke the kernel with a prompt and allow the AI to automatically invoke functions
-        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         Console.WriteLine(await kernel.InvokePromptAsync("What is my favourite color?", new(settings)));
 
         // Example response
@@ -144,7 +144,7 @@ public sealed class TransformPlugin(ITestOutputHelper output) : BaseTest(output)
         Kernel kernel = kernelBuilder.Build();
 
         // Invoke the kernel with a prompt and allow the AI to automatically invoke functions
-        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         Console.WriteLine(await kernel.InvokePromptAsync("What is my favourite color?", new(settings)));
         Console.WriteLine(await kernel.InvokePromptAsync("What is my favourite cold-blooded animal?", new(settings)));
         Console.WriteLine(await kernel.InvokePromptAsync("What is my favourite marine animal?", new(settings)));

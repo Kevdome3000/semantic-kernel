@@ -3,12 +3,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using Moq;
+using NRedisStack;
 using StackExchange.Redis;
 using Xunit;
 
@@ -19,26 +21,19 @@ namespace Microsoft.SemanticKernel.Connectors.Redis.UnitTests;
 /// </summary>
 public class RedisJsonVectorStoreRecordCollectionTests
 {
-
     private const string TestCollectionName = "testcollection";
-
     private const string TestRecordKey1 = "testid1";
-
     private const string TestRecordKey2 = "testid2";
 
     private readonly Mock<IDatabase> _redisDatabaseMock;
-
 
     public RedisJsonVectorStoreRecordCollectionTests()
     {
         this._redisDatabaseMock = new Mock<IDatabase>(MockBehavior.Strict);
 
         var batchMock = new Mock<IBatch>();
-
-        this._redisDatabaseMock.Setup(x => x.CreateBatch(It.IsAny<object>())).
-            Returns(batchMock.Object);
+        this._redisDatabaseMock.Setup(x => x.CreateBatch(It.IsAny<object>())).Returns(batchMock.Object);
     }
-
 
     [Theory]
     [InlineData(TestCollectionName, true)]
@@ -54,7 +49,6 @@ public class RedisJsonVectorStoreRecordCollectionTests
         {
             SetupExecuteMock(this._redisDatabaseMock, new RedisServerException("Unknown index name"));
         }
-
         var sut = new RedisJsonVectorStoreRecordCollection<MultiPropsModel>(
             this._redisDatabaseMock.Object,
             collectionName);
@@ -64,27 +58,21 @@ public class RedisJsonVectorStoreRecordCollectionTests
 
         // Assert
         var expectedArgs = new object[] { collectionName };
-
-        this._redisDatabaseMock.Verify(
-            x => x.ExecuteAsync(
-                "FT.INFO",
-                It.Is<object[]>(x => x.SequenceEqual(expectedArgs))),
-            Times.Once);
-
+        this._redisDatabaseMock
+            .Verify(
+                x => x.ExecuteAsync(
+                    "FT.INFO",
+                    It.Is<object[]>(x => x.SequenceEqual(expectedArgs))),
+                Times.Once);
         Assert.Equal(expectedExists, actual);
     }
-
 
     [Theory]
     [InlineData(true, true, "data2", "vector2")]
     [InlineData(true, false, "Data2", "Vector2")]
     [InlineData(false, true, "data2", "vector2")]
     [InlineData(false, false, "Data2", "Vector2")]
-    public async Task CanCreateCollectionAsync(
-        bool useDefinition,
-        bool useCustomJsonSerializerOptions,
-        string expectedData2Name,
-        string expectedVector2Name)
+    public async Task CanCreateCollectionAsync(bool useDefinition, bool useCustomJsonSerializerOptions, string expectedData2Name, string expectedVector2Name)
     {
         // Arrange.
         SetupExecuteMock(this._redisDatabaseMock, string.Empty);
@@ -94,8 +82,7 @@ public class RedisJsonVectorStoreRecordCollectionTests
         await sut.CreateCollectionAsync();
 
         // Assert.
-        var expectedArgs = new object[]
-        {
+        var expectedArgs = new object[] {
             "testcollection",
             "ON",
             "JSON",
@@ -134,16 +121,14 @@ public class RedisJsonVectorStoreRecordCollectionTests
             "DIM",
             "4",
             "DISTANCE_METRIC",
-            "COSINE"
-        };
-
-        this._redisDatabaseMock.Verify(
-            x => x.ExecuteAsync(
-                "FT.CREATE",
-                It.Is<object[]>(x => x.SequenceEqual(expectedArgs))),
-            Times.Once);
+            "COSINE" };
+        this._redisDatabaseMock
+            .Verify(
+                x => x.ExecuteAsync(
+                    "FT.CREATE",
+                    It.Is<object[]>(x => x.SequenceEqual(expectedArgs))),
+                Times.Once);
     }
-
 
     [Fact]
     public async Task CanDeleteCollectionAsync()
@@ -157,14 +142,13 @@ public class RedisJsonVectorStoreRecordCollectionTests
 
         // Assert
         var expectedArgs = new object[] { TestCollectionName };
-
-        this._redisDatabaseMock.Verify(
-            x => x.ExecuteAsync(
-                "FT.DROPINDEX",
-                It.Is<object[]>(x => x.SequenceEqual(expectedArgs))),
-            Times.Once);
+        this._redisDatabaseMock
+            .Verify(
+                x => x.ExecuteAsync(
+                    "FT.DROPINDEX",
+                    It.Is<object[]>(x => x.SequenceEqual(expectedArgs))),
+                Times.Once);
     }
-
 
     [Theory]
     [InlineData(true, true, """{ "data1_json_name": "data 1", "data2": "data 2", "vector1_json_name": [1, 2, 3, 4], "vector2": [1, 2, 3, 4] }""")]
@@ -184,12 +168,12 @@ public class RedisJsonVectorStoreRecordCollectionTests
 
         // Assert
         var expectedArgs = new object[] { TestRecordKey1 };
-
-        this._redisDatabaseMock.Verify(
-            x => x.ExecuteAsync(
-                "JSON.GET",
-                It.Is<object[]>(x => x.SequenceEqual(expectedArgs))),
-            Times.Once);
+        this._redisDatabaseMock
+            .Verify(
+                x => x.ExecuteAsync(
+                    "JSON.GET",
+                    It.Is<object[]>(x => x.SequenceEqual(expectedArgs))),
+                Times.Once);
 
         Assert.NotNull(actual);
         Assert.Equal(TestRecordKey1, actual.Key);
@@ -199,17 +183,12 @@ public class RedisJsonVectorStoreRecordCollectionTests
         Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.Vector2!.Value.ToArray());
     }
 
-
     [Theory]
     [InlineData(true, true, """{ "data1_json_name": "data 1", "data2": "data 2" }""", "data2")]
     [InlineData(true, false, """{ "data1_json_name": "data 1", "Data2": "data 2" }""", "Data2")]
     [InlineData(false, true, """{ "data1_json_name": "data 1", "data2": "data 2" }""", "data2")]
     [InlineData(false, false, """{ "data1_json_name": "data 1", "Data2": "data 2" }""", "Data2")]
-    public async Task CanGetRecordWithoutVectorsAsync(
-        bool useDefinition,
-        bool useCustomJsonSerializerOptions,
-        string redisResultString,
-        string expectedData2Name)
+    public async Task CanGetRecordWithoutVectorsAsync(bool useDefinition, bool useCustomJsonSerializerOptions, string redisResultString, string expectedData2Name)
     {
         // Arrange
         SetupExecuteMock(this._redisDatabaseMock, redisResultString);
@@ -222,12 +201,12 @@ public class RedisJsonVectorStoreRecordCollectionTests
 
         // Assert
         var expectedArgs = new object[] { TestRecordKey1, "data1_json_name", expectedData2Name };
-
-        this._redisDatabaseMock.Verify(
-            x => x.ExecuteAsync(
-                "JSON.GET",
-                It.Is<object[]>(x => x.SequenceEqual(expectedArgs))),
-            Times.Once);
+        this._redisDatabaseMock
+            .Verify(
+                x => x.ExecuteAsync(
+                    "JSON.GET",
+                    It.Is<object[]>(x => x.SequenceEqual(expectedArgs))),
+                Times.Once);
 
         Assert.NotNull(actual);
         Assert.Equal(TestRecordKey1, actual.Key);
@@ -235,7 +214,6 @@ public class RedisJsonVectorStoreRecordCollectionTests
         Assert.Equal("data 2", actual.Data2);
         Assert.False(actual.Vector1.HasValue);
     }
-
 
     [Theory]
     [InlineData(true)]
@@ -250,18 +228,17 @@ public class RedisJsonVectorStoreRecordCollectionTests
 
         // Act
         var actual = await sut.GetBatchAsync(
-                [TestRecordKey1, TestRecordKey2],
-                new() { IncludeVectors = true }).
-            ToListAsync();
+            [TestRecordKey1, TestRecordKey2],
+            new() { IncludeVectors = true }).ToListAsync();
 
         // Assert
         var expectedArgs = new object[] { TestRecordKey1, TestRecordKey2, "$" };
-
-        this._redisDatabaseMock.Verify(
-            x => x.ExecuteAsync(
-                "JSON.MGET",
-                It.Is<object[]>(x => x.SequenceEqual(expectedArgs))),
-            Times.Once);
+        this._redisDatabaseMock
+            .Verify(
+                x => x.ExecuteAsync(
+                    "JSON.MGET",
+                    It.Is<object[]>(x => x.SequenceEqual(expectedArgs))),
+                Times.Once);
 
         Assert.NotNull(actual);
         Assert.Equal(2, actual.Count);
@@ -275,7 +252,6 @@ public class RedisJsonVectorStoreRecordCollectionTests
         Assert.Equal(new float[] { 5, 6, 7, 8 }, actual[1].Vector1!.Value.ToArray());
     }
 
-
     [Fact]
     public async Task CanGetRecordWithCustomMapperAsync()
     {
@@ -285,12 +261,11 @@ public class RedisJsonVectorStoreRecordCollectionTests
 
         // Arrange mapper mock from JsonNode to data model.
         var mapperMock = new Mock<IVectorStoreRecordMapper<MultiPropsModel, (string key, JsonNode node)>>(MockBehavior.Strict);
-
         mapperMock.Setup(
-                x => x.MapFromStorageToDataModel(
-                    It.IsAny<(string key, JsonNode node)>(),
-                    It.IsAny<StorageToDataModelMapperOptions>())).
-            Returns(CreateModel(TestRecordKey1, true));
+            x => x.MapFromStorageToDataModel(
+                It.IsAny<(string key, JsonNode node)>(),
+                It.IsAny<StorageToDataModelMapperOptions>()))
+            .Returns(CreateModel(TestRecordKey1, true));
 
         // Arrange target with custom mapper.
         var sut = new RedisJsonVectorStoreRecordCollection<MultiPropsModel>(
@@ -314,13 +289,13 @@ public class RedisJsonVectorStoreRecordCollectionTests
         Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.Vector1!.Value.ToArray());
         Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.Vector2!.Value.ToArray());
 
-        mapperMock.Verify(
-            x => x.MapFromStorageToDataModel(
-                It.Is<(string key, JsonNode node)>(x => x.key == TestRecordKey1),
-                It.Is<StorageToDataModelMapperOptions>(x => x.IncludeVectors)),
-            Times.Once);
+        mapperMock
+            .Verify(
+                x => x.MapFromStorageToDataModel(
+                    It.Is<(string key, JsonNode node)>(x => x.key == TestRecordKey1),
+                    It.Is<StorageToDataModelMapperOptions>(x => x.IncludeVectors)),
+                Times.Once);
     }
-
 
     [Theory]
     [InlineData(true)]
@@ -336,14 +311,13 @@ public class RedisJsonVectorStoreRecordCollectionTests
 
         // Assert
         var expectedArgs = new object[] { TestRecordKey1 };
-
-        this._redisDatabaseMock.Verify(
-            x => x.ExecuteAsync(
-                "JSON.DEL",
-                It.Is<object[]>(x => x.SequenceEqual(expectedArgs))),
-            Times.Once);
+        this._redisDatabaseMock
+            .Verify(
+                x => x.ExecuteAsync(
+                    "JSON.DEL",
+                    It.Is<object[]>(x => x.SequenceEqual(expectedArgs))),
+                Times.Once);
     }
-
 
     [Theory]
     [InlineData(true)]
@@ -360,20 +334,19 @@ public class RedisJsonVectorStoreRecordCollectionTests
         // Assert
         var expectedArgs1 = new object[] { TestRecordKey1 };
         var expectedArgs2 = new object[] { TestRecordKey2 };
-
-        this._redisDatabaseMock.Verify(
-            x => x.ExecuteAsync(
-                "JSON.DEL",
-                It.Is<object[]>(x => x.SequenceEqual(expectedArgs1))),
-            Times.Once);
-
-        this._redisDatabaseMock.Verify(
-            x => x.ExecuteAsync(
-                "JSON.DEL",
-                It.Is<object[]>(x => x.SequenceEqual(expectedArgs2))),
-            Times.Once);
+        this._redisDatabaseMock
+            .Verify(
+                x => x.ExecuteAsync(
+                    "JSON.DEL",
+                    It.Is<object[]>(x => x.SequenceEqual(expectedArgs1))),
+                Times.Once);
+        this._redisDatabaseMock
+            .Verify(
+                x => x.ExecuteAsync(
+                    "JSON.DEL",
+                    It.Is<object[]>(x => x.SequenceEqual(expectedArgs2))),
+                Times.Once);
     }
-
 
     [Theory]
     [InlineData(true, true, """{"data1_json_name":"data 1","data2":"data 2","vector1_json_name":[1,2,3,4],"vector2":[1,2,3,4],"notAnnotated":null}""")]
@@ -393,14 +366,13 @@ public class RedisJsonVectorStoreRecordCollectionTests
         // Assert
         // TODO: Fix issue where NotAnnotated is being included in the JSON.
         var expectedArgs = new object[] { TestRecordKey1, "$", expectedUpsertedJson };
-
-        this._redisDatabaseMock.Verify(
-            x => x.ExecuteAsync(
-                "JSON.SET",
-                It.Is<object[]>(x => x.SequenceEqual(expectedArgs))),
-            Times.Once);
+        this._redisDatabaseMock
+            .Verify(
+                x => x.ExecuteAsync(
+                    "JSON.SET",
+                    It.Is<object[]>(x => x.SequenceEqual(expectedArgs))),
+                Times.Once);
     }
-
 
     [Theory]
     [InlineData(true)]
@@ -415,8 +387,7 @@ public class RedisJsonVectorStoreRecordCollectionTests
         var model2 = CreateModel(TestRecordKey2, true);
 
         // Act
-        var actual = await sut.UpsertBatchAsync([model1, model2]).
-            ToListAsync();
+        var actual = await sut.UpsertBatchAsync([model1, model2]).ToListAsync();
 
         // Assert
         Assert.NotNull(actual);
@@ -426,14 +397,13 @@ public class RedisJsonVectorStoreRecordCollectionTests
 
         // TODO: Fix issue where NotAnnotated is being included in the JSON.
         var expectedArgs = new object[] { TestRecordKey1, "$", """{"data1_json_name":"data 1","Data2":"data 2","vector1_json_name":[1,2,3,4],"Vector2":[1,2,3,4],"NotAnnotated":null}""", TestRecordKey2, "$", """{"data1_json_name":"data 1","Data2":"data 2","vector1_json_name":[1,2,3,4],"Vector2":[1,2,3,4],"NotAnnotated":null}""" };
-
-        this._redisDatabaseMock.Verify(
-            x => x.ExecuteAsync(
-                "JSON.MSET",
-                It.Is<object[]>(x => x.SequenceEqual(expectedArgs))),
-            Times.Once);
+        this._redisDatabaseMock
+            .Verify(
+                x => x.ExecuteAsync(
+                    "JSON.MSET",
+                    It.Is<object[]>(x => x.SequenceEqual(expectedArgs))),
+                Times.Once);
     }
-
 
     [Fact]
     public async Task CanUpsertRecordWithCustomMapperAsync()
@@ -444,9 +414,9 @@ public class RedisJsonVectorStoreRecordCollectionTests
         // Arrange mapper mock from data model to JsonNode.
         var mapperMock = new Mock<IVectorStoreRecordMapper<MultiPropsModel, (string key, JsonNode node)>>(MockBehavior.Strict);
         var jsonNode = """{"data1_json_name":"data 1","Data2": "data 2","vector1_json_name":[1,2,3,4],"Vector2":[1,2,3,4],"NotAnnotated":null}""";
-
-        mapperMock.Setup(x => x.MapFromDataToStorageModel(It.IsAny<MultiPropsModel>())).
-            Returns((TestRecordKey1, JsonNode.Parse(jsonNode)!));
+        mapperMock
+            .Setup(x => x.MapFromDataToStorageModel(It.IsAny<MultiPropsModel>()))
+            .Returns((TestRecordKey1, JsonNode.Parse(jsonNode)!));
 
         // Arrange target with custom mapper.
         var sut = new RedisJsonVectorStoreRecordCollection<MultiPropsModel>(
@@ -463,11 +433,75 @@ public class RedisJsonVectorStoreRecordCollectionTests
         await sut.UpsertAsync(model);
 
         // Assert
-        mapperMock.Verify(
-            x => x.MapFromDataToStorageModel(It.Is<MultiPropsModel>(x => x == model)),
-            Times.Once);
+        mapperMock
+            .Verify(
+                x => x.MapFromDataToStorageModel(It.Is<MultiPropsModel>(x => x == model)),
+                Times.Once);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanSearchWithVectorAndFilterAsync(bool useDefinition)
+    {
+        // Arrange
+        var jsonResult = """{ "data1_json_name": "data 1", "Data2": "data 2", "vector1_json_name": [1, 2, 3, 4], "Vector2": [1, 2, 3, 4] }""";
+        SetupExecuteMock(this._redisDatabaseMock, new RedisResult[]
+        {
+            RedisResult.Create(new RedisValue("1")),
+            RedisResult.Create(new RedisValue(TestRecordKey1)),
+            RedisResult.Create(new RedisValue("0.5")),
+            RedisResult.Create([new RedisValue("$"), new RedisValue(jsonResult)]),
+        });
+        var sut = this.CreateRecordCollection(useDefinition);
+
+        var filter = new VectorSearchFilter().EqualTo(nameof(MultiPropsModel.Data1), "data 1");
+
+        // Act.
+        var actual = await sut.VectorizedSearchAsync(
+            new ReadOnlyMemory<float>(new[] { 1f, 2f, 3f, 4f }),
+            new()
+            {
+                IncludeVectors = true,
+                Filter = filter,
+                Top = 5,
+                Skip = 2
+            });
+
+        // Assert.
+        var expectedArgs = new object[]
+        {
+            "testcollection",
+            "(@data1_json_name:{data 1})=>[KNN 7 @vector1_json_name $embedding AS vector_score]",
+            "WITHSCORES",
+            "SORTBY",
+            "vector_score",
+            "LIMIT",
+            2,
+            7,
+            "PARAMS",
+            2,
+            "embedding",
+            MemoryMarshal.AsBytes(new ReadOnlySpan<float>(new float[] { 1, 2, 3, 4 })).ToArray(),
+            "DIALECT",
+            2
+        };
+        this._redisDatabaseMock
+            .Verify(
+                x => x.ExecuteAsync(
+                    "FT.SEARCH",
+                    It.Is<object[]>(x => x.Where(y => !(y is byte[])).SequenceEqual(expectedArgs.Where(y => !(y is byte[]))))),
+                Times.Once);
+
+        var results = await actual.Results.ToListAsync();
+        Assert.Single(results);
+        Assert.Equal(TestRecordKey1, results.First().Record.Key);
+        Assert.Equal(0.5d, results.First().Score);
+        Assert.Equal("data 1", results.First().Record.Data1);
+        Assert.Equal("data 2", results.First().Record.Data2);
+        Assert.Equal(new float[] { 1, 2, 3, 4 }, results.First().Record.Vector1!.Value.ToArray());
+        Assert.Equal(new float[] { 1, 2, 3, 4 }, results.First().Record.Vector2!.Value.ToArray());
+    }
 
     /// <summary>
     /// Tests that the collection can be created even if the definition and the type do not match.
@@ -495,7 +529,6 @@ public class RedisJsonVectorStoreRecordCollectionTests
             new() { VectorStoreRecordDefinition = definition, JsonNodeCustomMapper = Mock.Of<IVectorStoreRecordMapper<MultiPropsModel, (string key, JsonNode node)>>() });
     }
 
-
     private RedisJsonVectorStoreRecordCollection<MultiPropsModel> CreateRecordCollection(bool useDefinition, bool useCustomJsonSerializerOptions = false)
     {
         return new RedisJsonVectorStoreRecordCollection<MultiPropsModel>(
@@ -504,52 +537,60 @@ public class RedisJsonVectorStoreRecordCollectionTests
             new()
             {
                 PrefixCollectionNameToKeyNames = false,
-                VectorStoreRecordDefinition = useDefinition
-                    ? this._multiPropsDefinition
-                    : null,
-                JsonSerializerOptions = useCustomJsonSerializerOptions
-                    ? this._customJsonSerializerOptions
-                    : null
+                VectorStoreRecordDefinition = useDefinition ? this._multiPropsDefinition : null,
+                JsonSerializerOptions = useCustomJsonSerializerOptions ? this._customJsonSerializerOptions : null
             });
     }
 
-
     private static void SetupExecuteMock(Mock<IDatabase> redisDatabaseMock, Exception exception)
     {
-        redisDatabaseMock.Setup(
+        redisDatabaseMock
+            .Setup(
                 x => x.ExecuteAsync(
                     It.IsAny<string>(),
-                    It.IsAny<object[]>())).
-            ThrowsAsync(exception);
+                    It.IsAny<object[]>()))
+            .ThrowsAsync(exception);
     }
-
 
     private static void SetupExecuteMock(Mock<IDatabase> redisDatabaseMock, IEnumerable<string> redisResultStrings)
     {
-        var results = redisResultStrings.Select(x => RedisResult.Create(new RedisValue(x))).
-            ToArray();
-
-        redisDatabaseMock.Setup(
+        var results = redisResultStrings
+            .Select(x => RedisResult.Create(new RedisValue(x)))
+            .ToArray();
+        redisDatabaseMock
+            .Setup(
                 x => x.ExecuteAsync(
                     It.IsAny<string>(),
-                    It.IsAny<object[]>())).
-            ReturnsAsync(RedisResult.Create(results));
+                    It.IsAny<object[]>()))
+            .ReturnsAsync(RedisResult.Create(results));
     }
 
+    private static void SetupExecuteMock(Mock<IDatabase> redisDatabaseMock, IEnumerable<RedisResult> redisResultStrings)
+    {
+        var results = redisResultStrings
+            .Select(x => x)
+            .ToArray();
+        redisDatabaseMock
+            .Setup(
+                x => x.ExecuteAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<object[]>()))
+            .ReturnsAsync(RedisResult.Create(results));
+    }
 
     private static void SetupExecuteMock(Mock<IDatabase> redisDatabaseMock, string redisResultString)
     {
-        redisDatabaseMock.Setup(
+        redisDatabaseMock
+            .Setup(
                 x => x.ExecuteAsync(
                     It.IsAny<string>(),
-                    It.IsAny<object[]>())).
-            Callback((string command, object[] args) =>
+                    It.IsAny<object[]>()))
+            .Callback((string command, object[] args) =>
             {
                 Console.WriteLine(args);
-            }).
-            ReturnsAsync(RedisResult.Create(new RedisValue(redisResultString)));
+            })
+            .ReturnsAsync(RedisResult.Create(new RedisValue(redisResultString)));
     }
-
 
     private static MultiPropsModel CreateModel(string key, bool withVectors)
     {
@@ -558,16 +599,11 @@ public class RedisJsonVectorStoreRecordCollectionTests
             Key = key,
             Data1 = "data 1",
             Data2 = "data 2",
-            Vector1 = withVectors
-                ? new float[] { 1, 2, 3, 4 }
-                : null,
-            Vector2 = withVectors
-                ? new float[] { 1, 2, 3, 4 }
-                : null,
+            Vector1 = withVectors ? new float[] { 1, 2, 3, 4 } : null,
+            Vector2 = withVectors ? new float[] { 1, 2, 3, 4 } : null,
             NotAnnotated = null,
         };
     }
-
 
     private readonly JsonSerializerOptions _customJsonSerializerOptions = new()
     {
@@ -586,10 +622,8 @@ public class RedisJsonVectorStoreRecordCollectionTests
         ]
     };
 
-
     public sealed class MultiPropsModel
     {
-
         [VectorStoreRecordKey]
         public string Key { get; set; } = string.Empty;
 
@@ -608,7 +642,5 @@ public class RedisJsonVectorStoreRecordCollectionTests
         public ReadOnlyMemory<float>? Vector2 { get; set; }
 
         public string? NotAnnotated { get; set; }
-
     }
-
 }

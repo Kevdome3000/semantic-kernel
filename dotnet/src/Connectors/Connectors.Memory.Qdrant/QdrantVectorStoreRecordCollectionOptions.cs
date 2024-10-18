@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 using Qdrant.Client.Grpc;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
@@ -9,7 +9,6 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 /// Options when creating a <see cref="QdrantVectorStoreRecordCollection{TRecord}"/>.
 /// </summary>
 public sealed class QdrantVectorStoreRecordCollectionOptions<TRecord>
-    where TRecord : class
 {
 
     /// <summary>

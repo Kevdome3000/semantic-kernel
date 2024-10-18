@@ -1,5 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+// Source copied from https://github.com/eiriktsarpalis/stj-schema-mapper
+// It should be kept in sync with any changes made in that repo,
+// and should be removed once the relevant replacements are available in STJv9.
+
 #if !NET9_0_OR_GREATER && !SYSTEM_TEXT_JSON_V9
 using System;
 using System.Collections.Generic;
@@ -75,6 +79,7 @@ internal
 
         if (hasDefaultValue)
         {
+            JsonSchema.EnsureMutable(ref paramSchema);
             paramSchema.DefaultValue = defaultValue;
             paramSchema.HasDefaultValue = true;
         }
@@ -246,7 +251,8 @@ internal
                 List<string>? required = null;
                 JsonSchema? additionalProperties = null;
 
-                if (typeInfo.UnmappedMemberHandling is JsonUnmappedMemberHandling.Disallow)
+                JsonUnmappedMemberHandling effectiveUnmappedMemberHandling = typeInfo.UnmappedMemberHandling ?? typeInfo.Options.UnmappedMemberHandling;
+                if (effectiveUnmappedMemberHandling is JsonUnmappedMemberHandling.Disallow)
                 {
                     // Disallow unspecified properties.
                     additionalProperties = JsonSchema.False;
@@ -335,6 +341,7 @@ internal
 
                     if (hasDefaultValue)
                     {
+                        JsonSchema.EnsureMutable(ref propertySchema);
                         propertySchema.DefaultValue = defaultValue;
                         propertySchema.HasDefaultValue = true;
                     }

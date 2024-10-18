@@ -31,7 +31,7 @@ internal sealed class Worker(
         // Enable auto function calling
         OpenAIPromptExecutionSettings openAIPromptExecutionSettings = new()
         {
-            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
         };
 
         Console.WriteLine("Ask questions or give instructions to the copilot such as:\n" +

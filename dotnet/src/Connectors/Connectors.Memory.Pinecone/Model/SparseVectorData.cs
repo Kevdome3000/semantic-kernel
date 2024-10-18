@@ -1,12 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Pinecone;
-
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using Text;
 
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// Represents a sparse vector data, which is a list of indices and a list of corresponding values, both of the same length.
@@ -25,9 +23,7 @@ public class SparseVectorData
     /// </summary>
     /// <value>The corresponding values of the sparse data, which must be the same length as the indices.</value>
     [JsonPropertyName("values")]
-    [JsonConverter(typeof(ReadOnlyMemoryConverter))]
     public ReadOnlyMemory<float> Values { get; set; }
-
 
     /// <summary>
     /// Creates a new instance of the <see cref="SparseVectorData"/> class with the specified indices and values.
@@ -40,7 +36,6 @@ public class SparseVectorData
         return new SparseVectorData(indices, values);
     }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="SparseVectorData" /> class.
     /// </summary>
@@ -49,7 +44,7 @@ public class SparseVectorData
     [JsonConstructor]
     public SparseVectorData(List<long> indices, ReadOnlyMemory<float> values)
     {
-        Indices = indices;
-        Values = values;
+        this.Indices = indices;
+        this.Values = values;
     }
 }

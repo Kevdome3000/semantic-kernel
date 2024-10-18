@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -11,11 +9,11 @@ using System.Linq;
 using System.Text.Json;
 using OpenAI.Chat;
 
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>Represents a behavior for OpenAI tool calls.</summary>
 public abstract class ToolCallBehavior
 {
-
     // NOTE: Right now, the only tools that are available are for function calling. In the future,
     // this class can be extended to support additional kinds of tools, including composite ones:
     // the OpenAIPromptExecutionSettings has a single ToolCallBehavior property, but we could
@@ -48,7 +46,7 @@ public abstract class ToolCallBehavior
     /// <remarks>
     /// If no <see cref="Kernel"/> is available, no function information will be provided to the model.
     /// </remarks>
-    public static ToolCallBehavior EnableKernelFunctions { get; } = new KernelFunctions(false);
+    public static ToolCallBehavior EnableKernelFunctions { get; } = new KernelFunctions(autoInvoke: false);
 
     /// <summary>
     /// Gets an instance that will both provide all of the <see cref="Kernel"/>'s plugins' function information
@@ -59,8 +57,7 @@ public abstract class ToolCallBehavior
     /// handling invoking any requested functions and supplying the results back to the model.
     /// If no <see cref="Kernel"/> is available, no function information will be provided to the model.
     /// </remarks>
-    public static ToolCallBehavior AutoInvokeKernelFunctions { get; } = new KernelFunctions(true);
-
+    public static ToolCallBehavior AutoInvokeKernelFunctions { get; } = new KernelFunctions(autoInvoke: true);
 
     /// <summary>Gets an instance that will provide the specified list of functions to the model.</summary>
     /// <param name="functions">The functions that should be made available to the model.</param>
@@ -72,10 +69,8 @@ public abstract class ToolCallBehavior
     public static ToolCallBehavior EnableFunctions(IEnumerable<OpenAIFunction> functions, bool autoInvoke = false)
     {
         Verify.NotNull(functions);
-
         return new EnabledFunctions(functions, autoInvoke);
     }
-
 
     /// <summary>Gets an instance that will request the model to use the specified function.</summary>
     /// <param name="function">The function the model should request to use.</param>
@@ -87,16 +82,14 @@ public abstract class ToolCallBehavior
     public static ToolCallBehavior RequireFunction(OpenAIFunction function, bool autoInvoke = false)
     {
         Verify.NotNull(function);
-
         return new RequiredFunction(function, autoInvoke);
     }
 
-
     /// <summary>Initializes the instance; prevents external instantiation.</summary>
-    private ToolCallBehavior(bool autoInvoke) => MaximumAutoInvokeAttempts = autoInvoke
-        ? DefaultMaximumAutoInvokeAttempts
-        : 0;
-
+    private ToolCallBehavior(bool autoInvoke)
+    {
+        this.MaximumAutoInvokeAttempts = autoInvoke ? DefaultMaximumAutoInvokeAttempts : 0;
+    }
 
     /// <summary>
     /// Options to control tool call result serialization behavior.
@@ -127,11 +120,9 @@ public abstract class ToolCallBehavior
     /// <value>true if it's ok to invoke any kernel function requested by the model if it's found; false if a request needs to be validated against an allow list.</value>
     internal virtual bool AllowAnyRequestedKernelFunction => false;
 
-
     /// <summary>Returns list of available tools and the way model should use them.</summary>
     /// <param name="kernel">The <see cref="Kernel"/> used for the operation. This can be queried to determine what tools to return.</param>
     internal abstract (IList<ChatTool>? Tools, ChatToolChoice? Choice) ConfigureOptions(Kernel? kernel);
-
 
     /// <summary>
     /// Represents a <see cref="ToolCallBehavior"/> that will provide to the model all available functions from a
@@ -139,14 +130,9 @@ public abstract class ToolCallBehavior
     /// </summary>
     internal sealed class KernelFunctions : ToolCallBehavior
     {
+        internal KernelFunctions(bool autoInvoke) : base(autoInvoke) { }
 
-        internal KernelFunctions(bool autoInvoke) : base(autoInvoke)
-        {
-        }
-
-
-        public override string ToString() => $"{nameof(KernelFunctions)}(autoInvoke:{MaximumAutoInvokeAttempts != 0})";
-
+        public override string ToString() => $"{nameof(KernelFunctions)}(autoInvoke:{this.MaximumAutoInvokeAttempts != 0})";
 
         internal override (IList<ChatTool>? Tools, ChatToolChoice? Choice) ConfigureOptions(Kernel? kernel)
         {
@@ -158,16 +144,13 @@ public abstract class ToolCallBehavior
             {
                 // Provide all functions from the kernel.
                 IList<KernelFunctionMetadata> functions = kernel.Plugins.GetFunctionsMetadata();
-
                 if (functions.Count > 0)
                 {
-                    choice = ChatToolChoice.Auto;
-tools = [];
+                    choice = ChatToolChoice.CreateAutoChoice();
+                    tools = [];
                     for (int i = 0; i < functions.Count; i++)
                     {
-                        tools.Add(functions[i].
-                            ToOpenAIFunction().
-                            ToFunctionDefinition());
+                        tools.Add(functions[i].ToOpenAIFunction().ToFunctionDefinition());
                     }
                 }
             }
@@ -175,51 +158,43 @@ tools = [];
             return (tools, choice);
         }
 
-
         internal override bool AllowAnyRequestedKernelFunction => true;
-
     }
-
 
     /// <summary>
     /// Represents a <see cref="ToolCallBehavior"/> that provides a specified list of functions to the model.
     /// </summary>
     internal sealed class EnabledFunctions : ToolCallBehavior
     {
-
         private readonly OpenAIFunction[] _openAIFunctions;
-
         private readonly ChatTool[] _functions;
-
 
         public EnabledFunctions(IEnumerable<OpenAIFunction> functions, bool autoInvoke) : base(autoInvoke)
         {
-            _openAIFunctions = functions.ToArray();
+            this._openAIFunctions = functions.ToArray();
 
-            var defs = new ChatTool[_openAIFunctions.Length];
+            var defs = new ChatTool[this._openAIFunctions.Length];
             for (int i = 0; i < defs.Length; i++)
             {
                 defs[i] = this._openAIFunctions[i].ToFunctionDefinition();
             }
-
-            _functions = defs;
+            this._functions = defs;
         }
 
-
-        public override string ToString() => $"{nameof(EnabledFunctions)}(autoInvoke:{MaximumAutoInvokeAttempts != 0}): {string.Join(", ", _functions.Select(f => f.FunctionName))}";
+        public override string ToString() => $"{nameof(EnabledFunctions)}(autoInvoke:{this.MaximumAutoInvokeAttempts != 0}): {string.Join(", ", this._functions.Select(f => f.FunctionName))}";
 
         internal override (IList<ChatTool>? Tools, ChatToolChoice? Choice) ConfigureOptions(Kernel? kernel)
         {
             ChatToolChoice? choice = null;
             List<ChatTool>? tools = null;
 
-            OpenAIFunction[] openAIFunctions = _openAIFunctions;
-            ChatTool[] functions = _functions;
+            OpenAIFunction[] openAIFunctions = this._openAIFunctions;
+            ChatTool[] functions = this._functions;
             Debug.Assert(openAIFunctions.Length == functions.Length);
 
             if (openAIFunctions.Length > 0)
             {
-                bool autoInvoke = MaximumAutoInvokeAttempts > 0;
+                bool autoInvoke = base.MaximumAutoInvokeAttempts > 0;
 
                 // If auto-invocation is specified, we need a kernel to be able to invoke the functions.
                 // Lack of a kernel is fatal: we don't want to tell the model we can handle the functions
@@ -231,8 +206,8 @@ tools = [];
                     throw new KernelException($"Auto-invocation with {nameof(EnabledFunctions)} is not supported when no kernel is provided.");
                 }
 
-                choice = ChatToolChoice.Auto;
-tools = [];
+                choice = ChatToolChoice.CreateAutoChoice();
+                tools = [];
                 for (int i = 0; i < openAIFunctions.Length; i++)
                 {
                     // Make sure that if auto-invocation is specified, every enabled function can be found in the kernel.
@@ -240,7 +215,6 @@ tools = [];
                     {
                         Debug.Assert(kernel is not null);
                         OpenAIFunction f = openAIFunctions[i];
-
                         if (!kernel!.Plugins.TryGetFunction(f.PluginName, f.FunctionName, out _))
                         {
                             throw new KernelException($"The specified {nameof(EnabledFunctions)} function {f.FullyQualifiedName} is not available in the kernel.");
@@ -254,34 +228,27 @@ tools = [];
 
             return (tools, choice);
         }
-
     }
-
 
     /// <summary>Represents a <see cref="ToolCallBehavior"/> that requests the model use a specific function.</summary>
     internal sealed class RequiredFunction : ToolCallBehavior
     {
-
         private readonly OpenAIFunction _function;
-
         private readonly ChatTool _tool;
-
         private readonly ChatToolChoice _choice;
-
 
         public RequiredFunction(OpenAIFunction function, bool autoInvoke) : base(autoInvoke)
         {
-            _function = function;
-            _tool = function.ToFunctionDefinition();
-            _choice = new ChatToolChoice(_tool);
+            this._function = function;
+            this._tool = function.ToFunctionDefinition();
+            this._choice = ChatToolChoice.CreateFunctionChoice(this._tool.FunctionName);
         }
 
-
-        public override string ToString() => $"{nameof(RequiredFunction)}(autoInvoke:{MaximumAutoInvokeAttempts != 0}): {_tool.FunctionName}";
+        public override string ToString() => $"{nameof(RequiredFunction)}(autoInvoke:{this.MaximumAutoInvokeAttempts != 0}): {this._tool.FunctionName}";
 
         internal override (IList<ChatTool>? Tools, ChatToolChoice? Choice) ConfigureOptions(Kernel? kernel)
         {
-            bool autoInvoke = MaximumAutoInvokeAttempts > 0;
+            bool autoInvoke = base.MaximumAutoInvokeAttempts > 0;
 
             // If auto-invocation is specified, we need a kernel to be able to invoke the functions.
             // Lack of a kernel is fatal: we don't want to tell the model we can handle the functions
@@ -294,24 +261,21 @@ tools = [];
             }
 
             // Make sure that if auto-invocation is specified, the required function can be found in the kernel.
-            if (autoInvoke && !kernel!.Plugins.TryGetFunction(_function.PluginName, _function.FunctionName, out _))
+            if (autoInvoke && !kernel!.Plugins.TryGetFunction(this._function.PluginName, this._function.FunctionName, out _))
             {
-                throw new KernelException($"The specified {nameof(RequiredFunction)} function {_function.FullyQualifiedName} is not available in the kernel.");
+                throw new KernelException($"The specified {nameof(RequiredFunction)} function {this._function.FullyQualifiedName} is not available in the kernel.");
             }
 
             return ([this._tool], this._choice);
         }
 
-
         /// <summary>Gets how many requests are part of a single interaction should include this tool in the request.</summary>
         /// <remarks>
-        /// Unlike <see cref="ToolCallBehavior.EnabledFunctions"/> and <see cref="ToolCallBehavior.KernelFunctions"/>, this must use 1 as the maximum
+        /// Unlike <see cref="EnabledFunctions"/> and <see cref="KernelFunctions"/>, this must use 1 as the maximum
         /// use attempts. Otherwise, every call back to the model _requires_ it to invoke the function (as opposed
         /// to allows it), which means we end up doing the same work over and over and over until the maximum is reached.
         /// Thus for "requires", we must send the tool information only once.
         /// </remarks>
         internal override int MaximumUseAttempts => 1;
-
     }
-
 }

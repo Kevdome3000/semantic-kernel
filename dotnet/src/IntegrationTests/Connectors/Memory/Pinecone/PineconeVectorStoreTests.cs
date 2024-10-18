@@ -3,8 +3,8 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
-using Microsoft.SemanticKernel.Data;
 using SemanticKernel.IntegrationTests.Connectors.Memory.Pinecone.Xunit;
 using Xunit;
 using Sdk = Pinecone;
@@ -54,7 +54,6 @@ public class PineconeVectorStoreTests(PineconeVectorStoreFixture fixture) : ICla
             string name,
             VectorStoreRecordDefinition? vectorStoreRecordDefinition)
             where TKey : notnull
-            where TRecord : class
         {
             if (typeof(TKey) != typeof(string))
             {

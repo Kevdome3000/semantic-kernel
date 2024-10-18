@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace ChatCompletion;
-
 using System.ComponentModel;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
+namespace ChatCompletion;
 
 /// <summary>
 /// Samples showing how to get the LLM to provide the reason it is calling a function
@@ -14,7 +13,6 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 /// </summary>
 public sealed class OpenAI_ReasonedFunctionCalling(ITestOutputHelper output) : BaseTest(output)
 {
-
     /// <summary>
     /// Shows how to ask the model to explain function calls after execution.
     /// </summary>
@@ -33,8 +31,7 @@ public sealed class OpenAI_ReasonedFunctionCalling(ITestOutputHelper output) : B
         {
             new ChatMessageContent(AuthorRole.User, "What is the weather like in Paris?")
         };
-
-        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var executionSettings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         var result1 = await service.GetChatMessageContentAsync(chatHistory, executionSettings, kernel);
         chatHistory.Add(result1);
         Console.WriteLine(result1);
@@ -43,7 +40,6 @@ public sealed class OpenAI_ReasonedFunctionCalling(ITestOutputHelper output) : B
         var result2 = await service.GetChatMessageContentAsync(chatHistory, executionSettings, kernel);
         Console.WriteLine(result2);
     }
-
 
     /// <summary>
     /// Shows how to use a function that has been decorated with an extra parameter which must be set by the model
@@ -61,13 +57,11 @@ public sealed class OpenAI_ReasonedFunctionCalling(ITestOutputHelper output) : B
         {
             new ChatMessageContent(AuthorRole.User, "What is the weather like in Paris?")
         };
-
-        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var executionSettings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         var result = await service.GetChatMessageContentAsync(chatHistory, executionSettings, kernel);
         chatHistory.Add(result);
         Console.WriteLine(result);
     }
-
 
     /// <summary>
     /// Shows how to use a function that has been decorated with an extra parameter which must be set by the model
@@ -82,14 +76,12 @@ public sealed class OpenAI_ReasonedFunctionCalling(ITestOutputHelper output) : B
 
         // Invoke chat prompt with auto invocation of functions enabled
         string chatPrompt = """
-                            <message role="user">What is the weather like in Paris?</message>
-                            """;
-
-        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+            <message role="user">What is the weather like in Paris?</message>
+            """;
+        var executionSettings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         var result = await kernel.InvokePromptAsync(chatPrompt, new(executionSettings));
         Console.WriteLine(result);
     }
-
 
     /// <summary>
     /// Asking the model to explain function calls in response to each function call can work but the model may also
@@ -108,13 +100,11 @@ public sealed class OpenAI_ReasonedFunctionCalling(ITestOutputHelper output) : B
         {
             new ChatMessageContent(AuthorRole.User, "What is the weather like in Paris?")
         };
-
-        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var executionSettings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         var result = await service.GetChatMessageContentAsync(chatHistory, executionSettings, kernel);
         chatHistory.Add(result);
         Console.WriteLine(result);
     }
-
 
     /// <summary>
     /// Asking to the model to explain function calls using a separate conversation i.e. chat history seems to provide the
@@ -134,13 +124,11 @@ public sealed class OpenAI_ReasonedFunctionCalling(ITestOutputHelper output) : B
         {
             new ChatMessageContent(AuthorRole.User, "What is the weather like in Paris?")
         };
-
-        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var executionSettings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         var result = await service.GetChatMessageContentAsync(chatHistory, executionSettings, kernel);
         chatHistory.Add(result);
         Console.WriteLine(result);
     }
-
 
     /// <summary>
     /// This <see cref="IAutoFunctionInvocationFilter"/> will respond to function call requests and ask the model to explain why it is
@@ -153,20 +141,16 @@ public sealed class OpenAI_ReasonedFunctionCalling(ITestOutputHelper output) : B
     /// </remarks>
     private sealed class RespondExplainFunctionInvocationFilter : IAutoFunctionInvocationFilter
     {
-
         private readonly HashSet<string> _functionNames = [];
-
 
         public async Task OnAutoFunctionInvocationAsync(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next)
         {
             // Get the function calls for which we need an explanation
             var functionCalls = FunctionCallContent.GetFunctionCalls(context.ChatHistory.Last());
             var needExplanation = 0;
-
             foreach (var functionCall in functionCalls)
             {
                 var functionName = $"{functionCall.PluginName}-{functionCall.FunctionName}";
-
                 if (_functionNames.Add(functionName))
                 {
                     needExplanation++;
@@ -177,16 +161,13 @@ public sealed class OpenAI_ReasonedFunctionCalling(ITestOutputHelper output) : B
             {
                 // Create a response asking why these functions are being called
                 context.Result = new FunctionResult(context.Result, $"Provide an explanation why you are calling function {string.Join(',', _functionNames)} and try again");
-
                 return;
             }
 
             // Invoke the functions
             await next(context);
         }
-
     }
-
 
     /// <summary>
     /// This <see cref="IAutoFunctionInvocationFilter"/> uses the currently available <see cref="IChatCompletionService"/> to query the model
@@ -198,67 +179,48 @@ public sealed class OpenAI_ReasonedFunctionCalling(ITestOutputHelper output) : B
     /// </remarks>
     private sealed class QueryExplainFunctionInvocationFilter(ITestOutputHelper output) : IAutoFunctionInvocationFilter
     {
-
         private readonly ITestOutputHelper _output = output;
-
 
         public async Task OnAutoFunctionInvocationAsync(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next)
         {
             // Invoke the model to explain why the functions are being called 
             var message = context.ChatHistory[^2];
             var functionCalls = FunctionCallContent.GetFunctionCalls(context.ChatHistory.Last());
-
-            var functionNames = functionCalls.Select(fc => $"{fc.PluginName}-{fc.FunctionName}").
-                ToList();
-
+            var functionNames = functionCalls.Select(fc => $"{fc.PluginName}-{fc.FunctionName}").ToList();
             var service = context.Kernel.GetRequiredService<IChatCompletionService>();
 
             var chatHistory = new ChatHistory
             {
                 new ChatMessageContent(AuthorRole.User, $"Provide an explanation why these functions: {string.Join(',', functionNames)} need to be called to answer this query: {message.Content}")
             };
-
-            var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
+            var executionSettings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(autoInvoke: false) };
             var result = await service.GetChatMessageContentAsync(chatHistory, executionSettings, context.Kernel);
             this._output.WriteLine(result);
 
             // Invoke the functions
             await next(context);
         }
-
     }
-
-
     private sealed class WeatherPlugin
     {
-
         [KernelFunction]
         [Description("Get the current weather in a given location.")]
         public string GetWeather(
-            [Description("The city and department, e.g. Marseille, 13")]
-            string location
+            [Description("The city and department, e.g. Marseille, 13")] string location
         ) => $"12°C\nWind: 11 KMPH\nHumidity: 48%\nMostly cloudy\nLocation: {location}";
-
     }
-
 
     private sealed class DecoratedWeatherPlugin
     {
-
         private readonly WeatherPlugin _weatherPlugin = new();
-
 
         [KernelFunction]
         [Description("Get the current weather in a given location.")]
         public string GetWeather(
-            [Description("A detailed explanation why this function is being called")]
-            string explanation,
-            [Description("The city and department, e.g. Marseille, 13")]
-            string location
+            [Description("A detailed explanation why this function is being called")] string explanation,
+            [Description("The city and department, e.g. Marseille, 13")] string location
         ) => this._weatherPlugin.GetWeather(location);
-
     }
-
 
     private Kernel CreateKernelWithPlugin<T>()
     {
@@ -268,16 +230,12 @@ public sealed class OpenAI_ReasonedFunctionCalling(ITestOutputHelper output) : B
 
         // Create a kernel with OpenAI chat completion and WeatherPlugin
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
-
         kernelBuilder.AddOpenAIChatCompletion(
-            modelId: TestConfiguration.OpenAI.ChatModelId!,
-            apiKey: TestConfiguration.OpenAI.ApiKey!,
-            httpClient: httpClient);
-
+                modelId: TestConfiguration.OpenAI.ChatModelId!,
+                apiKey: TestConfiguration.OpenAI.ApiKey!,
+                httpClient: httpClient);
         kernelBuilder.Plugins.AddFromType<T>();
         Kernel kernel = kernelBuilder.Build();
-
         return kernel;
     }
-
 }

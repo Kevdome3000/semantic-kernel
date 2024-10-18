@@ -132,7 +132,7 @@ public sealed class FunctionCallingStepwisePlanner
             // Check for final answer in the function response
             foreach (OpenAIFunctionToolCall functionResponse in functionResponses)
             {
-                if (this.TryFindFinalAnswer(functionResponse, stepExecutionSettings.ToolCallBehavior, out string finalAnswer, out string? finalAnswerError))
+                if (this.TryFindFinalAnswer(functionResponse, out string finalAnswer, out string? finalAnswerError))
                 {
                     if (finalAnswerError is not null)
                     {
@@ -164,7 +164,7 @@ public sealed class FunctionCallingStepwisePlanner
                         var result = (await clonedKernel.InvokeAsync(pluginFunction, arguments, cancellationToken).
                             ConfigureAwait(false)).GetValue<object>();
 
-                        chatHistoryForSteps.AddMessage(AuthorRole.Tool, ParseObjectAsString(result, stepExecutionSettings.ToolCallBehavior), metadata: new Dictionary<string, object?>(1) { { OpenAIChatMessageContent.ToolIdProperty, functionResponse.Id } });
+                        chatHistoryForSteps.AddMessage(AuthorRole.Tool, ParseObjectAsString(result), metadata: new Dictionary<string, object?>(1) { { OpenAIChatMessageContent.ToolIdProperty, functionResponse.Id } });
                     }
                     catch (Exception ex) when (!ex.IsCriticalException())
                     {
@@ -197,7 +197,7 @@ public sealed class FunctionCallingStepwisePlanner
         ILogger logger,
         CancellationToken cancellationToken)
     {
-        openAIExecutionSettings.ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions;
+        openAIExecutionSettings.FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(autoInvoke: false);
 
         await this.ValidateTokenCountAsync(chatHistory, kernel, logger, openAIExecutionSettings,
                 cancellationToken).
@@ -291,7 +291,7 @@ public sealed class FunctionCallingStepwisePlanner
 
     private bool TryFindFinalAnswer(
         OpenAIFunctionToolCall functionResponse,
-        ToolCallBehavior? toolCallBehavior,
+        
         out string finalAnswer,
         out string? errorMessage)
     {
@@ -302,7 +302,7 @@ public sealed class FunctionCallingStepwisePlanner
         {
             if (functionResponse.Arguments is { Count: > 0 } arguments && arguments.TryGetValue("answer", out object? valueObj))
             {
-                finalAnswer = ParseObjectAsString(valueObj, toolCallBehavior);
+                finalAnswer = ParseObjectAsString(valueObj);
             }
             else
             {
@@ -316,7 +316,7 @@ public sealed class FunctionCallingStepwisePlanner
     }
 
 
-    private static string ParseObjectAsString(object? valueObj, ToolCallBehavior? toolCallBehavior)
+    private static string ParseObjectAsString(object? valueObj)
     {
         string resultStr = string.Empty;
 
@@ -346,7 +346,7 @@ public sealed class FunctionCallingStepwisePlanner
         else
         {
 #pragma warning disable CS0618 // Type or member is obsolete
-            resultStr = JsonSerializer.Serialize(valueObj, toolCallBehavior?.ToolCallResultSerializerOptions);
+            resultStr = JsonSerializer.Serialize(valueObj);
 #pragma warning restore CS0618 // Type or member is obsolete
         }
 
@@ -366,7 +366,7 @@ public sealed class FunctionCallingStepwisePlanner
             string functionManual = string.Empty;
 
             // If using functions, get the functions manual to include in token count estimate
-            if (openAIExecutionSettings.ToolCallBehavior == ToolCallBehavior.EnableKernelFunctions)
+            if (openAIExecutionSettings.FunctionChoiceBehavior is not null)
             {
                 functionManual = await this.GetFunctionsManualAsync(kernel, logger, cancellationToken).
                     ConfigureAwait(false);

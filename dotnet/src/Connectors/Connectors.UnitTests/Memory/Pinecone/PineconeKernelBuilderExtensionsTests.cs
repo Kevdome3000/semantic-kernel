@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
-using Microsoft.SemanticKernel.Data;
 using Xunit;
 using Sdk = Pinecone;
 
@@ -14,15 +15,12 @@ namespace SemanticKernel.Connectors.UnitTests.Pinecone;
 /// </summary>
 public class PineconeKernelBuilderExtensionsTests
 {
-
     private readonly IKernelBuilder _kernelBuilder;
-
 
     public PineconeKernelBuilderExtensionsTests()
     {
         this._kernelBuilder = Kernel.CreateBuilder();
     }
-
 
     [Fact]
     public void AddVectorStoreRegistersClass()
@@ -38,7 +36,6 @@ public class PineconeKernelBuilderExtensionsTests
         this.AssertVectorStoreCreated();
     }
 
-
     [Fact]
     public void AddVectorStoreWithApiKeyRegistersClass()
     {
@@ -49,6 +46,29 @@ public class PineconeKernelBuilderExtensionsTests
         this.AssertVectorStoreCreated();
     }
 
+    [Fact]
+    public void AddVectorStoreRecordCollectionRegistersClass()
+    {
+        // Arrange.
+        using var client = new Sdk.PineconeClient("fake api key");
+        this._kernelBuilder.Services.AddSingleton<Sdk.PineconeClient>(client);
+
+        // Act.
+        this._kernelBuilder.AddPineconeVectorStoreRecordCollection<TestRecord>("testcollection");
+
+        // Assert.
+        this.AssertVectorStoreRecordCollectionCreated();
+    }
+
+    [Fact]
+    public void AddVectorStoreRecordCollectionWithApiKeyRegistersClass()
+    {
+        // Act.
+        this._kernelBuilder.AddPineconeVectorStoreRecordCollection<TestRecord>("testcollection", "fake api key");
+
+        // Assert.
+        this.AssertVectorStoreRecordCollectionCreated();
+    }
 
     private void AssertVectorStoreCreated()
     {
@@ -58,4 +78,27 @@ public class PineconeKernelBuilderExtensionsTests
         Assert.IsType<PineconeVectorStore>(vectorStore);
     }
 
+    private void AssertVectorStoreRecordCollectionCreated()
+    {
+        var kernel = this._kernelBuilder.Build();
+
+        var collection = kernel.Services.GetRequiredService<IVectorStoreRecordCollection<string, TestRecord>>();
+        Assert.NotNull(collection);
+        Assert.IsType<PineconeVectorStoreRecordCollection<TestRecord>>(collection);
+
+        var vectorizedSearch = kernel.Services.GetRequiredService<IVectorizedSearch<TestRecord>>();
+        Assert.NotNull(vectorizedSearch);
+        Assert.IsType<PineconeVectorStoreRecordCollection<TestRecord>>(vectorizedSearch);
+    }
+
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
+    private sealed class TestRecord
+#pragma warning restore CA1812 // Avoid uninstantiated internal classes
+    {
+        [VectorStoreRecordKey]
+        public string Id { get; set; } = string.Empty;
+
+        [VectorStoreRecordVector(4)]
+        public ReadOnlyMemory<float> Vector { get; set; }
+    }
 }

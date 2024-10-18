@@ -6,8 +6,9 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
-using Microsoft.SemanticKernel.Data;
+using Pinecone.Grpc;
 using Xunit;
 using Sdk = Pinecone;
 
@@ -15,30 +16,22 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.Pinecone;
 
 public class PineconeVectorStoreFixture : IAsyncLifetime
 {
-
     private const int MaxAttemptCount = 100;
-
     private const int DelayInterval = 300;
 
     public string IndexName { get; } = "sk-index"
 #pragma warning disable CA1308 // Normalize strings to uppercase
-                                       + new Regex("[^a-zA-Z0-9]", RegexOptions.None, matchTimeout: new TimeSpan(0, 0, 10)).Replace(Environment.MachineName.ToLowerInvariant(), "");
+        + new Regex("[^a-zA-Z0-9]", RegexOptions.None, matchTimeout: new TimeSpan(0, 0, 10)).Replace(Environment.MachineName.ToLowerInvariant(), "");
 #pragma warning restore CA1308 // Normalize strings to uppercase
 
     public Sdk.PineconeClient Client { get; private set; } = null!;
-
     public PineconeVectorStore VectorStore { get; private set; } = null!;
-
     public PineconeVectorStoreRecordCollection<PineconeHotel> HotelRecordCollection { get; set; } = null!;
-
     public PineconeVectorStoreRecordCollection<PineconeAllTypes> AllTypesRecordCollection { get; set; } = null!;
-
     public PineconeVectorStoreRecordCollection<PineconeHotel> HotelRecordCollectionWithCustomNamespace { get; set; } = null!;
-
     public IVectorStoreRecordCollection<string, PineconeHotel> HotelRecordCollectionFromVectorStore { get; set; } = null!;
 
     public virtual Sdk.Index<GrpcTransport> Index { get; set; } = null!;
-
 
     public virtual async Task InitializeAsync()
     {
@@ -123,7 +116,6 @@ public class PineconeVectorStoreFixture : IAsyncLifetime
         await this.AddSampleDataAsync();
     }
 
-
     private async Task CreateIndexAndWaitAsync()
     {
         var attemptCount = 0;
@@ -143,7 +135,6 @@ public class PineconeVectorStoreFixture : IAsyncLifetime
         }
     }
 
-
     public async Task DisposeAsync()
     {
         if (this.Client is not null)
@@ -152,7 +143,6 @@ public class PineconeVectorStoreFixture : IAsyncLifetime
             this.Client.Dispose();
         }
     }
-
 
     private async Task AddSampleDataAsync()
     {
@@ -199,9 +189,7 @@ public class PineconeVectorStoreFixture : IAsyncLifetime
         await this.HotelRecordCollection.UpsertAsync(fiveSeasons);
         vectorCountBefore = await this.VerifyVectorCountModifiedAsync(vectorCountBefore, delta: 1);
 
-        await this.HotelRecordCollectionFromVectorStore.UpsertBatchAsync([vacationInn, bestEastern]).
-            ToListAsync();
-
+        await this.HotelRecordCollectionFromVectorStore.UpsertBatchAsync([vacationInn, bestEastern]).ToListAsync();
         vectorCountBefore = await this.VerifyVectorCountModifiedAsync(vectorCountBefore, delta: 2);
 
         var allTypes1 = new PineconeAllTypes
@@ -256,9 +244,7 @@ public class PineconeVectorStoreFixture : IAsyncLifetime
             Embedding = new ReadOnlyMemory<float>([10.5f, 20.5f, 30.5f, 40.5f, 50.5f, 60.5f, 70.5f, 80.5f])
         };
 
-        await this.AllTypesRecordCollection.UpsertBatchAsync([allTypes1, allTypes2]).
-            ToListAsync();
-
+        await this.AllTypesRecordCollection.UpsertBatchAsync([allTypes1, allTypes2]).ToListAsync();
         vectorCountBefore = await this.VerifyVectorCountModifiedAsync(vectorCountBefore, delta: 2);
 
         var custom = new PineconeHotel
@@ -275,7 +261,6 @@ public class PineconeVectorStoreFixture : IAsyncLifetime
         await this.HotelRecordCollectionWithCustomNamespace.UpsertAsync(custom);
         vectorCountBefore = await this.VerifyVectorCountModifiedAsync(vectorCountBefore, delta: 1);
     }
-
 
     public async Task<uint> VerifyVectorCountModifiedAsync(uint vectorCountBefore, int delta)
     {
@@ -297,28 +282,21 @@ public class PineconeVectorStoreFixture : IAsyncLifetime
         return stats.TotalVectorCount;
     }
 
-
     public async Task DeleteAndWaitAsync(IEnumerable<string> ids, string? indexNamespace = null)
     {
         var stats = await this.Index.DescribeStats();
-
-        var vectorCountBefore = stats.Namespaces.Single(x => x.Name == (indexNamespace ?? "")).
-            VectorCount;
-
+        var vectorCountBefore = stats.Namespaces.Single(x => x.Name == (indexNamespace ?? "")).VectorCount;
         var idCount = ids.Count();
 
         var attemptCount = 0;
         await this.Index.Delete(ids, indexNamespace);
         long vectorCount;
-
         do
         {
             await Task.Delay(DelayInterval);
             attemptCount++;
             stats = await this.Index.DescribeStats();
-
-            vectorCount = stats.Namespaces.Single(x => x.Name == (indexNamespace ?? "")).
-                VectorCount;
+            vectorCount = stats.Namespaces.Single(x => x.Name == (indexNamespace ?? "")).VectorCount;
         } while (vectorCount > vectorCountBefore - idCount && attemptCount <= MaxAttemptCount);
 
         if (vectorCount > vectorCountBefore - idCount)
@@ -326,7 +304,6 @@ public class PineconeVectorStoreFixture : IAsyncLifetime
             throw new InvalidOperationException("'Delete' operation didn't complete in time.");
         }
     }
-
 
     private async Task ClearIndexesAsync()
     {
@@ -336,11 +313,9 @@ public class PineconeVectorStoreFixture : IAsyncLifetime
         await Task.WhenAll(deletions);
     }
 
-
     private async Task DeleteExistingIndexAndWaitAsync(string indexName)
     {
         var exists = true;
-
         try
         {
             var attemptCount = 0;
@@ -349,10 +324,7 @@ public class PineconeVectorStoreFixture : IAsyncLifetime
             do
             {
                 await Task.Delay(DelayInterval);
-
-                var indexes = (await this.Client.ListIndexes()).Select(x => x.Name).
-                    ToArray();
-
+                var indexes = (await this.Client.ListIndexes()).Select(x => x.Name).ToArray();
                 if (indexes.Length == 0 || !indexes.Contains(indexName))
                 {
                     exists = false;
@@ -370,5 +342,4 @@ public class PineconeVectorStoreFixture : IAsyncLifetime
             throw new InvalidOperationException("'Delete index' operation didn't complete in time. Index name: " + indexName);
         }
     }
-
 }

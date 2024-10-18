@@ -1,16 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-
-
-// This tests a type that contains experimental features.
-#pragma warning disable SKEXP0001
-#pragma warning disable SKEXP0010
-#pragma warning disable SKEXP0101
-
-namespace SemanticKernel.UnitTests.Contents;
-
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
@@ -18,10 +10,14 @@ using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 
+// This tests a type that contains experimental features.
+#pragma warning disable SKEXP0001
+#pragma warning disable SKEXP0010
+#pragma warning disable SKEXP0101
 
+namespace SemanticKernel.UnitTests.Contents;
 public class ChatMessageContentTests
 {
-
     [Fact]
     public void ConstructorShouldAddTextContentToItemsCollectionIfContentProvided()
     {
@@ -34,7 +30,6 @@ public class ChatMessageContentTests
         Assert.Contains(sut.Items, item => item is TextContent textContent && textContent.Text == "fake-content");
     }
 
-
     [Fact]
     public void ConstructorShouldNodAddTextContentToItemsCollectionIfNoContentProvided()
     {
@@ -44,7 +39,6 @@ public class ChatMessageContentTests
         // Assert
         Assert.Empty(sut.Items);
     }
-
 
     [Fact]
     public void ContentPropertySetterShouldAddTextContentToItemsCollection()
@@ -60,7 +54,6 @@ public class ChatMessageContentTests
 
         Assert.Contains(sut.Items, item => item is TextContent textContent && textContent.Text == "fake-content");
     }
-
 
     [Theory]
     [InlineData(null)]
@@ -83,7 +76,6 @@ public class ChatMessageContentTests
         Assert.Equal(content, ((TextContent)sut.Items[1]).Text);
     }
 
-
     [Fact]
     public void ContentPropertySetterShouldNotAddTextContentToItemsCollection()
     {
@@ -97,7 +89,6 @@ public class ChatMessageContentTests
         Assert.Empty(sut.Items);
     }
 
-
     [Fact]
     public void ContentPropertyGetterShouldReturnNullIfThereAreNoTextContentItems()
     {
@@ -109,7 +100,6 @@ public class ChatMessageContentTests
         Assert.Equal(string.Empty, sut.ToString());
     }
 
-
     [Fact]
     public void ContentPropertyGetterShouldReturnContentOfTextContentItem()
     {
@@ -120,7 +110,6 @@ public class ChatMessageContentTests
         Assert.Equal("fake-content", sut.Content);
         Assert.Equal("fake-content", sut.ToString());
     }
-
 
     [Fact]
     public void ContentPropertyGetterShouldReturnContentOfTheFirstTextContentItem()
@@ -138,7 +127,6 @@ public class ChatMessageContentTests
         // Act and assert
         Assert.Equal("fake-content-1", sut.Content);
     }
-
 
     [Theory]
     [InlineData(null)]
@@ -159,7 +147,6 @@ public class ChatMessageContentTests
         Assert.Null(message.AuthorName);
     }
 
-
     [Fact]
     public void ItShouldBePossibleToSetAndGetEncodingEvenIfThereAreNoItems()
     {
@@ -173,7 +160,6 @@ public class ChatMessageContentTests
         Assert.Empty(sut.Items);
         Assert.Equal(Encoding.UTF32, sut.Encoding);
     }
-
 
     [Fact]
     public void EncodingPropertySetterShouldUpdateEncodingTextContentItem()
@@ -189,7 +175,6 @@ public class ChatMessageContentTests
         Assert.Equal(Encoding.UTF32, ((TextContent)sut.Items[0]).Encoding);
     }
 
-
     [Fact]
     public void EncodingPropertyGetterShouldReturnEncodingOfTextContentItem()
     {
@@ -203,13 +188,11 @@ public class ChatMessageContentTests
         Assert.Equal(Encoding.Latin1, sut.Encoding);
     }
 
-
     [Fact]
     public void ItCanBeSerializeAndDeserialized()
     {
         // Arrange
-        ChatMessageContentItemCollection items =
-        [
+        ChatMessageContentItemCollection items = [
             new TextContent("content-1", "model-1", metadata: new Dictionary<string, object?>() { ["metadata-key-1"] = "metadata-value-1" }) { MimeType = "mime-type-1" },
             new ImageContent(new Uri("https://fake-random-test-host:123")) { ModelId = "model-2", MimeType = "mime-type-2", Metadata = new Dictionary<string, object?>() { ["metadata-key-2"] = "metadata-value-2" } },
             new BinaryContent(new BinaryData(new[] { 1, 2, 3 }), mimeType: "mime-type-3") { ModelId = "model-3", Metadata = new Dictionary<string, object?>() { ["metadata-key-3"] = "metadata-value-3" } },
@@ -219,7 +202,7 @@ public class ChatMessageContentTests
             new FunctionCallContent("function-name", "plugin-name", "function-id", new KernelArguments { ["parameter"] = "argument" }),
             new FunctionResultContent(new FunctionCallContent("function-name", "plugin-name", "function-id"), "function-result"),
             new FileReferenceContent(fileId: "file-id-1") { ModelId = "model-7", Metadata = new Dictionary<string, object?>() { ["metadata-key-7"] = "metadata-value-7" } },
-            new AnnotationContent() { ModelId = "model-8", FileId = "file-id-2", StartIndex = 2, EndIndex = 24, Quote = "quote-8", Metadata = new Dictionary<string, object?>() { ["metadata-key-8"] = "metadata-value-8" } }
+            new AnnotationContent("quote-8") { ModelId = "model-8", FileId = "file-id-2", StartIndex = 2, EndIndex = 24, Metadata = new Dictionary<string, object?>() { ["metadata-key-8"] = "metadata-value-8" } },
         ];
 
         // Act
@@ -242,10 +225,7 @@ public class ChatMessageContentTests
         Assert.Equal("user", deserializedMessage.Role.Label);
         Assert.NotNull(deserializedMessage.Metadata);
         Assert.Single(deserializedMessage.Metadata);
-
-        Assert.Equal("message-metadata-value-1", deserializedMessage.Metadata["message-metadata-key-1"]?.
-            ToString());
-
+        Assert.Equal("message-metadata-value-1", deserializedMessage.Metadata["message-metadata-key-1"]?.ToString());
         Assert.Null(deserializedMessage.Source);
 
         Assert.NotNull(deserializedMessage?.Items);
@@ -258,9 +238,7 @@ public class ChatMessageContentTests
         Assert.Equal("mime-type-1", textContent.MimeType);
         Assert.NotNull(textContent.Metadata);
         Assert.Single(textContent.Metadata);
-
-        Assert.Equal("metadata-value-1", textContent.Metadata["metadata-key-1"]?.
-            ToString());
+        Assert.Equal("metadata-value-1", textContent.Metadata["metadata-key-1"]?.ToString());
 
         var imageContent = deserializedMessage.Items[1] as ImageContent;
         Assert.NotNull(imageContent);
@@ -269,9 +247,7 @@ public class ChatMessageContentTests
         Assert.Equal("mime-type-2", imageContent.MimeType);
         Assert.NotNull(imageContent.Metadata);
         Assert.Single(imageContent.Metadata);
-
-        Assert.Equal("metadata-value-2", imageContent.Metadata["metadata-key-2"]?.
-            ToString());
+        Assert.Equal("metadata-value-2", imageContent.Metadata["metadata-key-2"]?.ToString());
 
         var binaryContent = deserializedMessage.Items[2] as BinaryContent;
         Assert.NotNull(binaryContent);
@@ -280,9 +256,7 @@ public class ChatMessageContentTests
         Assert.Equal("mime-type-3", binaryContent.MimeType);
         Assert.NotNull(binaryContent.Metadata);
         Assert.Single(binaryContent.Metadata);
-
-        Assert.Equal("metadata-value-3", binaryContent.Metadata["metadata-key-3"]?.
-            ToString());
+        Assert.Equal("metadata-value-3", binaryContent.Metadata["metadata-key-3"]?.ToString());
 
         var audioContent = deserializedMessage.Items[3] as AudioContent;
         Assert.NotNull(audioContent);
@@ -291,9 +265,7 @@ public class ChatMessageContentTests
         Assert.Equal("mime-type-4", audioContent.MimeType);
         Assert.NotNull(audioContent.Metadata);
         Assert.Single(audioContent.Metadata);
-
-        Assert.Equal("metadata-value-4", audioContent.Metadata["metadata-key-4"]?.
-            ToString());
+        Assert.Equal("metadata-value-4", audioContent.Metadata["metadata-key-4"]?.ToString());
 
         imageContent = deserializedMessage.Items[4] as ImageContent;
         Assert.NotNull(imageContent);
@@ -302,9 +274,7 @@ public class ChatMessageContentTests
         Assert.Equal("mime-type-5", imageContent.MimeType);
         Assert.NotNull(imageContent.Metadata);
         Assert.Single(imageContent.Metadata);
-
-        Assert.Equal("metadata-value-5", imageContent.Metadata["metadata-key-5"]?.
-            ToString());
+        Assert.Equal("metadata-value-5", imageContent.Metadata["metadata-key-5"]?.ToString());
 
         textContent = deserializedMessage.Items[5] as TextContent;
         Assert.NotNull(textContent);
@@ -313,9 +283,7 @@ public class ChatMessageContentTests
         Assert.Equal("mime-type-6", textContent.MimeType);
         Assert.NotNull(textContent.Metadata);
         Assert.Single(textContent.Metadata);
-
-        Assert.Equal("metadata-value-6", textContent.Metadata["metadata-key-6"]?.
-            ToString());
+        Assert.Equal("metadata-value-6", textContent.Metadata["metadata-key-6"]?.ToString());
 
         var functionCallContent = deserializedMessage.Items[6] as FunctionCallContent;
         Assert.NotNull(functionCallContent);
@@ -324,9 +292,7 @@ public class ChatMessageContentTests
         Assert.Equal("function-id", functionCallContent.Id);
         Assert.NotNull(functionCallContent.Arguments);
         Assert.Single(functionCallContent.Arguments);
-
-        Assert.Equal("argument", functionCallContent.Arguments["parameter"]?.
-            ToString());
+        Assert.Equal("argument", functionCallContent.Arguments["parameter"]?.ToString());
 
         var functionResultContent = deserializedMessage.Items[7] as FunctionResultContent;
         Assert.NotNull(functionResultContent);
@@ -341,9 +307,7 @@ public class ChatMessageContentTests
         Assert.Equal("model-7", fileReferenceContent.ModelId);
         Assert.NotNull(fileReferenceContent.Metadata);
         Assert.Single(fileReferenceContent.Metadata);
-
-        Assert.Equal("metadata-value-7", fileReferenceContent.Metadata["metadata-key-7"]?.
-            ToString());
+        Assert.Equal("metadata-value-7", fileReferenceContent.Metadata["metadata-key-7"]?.ToString());
 
         var annotationContent = deserializedMessage.Items[9] as AnnotationContent;
         Assert.NotNull(annotationContent);
@@ -354,9 +318,94 @@ public class ChatMessageContentTests
         Assert.Equal(24, annotationContent.EndIndex);
         Assert.NotNull(annotationContent.Metadata);
         Assert.Single(annotationContent.Metadata);
-
-        Assert.Equal("metadata-value-8", annotationContent.Metadata["metadata-key-8"]?.
-            ToString());
+        Assert.Equal("metadata-value-8", annotationContent.Metadata["metadata-key-8"]?.ToString());
     }
 
+    [Fact]
+    public void ItCanBePolymorphicallySerializedAndDeserializedAsKernelContentType()
+    {
+        // Arrange
+        KernelContent sut = new ChatMessageContent(AuthorRole.User, "test-content", "test-model", metadata: new Dictionary<string, object?>()
+        {
+            ["test-metadata-key"] = "test-metadata-value"
+        })
+        {
+            MimeType = "test-mime-type"
+        };
+
+        // Act
+        var json = JsonSerializer.Serialize(sut);
+
+        var deserialized = JsonSerializer.Deserialize<KernelContent>(json)!;
+
+        // Assert
+        Assert.IsType<ChatMessageContent>(deserialized);
+        Assert.Equal("test-content", ((ChatMessageContent)deserialized).Content);
+        Assert.Equal("test-model", deserialized.ModelId);
+        Assert.Equal("test-mime-type", deserialized.MimeType);
+        Assert.NotNull(deserialized.Metadata);
+        Assert.Single(deserialized.Metadata);
+        Assert.Equal("test-metadata-value", deserialized.Metadata["test-metadata-key"]?.ToString());
+    }
+
+    [Fact]
+    public void UnknownDerivativeCanBePolymorphicallySerializedAndDeserializedAsChatMessageContentType()
+    {
+        // Arrange
+        KernelContent sut = new UnknownExternalChatMessageContent(AuthorRole.User, "test-content")
+        {
+            MimeType = "test-mime-type",
+        };
+
+        // Act
+        var json = JsonSerializer.Serialize(sut);
+
+        var deserialized = JsonSerializer.Deserialize<KernelContent>(json)!;
+
+        // Assert
+        Assert.IsType<ChatMessageContent>(deserialized);
+        Assert.Equal("test-content", ((ChatMessageContent)deserialized).Content);
+        Assert.Equal("test-mime-type", deserialized.MimeType);
+    }
+
+    [Fact]
+    public void ItCanBeSerializeAndDeserializedWithFunctionResultOfChatMessageType()
+    {
+        // Arrange
+        ChatMessageContentItemCollection items = [
+            new FunctionResultContent(new FunctionCallContent("function-name-1", "plugin-name-1", "function-id-1"), new ChatMessageContent(AuthorRole.User, "test-content-1")),
+            new FunctionResultContent(new FunctionCallContent("function-name-2", "plugin-name-2", "function-id-2"), new UnknownExternalChatMessageContent(AuthorRole.Assistant, "test-content-2")),
+        ];
+
+        // Act
+        var chatMessageJson = JsonSerializer.Serialize(new ChatMessageContent(AuthorRole.User, items: items, "message-model"));
+
+        var deserializedMessage = JsonSerializer.Deserialize<ChatMessageContent>(chatMessageJson)!;
+
+        // Assert
+        var functionResultContentWithResultOfChatMessageContentType = deserializedMessage.Items[0] as FunctionResultContent;
+        Assert.NotNull(functionResultContentWithResultOfChatMessageContentType);
+        Assert.Equal("function-name-1", functionResultContentWithResultOfChatMessageContentType.FunctionName);
+        Assert.Equal("function-id-1", functionResultContentWithResultOfChatMessageContentType.CallId);
+        Assert.Equal("plugin-name-1", functionResultContentWithResultOfChatMessageContentType.PluginName);
+        var chatMessageContent = Assert.IsType<JsonElement>(functionResultContentWithResultOfChatMessageContentType.Result);
+        Assert.Equal("user", chatMessageContent.GetProperty("Role").GetProperty("Label").GetString());
+        Assert.Equal("test-content-1", chatMessageContent.GetProperty("Items")[0].GetProperty("Text").GetString());
+
+        var functionResultContentWithResultOfUnknownChatMessageContentType = deserializedMessage.Items[1] as FunctionResultContent;
+        Assert.NotNull(functionResultContentWithResultOfUnknownChatMessageContentType);
+        Assert.Equal("function-name-2", functionResultContentWithResultOfUnknownChatMessageContentType.FunctionName);
+        Assert.Equal("function-id-2", functionResultContentWithResultOfUnknownChatMessageContentType.CallId);
+        Assert.Equal("plugin-name-2", functionResultContentWithResultOfUnknownChatMessageContentType.PluginName);
+        var unknownChatMessageContent = Assert.IsType<JsonElement>(functionResultContentWithResultOfUnknownChatMessageContentType.Result);
+        Assert.Equal("assistant", unknownChatMessageContent.GetProperty("Role").GetProperty("Label").GetString());
+        Assert.Equal("test-content-2", unknownChatMessageContent.GetProperty("Items")[0].GetProperty("Text").GetString());
+    }
+
+    private sealed class UnknownExternalChatMessageContent : ChatMessageContent
+    {
+        public UnknownExternalChatMessageContent(AuthorRole role, string? content) : base(role, content)
+        {
+        }
+    }
 }

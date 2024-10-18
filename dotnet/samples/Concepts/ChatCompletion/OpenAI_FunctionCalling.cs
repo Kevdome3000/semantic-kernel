@@ -7,10 +7,8 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace ChatCompletion;
-
 public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
 {
-
     [Fact]
     public async Task AutoInvokeKernelFunctionsAsync()
     {
@@ -19,19 +17,15 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
 
         // Invoke chat prompt with auto invocation of functions enabled
         const string ChatPrompt = """
-                                      <message role="user">What is the weather like in Paris?</message>
-                                  """;
-
-        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
-
+            <message role="user">What is the weather like in Paris?</message>
+        """;
+        var executionSettings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         var chatSemanticFunction = kernel.CreateFunctionFromPrompt(
             ChatPrompt, executionSettings);
-
         var chatPromptResult = await kernel.InvokeAsync(chatSemanticFunction);
 
         Console.WriteLine(chatPromptResult);
     }
-
 
     [Fact]
     public async Task AutoInvokeKernelFunctionsMultipleCallsAsync()
@@ -45,8 +39,7 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
         {
             new ChatMessageContent(AuthorRole.User, "What is the weather like in Paris?")
         };
-
-        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var executionSettings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         var result1 = await service.GetChatMessageContentAsync(chatHistory, executionSettings, kernel);
         chatHistory.Add(result1);
 
@@ -57,7 +50,6 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
         Console.WriteLine(result2);
     }
 
-
     [Fact]
     public async Task AutoInvokeKernelFunctionsWithComplexParameterAsync()
     {
@@ -66,19 +58,15 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
 
         // Invoke chat prompt with auto invocation of functions enabled
         const string ChatPrompt = """
-                                      <message role="user">Book a holiday for me from 6th June 2025 to 20th June 2025?</message>
-                                  """;
-
-        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
-
+            <message role="user">Book a holiday for me from 6th June 2025 to 20th June 2025?</message>
+        """;
+        var executionSettings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         var chatSemanticFunction = kernel.CreateFunctionFromPrompt(
             ChatPrompt, executionSettings);
-
         var chatPromptResult = await kernel.InvokeAsync(chatSemanticFunction);
 
         Console.WriteLine(chatPromptResult);
     }
-
 
     [Fact]
     public async Task AutoInvokeLightPluginAsync()
@@ -89,69 +77,50 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
 
         // Invoke chat prompt with auto invocation of functions enabled
         const string ChatPrompt = """
-                                      <message role="user">Turn on the light?</message>
-                                  """;
-
-        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
-
+            <message role="user">Turn on the light?</message>
+        """;
+        var executionSettings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         var chatSemanticFunction = kernel.CreateFunctionFromPrompt(
             ChatPrompt, executionSettings);
-
         var chatPromptResult = await kernel.InvokeAsync(chatSemanticFunction);
 
         Console.WriteLine(chatPromptResult);
     }
 
-
     private sealed class WeatherPlugin
     {
-
         [KernelFunction]
         [Description("Get the current weather in a given location.")]
         public string GetWeather(
-            [Description("The city and department, e.g. Marseille, 13")]
-            string location
+            [Description("The city and department, e.g. Marseille, 13")] string location
         ) => $"12°C\nWind: 11 KMPH\nHumidity: 48%\nMostly cloudy\nLocation: {location}";
-
     }
-
 
     private sealed class HolidayPlugin
     {
-
         [KernelFunction]
         [Description("Book a holiday for a specified time period.")]
         public string BookHoliday(
             [Description("Holiday time period")] HolidayRequest holidayRequest
         ) => $"Holiday booked, starting {holidayRequest.StartDate} and ending {holidayRequest.EndDate}";
-
     }
-
 
     private sealed class HolidayRequest
     {
-
         [Description("The date when the holiday period starts in ISO 8601 format")]
         public string StartDate { get; set; } = string.Empty;
 
         [Description("The date when the holiday period ends in ISO 8601 format")]
         public string EndDate { get; set; } = string.Empty;
-
     }
-
 
     private sealed class LightPlugin
     {
-
         public bool IsOn { get; set; } = false;
-
 
         [KernelFunction]
         [Description("Gets the state of the light.")]
-        public string GetState() => IsOn
-            ? "on"
-            : "off";
-
+        public string GetState() => IsOn ? "on" : "off";
 
         [KernelFunction]
         [Description("Changes the state of the light.'")]
@@ -159,12 +128,9 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
         {
             this.IsOn = newState;
             var state = GetState();
-
             return state;
         }
-
     }
-
 
     private Kernel CreateKernelWithPlugin<T>()
     {
@@ -174,29 +140,22 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
 
         // Create a kernel with OpenAI chat completion and WeatherPlugin
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
-
         kernelBuilder.AddOpenAIChatCompletion(
-            modelId: TestConfiguration.OpenAI.ChatModelId!,
-            apiKey: TestConfiguration.OpenAI.ApiKey!,
-            httpClient: httpClient);
-
+                modelId: TestConfiguration.OpenAI.ChatModelId!,
+                apiKey: TestConfiguration.OpenAI.ApiKey!,
+                httpClient: httpClient);
         kernelBuilder.Plugins.AddFromType<T>();
         Kernel kernel = kernelBuilder.Build();
-
         return kernel;
     }
 
-
     private sealed class FunctionFilterExample(ITestOutputHelper output) : IFunctionInvocationFilter
     {
-
         public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
         {
             output.WriteLine($"Function {context.Function.Name} is being invoked with arguments: {JsonSerializer.Serialize(context.Arguments)}");
 
             await next(context);
         }
-
     }
-
 }

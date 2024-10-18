@@ -7,12 +7,12 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
-using Microsoft.SemanticKernel.Data;
 using Moq;
 using Xunit;
-using DistanceFunction = Microsoft.SemanticKernel.Data.DistanceFunction;
-using IndexKind = Microsoft.SemanticKernel.Data.IndexKind;
+using DistanceFunction = Microsoft.Extensions.VectorData.DistanceFunction;
+using IndexKind = Microsoft.Extensions.VectorData.IndexKind;
 
 namespace SemanticKernel.Connectors.AzureCosmosDBNoSQL.UnitTests;
 
@@ -24,14 +24,12 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
     private readonly Mock<Database> _mockDatabase = new();
     private readonly Mock<Container> _mockContainer = new();
 
-
     public AzureCosmosDBNoSQLVectorStoreRecordCollectionTests()
     {
         this._mockDatabase
             .Setup(l => l.GetContainer(It.IsAny<string>()))
             .Returns(this._mockContainer.Object);
     }
-
 
     [Fact]
     public void ConstructorForModelWithoutKeyThrowsException()
@@ -40,7 +38,6 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         var exception = Assert.Throws<ArgumentException>(() => new AzureCosmosDBNoSQLVectorStoreRecordCollection<object>(this._mockDatabase.Object, "collection"));
         Assert.Contains("No key property found", exception.Message);
     }
-
 
     [Fact]
     public void ConstructorWithDeclarativeModelInitializesCollection()
@@ -52,7 +49,6 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
 
         Assert.NotNull(collection);
     }
-
 
     [Fact]
     public void ConstructorWithImperativeModelInitializesCollection()
@@ -72,7 +68,6 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         // Assert
         Assert.NotNull(collection);
     }
-
 
     [Theory]
     [MemberData(nameof(CollectionExistsData))]
@@ -111,7 +106,6 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         // Assert
         Assert.Equal(expectedResult, actualResult);
     }
-
 
     [Theory]
     [InlineData(IndexingMode.Consistent)]
@@ -195,13 +189,12 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
 
         // Assert
         this._mockDatabase.Verify(l => l.CreateContainerAsync(
-                It.Is<ContainerProperties>(properties => this.VerifyContainerProperties(expectedContainerProperties, properties)),
-                It.IsAny<int?>(),
-                It.IsAny<RequestOptions>(),
-                It.IsAny<CancellationToken>()),
+            It.Is<ContainerProperties>(properties => this.VerifyContainerProperties(expectedContainerProperties, properties)),
+            It.IsAny<int?>(),
+            It.IsAny<RequestOptions>(),
+            It.IsAny<CancellationToken>()),
             Times.Once());
     }
-
 
     [Theory]
     [MemberData(nameof(CreateCollectionIfNotExistsData))]
@@ -241,13 +234,12 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
 
         // Assert
         this._mockDatabase.Verify(l => l.CreateContainerAsync(
-                It.IsAny<ContainerProperties>(),
-                It.IsAny<int?>(),
-                It.IsAny<RequestOptions>(),
-                It.IsAny<CancellationToken>()),
+            It.IsAny<ContainerProperties>(),
+            It.IsAny<int?>(),
+            It.IsAny<RequestOptions>(),
+            It.IsAny<CancellationToken>()),
             Times.Exactly(actualCollectionCreations));
     }
-
 
     [Theory]
     [InlineData("recordKey", false)]
@@ -278,13 +270,12 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
 
         // Assert
         this._mockContainer.Verify(l => l.DeleteItemAsync<JsonObject>(
-                RecordKey,
-                new PartitionKey(expectedPartitionKey),
-                It.IsAny<ItemRequestOptions>(),
-                It.IsAny<CancellationToken>()),
+            RecordKey,
+            new PartitionKey(expectedPartitionKey),
+            It.IsAny<ItemRequestOptions>(),
+            It.IsAny<CancellationToken>()),
             Times.Once());
     }
-
 
     [Fact]
     public async Task DeleteBatchInvokesValidMethodsAsync()
@@ -303,14 +294,13 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         foreach (var key in recordKeys)
         {
             this._mockContainer.Verify(l => l.DeleteItemAsync<JsonObject>(
-                    key,
-                    new PartitionKey(key),
-                    It.IsAny<ItemRequestOptions>(),
-                    It.IsAny<CancellationToken>()),
+                key,
+                new PartitionKey(key),
+                It.IsAny<ItemRequestOptions>(),
+                It.IsAny<CancellationToken>()),
                 Times.Once());
         }
     }
-
 
     [Fact]
     public async Task DeleteCollectionInvokesValidMethodsAsync()
@@ -325,11 +315,10 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
 
         // Assert
         this._mockContainer.Verify(l => l.DeleteContainerAsync(
-                It.IsAny<ContainerRequestOptions>(),
-                It.IsAny<CancellationToken>()),
+            It.IsAny<ContainerRequestOptions>(),
+            It.IsAny<CancellationToken>()),
             Times.Once());
     }
-
 
     [Fact]
     public async Task GetReturnsValidRecordAsync()
@@ -373,7 +362,6 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         Assert.Equal(RecordKey, result.HotelId);
         Assert.Equal("Test Name", result.HotelName);
     }
-
 
     [Fact]
     public async Task GetBatchReturnsValidRecordAsync()
@@ -426,7 +414,6 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         Assert.Equal("Test Name 3", results[2].HotelName);
     }
 
-
     [Fact]
     public async Task UpsertReturnsRecordKeyAsync()
     {
@@ -444,15 +431,14 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         Assert.Equal("key", result);
 
         this._mockContainer.Verify(l => l.UpsertItemAsync<JsonNode>(
-                It.Is<JsonNode>(node =>
-                    node["id"]!.ToString() == "key" &&
-                    node["HotelName"]!.ToString() == "Test Name"),
-                new PartitionKey("key"),
-                It.IsAny<ItemRequestOptions>(),
-                It.IsAny<CancellationToken>()),
+            It.Is<JsonNode>(node =>
+                node["id"]!.ToString() == "key" &&
+                node["HotelName"]!.ToString() == "Test Name"),
+            new PartitionKey("key"),
+            It.IsAny<ItemRequestOptions>(),
+            It.IsAny<CancellationToken>()),
             Times.Once());
     }
-
 
     [Fact]
     public async Task UpsertBatchReturnsRecordKeysAsync()
@@ -478,7 +464,6 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         Assert.Equal("key3", results[2]);
     }
 
-
     [Fact]
     public async Task UpsertWithCustomMapperWorksCorrectlyAsync()
     {
@@ -503,15 +488,14 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         Assert.Equal("key", result);
 
         this._mockContainer.Verify(l => l.UpsertItemAsync<JsonNode>(
-                It.Is<JsonNode>(node =>
-                    node["id"]!.ToString() == "key" &&
-                    node["my_name"]!.ToString() == "Test Name"),
-                new PartitionKey("key"),
-                It.IsAny<ItemRequestOptions>(),
-                It.IsAny<CancellationToken>()),
+            It.Is<JsonNode>(node =>
+                node["id"]!.ToString() == "key" &&
+                node["my_name"]!.ToString() == "Test Name"),
+            new PartitionKey("key"),
+            It.IsAny<ItemRequestOptions>(),
+            It.IsAny<CancellationToken>()),
             Times.Once());
     }
-
 
     [Fact]
     public async Task GetWithCustomMapperWorksCorrectlyAsync()
@@ -563,6 +547,86 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         Assert.Equal("Name from mapper", result.HotelName);
     }
 
+    [Fact]
+    public async Task VectorizedSearchReturnsValidRecordAsync()
+    {
+        // Arrange
+        const string RecordKey = "key";
+        const double ExpectedScore = 0.99;
+
+        var jsonObject = new JsonObject
+        {
+            ["id"] = RecordKey,
+            ["HotelName"] = "Test Name",
+            ["SimilarityScore"] = ExpectedScore
+        };
+
+        var mockFeedResponse = new Mock<FeedResponse<JsonObject>>();
+        mockFeedResponse
+            .Setup(l => l.Resource)
+            .Returns([jsonObject]);
+
+        var mockFeedIterator = new Mock<FeedIterator<JsonObject>>();
+        mockFeedIterator
+            .SetupSequence(l => l.HasMoreResults)
+            .Returns(true)
+            .Returns(false);
+
+        mockFeedIterator
+            .Setup(l => l.ReadNextAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockFeedResponse.Object);
+
+        this._mockContainer
+            .Setup(l => l.GetItemQueryIterator<JsonObject>(
+                It.IsAny<QueryDefinition>(),
+                It.IsAny<string>(),
+                It.IsAny<QueryRequestOptions>()))
+            .Returns(mockFeedIterator.Object);
+
+        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<AzureCosmosDBNoSQLHotel>(
+            this._mockDatabase.Object,
+            "collection");
+
+        // Act
+        var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]));
+
+        var results = await actual.Results.ToListAsync();
+        var result = results[0];
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(RecordKey, result.Record.HotelId);
+        Assert.Equal("Test Name", result.Record.HotelName);
+        Assert.Equal(ExpectedScore, result.Score);
+    }
+
+    [Fact]
+    public async Task VectorizedSearchWithUnsupportedVectorTypeThrowsExceptionAsync()
+    {
+        // Arrange
+        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<AzureCosmosDBNoSQLHotel>(
+            this._mockDatabase.Object,
+            "collection");
+
+        // Act & Assert
+        await Assert.ThrowsAsync<NotSupportedException>(async () =>
+            await (await sut.VectorizedSearchAsync(new List<double>([1, 2, 3]))).Results.ToListAsync());
+    }
+
+    [Fact]
+    public async Task VectorizedSearchWithNonExistentVectorPropertyNameThrowsExceptionAsync()
+    {
+        // Arrange
+        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<AzureCosmosDBNoSQLHotel>(
+            this._mockDatabase.Object,
+            "collection");
+
+        var searchOptions = new VectorSearchOptions { VectorPropertyName = "non-existent-property" };
+
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await (await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), searchOptions)).Results.ToListAsync());
+    }
 
     public static TheoryData<List<string>, string, bool> CollectionExistsData => new()
     {
@@ -575,7 +639,6 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         { ["collection"], 0 },
         { [], 1 }
     };
-
 
     #region
 
@@ -625,7 +688,6 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         return true;
     }
 
-
 #pragma warning disable CA1812
     private sealed class TestModel
     {
@@ -634,22 +696,21 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         public string? HotelName { get; set; }
     }
 
-
     private sealed class TestIndexingModel
     {
         [VectorStoreRecordKey]
         public string? Id { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 1, IndexKind: IndexKind.Flat, DistanceFunction: DistanceFunction.CosineSimilarity)]
+        [VectorStoreRecordVector(Dimensions: 1, DistanceFunction: DistanceFunction.CosineSimilarity, IndexKind: IndexKind.Flat)]
         public ReadOnlyMemory<Half>? DescriptionEmbedding1 { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 2, IndexKind: IndexKind.Flat, DistanceFunction: DistanceFunction.CosineSimilarity)]
+        [VectorStoreRecordVector(Dimensions: 2, DistanceFunction: DistanceFunction.CosineSimilarity, IndexKind: IndexKind.Flat)]
         public ReadOnlyMemory<float>? DescriptionEmbedding2 { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 3, IndexKind: IndexKind.QuantizedFlat, DistanceFunction: DistanceFunction.DotProductSimilarity)]
+        [VectorStoreRecordVector(Dimensions: 3, DistanceFunction: DistanceFunction.DotProductSimilarity, IndexKind: IndexKind.QuantizedFlat)]
         public ReadOnlyMemory<byte>? DescriptionEmbedding3 { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 4, IndexKind: IndexKind.DiskAnn, DistanceFunction: DistanceFunction.EuclideanDistance)]
+        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.EuclideanDistance, IndexKind: IndexKind.DiskAnn)]
         public ReadOnlyMemory<sbyte>? DescriptionEmbedding4 { get; set; }
 
         [VectorStoreRecordData(IsFilterable = true)]
@@ -664,6 +725,4 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
 #pragma warning restore CA1812
 
     #endregion
-
-
 }

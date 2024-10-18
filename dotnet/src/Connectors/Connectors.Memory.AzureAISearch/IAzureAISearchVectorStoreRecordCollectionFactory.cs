@@ -1,16 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Azure.Search.Documents.Indexes;
-using Microsoft.SemanticKernel.Data;
+using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
 /// <summary>
-/// Interface for constructing <see cref="IVectorStoreRecordCollection{TKey,TRecord}"/> Azure AI Search instances when using <see cref="IVectorStore"/> to retrieve these.
+/// Interface for constructing <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> Azure AI Search instances when using <see cref="IVectorStore"/> to retrieve these.
 /// </summary>
 public interface IAzureAISearchVectorStoreRecordCollectionFactory
 {
-
     /// <summary>
     /// Constructs a new instance of the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.
     /// </summary>
@@ -21,7 +20,5 @@ public interface IAzureAISearchVectorStoreRecordCollectionFactory
     /// <param name="vectorStoreRecordDefinition">An optional record definition that defines the schema of the record type. If not present, attributes on <typeparamref name="TRecord"/> will be used.</param>
     /// <returns>The new instance of <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</returns>
     IVectorStoreRecordCollection<TKey, TRecord> CreateVectorStoreRecordCollection<TKey, TRecord>(SearchIndexClient searchIndexClient, string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition)
-        where TKey : notnull
-        where TRecord : class;
-
+        where TKey : notnull;
 }

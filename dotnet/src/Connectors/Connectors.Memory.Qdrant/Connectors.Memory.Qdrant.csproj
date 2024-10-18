@@ -1,14 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-    <PropertyGroup>
+  
+  <PropertyGroup>
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
     <AssemblyName>Microsoft.SemanticKernel.Connectors.Qdrant</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
-        <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
-        <VersionSuffix>alpha</VersionSuffix>
+    <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
+    <VersionSuffix>preview</VersionSuffix>
   </PropertyGroup>
-
-    <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->
+  
+  <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
 
@@ -20,15 +20,15 @@
 
   <ItemGroup>
     <PackageReference Include="System.Text.Json" />
-      <PackageReference Include="Qdrant.Client"/>
+    <PackageReference Include="Qdrant.Client" />
   </ItemGroup>
 
-    <ItemGroup>
-        <InternalsVisibleTo Include="Microsoft.SemanticKernel.Connectors.Qdrant.UnitTests"/>
-        <InternalsVisibleTo Include="DynamicProxyGenAssembly2"/>
-    </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Connectors.Qdrant.UnitTests" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+  </ItemGroup>
 
-    <ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
 

@@ -16,7 +16,6 @@ namespace Microsoft.SemanticKernel.Agents.History;
 /// </remarks>
 internal static class ChatHistoryReducerExtensions
 {
-
     /// <summary>
     /// Extract a range of messages from the source history.
     /// </summary>
@@ -24,14 +23,9 @@ internal static class ChatHistoryReducerExtensions
     /// <param name="startIndex">The index of the first message to extract</param>
     /// <param name="finalIndex">The index of the last message to extract</param>
     /// <param name="filter">The optional filter to apply to each message</param>
-    public static IEnumerable<ChatMessageContent> Extract(
-        this IReadOnlyList<ChatMessageContent> history,
-        int startIndex,
-        int? finalIndex = null,
-        Func<ChatMessageContent, bool>? filter = null)
+    public static IEnumerable<ChatMessageContent> Extract(this IReadOnlyList<ChatMessageContent> history, int startIndex, int? finalIndex = null, Func<ChatMessageContent, bool>? filter = null)
     {
         int maxIndex = history.Count - 1;
-
         if (startIndex > maxIndex)
         {
             yield break;
@@ -51,7 +45,6 @@ internal static class ChatHistoryReducerExtensions
             yield return history[index];
         }
     }
-
 
     /// <summary>
     /// Identify the index of the first message that is not a summary message, as indicated by
@@ -74,7 +67,6 @@ internal static class ChatHistoryReducerExtensions
         return history.Count;
     }
 
-
     /// <summary>
     /// Identify the index of the first message at or beyond the specified targetCount that
     /// does not orphan sensitive content.
@@ -95,11 +87,7 @@ internal static class ChatHistoryReducerExtensions
     /// (such as summarization).
     /// </param>
     /// <returns>An index that identifies the starting point for a reduced history that does not orphan sensitive content.</returns>
-    public static int LocateSafeReductionIndex(
-        this IReadOnlyList<ChatMessageContent> history,
-        int targetCount,
-        int? thresholdCount = null,
-        int offsetCount = 0)
+    public static int LocateSafeReductionIndex(this IReadOnlyList<ChatMessageContent> history, int targetCount, int? thresholdCount = null, int offsetCount = 0)
     {
         // Compute the index of the truncation threshold
         int thresholdIndex = history.Count - (thresholdCount ?? 0) - targetCount;
@@ -107,7 +95,7 @@ internal static class ChatHistoryReducerExtensions
         if (thresholdIndex <= offsetCount)
         {
             // History is too short to truncate
-            return 0;
+            return -1;
         }
 
         // Compute the index of truncation target
@@ -116,8 +104,7 @@ internal static class ChatHistoryReducerExtensions
         // Skip function related content
         while (messageIndex >= 0)
         {
-            if (!history[messageIndex].
-                    Items.Any(i => i is FunctionCallContent || i is FunctionResultContent))
+            if (!history[messageIndex].Items.Any(i => i is FunctionCallContent || i is FunctionResultContent))
             {
                 break;
             }
@@ -144,7 +131,6 @@ internal static class ChatHistoryReducerExtensions
         return targetIndex;
     }
 
-
     /// <summary>
     /// Process history reduction and mutate the provided history.
     /// </summary>
@@ -163,8 +149,7 @@ internal static class ChatHistoryReducerExtensions
             return false;
         }
 
-        IEnumerable<ChatMessageContent>? reducedHistory = await reducer.ReduceAsync(history, cancellationToken).
-            ConfigureAwait(false);
+        IEnumerable<ChatMessageContent>? reducedHistory = await reducer.ReduceAsync(history, cancellationToken).ConfigureAwait(false);
 
         if (reducedHistory == null)
         {
@@ -179,4 +164,20 @@ internal static class ChatHistoryReducerExtensions
         return true;
     }
 
+    /// <summary>
+    /// Reduce the history using the provided reducer without mutating the source history.
+    /// </summary>
+    /// <param name="history">The source history</param>
+    /// <param name="reducer">The target reducer</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    public static async Task<IReadOnlyList<ChatMessageContent>> ReduceAsync(this IReadOnlyList<ChatMessageContent> history, IChatHistoryReducer? reducer, CancellationToken cancellationToken)
+    {
+        if (reducer != null)
+        {
+            IEnumerable<ChatMessageContent>? reducedHistory = await reducer.ReduceAsync(history, cancellationToken).ConfigureAwait(false);
+            history = reducedHistory?.ToArray() ?? history;
+        }
+
+        return history;
+    }
 }

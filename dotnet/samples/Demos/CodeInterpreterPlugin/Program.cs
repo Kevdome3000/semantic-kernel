@@ -13,9 +13,10 @@ using Microsoft.SemanticKernel.Plugins.Core.CodeInterpreter;
 
 #pragma warning disable SKEXP0050 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
-var configuration = new ConfigurationBuilder().AddUserSecrets<Program>().
-    AddEnvironmentVariables().
-    Build();
+var configuration = new ConfigurationBuilder()
+    .AddUserSecrets<Program>()
+    .AddEnvironmentVariables()
+    .Build();
 
 var apiKey = configuration["OpenAI:ApiKey"];
 var modelId = configuration["OpenAI:ChatModelId"];
@@ -42,14 +43,11 @@ async Task<string> TokenProvider()
         var credential = new InteractiveBrowserCredential();
 
         // Attempt to get the token
-        var accessToken = await credential.GetTokenAsync(new Azure.Core.TokenRequestContext([resource])).
-            ConfigureAwait(false);
-
+        var accessToken = await credential.GetTokenAsync(new Azure.Core.TokenRequestContext([resource])).ConfigureAwait(false);
         if (logger.IsEnabled(LogLevel.Information))
         {
             logger.LogInformation("Access token obtained successfully");
         }
-
         cachedToken = accessToken.Token;
     }
 
@@ -57,36 +55,29 @@ async Task<string> TokenProvider()
 }
 
 var settings = new SessionsPythonSettings(
-    sessionId: Guid.NewGuid().
-        ToString(),
-    endpoint: new Uri(endpoint));
+        sessionId: Guid.NewGuid().ToString(),
+        endpoint: new Uri(endpoint));
 
 Console.WriteLine("=== Code Interpreter With Azure Container Apps Plugin Demo ===\n");
 
 Console.WriteLine("Start your conversation with the assistant. Type enter or an empty message to quit.");
 
 var builder =
-    Kernel.CreateBuilder().
-        AddOpenAIChatCompletion(modelId, apiKey);
+    Kernel.CreateBuilder()
+    .AddOpenAIChatCompletion(modelId, apiKey);
 
 // Change the log level to Trace to see more detailed logs
-builder.Services.AddLogging(loggingBuilder => loggingBuilder.AddConsole().
-    SetMinimumLevel(LogLevel.Information));
-
+builder.Services.AddLogging(loggingBuilder => loggingBuilder.AddConsole().SetMinimumLevel(LogLevel.Information));
 builder.Services.AddHttpClient();
-
 builder.Services.AddSingleton((sp)
     => new SessionsPythonPlugin(
         settings,
         sp.GetRequiredService<IHttpClientFactory>(),
         TokenProvider,
         sp.GetRequiredService<ILoggerFactory>()));
-
 var kernel = builder.Build();
 
-logger = kernel.GetRequiredService<ILoggerFactory>().
-    CreateLogger<Program>();
-
+logger = kernel.GetRequiredService<ILoggerFactory>().CreateLogger<Program>();
 kernel.Plugins.AddFromObject(kernel.GetRequiredService<SessionsPythonPlugin>());
 var chatCompletion = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -98,23 +89,20 @@ while (true)
 {
     Console.Write("\nUser: ");
     var input = Console.ReadLine();
-
     if (string.IsNullOrWhiteSpace(input)) { break; }
 
     chatHistory.AddUserMessage(input);
 
     Console.WriteLine("Assistant: ");
     fullAssistantContent.Clear();
-
     await foreach (var content in chatCompletion.GetStreamingChatMessageContentsAsync(
-                           chatHistory,
-                           new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions },
-                           kernel).
-                       ConfigureAwait(false))
+        chatHistory,
+        new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() },
+        kernel)
+        .ConfigureAwait(false))
     {
         Console.Write(content.Content);
         fullAssistantContent.Append(content.Content);
     }
-
     chatHistory.AddAssistantMessage(fullAssistantContent.ToString());
 }

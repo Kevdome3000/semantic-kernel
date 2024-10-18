@@ -2,10 +2,11 @@
 
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Azure.Identity;
 using Memory.VectorStoreFixtures;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.Redis;
-using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Embeddings;
 using StackExchange.Redis;
 
@@ -37,7 +38,6 @@ namespace Memory;
 /// </summary>
 public class VectorStore_DataIngestion_CustomMapper(ITestOutputHelper output, VectorStoreRedisContainerFixture redisFixture) : BaseTest(output), IClassFixture<VectorStoreRedisContainerFixture>
 {
-
     /// <summary>
     /// A record definition for the glossary entries that defines the storage schema of the record.
     /// </summary>
@@ -52,15 +52,14 @@ public class VectorStore_DataIngestion_CustomMapper(ITestOutputHelper output, Ve
         }
     };
 
-
     [Fact]
     public async Task ExampleAsync()
     {
         // Create an embedding generation service.
         var textEmbeddingGenerationService = new AzureOpenAITextEmbeddingGenerationService(
-            TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
-            TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
-            TestConfiguration.AzureOpenAIEmbeddings.ApiKey);
+                TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
+                TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
+                new AzureCliCredential());
 
         // Initiate the docker container and construct the vector store using the custom factory for creating collections.
         await redisFixture.ManualInitializeAsync();
@@ -72,14 +71,11 @@ public class VectorStore_DataIngestion_CustomMapper(ITestOutputHelper output, Ve
         await collection.CreateCollectionIfNotExistsAsync();
 
         // Create glossary entries and generate embeddings for them.
-        var glossaryEntries = CreateGlossaryEntries().
-            ToList();
-
+        var glossaryEntries = CreateGlossaryEntries().ToList();
         var tasks = glossaryEntries.Select(entry => Task.Run(async () =>
         {
             entry.Vectors["DefinitionEmbedding"] = await textEmbeddingGenerationService.GenerateEmbeddingAsync((string)entry.Data["Definition"]);
         }));
-
         await Task.WhenAll(tasks);
 
         // Upsert the glossary entries into the collection and return their keys.
@@ -94,34 +90,24 @@ public class VectorStore_DataIngestion_CustomMapper(ITestOutputHelper output, Ve
         Console.WriteLine($"Upserted record: {JsonSerializer.Serialize(upsertedRecord)}");
     }
 
-
     /// <summary>
     /// A custom mapper that maps between the data model and the storage model.
     /// </summary>
     private sealed class Mapper : IVectorStoreRecordMapper<GenericDataModel, (string Key, JsonNode Node)>
     {
-
         public (string Key, JsonNode Node) MapFromDataToStorageModel(GenericDataModel dataModel)
         {
             var jsonObject = new JsonObject();
 
-            jsonObject.Add("Term", dataModel.Data["Term"].
-                ToString());
-
-            jsonObject.Add("Definition", dataModel.Data["Definition"].
-                ToString());
+            jsonObject.Add("Term", dataModel.Data["Term"].ToString());
+            jsonObject.Add("Definition", dataModel.Data["Definition"].ToString());
 
             var vector = (ReadOnlyMemory<float>)dataModel.Vectors["DefinitionEmbedding"];
-
-            var jsonArray = new JsonArray(vector.ToArray().
-                Select(x => JsonValue.Create(x)).
-                ToArray());
-
+            var jsonArray = new JsonArray(vector.ToArray().Select(x => JsonValue.Create(x)).ToArray());
             jsonObject.Add("DefinitionEmbedding", jsonArray);
 
             return (dataModel.Key, jsonObject);
         }
-
 
         public GenericDataModel MapFromStorageToDataModel((string Key, JsonNode Node) storageModel, StorageToDataModelMapperOptions options)
         {
@@ -135,61 +121,46 @@ public class VectorStore_DataIngestion_CustomMapper(ITestOutputHelper output, Ve
                 },
                 Vectors = new Dictionary<string, object>
                 {
-                    {
-                        "DefinitionEmbedding", new ReadOnlyMemory<float>(storageModel.Node["DefinitionEmbedding"]!.AsArray().
-                            Select(x => (float)x!).
-                            ToArray())
-                    }
+                    { "DefinitionEmbedding", new ReadOnlyMemory<float>(storageModel.Node["DefinitionEmbedding"]!.AsArray().Select(x => (float)x!).ToArray()) }
                 }
             };
 
             return dataModel;
         }
-
     }
-
 
     /// <summary>
     /// A factory for creating collections in the vector store
     /// </summary>
     private sealed class Factory : IRedisVectorStoreRecordCollectionFactory
     {
-
         public IVectorStoreRecordCollection<TKey, TRecord> CreateVectorStoreRecordCollection<TKey, TRecord>(IDatabase database, string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition)
             where TKey : notnull
-            where TRecord : class
         {
             // If the record definition is the glossary definition and the record type is the generic data model, inject the custom mapper into the collection options.
             if (vectorStoreRecordDefinition == s_glossaryDefinition && typeof(TRecord) == typeof(GenericDataModel))
             {
                 var customCollection = new RedisJsonVectorStoreRecordCollection<GenericDataModel>(database, name, new() { VectorStoreRecordDefinition = vectorStoreRecordDefinition, JsonNodeCustomMapper = new Mapper() }) as IVectorStoreRecordCollection<TKey, TRecord>;
-
                 return customCollection!;
             }
 
             // Otherwise, just create a standard collection with the default mapper.
             var collection = new RedisJsonVectorStoreRecordCollection<TRecord>(database, name, new() { VectorStoreRecordDefinition = vectorStoreRecordDefinition }) as IVectorStoreRecordCollection<TKey, TRecord>;
-
             return collection!;
         }
-
     }
-
 
     /// <summary>
     /// Sample generic data model class that can store any data.
     /// </summary>
     private sealed class GenericDataModel
     {
-
         public string Key { get; set; }
 
         public Dictionary<string, object> Data { get; set; }
 
         public Dictionary<string, object> Vectors { get; set; }
-
     }
-
 
     /// <summary>
     /// Create some sample glossary entries using the generic data model.
@@ -230,5 +201,4 @@ public class VectorStore_DataIngestion_CustomMapper(ITestOutputHelper output, Ve
             Vectors = new()
         };
     }
-
 }

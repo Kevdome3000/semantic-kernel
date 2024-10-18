@@ -1,35 +1,37 @@
 [project]
 name = "semantic-kernel"
 description = "Semantic Kernel Python SDK"
-authors = [{ name = "Microsoft", email = "SK-Support@microsoft.com" }]
+authors = [{ name = "Microsoft", email = "SK-Support@microsoft.com"}]
 readme = "pip/README.md"
 # Version read from __version__ field in __init__.py by Flit
 dynamic = ["version"]
 requires-python = ">=3.10,<3.13"
-license = { file = "LICENSE" }
+license = {file = "LICENSE"}
 urls.homepage = "https://learn.microsoft.com/en-us/semantic-kernel/overview/"
 urls.source = "https://github.com/microsoft/semantic-kernel/tree/main/python"
 urls.release_notes = "https://github.com/microsoft/semantic-kernel/releases?q=tag%3Apython-1&expanded=true"
 urls.issues = "https://github.com/microsoft/semantic-kernel/issues"
 classifiers = [
-    "License :: OSI Approved :: MIT License",
-    "Development Status :: 5 - Production/Stable",
-    "Intended Audience :: Developers",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Framework :: Pydantic :: 2",
-    "Typing :: Typed",
+  "License :: OSI Approved :: MIT License",
+  "Development Status :: 5 - Production/Stable",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Framework :: Pydantic :: 2",
+  "Typing :: Typed",
 ]
 dependencies = [
     "aiohttp ~= 3.8",
     "pydantic ~= 2.0",
     "pydantic-settings ~= 2.0",
     "defusedxml ~= 0.7",
+    # azure identity
+    "azure-identity ~= 1.13",
     # embeddings
-    "numpy ~= 1.25.0; python_version < '3.12'",
-    "numpy ~= 1.26.0; python_version >= '3.12'",
+    "numpy >= 1.25.0; python_version < '3.12'",
+    "numpy >= 1.26.0; python_version >= '3.12'",
     # openai connector
     "openai ~= 1.0",
     # openapi and swagger
@@ -41,7 +43,7 @@ dependencies = [
     # templating
     "pybars4 ~= 0.9",
     "jinja2 ~= 3.1",
-    "nest-asyncio ~= 1.6"
+    "nest-asyncio ~= 1.6",
 ]
 
 ### Optional dependencies
@@ -61,24 +63,28 @@ google = [
 ]
 hugging_face = [
     "transformers[torch] ~= 4.28",
-    "sentence-transformers ~= 2.2",
-    "torch == 2.2.2"
+    "sentence-transformers >= 2.2,< 4.0",
+    "torch == 2.4.1"
 ]
 mongo = [
-    "motor ~= 3.3.2"
+    "pymongo >= 4.8.0, < 4.9",
+    "motor >= 3.3.2,< 3.6.0"
 ]
 notebooks = [
     "ipykernel ~= 6.29"
 ]
 milvus = [
-    "pymilvus >= 2.3,<2.4",
+    "pymilvus >= 2.3,< 2.5",
     "milvus >= 2.3,<2.3.8; platform_system != 'Windows'"
 ]
 mistralai = [
-    "mistralai ~= 0.4"
+    "mistralai >= 0.4,< 2.0"
 ]
 ollama = [
     "ollama ~= 0.2"
+]
+onnx = [
+    "onnxruntime-genai ~= 0.4; platform_system != 'Darwin'"
 ]
 anthropic = [
     "anthropic ~= 0.32"
@@ -101,10 +107,13 @@ usearch = [
     "pyarrow >= 12.0,<18.0"
 ]
 weaviate = [
-    "weaviate-client >= 3.18,<5.0"
+    "weaviate-client>=4.7,<5.0",
 ]
 pandas = [
     "pandas ~= 2.2"
+]
+aws = [
+    "boto3>=1.28.57",
 ]
 
 [tool.uv]

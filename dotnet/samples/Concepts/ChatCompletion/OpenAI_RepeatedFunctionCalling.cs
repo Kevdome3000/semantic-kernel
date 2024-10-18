@@ -1,19 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace ChatCompletion;
-
 using System.ComponentModel;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
+namespace ChatCompletion;
 
 /// <summary>
 ///  Sample shows how to the model will reuse a function result from the chat history.
 /// </summary>
 public sealed class OpenAI_RepeatedFunctionCalling(ITestOutputHelper output) : BaseTest(output)
 {
-
     /// <summary>
     /// Sample shows a chat history where each ask requires a function to be called but when
     /// an ask is repeated the model will reuse the previous function result.
@@ -30,8 +28,7 @@ public sealed class OpenAI_RepeatedFunctionCalling(ITestOutputHelper output) : B
         {
             new ChatMessageContent(AuthorRole.User, "What is the weather like in Boston?")
         };
-
-        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var executionSettings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
         var result1 = await service.GetChatMessageContentAsync(chatHistory, executionSettings, kernel);
         chatHistory.Add(result1);
         Console.WriteLine(result1);
@@ -51,20 +48,14 @@ public sealed class OpenAI_RepeatedFunctionCalling(ITestOutputHelper output) : B
         chatHistory.Add(result4);
         Console.WriteLine(result4);
     }
-
-
     private sealed class WeatherPlugin
     {
-
         [KernelFunction]
         [Description("Get the current weather in a given location.")]
         public string GetWeather(
-            [Description("The city and department, e.g. Marseille, 13")]
-            string location
+            [Description("The city and department, e.g. Marseille, 13")] string location
         ) => $"12°C\nWind: 11 KMPH\nHumidity: 48%\nMostly cloudy\nLocation: {location}";
-
     }
-
 
     private Kernel CreateKernelWithPlugin<T>()
     {
@@ -74,16 +65,12 @@ public sealed class OpenAI_RepeatedFunctionCalling(ITestOutputHelper output) : B
 
         // Create a kernel with OpenAI chat completion and WeatherPlugin
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
-
         kernelBuilder.AddOpenAIChatCompletion(
-            modelId: TestConfiguration.OpenAI.ChatModelId!,
-            apiKey: TestConfiguration.OpenAI.ApiKey!,
-            httpClient: httpClient);
-
+                modelId: TestConfiguration.OpenAI.ChatModelId!,
+                apiKey: TestConfiguration.OpenAI.ApiKey!,
+                httpClient: httpClient);
         kernelBuilder.Plugins.AddFromType<T>();
         Kernel kernel = kernelBuilder.Build();
-
         return kernel;
     }
-
 }

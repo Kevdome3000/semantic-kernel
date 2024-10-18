@@ -107,7 +107,7 @@ while (true)
     // Enable auto function calling
     var executionSettings = new OpenAIPromptExecutionSettings
     {
-        ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+        FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
     };
 
     // Get the result from the AI

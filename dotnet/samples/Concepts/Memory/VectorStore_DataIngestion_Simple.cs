@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json;
+using Azure.Identity;
 using Memory.VectorStoreFixtures;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.Qdrant;
-using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Embeddings;
 using Qdrant.Client;
 
@@ -24,15 +25,14 @@ namespace Memory;
 [Collection("Sequential")]
 public class VectorStore_DataIngestion_Simple(ITestOutputHelper output, VectorStoreQdrantContainerFixture qdrantFixture) : BaseTest(output), IClassFixture<VectorStoreQdrantContainerFixture>
 {
-
     [Fact]
     public async Task ExampleAsync()
     {
         // Create an embedding generation service.
         var textEmbeddingGenerationService = new AzureOpenAITextEmbeddingGenerationService(
-            TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
-            TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
-            TestConfiguration.AzureOpenAIEmbeddings.ApiKey);
+                TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
+                TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
+                new AzureCliCredential());
 
         // Initiate the docker container and construct the vector store.
         await qdrantFixture.ManualInitializeAsync();
@@ -43,14 +43,11 @@ public class VectorStore_DataIngestion_Simple(ITestOutputHelper output, VectorSt
         await collection.CreateCollectionIfNotExistsAsync();
 
         // Create glossary entries and generate embeddings for them.
-        var glossaryEntries = CreateGlossaryEntries().
-            ToList();
-
+        var glossaryEntries = CreateGlossaryEntries().ToList();
         var tasks = glossaryEntries.Select(entry => Task.Run(async () =>
         {
             entry.DefinitionEmbedding = await textEmbeddingGenerationService.GenerateEmbeddingAsync(entry.Definition);
         }));
-
         await Task.WhenAll(tasks);
 
         // Upsert the glossary entries into the collection and return their keys.
@@ -65,7 +62,6 @@ public class VectorStore_DataIngestion_Simple(ITestOutputHelper output, VectorSt
         Console.WriteLine($"Upserted record: {JsonSerializer.Serialize(upsertedRecord)}");
     }
 
-
     /// <summary>
     /// Sample model class that represents a glossary entry.
     /// </summary>
@@ -75,7 +71,6 @@ public class VectorStore_DataIngestion_Simple(ITestOutputHelper output, VectorSt
     /// </remarks>
     private sealed class Glossary
     {
-
         [VectorStoreRecordKey]
         public ulong Key { get; set; }
 
@@ -87,9 +82,7 @@ public class VectorStore_DataIngestion_Simple(ITestOutputHelper output, VectorSt
 
         [VectorStoreRecordVector(1536)]
         public ReadOnlyMemory<float> DefinitionEmbedding { get; set; }
-
     }
-
 
     /// <summary>
     /// Create some sample glossary entries.
@@ -118,5 +111,4 @@ public class VectorStore_DataIngestion_Simple(ITestOutputHelper output, VectorSt
             Definition = "Retrieval Augmented Generation - a term that refers to the process of retrieving additional data to provide as context to an LLM to use when generating a response (completion) to a user’s question (prompt)."
         };
     }
-
 }

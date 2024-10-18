@@ -1,27 +1,31 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Functions.UnitTests.Yaml;
-
 using System;
+using System.Linq;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Xunit;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
+namespace SemanticKernel.Functions.UnitTests.Yaml;
 
 public class KernelFunctionYamlTests
 {
-
     private readonly ISerializer _serializer;
-
+    private readonly Kernel _kernel;
 
     public KernelFunctionYamlTests()
     {
-        this._serializer = new SerializerBuilder().WithNamingConvention(UnderscoredNamingConvention.Instance).
-            Build();
-    }
+        this._kernel = new Kernel();
+        this._kernel.Plugins.AddFromFunctions("p1", [KernelFunctionFactory.CreateFromMethod(() => { }, "f1")]);
+        this._kernel.Plugins.AddFromFunctions("p2", [KernelFunctionFactory.CreateFromMethod(() => { }, "f2")]);
+        this._kernel.Plugins.AddFromFunctions("p3", [KernelFunctionFactory.CreateFromMethod(() => { }, "f3")]);
 
+        this._serializer = new SerializerBuilder()
+            .WithNamingConvention(UnderscoredNamingConvention.Instance)
+            .Build();
+    }
 
     [Fact]
     public void ItShouldCreateFunctionFromPromptYamlWithNoExecutionSettings()
@@ -38,7 +42,6 @@ public class KernelFunctionYamlTests
         //Assert.Equal(0, function.ExecutionSettings.Count);
     }
 
-
     [Fact]
     public void ItShouldCreateFunctionFromPromptYaml()
     {
@@ -51,7 +54,6 @@ public class KernelFunctionYamlTests
         Assert.Equal("SayHello", function.Name);
         Assert.Equal("Say hello to the specified person using the specified language", function.Description);
     }
-
 
     [Fact]
     public void ItShouldCreateFunctionFromPromptYamlWithCustomExecutionSettings()
@@ -67,15 +69,14 @@ public class KernelFunctionYamlTests
         Assert.Equal(2, function.Metadata.Parameters.Count);
     }
 
-
     [Fact]
     public void ItShouldSupportCreatingOpenAIExecutionSettings()
     {
         // Arrange
-        var deserializer = new DeserializerBuilder().WithNamingConvention(UnderscoredNamingConvention.Instance).
-            WithNodeDeserializer(new PromptExecutionSettingsNodeDeserializer()).
-            Build();
-
+        var deserializer = new DeserializerBuilder()
+            .WithNamingConvention(UnderscoredNamingConvention.Instance)
+            .WithTypeConverter(new PromptExecutionSettingsTypeConverter())
+            .Build();
         var promptFunctionModel = deserializer.Deserialize<PromptTemplateConfig>(this._yaml);
 
         // Act
@@ -88,6 +89,68 @@ public class KernelFunctionYamlTests
         Assert.Equal(0.0, executionSettings.TopP);
     }
 
+    [Fact]
+    public void ItShouldDeserializeAutoFunctionChoiceBehaviors()
+    {
+        // Act
+        var promptTemplateConfig = KernelFunctionYaml.ToPromptTemplateConfig(this._yaml);
+
+        // Assert
+        Assert.NotNull(promptTemplateConfig?.ExecutionSettings);
+
+        // Service with auto function choice behavior
+        var executionSettings = promptTemplateConfig.ExecutionSettings["service1"];
+        Assert.NotNull(executionSettings?.FunctionChoiceBehavior);
+
+        var config = executionSettings.FunctionChoiceBehavior.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext([]) { Kernel = this._kernel });
+        Assert.NotNull(config);
+        Assert.Equal(FunctionChoice.Auto, config.Choice);
+        Assert.NotNull(config.Functions);
+        Assert.Equal("p1", config.Functions.Single().PluginName);
+        Assert.Equal("f1", config.Functions.Single().Name);
+    }
+
+    [Fact]
+    public void ItShouldDeserializeRequiredFunctionChoiceBehaviors()
+    {
+        // Act
+        var promptTemplateConfig = KernelFunctionYaml.ToPromptTemplateConfig(this._yaml);
+
+        // Assert
+        Assert.NotNull(promptTemplateConfig?.ExecutionSettings);
+
+        // Service with required function choice behavior
+        var executionSettings = promptTemplateConfig.ExecutionSettings["service2"];
+        Assert.NotNull(executionSettings?.FunctionChoiceBehavior);
+
+        var config = executionSettings.FunctionChoiceBehavior.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext([]) { Kernel = this._kernel });
+        Assert.NotNull(config);
+        Assert.Equal(FunctionChoice.Required, config.Choice);
+        Assert.NotNull(config.Functions);
+        Assert.Equal("p2", config.Functions.Single().PluginName);
+        Assert.Equal("f2", config.Functions.Single().Name);
+    }
+
+    [Fact]
+    public void ItShouldDeserializeNoneFunctionChoiceBehaviors()
+    {
+        // Act
+        var promptTemplateConfig = KernelFunctionYaml.ToPromptTemplateConfig(this._yaml);
+
+        // Assert
+        Assert.NotNull(promptTemplateConfig?.ExecutionSettings);
+
+        // Service with none function choice behavior
+        var executionSettings = promptTemplateConfig.ExecutionSettings["service3"];
+        Assert.NotNull(executionSettings?.FunctionChoiceBehavior);
+
+        var noneConfig = executionSettings.FunctionChoiceBehavior.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext([]) { Kernel = this._kernel });
+        Assert.NotNull(noneConfig);
+        Assert.Equal(FunctionChoice.None, noneConfig.Choice);
+        Assert.NotNull(noneConfig.Functions);
+        Assert.Equal("p3", noneConfig.Functions.Single().PluginName);
+        Assert.Equal("f3", noneConfig.Functions.Single().Name);
+    }
 
     [Fact]
     public void ItShouldCreateFunctionWithDefaultValueOfStringType()
@@ -100,7 +163,6 @@ public class KernelFunctionYamlTests
         Assert.Equal("John", function?.Metadata?.Parameters[0].DefaultValue);
         Assert.Equal("English", function?.Metadata?.Parameters[1].DefaultValue);
     }
-
 
     [Fact]
     // This test checks that the logic of imposing a temporary limitation on the default value being a string is in place and works as expected.
@@ -130,7 +192,6 @@ public class KernelFunctionYamlTests
         Assert.Throws<NotSupportedException>(() => KernelFunctionYaml.FromPromptYaml(CreateYaml(new { p1 = "v1" })));
     }
 
-
     private readonly string _yamlNoExecutionSettings = @"
         template_format: semantic-kernel
         template:        Say hello world to {{$name}} in {{$language}}
@@ -146,64 +207,83 @@ public class KernelFunctionYamlTests
         ";
 
     private readonly string _yaml = """
-                                    template_format: semantic-kernel
-                                    template:        Say hello world to {{$name}} in {{$language}}
-                                    description:     Say hello to the specified person using the specified language
-                                    name:            SayHello
-                                    input_variables:
-                                      - name:          name
-                                        description:   The name of the person to greet
-                                        default:       John
-                                      - name:          language
-                                        description:   The language to generate the greeting in
-                                        default: English
-                                    execution_settings:
-                                      service1:
-                                        model_id:          gpt-4
-                                        temperature:       1.0
-                                        top_p:             0.0
-                                        presence_penalty:  0.0
-                                        frequency_penalty: 0.0
-                                        max_tokens:        256
-                                        stop_sequences:    []
-                                      service2:
-                                        model_id:          gpt-3.5
-                                        temperature:       1.0
-                                        top_p:             0.0
-                                        presence_penalty:  0.0
-                                        frequency_penalty: 0.0
-                                        max_tokens:        256
-                                        stop_sequences:    [ "foo", "bar", "baz" ]
-                                    """;
+        template_format: semantic-kernel
+        template:        Say hello world to {{$name}} in {{$language}}
+        description:     Say hello to the specified person using the specified language
+        name:            SayHello
+        input_variables:
+          - name:          name
+            description:   The name of the person to greet
+            default:       John
+          - name:          language
+            description:   The language to generate the greeting in
+            default: English
+        execution_settings:
+          service1:
+            model_id:          gpt-4
+            temperature:       1.0
+            top_p:             0.0
+            presence_penalty:  0.0
+            frequency_penalty: 0.0
+            max_tokens:        256
+            stop_sequences:    []
+            function_choice_behavior:
+              type: auto
+              functions:
+              - p1.f1
+          service2:
+            model_id:          gpt-3.5
+            temperature:       1.0
+            top_p:             0.0
+            presence_penalty:  0.0
+            frequency_penalty: 0.0
+            max_tokens:        256
+            stop_sequences:    [ "foo", "bar", "baz" ]
+            function_choice_behavior:
+              type: required
+              functions:
+              - p2.f2
+          service3:
+            model_id:          gpt-3.5
+            temperature:       1.0
+            top_p:             0.0
+            presence_penalty:  0.0
+            frequency_penalty: 0.0
+            max_tokens:        256
+            stop_sequences:    [ "foo", "bar", "baz" ]
+            function_choice_behavior:
+              type: none
+              functions:
+              - p3.f3
+        """;
 
     private readonly string _yamlWithCustomSettings = """
-                                                      template_format: semantic-kernel
-                                                      template:        Say hello world to {{$name}} in {{$language}}
-                                                      description:     Say hello to the specified person using the specified language
-                                                      name:            SayHello
-                                                      input_variables:
-                                                        - name:          name
-                                                          description:   The name of the person to greet
-                                                          default:       John
-                                                        - name:          language
-                                                          description:   The language to generate the greeting in
-                                                          default:       English
-                                                      execution_settings:
-                                                        service1:
-                                                          model_id:          gpt-4
-                                                          temperature:       1.0
-                                                          top_p:             0.0
-                                                          presence_penalty:  0.0
-                                                          frequency_penalty: 0.0
-                                                          max_tokens:        256
-                                                          stop_sequences:    []
-                                                        service2:
-                                                          model_id:          random-model
-                                                          temperaturex:      1.0
-                                                          top_q:             0.0
-                                                          rando_penalty:     0.0
-                                                          max_token_count:   256
-                                                          stop_sequences:    [ "foo", "bar", "baz" ]
-                                                      """;
-
+        template_format: semantic-kernel
+        template:        Say hello world to {{$name}} in {{$language}}
+        description:     Say hello to the specified person using the specified language
+        name:            SayHello
+        input_variables:
+          - name:          name
+            description:   The name of the person to greet
+            default:       John
+          - name:          language
+            description:   The language to generate the greeting in
+            default:       English
+        execution_settings:
+          service1:
+            model_id:          gpt-4
+            temperature:       1.0
+            top_p:             0.0
+            presence_penalty:  0.0
+            frequency_penalty: 0.0
+            max_tokens:        256
+            stop_sequences:    []
+          service2:
+            model_id:          random-model
+            temperaturex:      1.0
+            top_q:             0.0
+            rando_penalty:     0.0
+            max_token_count:   256
+            stop_sequences:    [ "foo", "bar", "baz" ]
+        """;
 }
