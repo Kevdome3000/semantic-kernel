@@ -24,6 +24,7 @@ public class SqlServerMemoryStoreTests : IAsyncLifetime
     private const string SchemaName = "sk_it";
 
     private const string DefaultCollectionName = "test";
+    private const int TestEmbeddingDimensionsCount = 5;
 
     private string _connectionString = null!;
 
@@ -50,7 +51,7 @@ public class SqlServerMemoryStoreTests : IAsyncLifetime
         await this.CleanupDatabaseAsync();
         await this.InitializeDatabaseAsync();
 
-        this.Store = new SqlServerMemoryStore(this._connectionString, SchemaName);
+        this.Store = new SqlServerMemoryStore(this._connectionString, SchemaName, TestEmbeddingDimensionsCount);
     }
 
 

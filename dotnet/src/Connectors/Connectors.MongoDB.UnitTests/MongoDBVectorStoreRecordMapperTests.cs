@@ -3,21 +3,20 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
+using Microsoft.SemanticKernel.Connectors.MongoDB;
 using MongoDB.Bson;
 using Xunit;
 
-namespace SemanticKernel.Connectors.AzureCosmosDBMongoDB.UnitTests;
+namespace SemanticKernel.Connectors.MongoDB.UnitTests;
 
 /// <summary>
-/// Unit tests for <see cref="AzureCosmosDBMongoDBVectorStoreRecordMapper{TRecord}"/> class.
+/// Unit tests for <see cref="MongoDBVectorStoreRecordMapper{TRecord}"/> class.
 /// </summary>
-public sealed class AzureCosmosDBMongoDBVectorStoreRecordMapperTests
+public sealed class MongoDBVectorStoreRecordMapperTests
 {
-    private readonly AzureCosmosDBMongoDBVectorStoreRecordMapper<AzureCosmosDBMongoDBHotelModel> _sut;
+    private readonly MongoDBVectorStoreRecordMapper<MongoDBHotelModel> _sut;
 
-
-    public AzureCosmosDBMongoDBVectorStoreRecordMapperTests()
+    public MongoDBVectorStoreRecordMapperTests()
     {
         var keyProperty = new VectorStoreRecordKeyProperty("HotelId", typeof(string));
 
@@ -33,15 +32,14 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordMapperTests
             ]
         };
 
-        this._sut = new(new VectorStoreRecordPropertyReader(typeof(AzureCosmosDBMongoDBHotelModel), definition, null));
+        this._sut = new(new VectorStoreRecordPropertyReader(typeof(MongoDBHotelModel), definition, null));
     }
-
 
     [Fact]
     public void MapFromDataToStorageModelReturnsValidObject()
     {
         // Arrange
-        var hotel = new AzureCosmosDBMongoDBHotelModel("key")
+        var hotel = new MongoDBHotelModel("key")
         {
             HotelName = "Test Name",
             Tags = ["tag1", "tag2"],
@@ -61,7 +59,6 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordMapperTests
         Assert.True(document["parking_is_included"].AsBoolean);
         Assert.Equal([1f, 2f, 3f], document["DescriptionEmbedding"].AsBsonArray);
     }
-
 
     [Fact]
     public void MapFromStorageToDataModelReturnsValidObject()
