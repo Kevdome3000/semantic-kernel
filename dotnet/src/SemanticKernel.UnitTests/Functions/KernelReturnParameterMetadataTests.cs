@@ -1,18 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.Json;
+using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
+using SemanticKernel.UnitTests.Functions.JsonSerializerContexts;
+using Xunit;
+
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 
 namespace SemanticKernel.UnitTests.Functions;
 
-using System.Text.Json;
-using System.Threading.Tasks;
-using Microsoft.SemanticKernel;
-using Xunit;
-
-
 public class KernelReturnParameterMetadataTests
 {
-
     [Fact]
     public void ItRoundtripsArguments()
     {
@@ -22,7 +21,6 @@ public class KernelReturnParameterMetadataTests
         Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("""{ "type":"object" }""")), JsonSerializer.Serialize(m.Schema));
     }
 
-
     [Fact]
     public void ItInfersSchemaFromType()
     {
@@ -31,14 +29,16 @@ public class KernelReturnParameterMetadataTests
         Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("""{ "type":"string" }""")), JsonSerializer.Serialize(new KernelReturnParameterMetadata { ParameterType = typeof(string) }.Schema));
     }
 
-
-    [Fact]
-    public void ItIncludesDescriptionInSchema()
+    [Theory]
+    [ClassData(typeof(TestJsonSerializerOptionsForPrimitives))]
+    public void ItIncludesDescriptionInSchema(JsonSerializerOptions? jsos)
     {
-        var m = new KernelReturnParameterMetadata { Description = "d", ParameterType = typeof(int) };
+        var m = jsos is not null ?
+            new KernelReturnParameterMetadata(jsos) { Description = "d", ParameterType = typeof(int) } :
+            new KernelReturnParameterMetadata() { Description = "d", ParameterType = typeof(int) };
+
         Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("""{ "type":"integer", "description":"d" }""")), JsonSerializer.Serialize(m.Schema));
     }
-
 
     [Fact]
     public void ItCachesInferredSchemas()
@@ -46,7 +46,6 @@ public class KernelReturnParameterMetadataTests
         var m = new KernelReturnParameterMetadata { ParameterType = typeof(KernelParameterMetadataTests.Example) };
         Assert.Same(m.Schema, m.Schema);
     }
-
 
     [Fact]
     public void ItCopiesInferredSchemaToCopy()
@@ -58,7 +57,6 @@ public class KernelReturnParameterMetadataTests
         m = new KernelReturnParameterMetadata(m);
         Assert.Same(schema1, m.Schema);
     }
-
 
     [Fact]
     public void ItInvalidatesSchemaForNewType()
@@ -72,7 +70,6 @@ public class KernelReturnParameterMetadataTests
         Assert.NotSame(schema1, m.Schema);
     }
 
-
     [Fact]
     public void ItInvalidatesSchemaForNewDescription()
     {
@@ -85,42 +82,19 @@ public class KernelReturnParameterMetadataTests
         Assert.NotSame(schema1, m.Schema);
     }
 
-
     [Fact]
     public void ItRepresentsUnderlyingType()
     {
-        Assert.Equal(typeof(void), KernelFunctionFactory.CreateFromMethod(() => { }).
-            Metadata.ReturnParameter.ParameterType);
-
-        Assert.Equal(typeof(int), KernelFunctionFactory.CreateFromMethod(() => 42).
-            Metadata.ReturnParameter.ParameterType);
-
-        Assert.Equal(typeof(string), KernelFunctionFactory.CreateFromMethod(() => "42").
-            Metadata.ReturnParameter.ParameterType);
-
-        Assert.Equal(typeof(bool), KernelFunctionFactory.CreateFromMethod(() => true).
-            Metadata.ReturnParameter.ParameterType);
-
-        Assert.Equal(typeof(int), KernelFunctionFactory.CreateFromMethod(() => (int?)42).
-            Metadata.ReturnParameter.ParameterType);
-
-        Assert.Equal(typeof(int), KernelFunctionFactory.CreateFromMethod(async () => 42).
-            Metadata.ReturnParameter.ParameterType);
-
-        Assert.Equal(typeof(int), KernelFunctionFactory.CreateFromMethod(async ValueTask<int> () => 42).
-            Metadata.ReturnParameter.ParameterType);
-
-        Assert.Equal(typeof(int), KernelFunctionFactory.CreateFromMethod(async () => (int?)42).
-            Metadata.ReturnParameter.ParameterType);
-
-        Assert.Equal(typeof(int), KernelFunctionFactory.CreateFromMethod(async ValueTask<int?> () => (int?)42).
-            Metadata.ReturnParameter.ParameterType);
-
-        Assert.Equal(typeof(string), KernelFunctionFactory.CreateFromMethod(async () => "42").
-            Metadata.ReturnParameter.ParameterType);
-
-        Assert.Equal(typeof(string), KernelFunctionFactory.CreateFromMethod(async ValueTask<string> () => "42").
-            Metadata.ReturnParameter.ParameterType);
+        Assert.Equal(typeof(void), KernelFunctionFactory.CreateFromMethod(() => { }).Metadata.ReturnParameter.ParameterType);
+        Assert.Equal(typeof(int), KernelFunctionFactory.CreateFromMethod(() => 42).Metadata.ReturnParameter.ParameterType);
+        Assert.Equal(typeof(string), KernelFunctionFactory.CreateFromMethod(() => "42").Metadata.ReturnParameter.ParameterType);
+        Assert.Equal(typeof(bool), KernelFunctionFactory.CreateFromMethod(() => true).Metadata.ReturnParameter.ParameterType);
+        Assert.Equal(typeof(int), KernelFunctionFactory.CreateFromMethod(() => (int?)42).Metadata.ReturnParameter.ParameterType);
+        Assert.Equal(typeof(int), KernelFunctionFactory.CreateFromMethod(async () => 42).Metadata.ReturnParameter.ParameterType);
+        Assert.Equal(typeof(int), KernelFunctionFactory.CreateFromMethod(async ValueTask<int> () => 42).Metadata.ReturnParameter.ParameterType);
+        Assert.Equal(typeof(int), KernelFunctionFactory.CreateFromMethod(async () => (int?)42).Metadata.ReturnParameter.ParameterType);
+        Assert.Equal(typeof(int), KernelFunctionFactory.CreateFromMethod(async ValueTask<int?> () => (int?)42).Metadata.ReturnParameter.ParameterType);
+        Assert.Equal(typeof(string), KernelFunctionFactory.CreateFromMethod(async () => "42").Metadata.ReturnParameter.ParameterType);
+        Assert.Equal(typeof(string), KernelFunctionFactory.CreateFromMethod(async ValueTask<string> () => "42").Metadata.ReturnParameter.ParameterType);
     }
-
 }

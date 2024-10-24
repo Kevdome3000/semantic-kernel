@@ -12,7 +12,6 @@ namespace SemanticKernel.Connectors.Onnx.UnitTests;
 /// </summary>
 public class OnnxRuntimeGenAIPromptExecutionSettingsTests
 {
-
     [Fact]
     public void FromExecutionSettingsWhenAlreadyMistralShouldReturnSame()
     {
@@ -25,7 +24,6 @@ public class OnnxRuntimeGenAIPromptExecutionSettingsTests
         // Assert
         Assert.Same(executionSettings, onnxExecutionSettings);
     }
-
 
     [Fact]
     public void FromExecutionSettingsWhenNullShouldReturnDefaultSettings()
@@ -53,29 +51,28 @@ public class OnnxRuntimeGenAIPromptExecutionSettingsTests
         Assert.Null(onnxExecutionSettings.DoSample);
     }
 
-
     [Fact]
     public void FromExecutionSettingsWhenSerializedHasPropertiesShouldPopulateSpecialized()
     {
         // Arrange
         string jsonSettings = """
-                              {
-                                  "top_k": 2,
-                                  "top_p": 0.9,
-                                  "temperature": 0.5,
-                                  "repetition_penalty": 0.1,
-                                  "past_present_share_buffer": true,
-                                  "num_return_sequences": 200,
-                                  "num_beams": 20,
-                                  "no_repeat_ngram_size": 15,
-                                  "min_tokens": 10,
-                                  "max_tokens": 100,
-                                  "length_penalty": 0.2,
-                                  "diversity_penalty": 0.3,
-                                  "early_stopping": false,
-                                  "do_sample": true
-                              }
-                              """;
+                                {
+                                    "top_k": 2,
+                                    "top_p": 0.9,
+                                    "temperature": 0.5,
+                                    "repetition_penalty": 0.1,
+                                    "past_present_share_buffer": true,
+                                    "num_return_sequences": 200,
+                                    "num_beams": 20,
+                                    "no_repeat_ngram_size": 15,
+                                    "min_tokens": 10,
+                                    "max_tokens": 100,
+                                    "length_penalty": 0.2,
+                                    "diversity_penalty": 0.3,
+                                    "early_stopping": false,
+                                    "do_sample": true
+                                }
+                                """;
 
         // Act
         var executionSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(jsonSettings);
@@ -98,4 +95,36 @@ public class OnnxRuntimeGenAIPromptExecutionSettingsTests
         Assert.True(onnxExecutionSettings.DoSample);
     }
 
+    [Fact]
+    public void ItShouldCreateOnnxPromptExecutionSettingsFromCustomPromptExecutionSettings()
+    {
+        // Arrange
+        var customExecutionSettings = new CustomPromptExecutionSettings() { ServiceId = "service-id", Temperature = 36.6f };
+
+        // Act
+        var onnxExecutionSettings = OnnxRuntimeGenAIPromptExecutionSettings.FromExecutionSettings(customExecutionSettings);
+
+        // Assert
+        Assert.Equal("service-id", onnxExecutionSettings.ServiceId);
+        Assert.Equal(36.6f, onnxExecutionSettings.Temperature);
+    }
+
+    [Fact]
+    public void ItShouldCreateOnnxPromptExecutionSettingsFromCustomPromptExecutionSettingsUsingJSOs()
+    {
+        // Arrange
+        var jsos = new JsonSerializerOptions
+        {
+            TypeInfoResolver = CustomPromptExecutionSettingsJsonSerializerContext.Default
+        };
+
+        var customExecutionSettings = new CustomPromptExecutionSettings() { ServiceId = "service-id", Temperature = 36.6f };
+
+        // Act
+        var onnxExecutionSettings = OnnxRuntimeGenAIPromptExecutionSettings.FromExecutionSettings(customExecutionSettings, jsos);
+
+        // Assert
+        Assert.Equal("service-id", onnxExecutionSettings.ServiceId);
+        Assert.Equal(36.6f, onnxExecutionSettings.Temperature);
+    }
 }

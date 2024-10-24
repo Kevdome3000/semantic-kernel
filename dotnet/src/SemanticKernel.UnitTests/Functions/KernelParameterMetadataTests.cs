@@ -1,17 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.UnitTests.Functions;
-
 using System;
 using System.ComponentModel;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
+using SemanticKernel.UnitTests.Functions.JsonSerializerContexts;
 using Xunit;
 
+namespace SemanticKernel.UnitTests.Functions;
 
 public class KernelParameterMetadataTests
 {
-
     [Fact]
     public void ItThrowsForInvalidName()
     {
@@ -20,7 +19,6 @@ public class KernelParameterMetadataTests
         Assert.Throws<ArgumentException>(() => new KernelParameterMetadata("     "));
         Assert.Throws<ArgumentException>(() => new KernelParameterMetadata("\t\r\v "));
     }
-
 
     [Fact]
     public void ItCanBeConstructedWithJustName()
@@ -34,7 +32,6 @@ public class KernelParameterMetadataTests
         Assert.False(m.IsRequired);
     }
 
-
     [Fact]
     public void ItRoundtripsArguments()
     {
@@ -46,7 +43,6 @@ public class KernelParameterMetadataTests
         Assert.Equal(typeof(int), m.ParameterType);
         Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("""{ "type":"object" }""")), JsonSerializer.Serialize(m.Schema));
     }
-
 
     [Fact]
     public void ItInfersSchemaFromType()
@@ -60,7 +56,6 @@ public class KernelParameterMetadataTests
         Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("{\"type\":\"object\",\"properties\":{\"Value1\":{\"type\":[\"string\",\"null\"]},\"Value2\":{\"description\":\"Some property that does something.\",\"type\":\"integer\"},\"Value3\":{\"description\":\"This one also does something.\",\"type\":\"number\"}}}")), JsonSerializer.Serialize(new KernelParameterMetadata("p") { ParameterType = typeof(Example) }.Schema));
     }
 
-
     [Fact]
     public void ItCantInferSchemaFromUnsupportedType()
     {
@@ -68,30 +63,38 @@ public class KernelParameterMetadataTests
         Assert.Null(new KernelParameterMetadata("p") { ParameterType = typeof(int*) }.Schema);
     }
 
-
-    [Fact]
-    public void ItIncludesDescriptionInSchema()
+    [Theory]
+    [ClassData(typeof(TestJsonSerializerOptionsForPrimitives))]
+    public void ItIncludesDescriptionInSchema(JsonSerializerOptions? jsos)
     {
-        var m = new KernelParameterMetadata("p") { Description = "something neat", ParameterType = typeof(int) };
+        var m = jsos is not null ?
+            new KernelParameterMetadata("p", jsos) { Description = "something neat", ParameterType = typeof(int) } :
+            new KernelParameterMetadata("p") { Description = "something neat", ParameterType = typeof(int) };
+
         Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("""{ "type":"integer", "description":"something neat" }""")), JsonSerializer.Serialize(m.Schema));
     }
 
-
-    [Fact]
-    public void ItIncludesDefaultValueInSchema()
+    [Theory]
+    [ClassData(typeof(TestJsonSerializerOptionsForPrimitives))]
+    public void ItIncludesDefaultValueInSchema(JsonSerializerOptions? jsos)
     {
-        var m = new KernelParameterMetadata("p") { DefaultValue = "42", ParameterType = typeof(int) };
+        var m = jsos is not null ?
+            new KernelParameterMetadata("p", jsos) { DefaultValue = "42", ParameterType = typeof(int) } :
+            new KernelParameterMetadata("p") { DefaultValue = "42", ParameterType = typeof(int) };
+
         Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("""{ "type":"integer", "description":"(default value: 42)" }""")), JsonSerializer.Serialize(m.Schema));
     }
 
-
-    [Fact]
-    public void ItIncludesDescriptionAndDefaultValueInSchema()
+    [Theory]
+    [ClassData(typeof(TestJsonSerializerOptionsForPrimitives))]
+    public void ItIncludesDescriptionAndDefaultValueInSchema(JsonSerializerOptions? jsos)
     {
-        var m = new KernelParameterMetadata("p") { Description = "something neat", DefaultValue = "42", ParameterType = typeof(int) };
+        var m = jsos is not null ?
+            new KernelParameterMetadata("p", jsos) { Description = "something neat", DefaultValue = "42", ParameterType = typeof(int) } :
+            new KernelParameterMetadata("p") { Description = "something neat", DefaultValue = "42", ParameterType = typeof(int) };
+
         Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("""{ "type":"integer", "description":"something neat (default value: 42)" }""")), JsonSerializer.Serialize(m.Schema));
     }
-
 
     [Fact]
     public void ItCachesInferredSchemas()
@@ -99,7 +102,6 @@ public class KernelParameterMetadataTests
         var m = new KernelParameterMetadata("p") { ParameterType = typeof(Example) };
         Assert.Same(m.Schema, m.Schema);
     }
-
 
     [Fact]
     public void ItCopiesInferredSchemaToCopy()
@@ -111,7 +113,6 @@ public class KernelParameterMetadataTests
         m = new KernelParameterMetadata(m);
         Assert.Same(schema1, m.Schema);
     }
-
 
     [Fact]
     public void ItInvalidatesSchemaForNewType()
@@ -125,7 +126,6 @@ public class KernelParameterMetadataTests
         Assert.NotSame(schema1, m.Schema);
     }
 
-
     [Fact]
     public void ItInvalidatesSchemaForNewDescription()
     {
@@ -137,7 +137,6 @@ public class KernelParameterMetadataTests
         Assert.NotNull(m.Schema);
         Assert.NotSame(schema1, m.Schema);
     }
-
 
     [Fact]
     public void ItInvalidatesSchemaForNewDefaultValue()
@@ -151,20 +150,14 @@ public class KernelParameterMetadataTests
         Assert.NotSame(schema1, m.Schema);
     }
 
-
 #pragma warning disable CA1812 // class never instantiated
     internal sealed class Example
     {
-
         public string? Value1 { get; set; }
-
         [Description("Some property that does something.")]
         public int Value2 { get; set; }
-
         [Description("This one also does something.")]
         public double Value3 { get; set; }
-
     }
 #pragma warning restore CA1812
-
 }
