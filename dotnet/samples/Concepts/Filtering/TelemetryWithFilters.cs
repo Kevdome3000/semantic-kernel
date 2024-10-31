@@ -1,14 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Filtering;
-
 using System.Diagnostics;
+using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
+namespace Filtering;
 
 /// <summary>
 /// Kernel and connectors have out-of-the-box telemetry to capture key information, which is available during requests.
@@ -18,13 +18,15 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 /// </summary>
 public class TelemetryWithFilters(ITestOutputHelper output) : BaseTest(output)
 {
-
-    [Fact]
-    public async Task LoggingAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task LoggingAsync(bool isStreaming)
     {
         // Initialize kernel with chat completion service.
-        var builder = Kernel.CreateBuilder().
-            AddOpenAIChatCompletion("gpt-4", TestConfiguration.OpenAI.ApiKey);
+        var builder = Kernel
+            .CreateBuilder()
+            .AddOpenAIChatCompletion("gpt-4", TestConfiguration.OpenAI.ApiKey);
 
         // Create and add logger, which will output messages to test detail summary window.
         var logger = this.LoggerFactory.CreateLogger<TelemetryWithFilters>();
@@ -70,9 +72,25 @@ public class TelemetryWithFilters(ITestOutputHelper output) : BaseTest(output)
         {
             // Invoke prompt with arguments.
             const string Prompt = "Given the current time of day and weather, what is the likely color of the sky in {{$city}}?";
-            var result = await kernel.InvokePromptAsync(Prompt, new(executionSettings) { ["city"] = "Boston" });
 
-            Console.WriteLine(result);
+            var arguments = new KernelArguments(executionSettings) { ["city"] = "Boston" };
+
+            if (isStreaming)
+            {
+                await foreach (var item in kernel.InvokePromptStreamingAsync<StreamingChatMessageContent>(Prompt, arguments))
+                {
+                    if (item.Content is not null)
+                    {
+                        Console.Write(item.Content);
+                    }
+                }
+            }
+            else
+            {
+                var result = await kernel.InvokePromptAsync(Prompt, arguments);
+
+                Console.WriteLine(result);
+            }
         }
 
         // Output:
@@ -101,14 +119,12 @@ public class TelemetryWithFilters(ITestOutputHelper output) : BaseTest(output)
         // Transaction ID: [2d9ca2ce-8bf7-4d43-9f90-05eda7122aa2] Function completed. Duration: 5.397173s
     }
 
-
     /// <summary>
     /// Filter which logs an information available during function invocation such as:
     /// Function name, arguments, execution settings, result, duration, token usage.
     /// </summary>
     private sealed class FunctionInvocationLoggingFilter(ILogger logger) : IFunctionInvocationFilter
     {
-
         public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
         {
             long startingTimestamp = Stopwatch.GetTimestamp();
@@ -130,22 +146,12 @@ public class TelemetryWithFilters(ITestOutputHelper output) : BaseTest(output)
                 await next(context);
 
                 logger.LogInformation("Function {FunctionName} succeeded.", context.Function.Name);
-                logger.LogTrace("Function result: {Result}", context.Result.ToString());
 
-                if (logger.IsEnabled(LogLevel.Information))
-                {
-                    var usage = context.Result.Metadata?["Usage"];
-
-                    if (usage is not null)
-                    {
-                        logger.LogInformation("Usage: {Usage}", JsonSerializer.Serialize(usage));
-                    }
-                }
+                await this.LogFunctionResultAsync(context);
             }
             catch (Exception exception)
             {
                 logger.LogError(exception, "Function failed. Error: {Message}", exception.Message);
-
                 throw;
             }
             finally
@@ -161,24 +167,57 @@ public class TelemetryWithFilters(ITestOutputHelper output) : BaseTest(output)
             }
         }
 
-    }
+        private async Task LogFunctionResultAsync(FunctionInvocationContext context)
+        {
+            string? result = null;
+            object? usage = null;
 
+            if (context.IsStreaming)
+            {
+                var stringBuilder = new StringBuilder();
+
+                await foreach (var item in context.Result.GetValue<IAsyncEnumerable<StreamingChatMessageContent>>()!)
+                {
+                    if (item.Content is not null)
+                    {
+                        stringBuilder.Append(item.Content);
+                    }
+
+                    usage = item.Metadata?["Usage"];
+                }
+
+                result = stringBuilder.ToString();
+            }
+            else
+            {
+                result = context.Result.GetValue<string>();
+                usage = context.Result.Metadata?["Usage"];
+            }
+
+            if (result is not null)
+            {
+                logger.LogTrace("Function result: {Result}", result);
+            }
+
+            if (logger.IsEnabled(LogLevel.Information) && usage is not null)
+            {
+                logger.LogInformation("Usage: {Usage}", JsonSerializer.Serialize(usage));
+            }
+        }
+    }
 
     /// <summary>
     /// Filter which logs an information available during prompt rendering such as rendered prompt.
     /// </summary>
     private sealed class PromptRenderLoggingFilter(ILogger logger) : IPromptRenderFilter
     {
-
         public async Task OnPromptRenderAsync(PromptRenderContext context, Func<PromptRenderContext, Task> next)
         {
             await next(context);
 
             logger.LogTrace("Rendered prompt: {Prompt}", context.RenderedPrompt);
         }
-
     }
-
 
     /// <summary>
     /// Filter which logs an information available during automatic function calling such as:
@@ -186,7 +225,6 @@ public class TelemetryWithFilters(ITestOutputHelper output) : BaseTest(output)
     /// </summary>
     private sealed class AutoFunctionInvocationLoggingFilter(ILogger logger) : IAutoFunctionInvocationFilter
     {
-
         public async Task OnAutoFunctionInvocationAsync(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next)
         {
             if (logger.IsEnabled(LogLevel.Trace))
@@ -199,8 +237,7 @@ public class TelemetryWithFilters(ITestOutputHelper output) : BaseTest(output)
                 logger.LogDebug("Function count: {FunctionCount}", context.FunctionCount);
             }
 
-            var functionCalls = FunctionCallContent.GetFunctionCalls(context.ChatHistory.Last()).
-                ToList();
+            var functionCalls = FunctionCallContent.GetFunctionCalls(context.ChatHistory.Last()).ToList();
 
             if (logger.IsEnabled(LogLevel.Trace))
             {
@@ -214,7 +251,5 @@ public class TelemetryWithFilters(ITestOutputHelper output) : BaseTest(output)
 
             await next(context);
         }
-
     }
-
 }

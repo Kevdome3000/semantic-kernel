@@ -1,16 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Filtering;
-
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 
+namespace Filtering;
 
 public class FunctionInvocationFiltering(ITestOutputHelper output) : BaseTest(output)
 {
-
     /// <summary>
     /// Shows how to use function and prompt filters in Kernel.
     /// </summary>
@@ -39,7 +37,6 @@ public class FunctionInvocationFiltering(ITestOutputHelper output) : BaseTest(ou
         Console.WriteLine(result);
     }
 
-
     [Fact]
     public async Task FunctionFilterResultOverrideAsync()
     {
@@ -61,34 +58,69 @@ public class FunctionInvocationFiltering(ITestOutputHelper output) : BaseTest(ou
         // Metadata: metadata_key: metadata_value
     }
 
-
     [Fact]
     public async Task FunctionFilterResultOverrideOnStreamingAsync()
     {
         var builder = Kernel.CreateBuilder();
 
-        // This filter overrides streaming results with "item * 2" logic.
+        // This filter overrides streaming results with new ending in each chunk.
         builder.Services.AddSingleton<IFunctionInvocationFilter, StreamingFunctionFilterExample>();
 
         var kernel = builder.Build();
 
-        static async IAsyncEnumerable<int> GetData()
+        static async IAsyncEnumerable<string> GetData()
         {
-            yield return 1;
-            yield return 2;
-            yield return 3;
+            yield return "chunk1";
+            yield return "chunk2";
+            yield return "chunk3";
         }
 
         var function = KernelFunctionFactory.CreateFromMethod(GetData);
 
-        await foreach (var item in kernel.InvokeStreamingAsync<int>(function))
+        await foreach (var item in kernel.InvokeStreamingAsync<string>(function))
         {
             Console.WriteLine(item);
         }
 
-        // Output: 2, 4, 6.
+        // Output:
+        // chunk1 - updated from filter
+        // chunk2 - updated from filter
+        // chunk3 - updated from filter
     }
 
+    [Fact]
+    public async Task FunctionFilterResultOverrideForBothStreamingAndNonStreamingAsync()
+    {
+        var builder = Kernel.CreateBuilder();
+
+        // This filter overrides result for both streaming and non-streaming invocation modes.
+        builder.Services.AddSingleton<IFunctionInvocationFilter, DualModeFilter>();
+
+        var kernel = builder.Build();
+
+        static async IAsyncEnumerable<string> GetData()
+        {
+            yield return "chunk1";
+            yield return "chunk2";
+            yield return "chunk3";
+        }
+
+        var nonStreamingFunction = KernelFunctionFactory.CreateFromMethod(() => "Result");
+        var streamingFunction = KernelFunctionFactory.CreateFromMethod(GetData);
+
+        var nonStreamingResult = await kernel.InvokeAsync(nonStreamingFunction);
+        var streamingResult = await kernel.InvokeStreamingAsync<string>(streamingFunction).ToListAsync();
+
+        Console.WriteLine($"Non-streaming result: {nonStreamingResult}");
+        Console.WriteLine($"Streaming result \n: {string.Join("\n", streamingResult)}");
+
+        // Output:
+        // Non-streaming result: Result - updated from filter
+        // Streaming result:
+        // chunk1 - updated from filter
+        // chunk2 - updated from filter
+        // chunk3 - updated from filter
+    }
 
     [Fact]
     public async Task FunctionFilterExceptionHandlingAsync()
@@ -110,7 +142,6 @@ public class FunctionInvocationFiltering(ITestOutputHelper output) : BaseTest(ou
         // Output: Friendly message instead of exception.
     }
 
-
     [Fact]
     public async Task FunctionFilterExceptionHandlingOnStreamingAsync()
     {
@@ -124,7 +155,6 @@ public class FunctionInvocationFiltering(ITestOutputHelper output) : BaseTest(ou
         static async IAsyncEnumerable<string> GetData()
         {
             yield return "first chunk";
-
             // Simulation of exception during function invocation.
             throw new KernelException("Exception in function");
         }
@@ -139,13 +169,11 @@ public class FunctionInvocationFiltering(ITestOutputHelper output) : BaseTest(ou
         // Output: first chunk, chunk instead of exception.
     }
 
-
     #region Filter capabilities
 
     /// <summary>Shows syntax for function filter in non-streaming scenario.</summary>
     private sealed class FunctionFilterExample : IFunctionInvocationFilter
     {
-
         public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
         {
             // Example: override kernel arguments
@@ -162,10 +190,7 @@ public class FunctionInvocationFiltering(ITestOutputHelper output) : BaseTest(ou
             var usage = context.Result.Metadata?["Usage"];
 
             // Example: override function result value and metadata
-            Dictionary<string, object?> metadata = context.Result.Metadata is not null
-                ? new(context.Result.Metadata)
-                : [];
-
+            Dictionary<string, object?> metadata = context.Result.Metadata is not null ? new(context.Result.Metadata) : [];
             metadata["metadata_key"] = "metadata_value";
 
             context.Result = new FunctionResult(context.Result, "Result from filter")
@@ -173,43 +198,35 @@ public class FunctionInvocationFiltering(ITestOutputHelper output) : BaseTest(ou
                 Metadata = metadata
             };
         }
-
     }
-
 
     /// <summary>Shows syntax for function filter in streaming scenario.</summary>
     private sealed class StreamingFunctionFilterExample : IFunctionInvocationFilter
     {
-
         public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
         {
             await next(context);
 
             // In streaming scenario, async enumerable is available in context result object.
             // To override data: get async enumerable from function result, override data and set new async enumerable in context result:
-            var enumerable = context.Result.GetValue<IAsyncEnumerable<int>>();
+            var enumerable = context.Result.GetValue<IAsyncEnumerable<string>>();
             context.Result = new FunctionResult(context.Result, OverrideStreamingDataAsync(enumerable!));
         }
 
-
-        private async IAsyncEnumerable<int> OverrideStreamingDataAsync(IAsyncEnumerable<int> data)
+        private async IAsyncEnumerable<string> OverrideStreamingDataAsync(IAsyncEnumerable<string> data)
         {
             await foreach (var item in data)
             {
                 // Example: override streaming data
-                yield return item * 2;
+                yield return $"{item} - updated from filter";
             }
         }
-
     }
-
 
     /// <summary>Shows syntax for exception handling in function filter in non-streaming scenario.</summary>
     private sealed class ExceptionHandlingFilterExample(ILogger logger) : IFunctionInvocationFilter
     {
-
         private readonly ILogger _logger = logger;
-
 
         public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
         {
@@ -228,16 +245,12 @@ public class FunctionInvocationFiltering(ITestOutputHelper output) : BaseTest(ou
                 // throw new InvalidOperationException("New exception");
             }
         }
-
     }
-
 
     /// <summary>Shows syntax for exception handling in function filter in streaming scenario.</summary>
     private sealed class StreamingExceptionHandlingFilterExample(ILogger logger) : IFunctionInvocationFilter
     {
-
         private readonly ILogger _logger = logger;
-
 
         public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
         {
@@ -246,7 +259,6 @@ public class FunctionInvocationFiltering(ITestOutputHelper output) : BaseTest(ou
             var enumerable = context.Result.GetValue<IAsyncEnumerable<string>>();
             context.Result = new FunctionResult(context.Result, StreamingWithExceptionHandlingAsync(enumerable!));
         }
-
 
         private async IAsyncEnumerable<string> StreamingWithExceptionHandlingAsync(IAsyncEnumerable<string> data)
         {
@@ -260,8 +272,7 @@ public class FunctionInvocationFiltering(ITestOutputHelper output) : BaseTest(ou
 
                     try
                     {
-                        if (!await enumerator.MoveNextAsync().
-                                ConfigureAwait(false))
+                        if (!await enumerator.MoveNextAsync().ConfigureAwait(false))
                         {
                             break;
                         }
@@ -279,19 +290,48 @@ public class FunctionInvocationFiltering(ITestOutputHelper output) : BaseTest(ou
                 }
             }
         }
+    }
 
+    /// <summary>Filter that can be used for both streaming and non-streaming invocation modes at the same time.</summary>
+    private sealed class DualModeFilter : IFunctionInvocationFilter
+    {
+        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
+        {
+            await next(context);
+
+            if (context.IsStreaming)
+            {
+                var enumerable = context.Result.GetValue<IAsyncEnumerable<string>>();
+                context.Result = new FunctionResult(context.Result, OverrideStreamingDataAsync(enumerable!));
+            }
+            else
+            {
+                var data = context.Result.GetValue<string>();
+                context.Result = new FunctionResult(context.Result, OverrideNonStreamingData(data!));
+            }
+        }
+
+        private async IAsyncEnumerable<string> OverrideStreamingDataAsync(IAsyncEnumerable<string> data)
+        {
+            await foreach (var item in data)
+            {
+                yield return $"{item} - updated from filter";
+            }
+        }
+
+        private string OverrideNonStreamingData(string data)
+        {
+            return $"{data} - updated from filter";
+        }
     }
 
     #endregion
-
 
     #region Filters
 
     private sealed class FirstFunctionFilter(ITestOutputHelper output) : IFunctionInvocationFilter
     {
-
         private readonly ITestOutputHelper _output = output;
-
 
         public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
         {
@@ -299,15 +339,11 @@ public class FunctionInvocationFiltering(ITestOutputHelper output) : BaseTest(ou
             await next(context);
             this._output.WriteLine($"{nameof(FirstFunctionFilter)}.FunctionInvoked - {context.Function.PluginName}.{context.Function.Name}");
         }
-
     }
-
 
     private sealed class SecondFunctionFilter(ITestOutputHelper output) : IFunctionInvocationFilter
     {
-
         private readonly ITestOutputHelper _output = output;
-
 
         public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
         {
@@ -315,10 +351,7 @@ public class FunctionInvocationFiltering(ITestOutputHelper output) : BaseTest(ou
             await next(context);
             this._output.WriteLine($"{nameof(SecondFunctionFilter)}.FunctionInvoked - {context.Function.PluginName}.{context.Function.Name}");
         }
-
     }
 
     #endregion
-
-
 }

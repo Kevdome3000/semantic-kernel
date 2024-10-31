@@ -180,7 +180,8 @@ internal sealed class MistralClient
                     RequestSequenceIndex = requestIndex - 1,
                     FunctionSequenceIndex = toolCallIndex,
                     FunctionCount = chatChoice.ToolCalls.Count,
-                    CancellationToken = cancellationToken
+                    CancellationToken = cancellationToken,
+                    IsStreaming = false
                 };
                 s_inflightAutoInvokes.Value++;
                 try
@@ -410,7 +411,8 @@ internal sealed class MistralClient
                     RequestSequenceIndex = requestIndex - 1,
                     FunctionSequenceIndex = toolCallIndex,
                     FunctionCount = toolCalls.Count,
-                    CancellationToken = cancellationToken
+                    CancellationToken = cancellationToken,
+                    IsStreaming = true
                 };
                 s_inflightAutoInvokes.Value++;
                 try

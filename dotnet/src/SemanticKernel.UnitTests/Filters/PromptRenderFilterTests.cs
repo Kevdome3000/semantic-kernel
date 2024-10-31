@@ -1,8 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.UnitTests.Filters;
-
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,10 +10,10 @@ using Microsoft.SemanticKernel.TextGeneration;
 using Moq;
 using Xunit;
 
+namespace SemanticKernel.UnitTests.Filters;
 
 public class PromptRenderFilterTests : FilterBaseTest
 {
-
     [Fact]
     public async Task PromptFiltersAreNotTriggeredForMethodsAsync()
     {
@@ -38,7 +37,6 @@ public class PromptRenderFilterTests : FilterBaseTest
         Assert.Equal(1, functionInvocations);
         Assert.Equal(0, filterInvocations);
     }
-
 
     [Theory]
     [InlineData(true)]
@@ -73,8 +71,7 @@ public class PromptRenderFilterTests : FilterBaseTest
         if (isStreaming)
         {
             await foreach (var item in kernel.InvokeStreamingAsync(function, arguments))
-            {
-            }
+            { }
         }
         else
         {
@@ -85,7 +82,6 @@ public class PromptRenderFilterTests : FilterBaseTest
         Assert.Equal(2, filterInvocations);
         Assert.Same(contextKernel, kernel);
     }
-
 
     [Fact]
     public async Task DifferentWaysOfAddingPromptFiltersWorkCorrectlyAsync()
@@ -125,7 +121,6 @@ public class PromptRenderFilterTests : FilterBaseTest
         Assert.Equal("PromptFilter1-Rendering", executionOrder[0]);
         Assert.Equal("PromptFilter2-Rendering", executionOrder[1]);
     }
-
 
     [Fact]
     public async Task MultipleFiltersAreExecutedInOrderAsync()
@@ -178,7 +173,6 @@ public class PromptRenderFilterTests : FilterBaseTest
         Assert.Equal("PromptFilter1-Rendered", executionOrder[5]);
     }
 
-
     [Fact]
     public async Task PromptFilterCanOverrideArgumentsAsync()
     {
@@ -204,14 +198,12 @@ public class PromptRenderFilterTests : FilterBaseTest
         mockTextGeneration.Verify(m => m.GetTextContentsAsync("Prompt: NewInput", It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
     }
 
-
     [Fact]
     public async Task PostInvocationPromptFilterCanOverrideRenderedPromptAsync()
     {
         // Arrange
         var mockTextGeneration = this.GetMockTextGeneration();
         var function = KernelFunctionFactory.CreateFromPrompt("Prompt");
-
         var kernel = this.GetKernelWithFilters(textGenerationService: mockTextGeneration.Object,
             onPromptRender: async (context, next) =>
             {
@@ -226,14 +218,12 @@ public class PromptRenderFilterTests : FilterBaseTest
         mockTextGeneration.Verify(m => m.GetTextContentsAsync("Prompt - updated from filter", It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
     }
 
-
     [Fact]
     public async Task PostInvocationPromptFilterSkippingWorksCorrectlyAsync()
     {
         // Arrange
         var mockTextGeneration = this.GetMockTextGeneration();
         var function = KernelFunctionFactory.CreateFromPrompt("Prompt");
-
         var kernel = this.GetKernelWithFilters(textGenerationService: mockTextGeneration.Object,
             onPromptRender: (context, next) =>
             {
@@ -247,7 +237,6 @@ public class PromptRenderFilterTests : FilterBaseTest
         // Assert
         mockTextGeneration.Verify(m => m.GetTextContentsAsync("", It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
     }
-
 
     [Fact]
     public async Task PromptFilterCanOverrideFunctionResultAsync()
@@ -277,7 +266,6 @@ public class PromptRenderFilterTests : FilterBaseTest
         Assert.Equal("Result from prompt filter", result.ToString());
     }
 
-
     [Fact]
     public async Task FilterContextHasCancellationTokenAsync()
     {
@@ -303,4 +291,34 @@ public class PromptRenderFilterTests : FilterBaseTest
             => kernel.InvokeAsync(function, cancellationToken: cancellationTokenSource.Token));
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task FilterContextHasValidStreamingFlagAsync(bool isStreaming)
+    {
+        // Arrange
+        bool? actualStreamingFlag = null;
+
+        var mockTextGeneration = this.GetMockTextGeneration();
+
+        var kernel = this.GetKernelWithFilters(textGenerationService: mockTextGeneration.Object,
+            onPromptRender: async (context, next) =>
+            {
+                actualStreamingFlag = context.IsStreaming;
+                await next(context);
+            });
+
+        // Act
+        if (isStreaming)
+        {
+            await kernel.InvokePromptStreamingAsync("Prompt").ToListAsync();
+        }
+        else
+        {
+            await kernel.InvokePromptAsync("Prompt");
+        }
+
+        // Assert
+        Assert.Equal(isStreaming, actualStreamingFlag);
+    }
 }

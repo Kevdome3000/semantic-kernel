@@ -1,10 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.UnitTests.Filters;
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,10 +12,10 @@ using Microsoft.SemanticKernel.TextGeneration;
 using Moq;
 using Xunit;
 
+namespace SemanticKernel.UnitTests.Filters;
 
 public class FunctionInvocationFilterTests : FilterBaseTest
 {
-
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
@@ -48,8 +47,7 @@ public class FunctionInvocationFilterTests : FilterBaseTest
         if (isStreaming)
         {
             await foreach (var item in kernel.InvokeStreamingAsync(function, arguments))
-            {
-            }
+            { }
         }
         else
         {
@@ -63,7 +61,6 @@ public class FunctionInvocationFilterTests : FilterBaseTest
 
         Assert.Same(contextKernel, kernel);
     }
-
 
     [Fact]
     public async Task FunctionFilterContextHasResultAsync()
@@ -87,7 +84,6 @@ public class FunctionInvocationFilterTests : FilterBaseTest
         // Assert
         Assert.Equal("Result", result.ToString());
     }
-
 
     [Fact]
     public async Task DifferentWaysOfAddingFunctionFiltersWorkCorrectlyAsync()
@@ -126,7 +122,6 @@ public class FunctionInvocationFilterTests : FilterBaseTest
         Assert.Equal("FunctionFilter1-Invoking", executionOrder[0]);
         Assert.Equal("FunctionFilter2-Invoking", executionOrder[1]);
     }
-
 
     [Theory]
     [InlineData(true)]
@@ -173,8 +168,7 @@ public class FunctionInvocationFilterTests : FilterBaseTest
         if (isStreaming)
         {
             await foreach (var item in kernel.InvokeStreamingAsync(function))
-            {
-            }
+            { }
         }
         else
         {
@@ -189,7 +183,6 @@ public class FunctionInvocationFilterTests : FilterBaseTest
         Assert.Equal("FunctionFilter2-Invoked", executionOrder[4]);
         Assert.Equal("FunctionFilter1-Invoked", executionOrder[5]);
     }
-
 
     [Theory]
     [InlineData(true)]
@@ -224,7 +217,6 @@ public class FunctionInvocationFilterTests : FilterBaseTest
         }
     }
 
-
     [Fact]
     public async Task FunctionFiltersForMethodCanOverrideResultAsync()
     {
@@ -247,7 +239,6 @@ public class FunctionInvocationFilterTests : FilterBaseTest
         Assert.Equal(NewResult, result.GetValue<int>());
     }
 
-
     [Fact]
     public async Task FunctionFiltersForMethodCanOverrideResultAsyncOnStreamingAsync()
     {
@@ -255,7 +246,6 @@ public class FunctionInvocationFilterTests : FilterBaseTest
         static async IAsyncEnumerable<int> GetData()
         {
             await Task.Delay(0);
-
             yield return 1;
             yield return 2;
             yield return 3;
@@ -292,7 +282,6 @@ public class FunctionInvocationFilterTests : FilterBaseTest
         Assert.Equal(4, resultArray[1]);
         Assert.Equal(6, resultArray[2]);
     }
-
 
     [Fact]
     public async Task FunctionFiltersForPromptCanOverrideResultAsync()
@@ -343,7 +332,6 @@ public class FunctionInvocationFilterTests : FilterBaseTest
         mockTextGeneration.Verify(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
     }
 
-
     [Fact]
     public async Task FunctionFiltersForPromptCanOverrideResultOnStreamingAsync()
     {
@@ -366,7 +354,6 @@ public class FunctionInvocationFilterTests : FilterBaseTest
                     await foreach (var item in enumerable)
                     {
                         Assert.NotNull(item.Metadata);
-
                         var metadata = new Dictionary<string, object?>(item.Metadata)
                         {
                             ["key3"] = "value3"
@@ -388,7 +375,6 @@ public class FunctionInvocationFilterTests : FilterBaseTest
 
         // Act
         var result = new List<StreamingTextContent>();
-
         await foreach (var item in kernel.InvokeStreamingAsync<StreamingTextContent>(function))
         {
             result.Add(item);
@@ -407,7 +393,6 @@ public class FunctionInvocationFilterTests : FilterBaseTest
         mockTextGeneration.Verify(m => m.GetStreamingTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
     }
 
-
     [Fact]
     public async Task FunctionFilterSkippingWorksCorrectlyAsync()
     {
@@ -419,7 +404,6 @@ public class FunctionInvocationFilterTests : FilterBaseTest
         var kernel = this.GetKernelWithFilters(onFunctionInvocation: (context, next) =>
         {
             filterInvocations++;
-
             // next(context) is not called here, function invocation is cancelled.
             return Task.CompletedTask;
         });
@@ -432,7 +416,6 @@ public class FunctionInvocationFilterTests : FilterBaseTest
         Assert.Equal(0, functionInvocations);
     }
 
-
     [Fact]
     public async Task FunctionFilterSkippingWorksCorrectlyOnStreamingAsync()
     {
@@ -444,7 +427,6 @@ public class FunctionInvocationFilterTests : FilterBaseTest
         var kernel = this.GetKernelWithFilters(onFunctionInvocation: (context, next) =>
         {
             filterInvocations++;
-
             // next(context) is not called here, function invocation is cancelled.
             return Task.CompletedTask;
         });
@@ -459,7 +441,6 @@ public class FunctionInvocationFilterTests : FilterBaseTest
         Assert.Equal(1, filterInvocations);
         Assert.Equal(0, functionInvocations);
     }
-
 
     [Fact]
     public async Task FunctionFilterPropagatesExceptionToCallerAsync()
@@ -482,7 +463,6 @@ public class FunctionInvocationFilterTests : FilterBaseTest
         Assert.NotNull(exception);
     }
 
-
     [Fact]
     public async Task FunctionFilterPropagatesExceptionToCallerOnStreamingAsync()
     {
@@ -490,9 +470,7 @@ public class FunctionInvocationFilterTests : FilterBaseTest
         static async IAsyncEnumerable<int> GetData()
         {
             await Task.Delay(0);
-
             yield return 1;
-
             throw new KernelException();
         }
 
@@ -510,14 +488,12 @@ public class FunctionInvocationFilterTests : FilterBaseTest
         var exception = await Assert.ThrowsAsync<KernelException>(async () =>
         {
             await foreach (var item in kernel.InvokeStreamingAsync<int>(function))
-            {
-            }
+            { }
         });
 
         // Assert
         Assert.NotNull(exception);
     }
-
 
     [Fact]
     public async Task FunctionFilterCanHandleExceptionAsync()
@@ -546,7 +522,6 @@ public class FunctionInvocationFilterTests : FilterBaseTest
         Assert.Equal("Result ignoring exception.", resultValue);
     }
 
-
     [Fact]
     public async Task FunctionFilterCanHandleExceptionOnStreamingAsync()
     {
@@ -554,9 +529,7 @@ public class FunctionInvocationFilterTests : FilterBaseTest
         static async IAsyncEnumerable<string> GetData()
         {
             await Task.Delay(0);
-
             yield return "first chunk";
-
             throw new KernelException();
         }
 
@@ -579,8 +552,7 @@ public class FunctionInvocationFilterTests : FilterBaseTest
 
                             try
                             {
-                                if (!await enumerator.MoveNextAsync().
-                                        ConfigureAwait(false))
+                                if (!await enumerator.MoveNextAsync().ConfigureAwait(false))
                                 {
                                     break;
                                 }
@@ -614,7 +586,6 @@ public class FunctionInvocationFilterTests : FilterBaseTest
         Assert.Equal("chunk instead of exception", resultArray[1]);
     }
 
-
     [Fact]
     public async Task FunctionFilterCanRethrowNewExceptionAsync()
     {
@@ -642,7 +613,6 @@ public class FunctionInvocationFilterTests : FilterBaseTest
         Assert.Equal("Exception from filter", exception.Message);
     }
 
-
     [Fact]
     public async Task FunctionFilterCanRethrowNewExceptionOnStreamingAsync()
     {
@@ -650,9 +620,7 @@ public class FunctionInvocationFilterTests : FilterBaseTest
         static async IAsyncEnumerable<string> GetData()
         {
             await Task.Delay(0);
-
             yield return "first chunk";
-
             throw new KernelException("Exception from method");
         }
 
@@ -673,8 +641,7 @@ public class FunctionInvocationFilterTests : FilterBaseTest
                         {
                             try
                             {
-                                if (!await enumerator.MoveNextAsync().
-                                        ConfigureAwait(false))
+                                if (!await enumerator.MoveNextAsync().ConfigureAwait(false))
                                 {
                                     break;
                                 }
@@ -697,15 +664,13 @@ public class FunctionInvocationFilterTests : FilterBaseTest
         var exception = await Assert.ThrowsAsync<KernelException>(async () =>
         {
             await foreach (var item in kernel.InvokeStreamingAsync<string>(function))
-            {
-            }
+            { }
         });
 
         // Assert
         Assert.NotNull(exception);
         Assert.Equal("Exception from filter", exception.Message);
     }
-
 
     [Fact]
     public async Task MultipleFunctionFiltersReceiveInvocationExceptionAsync()
@@ -723,7 +688,6 @@ public class FunctionInvocationFilterTests : FilterBaseTest
             catch (KernelException)
             {
                 filterInvocations++;
-
                 throw;
             }
         }
@@ -747,7 +711,6 @@ public class FunctionInvocationFilterTests : FilterBaseTest
         Assert.NotNull(exception);
         Assert.Equal(3, filterInvocations);
     }
-
 
     [Fact]
     public async Task MultipleFunctionFiltersPropagateExceptionAsync()
@@ -777,7 +740,6 @@ public class FunctionInvocationFilterTests : FilterBaseTest
             catch (KernelException exception)
             {
                 Assert.Equal("Exception from functionFilter3", exception.Message);
-
                 throw new KernelException("Exception from functionFilter2");
             }
         });
@@ -791,7 +753,6 @@ public class FunctionInvocationFilterTests : FilterBaseTest
             catch (KernelException exception)
             {
                 Assert.Equal("Exception from method", exception.Message);
-
                 throw new KernelException("Exception from functionFilter3");
             }
         });
@@ -810,7 +771,6 @@ public class FunctionInvocationFilterTests : FilterBaseTest
         // Assert
         Assert.Equal("Result from functionFilter1", result.ToString());
     }
-
 
     [Fact]
     public async Task MultipleFunctionFiltersPropagateExceptionOnStreamingAsync()
@@ -837,8 +797,7 @@ public class FunctionInvocationFilterTests : FilterBaseTest
                     {
                         try
                         {
-                            if (!await enumerator.MoveNextAsync().
-                                    ConfigureAwait(false))
+                            if (!await enumerator.MoveNextAsync().ConfigureAwait(false))
                             {
                                 break;
                             }
@@ -881,8 +840,7 @@ public class FunctionInvocationFilterTests : FilterBaseTest
         var exception = await Assert.ThrowsAsync<KernelException>(async () =>
         {
             await foreach (var item in kernel.InvokeStreamingAsync<string>(function))
-            {
-            }
+            { }
         });
 
         // Assert
@@ -890,7 +848,6 @@ public class FunctionInvocationFilterTests : FilterBaseTest
         Assert.Equal("Exception from functionFilter1", exception.Message);
         Assert.Equal(3, filterInvocations);
     }
-
 
     [Fact]
     public async Task FunctionFiltersWithPromptsWorkCorrectlyAsync()
@@ -918,7 +875,6 @@ public class FunctionInvocationFilterTests : FilterBaseTest
         Assert.Equal(1, postFunctionInvocations);
         mockTextGeneration.Verify(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
     }
-
 
     [Fact]
     public async Task FunctionAndPromptFiltersAreExecutedInCorrectOrderAsync()
@@ -982,7 +938,6 @@ public class FunctionInvocationFilterTests : FilterBaseTest
         Assert.Equal("FunctionFilter1-Invoked", executionOrder[7]);
     }
 
-
     [Fact]
     public async Task MultipleFunctionFiltersSkippingWorksCorrectlyAsync()
     {
@@ -994,7 +949,6 @@ public class FunctionInvocationFilterTests : FilterBaseTest
         var functionFilter1 = new FakeFunctionFilter(onFunctionInvocation: (context, next) =>
         {
             filterInvocations++;
-
             // next(context) is not called here, function invocation is cancelled.
             return Task.CompletedTask;
         });
@@ -1002,7 +956,6 @@ public class FunctionInvocationFilterTests : FilterBaseTest
         var functionFilter2 = new FakeFunctionFilter(onFunctionInvocation: (context, next) =>
         {
             filterInvocations++;
-
             // next(context) is not called here, function invocation is cancelled.
             return Task.CompletedTask;
         });
@@ -1021,7 +974,6 @@ public class FunctionInvocationFilterTests : FilterBaseTest
         Assert.Equal(0, functionInvocations);
         Assert.Equal(1, filterInvocations);
     }
-
 
     [Fact]
     public async Task InsertFilterInMiddleOfPipelineTriggersFiltersInCorrectOrderAsync()
@@ -1072,17 +1024,14 @@ public class FunctionInvocationFilterTests : FilterBaseTest
         Assert.Equal("FunctionFilter1-Invoked", executionOrder[5]);
     }
 
-
     [Fact]
     public async Task FilterContextHasCancellationTokenAsync()
     {
         // Arrange
         using var cancellationTokenSource = new CancellationTokenSource();
-
         var function = KernelFunctionFactory.CreateFromMethod(() =>
         {
             cancellationTokenSource.Cancel();
-
             return "Result";
         });
 
@@ -1105,4 +1054,33 @@ public class FunctionInvocationFilterTests : FilterBaseTest
         Assert.Equal("Result", exception.FunctionResult.ToString());
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task FilterContextHasValidStreamingFlagAsync(bool isStreaming)
+    {
+        // Arrange
+        bool? actualStreamingFlag = null;
+
+        var function = KernelFunctionFactory.CreateFromMethod(() => "Result");
+
+        var kernel = this.GetKernelWithFilters(onFunctionInvocation: async (context, next) =>
+        {
+            actualStreamingFlag = context.IsStreaming;
+            await next(context);
+        });
+
+        // Act
+        if (isStreaming)
+        {
+            await kernel.InvokeStreamingAsync(function).ToListAsync();
+        }
+        else
+        {
+            await kernel.InvokeAsync(function);
+        }
+
+        // Assert
+        Assert.Equal(isStreaming, actualStreamingFlag);
+    }
 }
