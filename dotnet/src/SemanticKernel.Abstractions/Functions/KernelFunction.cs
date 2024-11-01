@@ -472,19 +472,20 @@ public abstract class KernelFunction : IKernelFunction
                 FunctionResult functionResult = new(this, culture: kernel.Culture);
 
                 var invocationContext = await kernel.OnFunctionInvocationAsync(this,
-                        arguments,
-                        functionResult,
-                        context =>
-                        {
-                            // Invoke the function and get its streaming enumerable.
-                            var enumerable = InvokeStreamingCoreAsync<TResult>(kernel, context.Arguments, cancellationToken);
+                    arguments,
+                    functionResult,
+                    true,
+                    context =>
+                    {
+                        // Invoke the function and get its streaming enumerable.
+                        var enumerable = InvokeStreamingCoreAsync<TResult>(kernel, context.Arguments, cancellationToken);
 
-                            // Update context with enumerable as result value.
-                            context.Result = new FunctionResult(this, enumerable, kernel.Culture);
+                        // Update context with enumerable as result value.
+                        context.Result = new FunctionResult(this, enumerable, kernel.Culture);
 
-                            return Task.CompletedTask;
-                        },
-                        cancellationToken)
+                        return Task.CompletedTask;
+                    },
+                    cancellationToken)
                     .ConfigureAwait(false);
 
                 // Apply changes from the function filters to final result.
@@ -505,7 +506,6 @@ public abstract class KernelFunction : IKernelFunction
                     arguments,
                     null,
                     ref tags);
-
                 throw;
             }
 
@@ -532,7 +532,6 @@ public abstract class KernelFunction : IKernelFunction
                             arguments,
                             null,
                             ref tags);
-
                         throw;
                     }
 
@@ -627,7 +626,6 @@ public abstract class KernelFunction : IKernelFunction
                 arguments,
                 result,
                 cancelEx);
-
             foreach (DictionaryEntry entry in cancelEx.Data)
             {
                 kernelEx.Data.Add(entry.Key, entry.Value);
@@ -747,7 +745,6 @@ public abstract class KernelFunction : IKernelFunction
             return functionResult.Value is object value
                 ? JsonSerializer.SerializeToElement(value, AbstractionsJsonContext.GetTypeInfo(value.GetType(), _kernelFunction.JsonSerializerOptions))
                 : null;
-                var invocationContext = await kernel.OnFunctionInvocationAsync(this, arguments, functionResult, isStreaming: true, (context) =>
         }
     }
 }
