@@ -17,7 +17,6 @@ using Microsoft.OpenApi.Services;
 using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi.Extensions;
-
 /// <summary>
 /// Provides extension methods for the <see cref="Kernel"/> class related to OpenAPI functionality.
 /// </summary>
@@ -43,7 +42,6 @@ public static class ApiManifestKernelExtensions
         kernel.Plugins.Add(plugin);
         return plugin;
     }
-
 
     /// <summary>
     /// Creates a kernel plugin from an API manifest file asynchronously.
@@ -83,14 +81,12 @@ public static class ApiManifestKernelExtensions
         ApiManifestDocument document = ApiManifestDocument.Load(jsonDocument.RootElement);
 
         var functions = new List<KernelFunction>();
-
         foreach (var apiDependency in document.ApiDependencies)
         {
             var apiName = apiDependency.Key;
             var apiDependencyDetails = apiDependency.Value;
 
             var apiDescriptionUrl = apiDependencyDetails.ApiDescriptionUrl;
-
             if (apiDescriptionUrl is null)
             {
                 logger.LogWarning("ApiDescriptionUrl is missing for API dependency: {ApiName}", apiName);
@@ -106,14 +102,13 @@ public static class ApiManifestKernelExtensions
 
             OpenApiDiagnostic diagnostic = new();
             var openApiDocument = new OpenApiStringReader(new()
-                {
-                    BaseUrl = new(apiDescriptionUrl)
-                }
+            {
+                BaseUrl = new(apiDescriptionUrl)
+            }
             ).Read(openApiDocumentString, out diagnostic);
 
             var requestUrls = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
             var pathMethodPairs = apiDependencyDetails.Requests.Select(request => (request.UriTemplate, request.Method?.ToUpperInvariant()));
-
             foreach (var (UriTemplate, Method) in pathMethodPairs)
             {
                 if (UriTemplate is null || Method is null)
@@ -149,19 +144,19 @@ public static class ApiManifestKernelExtensions
                 openApiFunctionExecutionParameters?.EnablePayloadNamespacing ?? false);
 
             var server = filteredOpenApiDocument.Servers.FirstOrDefault();
-
             if (server?.Url is not null)
             {
+                var info = OpenApiDocumentParser.ExtractRestApiInfo(filteredOpenApiDocument);
+                var security = OpenApiDocumentParser.CreateRestApiOperationSecurityRequirements(filteredOpenApiDocument.SecurityRequirements);
                 foreach (var path in filteredOpenApiDocument.Paths)
                 {
-                    var operations = OpenApiDocumentParser.CreateRestApiOperations(server, path.Key, path.Value, null, logger);
-
+                    var operations = OpenApiDocumentParser.CreateRestApiOperations(filteredOpenApiDocument, path.Key, path.Value, null, logger);
                     foreach (RestApiOperation operation in operations)
                     {
                         try
                         {
                             logger.LogTrace("Registering Rest function {0}.{1}", pluginName, operation.Id);
-                            functions.Add(OpenApiKernelPluginFactory.CreateRestApiFunction(pluginName, runner, operation, openApiFunctionExecutionParameters, new Uri(server.Url), loggerFactory));
+                            functions.Add(OpenApiKernelPluginFactory.CreateRestApiFunction(pluginName, runner, info, security, operation, openApiFunctionExecutionParameters, new Uri(server.Url), loggerFactory));
                         }
                         catch (Exception ex) when (!ex.IsCriticalException())
                         {

@@ -11,10 +11,8 @@ using System.Threading.Tasks;
 
 #pragma warning disable CA1812
 
-
 internal sealed class MultipleHttpMessageHandlerStub : DelegatingHandler
 {
-
     private int _callIteration = 0;
 
     public List<HttpRequestHeaders?> RequestHeaders { get; private set; } = [];
@@ -31,7 +29,6 @@ internal sealed class MultipleHttpMessageHandlerStub : DelegatingHandler
 
     internal HttpClient CreateHttpClient() => new(this, false);
 
-
     internal void AddJsonResponse(string json)
     {
         this.ResponsesToReturn.Add(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
@@ -39,7 +36,6 @@ internal sealed class MultipleHttpMessageHandlerStub : DelegatingHandler
             Content = new StringContent(json, Encoding.UTF8, MediaTypeNames.Application.Json)
         });
     }
-
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
@@ -50,13 +46,15 @@ internal sealed class MultipleHttpMessageHandlerStub : DelegatingHandler
         this.RequestHeaders.Add(request.Headers);
         this.ContentHeaders.Add(request.Content?.Headers);
 
-        var content = request.Content is null
-            ? null
-            : await request.Content.ReadAsByteArrayAsync(cancellationToken);
+        var content = request.Content is null ? null : await request.Content.ReadAsByteArrayAsync(cancellationToken);
 
         this.RequestContents.Add(content);
 
         return await Task.FromResult(this.ResponsesToReturn[this._callIteration - 1]);
     }
 
+    internal string? GetRequestContentAsString(int index, Encoding? encoding = null)
+        => this.RequestContents[index] is null
+            ? null
+            : (encoding ?? Encoding.UTF8).GetString(this.RequestContents[index]!);
 }

@@ -66,7 +66,7 @@ public abstract class KernelFunction : IKernelFunction
     /// </remarks>\
     [JsonPropertyName("name")]
     [JsonInclude]
-    public string Name { get; init; }
+    public string Name => Metadata.Name;
 
     /// <summary>
     /// Gets the name of the plugin this function was added to.
@@ -75,7 +75,7 @@ public abstract class KernelFunction : IKernelFunction
     /// The plugin name will be null if the function has not been added to a plugin.
     /// When a function is added to a plugin it will be cloned and the plugin name will be set.
     /// </remarks>
-    public string? PluginName { get; init; }
+    public string? PluginName => Metadata.PluginName;
 
     /// <summary>
     /// Gets a description of the function.
@@ -86,7 +86,7 @@ public abstract class KernelFunction : IKernelFunction
     /// </remarks>
     [JsonPropertyName("description")]
     [JsonInclude]
-    public string Description { get; init; }
+    public string Description => Metadata.Description;
 
     /// <summary>
     /// Gets the metadata describing the function.
@@ -292,9 +292,9 @@ public abstract class KernelFunction : IKernelFunction
 
         // Ensure arguments are initialized.
         arguments ??= [];
-        logger.LogFunctionInvoking(Name);
+        logger.LogFunctionInvoking(this.PluginName, this.Name);
 
-        LogFunctionArguments(logger, arguments);
+        LogFunctionArguments(logger, this.PluginName, this.Name, arguments);
 
         TagList tags = new() { { MeasurementFunctionTagName, Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
@@ -349,9 +349,9 @@ public abstract class KernelFunction : IKernelFunction
                 throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.FunctionInvoked)} event handler requested cancellation after function invocation.");
             }
 
-            logger.LogFunctionInvokedSuccess(Name);
+            logger.LogFunctionInvokedSuccess(this.PluginName, this.Name);
 
-            LogFunctionResult(logger, functionResult);
+            LogFunctionResult(logger, this.PluginName, this.Name, functionResult);
 
             return functionResult;
         }
@@ -373,7 +373,7 @@ public abstract class KernelFunction : IKernelFunction
             // Record the invocation duration metric and log the completion.
             TimeSpan duration = new((long)((Stopwatch.GetTimestamp() - startingTimestamp) * (10_000_000.0 / Stopwatch.Frequency)));
             s_invocationDuration.Record(duration.TotalSeconds, in tags);
-            logger.LogFunctionComplete(duration.TotalSeconds);
+            logger.LogFunctionComplete(this.PluginName, this.Name, duration.TotalSeconds);
         }
     }
 
@@ -443,9 +443,9 @@ public abstract class KernelFunction : IKernelFunction
         ILogger logger = kernel.LoggerFactory.CreateLogger(Name) ?? NullLogger.Instance;
 
         arguments ??= [];
-        logger.LogFunctionStreamingInvoking(Name);
+        logger.LogFunctionStreamingInvoking(this.PluginName, this.Name);
 
-        LogFunctionArguments(logger, arguments);
+        LogFunctionArguments(logger, this.PluginName, this.Name, arguments);
 
         TagList tags = new() { { MeasurementFunctionTagName, Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
@@ -545,7 +545,7 @@ public abstract class KernelFunction : IKernelFunction
             // Record the streaming duration metric and log the completion.
             TimeSpan duration = new((long)((Stopwatch.GetTimestamp() - startingTimestamp) * (10_000_000.0 / Stopwatch.Frequency)));
             s_streamingDuration.Record(duration.TotalSeconds, in tags);
-            logger.LogFunctionStreamingComplete(duration.TotalSeconds);
+            logger.LogFunctionStreamingComplete(this.PluginName, this.Name, duration.TotalSeconds);
         }
     }
 
@@ -612,7 +612,7 @@ public abstract class KernelFunction : IKernelFunction
         tags.Add(MeasurementErrorTagName, ex.GetType().FullName);
 
         activity?.SetError(ex);
-        logger.LogFunctionError(ex, ex.Message);
+        logger.LogFunctionError(kernelFunction.PluginName, kernelFunction.Name, ex, ex.Message);
 
         // If the exception is an OperationCanceledException, wrap it in a KernelFunctionCanceledException
         // in order to convey additional details about what function was canceled. This is particularly
@@ -638,30 +638,30 @@ public abstract class KernelFunction : IKernelFunction
 
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "The warning is shown and should be addressed at the function creation site; there is no need to show it again at the function invocation sites.")]
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "The warning is shown and should be addressed at the function creation site; there is no need to show it again at the function invocation sites.")]
-    private void LogFunctionArguments(ILogger logger, KernelArguments arguments)
+    private void LogFunctionArguments(ILogger logger, string? pluginName, string functionName, KernelArguments arguments)
     {
         if (JsonSerializerOptions is not null)
         {
-            logger.LogFunctionArguments(arguments, JsonSerializerOptions);
+            logger.LogFunctionArguments(pluginName, functionName, arguments, JsonSerializerOptions);
         }
         else
         {
-            logger.LogFunctionArguments(arguments);
+            logger.LogFunctionArguments(pluginName, functionName, arguments);
         }
     }
 
 
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "The warning is shown and should be addressed at the function creation site; there is no need to show it again at the function invocation sites.")]
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "The warning is shown and should be addressed at the function creation site; there is no need to show it again at the function invocation sites.")]
-    private void LogFunctionResult(ILogger logger, FunctionResult functionResult)
+    private void LogFunctionResult(ILogger logger, string? pluginName, string functionName, FunctionResult functionResult)
     {
         if (JsonSerializerOptions is not null)
         {
-            logger.LogFunctionResultValue(functionResult, JsonSerializerOptions);
+            logger.LogFunctionResultValue(pluginName, functionName, functionResult, JsonSerializerOptions);
         }
         else
         {
-            logger.LogFunctionResultValue(functionResult);
+            logger.LogFunctionResultValue(pluginName, functionName, functionResult);
         }
     }
 
@@ -692,7 +692,7 @@ public abstract class KernelFunction : IKernelFunction
 
             string name = string.IsNullOrWhiteSpace(kernelFunction.PluginName)
                 ? kernelFunction.Name
-                : $"{kernelFunction.PluginName}_{kernelFunction.Name}";
+                : $"{kernelFunction.PluginName}-{kernelFunction.Name}";
 
             Metadata = new AIFunctionMetadata(name)
             {

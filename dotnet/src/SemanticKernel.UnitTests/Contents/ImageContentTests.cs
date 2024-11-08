@@ -1,20 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.UnitTests.Contents;
-
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Xunit;
 
+namespace SemanticKernel.UnitTests.Contents;
 
 /// <summary>
 /// Unit tests for <see cref="ImageContent"/> class.
 /// </summary>
 public sealed class ImageContentTests
 {
-
     [Fact]
     public void ToStringForUriReturnsString()
     {
@@ -31,7 +30,6 @@ public sealed class ImageContentTests
         Assert.Equal($"Microsoft.SemanticKernel.{nameof(ImageContent)}", result2);
     }
 
-
     [Fact]
     public void ToStringForDataUriReturnsTypeString()
     {
@@ -46,7 +44,6 @@ public sealed class ImageContentTests
         // Assert
         Assert.Equal($"Microsoft.SemanticKernel.{nameof(ImageContent)}", result1);
     }
-
 
     [Fact]
     public void ToStringForUriAndDataUriReturnsDataUriString()
@@ -63,7 +60,6 @@ public sealed class ImageContentTests
         Assert.Equal($"Microsoft.SemanticKernel.{nameof(ImageContent)}", result1);
     }
 
-
     [Fact]
     public void CreateForEmptyDataUriThrows()
     {
@@ -74,7 +70,6 @@ public sealed class ImageContentTests
         Assert.Throws<ArgumentException>(()
             => new ImageContent(data, "text/plain"));
     }
-
 
     [Fact]
     public void ToStringForDataUriFromBytesReturnsType()
@@ -92,7 +87,6 @@ public sealed class ImageContentTests
         Assert.Equal($"Microsoft.SemanticKernel.{nameof(ImageContent)}", result1);
     }
 
-
     [Fact]
     public void ToStringForDataUriFromStreamReturnsDataUriString()
     {
@@ -109,7 +103,6 @@ public sealed class ImageContentTests
         Assert.Equal($"Microsoft.SemanticKernel.{nameof(ImageContent)}", result1);
     }
 
-
     [Fact]
     public void DataConstructorWhenDataIsEmptyShouldThrow()
     {
@@ -121,7 +114,6 @@ public sealed class ImageContentTests
         // Assert throws if mediatype is null
         Assert.Throws<ArgumentException>(() => new ImageContent(BinaryData.FromStream(ms), mimeType: null));
     }
-
 
     [Fact]
     public void ToStringInMemoryImageWithoutMediaTypeReturnsType()
@@ -136,9 +128,7 @@ public sealed class ImageContentTests
         Assert.Equal($"Microsoft.SemanticKernel.{nameof(ImageContent)}", dataUrl?.ToString());
     }
 
-
     // Ensure retrocompatibility with ImageContent Pre-BinaryContent Version
-
 
     [Theory]
     [InlineData("", null, $"Microsoft.SemanticKernel.{nameof(ImageContent)}")]
@@ -153,7 +143,6 @@ public sealed class ImageContentTests
         var bytes = Encoding.UTF8.GetBytes("this is a test");
         var data = BinaryData.FromBytes(bytes);
         var content1 = new ImageContent(data, mimeType);
-
         if (path is not null)
         {
             content1.Uri = new Uri(path);
@@ -165,7 +154,6 @@ public sealed class ImageContentTests
         // Assert
         Assert.Equal(expectedToString, result1);
     }
-
 
     [Fact]
     public void UpdatingUriPropertyShouldReturnAsExpected()
@@ -195,7 +183,6 @@ public sealed class ImageContentTests
         Assert.Equal(data.ToArray(), content.Data!.Value.ToArray());
     }
 
-
     [Fact]
     public void UpdatingMimeTypePropertyShouldReturnAsExpected()
     {
@@ -217,7 +204,6 @@ public sealed class ImageContentTests
         Assert.Equal("application/json", content.MimeType);
     }
 
-
     [Fact]
     public void UpdateDataPropertyShouldReturnAsExpected()
     {
@@ -238,7 +224,6 @@ public sealed class ImageContentTests
         Assert.Equal(Convert.FromBase64String("dGhpcyBpcyBhIG5ldyB0ZXN0"), content.Data!.Value.ToArray()); // Data is updated
     }
 
-
     [Fact]
     public void EmptyConstructorSerializationAndDeserializationAsExpected()
     {
@@ -257,6 +242,24 @@ public sealed class ImageContentTests
         Assert.Null(deserialized.Metadata);
     }
 
+    [Fact]
+    public void MetadataSerializationAndDeserializationWorksCorrectly()
+    {
+        // Arrange
+        var content = new ImageContent()
+        {
+            Metadata = new Dictionary<string, object?> { ["ChatImageDetailLevel"] = "high" }
+        };
+
+        // Act
+        var serialized = JsonSerializer.Serialize(content);
+        var deserialized = JsonSerializer.Deserialize<ImageContent>(serialized);
+
+        // Assert
+        Assert.NotNull(deserialized?.Metadata);
+        Assert.True(deserialized.Metadata.ContainsKey("ChatImageDetailLevel"));
+        Assert.Equal("high", deserialized.Metadata["ChatImageDetailLevel"]?.ToString());
+    }
 
     [Theory]
     [InlineData("http://localhost:9090/")]
@@ -265,9 +268,7 @@ public sealed class ImageContentTests
     {
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
 #pragma warning disable CS8604 // Possible null reference argument.
-        Uri uri = path is not null
-            ? new Uri(path)
-            : null;
+        Uri uri = path is not null ? new Uri(path) : null;
 
         var content = new ImageContent(uri);
         var serialized = JsonSerializer.Serialize(content);
@@ -292,5 +293,4 @@ public sealed class ImageContentTests
 #pragma warning restore CS8604 // Possible null reference argument.
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
     }
-
 }

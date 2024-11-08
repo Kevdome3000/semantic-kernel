@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Functions.UnitTests.OpenApi.Serialization;
-
 using System;
 using System.Text.Json.Nodes;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Xunit;
 
+namespace SemanticKernel.Functions.UnitTests.OpenApi.Serialization;
 
 public class PipeDelimitedStyleParametersSerializerTests
 {
@@ -14,12 +13,11 @@ public class PipeDelimitedStyleParametersSerializerTests
     public void ItShouldThrowExceptionForUnsupportedParameterStyle()
     {
         // Arrange
-        var parameter = new RestApiOperationParameter(name: "p1", type: "string", isRequired: false, expand: false, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.Form);
+        var parameter = new RestApiParameter(name: "p1", type: "string", isRequired: false, expand: false, location: RestApiParameterLocation.Query, style: RestApiParameterStyle.Form);
 
         // Act & Assert
         Assert.Throws<NotSupportedException>(() => PipeDelimitedStyleParameterSerializer.Serialize(parameter, "fake-argument"));
     }
-
 
     [Theory]
     [InlineData("integer")]
@@ -30,25 +28,24 @@ public class PipeDelimitedStyleParametersSerializerTests
     public void ItShouldThrowExceptionIfParameterTypeIsNotArray(string parameterType)
     {
         // Arrange
-        var parameter = new RestApiOperationParameter(name: "p1", type: parameterType, isRequired: false, expand: false, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.PipeDelimited);
+        var parameter = new RestApiParameter(name: "p1", type: parameterType, isRequired: false, expand: false, location: RestApiParameterLocation.Query, style: RestApiParameterStyle.PipeDelimited);
 
         // Act & Assert
         Assert.Throws<NotSupportedException>(() => PipeDelimitedStyleParameterSerializer.Serialize(parameter, "fake-argument"));
     }
 
-
     [Fact]
     public void ItShouldCreateAmpersandSeparatedParameterPerArrayItem()
     {
         // Arrange
-        var parameter = new RestApiOperationParameter(
-            name: "id",
-            type: "array",
-            isRequired: true,
-            expand: true, //Specifies to generate a separate parameter for each array item.
-            location: RestApiOperationParameterLocation.Query,
-            style: RestApiOperationParameterStyle.PipeDelimited,
-            arrayItemType: "integer");
+        var parameter = new RestApiParameter(
+                name: "id",
+                type: "array",
+                isRequired: true,
+                expand: true, //Specifies to generate a separate parameter for each array item.
+                location: RestApiParameterLocation.Query,
+                style: RestApiParameterStyle.PipeDelimited,
+                arrayItemType: "integer");
 
         // Act
         var result = PipeDelimitedStyleParameterSerializer.Serialize(parameter, new JsonArray(1, 2, 3));
@@ -59,19 +56,18 @@ public class PipeDelimitedStyleParametersSerializerTests
         Assert.Equal("id=1&id=2&id=3", result);
     }
 
-
     [Fact]
     public void ItShouldCreateParameterWithPipeSeparatedValuePerArrayItem()
     {
         // Arrange
-        var parameter = new RestApiOperationParameter(
-            name: "id",
-            type: "array",
-            isRequired: true,
-            expand: false, //Specify generating a parameter with pipe-separated values for each array item.
-            location: RestApiOperationParameterLocation.Query,
-            style: RestApiOperationParameterStyle.PipeDelimited,
-            arrayItemType: "integer");
+        var parameter = new RestApiParameter(
+                name: "id",
+                type: "array",
+                isRequired: true,
+                expand: false, //Specify generating a parameter with pipe-separated values for each array item.
+                location: RestApiParameterLocation.Query,
+                style: RestApiParameterStyle.PipeDelimited,
+                arrayItemType: "integer");
 
         // Act
         var result = PipeDelimitedStyleParameterSerializer.Serialize(parameter, new JsonArray("1", "2", "3"));
@@ -82,7 +78,6 @@ public class PipeDelimitedStyleParametersSerializerTests
         Assert.Equal("id=1|2|3", result);
     }
 
-
     [Theory]
     [InlineData(":", "%3a")]
     [InlineData("/", "%2f")]
@@ -91,7 +86,7 @@ public class PipeDelimitedStyleParametersSerializerTests
     public void ItShouldEncodeSpecialSymbolsInPipeDelimitedParameterValues(string specialSymbol, string encodedEquivalent)
     {
         // Arrange
-        var parameter = new RestApiOperationParameter(name: "id", type: "array", isRequired: false, expand: false, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.PipeDelimited);
+        var parameter = new RestApiParameter(name: "id", type: "array", isRequired: false, expand: false, location: RestApiParameterLocation.Query, style: RestApiParameterStyle.PipeDelimited);
 
         // Act
         var result = PipeDelimitedStyleParameterSerializer.Serialize(parameter, new JsonArray(specialSymbol));
@@ -102,7 +97,6 @@ public class PipeDelimitedStyleParametersSerializerTests
         Assert.EndsWith(encodedEquivalent, result, StringComparison.Ordinal);
     }
 
-
     [Theory]
     [InlineData(":", "%3a")]
     [InlineData("/", "%2f")]
@@ -111,7 +105,7 @@ public class PipeDelimitedStyleParametersSerializerTests
     public void ItShouldEncodeSpecialSymbolsInAmpersandDelimitedParameterValues(string specialSymbol, string encodedEquivalent)
     {
         // Arrange
-        var parameter = new RestApiOperationParameter(name: "id", type: "array", isRequired: false, expand: true, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.PipeDelimited);
+        var parameter = new RestApiParameter(name: "id", type: "array", isRequired: false, expand: true, location: RestApiParameterLocation.Query, style: RestApiParameterStyle.PipeDelimited);
 
         // Act
         var result = PipeDelimitedStyleParameterSerializer.Serialize(parameter, new JsonArray(specialSymbol));

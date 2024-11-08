@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
-/// The REST API specification.
+/// REST API specification.
 /// </summary>
 internal sealed class RestApiSpecification
 {
@@ -14,6 +14,11 @@ internal sealed class RestApiSpecification
     /// The REST API information.
     /// </summary>
     public RestApiInfo Info { get; private set; }
+
+    /// <summary>
+    /// The REST API security requirements.
+    /// </summary>
+    public List<RestApiSecurityRequirement>? SecurityRequirements { get; private set; }
 
     /// <summary>
     /// The REST API operations.
@@ -25,10 +30,12 @@ internal sealed class RestApiSpecification
     /// Construct an instance of <see cref="RestApiSpecification"/>
     /// </summary>
     /// <param name="info">REST API information.</param>
+    /// <param name="securityRequirements">REST API security requirements.</param>
     /// <param name="operations">REST API operations.</param>
-    public RestApiSpecification(RestApiInfo info, IList<RestApiOperation> operations)
+    public RestApiSpecification(RestApiInfo info, List<RestApiSecurityRequirement>? securityRequirements, IList<RestApiOperation> operations)
     {
         this.Info = info;
+        this.SecurityRequirements = securityRequirements;
         this.Operations = operations;
     }
 

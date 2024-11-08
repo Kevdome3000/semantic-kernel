@@ -1,16 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Google;
-
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using ChatCompletion;
-using Text;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Text;
 
+namespace Microsoft.SemanticKernel.Connectors.Google;
 
 /// <summary>
 /// Represents the settings for executing a prompt with the Gemini model.
@@ -18,21 +17,14 @@ using Text;
 [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
 public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
 {
-
     private double? _temperature;
-
     private double? _topP;
-
     private int? _topK;
-
     private int? _maxTokens;
-
     private int? _candidateCount;
-
     private IList<string>? _stopSequences;
-
+    private bool? _audioTimestamp;
     private IList<GeminiSafetySetting>? _safetySettings;
-
     private GeminiToolCallBehavior? _toolCallBehavior;
 
     /// <summary>
@@ -180,6 +172,20 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
         }
     }
 
+    /// <summary>
+    /// Indicates if the audio response should include timestamps.
+    /// if enabled, audio timestamp will be included in the request to the model.
+    /// </summary>
+    [JsonPropertyName("audio_timestamp")]
+    public bool? AudioTimestamp
+    {
+        get => this._audioTimestamp;
+        set
+        {
+            this.ThrowIfFrozen();
+            this._audioTimestamp = value;
+        }
+    }
 
     /// <inheritdoc />
     public override void Freeze()
@@ -202,30 +208,24 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
         }
     }
 
-
     /// <inheritdoc />
     public override PromptExecutionSettings Clone()
     {
         return new GeminiPromptExecutionSettings()
         {
             ModelId = this.ModelId,
-            ExtensionData = this.ExtensionData is not null
-                ? new Dictionary<string, object>(this.ExtensionData)
-                : null,
+            ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null,
             Temperature = this.Temperature,
             TopP = this.TopP,
             TopK = this.TopK,
             MaxTokens = this.MaxTokens,
             CandidateCount = this.CandidateCount,
-            StopSequences = this.StopSequences is not null
-                ? new List<string>(this.StopSequences)
-                : null,
-            SafetySettings = this.SafetySettings?.Select(setting => new GeminiSafetySetting(setting)).
-                ToList(),
+            StopSequences = this.StopSequences is not null ? new List<string>(this.StopSequences) : null,
+            SafetySettings = this.SafetySettings?.Select(setting => new GeminiSafetySetting(setting)).ToList(),
             ToolCallBehavior = this.ToolCallBehavior?.Clone(),
+            AudioTimestamp = this.AudioTimestamp
         };
     }
-
 
     /// <summary>
     /// Converts a <see cref="PromptExecutionSettings"/> object to a <see cref="GeminiPromptExecutionSettings"/> object.
@@ -250,8 +250,6 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
         }
 
         var json = JsonSerializer.Serialize(executionSettings);
-
         return JsonSerializer.Deserialize<GeminiPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive)!;
     }
-
 }

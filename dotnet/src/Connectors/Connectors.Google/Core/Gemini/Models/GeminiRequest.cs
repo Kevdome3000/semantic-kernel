@@ -1,18 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Google.Core;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using ChatCompletion;
+using Microsoft.SemanticKernel.ChatCompletion;
 
+namespace Microsoft.SemanticKernel.Connectors.Google.Core;
 
 internal sealed class GeminiRequest
 {
-
     [JsonPropertyName("contents")]
     public IList<GeminiContent> Contents { get; set; } = null!;
 
@@ -32,21 +30,17 @@ internal sealed class GeminiRequest
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public GeminiContent? SystemInstruction { get; set; }
 
-
     public void AddFunction(GeminiFunction function)
     {
         // NOTE: Currently Gemini only supports one tool i.e. function calling.
         this.Tools ??= [];
-
         if (this.Tools.Count == 0)
         {
             this.Tools.Add(new GeminiTool());
         }
 
-        this.Tools[0].
-            Functions.Add(function.ToFunctionDeclaration());
+        this.Tools[0].Functions.Add(function.ToFunctionDeclaration());
     }
-
 
     /// <summary>
     /// Creates a <see cref="GeminiRequest"/> object from the given prompt and <see cref="GeminiPromptExecutionSettings"/>.
@@ -61,10 +55,8 @@ internal sealed class GeminiRequest
         GeminiRequest obj = CreateGeminiRequest(prompt);
         AddSafetySettings(executionSettings, obj);
         AddConfiguration(executionSettings, obj);
-
         return obj;
     }
-
 
     /// <summary>
     /// Creates a <see cref="GeminiRequest"/> object from the given <see cref="ChatHistory"/> and <see cref="GeminiPromptExecutionSettings"/>.
@@ -79,10 +71,8 @@ internal sealed class GeminiRequest
         GeminiRequest obj = CreateGeminiRequest(chatHistory);
         AddSafetySettings(executionSettings, obj);
         AddConfiguration(executionSettings, obj);
-
         return obj;
     }
-
 
     private static GeminiRequest CreateGeminiRequest(string prompt)
     {
@@ -102,24 +92,20 @@ internal sealed class GeminiRequest
                 }
             ]
         };
-
         return obj;
     }
-
 
     private static GeminiRequest CreateGeminiRequest(ChatHistory chatHistory)
     {
         GeminiRequest obj = new()
         {
-            Contents = chatHistory.Where(message => message.Role != AuthorRole.System).
-                Select(CreateGeminiContentFromChatMessage).
-                ToList(),
+            Contents = chatHistory
+                .Where(message => message.Role != AuthorRole.System)
+                .Select(CreateGeminiContentFromChatMessage).ToList(),
             SystemInstruction = CreateSystemMessages(chatHistory)
         };
-
         return obj;
     }
-
 
     private static GeminiContent CreateGeminiContentFromChatMessage(ChatMessageContent message)
     {
@@ -130,12 +116,9 @@ internal sealed class GeminiRequest
         };
     }
 
-
     private static GeminiContent? CreateSystemMessages(ChatHistory chatHistory)
     {
-        var contents = chatHistory.Where(message => message.Role == AuthorRole.System).
-            ToList();
-
+        var contents = chatHistory.Where(message => message.Role == AuthorRole.System).ToList();
         if (contents.Count == 0)
         {
             return null;
@@ -147,7 +130,6 @@ internal sealed class GeminiRequest
         };
     }
 
-
     public void AddChatMessage(ChatMessageContent message)
     {
         Verify.NotNull(this.Contents);
@@ -156,11 +138,9 @@ internal sealed class GeminiRequest
         this.Contents.Add(CreateGeminiContentFromChatMessage(message));
     }
 
-
     private static List<GeminiPart> CreateGeminiParts(IEnumerable<ChatMessageContent> contents)
     {
         List<GeminiPart>? parts = null;
-
         foreach (var content in contents)
         {
             if (parts == null)
@@ -176,11 +156,9 @@ internal sealed class GeminiRequest
         return parts!;
     }
 
-
     private static List<GeminiPart> CreateGeminiParts(ChatMessageContent content)
     {
         List<GeminiPart> parts = [];
-
         switch (content)
         {
             case GeminiChatMessageContent { CalledToolResult: not null } contentWithCalledTool:
@@ -192,7 +170,6 @@ internal sealed class GeminiRequest
                         Response = new(contentWithCalledTool.CalledToolResult.FunctionResult.GetValue<object>())
                     }
                 });
-
                 break;
             case GeminiChatMessageContent { ToolCalls: not null } contentWithToolCalls:
                 parts.AddRange(contentWithToolCalls.ToolCalls.Select(toolCall =>
@@ -204,11 +181,9 @@ internal sealed class GeminiRequest
                             Arguments = JsonSerializer.SerializeToNode(toolCall.Arguments),
                         }
                     }));
-
                 break;
             default:
                 parts.AddRange(content.Items.Select(GetGeminiPartFromKernelContent));
-
                 break;
         }
 
@@ -220,14 +195,12 @@ internal sealed class GeminiRequest
         return parts;
     }
 
-
     private static GeminiPart GetGeminiPartFromKernelContent(KernelContent item) => item switch
     {
         TextContent textContent => new GeminiPart { Text = textContent.Text },
         ImageContent imageContent => CreateGeminiPartFromImage(imageContent),
         _ => throw new NotSupportedException($"Unsupported content type. {item.GetType().Name} is not supported by Gemini.")
     };
-
 
     private static GeminiPart CreateGeminiPartFromImage(ImageContent imageContent)
     {
@@ -259,13 +232,11 @@ internal sealed class GeminiRequest
         throw new InvalidOperationException("Image content does not contain any data or uri.");
     }
 
-
     private static string GetMimeTypeFromImageContent(ImageContent imageContent)
     {
         return imageContent.MimeType
                ?? throw new InvalidOperationException("Image content MimeType is empty.");
     }
-
 
     private static void AddConfiguration(GeminiPromptExecutionSettings executionSettings, GeminiRequest request)
     {
@@ -276,22 +247,19 @@ internal sealed class GeminiRequest
             TopK = executionSettings.TopK,
             MaxOutputTokens = executionSettings.MaxTokens,
             StopSequences = executionSettings.StopSequences,
-            CandidateCount = executionSettings.CandidateCount
+            CandidateCount = executionSettings.CandidateCount,
+            AudioTimestamp = executionSettings.AudioTimestamp
         };
     }
-
 
     private static void AddSafetySettings(GeminiPromptExecutionSettings executionSettings, GeminiRequest request)
     {
         request.SafetySettings = executionSettings.SafetySettings?.Select(s
-                => new GeminiSafetySetting(s.Category, s.Threshold)).
-            ToList();
+            => new GeminiSafetySetting(s.Category, s.Threshold)).ToList();
     }
-
 
     internal sealed class ConfigurationElement
     {
-
         [JsonPropertyName("temperature")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public double? Temperature { get; set; }
@@ -316,6 +284,8 @@ internal sealed class GeminiRequest
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int? CandidateCount { get; set; }
 
+        [JsonPropertyName("audioTimestamp")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public bool? AudioTimestamp { get; set; }
     }
-
 }

@@ -1,35 +1,32 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Plugins.OpenApi;
-
 using System;
 using System.Text.Json.Nodes;
 
+namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
-/// Serializes REST API operation parameter of the 'Simple' style.
+/// Serializes REST API parameter of the 'Simple' style.
 /// </summary>
 internal static class SimpleStyleParameterSerializer
 {
-
     /// <summary>
-    /// Serializes a REST API operation `Simple` style parameter.
+    /// Serializes a REST API `Simple` style parameter.
     /// </summary>
-    /// <param name="parameter">The REST API operation parameter to serialize.</param>
+    /// <param name="parameter">The REST API parameter to serialize.</param>
     /// <param name="argument">The parameter argument.</param>
     /// <returns>The serialized parameter.</returns>
-    public static string Serialize(RestApiOperationParameter parameter, JsonNode argument)
+    public static string Serialize(RestApiParameter parameter, JsonNode argument)
     {
         const string ArrayType = "array";
 
         Verify.NotNull(parameter);
         Verify.NotNull(argument);
 
-        var style = parameter.Style ?? RestApiOperationParameterStyle.Simple;
-
-        if (style != RestApiOperationParameterStyle.Simple)
+        var style = parameter.Style ?? RestApiParameterStyle.Simple;
+        if (style != RestApiParameterStyle.Simple)
         {
-            throw new NotSupportedException($"Unsupported Rest API operation parameter style '{parameter.Style}' for parameter '{parameter.Name}'");
+            throw new NotSupportedException($"Unsupported Rest API parameter style '{parameter.Style}' for parameter '{parameter.Name}'");
         }
 
         // Serializing parameters of array type.
@@ -45,18 +42,16 @@ internal static class SimpleStyleParameterSerializer
         }
 
         // Handling parameters of any arbitrary type by using JSON format without enclosing quotes.
-        return argument.ToString().
-            Trim('"');
+        return argument.ToString().Trim('"');
     }
-
 
     /// <summary>
     /// Serializes an array-type parameter.
     /// </summary>
-    /// <param name="parameter">The REST API operation parameter to serialize.</param>
+    /// <param name="parameter">The REST API parameter to serialize.</param>
     /// <param name="argument">The argument value.</param>
     /// <returns>The serialized parameter string.</returns>
-    private static string SerializeArrayParameter(RestApiOperationParameter parameter, object argument)
+    private static string SerializeArrayParameter(RestApiParameter parameter, object argument)
     {
         if (argument is not JsonArray array)
         {
@@ -65,5 +60,4 @@ internal static class SimpleStyleParameterSerializer
 
         return ArrayParameterValueSerializer.SerializeArrayAsDelimitedValues(array, delimiter: ",", encode: false); //1,2,3
     }
-
 }
