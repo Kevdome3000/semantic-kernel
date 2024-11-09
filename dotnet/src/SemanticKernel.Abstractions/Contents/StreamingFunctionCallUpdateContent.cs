@@ -43,10 +43,10 @@ public class StreamingFunctionCallUpdateContent : StreamingKernelContent
         string? arguments = null,
         int functionCallIndex = 0)
     {
-        this.CallId = callId;
-        this.Name = name;
-        this.Arguments = arguments;
-        this.FunctionCallIndex = functionCallIndex;
+        CallId = callId;
+        Name = name;
+        Arguments = arguments;
+        FunctionCallIndex = functionCallIndex;
     }
 
     /// <inheritdoc />
@@ -58,6 +58,6 @@ public class StreamingFunctionCallUpdateContent : StreamingKernelContent
     /// <inheritdoc />
     public override byte[] ToByteArray()
     {
-        return Encoding.UTF8.GetBytes(this.ToString());
+        return Encoding.UTF8.GetBytes(ToString());
     }
 }

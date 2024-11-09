@@ -38,18 +38,18 @@ public class StreamingFileReferenceContent : StreamingKernelContent
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(innerContent, choiceIndex: 0, modelId, metadata)
     {
-        this.FileId = fileId;
+        FileId = fileId;
     }
 
     /// <inheritdoc/>
     public override string ToString()
     {
-        return this.FileId;
+        return FileId;
     }
 
     /// <inheritdoc/>
     public override byte[] ToByteArray()
     {
-        return Encoding.UTF8.GetBytes(this.ToString());
+        return Encoding.UTF8.GetBytes(ToString());
     }
 }

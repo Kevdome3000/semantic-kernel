@@ -19,7 +19,7 @@ public sealed class StreamingKernelContentItemCollection : IList<StreamingKernel
     /// </summary>
     public StreamingKernelContentItemCollection()
     {
-        this._items = [];
+        _items = [];
     }
 
     /// <summary>
@@ -31,18 +31,18 @@ public sealed class StreamingKernelContentItemCollection : IList<StreamingKernel
     /// <exception cref="ArgumentOutOfRangeException">The <paramref name="index"/> was not valid for this collection.</exception>
     public StreamingKernelContent this[int index]
     {
-        get => this._items[index];
+        get => _items[index];
         set
         {
             Verify.NotNull(value);
-            this._items[index] = value;
+            _items[index] = value;
         }
     }
 
     /// <summary>
     /// Gets the number of content items in the collection.
     /// </summary>
-    public int Count => this._items.Count;
+    public int Count => _items.Count;
 
     /// <summary>
     /// Adds a content item to the collection.
@@ -52,13 +52,17 @@ public sealed class StreamingKernelContentItemCollection : IList<StreamingKernel
     public void Add(StreamingKernelContent item)
     {
         Verify.NotNull(item);
-        this._items.Add(item);
+        _items.Add(item);
     }
 
     /// <summary>
     /// Removes all content items from the collection.
     /// </summary>
-    public void Clear() => this._items.Clear();
+    public void Clear()
+    {
+        _items.Clear();
+    }
+
 
     /// <summary>
     /// Determines whether a content item is in the collection.
@@ -70,7 +74,7 @@ public sealed class StreamingKernelContentItemCollection : IList<StreamingKernel
     {
         Verify.NotNull(item);
 
-        return this._items.Contains(item);
+        return _items.Contains(item);
     }
 
     /// <summary>
@@ -81,7 +85,11 @@ public sealed class StreamingKernelContentItemCollection : IList<StreamingKernel
     /// <exception cref="ArgumentNullException"><paramref name="array"/> is null.</exception>
     /// <exception cref="ArgumentException">The number of content items in the collection is greater than the available space from <paramref name="arrayIndex"/> to the end of <paramref name="array"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="arrayIndex"/> is less than 0.</exception>
-    public void CopyTo(StreamingKernelContent[] array, int arrayIndex) => this._items.CopyTo(array, arrayIndex);
+    public void CopyTo(StreamingKernelContent[] array, int arrayIndex)
+    {
+        _items.CopyTo(array, arrayIndex);
+    }
+
 
     /// <summary>
     /// Searches for the specified content item and returns the index of the first occurrence.
@@ -93,7 +101,7 @@ public sealed class StreamingKernelContentItemCollection : IList<StreamingKernel
     {
         Verify.NotNull(item);
 
-        return this._items.IndexOf(item);
+        return _items.IndexOf(item);
     }
 
     /// <summary>
@@ -105,7 +113,7 @@ public sealed class StreamingKernelContentItemCollection : IList<StreamingKernel
     public void Insert(int index, StreamingKernelContent item)
     {
         Verify.NotNull(item);
-        this._items.Insert(index, item);
+        _items.Insert(index, item);
     }
 
     /// <summary>
@@ -118,23 +126,35 @@ public sealed class StreamingKernelContentItemCollection : IList<StreamingKernel
     {
         Verify.NotNull(item);
 
-        return this._items.Remove(item);
+        return _items.Remove(item);
     }
 
     /// <summary>
     /// Removes the content item at the specified index from the collection.
     /// </summary>
     /// <param name="index">The index of the content item to remove.</param>
-    public void RemoveAt(int index) => this._items.RemoveAt(index);
+    public void RemoveAt(int index)
+    {
+        _items.RemoveAt(index);
+    }
+
 
     /// <inheritdoc/>
     bool ICollection<StreamingKernelContent>.IsReadOnly => false;
 
     /// <inheritdoc/>
-    IEnumerator IEnumerable.GetEnumerator() => this._items.GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return _items.GetEnumerator();
+    }
+
 
     /// <inheritdoc/>
-    IEnumerator<StreamingKernelContent> IEnumerable<StreamingKernelContent>.GetEnumerator() => this._items.GetEnumerator();
+    IEnumerator<StreamingKernelContent> IEnumerable<StreamingKernelContent>.GetEnumerator()
+    {
+        return _items.GetEnumerator();
+    }
+
 
     #region private
 

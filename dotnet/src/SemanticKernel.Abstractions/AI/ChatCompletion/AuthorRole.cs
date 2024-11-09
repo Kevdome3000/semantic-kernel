@@ -46,7 +46,7 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
     public AuthorRole(string label)
     {
         Verify.NotNullOrWhiteSpace(label, nameof(label));
-        this.Label = label!;
+        Label = label!;
     }
 
     /// <summary>
@@ -75,12 +75,21 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
 
     /// <inheritdoc/>
     public bool Equals(AuthorRole other)
-        => string.Equals(this.Label, other.Label, StringComparison.OrdinalIgnoreCase);
+    {
+        return string.Equals(Label, other.Label, StringComparison.OrdinalIgnoreCase);
+    }
+
 
     /// <inheritdoc/>
     public override int GetHashCode()
-        => StringComparer.OrdinalIgnoreCase.GetHashCode(this.Label);
+    {
+        return StringComparer.OrdinalIgnoreCase.GetHashCode(Label);
+    }
+
 
     /// <inheritdoc/>
-    public override string ToString() => this.Label;
+    public override string ToString()
+    {
+        return Label;
+    }
 }

@@ -24,8 +24,8 @@ internal sealed class UnconditionalSuppressMessageAttribute : Attribute
     /// <param name="checkId">The identifier of the analysis rule the attribute applies to.</param>
     public UnconditionalSuppressMessageAttribute(string category, string checkId)
     {
-        this.Category = category;
-        this.CheckId = checkId;
+        Category = category;
+        CheckId = checkId;
     }
 
     /// <summary>

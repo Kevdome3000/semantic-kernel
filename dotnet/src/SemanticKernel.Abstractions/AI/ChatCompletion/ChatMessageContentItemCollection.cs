@@ -17,7 +17,7 @@ public class ChatMessageContentItemCollection : IList<KernelContent>, IReadOnlyL
     /// </summary>
     public ChatMessageContentItemCollection()
     {
-        this._items = [];
+        _items = [];
     }
 
     /// <summary>
@@ -29,18 +29,18 @@ public class ChatMessageContentItemCollection : IList<KernelContent>, IReadOnlyL
     /// <exception cref="ArgumentOutOfRangeException">The <paramref name="index"/> was not valid for this collection.</exception>
     public KernelContent this[int index]
     {
-        get => this._items[index];
+        get => _items[index];
         set
         {
             Verify.NotNull(value);
-            this._items[index] = value;
+            _items[index] = value;
         }
     }
 
     /// <summary>
     /// Gets the number of content items in the collection.
     /// </summary>
-    public int Count => this._items.Count;
+    public int Count => _items.Count;
 
     /// <summary>
     /// Adds a content item to the collection.
@@ -50,13 +50,17 @@ public class ChatMessageContentItemCollection : IList<KernelContent>, IReadOnlyL
     public void Add(KernelContent item)
     {
         Verify.NotNull(item);
-        this._items.Add(item);
+        _items.Add(item);
     }
 
     /// <summary>
     /// Removes all content items from the collection.
     /// </summary>
-    public void Clear() => this._items.Clear();
+    public void Clear()
+    {
+        _items.Clear();
+    }
+
 
     /// <summary>
     /// Determines whether a content item is in the collection.
@@ -68,7 +72,7 @@ public class ChatMessageContentItemCollection : IList<KernelContent>, IReadOnlyL
     {
         Verify.NotNull(item);
 
-        return this._items.Contains(item);
+        return _items.Contains(item);
     }
 
     /// <summary>
@@ -79,7 +83,11 @@ public class ChatMessageContentItemCollection : IList<KernelContent>, IReadOnlyL
     /// <exception cref="ArgumentNullException"><paramref name="array"/> is null.</exception>
     /// <exception cref="ArgumentException">The number of content items in the collection is greater than the available space from <paramref name="arrayIndex"/> to the end of <paramref name="array"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="arrayIndex"/> is less than 0.</exception>
-    public void CopyTo(KernelContent[] array, int arrayIndex) => this._items.CopyTo(array, arrayIndex);
+    public void CopyTo(KernelContent[] array, int arrayIndex)
+    {
+        _items.CopyTo(array, arrayIndex);
+    }
+
 
     /// <summary>
     /// Searches for the specified content item and returns the index of the first occurrence.
@@ -91,7 +99,7 @@ public class ChatMessageContentItemCollection : IList<KernelContent>, IReadOnlyL
     {
         Verify.NotNull(item);
 
-        return this._items.IndexOf(item);
+        return _items.IndexOf(item);
     }
 
     /// <summary>
@@ -103,7 +111,7 @@ public class ChatMessageContentItemCollection : IList<KernelContent>, IReadOnlyL
     public void Insert(int index, KernelContent item)
     {
         Verify.NotNull(item);
-        this._items.Insert(index, item);
+        _items.Insert(index, item);
     }
 
     /// <summary>
@@ -116,20 +124,33 @@ public class ChatMessageContentItemCollection : IList<KernelContent>, IReadOnlyL
     {
         Verify.NotNull(item);
 
-        return this._items.Remove(item);
+        return _items.Remove(item);
     }
 
     /// <summary>
     /// Removes the content item at the specified index from the collection.
     /// </summary>
     /// <param name="index">The index of the content item to remove.</param>
-    public void RemoveAt(int index) => this._items.RemoveAt(index);
+    public void RemoveAt(int index)
+    {
+        _items.RemoveAt(index);
+    }
+
 
     bool ICollection<KernelContent>.IsReadOnly => false;
 
-    IEnumerator IEnumerable.GetEnumerator() => this._items.GetEnumerator();
 
-    IEnumerator<KernelContent> IEnumerable<KernelContent>.GetEnumerator() => this._items.GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return _items.GetEnumerator();
+    }
+
+
+    IEnumerator<KernelContent> IEnumerable<KernelContent>.GetEnumerator()
+    {
+        return _items.GetEnumerator();
+    }
+
 
     #region private
 

@@ -33,11 +33,11 @@ public class AutoFunctionInvocationContext
         Verify.NotNull(chatHistory);
         Verify.NotNull(chatMessageContent);
 
-        this.Kernel = kernel;
-        this.Function = function;
-        this.Result = result;
-        this.ChatHistory = chatHistory;
-        this.ChatMessageContent = chatMessageContent;
+        Kernel = kernel;
+        Function = function;
+        Result = result;
+        ChatHistory = chatHistory;
+        ChatMessageContent = chatMessageContent;
     }
 
     /// <summary>

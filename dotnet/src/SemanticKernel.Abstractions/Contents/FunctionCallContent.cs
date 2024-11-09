@@ -58,10 +58,10 @@ public sealed class FunctionCallContent : KernelContent
     {
         Verify.NotNull(functionName);
 
-        this.FunctionName = functionName;
-        this.Id = id;
-        this.PluginName = pluginName;
-        this.Arguments = arguments;
+        FunctionName = functionName;
+        Id = id;
+        PluginName = pluginName;
+        Arguments = arguments;
     }
 
     /// <summary>
@@ -74,20 +74,21 @@ public sealed class FunctionCallContent : KernelContent
     {
         Verify.NotNull(kernel, nameof(kernel));
 
-        if (this.Exception is not null)
+        if (Exception is not null)
         {
-            throw this.Exception;
+            throw Exception;
         }
 
-        if (kernel.Plugins.TryGetFunction(this.PluginName, this.FunctionName, out KernelFunction? function))
+        if (kernel.Plugins.TryGetFunction(PluginName, FunctionName, out KernelFunction? function))
         {
-            var result = await function.InvokeAsync(kernel, this.Arguments, cancellationToken).
+            var result = await function.InvokeAsync(kernel, Arguments, cancellationToken)
+                .
                 ConfigureAwait(false);
 
             return new FunctionResultContent(this, result);
         }
 
-        throw new KeyNotFoundException($"The plugin collection does not contain a plugin and/or function with the specified names. Plugin name - '{this.PluginName}', function name - '{this.FunctionName}'.");
+        throw new KeyNotFoundException($"The plugin collection does not contain a plugin and/or function with the specified names. Plugin name - '{PluginName}', function name - '{FunctionName}'.");
     }
 
     /// <summary>

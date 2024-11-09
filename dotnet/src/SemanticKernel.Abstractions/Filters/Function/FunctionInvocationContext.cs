@@ -26,10 +26,10 @@ public class FunctionInvocationContext
         Verify.NotNull(function);
         Verify.NotNull(arguments);
 
-        this.Kernel = kernel;
-        this.Function = function;
-        this.Arguments = arguments;
-        this.Result = result;
+        Kernel = kernel;
+        Function = function;
+        Arguments = arguments;
+        Result = result;
     }
 
     /// <summary>

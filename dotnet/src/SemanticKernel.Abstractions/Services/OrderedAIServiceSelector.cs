@@ -72,7 +72,7 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector
 
                 if (!string.IsNullOrEmpty(settings.ModelId))
                 {
-                    service = this.GetServiceByModelId<T>(kernel, settings.ModelId!);
+                    service = GetServiceByModelId<T>(kernel, settings.ModelId!);
 
                     if (service is not null)
                     {

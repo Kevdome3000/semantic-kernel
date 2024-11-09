@@ -19,8 +19,8 @@ public sealed class FunctionInvokedContext : FunctionFilterContext
     public FunctionInvokedContext(KernelArguments arguments, FunctionResult result)
         : base(result.Function, arguments, (result ?? throw new ArgumentNullException(nameof(result))).Metadata)
     {
-        this.Result = result;
-        this.ResultValue = result.Value;
+        Result = result;
+        ResultValue = result.Value;
     }
 
     /// <summary>
@@ -39,6 +39,6 @@ public sealed class FunctionInvokedContext : FunctionFilterContext
     /// <param name="value">The value to use as the new result of the function's invocation.</param>
     public void SetResultValue(object? value)
     {
-        this.ResultValue = value;
+        ResultValue = value;
     }
 }

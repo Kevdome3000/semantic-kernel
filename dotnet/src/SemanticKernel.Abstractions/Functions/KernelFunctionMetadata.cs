@@ -35,7 +35,7 @@ public sealed class KernelFunctionMetadata
     /// <exception cref="ArgumentException">An invalid name was supplied.</exception>
     public KernelFunctionMetadata(string name)
     {
-        this.Name = name;
+        Name = name;
     }
 
     /// <summary>Initializes a <see cref="KernelFunctionMetadata"/> as a copy of another <see cref="KernelFunctionMetadata"/>.</summary>
@@ -47,23 +47,23 @@ public sealed class KernelFunctionMetadata
     public KernelFunctionMetadata(KernelFunctionMetadata metadata)
     {
         Verify.NotNull(metadata);
-        this.Name = metadata.Name;
-        this.PluginName = metadata.PluginName;
-        this.Description = metadata.Description;
-        this.Parameters = metadata.Parameters;
-        this.ReturnParameter = metadata.ReturnParameter;
-        this.AdditionalProperties = metadata.AdditionalProperties;
+        Name = metadata.Name;
+        PluginName = metadata.PluginName;
+        Description = metadata.Description;
+        Parameters = metadata.Parameters;
+        ReturnParameter = metadata.ReturnParameter;
+        AdditionalProperties = metadata.AdditionalProperties;
     }
 
     /// <summary>Gets the name of the function.</summary>
     public string Name
     {
-        get => this._name;
+        get => _name;
         init
         {
             Verify.NotNull(value);
             Verify.ValidFunctionName(value);
-            this._name = value;
+            _name = value;
         }
     }
 
@@ -74,19 +74,19 @@ public sealed class KernelFunctionMetadata
     [AllowNull]
     public string Description
     {
-        get => this._description;
-        init => this._description = value ?? string.Empty;
+        get => _description;
+        init => _description = value ?? string.Empty;
     }
 
     /// <summary>Gets the metadata for the parameters to the function.</summary>
     /// <remarks>If the function has no parameters, the returned list will be empty.</remarks>
     public IReadOnlyList<KernelParameterMetadata> Parameters
     {
-        get => this._parameters;
+        get => _parameters;
         init
         {
             Verify.NotNull(value);
-            this._parameters = value;
+            _parameters = value;
         }
     }
 
@@ -94,22 +94,22 @@ public sealed class KernelFunctionMetadata
     /// <remarks>If the function has no return parameter, the returned value will be a default instance of a <see cref="KernelReturnParameterMetadata"/>.</remarks>
     public KernelReturnParameterMetadata ReturnParameter
     {
-        get => this._returnParameter ??= KernelReturnParameterMetadata.Empty;
+        get => _returnParameter ??= KernelReturnParameterMetadata.Empty;
         init
         {
             Verify.NotNull(value);
-            this._returnParameter = value;
+            _returnParameter = value;
         }
     }
 
     /// <summary>Gets optional metadata in addition to the named properties already available on this class.</summary>
     public ReadOnlyDictionary<string, object?> AdditionalProperties
     {
-        get => this._additionalProperties ??= s_emptyDictionary;
+        get => _additionalProperties ??= s_emptyDictionary;
         init
         {
             Verify.NotNull(value);
-            this._additionalProperties = value;
+            _additionalProperties = value;
         }
     }
 }

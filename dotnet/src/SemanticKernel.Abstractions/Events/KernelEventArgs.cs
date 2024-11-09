@@ -19,9 +19,9 @@ public abstract class KernelEventArgs : EventArgs
         Verify.NotNull(function);
         Verify.NotNull(arguments);
 
-        this.Function = function;
-        this.Arguments = arguments;
-        this.Metadata = metadata;
+        Function = function;
+        Arguments = arguments;
+        Metadata = metadata;
     }
 
     /// <summary>

@@ -43,9 +43,9 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
         bool autoInvoke = true,
         FunctionChoiceBehaviorOptions? options = null) : base(functions)
     {
-        this.Functions = functions?.Select(f => FunctionName.ToFullyQualifiedName(f.Name, f.PluginName, FunctionNameSeparator)).ToList();
-        this._autoInvoke = autoInvoke;
-        this.Options = options;
+        Functions = functions?.Select(f => FunctionName.ToFullyQualifiedName(f.Name, f.PluginName, FunctionNameSeparator)).ToList();
+        _autoInvoke = autoInvoke;
+        Options = options;
     }
 
     /// <summary>
@@ -71,21 +71,21 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
         // This is a temporary solution which will be removed after we have a way to dynamically control list of functions to advertise to the model.
         if (context.RequestSequenceIndex >= 1)
         {
-            return new FunctionChoiceBehaviorConfiguration(this.Options ?? DefaultOptions)
+            return new FunctionChoiceBehaviorConfiguration(Options ?? DefaultOptions)
             {
                 Choice = FunctionChoice.Required,
                 Functions = null,
-                AutoInvoke = this._autoInvoke,
+                AutoInvoke = _autoInvoke
             };
         }
 
-        var functions = base.GetFunctions(this.Functions, context.Kernel, this._autoInvoke);
+        var functions = GetFunctions(Functions, context.Kernel, _autoInvoke);
 
-        return new FunctionChoiceBehaviorConfiguration(this.Options ?? DefaultOptions)
+        return new FunctionChoiceBehaviorConfiguration(Options ?? DefaultOptions)
         {
             Choice = FunctionChoice.Required,
             Functions = functions,
-            AutoInvoke = this._autoInvoke,
+            AutoInvoke = _autoInvoke
         };
     }
 }

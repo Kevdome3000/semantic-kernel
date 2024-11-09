@@ -29,10 +29,10 @@ public sealed class KernelFunctionCanceledException : OperationCanceledException
         Exception? innerException = null) :
         base($"The invocation of function '{function.Name}' was canceled.", innerException, (innerException as OperationCanceledException)?.CancellationToken ?? default)
     {
-        this.Kernel = kernel;
-        this.Function = function;
-        this.Arguments = arguments;
-        this.FunctionResult = functionResult;
+        Kernel = kernel;
+        Function = function;
+        Arguments = arguments;
+        FunctionResult = functionResult;
     }
 
     /// <summary>Gets the <see cref="Kernel"/> that was passed to the invocation of <see cref="Function"/>.</summary>

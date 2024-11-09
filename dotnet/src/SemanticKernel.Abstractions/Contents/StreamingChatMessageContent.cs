@@ -23,14 +23,16 @@ public class StreamingChatMessageContent : StreamingKernelContent
     {
         get
         {
-            var textContent = this.Items.OfType<StreamingTextContent>().
+            var textContent = Items.OfType<StreamingTextContent>()
+                .
                 FirstOrDefault();
 
             return textContent?.Text;
         }
         set
         {
-            var textContent = this.Items.OfType<StreamingTextContent>().
+            var textContent = Items.OfType<StreamingTextContent>()
+                .
                 FirstOrDefault();
 
             if (textContent is not null)
@@ -39,13 +41,13 @@ public class StreamingChatMessageContent : StreamingKernelContent
             }
             else if (value is not null)
             {
-                this.Items.Add(new StreamingTextContent(
+                Items.Add(new StreamingTextContent(
                     text: value,
-                    choiceIndex: this.ChoiceIndex,
-                    modelId: this.ModelId,
-                    innerContent: this.InnerContent,
-                    encoding: this.Encoding,
-                    metadata: this.Metadata
+                    ChoiceIndex,
+                    ModelId,
+                    InnerContent,
+                    Encoding,
+                    Metadata
                 ));
             }
         }
@@ -58,8 +60,8 @@ public class StreamingChatMessageContent : StreamingKernelContent
     [Experimental("SKEXP0001")]
     public StreamingKernelContentItemCollection Items
     {
-        get => this._items ??= [];
-        set => this._items = value;
+        get => _items ??= [];
+        set => _items = value;
     }
 
     /// <summary>
@@ -69,8 +71,8 @@ public class StreamingChatMessageContent : StreamingKernelContent
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? AuthorName
     {
-        get => this._authorName;
-        set => this._authorName = string.IsNullOrWhiteSpace(value)
+        get => _authorName;
+        set => _authorName = string.IsNullOrWhiteSpace(value)
             ? null
             : value;
     }
@@ -88,7 +90,8 @@ public class StreamingChatMessageContent : StreamingKernelContent
     {
         get
         {
-            var textContent = this.Items.OfType<StreamingTextContent>().
+            var textContent = Items.OfType<StreamingTextContent>()
+                .
                 FirstOrDefault();
 
             if (textContent is not null)
@@ -96,13 +99,14 @@ public class StreamingChatMessageContent : StreamingKernelContent
                 return textContent.Encoding;
             }
 
-            return this._encoding;
+            return _encoding;
         }
         set
         {
-            this._encoding = value;
+            _encoding = value;
 
-            var textContent = this.Items.OfType<StreamingTextContent>().
+            var textContent = Items.OfType<StreamingTextContent>()
+                .
                 FirstOrDefault();
 
             if (textContent is not null)
@@ -133,16 +137,24 @@ public class StreamingChatMessageContent : StreamingKernelContent
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(innerContent, choiceIndex, modelId, metadata)
     {
-        this.Role = role;
-        this.Content = content;
-        this._encoding = encoding ?? Encoding.UTF8;
+        Role = role;
+        Content = content;
+        _encoding = encoding ?? Encoding.UTF8;
     }
 
     /// <inheritdoc/>
-    public override string ToString() => this.Content ?? string.Empty;
+    public override string ToString()
+    {
+        return Content ?? string.Empty;
+    }
+
 
     /// <inheritdoc/>
-    public override byte[] ToByteArray() => this.Encoding.GetBytes(this.ToString());
+    public override byte[] ToByteArray()
+    {
+        return Encoding.GetBytes(ToString());
+    }
+
 
     private StreamingKernelContentItemCollection? _items;
 

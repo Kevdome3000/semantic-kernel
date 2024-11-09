@@ -26,10 +26,10 @@ public sealed class FunctionResult
     {
         Verify.NotNull(function);
 
-        this.Function = function;
-        this.Value = value;
-        this.Culture = culture ?? CultureInfo.InvariantCulture;
-        this.Metadata = metadata;
+        Function = function;
+        Value = value;
+        Culture = culture ?? CultureInfo.InvariantCulture;
+        Metadata = metadata;
     }
 
     /// <summary>
@@ -41,11 +41,11 @@ public sealed class FunctionResult
     {
         Verify.NotNull(result);
 
-        this.Function = result.Function;
-        this.Value = value ?? result.Value;
-        this.Culture = result.Culture;
-        this.Metadata = result.Metadata;
-        this.RenderedPrompt = result.RenderedPrompt;
+        Function = result.Function;
+        Value = value ?? result.Value;
+        Culture = result.Culture;
+        Metadata = result.Metadata;
+        RenderedPrompt = result.RenderedPrompt;
     }
 
     /// <summary>
@@ -70,7 +70,7 @@ public sealed class FunctionResult
     /// This or a base type is the type expected to be passed as the generic
     /// argument to <see cref="GetValue{T}"/>.
     /// </remarks>
-    public Type? ValueType => this.Value?.GetType();
+    public Type? ValueType => Value?.GetType();
 
     /// <summary>
     /// Gets the prompt used during function invocation if any was rendered.
@@ -84,17 +84,17 @@ public sealed class FunctionResult
     /// <exception cref="InvalidCastException">Thrown when it's not possible to cast result value to <typeparamref name="T"/>.</exception>
     public T? GetValue<T>()
     {
-        if (this.Value is null)
+        if (Value is null)
         {
             return default;
         }
 
-        if (this.Value is T typedResult)
+        if (Value is T typedResult)
         {
             return typedResult;
         }
 
-        if (this.Value is KernelContent content)
+        if (Value is KernelContent content)
         {
             if (typeof(T) == typeof(string))
             {
@@ -107,12 +107,12 @@ public sealed class FunctionResult
             }
         }
 
-        throw new InvalidCastException($"Cannot cast {this.Value.GetType()} to {typeof(T)}");
+        throw new InvalidCastException($"Cannot cast {Value.GetType()} to {typeof(T)}");
     }
 
     /// <inheritdoc/>
     public override string ToString() =>
-        InternalTypeConverter.ConvertToString(this.Value, this.Culture) ?? string.Empty;
+        InternalTypeConverter.ConvertToString(Value, Culture) ?? string.Empty;
 
     /// <summary>
     /// Function result object.

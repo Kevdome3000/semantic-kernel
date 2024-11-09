@@ -47,13 +47,13 @@ internal sealed class AIFunctionKernelFunction : KernelFunction
                     null,
             })
     {
-        this._aiFunction = aiFunction;
+        _aiFunction = aiFunction;
     }
 
     private AIFunctionKernelFunction(AIFunctionKernelFunction other, string pluginName) :
         base(other.Name, pluginName, other.Description, other.Metadata.Parameters, AbstractionsJsonContext.Default.Options, other.Metadata.ReturnParameter)
     {
-        this._aiFunction = other._aiFunction;
+        _aiFunction = other._aiFunction;
     }
 
     public override KernelFunction Clone(string pluginName)

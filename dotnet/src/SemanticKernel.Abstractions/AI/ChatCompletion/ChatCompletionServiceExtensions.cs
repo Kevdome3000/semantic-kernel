@@ -162,37 +162,46 @@ public static class ChatCompletionServiceExtensions
             AIContent? aiContent = null;
             switch (item)
             {
-                case Microsoft.SemanticKernel.TextContent tc:
-                    aiContent = new Microsoft.Extensions.AI.TextContent(tc.Text);
+                case TextContent tc:
+                    aiContent = new Extensions.AI.TextContent(tc.Text);
                     break;
 
-                case Microsoft.SemanticKernel.ImageContent ic:
+                case ImageContent ic:
                     aiContent =
-                        ic.DataUri is not null ? new Microsoft.Extensions.AI.ImageContent(ic.DataUri, ic.MimeType) :
-                        ic.Uri is not null ? new Microsoft.Extensions.AI.ImageContent(ic.Uri, ic.MimeType) :
+                        ic.DataUri is not null
+                            ? new Extensions.AI.ImageContent(ic.DataUri, ic.MimeType)
+                            : ic.Uri is not null
+                                ? new Extensions.AI.ImageContent(ic.Uri, ic.MimeType)
+                                :
                         null;
                     break;
 
-                case Microsoft.SemanticKernel.AudioContent ac:
+                case AudioContent ac:
                     aiContent =
-                        ac.DataUri is not null ? new Microsoft.Extensions.AI.AudioContent(ac.DataUri, ac.MimeType) :
-                        ac.Uri is not null ? new Microsoft.Extensions.AI.AudioContent(ac.Uri, ac.MimeType) :
+                        ac.DataUri is not null
+                            ? new Extensions.AI.AudioContent(ac.DataUri, ac.MimeType)
+                            : ac.Uri is not null
+                                ? new Extensions.AI.AudioContent(ac.Uri, ac.MimeType)
+                                :
                         null;
                     break;
 
-                case Microsoft.SemanticKernel.BinaryContent bc:
+                case BinaryContent bc:
                     aiContent =
-                        bc.DataUri is not null ? new Microsoft.Extensions.AI.DataContent(bc.DataUri, bc.MimeType) :
-                        bc.Uri is not null ? new Microsoft.Extensions.AI.DataContent(bc.Uri, bc.MimeType) :
+                        bc.DataUri is not null
+                            ? new DataContent(bc.DataUri, bc.MimeType)
+                            : bc.Uri is not null
+                                ? new DataContent(bc.Uri, bc.MimeType)
+                                :
                         null;
                     break;
 
-                case Microsoft.SemanticKernel.FunctionCallContent fcc:
-                    aiContent = new Microsoft.Extensions.AI.FunctionCallContent(fcc.Id ?? string.Empty, fcc.FunctionName, fcc.Arguments);
+                case FunctionCallContent fcc:
+                    aiContent = new Extensions.AI.FunctionCallContent(fcc.Id ?? string.Empty, fcc.FunctionName, fcc.Arguments);
                     break;
 
-                case Microsoft.SemanticKernel.FunctionResultContent frc:
-                    aiContent = new Microsoft.Extensions.AI.FunctionResultContent(frc.CallId ?? string.Empty, frc.FunctionName ?? string.Empty, frc.Result);
+                case FunctionResultContent frc:
+                    aiContent = new Extensions.AI.FunctionResultContent(frc.CallId ?? string.Empty, frc.FunctionName ?? string.Empty, frc.Result);
                     break;
             }
 
@@ -210,7 +219,7 @@ public static class ChatCompletionServiceExtensions
 
     /// <summary>Converts a <see cref="ChatMessage"/> to a <see cref="ChatMessageContent"/>.</summary>
     /// <remarks>This conversion should not be necessary once SK eventually adopts the shared content types.</remarks>
-    internal static ChatMessageContent ToChatMessageContent(ChatMessage message, Microsoft.Extensions.AI.ChatCompletion? completion = null)
+    internal static ChatMessageContent ToChatMessageContent(ChatMessage message, Extensions.AI.ChatCompletion? completion = null)
     {
         ChatMessageContent result = new()
         {
@@ -226,34 +235,39 @@ public static class ChatCompletionServiceExtensions
             KernelContent? resultContent = null;
             switch (content)
             {
-                case Microsoft.Extensions.AI.TextContent tc:
-                    resultContent = new Microsoft.SemanticKernel.TextContent(tc.Text);
+                case Extensions.AI.TextContent tc:
+                    resultContent = new TextContent(tc.Text);
                     break;
 
-                case Microsoft.Extensions.AI.ImageContent ic:
-                    resultContent = ic.ContainsData ?
-                        new Microsoft.SemanticKernel.ImageContent(ic.Uri) :
-                        new Microsoft.SemanticKernel.ImageContent(new Uri(ic.Uri));
+                case Extensions.AI.ImageContent ic:
+                    resultContent = ic.ContainsData ? new ImageContent(ic.Uri)
+                        : new ImageContent(new Uri(ic.Uri));
                     break;
 
-                case Microsoft.Extensions.AI.AudioContent ac:
-                    resultContent = ac.ContainsData ?
-                        new Microsoft.SemanticKernel.AudioContent(ac.Uri) :
-                        new Microsoft.SemanticKernel.AudioContent(new Uri(ac.Uri));
+                case Extensions.AI.AudioContent ac:
+                    resultContent = ac.ContainsData ? new AudioContent(ac.Uri)
+                        : new AudioContent(new Uri(ac.Uri));
                     break;
 
-                case Microsoft.Extensions.AI.DataContent dc:
-                    resultContent = dc.ContainsData ?
-                        new Microsoft.SemanticKernel.BinaryContent(dc.Uri) :
-                        new Microsoft.SemanticKernel.BinaryContent(new Uri(dc.Uri));
+                case DataContent dc:
+                    resultContent = dc.ContainsData ? new BinaryContent(dc.Uri)
+                        : new BinaryContent(new Uri(dc.Uri));
                     break;
 
-                case Microsoft.Extensions.AI.FunctionCallContent fcc:
-                    resultContent = new Microsoft.SemanticKernel.FunctionCallContent(fcc.Name, null, fcc.CallId, fcc.Arguments is not null ? new(fcc.Arguments) : null);
+                case Extensions.AI.FunctionCallContent fcc:
+                    resultContent = new FunctionCallContent(fcc.Name,
+                        null,
+                        fcc.CallId,
+                        fcc.Arguments is not null
+                            ? new KernelArguments(fcc.Arguments)
+                            : null);
                     break;
 
-                case Microsoft.Extensions.AI.FunctionResultContent frc:
-                    resultContent = new Microsoft.SemanticKernel.FunctionResultContent(frc.Name, null, frc.CallId, frc.Result);
+                case Extensions.AI.FunctionResultContent frc:
+                    resultContent = new FunctionResultContent(frc.Name,
+                        null,
+                        frc.CallId,
+                        frc.Result);
                     break;
             }
 

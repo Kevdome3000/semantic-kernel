@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -100,8 +99,8 @@ public static class EmbeddingGenerationExtensions
         /// <summary>Initializes the <see cref="EmbeddingGenerationServiceEmbeddingGenerator{TValue, TEmbedding}"/> for <paramref name="service"/>.</summary>
         public EmbeddingGenerationServiceEmbeddingGenerator(IEmbeddingGenerationService<TValue, TEmbedding> service)
         {
-            this._service = service;
-            this.Metadata = new EmbeddingGeneratorMetadata(
+            _service = service;
+            Metadata = new EmbeddingGeneratorMetadata(
                 service.GetType().Name,
                 service.GetEndpoint() is string endpoint ? new Uri(endpoint) : null,
                 service.GetModelId());
@@ -113,13 +112,13 @@ public static class EmbeddingGenerationExtensions
         /// <inheritdoc />
         public void Dispose()
         {
-            (this._service as IDisposable)?.Dispose();
+            (_service as IDisposable)?.Dispose();
         }
 
         /// <inheritdoc />
         public async Task<GeneratedEmbeddings<Embedding<TEmbedding>>> GenerateAsync(IEnumerable<TValue> values, EmbeddingGenerationOptions? options = null, CancellationToken cancellationToken = default)
         {
-            IList<ReadOnlyMemory<TEmbedding>> result = await this._service.GenerateEmbeddingsAsync(values.ToList(), kernel: null, cancellationToken).ConfigureAwait(false);
+            IList<ReadOnlyMemory<TEmbedding>> result = await _service.GenerateEmbeddingsAsync(values.ToList(), null, cancellationToken).ConfigureAwait(false);
             return new(result.Select(e => new Embedding<TEmbedding>(e)));
         }
 
@@ -127,8 +126,7 @@ public static class EmbeddingGenerationExtensions
         public TService? GetService<TService>(object? key = null) where TService : class
         {
             return
-                typeof(TService) == typeof(IEmbeddingGenerator<TValue, Embedding<TEmbedding>>) ? (TService)(object)this :
-                this._service as TService;
+                typeof(TService) == typeof(IEmbeddingGenerator<TValue, Embedding<TEmbedding>>) ? (TService)(object)this : _service as TService;
         }
     }
 
@@ -144,11 +142,11 @@ public static class EmbeddingGenerationExtensions
             IEmbeddingGenerator<TValue, Embedding<TEmbedding>> generator, IServiceProvider? serviceProvider)
         {
             // Store the generator.
-            this._generator = generator;
+            _generator = generator;
 
             // Initialize the attributes.
             var attrs = new Dictionary<string, object?>();
-            this.Attributes = new ReadOnlyDictionary<string, object?>(attrs);
+            Attributes = new ReadOnlyDictionary<string, object?>(attrs);
 
             var metadata = generator.Metadata;
             if (metadata.ProviderUri is not null)
@@ -169,7 +167,7 @@ public static class EmbeddingGenerationExtensions
         {
             Verify.NotNull(data);
 
-            var embeddings = await this._generator.GenerateAsync(data, cancellationToken: cancellationToken).ConfigureAwait(false);
+            var embeddings = await _generator.GenerateAsync(data, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             return embeddings.Select(e => e.Vector).ToList();
         }

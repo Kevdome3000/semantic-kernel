@@ -40,9 +40,9 @@ public sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
     /// <param name="options">The behavior options.</param>
     internal AutoFunctionChoiceBehavior(IEnumerable<KernelFunction>? functions = null, bool autoInvoke = true, FunctionChoiceBehaviorOptions? options = null) : base(functions)
     {
-        this.Functions = functions?.Select(f => FunctionName.ToFullyQualifiedName(f.Name, f.PluginName, FunctionNameSeparator)).ToList();
-        this._autoInvoke = autoInvoke;
-        this.Options = options;
+        Functions = functions?.Select(f => FunctionName.ToFullyQualifiedName(f.Name, f.PluginName, FunctionNameSeparator)).ToList();
+        _autoInvoke = autoInvoke;
+        Options = options;
     }
 
     /// <summary>
@@ -64,13 +64,13 @@ public sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
     /// <inheritdoc />
     public override FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorConfigurationContext context)
     {
-        var functions = base.GetFunctions(this.Functions, context.Kernel, this._autoInvoke);
+        var functions = GetFunctions(Functions, context.Kernel, _autoInvoke);
 
-        return new FunctionChoiceBehaviorConfiguration(this.Options ?? DefaultOptions)
+        return new FunctionChoiceBehaviorConfiguration(Options ?? DefaultOptions)
         {
             Choice = FunctionChoice.Auto,
             Functions = functions,
-            AutoInvoke = this._autoInvoke,
+            AutoInvoke = _autoInvoke
         };
     }
 }

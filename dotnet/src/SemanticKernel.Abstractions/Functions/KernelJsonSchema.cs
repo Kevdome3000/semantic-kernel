@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.Text;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>Represents JSON Schema for describing types used in <see cref="KernelFunction"/>s.</summary>
-[JsonConverter(typeof(KernelJsonSchema.JsonConverter))]
+[JsonConverter(typeof(JsonConverter))]
 public sealed class KernelJsonSchema
 {
     /// <summary>The schema stored as a string.</summary>
@@ -50,13 +50,17 @@ public sealed class KernelJsonSchema
     /// All callers must ensure JSON Schema validity.
     /// </remarks>
     internal KernelJsonSchema(JsonElement jsonSchema) =>
-        this.RootElement = jsonSchema;
+        RootElement = jsonSchema;
 
     /// <summary>Gets a <see cref="JsonElement"/> representing the root element of the schema.</summary>
     public JsonElement RootElement { get; }
 
     /// <summary>Gets the JSON Schema as a string.</summary>
-    public override string ToString() => this._schemaAsString ??= JsonSerializer.Serialize(this.RootElement, JsonElementJsonSerializerContext.MaxDepth_128.JsonElement);
+    public override string ToString()
+    {
+        return _schemaAsString ??= JsonSerializer.Serialize(RootElement, JsonElementJsonSerializerContext.MaxDepth_128.JsonElement);
+    }
+
 
     /// <summary>Converter for reading/writing the schema.</summary>
     public sealed class JsonConverter : JsonConverter<KernelJsonSchema>

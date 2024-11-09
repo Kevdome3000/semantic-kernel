@@ -30,9 +30,9 @@ public abstract class KernelPlugin : IEnumerable<KernelFunction>
     {
         Verify.ValidPluginName(name);
 
-        this.Name = name;
+        Name = name;
 
-        this.Description = !string.IsNullOrWhiteSpace(description)
+        Description = !string.IsNullOrWhiteSpace(description)
             ? description!
             : "";
     }
@@ -48,9 +48,9 @@ public abstract class KernelPlugin : IEnumerable<KernelFunction>
     /// <returns>The function.</returns>
     /// <exception cref="KeyNotFoundException">The plugin does not contain a function with the specified name.</exception>
     public KernelFunction this[string functionName] =>
-        this.TryGetFunction(functionName, out KernelFunction? function)
+        TryGetFunction(functionName, out KernelFunction? function)
             ? function
-            : throw new KeyNotFoundException($"The plugin does not contain a function with the specified name. Plugin name - '{this.Name}', function name - '{functionName}'.");
+            : throw new KeyNotFoundException($"The plugin does not contain a function with the specified name. Plugin name - '{Name}', function name - '{functionName}'.");
 
     /// <summary>Gets whether the plugin contains a function with the specified name.</summary>
     /// <param name="functionName">The name of the function.</param>
@@ -59,7 +59,7 @@ public abstract class KernelPlugin : IEnumerable<KernelFunction>
     {
         Verify.NotNull(functionName);
 
-        return this.TryGetFunction(functionName, out _);
+        return TryGetFunction(functionName, out _);
     }
 
     /// <summary>Gets whether the plugin contains a function.</summary>
@@ -69,7 +69,7 @@ public abstract class KernelPlugin : IEnumerable<KernelFunction>
     {
         Verify.NotNull(function);
 
-        return this.Contains(function.Name);
+        return Contains(function.Name);
     }
 
     /// <summary>Gets the number of functions in this plugin.</summary>
@@ -85,7 +85,7 @@ public abstract class KernelPlugin : IEnumerable<KernelFunction>
     /// <returns>A list of metadata over every function in this plugin.</returns>
     public IList<KernelFunctionMetadata> GetFunctionsMetadata()
     {
-        List<KernelFunctionMetadata> metadata = new(this.FunctionCount);
+        List<KernelFunctionMetadata> metadata = new(FunctionCount);
 
         foreach (KernelFunction function in this)
         {
@@ -113,17 +113,21 @@ public abstract class KernelPlugin : IEnumerable<KernelFunction>
     }
 
     /// <inheritdoc/>
-    IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
+
 
     /// <summary>Debugger type proxy for the kernel plugin.</summary>
     private sealed class TypeProxy(KernelPlugin plugin)
     {
         private readonly KernelPlugin _plugin = plugin;
 
-        public string Name => this._plugin.Name;
+        public string Name => _plugin.Name;
 
-        public string Description => this._plugin.Description;
+        public string Description => _plugin.Description;
 
-        public KernelFunction[] Functions => [.. this._plugin.OrderBy(f => f.Name, StringComparer.OrdinalIgnoreCase)];
+        public KernelFunction[] Functions => [.. _plugin.OrderBy(f => f.Name, StringComparer.OrdinalIgnoreCase)];
     }
 }

@@ -71,9 +71,9 @@ public abstract class StreamingKernelContent
         string? modelId = null,
         IReadOnlyDictionary<string, object?>? metadata = null)
     {
-        this.ModelId = modelId;
-        this.InnerContent = innerContent;
-        this.ChoiceIndex = choiceIndex;
-        this.Metadata = metadata;
+        ModelId = modelId;
+        InnerContent = innerContent;
+        ChoiceIndex = choiceIndex;
+        Metadata = metadata;
     }
 }

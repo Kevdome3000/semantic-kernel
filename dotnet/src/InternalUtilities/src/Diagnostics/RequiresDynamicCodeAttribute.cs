@@ -23,7 +23,7 @@ internal sealed class RequiresDynamicCodeAttribute : Attribute
     /// </param>
     public RequiresDynamicCodeAttribute(string message)
     {
-        this.Message = message;
+        Message = message;
     }
 
     /// <summary>

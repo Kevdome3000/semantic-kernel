@@ -38,6 +38,6 @@ public class FileReferenceContent : KernelContent
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(innerContent, modelId, metadata)
     {
-        this.FileId = fileId;
+        FileId = fileId;
     }
 }

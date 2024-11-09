@@ -72,12 +72,12 @@ public class MemoryRecordMetadata : ICloneable
         string additionalMetadata
     )
     {
-        this.IsReference = isReference;
-        this.ExternalSourceName = externalSourceName;
-        this.Id = id;
-        this.Text = text;
-        this.Description = description;
-        this.AdditionalMetadata = additionalMetadata;
+        IsReference = isReference;
+        ExternalSourceName = externalSourceName;
+        Id = id;
+        Text = text;
+        Description = description;
+        AdditionalMetadata = additionalMetadata;
     }
 
     /// <summary>
@@ -86,6 +86,6 @@ public class MemoryRecordMetadata : ICloneable
     /// <returns>A shallow copy of this object</returns>
     public object Clone()
     {
-        return this.MemberwiseClone();
+        return MemberwiseClone();
     }
 }

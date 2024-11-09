@@ -17,7 +17,7 @@ public sealed class FunctionChoiceBehaviorConfiguration
     /// </summary>
     internal FunctionChoiceBehaviorConfiguration(FunctionChoiceBehaviorOptions options)
     {
-        this.Options = options;
+        Options = options;
     }
 
     /// <summary>

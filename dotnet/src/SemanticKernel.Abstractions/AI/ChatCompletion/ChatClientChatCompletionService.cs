@@ -28,11 +28,11 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
         Verify.NotNull(chatClient);
 
         // Store the client.
-        this._chatClient = chatClient;
+        _chatClient = chatClient;
 
         // Initialize the attributes.
         var attrs = new Dictionary<string, object?>();
-        this.Attributes = new ReadOnlyDictionary<string, object?>(attrs);
+        Attributes = new ReadOnlyDictionary<string, object?>(attrs);
 
         var metadata = chatClient.Metadata;
         if (metadata.ProviderUri is not null)
@@ -57,7 +57,7 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
         var messageList = ChatCompletionServiceExtensions.ToChatMessageList(chatHistory);
         var currentSize = messageList.Count;
 
-        var completion = await this._chatClient.CompleteAsync(
+        var completion = await _chatClient.CompleteAsync(
             messageList,
             ToChatOptions(executionSettings, kernel),
             cancellationToken).ConfigureAwait(false);
@@ -76,7 +76,7 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
     {
         Verify.NotNull(chatHistory);
 
-        await foreach (var update in this._chatClient.CompleteStreamingAsync(
+        await foreach (var update in _chatClient.CompleteStreamingAsync(
             ChatCompletionServiceExtensions.ToChatMessageList(chatHistory),
             ToChatOptions(executionSettings, kernel),
             cancellationToken).ConfigureAwait(false))
@@ -280,9 +280,13 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
         foreach (AIContent item in update.Contents)
         {
             StreamingKernelContent? resultContent =
-                item is Microsoft.Extensions.AI.TextContent tc ? new Microsoft.SemanticKernel.StreamingTextContent(tc.Text) :
-                item is Microsoft.Extensions.AI.FunctionCallContent fcc ?
-                    new Microsoft.SemanticKernel.StreamingFunctionCallUpdateContent(fcc.CallId, fcc.Name, fcc.Arguments is not null ?
+                item is Extensions.AI.TextContent tc
+                    ? new StreamingTextContent(tc.Text)
+                    : item is Extensions.AI.FunctionCallContent fcc
+                        ? new StreamingFunctionCallUpdateContent(fcc.CallId,
+                            fcc.Name,
+                            fcc.Arguments is not null
+                                ?
                         JsonSerializer.Serialize(fcc.Arguments!, AbstractionsJsonContext.Default.IDictionaryStringObject!) :
                         null) :
                 null;

@@ -27,8 +27,8 @@ internal sealed class PromptNode(string tagName)
     /// </summary>
     public Dictionary<string, string> Attributes
     {
-        get => this._attributes ??= [];
-        set => this._attributes = value;
+        get => _attributes ??= [];
+        set => _attributes = value;
     }
 
     /// <summary>
@@ -36,7 +36,7 @@ internal sealed class PromptNode(string tagName)
     /// </summary>
     public List<PromptNode> ChildNodes
     {
-        get => this._childNodes ??= [];
-        set => this._childNodes = value;
+        get => _childNodes ??= [];
+        set => _childNodes = value;
     }
 }

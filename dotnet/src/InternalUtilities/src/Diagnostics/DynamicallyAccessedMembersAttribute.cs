@@ -40,7 +40,7 @@ internal sealed class DynamicallyAccessedMembersAttribute : Attribute
     /// <param name="memberTypes">The types of members dynamically accessed.</param>
     public DynamicallyAccessedMembersAttribute(DynamicallyAccessedMemberTypes memberTypes)
     {
-        this.MemberTypes = memberTypes;
+        MemberTypes = memberTypes;
     }
 
     /// <summary>

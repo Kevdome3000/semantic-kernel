@@ -21,8 +21,8 @@ public class ChatMessageContent : KernelContent
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? AuthorName
     {
-        get => this._authorName;
-        set => this._authorName = string.IsNullOrWhiteSpace(value)
+        get => _authorName;
+        set => _authorName = string.IsNullOrWhiteSpace(value)
             ? null
             : value;
     }
@@ -41,14 +41,16 @@ public class ChatMessageContent : KernelContent
     {
         get
         {
-            var textContent = this.Items.OfType<TextContent>().
+            var textContent = Items.OfType<TextContent>()
+                .
                 FirstOrDefault();
 
             return textContent?.Text;
         }
         set
         {
-            var textContent = this.Items.OfType<TextContent>().
+            var textContent = Items.OfType<TextContent>()
+                .
                 FirstOrDefault();
 
             if (textContent is not null)
@@ -57,14 +59,14 @@ public class ChatMessageContent : KernelContent
             }
             else if (value is not null)
             {
-                this.Items.Add(new TextContent(
+                Items.Add(new TextContent(
                         text: value,
-                        modelId: this.ModelId,
-                        innerContent: this.InnerContent,
-                        encoding: this.Encoding,
-                        metadata: this.Metadata
+                        ModelId,
+                        InnerContent,
+                        Encoding,
+                        Metadata
                     )
-                { MimeType = this.MimeType });
+                    { MimeType = MimeType });
             }
         }
     }
@@ -74,8 +76,8 @@ public class ChatMessageContent : KernelContent
     /// </summary>
     public ChatMessageContentItemCollection Items
     {
-        get => this._items ??= [];
-        set => this._items = value;
+        get => _items ??= [];
+        set => _items = value;
     }
 
     /// <summary>
@@ -86,7 +88,8 @@ public class ChatMessageContent : KernelContent
     {
         get
         {
-            var textContent = this.Items.OfType<TextContent>().
+            var textContent = Items.OfType<TextContent>()
+                .
                 FirstOrDefault();
 
             if (textContent is not null)
@@ -94,13 +97,14 @@ public class ChatMessageContent : KernelContent
                 return textContent.Encoding;
             }
 
-            return this._encoding;
+            return _encoding;
         }
         set
         {
-            this._encoding = value;
+            _encoding = value;
 
-            var textContent = this.Items.OfType<TextContent>().
+            var textContent = Items.OfType<TextContent>()
+                .
                 FirstOrDefault();
 
             if (textContent is not null)
@@ -127,7 +131,7 @@ public class ChatMessageContent : KernelContent
     [JsonConstructor]
     public ChatMessageContent()
     {
-        this._encoding = Encoding.UTF8;
+        _encoding = Encoding.UTF8;
     }
 
     /// <summary>
@@ -148,9 +152,9 @@ public class ChatMessageContent : KernelContent
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(innerContent, modelId, metadata)
     {
-        this.Role = role;
-        this._encoding = encoding ?? Encoding.UTF8;
-        this.Content = content;
+        Role = role;
+        _encoding = encoding ?? Encoding.UTF8;
+        Content = content;
     }
 
     /// <summary>
@@ -171,15 +175,15 @@ public class ChatMessageContent : KernelContent
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(innerContent, modelId, metadata)
     {
-        this.Role = role;
-        this._encoding = encoding ?? Encoding.UTF8;
-        this._items = items;
+        Role = role;
+        _encoding = encoding ?? Encoding.UTF8;
+        _items = items;
     }
 
     /// <inheritdoc/>
     public override string ToString()
     {
-        return this.Content ?? string.Empty;
+        return Content ?? string.Empty;
     }
 
     private ChatMessageContentItemCollection? _items;

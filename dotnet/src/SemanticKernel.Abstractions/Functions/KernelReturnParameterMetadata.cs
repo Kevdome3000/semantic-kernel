@@ -46,7 +46,7 @@ public sealed class KernelReturnParameterMetadata
     [Experimental("SKEXP0120")]
     public KernelReturnParameterMetadata(JsonSerializerOptions jsonSerializerOptions)
     {
-        this._jsonSerializerOptions = jsonSerializerOptions;
+        _jsonSerializerOptions = jsonSerializerOptions;
     }
 
     /// <summary>Initializes a <see cref="KernelReturnParameterMetadata"/> as a copy of another <see cref="KernelReturnParameterMetadata"/>.</summary>
@@ -54,10 +54,10 @@ public sealed class KernelReturnParameterMetadata
     [RequiresDynamicCode("Uses reflection, if no JSOs are available in the metadata, to generate the schema, making it incompatible with AOT scenarios.")]
     public KernelReturnParameterMetadata(KernelReturnParameterMetadata metadata)
     {
-        this._description = metadata._description;
-        this._parameterType = metadata._parameterType;
-        this._schema = metadata._schema;
-        this._jsonSerializerOptions = metadata._jsonSerializerOptions;
+        _description = metadata._description;
+        _parameterType = metadata._parameterType;
+        _schema = metadata._schema;
+        _jsonSerializerOptions = metadata._jsonSerializerOptions;
     }
 
     /// <summary>Initializes a <see cref="KernelReturnParameterMetadata"/> as a copy of another <see cref="KernelReturnParameterMetadata"/>.</summary>
@@ -66,40 +66,40 @@ public sealed class KernelReturnParameterMetadata
     [Experimental("SKEXP0120")]
     public KernelReturnParameterMetadata(KernelReturnParameterMetadata metadata, JsonSerializerOptions jsonSerializerOptions)
     {
-        this._description = metadata._description;
-        this._parameterType = metadata._parameterType;
-        this._schema = metadata._schema;
-        this._jsonSerializerOptions = jsonSerializerOptions;
+        _description = metadata._description;
+        _parameterType = metadata._parameterType;
+        _schema = metadata._schema;
+        _jsonSerializerOptions = jsonSerializerOptions;
     }
 
     /// <summary>Gets a description of the return parameter, suitable for use in describing the purpose to a model.</summary>
     [AllowNull]
     public string Description
     {
-        get => this._description;
+        get => _description;
         init
         {
             string newDescription = value ?? string.Empty;
 
-            if (value != this._description && this._schema?.Inferred is true)
+            if (value != _description && _schema?.Inferred is true)
             {
-                this._schema = null;
+                _schema = null;
             }
-            this._description = newDescription;
+            _description = newDescription;
         }
     }
 
     /// <summary>Gets the .NET type of the return parameter.</summary>
     public Type? ParameterType
     {
-        get => this._parameterType;
+        get => _parameterType;
         init
         {
-            if (value != this._parameterType && this._schema?.Inferred is true)
+            if (value != _parameterType && _schema?.Inferred is true)
             {
-                this._schema = null;
+                _schema = null;
             }
-            this._parameterType = value;
+            _parameterType = value;
         }
     }
 
@@ -108,7 +108,12 @@ public sealed class KernelReturnParameterMetadata
     {
         [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "The warning is shown and should be addressed at the class creation site; no need to show it again at the members invocation sites.")]
         [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "The warning is shown and should be addressed at the class creation site; no need to show it again at the members invocation sites.")]
-        get => (this._schema ??= InferSchema(this.ParameterType, defaultValue: null, this.Description, this._jsonSerializerOptions)).Schema;
-        init => this._schema = value is null ? null : new() { Inferred = false, Schema = value };
+        get => (_schema ??= InferSchema(ParameterType,
+            null,
+            Description,
+            _jsonSerializerOptions)).Schema;
+        init => _schema = value is null
+            ? null
+            : new InitializedSchema { Inferred = false, Schema = value };
     }
 }

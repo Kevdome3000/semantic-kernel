@@ -30,12 +30,12 @@ public sealed class InputVariable
     {
         Verify.NotNull(inputVariable);
 
-        this.Name = inputVariable.Name;
-        this.Description = inputVariable.Description;
-        this.Default = inputVariable.Default;
-        this.IsRequired = inputVariable.IsRequired;
-        this.JsonSchema = inputVariable.JsonSchema;
-        this.AllowDangerouslySetContent = inputVariable.AllowDangerouslySetContent;
+        Name = inputVariable.Name;
+        Description = inputVariable.Description;
+        Default = inputVariable.Default;
+        IsRequired = inputVariable.IsRequired;
+        JsonSchema = inputVariable.JsonSchema;
+        AllowDangerouslySetContent = inputVariable.AllowDangerouslySetContent;
     }
 
     /// <summary>
@@ -47,11 +47,11 @@ public sealed class InputVariable
     [JsonPropertyName("name")]
     public string Name
     {
-        get => this._name;
+        get => _name;
         set
         {
             Verify.NotNull(value);
-            this._name = value;
+            _name = value;
         }
     }
 
@@ -62,8 +62,8 @@ public sealed class InputVariable
     [AllowNull]
     public string Description
     {
-        get => this._description;
-        set => this._description = value ?? string.Empty;
+        get => _description;
+        set => _description = value ?? string.Empty;
     }
 
     /// <summary>

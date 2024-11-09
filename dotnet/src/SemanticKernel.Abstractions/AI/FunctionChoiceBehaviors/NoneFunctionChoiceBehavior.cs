@@ -33,8 +33,8 @@ public sealed class NoneFunctionChoiceBehavior : FunctionChoiceBehavior
     /// <param name="options">The behavior options.</param>
     internal NoneFunctionChoiceBehavior(IEnumerable<KernelFunction>? functions = null, FunctionChoiceBehaviorOptions? options = null) : base(functions)
     {
-        this.Functions = functions?.Select(f => FunctionName.ToFullyQualifiedName(f.Name, f.PluginName, FunctionNameSeparator)).ToList();
-        this.Options = options;
+        Functions = functions?.Select(f => FunctionName.ToFullyQualifiedName(f.Name, f.PluginName, FunctionNameSeparator)).ToList();
+        Options = options;
     }
 
     /// <summary>
@@ -56,9 +56,9 @@ public sealed class NoneFunctionChoiceBehavior : FunctionChoiceBehavior
     /// <inheritdoc />
     public override FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorConfigurationContext context)
     {
-        var functions = base.GetFunctions(this.Functions, context.Kernel, autoInvoke: false);
+        var functions = GetFunctions(Functions, context.Kernel, false);
 
-        return new FunctionChoiceBehaviorConfiguration(this.Options ?? DefaultOptions)
+        return new FunctionChoiceBehaviorConfiguration(Options ?? DefaultOptions)
         {
             Choice = FunctionChoice.None,
             Functions = functions,

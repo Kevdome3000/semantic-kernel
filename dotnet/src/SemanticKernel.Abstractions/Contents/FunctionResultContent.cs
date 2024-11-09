@@ -49,10 +49,10 @@ public sealed class FunctionResultContent : KernelContent
         string? callId = null,
         object? result = null)
     {
-        this.FunctionName = functionName;
-        this.PluginName = pluginName;
-        this.CallId = callId;
-        this.Result = result;
+        FunctionName = functionName;
+        PluginName = pluginName;
+        CallId = callId;
+        Result = result;
     }
 
     /// <summary>
@@ -62,10 +62,10 @@ public sealed class FunctionResultContent : KernelContent
     /// <param name="result">The function result.</param>
     public FunctionResultContent(FunctionCallContent functionCall, object? result = null)
     {
-        this.CallId = functionCall.Id;
-        this.PluginName = functionCall.PluginName;
-        this.FunctionName = functionCall.FunctionName;
-        this.Result = result;
+        CallId = functionCall.Id;
+        PluginName = functionCall.PluginName;
+        FunctionName = functionCall.FunctionName;
+        Result = result;
     }
 
     /// <summary>
@@ -76,7 +76,7 @@ public sealed class FunctionResultContent : KernelContent
     public FunctionResultContent(FunctionCallContent functionCallContent, FunctionResult result) :
         this(functionCallContent, result.Value)
     {
-        this.InnerContent = result;
+        InnerContent = result;
     }
 
     /// <summary>

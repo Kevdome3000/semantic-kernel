@@ -24,7 +24,7 @@ internal sealed class RequiresUnreferencedCodeAttribute : Attribute
     /// </param>
     public RequiresUnreferencedCodeAttribute(string message)
     {
-        this.Message = message;
+        Message = message;
     }
 
     /// <summary>

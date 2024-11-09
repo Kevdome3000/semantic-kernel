@@ -17,7 +17,7 @@ public sealed class FunctionChoiceBehaviorConfigurationContext
     /// <param name="chatHistory">History of the current chat session.</param>
     public FunctionChoiceBehaviorConfigurationContext(ChatHistory chatHistory)
     {
-        this.ChatHistory = chatHistory;
+        ChatHistory = chatHistory;
     }
 
     /// <summary>

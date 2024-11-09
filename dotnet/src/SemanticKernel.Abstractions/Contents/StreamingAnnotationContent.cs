@@ -54,25 +54,25 @@ public class StreamingAnnotationContent : StreamingKernelContent
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(innerContent, choiceIndex: 0, modelId, metadata)
     {
-        this.Quote = quote;
+        Quote = quote;
     }
 
     /// <inheritdoc/>
     public override string ToString()
     {
-        bool hasFileId = !string.IsNullOrEmpty(this.FileId);
+        bool hasFileId = !string.IsNullOrEmpty(FileId);
 
         if (hasFileId)
         {
-            return $"{this.Quote}: {this.FileId}";
+            return $"{Quote}: {FileId}";
         }
 
-        return this.Quote;
+        return Quote;
     }
 
     /// <inheritdoc/>
     public override byte[] ToByteArray()
     {
-        return Encoding.UTF8.GetBytes(this.ToString());
+        return Encoding.UTF8.GetBytes(ToString());
     }
 }

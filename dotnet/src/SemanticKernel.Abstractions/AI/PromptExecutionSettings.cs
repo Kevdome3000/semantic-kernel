@@ -39,12 +39,12 @@ public class PromptExecutionSettings
     [JsonPropertyName("service_id")]
     public string? ServiceId
     {
-        get => this._serviceId;
+        get => _serviceId;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._serviceId = value;
+            ThrowIfFrozen();
+            _serviceId = value;
         }
     }
 
@@ -55,12 +55,12 @@ public class PromptExecutionSettings
     [JsonPropertyName("model_id")]
     public string? ModelId
     {
-        get => this._modelId;
+        get => _modelId;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._modelId = value;
+            ThrowIfFrozen();
+            _modelId = value;
         }
     }
 
@@ -72,11 +72,11 @@ public class PromptExecutionSettings
     /// <item>To disable function calling, and have the model only generate a user-facing message, set the property to null (the default).</item>
     /// <item>
     /// To allow the model to decide whether to call the functions and, if so, which ones to call, set the property to an instance returned
-    /// by the <see cref="FunctionChoiceBehavior.Auto(IEnumerable{KernelFunction}?, bool, FunctionChoiceBehaviorOptions?)"/> method.
+    /// by the <see cref="FunctionChoiceBehavior.Auto(System.Collections.Generic.IEnumerable{Microsoft.SemanticKernel.KernelFunction}?, bool, FunctionChoiceBehaviorOptions?)"/> method.
     /// </item>
     /// <item>
     /// To force the model to always call one or more functions set the property to an instance returned
-    /// by the <see cref="FunctionChoiceBehavior.Required(IEnumerable{KernelFunction}?, bool, FunctionChoiceBehaviorOptions?)"/> method.
+    /// by the <see cref="FunctionChoiceBehavior.Required(System.Collections.Generic.IEnumerable{Microsoft.SemanticKernel.KernelFunction}?, bool, FunctionChoiceBehaviorOptions?)"/> method.
     /// </item>
     /// <item>
     /// To instruct the model to not call any functions and only generate a user-facing message, set the property to an instance returned
@@ -92,12 +92,12 @@ public class PromptExecutionSettings
     [Experimental("SKEXP0001")]
     public FunctionChoiceBehavior? FunctionChoiceBehavior
     {
-        get => this._functionChoiceBehavior;
+        get => _functionChoiceBehavior;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._functionChoiceBehavior = value;
+            ThrowIfFrozen();
+            _functionChoiceBehavior = value;
         }
     }
 
@@ -111,12 +111,12 @@ public class PromptExecutionSettings
     [JsonIgnore]
     public IDictionary<string, object>? ExtensionData
     {
-        get => this._extensionData;
+        get => _extensionData;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._extensionData = value;
+            ThrowIfFrozen();
+            _extensionData = value;
         }
     }
 
@@ -131,16 +131,16 @@ public class PromptExecutionSettings
     /// </summary>
     public virtual void Freeze()
     {
-        if (this.IsFrozen)
+        if (IsFrozen)
         {
             return;
         }
 
-        this.IsFrozen = true;
+        IsFrozen = true;
 
-        if (this._extensionData is not null)
+        if (_extensionData is not null)
         {
-            this._extensionData = new ReadOnlyDictionary<string, object>(this._extensionData);
+            _extensionData = new ReadOnlyDictionary<string, object>(_extensionData);
         }
     }
 
@@ -152,10 +152,10 @@ public class PromptExecutionSettings
 #pragma warning disable SKEXP0001 // FunctionChoiceBehavior is an experimental feature and is subject to change in future updates. Suppress this diagnostic to proceed.
         return new()
     {
-        ModelId = this.ModelId,
-        ServiceId = this.ServiceId,
-        FunctionChoiceBehavior = this.FunctionChoiceBehavior,ExtensionData = this.ExtensionData is not null
-            ? new Dictionary<string, object>(this.ExtensionData)
+        ModelId = ModelId,
+        ServiceId = ServiceId,
+        FunctionChoiceBehavior = FunctionChoiceBehavior, ExtensionData = ExtensionData is not null
+            ? new Dictionary<string, object>(ExtensionData)
             : null
     };
 #pragma warning restore SKEXP0001 // FunctionChoiceBehavior is an experimental feature and is subject to change in future updates. Suppress this diagnostic to proceed.
@@ -167,7 +167,7 @@ public class PromptExecutionSettings
     /// <exception cref="InvalidOperationException"></exception>
     protected void ThrowIfFrozen()
     {
-        if (this.IsFrozen)
+        if (IsFrozen)
         {
             throw new InvalidOperationException("PromptExecutionSettings are frozen and cannot be modified.");
         }

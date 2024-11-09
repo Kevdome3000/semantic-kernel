@@ -28,7 +28,7 @@ public sealed class TextContent : KernelContent
     [JsonConstructor]
     public TextContent()
     {
-        this.Encoding = Encoding.UTF8;
+        Encoding = Encoding.UTF8;
     }
 
     /// <summary>
@@ -47,14 +47,14 @@ public sealed class TextContent : KernelContent
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(innerContent, modelId, metadata)
     {
-        this.Text = text;
-        this.Encoding = encoding ?? Encoding.UTF8;
+        Text = text;
+        Encoding = encoding ?? Encoding.UTF8;
     }
 
     /// <inheritdoc/>
     public override string ToString()
     {
-        return this.Text ?? string.Empty;
+        return Text ?? string.Empty;
     }
 
     /// <summary>

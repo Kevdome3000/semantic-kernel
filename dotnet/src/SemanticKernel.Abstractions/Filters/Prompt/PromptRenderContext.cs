@@ -23,9 +23,9 @@ public sealed class PromptRenderContext
         Verify.NotNull(function);
         Verify.NotNull(arguments);
 
-        this.Kernel = kernel;
-        this.Function = function;
-        this.Arguments = arguments;
+        Kernel = kernel;
+        Function = function;
+        Arguments = arguments;
     }
 
     /// <summary>
@@ -66,11 +66,11 @@ public sealed class PromptRenderContext
     /// </remarks>
     public string? RenderedPrompt
     {
-        get => this._renderedPrompt;
+        get => _renderedPrompt;
         set
         {
             Verify.NotNullOrWhiteSpace(value);
-            this._renderedPrompt = value;
+            _renderedPrompt = value;
         }
     }
 

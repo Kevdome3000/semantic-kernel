@@ -19,8 +19,8 @@ public sealed class OutputVariable
     [AllowNull]
     public string Description
     {
-        get => this._description;
-        set => this._description = value ?? string.Empty;
+        get => _description;
+        set => _description = value ?? string.Empty;
     }
 
     /// <summary>

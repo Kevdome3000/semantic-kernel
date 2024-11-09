@@ -23,9 +23,9 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
     {
         Verify.NotNull(chatCompletionService);
 
-        this._chatCompletionService = chatCompletionService;
+        _chatCompletionService = chatCompletionService;
 
-        this.Metadata = new ChatClientMetadata(
+        Metadata = new ChatClientMetadata(
             chatCompletionService.GetType().Name,
             chatCompletionService.GetEndpoint() is string endpoint ? new Uri(endpoint) : null,
             chatCompletionService.GetModelId());
@@ -39,7 +39,7 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
     {
         Verify.NotNull(chatMessages);
 
-        var response = await this._chatCompletionService.GetChatMessageContentAsync(
+        var response = await _chatCompletionService.GetChatMessageContentAsync(
             new ChatHistory(chatMessages.Select(m => ChatCompletionServiceExtensions.ToChatMessageContent(m))),
             ToPromptExecutionSettings(options),
             kernel: null,
@@ -57,7 +57,7 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
     {
         Verify.NotNull(chatMessages);
 
-        await foreach (var update in this._chatCompletionService.GetStreamingChatMessageContentsAsync(
+        await foreach (var update in _chatCompletionService.GetStreamingChatMessageContentsAsync(
             new ChatHistory(chatMessages.Select(m => ChatCompletionServiceExtensions.ToChatMessageContent(m))),
             ToPromptExecutionSettings(options),
             kernel: null,
@@ -70,15 +70,14 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
     /// <inheritdoc />
     public void Dispose()
     {
-        (this._chatCompletionService as IDisposable)?.Dispose();
+        (_chatCompletionService as IDisposable)?.Dispose();
     }
 
     /// <inheritdoc />
     public TService? GetService<TService>(object? key = null) where TService : class
     {
         return
-            typeof(TService) == typeof(IChatClient) ? (TService)(object)this :
-            this._chatCompletionService as TService;
+            typeof(TService) == typeof(IChatClient) ? (TService)(object)this : _chatCompletionService as TService;
     }
 
     /// <summary>Converts a <see cref="ChatOptions"/> to a <see cref="PromptExecutionSettings"/>.</summary>
@@ -201,12 +200,12 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
             AIContent? aiContent = null;
             switch (item)
             {
-                case Microsoft.SemanticKernel.StreamingTextContent tc:
-                    aiContent = new Microsoft.Extensions.AI.TextContent(tc.Text);
+                case StreamingTextContent tc:
+                    aiContent = new Extensions.AI.TextContent(tc.Text);
                     break;
 
-                case Microsoft.SemanticKernel.StreamingFunctionCallUpdateContent fcc:
-                    aiContent = new Microsoft.Extensions.AI.FunctionCallContent(
+                case StreamingFunctionCallUpdateContent fcc:
+                    aiContent = new Extensions.AI.FunctionCallContent(
                         fcc.CallId ?? string.Empty,
                         fcc.Name ?? string.Empty,
                         fcc.Arguments is not null ? JsonSerializer.Deserialize<IDictionary<string, object?>>(fcc.Arguments, AbstractionsJsonContext.Default.IDictionaryStringObject!) : null);

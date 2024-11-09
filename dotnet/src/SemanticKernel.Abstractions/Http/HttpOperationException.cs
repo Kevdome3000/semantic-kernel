@@ -52,8 +52,8 @@ public class HttpOperationException : Exception
         Exception? innerException)
         : base(message, innerException)
     {
-        this.StatusCode = statusCode;
-        this.ResponseContent = responseContent;
+        StatusCode = statusCode;
+        ResponseContent = responseContent;
     }
 
     /// <summary>

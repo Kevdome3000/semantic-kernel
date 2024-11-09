@@ -45,7 +45,7 @@ public abstract class FunctionChoiceBehavior
     /// </param>
     internal FunctionChoiceBehavior(IEnumerable<KernelFunction>? functions = null)
     {
-        this._functions = functions;
+        _functions = functions;
     }
 
     /// <summary>
@@ -152,7 +152,7 @@ public abstract class FunctionChoiceBehavior
                 }
 
                 // Look up the function in the list of functions provided as instances of KernelFunction.
-                function = this._functions?.FirstOrDefault(f => f.Name == nameParts.Name && f.PluginName == nameParts.PluginName);
+                function = _functions?.FirstOrDefault(f => f.Name == nameParts.Name && f.PluginName == nameParts.PluginName);
                 if (function is not null)
                 {
                     availableFunctions.Add(function);

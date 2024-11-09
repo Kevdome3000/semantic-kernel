@@ -33,8 +33,8 @@ public class MemoryRecord : DataEntryBase
         string? key,
         DateTimeOffset? timestamp = null) : base(key, timestamp)
     {
-        this.Metadata = metadata;
-        this.Embedding = embedding;
+        Metadata = metadata;
+        Embedding = embedding;
     }
 
     /// <summary>
@@ -145,6 +145,6 @@ public class MemoryRecord : DataEntryBase
     /// <returns>The memory record's metadata serialized to a json string.</returns>
     public string GetSerializedMetadata()
     {
-        return JsonSerializer.Serialize(this.Metadata, MemoryRecordMetadataJsonSerializerContext.Default.MemoryRecordMetadata);
+        return JsonSerializer.Serialize(Metadata, MemoryRecordMetadataJsonSerializerContext.Default.MemoryRecordMetadata);
     }
 }

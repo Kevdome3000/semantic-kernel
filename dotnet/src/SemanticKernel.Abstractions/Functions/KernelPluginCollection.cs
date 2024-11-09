@@ -24,7 +24,11 @@ public sealed class KernelPluginCollection : ICollection<KernelPlugin>, IReadOnl
     private readonly Dictionary<string, KernelPlugin> _plugins;
 
     /// <summary>Initializes a collection of plugins.</summary>
-    public KernelPluginCollection() => this._plugins = new(StringComparer.OrdinalIgnoreCase);
+    public KernelPluginCollection()
+    {
+        _plugins = new Dictionary<string, KernelPlugin>(StringComparer.OrdinalIgnoreCase);
+    }
+
 
     /// <summary>Initializes a collection of plugins that contains all of the plugins from the provided collection.</summary>
     /// <param name="plugins">The initial collection of plugins to populate this collection.</param>
@@ -36,20 +40,20 @@ public sealed class KernelPluginCollection : ICollection<KernelPlugin>, IReadOnl
 
         if (plugins is KernelPluginCollection existing)
         {
-            this._plugins = new(existing._plugins, StringComparer.OrdinalIgnoreCase);
+            _plugins = new Dictionary<string, KernelPlugin>(existing._plugins, StringComparer.OrdinalIgnoreCase);
         }
         else
         {
-            this._plugins = new(plugins is ICollection<KernelPlugin> c
+            _plugins = new Dictionary<string, KernelPlugin>(plugins is ICollection<KernelPlugin> c
                 ? c.Count
                 : 0, StringComparer.OrdinalIgnoreCase);
 
-            this.AddRange(plugins);
+            AddRange(plugins);
         }
     }
 
     /// <summary>Gets the number of plugins in the collection.</summary>
-    public int Count => this._plugins.Count;
+    public int Count => _plugins.Count;
 
     /// <summary>Adds the plugin to the plugin collection.</summary>
     /// <param name="plugin">The plugin to add.</param>
@@ -63,7 +67,7 @@ public sealed class KernelPluginCollection : ICollection<KernelPlugin>, IReadOnl
         string name = plugin.Name;
         Verify.NotNull(name, "plugin.Name");
 
-        this._plugins.Add(name, plugin);
+        _plugins.Add(name, plugin);
     }
 
     /// <summary>Adds a collection of plugins to this plugin collection.</summary>
@@ -78,7 +82,7 @@ public sealed class KernelPluginCollection : ICollection<KernelPlugin>, IReadOnl
 
         foreach (KernelPlugin plugin in plugins)
         {
-            this.Add(plugin);
+            Add(plugin);
         }
     }
 
@@ -89,9 +93,9 @@ public sealed class KernelPluginCollection : ICollection<KernelPlugin>, IReadOnl
     {
         Verify.NotNull(plugin);
 
-        if (this._plugins.TryGetValue(plugin.Name, out KernelPlugin? existing) && existing == plugin)
+        if (_plugins.TryGetValue(plugin.Name, out KernelPlugin? existing) && existing == plugin)
         {
-            return this._plugins.Remove(plugin.Name);
+            return _plugins.Remove(plugin.Name);
         }
 
         return false;
@@ -109,24 +113,36 @@ public sealed class KernelPluginCollection : ICollection<KernelPlugin>, IReadOnl
         string name = plugin.Name;
         Verify.NotNull(name, "plugin.Name");
 
-        if (this._plugins.ContainsKey(name))
+        if (_plugins.ContainsKey(name))
         {
             return false;
         }
 
-        this._plugins.Add(name, plugin);
+        _plugins.Add(name, plugin);
 
         return true;
     }
 
     /// <summary>Removes all plugins from the collection.</summary>
-    public void Clear() => this._plugins.Clear();
+    public void Clear()
+    {
+        _plugins.Clear();
+    }
+
 
     /// <summary>Gets an enumerable of all plugins stored in this collection.</summary>
-    public IEnumerator<KernelPlugin> GetEnumerator() => this._plugins.Values.GetEnumerator();
+    public IEnumerator<KernelPlugin> GetEnumerator()
+    {
+        return _plugins.Values.GetEnumerator();
+    }
+
 
     /// <summary>Gets an enumerable of all plugins stored in this collection.</summary>
-    IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
+
 
     /// <summary>Gets whether the collection contains the specified plugin.</summary>
     /// <param name="plugin">The plugin.</param>
@@ -135,7 +151,7 @@ public sealed class KernelPluginCollection : ICollection<KernelPlugin>, IReadOnl
     {
         Verify.NotNull(plugin);
 
-        return this._plugins.TryGetValue(plugin.Name, out KernelPlugin? existing) && plugin == existing;
+        return _plugins.TryGetValue(plugin.Name, out KernelPlugin? existing) && plugin == existing;
     }
 
     /// <inheritdoc/>
@@ -143,7 +159,7 @@ public sealed class KernelPluginCollection : ICollection<KernelPlugin>, IReadOnl
     {
         get
         {
-            if (!this.TryGetPlugin(name, out KernelPlugin? plugin))
+            if (!TryGetPlugin(name, out KernelPlugin? plugin))
             {
                 throw new KeyNotFoundException($"Plugin {name} not found.");
             }
@@ -157,10 +173,10 @@ public sealed class KernelPluginCollection : ICollection<KernelPlugin>, IReadOnl
     /// <param name="plugin">The plugin if found in the collection.</param>
     /// <returns>true if the collection contains the plugin; otherwise, false.</returns>
     public bool TryGetPlugin(string name, [NotNullWhen(true)] out KernelPlugin? plugin) =>
-        this._plugins.TryGetValue(name, out plugin);
+        _plugins.TryGetValue(name, out plugin);
 
     void ICollection<KernelPlugin>.CopyTo(KernelPlugin[] array, int arrayIndex) =>
-        ((IDictionary<string, KernelPlugin>)this._plugins).Values.CopyTo(array, arrayIndex);
+        ((IDictionary<string, KernelPlugin>)_plugins).Values.CopyTo(array, arrayIndex);
 
     bool ICollection<KernelPlugin>.IsReadOnly => false;
 
@@ -169,9 +185,14 @@ public sealed class KernelPluginCollection : ICollection<KernelPlugin>, IReadOnl
     {
         private readonly KernelPluginCollection _collection;
 
-        public TypeProxy(KernelPluginCollection collection) => this._collection = collection;
+
+        public TypeProxy(KernelPluginCollection collection)
+        {
+            _collection = collection;
+        }
+
 
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-        public KernelPlugin[] Plugins => [.. this._collection._plugins.Values];
+        public KernelPlugin[] Plugins => [.. _collection._plugins.Values];
     }
 }

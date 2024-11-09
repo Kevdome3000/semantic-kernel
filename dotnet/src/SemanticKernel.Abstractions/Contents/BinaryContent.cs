@@ -28,7 +28,7 @@ public class BinaryContent : KernelContent
     /// The binary content.
     /// </summary>
     [JsonIgnore, Obsolete("Use Data instead")]
-    public ReadOnlyMemory<byte>? Content => this.Data;
+    public ReadOnlyMemory<byte>? Content => Data;
 
     /// <summary>
     /// Gets the referenced Uri of the content.
@@ -36,8 +36,8 @@ public class BinaryContent : KernelContent
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public Uri? Uri
     {
-        get => this.GetUri();
-        set => this.SetUri(value);
+        get => GetUri();
+        set => SetUri(value);
     }
 
     /// <summary>
@@ -46,8 +46,8 @@ public class BinaryContent : KernelContent
     [JsonIgnore]
     public string? DataUri
     {
-        get => this.GetDataUri();
-        set => this.SetDataUri(value);
+        get => GetDataUri();
+        set => SetDataUri(value);
     }
 
     /// <summary>
@@ -56,8 +56,8 @@ public class BinaryContent : KernelContent
     [JsonPropertyOrder(100), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] // Ensuring Data Uri is serialized last for better visibility of other properties.
     public ReadOnlyMemory<byte>? Data
     {
-        get => this.GetData();
-        set => this.SetData(value);
+        get => GetData();
+        set => SetData(value);
     }
 
     /// <summary>
@@ -66,8 +66,8 @@ public class BinaryContent : KernelContent
     /// <returns>True if the content has binary data, false otherwise.</returns>
     [JsonIgnore]
     public bool CanRead
-        => this._data is not null
-           || this._dataUri is not null;
+        => _data is not null
+            || _dataUri is not null;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BinaryContent"/> class with no content.
@@ -85,7 +85,7 @@ public class BinaryContent : KernelContent
     /// </summary>
     public BinaryContent(Uri uri)
     {
-        this.Uri = uri;
+        Uri = uri;
     }
 
     /// <summary>
@@ -97,7 +97,7 @@ public class BinaryContent : KernelContent
         // <see href="https://github.com/dotnet/runtime/issues/96544"/>
         string dataUri)
     {
-        this.DataUri = dataUri;
+        DataUri = dataUri;
     }
 
     /// <summary>
@@ -116,8 +116,8 @@ public class BinaryContent : KernelContent
             throw new ArgumentException("Data cannot be empty", nameof(data));
         }
 
-        this.MimeType = mimeType;
-        this.Data = data;
+        MimeType = mimeType;
+        Data = data;
     }
 
     #region Private
@@ -133,7 +133,7 @@ public class BinaryContent : KernelContent
             throw new InvalidOperationException("For DataUri contents, use DataUri property.");
         }
 
-        this._referencedUri = uri;
+        _referencedUri = uri;
     }
 
     /// <summary>
@@ -141,7 +141,10 @@ public class BinaryContent : KernelContent
     /// </summary>
     /// <returns>Uri of the content</returns>
     private Uri? GetUri()
-        => this._referencedUri;
+    {
+        return _referencedUri;
+    }
+
 
     /// <summary>
     /// Sets the DataUri of the content.
@@ -151,10 +154,10 @@ public class BinaryContent : KernelContent
     {
         if (dataUri is null)
         {
-            this._dataUri = null;
+            _dataUri = null;
 
             // Invalidate the current bytearray
-            this._data = null;
+            _data = null;
 
             return;
         }
@@ -170,7 +173,7 @@ public class BinaryContent : KernelContent
         var parsedDataUri = DataUriParser.Parse(dataUri);
 
         // Overwrite the mimetype to the DataUri.
-        this.MimeType = parsedDataUri.MimeType;
+        MimeType = parsedDataUri.MimeType;
 
         // If parameters where provided in the data uri, updates the content metadata.
         if (parsedDataUri.Parameters.Count != 0)
@@ -178,13 +181,13 @@ public class BinaryContent : KernelContent
             // According to the RFC 2397, the data uri supports custom parameters
             // This method ensures that if parameter is provided those will be added
             // to the content metadata with a "data-uri-" prefix.
-            this.UpdateDataUriParametersToMetadata(parsedDataUri);
+            UpdateDataUriParametersToMetadata(parsedDataUri);
         }
 
-        this._dataUri = dataUri;
+        _dataUri = dataUri;
 
         // Invalidate the current bytearray
-        this._data = null;
+        _data = null;
     }
 
     private void UpdateDataUriParametersToMetadata(DataUriParser.DataUri parsedDataUri)
@@ -194,15 +197,15 @@ public class BinaryContent : KernelContent
             return;
         }
 
-        var newMetadata = this.Metadata as Dictionary<string, object?>;
+        var newMetadata = Metadata as Dictionary<string, object?>;
 
         if (newMetadata is null)
         {
             newMetadata = new Dictionary<string, object?>();
 
-            if (this.Metadata is not null)
+            if (Metadata is not null)
             {
-                foreach (var property in this.Metadata!)
+                foreach (var property in Metadata!)
                 {
                     newMetadata[property.Key] = property.Value;
                 }
@@ -216,12 +219,12 @@ public class BinaryContent : KernelContent
             newMetadata[$"data-uri-{property.Key}"] = property.Value;
         }
 
-        this.Metadata = newMetadata;
+        Metadata = newMetadata;
     }
 
     private string GetDataUriParametersFromMetadata()
     {
-        var metadata = this.Metadata;
+        var metadata = Metadata;
 
         if (metadata is null || metadata.Count == 0)
         {
@@ -248,8 +251,8 @@ public class BinaryContent : KernelContent
     private void SetData(ReadOnlyMemory<byte>? data)
     {
         // Overriding the content will invalidate the previous dataUri
-        this._dataUri = null;
-        this._data = data;
+        _dataUri = null;
+        _data = data;
     }
 
     /// <summary>
@@ -258,7 +261,7 @@ public class BinaryContent : KernelContent
     /// <returns>The byte array data content</returns>
     private ReadOnlyMemory<byte>? GetData()
     {
-        return this.GetCachedByteArrayContent();
+        return GetCachedByteArrayContent();
     }
 
     /// <summary>
@@ -267,24 +270,24 @@ public class BinaryContent : KernelContent
     /// <returns></returns>
     private string? GetDataUri()
     {
-        if (!this.CanRead)
+        if (!CanRead)
         {
             return null;
         }
 
-        if (this._dataUri is not null)
+        if (_dataUri is not null)
         {
             // Double check if the set MimeType matches the current dataUri.
-            var parsedDataUri = DataUriParser.Parse(this._dataUri);
+            var parsedDataUri = DataUriParser.Parse(_dataUri);
 
-            if (string.Equals(parsedDataUri.MimeType, this.MimeType, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(parsedDataUri.MimeType, MimeType, StringComparison.OrdinalIgnoreCase))
             {
-                return this._dataUri;
+                return _dataUri;
             }
         }
 
         // If the Uri is not a DataUri, then we need to get from byteArray (caching if needed) to generate it.
-        return this.GetCachedUriDataFromByteArray(this.GetCachedByteArrayContent());
+        return GetCachedUriDataFromByteArray(GetCachedByteArrayContent());
     }
 
     private string? GetCachedUriDataFromByteArray(ReadOnlyMemory<byte>? cachedByteArray)
@@ -294,36 +297,36 @@ public class BinaryContent : KernelContent
             return null;
         }
 
-        if (this.MimeType is null)
+        if (MimeType is null)
         {
             // May consider defaulting to application/octet-stream if not provided.
             throw new InvalidOperationException("Can't get the data uri without a mime type defined for the content.");
         }
 
         // Ensure that if any data-uri-parameter defined in the metadata those will be added to the data uri.
-        this._dataUri = $"data:{this.MimeType}{this.GetDataUriParametersFromMetadata()};base64," + Convert.ToBase64String(cachedByteArray.Value.ToArray());
+        _dataUri = $"data:{MimeType}{GetDataUriParametersFromMetadata()};base64," + Convert.ToBase64String(cachedByteArray.Value.ToArray());
 
-        return this._dataUri;
+        return _dataUri;
     }
 
     private ReadOnlyMemory<byte>? GetCachedByteArrayContent()
     {
-        if (this._data is null && this._dataUri is not null)
+        if (_data is null && _dataUri is not null)
         {
-            var parsedDataUri = DataUriParser.Parse(this._dataUri);
+            var parsedDataUri = DataUriParser.Parse(_dataUri);
 
             if (string.Equals(parsedDataUri.DataFormat, "base64", StringComparison.OrdinalIgnoreCase))
             {
-                this._data = Convert.FromBase64String(parsedDataUri.Data!);
+                _data = Convert.FromBase64String(parsedDataUri.Data!);
             }
             else
             {
                 // Defaults to UTF8 encoding if format is not provided.
-                this._data = Encoding.UTF8.GetBytes(parsedDataUri.Data!);
+                _data = Encoding.UTF8.GetBytes(parsedDataUri.Data!);
             }
         }
 
-        return this._data;
+        return _data;
     }
 
     #endregion

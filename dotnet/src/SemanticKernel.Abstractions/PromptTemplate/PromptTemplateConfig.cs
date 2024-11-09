@@ -50,7 +50,7 @@ public sealed class PromptTemplateConfig
     /// <exception cref="ArgumentNullException"><paramref name="template"/> is null.</exception>
     public PromptTemplateConfig(string template)
     {
-        this.Template = template;
+        Template = template;
     }
 
     /// <summary>
@@ -113,8 +113,8 @@ public sealed class PromptTemplateConfig
     [AllowNull]
     public string TemplateFormat
     {
-        get => this._templateFormat ?? SemanticKernelTemplateFormat;
-        set => this._templateFormat = value;
+        get => _templateFormat ?? SemanticKernelTemplateFormat;
+        set => _templateFormat = value;
     }
 
     /// <summary>
@@ -124,11 +124,11 @@ public sealed class PromptTemplateConfig
     [JsonPropertyName("template")]
     public string Template
     {
-        get => this._template;
+        get => _template;
         set
         {
             Verify.NotNull(value);
-            this._template = value;
+            _template = value;
         }
     }
 
@@ -138,11 +138,11 @@ public sealed class PromptTemplateConfig
     [JsonPropertyName("input_variables")]
     public List<InputVariable> InputVariables
     {
-        get => this._inputVariables ??= [];
+        get => _inputVariables ??= [];
         set
         {
             Verify.NotNull(value);
-            this._inputVariables = value;
+            _inputVariables = value;
         }
     }
 
@@ -162,7 +162,7 @@ public sealed class PromptTemplateConfig
     [JsonPropertyName("execution_settings")]
     public Dictionary<string, PromptExecutionSettings> ExecutionSettings
     {
-        get => this._executionSettings ??= [];
+        get => _executionSettings ??= [];
         set
         {
             Verify.NotNull(value);
@@ -174,12 +174,12 @@ public sealed class PromptTemplateConfig
                     // Ensures that if a service id is provided it must match the key in the dictionary.
                     if (!string.IsNullOrWhiteSpace(kv.Value.ServiceId) && kv.Key != kv.Value.ServiceId)
                     {
-                        throw new ArgumentException($"Service id '{kv.Value.ServiceId}' must match the key '{kv.Key}'.", nameof(this.ExecutionSettings));
+                        throw new ArgumentException($"Service id '{kv.Value.ServiceId}' must match the key '{kv.Key}'.", nameof(ExecutionSettings));
                     }
                 }
             }
 
-            this._executionSettings = value;
+            _executionSettings = value;
         }
     }
 
@@ -202,7 +202,7 @@ public sealed class PromptTemplateConfig
     /// <remarks>
     /// If no default is specified, this will return null.
     /// </remarks>
-    public PromptExecutionSettings? DefaultExecutionSettings => this._executionSettings?.TryGetValue(PromptExecutionSettings.DefaultServiceId, out PromptExecutionSettings? settings) is true
+    public PromptExecutionSettings? DefaultExecutionSettings => _executionSettings?.TryGetValue(PromptExecutionSettings.DefaultServiceId, out PromptExecutionSettings? settings) is true
         ? settings
         : null;
 
@@ -226,12 +226,12 @@ public sealed class PromptTemplateConfig
 
         var key = serviceId ?? settings.ServiceId ?? PromptExecutionSettings.DefaultServiceId;
 
-        if (this.ExecutionSettings.ContainsKey(key))
+        if (ExecutionSettings.ContainsKey(key))
         {
             throw new ArgumentException($"Execution settings for service id '{key}' already exists.", nameof(serviceId));
         }
 
-        this.ExecutionSettings[key] = settings;
+        ExecutionSettings[key] = settings;
     }
 
     /// <summary>
@@ -241,7 +241,8 @@ public sealed class PromptTemplateConfig
     public IReadOnlyList<KernelParameterMetadata> GetKernelParametersMetadata(JsonSerializerOptions jsonSerializerOptions)
     {
         KernelParameterMetadata[] result = [];
-        if (this._inputVariables is List<InputVariable> inputVariables)
+
+        if (_inputVariables is List<InputVariable> inputVariables)
         {
             result = new KernelParameterMetadata[inputVariables.Count];
             for (int i = 0; i < result.Length; i++)
@@ -270,7 +271,7 @@ public sealed class PromptTemplateConfig
     {
         KernelParameterMetadata[] result = [];
 
-        if (this._inputVariables is { } inputVariables)
+        if (_inputVariables is { } inputVariables)
         {
             result = new KernelParameterMetadata[inputVariables.Count];
 
@@ -302,7 +303,8 @@ public sealed class PromptTemplateConfig
     [RequiresUnreferencedCode("Uses reflection to generate JSON schema, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to generate JSON schema, making it incompatible with AOT scenarios.")]
     public KernelReturnParameterMetadata? GetKernelReturnParameterMetadata() =>
-        this.OutputVariable is OutputVariable outputVariable ?
+        OutputVariable is OutputVariable outputVariable
+            ?
             new KernelReturnParameterMetadata
             {
                 Description = outputVariable.Description,
@@ -315,7 +317,8 @@ public sealed class PromptTemplateConfig
     /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to generate and parse JSON schema.</param>"
     /// </summary>
     public KernelReturnParameterMetadata? GetKernelReturnParameterMetadata(JsonSerializerOptions jsonSerializerOptions) =>
-        this.OutputVariable is OutputVariable outputVariable ?
+        OutputVariable is OutputVariable outputVariable
+            ?
             new KernelReturnParameterMetadata(jsonSerializerOptions)
             {
                 Description = outputVariable.Description,

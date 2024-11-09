@@ -12,7 +12,7 @@ public sealed class KernelBuilder : IKernelBuilder, IKernelBuilderPlugins
     /// <summary>Initializes a new instance of the <see cref="KernelBuilder"/>.</summary>
     public KernelBuilder()
     {
-        this.AllowBuild = true;
+        AllowBuild = true;
     }
 
     /// <summary>Initializes a new instance of the <see cref="KernelBuilder"/>.</summary>
@@ -23,7 +23,7 @@ public sealed class KernelBuilder : IKernelBuilder, IKernelBuilderPlugins
     {
         Verify.NotNull(services);
 
-        this._services = services;
+        _services = services;
         AllowBuild = true;
     }
 
@@ -32,7 +32,7 @@ public sealed class KernelBuilder : IKernelBuilder, IKernelBuilderPlugins
     internal bool AllowBuild { get; }
 
     /// <summary>Gets the collection of services to be built into the <see cref="Kernel"/>.</summary>
-    public IServiceCollection Services => this._services ??= new ServiceCollection();
+    public IServiceCollection Services => _services ??= new ServiceCollection();
 
     /// <summary>Gets a builder for plugins to be built as services into the <see cref="Kernel"/>.</summary>
     public IKernelBuilderPlugins Plugins => this;

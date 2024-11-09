@@ -18,8 +18,8 @@ public sealed class FunctionInvokedEventArgs : CancelKernelEventArgs
     public FunctionInvokedEventArgs(KernelFunction function, KernelArguments arguments, FunctionResult result) :
         base(function, arguments, (result ?? throw new ArgumentNullException(nameof(result))).Metadata)
     {
-        this.Result = result;
-        this.ResultValue = result.Value;
+        Result = result;
+        ResultValue = result.Value;
     }
 
     /// <summary>Gets the result of the function's invocation.</summary>
@@ -32,6 +32,6 @@ public sealed class FunctionInvokedEventArgs : CancelKernelEventArgs
     /// <param name="value">The value to use as the new result of the function's invocation.</param>
     public void SetResultValue(object? value)
     {
-        this.ResultValue = value;
+        ResultValue = value;
     }
 }

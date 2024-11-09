@@ -22,7 +22,7 @@ public sealed class PromptRenderedContext : PromptFilterContext
     public PromptRenderedContext(KernelFunction function, KernelArguments arguments, string renderedPrompt)
         : base(function, arguments, metadata: null)
     {
-        this.RenderedPrompt = renderedPrompt;
+        RenderedPrompt = renderedPrompt;
     }
 
     /// <summary>
@@ -48,12 +48,12 @@ public sealed class PromptRenderedContext : PromptFilterContext
     /// </remarks>
     public string RenderedPrompt
     {
-        get => this._renderedPrompt;
+        get => _renderedPrompt;
         [MemberNotNull(nameof(_renderedPrompt))]
         set
         {
             Verify.NotNullOrWhiteSpace(value);
-            this._renderedPrompt = value;
+            _renderedPrompt = value;
         }
     }
 }

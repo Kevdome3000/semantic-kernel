@@ -54,6 +54,6 @@ public class AnnotationContent : KernelContent
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(innerContent, modelId, metadata)
     {
-   this.Quote = quote;
+        Quote = quote;
     }
 }

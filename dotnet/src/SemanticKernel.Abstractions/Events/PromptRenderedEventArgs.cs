@@ -21,7 +21,7 @@ public sealed class PromptRenderedEventArgs : CancelKernelEventArgs
     public PromptRenderedEventArgs(KernelFunction function, KernelArguments arguments, string renderedPrompt) :
         base(function, arguments, metadata: null)
     {
-        this.RenderedPrompt = renderedPrompt;
+        RenderedPrompt = renderedPrompt;
     }
 
     /// <summary>Gets or sets the rendered prompt.</summary>
@@ -33,12 +33,12 @@ public sealed class PromptRenderedEventArgs : CancelKernelEventArgs
     /// </remarks>
     public string RenderedPrompt
     {
-        get => this._renderedPrompt;
+        get => _renderedPrompt;
         [MemberNotNull(nameof(_renderedPrompt))]
         set
         {
             Verify.NotNullOrWhiteSpace(value);
-            this._renderedPrompt = value;
+            _renderedPrompt = value;
         }
     }
 }

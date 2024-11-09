@@ -64,8 +64,8 @@ public abstract class KernelContent
     /// <param name="metadata">Metadata associated with the content</param>
     protected KernelContent(object? innerContent, string? modelId = null, IReadOnlyDictionary<string, object?>? metadata = null)
     {
-        this.ModelId = modelId;
-        this.InnerContent = innerContent;
-        this.Metadata = metadata;
+        ModelId = modelId;
+        InnerContent = innerContent;
+        Metadata = metadata;
     }
 }

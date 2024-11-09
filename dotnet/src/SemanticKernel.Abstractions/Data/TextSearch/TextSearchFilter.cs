@@ -20,7 +20,7 @@ public sealed class TextSearchFilter
     /// <summary>
     /// The clauses to apply to the <see cref="TextSearchFilter" />
     /// </summary>
-    public IEnumerable<FilterClause> FilterClauses => this._filterClauses;
+    public IEnumerable<FilterClause> FilterClauses => _filterClauses;
 
     /// <summary>
     /// Add a equality clause to the filter options.
@@ -30,7 +30,7 @@ public sealed class TextSearchFilter
     /// <returns>FilterOptions instance to allow fluent configuration.</returns>
     public TextSearchFilter Equality(string fieldName, object value)
     {
-        this._filterClauses.Add(new EqualToFilterClause(fieldName, value));
+        _filterClauses.Add(new EqualToFilterClause(fieldName, value));
         return this;
     }
 

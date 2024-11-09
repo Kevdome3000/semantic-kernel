@@ -40,19 +40,19 @@ public class StreamingTextContent : StreamingKernelContent
         Encoding? encoding = null,
         IReadOnlyDictionary<string, object?>? metadata = null) : base(innerContent, choiceIndex, modelId, metadata)
     {
-        this.Text = text;
-        this.Encoding = encoding ?? Encoding.UTF8;
+        Text = text;
+        Encoding = encoding ?? Encoding.UTF8;
     }
 
     /// <inheritdoc/>
     public override string ToString()
     {
-        return this.Text ?? string.Empty;
+        return Text ?? string.Empty;
     }
 
     /// <inheritdoc/>
     public override byte[] ToByteArray()
     {
-        return this.Encoding.GetBytes(this.ToString());
+        return Encoding.GetBytes(ToString());
     }
 }

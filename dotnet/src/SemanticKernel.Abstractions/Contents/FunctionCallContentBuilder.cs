@@ -38,7 +38,7 @@ public sealed class FunctionCallContentBuilder
     [Experimental("SKEXP0120")]
     public FunctionCallContentBuilder(JsonSerializerOptions jsonSerializerOptions)
     {
-        this._jsonSerializerOptions = jsonSerializerOptions;
+        _jsonSerializerOptions = jsonSerializerOptions;
     }
 
     /// <summary>
@@ -52,9 +52,9 @@ public sealed class FunctionCallContentBuilder
         foreach (var update in streamingFunctionCallUpdates)
         {
             TrackStreamingFunctionCallUpdate(update,
-                ref this._functionCallIdsByIndex,
-                ref this._functionNamesByIndex,
-                ref this._functionArgumentBuildersByIndex);
+                ref _functionCallIdsByIndex,
+                ref _functionNamesByIndex,
+                ref _functionArgumentBuildersByIndex);
         }
     }
 
@@ -66,18 +66,18 @@ public sealed class FunctionCallContentBuilder
     {
         FunctionCallContent[]? functionCalls = null;
 
-        if (this._functionCallIdsByIndex is { Count: > 0 })
+        if (_functionCallIdsByIndex is { Count: > 0 })
         {
-            functionCalls = new FunctionCallContent[this._functionCallIdsByIndex.Count];
+            functionCalls = new FunctionCallContent[_functionCallIdsByIndex.Count];
 
-            for (int i = 0; i < this._functionCallIdsByIndex.Count; i++)
+            for (int i = 0; i < _functionCallIdsByIndex.Count; i++)
             {
-                KeyValuePair<int, string> functionCallIndexAndId = this._functionCallIdsByIndex.ElementAt(i);
+                KeyValuePair<int, string> functionCallIndexAndId = _functionCallIdsByIndex.ElementAt(i);
 
                 string? pluginName = null;
                 string functionName = string.Empty;
 
-                if (this._functionNamesByIndex?.TryGetValue(functionCallIndexAndId.Key, out string? fqn) ?? false)
+                if (_functionNamesByIndex?.TryGetValue(functionCallIndexAndId.Key, out string? fqn) ?? false)
                 {
                     var functionFullyQualifiedName = FunctionName.Parse(fqn);
                     pluginName = functionFullyQualifiedName.PluginName;
@@ -100,12 +100,12 @@ public sealed class FunctionCallContentBuilder
             [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "The warning is shown and should be addressed at the class creation site; there is no need to show it again at the function invocation sites.")]
             (KernelArguments? Arguments, Exception? Exception) GetFunctionArgumentsSafe(int functionCallIndex)
             {
-                if (this._jsonSerializerOptions is not null)
+                if (_jsonSerializerOptions is not null)
                 {
-                    return this.GetFunctionArguments(functionCallIndex, this._jsonSerializerOptions);
+                    return GetFunctionArguments(functionCallIndex, _jsonSerializerOptions);
                 }
 
-                return this.GetFunctionArguments(functionCallIndex);
+                return GetFunctionArguments(functionCallIndex);
             }
         }
 
@@ -122,8 +122,7 @@ public sealed class FunctionCallContentBuilder
     [RequiresDynamicCode("Uses reflection to deserialize function arguments if no JSOs are provided, making it incompatible with AOT scenarios.")]
     private (KernelArguments? Arguments, Exception? Exception) GetFunctionArguments(int functionCallIndex, JsonSerializerOptions? jsonSerializerOptions = null)
     {
-        if (this._functionArgumentBuildersByIndex is null ||
-            !this._functionArgumentBuildersByIndex.TryGetValue(functionCallIndex, out StringBuilder? functionArgumentsBuilder))
+        if (_functionArgumentBuildersByIndex is null || !_functionArgumentBuildersByIndex.TryGetValue(functionCallIndex, out StringBuilder? functionArgumentsBuilder))
         {
             return (null, null);
         }

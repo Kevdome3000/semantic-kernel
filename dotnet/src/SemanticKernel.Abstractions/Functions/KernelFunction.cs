@@ -200,10 +200,6 @@ public abstract class KernelFunction : IKernelFunction
             AdditionalProperties = additionalMetadata ?? KernelFunctionMetadata.s_emptyDictionary
         };
 
-        Name = Metadata.Name;
-        PluginName = Metadata.PluginName;
-        Description = Metadata.Description;
-
         if (executionSettings is not null)
         {
             ExecutionSettings = executionSettings.ToDictionary(
@@ -288,13 +284,16 @@ public abstract class KernelFunction : IKernelFunction
         Verify.NotNull(kernel);
 
         using var activity = s_activitySource.StartActivity(Name);
-        ILogger logger = kernel.LoggerFactory.CreateLogger(typeof(KernelFunction)) ?? NullLogger.Instance;
+        ILogger logger = kernel.LoggerFactory.CreateLogger(typeof(KernelFunction));
 
         // Ensure arguments are initialized.
         arguments ??= [];
-        logger.LogFunctionInvoking(this.PluginName, this.Name);
+        logger.LogFunctionInvoking(PluginName, Name);
 
-        LogFunctionArguments(logger, this.PluginName, this.Name, arguments);
+        LogFunctionArguments(logger,
+            PluginName,
+            Name,
+            arguments);
 
         TagList tags = new() { { MeasurementFunctionTagName, Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
@@ -349,9 +348,12 @@ public abstract class KernelFunction : IKernelFunction
                 throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.FunctionInvoked)} event handler requested cancellation after function invocation.");
             }
 
-            logger.LogFunctionInvokedSuccess(this.PluginName, this.Name);
+            logger.LogFunctionInvokedSuccess(PluginName, Name);
 
-            LogFunctionResult(logger, this.PluginName, this.Name, functionResult);
+            LogFunctionResult(logger,
+                PluginName,
+                Name,
+                functionResult);
 
             return functionResult;
         }
@@ -373,7 +375,7 @@ public abstract class KernelFunction : IKernelFunction
             // Record the invocation duration metric and log the completion.
             TimeSpan duration = new((long)((Stopwatch.GetTimestamp() - startingTimestamp) * (10_000_000.0 / Stopwatch.Frequency)));
             s_invocationDuration.Record(duration.TotalSeconds, in tags);
-            logger.LogFunctionComplete(this.PluginName, this.Name, duration.TotalSeconds);
+            logger.LogFunctionComplete(PluginName, Name, duration.TotalSeconds);
         }
     }
 
@@ -443,9 +445,12 @@ public abstract class KernelFunction : IKernelFunction
         ILogger logger = kernel.LoggerFactory.CreateLogger(Name) ?? NullLogger.Instance;
 
         arguments ??= [];
-        logger.LogFunctionStreamingInvoking(this.PluginName, this.Name);
+        logger.LogFunctionStreamingInvoking(PluginName, Name);
 
-        LogFunctionArguments(logger, this.PluginName, this.Name, arguments);
+        LogFunctionArguments(logger,
+            PluginName,
+            Name,
+            arguments);
 
         TagList tags = new() { { MeasurementFunctionTagName, Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
@@ -545,7 +550,7 @@ public abstract class KernelFunction : IKernelFunction
             // Record the streaming duration metric and log the completion.
             TimeSpan duration = new((long)((Stopwatch.GetTimestamp() - startingTimestamp) * (10_000_000.0 / Stopwatch.Frequency)));
             s_streamingDuration.Record(duration.TotalSeconds, in tags);
-            logger.LogFunctionStreamingComplete(this.PluginName, this.Name, duration.TotalSeconds);
+            logger.LogFunctionStreamingComplete(PluginName, Name, duration.TotalSeconds);
         }
     }
 

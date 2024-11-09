@@ -48,11 +48,14 @@ public sealed class RestApiOperationResponse
     /// <param name="expectedSchema">The schema against which the response body should be validated.</param>
     public RestApiOperationResponse(object? content, string? contentType, KernelJsonSchema? expectedSchema = null)
     {
-        this.Content = content;
-        this.ContentType = contentType;
-        this.ExpectedSchema = expectedSchema;
+        Content = content;
+        ContentType = contentType;
+        ExpectedSchema = expectedSchema;
     }
 
     /// <inheritdoc/>
-    public override string ToString() => this.Content?.ToString() ?? string.Empty;
+    public override string ToString()
+    {
+        return Content?.ToString() ?? string.Empty;
+    }
 }
