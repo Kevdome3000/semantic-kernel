@@ -57,7 +57,6 @@ public class StreamingChatMessageContent : StreamingKernelContent
     /// Chat message content items.
     /// </summary>
     [JsonIgnore]
-    [Experimental("SKEXP0001")]
     public StreamingKernelContentItemCollection Items
     {
         get => _items ??= [];

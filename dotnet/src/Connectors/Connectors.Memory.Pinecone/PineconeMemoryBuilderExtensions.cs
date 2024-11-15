@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Pinecone;
-
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
-using Http;
-using Memory;
+using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.Memory;
+
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 
 /// <summary>

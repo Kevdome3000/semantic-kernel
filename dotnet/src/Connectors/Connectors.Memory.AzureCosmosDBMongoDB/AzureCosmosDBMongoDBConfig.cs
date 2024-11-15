@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.SemanticKernel.Http;
+
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
-
-using Http;
-
 
 /// <summary>
 /// Azure Cosmos Mongo vCore configuration.
@@ -12,9 +12,9 @@ using Http;
 /// <remarks>
 /// Initialize the <see cref="AzureCosmosDBMongoDBConfig"/> with default values.
 /// </remarks>
+[Experimental("SKEXP0020")]
 public class AzureCosmosDBMongoDBConfig(int dimensions)
 {
-
     private const string DefaultIndexName = "default_index";
 
     /// <summary>
@@ -76,5 +76,4 @@ public class AzureCosmosDBMongoDBConfig(int dimensions)
     /// the cost of speed.
     /// </summary>
     public int EfSearch { get; set; } = 40;
-
 }

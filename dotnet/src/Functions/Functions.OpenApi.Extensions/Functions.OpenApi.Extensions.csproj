@@ -1,25 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <!-- THIS PROPERTY GROUP MUST COME FIRST -->
-        <AssemblyName>Microsoft.SemanticKernel.Plugins.OpenApi.Extensions</AssemblyName>
-        <RootNamespace>$(AssemblyName)</RootNamespace>
-        <TargetFrameworks>net8.0;netstandard2.0;net9.0</TargetFrameworks>
-        <VersionSuffix>alpha</VersionSuffix>
-        <NoWarn>$(NoWarn);SKEXP0040</NoWarn>
-        <LangVersion>latestmajor</LangVersion>
-    </PropertyGroup>
-    <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props"/>
-    <PropertyGroup>
-        <!-- NuGet Package Settings -->
-        <Title>Semantic Kernel - OpenAPI Plugin Extensions</Title>
-        <Description>Semantic Kernel OpenAPI Plugin Extensions</Description>
-    </PropertyGroup>
-    <ItemGroup>
-        <PackageReference Include="Microsoft.OpenApi.ApiManifest"/>
-        <PackageReference Include="System.Text.Json"/>
-    </ItemGroup>
-    <ItemGroup>
-        <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj"/>
-        <ProjectReference Include="..\Functions.OpenApi\Functions.OpenApi.csproj"/>
-    </ItemGroup>
+  <PropertyGroup>
+    <!-- THIS PROPERTY GROUP MUST COME FIRST -->
+    <AssemblyName>Microsoft.SemanticKernel.Plugins.OpenApi.Extensions</AssemblyName>
+    <RootNamespace>$(AssemblyName)</RootNamespace>
+    <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
+    <VersionSuffix>alpha</VersionSuffix>
+    <NoWarn>$(NoWarn);SKEXP0040</NoWarn>
+  </PropertyGroup>
+  <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
+  <PropertyGroup>
+    <!-- NuGet Package Settings -->
+    <Title>Semantic Kernel - OpenAPI Plugin Extensions</Title>
+    <Description>Semantic Kernel OpenAPI Plugin Extensions</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.OpenApi.ApiManifest" />
+    <PackageReference Include="Microsoft.Plugins.Manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
+    <ProjectReference Include="..\Functions.OpenApi\Functions.OpenApi.csproj" />
+  </ItemGroup>
 </Project>

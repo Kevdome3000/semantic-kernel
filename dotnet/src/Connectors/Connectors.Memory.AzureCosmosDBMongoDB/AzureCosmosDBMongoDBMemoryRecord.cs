@@ -3,6 +3,7 @@
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Memory;
 using MongoDB.Bson;
@@ -13,6 +14,7 @@ using MongoDB.Bson.Serialization.Attributes;
 /// <summary>
 /// A MongoDB memory record.
 /// </summary>
+[Experimental("SKEXP0020")]
 internal sealed class AzureCosmosDBMongoDBMemoryRecord
 {
 

@@ -1,14 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Qdrant;
-
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 /// <summary>
 /// The vector distance type used by Qdrant.
 /// </summary>
 [JsonConverter(typeof(JsonStringEnumConverter))]
+[Experimental("SKEXP0020")]
 public enum QdrantDistanceType
 {
     /// <summary>

@@ -1,15 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.SemanticKernel.Memory;
+using MongoDB.Bson.Serialization.Attributes;
+
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
-
-using global::MongoDB.Bson.Serialization.Attributes;
-using Memory;
-
 
 /// <summary>
 /// A MongoDB record metadata.
 /// </summary>
 #pragma warning disable CA1815 // Override equals and operator equals on value types
+[Experimental("SKEXP0020")]
 public struct MongoDBMemoryRecordMetadata
 #pragma warning restore CA1815 // Override equals and operator equals on value types
 {
@@ -53,7 +54,6 @@ public struct MongoDBMemoryRecordMetadata
     [BsonIgnoreIfDefault]
     public string AdditionalMetadata { get; set; }
 
-
     /// <summary>
     /// Initializes a new instance of <see cref="MongoDBMemoryRecordMetadata"/> structure.
     /// </summary>
@@ -66,7 +66,6 @@ public struct MongoDBMemoryRecordMetadata
         this.Text = memoryRecordMetadata.Text;
         this.AdditionalMetadata = memoryRecordMetadata.AdditionalMetadata;
     }
-
 
     /// <summary>
     /// Returns mapped <see cref="MemoryRecordMetadata"/>.

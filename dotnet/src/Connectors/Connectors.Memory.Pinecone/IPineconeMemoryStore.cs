@@ -4,6 +4,7 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Memory;
@@ -13,6 +14,7 @@ using Memory;
 /// Interface for Pinecone memory store that extends the memory store interface
 /// to add support for namespaces
 /// </summary>
+[Experimental("SKEXP0020")]
 public interface IPineconeMemoryStore : IMemoryStore
 {
     /// <summary>

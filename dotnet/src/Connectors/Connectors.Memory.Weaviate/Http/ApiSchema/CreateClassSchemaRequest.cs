@@ -1,19 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Weaviate;
-
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 
+namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
+[Experimental("SKEXP0020")]
 internal sealed class CreateClassSchemaRequest
 {
-
     private CreateClassSchemaRequest(string @class, string description)
     {
         this.Class = @class;
         this.Description = description;
         this.Vectorizer = "none";
-
         // See: MemoryRecordMetadata, we also store the timestamp
         this.Properties =
         [
@@ -49,7 +48,6 @@ internal sealed class CreateClassSchemaRequest
         ];
     }
 
-
     public string Class { get; set; }
 
     public string Description { get; set; }
@@ -59,12 +57,10 @@ internal sealed class CreateClassSchemaRequest
 
     public Property[] Properties { get; set; }
 
-
     public static CreateClassSchemaRequest Create(string @class, string description)
     {
         return new(@class, description);
     }
-
 
     public HttpRequestMessage Build()
     {
@@ -72,5 +68,4 @@ internal sealed class CreateClassSchemaRequest
             "schema",
             this);
     }
-
 }

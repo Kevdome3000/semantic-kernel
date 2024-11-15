@@ -4,6 +4,7 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
@@ -20,6 +21,7 @@ using Memory;
 /// <remarks>The Embedding data is saved to a Qdrant Vector Database instance specified in the constructor by url and port.
 /// The embedding data persists between subsequent instances and has similarity search capability.
 /// </remarks>
+[Experimental("SKEXP0020")]
 public class QdrantMemoryStore : IMemoryStore
 {
 

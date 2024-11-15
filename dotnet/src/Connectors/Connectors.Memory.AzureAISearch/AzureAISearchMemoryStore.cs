@@ -5,6 +5,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -24,6 +25,7 @@ using Memory;
 /// <summary>
 /// <see cref="AzureAISearchMemoryStore"/> is a memory store implementation using Azure AI Search.
 /// </summary>
+[Experimental("SKEXP0020")]
 public partial class AzureAISearchMemoryStore : IMemoryStore
 {
 

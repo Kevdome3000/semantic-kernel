@@ -4,6 +4,7 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -13,6 +14,7 @@ using Text;
 /// <summary>
 /// Pinecone Document entity.
 /// </summary>
+[Experimental("SKEXP0020")]
 public class PineconeDocument
 {
 

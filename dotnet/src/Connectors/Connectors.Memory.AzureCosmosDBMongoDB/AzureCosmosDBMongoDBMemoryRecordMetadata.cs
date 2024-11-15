@@ -1,19 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
-
-using Memory;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.SemanticKernel.Memory;
 using MongoDB.Bson.Serialization.Attributes;
 
+namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 
 /// <summary>
 /// A MongoDB memory record metadata.
 /// </summary>
 #pragma warning disable CA1815 // Override equals and operator equals on value types
+[Experimental("SKEXP0020")]
 internal struct AzureCosmosDBMongoDBMemoryRecordMetadata
 #pragma warning restore CA1815 // Override equals and operator equals on value types
 {
-
     /// <summary>
     /// Whether the source data used to calculate embeddings are stored in the local
     /// storage provider or is available through and external service, such as web site, MS Graph, etc.
@@ -56,7 +56,6 @@ internal struct AzureCosmosDBMongoDBMemoryRecordMetadata
     [BsonIgnoreIfDefault]
     public string AdditionalMetadata { get; set; }
 
-
     /// <summary>
     /// Initializes a new instance of <see cref="AzureCosmosDBMongoDBMemoryRecordMetadata"/> structure.
     /// </summary>
@@ -70,7 +69,6 @@ internal struct AzureCosmosDBMongoDBMemoryRecordMetadata
         this.AdditionalMetadata = memoryRecordMetadata.AdditionalMetadata;
     }
 
-
     /// <summary>
     /// Returns mapped <see cref="AzureCosmosDBMongoDBMemoryRecordMetadata"/>.
     /// </summary>
@@ -83,5 +81,4 @@ internal struct AzureCosmosDBMongoDBMemoryRecordMetadata
             this.ExternalSourceName,
             this.AdditionalMetadata
         );
-
 }

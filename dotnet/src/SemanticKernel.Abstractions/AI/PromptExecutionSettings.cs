@@ -89,7 +89,6 @@ public class PromptExecutionSettings
     /// The intermediate messages will be retained in the provided <see cref="ChatHistory"/>.
     /// </remarks>
     [JsonPropertyName("function_choice_behavior")]
-    [Experimental("SKEXP0001")]
     public FunctionChoiceBehavior? FunctionChoiceBehavior
     {
         get => _functionChoiceBehavior;
@@ -149,7 +148,6 @@ public class PromptExecutionSettings
     /// </summary>
     public virtual PromptExecutionSettings Clone()
     {
-#pragma warning disable SKEXP0001 // FunctionChoiceBehavior is an experimental feature and is subject to change in future updates. Suppress this diagnostic to proceed.
         return new()
     {
         ModelId = ModelId,
@@ -158,7 +156,6 @@ public class PromptExecutionSettings
             ? new Dictionary<string, object>(ExtensionData)
             : null
     };
-#pragma warning restore SKEXP0001 // FunctionChoiceBehavior is an experimental feature and is subject to change in future updates. Suppress this diagnostic to proceed.
     }
 
     /// <summary>

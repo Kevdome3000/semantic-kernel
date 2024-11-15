@@ -3,10 +3,12 @@
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 
 
+[Experimental("SKEXP0020")]
 internal sealed class CreateCollectionRequest
 {
 

@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -8,7 +7,6 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents the result of a function call.
 /// </summary>
-[Experimental("SKEXP0001")]
 public sealed class FunctionResultContent : KernelContent
 {
     /// <summary>

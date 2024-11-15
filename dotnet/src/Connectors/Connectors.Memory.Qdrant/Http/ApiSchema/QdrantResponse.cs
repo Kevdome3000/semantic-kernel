@@ -1,13 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Qdrant;
-
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 /// <summary>
 /// Base class for Qdrant response schema.
 /// </summary>
+[Experimental("SKEXP0020")]
 internal abstract class QdrantResponse
 {
     /// <summary>

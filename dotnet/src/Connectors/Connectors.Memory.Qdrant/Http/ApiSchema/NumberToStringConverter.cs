@@ -3,11 +3,13 @@
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes: Used for Json Deserialization
+[Experimental("SKEXP0020")]
 internal sealed class NumberToStringConverter : JsonConverter<string>
 {
     public override string Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)

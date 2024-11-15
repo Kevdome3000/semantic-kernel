@@ -1,10 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Fluid;
-using Fluid.Ast;
-
-namespace Microsoft.SemanticKernel.PromptTemplates.Liquid;
-
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -12,33 +7,28 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using Fluid;
+using Fluid.Ast;
 
+namespace Microsoft.SemanticKernel.PromptTemplates.Liquid;
 
 /// <summary>
 /// Represents a Liquid prompt template.
 /// </summary>
 internal sealed partial class LiquidPromptTemplate : IPromptTemplate
 {
-
     private static readonly FluidParser s_parser = new();
-
     private static readonly TemplateOptions s_templateOptions = new()
     {
         MemberAccessStrategy = new UnsafeMemberAccessStrategy() { MemberNameStrategy = MemberNameStrategies.SnakeCase },
     };
 
     private const string ReservedString = "&#58;";
-
     private const string ColonString = ":";
-
     private const char LineEnding = '\n';
-
     private readonly PromptTemplateConfig _config;
-
     private readonly bool _allowDangerouslySetContent;
-
     private readonly IFluidTemplate _liquidTemplate;
-
     private readonly Dictionary<string, object> _inputVariables;
 
 #if NET
@@ -48,7 +38,6 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
     private static Regex RoleRegex() => s_roleRegex;
     private static readonly Regex s_roleRegex = new(@"(?<role>system|assistant|user|function):\s+", RegexOptions.Compiled);
 #endif
-
 
     /// <summary>Initializes the <see cref="LiquidPromptTemplate"/>.</summary>
     /// <param name="config">Prompt template configuration</param>
@@ -61,7 +50,6 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
     {
         Verify.NotNull(config, nameof(config));
         Verify.NotNull(config.Template, nameof(config.Template));
-
         if (config.TemplateFormat != LiquidPromptTemplateFactory.LiquidTemplateFormat)
         {
             throw new ArgumentException($"Invalid template format: {config.TemplateFormat}");
@@ -74,9 +62,9 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
         // avoid having to parse on each render.
         if (!s_parser.TryParse(config.Template, out this._liquidTemplate, out string error))
         {
-            throw new ArgumentException(error is not null
-                ? $"The template could not be parsed:{Environment.NewLine}{error}"
-                : "The template could not be parsed.");
+            throw new ArgumentException(error is not null ?
+                $"The template could not be parsed:{Environment.NewLine}{error}" :
+                 "The template could not be parsed.");
         }
 
         // Ideally the prompty author would have explicitly specified input variables. If they specified any,
@@ -93,7 +81,6 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
         // Configure _inputVariables with the default values from the config. This will be used
         // in RenderAsync to seed the arguments used when evaluating the template.
         this._inputVariables = [];
-
         foreach (var p in config.InputVariables)
         {
             if (p.Default is not null)
@@ -102,7 +89,6 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
             }
         }
     }
-
 
     /// <inheritdoc/>
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
@@ -123,8 +109,7 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
         // <message role="system|assistant|user|function">
         // xxxx
         // </message>
-        var splits = RoleRegex().
-            Split(renderedResult);
+        var splits = RoleRegex().Split(renderedResult);
 
         // if no role is found, return the entire text
         if (splits.Length > 1)
@@ -138,41 +123,29 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
             // ...
             // we will iterate through the array and create a new string with the following format
             var sb = new StringBuilder();
-
             for (var i = 1; i < splits.Length; i += 2)
             {
                 var role = splits[i];
                 var content = splits[i + 1];
                 content = this.Encoding(content);
-
-                sb.Append("<message role=\"").
-                    Append(role).
-                    Append("\">").
-                    Append(LineEnding);
-
-                sb.Append(content).
-                    Append(LineEnding);
-
-                sb.Append("</message>").
-                    Append(LineEnding);
+                sb.Append("<message role=\"").Append(role).Append("\">").Append(LineEnding);
+                sb.Append(content).Append(LineEnding);
+                sb.Append("</message>").Append(LineEnding);
             }
 
-            renderedResult = sb.ToString().
-                TrimEnd();
+            renderedResult = sb.ToString().TrimEnd();
         }
 
         return renderedResult;
     }
 
-
+    #region Private
     private string Encoding(string text)
     {
         text = this.ReplaceReservedStringBackToColonIfNeeded(text);
         text = HttpUtility.HtmlEncode(text);
-
         return text;
     }
-
 
     private string ReplaceReservedStringBackToColonIfNeeded(string text)
     {
@@ -183,7 +156,6 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
 
         return text.Replace(ReservedString, ColonString);
     }
-
 
     /// <summary>
     /// Gets the variables for the prompt template, including setting any default values from the prompt config.
@@ -209,11 +181,9 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
                 if (kvp.Value is not null)
                 {
                     var value = (object)kvp.Value;
-
                     if (this.ShouldReplaceColonToReservedString(this._config, kvp.Key, kvp.Value))
                     {
-                        ctx.SetValue(kvp.Key, value.ToString()?.
-                            Replace(ColonString, ReservedString));
+                        ctx.SetValue(kvp.Key, value.ToString()?.Replace(ColonString, ReservedString));
                     }
                     else
                     {
@@ -225,7 +195,6 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
 
         return ctx;
     }
-
 
     private bool ShouldReplaceColonToReservedString(PromptTemplateConfig promptTemplateConfig, string propertyName, object? propertyValue)
     {
@@ -245,7 +214,6 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
         return true;
     }
 
-
     /// <summary>
     /// Visitor for <see cref="IFluidTemplate"/> looking for variables that are only
     /// ever read and appear to represent very simple strings. If any variables
@@ -255,20 +223,15 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
     /// </summary>
     private sealed class SimpleVariablesVisitor : AstVisitor
     {
-
         private readonly HashSet<string> _variables = new(StringComparer.OrdinalIgnoreCase);
-
         private readonly Stack<Statement> _statementStack = new();
-
         private bool _valid = true;
-
 
         public static HashSet<string> InferInputs(IFluidTemplate template)
         {
             var visitor = new SimpleVariablesVisitor();
 
             visitor.VisitTemplate(template);
-
             if (!visitor._valid)
             {
                 visitor._variables.Clear();
@@ -276,7 +239,6 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
 
             return visitor._variables;
         }
-
 
         public override Statement Visit(Statement statement)
         {
@@ -286,7 +248,6 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
             }
 
             this._statementStack.Push(statement);
-
             try
             {
                 return base.Visit(statement);
@@ -296,7 +257,6 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
                 this._statementStack.Pop();
             }
         }
-
 
         protected override Expression VisitMemberExpression(MemberExpression memberExpression)
         {
@@ -311,7 +271,6 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
                         case ForStatement:
                         case AssignStatement assign when string.Equals(id.Identifier, assign.Identifier, StringComparison.OrdinalIgnoreCase):
                             isValid = false;
-
                             break;
                     }
                 }
@@ -319,17 +278,14 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
                 if (isValid)
                 {
                     this._variables.Add(id.Identifier);
-
                     return base.VisitMemberExpression(memberExpression);
                 }
             }
 
             // Found something unsupported. Bail.
             this._valid = false;
-
             return memberExpression;
         }
-
     }
-
+    #endregion
 }

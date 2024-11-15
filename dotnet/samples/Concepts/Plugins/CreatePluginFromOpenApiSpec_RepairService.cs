@@ -12,7 +12,6 @@ namespace Plugins;
 /// </summary>
 public sealed class CreatePluginFromOpenApiSpec_RepairService(ITestOutputHelper output) : BaseTest(output)
 {
-
     [Fact]
     public async Task ShowCreatingRepairServicePluginAsync()
     {
@@ -25,7 +24,6 @@ public sealed class CreatePluginFromOpenApiSpec_RepairService(ITestOutputHelper 
             "RepairService",
             stream,
             new OpenApiFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = false });
-
         kernel.Plugins.Add(plugin);
 
         var arguments = new KernelArguments
@@ -34,15 +32,11 @@ public sealed class CreatePluginFromOpenApiSpec_RepairService(ITestOutputHelper 
         };
 
         // Create Repair
-        var result = await plugin["createRepair"].
-            InvokeAsync(kernel, arguments);
-
+        var result = await plugin["createRepair"].InvokeAsync(kernel, arguments);
         Console.WriteLine(result.ToString());
 
         // List All Repairs
-        result = await plugin["listRepairs"].
-            InvokeAsync(kernel, arguments);
-
+        result = await plugin["listRepairs"].InvokeAsync(kernel);
         var repairs = JsonSerializer.Deserialize<Repair[]>(result.ToString());
         Assert.True(repairs?.Length > 0);
         var id = repairs[repairs.Length - 1].Id;
@@ -53,9 +47,7 @@ public sealed class CreatePluginFromOpenApiSpec_RepairService(ITestOutputHelper 
             ["payload"] = $"{{ \"id\": {id}, \"assignedTo\": \"Karin Blair\", \"date\": \"2024-04-16\", \"image\": \"https://www.howmuchisit.org/wp-content/uploads/2011/01/oil-change.jpg\" }}"
         };
 
-        result = await plugin["updateRepair"].
-            InvokeAsync(kernel, arguments);
-
+        result = await plugin["updateRepair"].InvokeAsync(kernel, arguments);
         Console.WriteLine(result.ToString());
 
         // Delete Repair
@@ -64,16 +56,12 @@ public sealed class CreatePluginFromOpenApiSpec_RepairService(ITestOutputHelper 
             ["payload"] = $"{{ \"id\": {id} }}"
         };
 
-        result = await plugin["deleteRepair"].
-            InvokeAsync(kernel, arguments);
-
+        result = await plugin["deleteRepair"].InvokeAsync(kernel, arguments);
         Console.WriteLine(result.ToString());
     }
 
-
     private sealed class Repair
     {
-
         [JsonPropertyName("id")]
         public int? Id { get; set; }
 
@@ -91,7 +79,5 @@ public sealed class CreatePluginFromOpenApiSpec_RepairService(ITestOutputHelper 
 
         [JsonPropertyName("image")]
         public string? Image { get; set; }
-
     }
-
 }

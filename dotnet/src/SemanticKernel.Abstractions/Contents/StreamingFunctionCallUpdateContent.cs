@@ -1,13 +1,11 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents a function streaming call requested by LLM.
 /// </summary>
-[Experimental("SKEXP0001")]
 public class StreamingFunctionCallUpdateContent : StreamingKernelContent
 {
     /// <summary>

@@ -8,7 +8,7 @@ using System.Net.Http;
 /// <summary>
 /// API manifest plugin parameters.
 /// </summary>
-public class ApiManifestPluginParameters
+public sealed class ApiManifestPluginParameters
 {
 
     /// <summary>

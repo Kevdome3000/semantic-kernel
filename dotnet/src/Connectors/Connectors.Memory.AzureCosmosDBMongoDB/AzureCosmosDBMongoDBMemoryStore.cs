@@ -4,6 +4,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -18,6 +19,7 @@ using MongoDB.Driver;
 /// An implementation of <see cref="IMemoryStore"/> backed by a Azure CosmosDB Mongo vCore database.
 /// Get more details about Azure Cosmos Mongo vCore vector search  https://learn.microsoft.com/en-us/azure/cosmos-db/mongodb/vcore/vector-search
 /// </summary>
+[Experimental("SKEXP0020")]
 public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
 {
 

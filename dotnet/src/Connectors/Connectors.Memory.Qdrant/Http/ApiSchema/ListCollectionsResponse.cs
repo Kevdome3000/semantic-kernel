@@ -3,9 +3,11 @@
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes: Used for Json Deserialization
+[Experimental("SKEXP0020")]
 internal sealed class ListCollectionsResponse : QdrantResponse
 {
 

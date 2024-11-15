@@ -1,16 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Functions.UnitTests.OpenApi;
-
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Plugins.OpenApi;
-using TestResponses;
+using SemanticKernel.Functions.UnitTests.OpenApi.TestResponses;
 using Xunit;
 
+namespace SemanticKernel.Functions.UnitTests.OpenApi;
 
 public class RestApiOperationResponseTests
 {
-
     [Fact]
     public void ItShouldValidateStringContentWithNoSchema()
     {
@@ -24,7 +21,6 @@ public class RestApiOperationResponseTests
         Assert.True(result);
     }
 
-
     [Fact]
     public void ItShouldValidateByteContentTWithNoSchema()
     {
@@ -37,7 +33,6 @@ public class RestApiOperationResponseTests
         //Assert
         Assert.True(result);
     }
-
 
     [Theory]
     [InlineData("fake-content", "application/json", "{\"type\": \"string\"}")]
@@ -55,7 +50,6 @@ public class RestApiOperationResponseTests
         //Assert
         Assert.False(result);
     }
-
 
     [Theory]
     [InlineData("\"fake-content\"", "application/json", "{\"type\": \"string\"}")]
@@ -75,7 +69,6 @@ public class RestApiOperationResponseTests
         Assert.True(result);
     }
 
-
     [Theory]
     [InlineData("ValidProductContent.json", "application/json", "ObjectResponseSchema.json")]
     [InlineData("ValidProductContent.json", "application/json", "ProductResponseSchema.json")]
@@ -92,7 +85,6 @@ public class RestApiOperationResponseTests
         //Assert
         Assert.True(result);
     }
-
 
     [Theory]
     [InlineData("NotProductContent.json", "application/json", "ProductResponseSchema.json")]
@@ -111,7 +103,6 @@ public class RestApiOperationResponseTests
         Assert.False(result);
     }
 
-
     [Theory]
     [InlineData(null, "")]
     [InlineData("content", "content")]
@@ -126,5 +117,4 @@ public class RestApiOperationResponseTests
         // Assert
         Assert.Equal(expectedContent, result);
     }
-
 }

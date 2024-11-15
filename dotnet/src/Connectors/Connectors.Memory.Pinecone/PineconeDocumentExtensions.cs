@@ -4,6 +4,7 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.Json;
 using Memory;
@@ -12,6 +13,7 @@ using Memory;
 /// <summary>
 /// Extensions for <see cref="PineconeDocument"/> class.
 /// </summary>
+[Experimental("SKEXP0020")]
 public static class PineconeDocumentExtensions
 {
 

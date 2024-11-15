@@ -4,8 +4,10 @@ namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 
+[Experimental("SKEXP0020")]
 internal class WeaviateObject
 {
     public string? Id { get; set; }

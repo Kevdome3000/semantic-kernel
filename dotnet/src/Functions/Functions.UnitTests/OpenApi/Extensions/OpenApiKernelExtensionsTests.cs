@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Functions.UnitTests.OpenApi;
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -13,13 +11,13 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
-using TestPlugins;
+using SemanticKernel.Functions.UnitTests.OpenApi.TestPlugins;
 using Xunit;
 
+namespace SemanticKernel.Functions.UnitTests.OpenApi;
 
 public sealed class OpenApiKernelExtensionsTests : IDisposable
 {
-
     /// <summary>
     /// System under test - an instance of OpenApiDocumentParser class.
     /// </summary>
@@ -40,7 +38,6 @@ public sealed class OpenApiKernelExtensionsTests : IDisposable
     /// </summary>
     private readonly Kernel _kernel;
 
-
     /// <summary>
     /// Creates an instance of a <see cref="OpenApiKernelExtensionsTests"/> class.
     /// </summary>
@@ -54,7 +51,6 @@ public sealed class OpenApiKernelExtensionsTests : IDisposable
 
         this._sut = new OpenApiDocumentParser();
     }
-
 
     [Fact]
     public async Task ItCanIncludeOpenApiOperationParameterTypesIntoFunctionParametersViewAsync()
@@ -71,22 +67,15 @@ public sealed class OpenApiKernelExtensionsTests : IDisposable
 
         var secretNameParameter = functionView.Parameters.First(p => p.Name == "secret_name");
         Assert.NotNull(secretNameParameter.Schema);
-
-        Assert.Equal("string", secretNameParameter.Schema!.RootElement.GetProperty("type").
-            GetString());
+        Assert.Equal("string", secretNameParameter.Schema!.RootElement.GetProperty("type").GetString());
 
         var apiVersionParameter = functionView.Parameters.First(p => p.Name == "api_version");
-
-        Assert.Equal("string", apiVersionParameter.Schema!.RootElement.GetProperty("type").
-            GetString());
+        Assert.Equal("string", apiVersionParameter.Schema!.RootElement.GetProperty("type").GetString());
 
         var payloadParameter = functionView.Parameters.First(p => p.Name == "payload");
         Assert.NotNull(payloadParameter.Schema);
-
-        Assert.Equal("object", payloadParameter.Schema!.RootElement.GetProperty("type").
-            GetString());
+        Assert.Equal("object", payloadParameter.Schema!.RootElement.GetProperty("type").GetString());
     }
-
 
     [Theory]
     [InlineData(true)]
@@ -128,7 +117,6 @@ public sealed class OpenApiKernelExtensionsTests : IDisposable
         Assert.StartsWith(ServerUrlOverride, messageHandlerStub.RequestUri.AbsoluteUri, StringComparison.Ordinal);
     }
 
-
     [Theory]
     [InlineData("documentV2_0.json")]
     [InlineData("documentV3_0.json")]
@@ -159,7 +147,6 @@ public sealed class OpenApiKernelExtensionsTests : IDisposable
         Assert.NotNull(messageHandlerStub.RequestUri);
         Assert.StartsWith(ServerUrlFromDocument, messageHandlerStub.RequestUri.AbsoluteUri, StringComparison.Ordinal);
     }
-
 
     [Theory]
     [InlineData("http://localhost:3001/openapi.json", "http://localhost:3001/", "documentV2_0.json")]
@@ -199,7 +186,6 @@ public sealed class OpenApiKernelExtensionsTests : IDisposable
         Assert.StartsWith(expectedServerUrl, messageHandlerStub.RequestUri.AbsoluteUri, StringComparison.Ordinal);
     }
 
-
     [Fact]
     public async Task ItShouldRespectRunAsyncCancellationTokenOnExecutionAsync()
     {
@@ -211,12 +197,10 @@ public sealed class OpenApiKernelExtensionsTests : IDisposable
 
         this._executionParameters.HttpClient = httpClient;
 
-        var fakePlugin = new FakePlugin();
-
         using var registerCancellationToken = new System.Threading.CancellationTokenSource();
         using var executeCancellationToken = new System.Threading.CancellationTokenSource();
 
-        var openApiPlugins = await this._kernel.ImportPluginFromOpenApiAsync("fakePlugin", this._openApiDocument, this._executionParameters, registerCancellationToken.Token);
+        var openApiPlugin = await this._kernel.ImportPluginFromOpenApiAsync("fakePlugin", this._openApiDocument, this._executionParameters, registerCancellationToken.Token);
 
         var kernel = new Kernel();
 
@@ -228,7 +212,7 @@ public sealed class OpenApiKernelExtensionsTests : IDisposable
 
         // Act
         registerCancellationToken.Cancel();
-        var result = await kernel.InvokeAsync(openApiPlugins["GetSecret"], arguments, executeCancellationToken.Token);
+        var result = await kernel.InvokeAsync(openApiPlugin["GetSecret"], arguments, executeCancellationToken.Token);
 
         // Assert
         Assert.NotNull(result);
@@ -239,7 +223,6 @@ public sealed class OpenApiKernelExtensionsTests : IDisposable
         Assert.NotNull(response);
         Assert.Equal("fake-content", response.Content);
     }
-
 
     [Fact]
     public async Task ItShouldSanitizeOperationNameAsync()
@@ -259,7 +242,6 @@ public sealed class OpenApiKernelExtensionsTests : IDisposable
         Assert.True(plugin.TryGetFunction("IssuesCreatemilestone", out var _));
     }
 
-
     [Fact]
     public async Task ItCanIncludeOpenApiDeleteAndPatchOperationsAsync()
     {
@@ -276,7 +258,6 @@ public sealed class OpenApiKernelExtensionsTests : IDisposable
         AssertPayloadParameters(plugin, "updateRepair");
         AssertPayloadParameters(plugin, "deleteRepair");
     }
-
 
     [Theory]
     [InlineData("documentV2_0.json")]
@@ -311,8 +292,8 @@ public sealed class OpenApiKernelExtensionsTests : IDisposable
         Assert.Equal(["https://my-key-vault.vault.azure.net"], serverUrls);
         var info = additionalProperties["info"] as RestApiInfo;
         Assert.NotNull(info);
-        var security = additionalProperties["info"] as List<RestApiSecurityRequirement>;
-        Assert.Null(security);
+        var security = additionalProperties["security"] as List<RestApiSecurityRequirement>;
+        Assert.NotNull(security);
 
         // Assert Operation Extension keys
         var operationExtensions = additionalProperties["operation-extensions"] as Dictionary<string, object?>;
@@ -330,12 +311,94 @@ public sealed class OpenApiKernelExtensionsTests : IDisposable
         Assert.Contains("x-object-extension", nonNullOperationExtensions.Keys);
     }
 
+    [Fact]
+    public void ItCreatesPluginFromOpenApiSpecificationModel()
+    {
+        // Arrange
+        var info = new RestApiInfo() { Description = "api-description", Title = "api-title", Version = "7.0" };
+
+        var securityRequirements = new List<RestApiSecurityRequirement>
+        {
+            new(new Dictionary<RestApiSecurityScheme, IList<string>> { { new RestApiSecurityScheme(), new List<string>() } })
+        };
+
+        var operations = new List<RestApiOperation>
+        {
+            new (
+                id: "operation1",
+                servers: [],
+                path: "path",
+                method: HttpMethod.Get,
+                description: "operation-description",
+                parameters: [],
+                responses: new Dictionary<string, RestApiExpectedResponse>(),
+                securityRequirements: [],
+                payload: null)
+        };
+
+        var specification = new RestApiSpecification(info, securityRequirements, operations);
+
+        // Act
+        var plugin = this._kernel.CreatePluginFromOpenApi("fakePlugin", specification, this._executionParameters);
+
+        // Assert
+        Assert.Single(plugin);
+        Assert.Equal("api-description", plugin.Description);
+        Assert.Equal("fakePlugin", plugin.Name);
+
+        var function = plugin["operation1"];
+        Assert.Equal("operation1", function.Name);
+        Assert.Equal("operation-description", function.Description);
+        Assert.Same(operations[0], function.Metadata.AdditionalProperties["operation"]);
+    }
+
+    [Fact]
+    public void ItImportPluginFromOpenApiSpecificationModel()
+    {
+        // Arrange
+        var info = new RestApiInfo() { Description = "api-description", Title = "api-title", Version = "7.0" };
+
+        var securityRequirements = new List<RestApiSecurityRequirement>
+        {
+            new(new Dictionary<RestApiSecurityScheme, IList<string>> { { new RestApiSecurityScheme(), new List<string>() } })
+        };
+
+        var operations = new List<RestApiOperation>
+        {
+            new (
+                id: "operation1",
+                servers: [],
+                path: "path",
+                method: HttpMethod.Get,
+                description: "operation-description",
+                parameters: [],
+                responses: new Dictionary<string, RestApiExpectedResponse>(),
+                securityRequirements: [],
+                payload: null)
+        };
+
+        var specification = new RestApiSpecification(info, securityRequirements, operations);
+
+        // Act
+        this._kernel.ImportPluginFromOpenApi("fakePlugin", specification, this._executionParameters);
+
+        // Assert
+        var plugin = Assert.Single(this._kernel.Plugins);
+
+        Assert.Single(plugin);
+        Assert.Equal("api-description", plugin.Description);
+        Assert.Equal("fakePlugin", plugin.Name);
+
+        var function = plugin["operation1"];
+        Assert.Equal("operation1", function.Name);
+        Assert.Equal("operation-description", function.Description);
+        Assert.Same(operations[0], function.Metadata.AdditionalProperties["operation"]);
+    }
 
     public void Dispose()
     {
         this._openApiDocument.Dispose();
     }
-
 
     #region private ================================================================================
 
@@ -348,7 +411,6 @@ public sealed class OpenApiKernelExtensionsTests : IDisposable
         Assert.Equal("content_type", function.Metadata.Parameters[1].Name);
     }
 
-
     private KernelArguments GetFakeFunctionArguments()
     {
         return new KernelArguments
@@ -360,22 +422,5 @@ public sealed class OpenApiKernelExtensionsTests : IDisposable
         };
     }
 
-
-    private sealed class FakePlugin
-    {
-
-        public string? ParameterValueFakeMethodCalledWith { get; private set; }
-
-
-        [KernelFunction]
-        public void DoFakeAction(string parameter)
-        {
-            this.ParameterValueFakeMethodCalledWith = parameter;
-        }
-
-    }
-
     #endregion
-
-
 }

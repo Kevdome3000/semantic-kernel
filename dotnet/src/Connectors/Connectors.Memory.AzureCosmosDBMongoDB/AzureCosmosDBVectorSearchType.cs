@@ -1,20 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+using MongoDB.Bson.Serialization.Attributes;
 
 // ReSharper disable InconsistentNaming
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 
-using System.Reflection;
-using MongoDB.Bson.Serialization.Attributes;
-
-
 /// <summary>
 /// Type of vector index to create. The options are vector-ivf and vector-hnsw.
 /// </summary>
+[Experimental("SKEXP0020")]
 public enum AzureCosmosDBVectorSearchType
 {
-
     /// <summary>
     /// vector-ivf is available on all cluster tiers
     /// </summary>
@@ -26,20 +24,14 @@ public enum AzureCosmosDBVectorSearchType
     /// </summary>
     [BsonElement("vector-hnsw")]
     VectorHNSW
-
 }
 
-
+[Experimental("SKEXP0020")]
 internal static class AzureCosmosDBVectorSearchTypeExtensions
 {
-
     public static string GetCustomName(this AzureCosmosDBVectorSearchType type)
     {
-        var attribute = type.GetType().
-            GetField(type.ToString())?.
-            GetCustomAttribute<BsonElementAttribute>();
-
+        var attribute = type.GetType().GetField(type.ToString())?.GetCustomAttribute<BsonElementAttribute>();
         return attribute?.ElementName ?? type.ToString();
     }
-
 }

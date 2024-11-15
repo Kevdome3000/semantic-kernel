@@ -4,6 +4,7 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,6 +12,7 @@ using System.Threading.Tasks;
 /// <summary>
 /// Interface for a Pinecone client
 /// </summary>
+[Experimental("SKEXP0020")]
 public interface IPineconeClient
 {
     /// <summary>

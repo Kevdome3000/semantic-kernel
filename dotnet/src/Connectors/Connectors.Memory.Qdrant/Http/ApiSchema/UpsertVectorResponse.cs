@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Qdrant;
-
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel.Connectors.Qdrant;
+
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes: Used for Json Deserialization
+[Experimental("SKEXP0020")]
 internal sealed class UpsertVectorResponse : QdrantResponse
 {
     /// <summary>
@@ -12,7 +14,6 @@ internal sealed class UpsertVectorResponse : QdrantResponse
     /// </summary>
     [JsonPropertyName("result")]
     public UpdateResult Result { get; set; }
-
 
     /// <summary>
     /// Constructor
@@ -23,7 +24,6 @@ internal sealed class UpsertVectorResponse : QdrantResponse
     {
         this.Result = result;
     }
-
 
     internal sealed class UpdateResult
     {
