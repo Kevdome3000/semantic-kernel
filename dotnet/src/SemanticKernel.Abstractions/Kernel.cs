@@ -117,23 +117,11 @@ public sealed class Kernel
                 ? new KernelPluginCollection(_plugins)
             : null)
         {
-            FunctionInvoking = FunctionInvoking,
-            FunctionInvoked = FunctionInvoked,
-            PromptRendering = PromptRendering,
-            PromptRendered = PromptRendered,
-            _functionInvocationFilters = _functionInvocationFilters is { Count: > 0 }
-                ? new NonNullCollection<IFunctionInvocationFilter>(_functionInvocationFilters)
-                : null,
-            _promptRenderFilters = _promptRenderFilters is { Count: > 0 }
-                ? new NonNullCollection<IPromptRenderFilter>(_promptRenderFilters)
-                : null,
-            _autoFunctionInvocationFilters = _autoFunctionInvocationFilters is { Count: > 0 }
-                ? new NonNullCollection<IAutoFunctionInvocationFilter>(_autoFunctionInvocationFilters)
-                : null,
-            _data = _data is { Count: > 0 }
-                ? new Dictionary<string, object?>(_data)
-                : null,
-            _culture = _culture
+            _functionInvocationFilters = this._functionInvocationFilters is { Count: > 0 } ? new NonNullCollection<IFunctionInvocationFilter>(this._functionInvocationFilters) : null,
+            _promptRenderFilters = this._promptRenderFilters is { Count: > 0 } ? new NonNullCollection<IPromptRenderFilter>(this._promptRenderFilters) : null,
+            _autoFunctionInvocationFilters = this._autoFunctionInvocationFilters is { Count: > 0 } ? new NonNullCollection<IAutoFunctionInvocationFilter>(this._autoFunctionInvocationFilters) : null,
+            _data = this._data is { Count: > 0 } ? new Dictionary<string, object?>(this._data) : null,
+            _culture = this._culture,
         };
 
     /// <summary>
@@ -157,7 +145,6 @@ public sealed class Kernel
     /// <summary>
     /// Gets the collection of auto function invocation filters available through the kernel.
     /// </summary>
-    [Experimental("SKEXP0001")]
     public IList<IAutoFunctionInvocationFilter> AutoFunctionInvocationFilters =>
         _autoFunctionInvocationFilters ?? Interlocked.CompareExchange(ref _autoFunctionInvocationFilters, [], null) ?? _autoFunctionInvocationFilters;
 
@@ -659,6 +646,7 @@ public sealed class Kernel
 
     #region Obsolete
 
+#pragma warning disable CS0067 // The event is never used
     /// <summary>
     /// Provides an event that's raised prior to a function's invocation.
     /// </summary>
@@ -686,62 +674,7 @@ public sealed class Kernel
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/GettingStarted/Step7_Observability.cs of Semantic Kernel repository.")]
     public event EventHandler<PromptRenderedEventArgs>? PromptRendered;
-
-    [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/GettingStarted/Step7_Observability.cs of Semantic Kernel repository.")]
-    internal FunctionInvokingEventArgs? OnFunctionInvoking(KernelFunction function, KernelArguments arguments)
-    {
-        FunctionInvokingEventArgs? eventArgs = null;
-
-        if (FunctionInvoking is { } functionInvoking)
-        {
-            eventArgs = new FunctionInvokingEventArgs(function, arguments);
-            functionInvoking.Invoke(this, eventArgs);
-        }
-
-        return eventArgs;
-    }
-
-    [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/GettingStarted/Step7_Observability.cs of Semantic Kernel repository.")]
-    internal FunctionInvokedEventArgs? OnFunctionInvoked(KernelFunction function, KernelArguments arguments, FunctionResult result)
-    {
-        FunctionInvokedEventArgs? eventArgs = null;
-
-        if (FunctionInvoked is { } functionInvoked)
-        {
-            eventArgs = new FunctionInvokedEventArgs(function, arguments, result);
-            functionInvoked.Invoke(this, eventArgs);
-        }
-
-        return eventArgs;
-    }
-
-    [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/GettingStarted/Step7_Observability.cs of Semantic Kernel repository.")]
-    internal PromptRenderingEventArgs? OnPromptRendering(KernelFunction function, KernelArguments arguments)
-    {
-        PromptRenderingEventArgs? eventArgs = null;
-
-        if (PromptRendering is { } promptRendering)
-        {
-            eventArgs = new PromptRenderingEventArgs(function, arguments);
-            promptRendering.Invoke(this, eventArgs);
-        }
-
-        return eventArgs;
-    }
-
-    [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/GettingStarted/Step7_Observability.cs of Semantic Kernel repository.")]
-    internal PromptRenderedEventArgs? OnPromptRendered(KernelFunction function, KernelArguments arguments, string renderedPrompt)
-    {
-        PromptRenderedEventArgs? eventArgs = null;
-
-        if (PromptRendered is { } promptRendered)
-        {
-            eventArgs = new PromptRenderedEventArgs(function, arguments, renderedPrompt);
-            promptRendered.Invoke(this, eventArgs);
-        }
-
-        return eventArgs;
-    }
+#pragma warning disable CS0067 // The event is never used
 
     #endregion
 

@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
-
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -14,10 +12,11 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.Cosmos;
-using Http;
-using Memory;
+using Microsoft.Azure.Cosmos;
+using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.Memory;
 
+namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> backed by a Azure Cosmos DB database.
@@ -26,17 +25,12 @@ using Memory;
 [Experimental("SKEXP0020")]
 public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
 {
-
     private const string EmbeddingPath = "/embedding";
 
     private readonly CosmosClient _cosmosClient;
-
     private readonly VectorEmbeddingPolicy _vectorEmbeddingPolicy;
-
     private readonly IndexingPolicy _indexingPolicy;
-
     private readonly string _databaseName;
-
 
     /// <summary>
     /// Initiates a AzureCosmosDBNoSQLMemoryStore instance using a Azure Cosmos DB connection string
@@ -65,19 +59,18 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
                 }),
             databaseName,
             new VectorEmbeddingPolicy(
-            [
-                new Embedding
-                {
-                    DataType = vectorDataType,
-                    Dimensions = dimensions,
-                    DistanceFunction = DistanceFunction.Cosine,
-                    Path = EmbeddingPath,
-                }
-            ]),
+                [
+                    new Embedding
+                    {
+                        DataType = vectorDataType,
+                        Dimensions = (int)dimensions,
+                        DistanceFunction = DistanceFunction.Cosine,
+                        Path = EmbeddingPath,
+                    }
+                ]),
             new IndexingPolicy
             {
-                VectorIndexes = new Collection<VectorIndexPath>
-                {
+                VectorIndexes = new Collection<VectorIndexPath> {
                     new()
                     {
                         Path = EmbeddingPath,
@@ -87,7 +80,6 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
             })
     {
     }
-
 
     /// <summary>
     /// Initiates a AzureCosmosDBNoSQLMemoryStore instance using a Azure Cosmos DB connection string
@@ -118,7 +110,6 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
     {
     }
 
-
     /// <summary>
     /// Initiates a AzureCosmosDBNoSQLMemoryStore instance using a <see cref="CosmosClient"/> instance
     /// and other properties required for vector search.
@@ -135,36 +126,33 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         IndexingPolicy indexingPolicy)
     {
         var embedding = vectorEmbeddingPolicy.Embeddings.FirstOrDefault(e => e.Path == EmbeddingPath);
-
         if (embedding is null)
         {
             throw new InvalidOperationException($"""
-                                                 In order for {nameof(GetNearestMatchAsync)} to function, {nameof(vectorEmbeddingPolicy)} should
-                                                 contain an embedding path at {EmbeddingPath}. It's also recommended to include that path in the
-                                                 {nameof(indexingPolicy)} to improve performance and reduce cost for searches.
-                                                 """);
+                In order for {nameof(GetNearestMatchAsync)} to function, {nameof(vectorEmbeddingPolicy)} should
+                contain an embedding path at {EmbeddingPath}. It's also recommended to include that path in the
+                {nameof(indexingPolicy)} to improve performance and reduce cost for searches.
+                """);
         }
         else if (embedding.DistanceFunction != DistanceFunction.Cosine)
         {
             throw new InvalidOperationException($"""
-                                                 In order for {nameof(GetNearestMatchAsync)} to reliably return relevance information, the {nameof(DistanceFunction)} should
-                                                 be specified as {nameof(DistanceFunction)}.{nameof(DistanceFunction.Cosine)}.
-                                                 """);
+                In order for {nameof(GetNearestMatchAsync)} to reliably return relevance information, the {nameof(DistanceFunction)} should
+                be specified as {nameof(DistanceFunction)}.{nameof(DistanceFunction.Cosine)}.
+                """);
         }
-        else if (embedding.DataType != VectorDataType.Float16 && embedding.DataType != VectorDataType.Float32)
+        else if (embedding.DataType != VectorDataType.Float32)
         {
             throw new NotSupportedException($"""
-                                             Only {nameof(VectorDataType)}.{nameof(VectorDataType.Float16)} and {nameof(VectorDataType)}.{nameof(VectorDataType.Float32)}
-                                             are supported.
-                                             """);
+                Only {nameof(VectorDataType)}.{nameof(VectorDataType.Float32)}
+                are supported.
+                """);
         }
-
         this._cosmosClient = cosmosClient;
         this._databaseName = databaseName;
         this._vectorEmbeddingPolicy = vectorEmbeddingPolicy;
         this._indexingPolicy = indexingPolicy;
     }
-
 
     /// <inheritdoc/>
     public async Task CreateCollectionAsync(
@@ -172,42 +160,36 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         CancellationToken cancellationToken = default)
     {
         var databaseResponse = await this._cosmosClient.CreateDatabaseIfNotExistsAsync(
-                this._databaseName, cancellationToken: cancellationToken).
-            ConfigureAwait(false);
+            this._databaseName, cancellationToken: cancellationToken).ConfigureAwait(false);
 
         var containerProperties = new ContainerProperties(collectionName, "/key")
         {
             VectorEmbeddingPolicy = this._vectorEmbeddingPolicy,
             IndexingPolicy = this._indexingPolicy,
         };
-
         var containerResponse = await databaseResponse.Database.CreateContainerIfNotExistsAsync(
-                containerProperties,
-                cancellationToken: cancellationToken).
-            ConfigureAwait(false);
+            containerProperties,
+            cancellationToken: cancellationToken).ConfigureAwait(false);
     }
-
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<string> GetCollectionsAsync(
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         using var feedIterator = this.
-            _cosmosClient.GetDatabase(this._databaseName).
-            GetContainerQueryIterator<string>("SELECT VALUE(c.id) FROM c");
+            _cosmosClient
+            .GetDatabase(this._databaseName)
+            .GetContainerQueryIterator<string>("SELECT VALUE(c.id) FROM c");
 
         while (feedIterator.HasMoreResults)
         {
-            var next = await feedIterator.ReadNextAsync(cancellationToken).
-                ConfigureAwait(false);
-
+            var next = await feedIterator.ReadNextAsync(cancellationToken).ConfigureAwait(false);
             foreach (var containerName in next.Resource)
             {
                 yield return containerName;
             }
         }
     }
-
 
     /// <inheritdoc/>
     public async Task<bool> DoesCollectionExistAsync(
@@ -216,16 +198,14 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
     {
         var queryDefinition = new QueryDefinition("SELECT VALUE(c.id) FROM c WHERE c.id = @collectionName");
         queryDefinition.WithParameter("@collectionName", collectionName);
-
         using var feedIterator = this.
-            _cosmosClient.GetDatabase(this._databaseName).
-            GetContainerQueryIterator<string>(queryDefinition);
+            _cosmosClient
+            .GetDatabase(this._databaseName)
+            .GetContainerQueryIterator<string>(queryDefinition);
 
         while (feedIterator.HasMoreResults)
         {
-            var next = await feedIterator.ReadNextAsync(cancellationToken).
-                ConfigureAwait(false);
-
+            var next = await feedIterator.ReadNextAsync(cancellationToken).ConfigureAwait(false);
             foreach (var containerName in next.Resource)
             {
                 return true;
@@ -235,18 +215,17 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         return false;
     }
 
-
     /// <inheritdoc/>
     public async Task DeleteCollectionAsync(
         string collectionName,
         CancellationToken cancellationToken = default)
     {
-        await this._cosmosClient.GetDatabase(this._databaseName).
-            GetContainer(collectionName).
-            DeleteContainerAsync(cancellationToken: cancellationToken).
-            ConfigureAwait(false);
+        await this._cosmosClient
+            .GetDatabase(this._databaseName)
+            .GetContainer(collectionName)
+            .DeleteContainerAsync(cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
     }
-
 
     /// <inheritdoc/>
     public async Task<string> UpsertAsync(
@@ -257,18 +236,17 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         // In some cases we're expected to generate the key to use. Do so if one isn't provided.
         if (string.IsNullOrEmpty(record.Key))
         {
-            record.Key = Guid.NewGuid().
-                ToString();
+            record.Key = Guid.NewGuid().ToString();
         }
 
-        var result = await this._cosmosClient.GetDatabase(this._databaseName).
-            GetContainer(collectionName).
-            UpsertItemAsync(new MemoryRecordWithId(record), new PartitionKey(record.Key), cancellationToken: cancellationToken).
-            ConfigureAwait(false);
+        var result = await this._cosmosClient
+            .GetDatabase(this._databaseName)
+            .GetContainer(collectionName)
+            .UpsertItemAsync(new MemoryRecordWithId(record), new PartitionKey(record.Key), cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
 
         return record.Key;
     }
-
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<string> UpsertBatchAsync(
@@ -278,11 +256,10 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
     {
         foreach (var record in records)
         {
-            yield return await this.UpsertAsync(collectionName, record, cancellationToken).
-                ConfigureAwait(false);
+            yield return await this.UpsertAsync(collectionName, record, cancellationToken)
+                .ConfigureAwait(false);
         }
     }
-
 
     /// <inheritdoc/>
     public async Task<MemoryRecord?> GetAsync(
@@ -292,14 +269,14 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         CancellationToken cancellationToken = default)
     {
         // TODO: Consider using a query when `withEmbedding` is false to avoid passing it over the wire.
-        var result = await this._cosmosClient.GetDatabase(this._databaseName).
-            GetContainer(collectionName).
-            ReadItemAsync<MemoryRecord>(key, new PartitionKey(key), cancellationToken: cancellationToken).
-            ConfigureAwait(false);
+        var result = await this._cosmosClient
+         .GetDatabase(this._databaseName)
+         .GetContainer(collectionName)
+         .ReadItemAsync<MemoryRecord>(key, new PartitionKey(key), cancellationToken: cancellationToken)
+         .ConfigureAwait(false);
 
         return result.Resource;
     }
-
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(
@@ -309,53 +286,44 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         const string OR = " OR ";
-
         var queryStart = $"""
-                          SELECT x.id,x.key,x.metadata,x.timestamp{(withEmbeddings ? ",x.embedding" : "")}
-                          FROM x
-                          WHERE 
-                          """;
-
+            SELECT x.id,x.key,x.metadata,x.timestamp{(withEmbeddings ? ",x.embedding" : "")}
+            FROM x
+            WHERE 
+            """;
         // NOTE: Cosmos DB queries are limited to 512kB, so we'll break this into chunks
         // of around 500kB. We don't go all the way to 512kB so that we don't have to
         // remove the last clause we added once we go over.
         int keyIndex = 0;
         var keyList = keys.ToList();
-
         while (keyIndex < keyList.Count)
         {
             var length = queryStart.Length;
             var countThisBatch = 0;
             var whereClauses = new StringBuilder();
-
             for (int i = keyIndex; i < keyList.Count && length <= 500 * 1024; i++, countThisBatch++)
             {
                 string keyId = $"@key{i:D}";
                 var clause = $"(x.id = {keyId} AND x.key = {keyId})";
-
-                whereClauses.Append(clause).
-                    Append(OR);
-
+                whereClauses.Append(clause).Append(OR);
                 length += clause.Length + OR.Length + 4 + keyId.Length + Encoding.UTF8.GetByteCount(keyList[keyIndex]);
             }
-
             whereClauses.Length -= OR.Length;
 
             var queryDefinition = new QueryDefinition(queryStart + whereClauses);
-
             for (int i = keyIndex; i < keyIndex + countThisBatch; i++)
             {
                 queryDefinition.WithParameter($"@key{i:D}", keyList[i]);
             }
 
-            var feedIterator = this._cosmosClient.GetDatabase(this._databaseName).
-                GetContainer(collectionName).
-                GetItemQueryIterator<MemoryRecord>(queryDefinition);
+            var feedIterator = this._cosmosClient
+                .GetDatabase(this._databaseName)
+                .GetContainer(collectionName)
+                .GetItemQueryIterator<MemoryRecord>(queryDefinition);
 
             while (feedIterator.HasMoreResults)
             {
-                foreach (var memoryRecord in await feedIterator.ReadNextAsync(cancellationToken).
-                             ConfigureAwait(false))
+                foreach (var memoryRecord in await feedIterator.ReadNextAsync(cancellationToken).ConfigureAwait(false))
                 {
                     yield return memoryRecord;
                 }
@@ -365,19 +333,18 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         }
     }
 
-
     /// <inheritdoc/>
     public async Task RemoveAsync(
         string collectionName,
         string key,
         CancellationToken cancellationToken = default)
     {
-        var response = await this._cosmosClient.GetDatabase(this._databaseName).
-            GetContainer(collectionName).
-            DeleteItemAsync<MemoryRecord>(key, new PartitionKey(key), cancellationToken: cancellationToken).
-            ConfigureAwait(false);
+        var response = await this._cosmosClient
+            .GetDatabase(this._databaseName)
+            .GetContainer(collectionName)
+            .DeleteItemAsync<MemoryRecord>(key, new PartitionKey(key), cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
     }
-
 
     /// <inheritdoc/>
     public async Task RemoveBatchAsync(
@@ -387,13 +354,13 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
     {
         foreach (var key in keys)
         {
-            var response = await this._cosmosClient.GetDatabase(this._databaseName).
-                GetContainer(collectionName).
-                DeleteItemAsync<MemoryRecord>(key, new PartitionKey(key), cancellationToken: cancellationToken).
-                ConfigureAwait(false);
+            var response = await this._cosmosClient
+                .GetDatabase(this._databaseName)
+                .GetContainer(collectionName)
+                .DeleteItemAsync<MemoryRecord>(key, new PartitionKey(key), cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
         }
     }
-
 
     /// <inheritdoc/>
     public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(
@@ -403,16 +370,13 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         bool withEmbedding = false,
         CancellationToken cancellationToken = default)
     {
-        await foreach (var item in this.GetNearestMatchesAsync(collectionName, embedding, limit: 1, minRelevanceScore,
-                               withEmbedding, cancellationToken).
-                           ConfigureAwait(false))
+        await foreach (var item in this.GetNearestMatchesAsync(collectionName, embedding, limit: 1, minRelevanceScore, withEmbedding, cancellationToken).ConfigureAwait(false))
         {
             return item;
         }
 
         return null;
     }
-
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(
@@ -426,25 +390,23 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         // It would be nice to "WHERE" on the similarity score to stay above the `minRelevanceScore`, but alas
         // queries don't support that.
         var queryDefinition = new QueryDefinition($"""
-                                                   SELECT TOP @limit x.id,x.key,x.metadata,x.timestamp,{(withEmbeddings ? "x.embedding," : "")}VectorDistance(x.embedding, @embedding) AS SimilarityScore
-                                                   FROM x
-                                                   ORDER BY VectorDistance(x.embedding, @embedding)
-                                                   """);
-
+            SELECT TOP @limit x.id,x.key,x.metadata,x.timestamp,{(withEmbeddings ? "x.embedding," : "")}VectorDistance(x.embedding, @embedding) AS SimilarityScore
+            FROM x
+            ORDER BY VectorDistance(x.embedding, @embedding)
+            """);
         queryDefinition.WithParameter("@embedding", embedding);
         queryDefinition.WithParameter("@limit", limit);
 
-        var feedIterator = this._cosmosClient.GetDatabase(this._databaseName).
-            GetContainer(collectionName).
-            GetItemQueryIterator<MemoryRecordWithSimilarityScore>(queryDefinition);
+        var feedIterator = this._cosmosClient
+         .GetDatabase(this._databaseName)
+         .GetContainer(collectionName)
+         .GetItemQueryIterator<MemoryRecordWithSimilarityScore>(queryDefinition);
 
         while (feedIterator.HasMoreResults)
         {
-            foreach (var memoryRecord in await feedIterator.ReadNextAsync(cancellationToken).
-                         ConfigureAwait(false))
+            foreach (var memoryRecord in await feedIterator.ReadNextAsync(cancellationToken).ConfigureAwait(false))
             {
                 var relevanceScore = (memoryRecord.SimilarityScore + 1) / 2;
-
                 if (relevanceScore >= minRelevanceScore)
                 {
                     yield return (memoryRecord, relevanceScore);
@@ -452,7 +414,6 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
             }
         }
     }
-
 
     /// <summary>
     /// Disposes the <see cref="AzureCosmosDBNoSQLMemoryStore"/> instance.
@@ -462,7 +423,6 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         this.Dispose(true);
         GC.SuppressFinalize(this);
     }
-
 
     /// <summary>
     /// Disposes the resources used by the <see cref="AzureCosmosDBNoSQLMemoryStore"/> instance.
@@ -475,9 +435,7 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
             this._cosmosClient.Dispose();
         }
     }
-
 }
-
 
 /// <summary>
 /// Creates a new record with a similarity score.
@@ -496,20 +454,16 @@ internal sealed class MemoryRecordWithSimilarityScore(
     string? key,
     DateTimeOffset? timestamp = null) : MemoryRecord(metadata, embedding, key, timestamp)
 {
-
     /// <summary>
     /// The similarity score returned.
     /// </summary>
     public double SimilarityScore { get; set; }
 
-
     private string GetDebuggerDisplay()
     {
         return $"{this.Key} - {this.SimilarityScore}";
     }
-
 }
-
 
 /// <summary>
 /// Creates a new record that also serializes an "id" property.
@@ -518,7 +472,6 @@ internal sealed class MemoryRecordWithSimilarityScore(
 [DebuggerDisplay("{GetDebuggerDisplay()}")]
 internal sealed class MemoryRecordWithId : MemoryRecord
 {
-
     /// <summary>
     /// Creates a new record that also serializes an "id" property.
     /// </summary>
@@ -526,7 +479,6 @@ internal sealed class MemoryRecordWithId : MemoryRecord
         : base(source.Metadata, source.Embedding, source.Key, source.Timestamp)
     {
     }
-
 
     /// <summary>
     /// Creates a new record that also serializes an "id" property.
@@ -541,7 +493,6 @@ internal sealed class MemoryRecordWithId : MemoryRecord
     {
     }
 
-
     /// <summary>
     /// Serializes the <see cref="DataEntryBase.Key"/>property as "id".
     /// We do this because Azure Cosmos DB requires a property named "id" for
@@ -551,10 +502,8 @@ internal sealed class MemoryRecordWithId : MemoryRecord
     [JsonPropertyName("id")]
     public string Id => this.Key;
 
-
     private string GetDebuggerDisplay()
     {
         return this.Key;
     }
-
 }

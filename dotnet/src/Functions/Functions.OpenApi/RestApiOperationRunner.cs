@@ -48,15 +48,12 @@ internal sealed class RestApiOperationRunner
     /// <summary>
     /// A dictionary containing the content type as the key and the corresponding content reader as the value.
     /// </summary>
-    /// <remarks>
-    /// TODO: Pass cancelation tokes to the content readers.
-    /// </remarks>
     private static readonly Dictionary<string, HttpResponseContentReader> s_contentReaderByContentType = new()
     {
-        { "image", async (context, _) => await context.Response.Content.ReadAsByteArrayAndTranslateExceptionAsync().ConfigureAwait(false) },
-        { "text", async (context, _) => await context.Response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false) },
-        { "application/json", async (context, _) => await context.Response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false) },
-        { "application/xml", async (context, _) => await context.Response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false) }
+        { "image", async (context, cancellationToken) => await context.Response.Content.ReadAsByteArrayAndTranslateExceptionAsync(cancellationToken).ConfigureAwait(false) },
+        { "text", async (context, cancellationToken) => await context.Response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false) },
+        { "application/json", async (context, cancellationToken) => await context.Response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false)},
+        { "application/xml", async (context, cancellationToken) => await context.Response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false)}
     };
 
     /// <summary>
@@ -90,7 +87,6 @@ internal sealed class RestApiOperationRunner
     /// Custom HTTP response content reader.
     /// </summary>
     private readonly HttpResponseContentReader? _httpResponseContentReader;
-
 
     /// <summary>
     /// Creates an instance of the <see cref="RestApiOperationRunner"/> class.
@@ -135,7 +131,6 @@ internal sealed class RestApiOperationRunner
         };
     }
 
-
     /// <summary>
     /// Executes the specified <paramref name="operation"/> asynchronously, using the provided <paramref name="arguments"/>.
     /// </summary>
@@ -158,7 +153,6 @@ internal sealed class RestApiOperationRunner
 
         return this.SendAsync(url, operation.Method, headers, operationPayload.Payload, operationPayload.Content, operation.Responses.ToDictionary(item => item.Key, item => item.Value.Schema), options, cancellationToken);
     }
-
 
     #region private
 
@@ -274,7 +268,6 @@ internal sealed class RestApiOperationRunner
         }
     }
 
-
     /// <summary>
     /// Reads the response content of an HTTP request and creates an operation response.
     /// </summary>
@@ -309,7 +302,6 @@ internal sealed class RestApiOperationRunner
         };
     }
 
-
     /// <summary>
     /// Builds operation payload.
     /// </summary>
@@ -324,7 +316,6 @@ internal sealed class RestApiOperationRunner
         }
 
         var mediaType = operation.Payload?.MediaType;
-
         if (string.IsNullOrEmpty(mediaType))
         {
             if (!arguments.TryGetValue(RestApiOperation.ContentTypeArgumentName, out object? fallback) || fallback is not string mediaTypeFallback)
@@ -342,7 +333,6 @@ internal sealed class RestApiOperationRunner
 
         return payloadFactory.Invoke(operation.Payload, arguments);
     }
-
 
     /// <summary>
     /// Builds "application/json" payload.
@@ -374,7 +364,6 @@ internal sealed class RestApiOperationRunner
         return (content, new StringContent(content, Encoding.UTF8, MediaTypeApplicationJson));
     }
 
-
     /// <summary>
     /// Builds a JSON object from a list of RestAPI operation payload properties.
     /// </summary>
@@ -382,7 +371,7 @@ internal sealed class RestApiOperationRunner
     /// <param name="arguments">The arguments.</param>
     /// <param name="propertyNamespace">The namespace to add to the property name.</param>
     /// <returns>The JSON object.</returns>
-    private JsonObject BuildJsonObject(IReadOnlyList<RestApiPayloadProperty> properties, IDictionary<string, object?> arguments, string? propertyNamespace = null)
+    private JsonObject BuildJsonObject(IList<RestApiPayloadProperty> properties, IDictionary<string, object?> arguments, string? propertyNamespace = null)
     {
         var result = new JsonObject();
 
@@ -419,7 +408,6 @@ internal sealed class RestApiOperationRunner
         return result;
     }
 
-
     /// <summary>
     /// Gets the expected schema for the specified status code.
     /// </summary>
@@ -429,7 +417,6 @@ internal sealed class RestApiOperationRunner
     private static KernelJsonSchema? GetExpectedSchema(IDictionary<string, KernelJsonSchema?>? expectedSchemas, HttpStatusCode statusCode)
     {
         KernelJsonSchema? matchingResponse = null;
-
         if (expectedSchemas is not null)
         {
             var statusCodeKey = ((int)statusCode).ToString(CultureInfo.InvariantCulture);
@@ -447,7 +434,6 @@ internal sealed class RestApiOperationRunner
         return matchingResponse;
     }
 
-
     /// <summary>
     /// Builds "text/plain" payload.
     /// </summary>
@@ -463,7 +449,6 @@ internal sealed class RestApiOperationRunner
 
         return (payload, new StringContent(payload, Encoding.UTF8, MediaTypeTextPlain));
     }
-
 
     /// <summary>
     /// Retrieves the argument name for a payload property.
@@ -481,7 +466,6 @@ internal sealed class RestApiOperationRunner
         return string.IsNullOrEmpty(propertyNamespace) ? propertyName : $"{propertyNamespace}.{propertyName}";
     }
 
-
     /// <summary>
     /// Builds operation Url.
     /// </summary>
@@ -496,7 +480,6 @@ internal sealed class RestApiOperationRunner
 
         return new UriBuilder(url) { Query = operation.BuildQueryString(arguments) }.Uri;
     }
-
 
     /// <summary>
     /// Reads the HTTP content.
@@ -524,7 +507,6 @@ internal sealed class RestApiOperationRunner
             {
                 // Split the media type into a primary-type and a sub-type
                 var mediaTypeParts = mediaType.Split('/');
-
                 if (mediaTypeParts.Length != 2)
                 {
                     throw new KernelException($"The string `{mediaType}` is not a valid media type.");
@@ -555,6 +537,4 @@ internal sealed class RestApiOperationRunner
     }
 
     #endregion
-
-
 }

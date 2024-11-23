@@ -25,7 +25,6 @@ namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
 /// </summary>
 internal sealed class HuggingFaceMessageApiClient
 {
-
     private readonly HuggingFaceClient _clientCore;
 
     private static readonly string s_namespace = typeof(HuggingFaceChatCompletionService).Namespace!;
@@ -62,7 +61,6 @@ internal sealed class HuggingFaceMessageApiClient
             unit: "{token}",
             description: "Number of total tokens used");
 
-
     internal HuggingFaceMessageApiClient(
         HttpClient httpClient,
         string? modelId = null,
@@ -78,11 +76,10 @@ internal sealed class HuggingFaceMessageApiClient
             logger);
     }
 
-
     internal async IAsyncEnumerable<StreamingChatMessageContent> StreamCompleteChatMessageAsync(
-        ChatHistory chatHistory,
-        PromptExecutionSettings? executionSettings,
-        [EnumeratorCancellation] CancellationToken cancellationToken)
+      ChatHistory chatHistory,
+      PromptExecutionSettings? executionSettings,
+      [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         string? modelId = executionSettings?.ModelId ?? this._clientCore.ModelId;
         var endpoint = this.GetChatGenerationEndpoint();
@@ -92,46 +89,33 @@ internal sealed class HuggingFaceMessageApiClient
         var request = this.CreateChatRequest(chatHistory, huggingFaceExecutionSettings, modelId);
         request.Stream = true;
 
-        using var activity = ModelDiagnostics.StartCompletionActivity(endpoint, modelId ?? string.Empty, this._clientCore.ModelProvider, chatHistory,
-            huggingFaceExecutionSettings);
-
+        using var activity = ModelDiagnostics.StartCompletionActivity(endpoint, modelId ?? string.Empty, this._clientCore.ModelProvider, chatHistory, huggingFaceExecutionSettings);
         HttpResponseMessage? httpResponseMessage = null;
         Stream? responseStream = null;
-
         try
         {
             using var httpRequestMessage = this._clientCore.CreatePost(request, endpoint, this._clientCore.ApiKey);
-
-            httpResponseMessage = await this._clientCore.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken).
-                ConfigureAwait(false);
-
-            responseStream = await httpResponseMessage.Content.ReadAsStreamAndTranslateExceptionAsync().
-                ConfigureAwait(false);
+            httpResponseMessage = await this._clientCore.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+            responseStream = await httpResponseMessage.Content.ReadAsStreamAndTranslateExceptionAsync(cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
             activity?.SetError(ex);
             httpResponseMessage?.Dispose();
             responseStream?.Dispose();
-
             throw;
         }
 
-        var responseEnumerator = this.ProcessChatResponseStreamAsync(responseStream, modelId, cancellationToken).
-            GetAsyncEnumerator(cancellationToken);
-
-        List<StreamingChatMessageContent>? streamedContents = activity is not null
-            ? []
-            : null;
-
+        var responseEnumerator = this.ProcessChatResponseStreamAsync(responseStream, modelId, cancellationToken)
+            .GetAsyncEnumerator(cancellationToken);
+        List<StreamingChatMessageContent>? streamedContents = activity is not null ? [] : null;
         try
         {
             while (true)
             {
                 try
                 {
-                    if (!await responseEnumerator.MoveNextAsync().
-                            ConfigureAwait(false))
+                    if (!await responseEnumerator.MoveNextAsync().ConfigureAwait(false))
                     {
                         break;
                     }
@@ -139,12 +123,10 @@ internal sealed class HuggingFaceMessageApiClient
                 catch (Exception ex) when (activity is not null)
                 {
                     activity.SetError(ex);
-
                     throw;
                 }
 
                 streamedContents?.Add(responseEnumerator.Current);
-
                 yield return responseEnumerator.Current;
             }
         }
@@ -153,12 +135,9 @@ internal sealed class HuggingFaceMessageApiClient
             activity?.EndStreaming(streamedContents);
             httpResponseMessage?.Dispose();
             responseStream?.Dispose();
-
-            await responseEnumerator.DisposeAsync().
-                ConfigureAwait(false);
+            await responseEnumerator.DisposeAsync().ConfigureAwait(false);
         }
     }
-
 
     internal async Task<IReadOnlyList<ChatMessageContent>> CompleteChatMessageAsync(
         ChatHistory chatHistory,
@@ -171,24 +150,20 @@ internal sealed class HuggingFaceMessageApiClient
         var huggingFaceExecutionSettings = HuggingFacePromptExecutionSettings.FromExecutionSettings(executionSettings);
         var request = this.CreateChatRequest(chatHistory, huggingFaceExecutionSettings, modelId);
 
-        using var activity = ModelDiagnostics.StartCompletionActivity(endpoint, modelId ?? string.Empty, this._clientCore.ModelProvider, chatHistory,
-            huggingFaceExecutionSettings);
-
+        using var activity = ModelDiagnostics.StartCompletionActivity(endpoint, modelId ?? string.Empty, this._clientCore.ModelProvider, chatHistory, huggingFaceExecutionSettings);
         using var httpRequestMessage = this._clientCore.CreatePost(request, endpoint, this._clientCore.ApiKey);
 
         ChatCompletionResponse response;
-
         try
         {
-            string body = await this._clientCore.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken).
-                ConfigureAwait(false);
+            string body = await this._clientCore.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
+                .ConfigureAwait(false);
 
             response = HuggingFaceClient.DeserializeResponse<ChatCompletionResponse>(body);
         }
         catch (Exception ex) when (activity is not null)
         {
             activity.SetError(ex);
-
             throw;
         }
 
@@ -200,13 +175,11 @@ internal sealed class HuggingFaceMessageApiClient
         return chatContents;
     }
 
-
     private void LogChatCompletionUsage(HuggingFacePromptExecutionSettings executionSettings, ChatCompletionResponse chatCompletionResponse)
     {
         if (chatCompletionResponse.Usage is null)
         {
             this._clientCore.Logger.LogDebug("Token usage information unavailable.");
-
             return;
         }
 
@@ -224,7 +197,6 @@ internal sealed class HuggingFaceMessageApiClient
         s_completionTokensCounter.Add(chatCompletionResponse.Usage.CompletionTokens);
         s_totalTokensCounter.Add(chatCompletionResponse.Usage.TotalTokens);
     }
-
 
     private static List<ChatMessageContent> GetChatMessageContentsFromResponse(ChatCompletionResponse response, string? modelId)
     {
@@ -258,11 +230,9 @@ internal sealed class HuggingFaceMessageApiClient
         return chatMessageContents;
     }
 
-
     private static StreamingChatMessageContent GetStreamingChatMessageContentFromStreamResponse(ChatCompletionStreamResponse response, string? modelId)
     {
         var choice = response.Choices?.FirstOrDefault();
-
         if (choice is not null)
         {
             var metadata = new HuggingFaceChatCompletionMetadata
@@ -277,9 +247,7 @@ internal sealed class HuggingFaceMessageApiClient
             };
 
             var streamChat = new StreamingChatMessageContent(
-                choice.Delta?.Role is not null
-                    ? new AuthorRole(choice.Delta.Role)
-                    : null,
+                choice.Delta?.Role is not null ? new AuthorRole(choice.Delta.Role) : null,
                 choice.Delta?.Content,
                 response,
                 choice.Index,
@@ -296,16 +264,13 @@ internal sealed class HuggingFaceMessageApiClient
         };
     }
 
-
     private async IAsyncEnumerable<StreamingChatMessageContent> ProcessChatResponseStreamAsync(Stream stream, string? modelId, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        await foreach (var content in this.ParseChatResponseStreamAsync(stream, cancellationToken).
-                           ConfigureAwait(false))
+        await foreach (var content in this.ParseChatResponseStreamAsync(stream, cancellationToken).ConfigureAwait(false))
         {
             yield return GetStreamingChatMessageContentFromStreamResponse(content, modelId);
         }
     }
-
 
     private ChatCompletionRequest CreateChatRequest(
         ChatHistory chatHistory,
@@ -322,16 +287,12 @@ internal sealed class HuggingFaceMessageApiClient
         }
 
         var request = ChatCompletionRequest.FromChatHistoryAndExecutionSettings(chatHistory, huggingFaceExecutionSettings, modelId);
-
         return request;
     }
-
 
     private IAsyncEnumerable<ChatCompletionStreamResponse> ParseChatResponseStreamAsync(Stream responseStream, CancellationToken cancellationToken)
         => SseJsonParser.ParseAsync<ChatCompletionStreamResponse>(responseStream, cancellationToken);
 
-
     private Uri GetChatGenerationEndpoint()
         => new($"{this._clientCore.Endpoint}{this._clientCore.Separator}v1/chat/completions");
-
 }

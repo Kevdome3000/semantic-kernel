@@ -819,9 +819,10 @@ internal partial class FlowExecutor : IFlowExecutor
 
                 try
                 {
-                    await Task.Delay(this._config.MinIterationTimeMs).
+                    if (this._config.MinIterationTimeMs > 0)
+                    {await Task.Delay(this._config.MinIterationTimeMs).
                         ConfigureAwait(false);
-
+}
                     actionResult = await this._reActEngine.InvokeActionAsync(actionStep, input, chatHistory, kernel,
                             actionContextVariables).
                         ConfigureAwait(false);
@@ -925,9 +926,12 @@ internal partial class FlowExecutor : IFlowExecutor
                 this._logger?.LogWarning("Action: No action to take");
             }
 
-            // continue to next iteration
+            if (this._config.MinIterationTimeMs > 0)
+            {
+                // continue to next iteration
             await Task.Delay(this._config.MinIterationTimeMs).
                 ConfigureAwait(false);
+            }
         }
 
         throw new KernelException($"Failed to complete step {stepId} for session {sessionId}.");

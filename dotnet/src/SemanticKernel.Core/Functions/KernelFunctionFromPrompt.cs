@@ -241,13 +241,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             cancellationToken).
             ConfigureAwait(false);
 
-#pragma warning disable CS0612 // Events are deprecated
-        if (promptRenderingResult.RenderedEventArgs?.Cancel is true)
-        {
-            throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.PromptRendered)} event handler requested cancellation after prompt rendering.");
-        }
-#pragma warning restore CS0612 // Events are deprecated
-
         // Return function result if it was set in prompt filter.
         if (promptRenderingResult.FunctionResult is not null)
         {
@@ -281,13 +274,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             isStreaming: true,
             cancellationToken).
             ConfigureAwait(false);
-
-#pragma warning disable CS0612 // Events are deprecated
-        if (result.RenderedEventArgs?.Cancel is true)
-        {
-            yield break;
-        }
-#pragma warning restore CS0612 // Events are deprecated
 
         IAsyncEnumerable<StreamingKernelContent>? asyncReference = null;
 
@@ -524,10 +510,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         Verify.NotNull(aiService);
 
-#pragma warning disable CS0618 // Events are deprecated
-        kernel.OnPromptRendering(this, arguments);
-#pragma warning restore CS0618 // Events are deprecated
-
         var renderingContext = await kernel.OnPromptRenderAsync(this, arguments, isStreaming, async (context) =>
             {
                 renderedPrompt = await this._promptTemplate.RenderAsync(kernel, context.Arguments, cancellationToken).
@@ -553,26 +535,9 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             }
         }
 
-#pragma warning disable CS0618 // Events are deprecated
-        var renderedEventArgs = kernel.OnPromptRendered(this, arguments, renderedPrompt);
-
-        if (renderedEventArgs is not null &&
-            !renderedEventArgs.Cancel &&
-            renderedEventArgs.RenderedPrompt != renderedPrompt)
-        {
-            renderedPrompt = renderedEventArgs.RenderedPrompt;
-
-            if (this._logger.IsEnabled(LogLevel.Trace))
-            {
-                this._logger.LogTrace("Rendered prompt changed by event handler: {Prompt}", renderedEventArgs.RenderedPrompt);
-            }
-        }
-#pragma warning restore CS0618 // Events are deprecated
-
         return new(aiService, renderedPrompt)
         {
             ExecutionSettings = executionSettings,
-            RenderedEventArgs = renderedEventArgs,
             FunctionResult = renderingContext.Result
         };
     }
