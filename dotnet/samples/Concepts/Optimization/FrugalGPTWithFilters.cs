@@ -1,16 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Optimization;
-
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.InMemory;
 using Microsoft.SemanticKernel.Embeddings;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using Microsoft.SemanticKernel.Services;
 
+namespace Optimization;
 
 /// <summary>
 /// This example shows how to use FrugalGPT techniques to reduce cost and improve LLM-related task performance.
@@ -18,7 +18,6 @@ using Microsoft.SemanticKernel.Services;
 /// </summary>
 public sealed class FrugalGPTWithFilters(ITestOutputHelper output) : BaseTest(output)
 {
-
     /// <summary>
     /// One of the FrugalGPT techniques is to reduce prompt size when using few-shot prompts.
     /// If prompt contains a lof of examples to help LLM to provide the best result, it's possible to send only a couple of them to reduce amount of tokens.
@@ -55,30 +54,30 @@ public sealed class FrugalGPTWithFilters(ITestOutputHelper output) : BaseTest(ou
 
         // Initialize kernel with chat completion and embedding generation services.
         // It's possible to combine different models from different AI providers to achieve the lowest token usage.
-        var kernel = Kernel.CreateBuilder().
-            AddOpenAIChatCompletion(
+        var kernel = Kernel.CreateBuilder()
+            .AddOpenAIChatCompletion(
                 modelId: "gpt-4",
-                apiKey: TestConfiguration.OpenAI.ApiKey).
-            AddOpenAITextEmbeddingGeneration(
+                apiKey: TestConfiguration.OpenAI.ApiKey)
+            .AddOpenAITextEmbeddingGeneration(
                 modelId: "text-embedding-3-small",
-                apiKey: TestConfiguration.OpenAI.ApiKey).
-            Build();
+                apiKey: TestConfiguration.OpenAI.ApiKey)
+            .Build();
 
         // Initialize few-shot prompt.
         var function = kernel.CreateFunctionFromPrompt(
             new()
             {
                 Template =
-                    """
-                    Available classification labels: Personal, Work, Events, Notifications, Tasks
-                    Email classification examples:
-                    {{#each Examples}}
-                        {{this}}
-                    {{/each}}
+                """
+                Available classification labels: Personal, Work, Events, Notifications, Tasks
+                Email classification examples:
+                {{#each Examples}}
+                    {{this}}
+                {{/each}}
 
-                    Email body to classify:
-                    {{Request}}
-                    """,
+                Email body to classify:
+                {{Request}}
+                """,
                 TemplateFormat = "handlebars"
             },
             new HandlebarsPromptTemplateFactory()
@@ -95,27 +94,22 @@ public sealed class FrugalGPTWithFilters(ITestOutputHelper output) : BaseTest(ou
         var result = await kernel.InvokeAsync(function, arguments);
 
         Console.WriteLine(result); // Personal, Notifications
-
-        Console.WriteLine(result.Metadata?["Usage"]?.
-            AsJson()); // Total tokens: ~430
+        Console.WriteLine(result.Metadata?["Usage"]?.AsJson()); // Total tokens: ~430
 
         // Add few-shot prompt optimization filter.
         // The filter uses in-memory store for vector similarity search and text embedding generation service to generate embeddings.
-        var memoryStore = new VolatileMemoryStore();
+        var vectorStore = new InMemoryVectorStore();
         var textEmbeddingGenerationService = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
 
         // Register optimization filter.
-        kernel.PromptRenderFilters.Add(new FewShotPromptOptimizationFilter(memoryStore, textEmbeddingGenerationService));
+        kernel.PromptRenderFilters.Add(new FewShotPromptOptimizationFilter(vectorStore, textEmbeddingGenerationService));
 
         // Get result again and compare the usage.
         result = await kernel.InvokeAsync(function, arguments);
 
         Console.WriteLine(result); // Personal, Notifications
-
-        Console.WriteLine(result.Metadata?["Usage"]?.
-            AsJson()); // Total tokens: ~150
+        Console.WriteLine(result.Metadata?["Usage"]?.AsJson()); // Total tokens: ~150
     }
-
 
     /// <summary>
     /// LLM cascade technique allows to use multiple LLMs sequentially starting from cheaper model,
@@ -169,26 +163,23 @@ public sealed class FrugalGPTWithFilters(ITestOutputHelper output) : BaseTest(ou
         // Final result: Hey! I'm fine, thanks. How's your day going so far?
     }
 
-
     /// <summary>
     /// Few-shot prompt optimization filter which takes all examples from kernel arguments and selects first <see cref="TopN"/> examples,
     /// which are similar to original request.
     /// </summary>
     private sealed class FewShotPromptOptimizationFilter(
-        IMemoryStore memoryStore,
+        IVectorStore vectorStore,
         ITextEmbeddingGenerationService textEmbeddingGenerationService) : IPromptRenderFilter
     {
-
         /// <summary>
         /// Maximum number of examples to use which are similar to original request.
         /// </summary>
         private const int TopN = 5;
 
         /// <summary>
-        /// Collection name to use in memory store.
+        /// Collection name to use in vector store.
         /// </summary>
         private const string CollectionName = "examples";
-
 
         public async Task OnPromptRenderAsync(PromptRenderContext context, Func<PromptRenderContext, Task> next)
         {
@@ -198,42 +189,44 @@ public sealed class FrugalGPTWithFilters(ITestOutputHelper output) : BaseTest(ou
 
             if (examples is { Count: > 0 } && !string.IsNullOrEmpty(request))
             {
-                var memoryRecords = new List<MemoryRecord>();
+                var exampleRecords = new List<ExampleRecord>();
 
                 // Generate embedding for each example.
                 var embeddings = await textEmbeddingGenerationService.GenerateEmbeddingsAsync(examples);
 
-                // Create memory record instances with example text and embedding.
+                // Create vector store record instances with example text and embedding.
                 for (var i = 0; i < examples.Count; i++)
                 {
-                    memoryRecords.Add(MemoryRecord.LocalRecord(Guid.NewGuid().
-                        ToString(), examples[i], "description", embeddings[i]));
+                    exampleRecords.Add(new ExampleRecord
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Example = examples[i],
+                        ExampleEmbedding = embeddings[i]
+                    });
                 }
 
-                // Create collection and upsert all memory records for search.
+                // Create collection and upsert all vector store records for search.
                 // It's possible to do it only once and re-use the same examples for future requests.
-                await memoryStore.CreateCollectionAsync(CollectionName);
+                var collection = vectorStore.GetCollection<string, ExampleRecord>(CollectionName);
+                await collection.CreateCollectionIfNotExistsAsync(context.CancellationToken);
 
-                await memoryStore.UpsertBatchAsync(CollectionName, memoryRecords).
-                    ToListAsync();
+                await collection.UpsertBatchAsync(exampleRecords, cancellationToken: context.CancellationToken).ToListAsync(context.CancellationToken);
 
                 // Generate embedding for original request.
-                var requestEmbedding = await textEmbeddingGenerationService.GenerateEmbeddingAsync(request);
+                var requestEmbedding = await textEmbeddingGenerationService.GenerateEmbeddingAsync(request, cancellationToken: context.CancellationToken);
 
                 // Find top N examples which are similar to original request.
-                var topNExamples = await memoryStore.GetNearestMatchesAsync(CollectionName, requestEmbedding, TopN).
-                    ToListAsync();
+                var searchResults = await collection.VectorizedSearchAsync(requestEmbedding, new() { Top = TopN }, cancellationToken: context.CancellationToken);
+                var topNExamples = (await searchResults.Results.ToListAsync(context.CancellationToken)).Select(l => l.Record).ToList();
 
                 // Override arguments to use only top N examples, which will be sent to LLM.
-                context.Arguments["Examples"] = topNExamples.Select(l => l.Item1.Metadata.Text);
+                context.Arguments["Examples"] = topNExamples.Select(l => l.Example);
             }
 
             // Continue prompt rendering operation.
             await next(context);
         }
-
     }
-
 
     /// <summary>
     /// Example of LLM cascade filter which will invoke a function using multiple LLMs in specific order,
@@ -244,16 +237,17 @@ public sealed class FrugalGPTWithFilters(ITestOutputHelper output) : BaseTest(ou
         Predicate<string> acceptanceCriteria,
         ITestOutputHelper output) : IFunctionInvocationFilter
     {
-
         public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
         {
             // Get registered chat completion services from kernel.
-            var registeredServices = context.Kernel.GetAllServices<IChatCompletionService>().
-                Select(service => (ModelId: service.GetModelId()!, Service: service));
+            var registeredServices = context.Kernel
+                .GetAllServices<IChatCompletionService>()
+                .Select(service => (ModelId: service.GetModelId()!, Service: service));
 
             // Define order of execution.
-            var order = modelExecutionOrder.Select((value, index) => new { Value = value, Index = index }).
-                ToDictionary(k => k.Value, v => v.Index);
+            var order = modelExecutionOrder
+                .Select((value, index) => new { Value = value, Index = index })
+                .ToDictionary(k => k.Value, v => v.Index);
 
             // Sort services by specified order.
             var orderedServices = registeredServices.OrderBy(service => order[service.ModelId]);
@@ -282,7 +276,6 @@ public sealed class FrugalGPTWithFilters(ITestOutputHelper output) : BaseTest(ou
                 if (acceptanceCriteria(result))
                 {
                     output.WriteLine("Returning result as it meets the acceptance criteria.");
-
                     return;
                 }
 
@@ -294,18 +287,14 @@ public sealed class FrugalGPTWithFilters(ITestOutputHelper output) : BaseTest(ou
             // It's also possible to throw an exception in such cases if needed.
             // throw new Exception("Models didn't return a result that meets the acceptance criteria").
         }
-
     }
-
 
     /// <summary>
     /// Mock chat completion service for demonstration purposes.
     /// </summary>
     private sealed class MockChatCompletionService(string modelId, string mockResult) : IChatCompletionService
     {
-
         public IReadOnlyDictionary<string, object?> Attributes => new Dictionary<string, object?> { { AIServiceExtensions.ModelIdKey, modelId } };
-
 
         public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(
             ChatHistory chatHistory,
@@ -316,7 +305,6 @@ public sealed class FrugalGPTWithFilters(ITestOutputHelper output) : BaseTest(ou
             return Task.FromResult<IReadOnlyList<ChatMessageContent>>([new ChatMessageContent(AuthorRole.Assistant, mockResult)]);
         }
 
-
         public async IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(
             ChatHistory chatHistory,
             PromptExecutionSettings? executionSettings = null,
@@ -325,7 +313,17 @@ public sealed class FrugalGPTWithFilters(ITestOutputHelper output) : BaseTest(ou
         {
             yield return new StreamingChatMessageContent(AuthorRole.Assistant, mockResult);
         }
-
     }
 
+    private sealed class ExampleRecord
+    {
+        [VectorStoreRecordKey]
+        public string Id { get; set; }
+
+        [VectorStoreRecordData]
+        public string Example { get; set; }
+
+        [VectorStoreRecordVector]
+        public ReadOnlyMemory<float> ExampleEmbedding { get; set; }
+    }
 }
