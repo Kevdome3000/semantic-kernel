@@ -27,7 +27,8 @@ public sealed class GeminiRequestTests
             Temperature = 1.5,
             MaxTokens = 10,
             TopP = 0.9,
-            AudioTimestamp = true
+            AudioTimestamp = true,
+            ResponseMimeType = "application/json"
         };
 
         // Act
@@ -38,6 +39,7 @@ public sealed class GeminiRequestTests
         Assert.Equal(executionSettings.Temperature, request.Configuration.Temperature);
         Assert.Equal(executionSettings.MaxTokens, request.Configuration.MaxOutputTokens);
         Assert.Equal(executionSettings.AudioTimestamp, request.Configuration.AudioTimestamp);
+        Assert.Equal(executionSettings.ResponseMimeType, request.Configuration.ResponseMimeType);
         Assert.Equal(executionSettings.TopP, request.Configuration.TopP);
     }
 
@@ -95,7 +97,8 @@ public sealed class GeminiRequestTests
             Temperature = 1.5,
             MaxTokens = 10,
             TopP = 0.9,
-            AudioTimestamp = true
+            AudioTimestamp = true,
+            ResponseMimeType = "application/json"
         };
 
         // Act
@@ -106,6 +109,7 @@ public sealed class GeminiRequestTests
         Assert.Equal(executionSettings.Temperature, request.Configuration.Temperature);
         Assert.Equal(executionSettings.MaxTokens, request.Configuration.MaxOutputTokens);
         Assert.Equal(executionSettings.AudioTimestamp, request.Configuration.AudioTimestamp);
+        Assert.Equal(executionSettings.ResponseMimeType, request.Configuration.ResponseMimeType);
         Assert.Equal(executionSettings.TopP, request.Configuration.TopP);
     }
 

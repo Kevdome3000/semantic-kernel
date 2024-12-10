@@ -1,19 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Connectors.MistralAI.UnitTests;
-
+using System;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.MistralAI;
 using Xunit;
 
+namespace SemanticKernel.Connectors.MistralAI.UnitTests;
 
 /// <summary>
 /// Unit tests for <see cref="MistralAIPromptExecutionSettings"/>.
 /// </summary>
 public class MistralAIPromptExecutionSettingsTests
 {
-
     [Fact]
     public void FromExecutionSettingsWhenAlreadyMistralShouldReturnSame()
     {
@@ -26,7 +25,6 @@ public class MistralAIPromptExecutionSettingsTests
         // Assert
         Assert.Same(executionSettings, mistralExecutionSettings);
     }
-
 
     [Fact]
     public void FromExecutionSettingsWhenNullShouldReturnDefaultSettings()
@@ -45,21 +43,20 @@ public class MistralAIPromptExecutionSettingsTests
         Assert.Null(MistralExecutionSettings.RandomSeed);
     }
 
-
     [Fact]
     public void FromExecutionSettingsWhenSerializedHasPropertiesShouldPopulateSpecialized()
     {
         // Arrange
         string jsonSettings = """
-                              {
-                                  "temperature": 0.5,
-                                  "top_p": 0.9,
-                                  "max_tokens": 100,
-                                  "max_time": 10.0,
-                                  "safe_prompt": true,
-                                  "random_seed": 123
-                              }
-                              """;
+                                {
+                                    "temperature": 0.5,
+                                    "top_p": 0.9,
+                                    "max_tokens": 100,
+                                    "max_time": 10.0,
+                                    "safe_prompt": true,
+                                    "random_seed": 123
+                                }
+                                """;
 
         // Act
         var executionSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(jsonSettings);
@@ -73,4 +70,43 @@ public class MistralAIPromptExecutionSettingsTests
         Assert.Equal(123, MistralExecutionSettings.RandomSeed);
     }
 
+    [Fact]
+    public void FreezeShouldPreventPropertyModification()
+    {
+        // Arrange  
+        var settings = new MistralAIPromptExecutionSettings
+        {
+            Temperature = 0.7,
+            TopP = 1,
+            MaxTokens = 100,
+            SafePrompt = false,
+            Stop = ["foo", "bar"]
+        };
+
+        // Act  
+        settings.Freeze();
+
+        // Assert  
+        // Try to modify a property after freezing  
+        Assert.Throws<InvalidOperationException>(() => settings.Temperature = 0.8);
+        Assert.Throws<InvalidOperationException>(() => settings.TopP = 0.9);
+        Assert.Throws<InvalidOperationException>(() => settings.MaxTokens = 50);
+        Assert.Throws<InvalidOperationException>(() => settings.SafePrompt = true);
+        Assert.Throws<NotSupportedException>(() => settings.Stop.Add("baz"));
+    }
+
+    [Fact]
+    public void FreezeShouldNotAllowMultipleFreezes()
+    {
+        // Arrange  
+        var settings = new MistralAIPromptExecutionSettings();
+        settings.Freeze(); // First freeze  
+
+        // Act  
+        settings.Freeze(); // Second freeze (should not throw)  
+
+        // Assert  
+        // No exception should be thrown  
+        Assert.True(settings.IsFrozen); // Assuming IsFrozen is a property indicating the freeze state  
+    }
 }

@@ -29,9 +29,9 @@ public abstract class Agent
     /// <summary>
     /// The identifier of the agent (optional).
     /// </summary>
-    /// <reamarks>
+    /// <remarks>
     /// Default to a random guid value, but may be overridden.
-    /// </reamarks>
+    /// </remarks>
     public string Id { get; init; } = Guid.NewGuid().
         ToString();
 

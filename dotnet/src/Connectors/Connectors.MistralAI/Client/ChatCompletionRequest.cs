@@ -1,17 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.MistralAI.Client;
-
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel.Connectors.MistralAI.Client;
 
 /// <summary>
 /// Request for chat completion.
 /// </summary>
 internal sealed class ChatCompletionRequest
 {
-
     [JsonPropertyName("model")]
     public string Model { get; set; }
 
@@ -46,6 +44,21 @@ internal sealed class ChatCompletionRequest
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? RandomSeed { get; set; }
 
+    [JsonPropertyName("response_format")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public object? ResponseFormat { get; set; }
+
+    [JsonPropertyName("frequency_penalty")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public double? FrequencyPenalty { get; set; }
+
+    [JsonPropertyName("presence_penalty")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public double? PresencePenalty { get; set; }
+
+    [JsonPropertyName("stop")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IList<string>? Stop { get; set; }
 
     /// <summary>
     /// Construct an instance of <see cref="ChatCompletionRequest"/>.
@@ -57,7 +70,6 @@ internal sealed class ChatCompletionRequest
         this.Model = model;
     }
 
-
     /// <summary>
     /// Add a tool to the request.
     /// </summary>
@@ -67,7 +79,6 @@ internal sealed class ChatCompletionRequest
         this.Tools.Add(tool);
     }
 
-
     /// <summary>
     /// Add a message to the request.
     /// </summary>
@@ -76,5 +87,4 @@ internal sealed class ChatCompletionRequest
     {
         this.Messages.Add(message);
     }
-
 }
