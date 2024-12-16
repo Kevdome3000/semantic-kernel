@@ -10,7 +10,7 @@ using Pgvector;
 
 
 /// <summary>
-/// Interface for client managing postgres database operations.
+/// Interface for client managing postgres database operations for <see cref="PostgresMemoryStore"/>.
 /// </summary>
 public interface IPostgresDbClient
 {

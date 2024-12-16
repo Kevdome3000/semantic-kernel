@@ -16,12 +16,10 @@ namespace SemanticKernel.Functions.UnitTests.OpenApi;
 /// </summary>
 public class OpenApiDocumentParserExtensionsTests
 {
-
     /// <summary>
     /// System under test - an instance of OpenApiDocumentParser class.
     /// </summary>
     private readonly OpenApiDocumentParser _sut;
-
 
     /// <summary>
     /// Creates an instance of a <see cref="OpenApiDocumentParserV31Tests"/> class.
@@ -30,7 +28,6 @@ public class OpenApiDocumentParserExtensionsTests
     {
         this._sut = new OpenApiDocumentParser();
     }
-
 
     [Theory]
     [InlineData("documentV2_0.json")]
@@ -81,4 +78,22 @@ public class OpenApiDocumentParserExtensionsTests
         Assert.Equal("{\"key1\":\"value1\",\"key2\":\"value2\"}", objectValue);
     }
 
+    [Theory]
+    [InlineData("documentV3_0.json")]
+    [InlineData("documentV3_1.yaml")]
+    public async Task ItCanParseMediaTypeAsync(string documentName)
+    {
+        // Arrange.
+        using var openApiDocument = ResourcePluginsProvider.LoadFromResource(documentName);
+
+        // Act.
+        var restApi = await this._sut.ParseAsync(openApiDocument);
+
+        // Assert.
+        Assert.NotNull(restApi.Operations);
+        Assert.Equal(7, restApi.Operations.Count);
+        var operation = restApi.Operations.Single(o => o.Id == "Joke");
+        Assert.NotNull(operation);
+        Assert.Equal("application/json; x-api-version=2.0", operation.Payload?.MediaType);
+    }
 }

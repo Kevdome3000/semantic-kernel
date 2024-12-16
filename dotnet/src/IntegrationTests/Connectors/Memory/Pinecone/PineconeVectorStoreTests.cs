@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
@@ -13,21 +12,16 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.Pinecone;
 
 [Collection("PineconeVectorStoreTests")]
 [PineconeApiKeySetCondition]
-public class PineconeVectorStoreTests(PineconeVectorStoreFixture fixture) : IClassFixture<PineconeVectorStoreFixture>
+public class PineconeVectorStoreTests(PineconeVectorStoreFixture fixture)
+    : BaseVectorStoreTests<string, PineconeHotel>(new PineconeVectorStore(fixture.Client)), IClassFixture<PineconeVectorStoreFixture>
 {
-
     private PineconeVectorStoreFixture Fixture { get; } = fixture;
 
-
     [PineconeFact]
-    public async Task ListCollectionNamesAsync()
+    public override async Task ItCanGetAListOfExistingCollectionNamesAsync()
     {
-        var collectionNames = await this.Fixture.VectorStore.ListCollectionNamesAsync().
-            ToListAsync();
-
-        Assert.Equal([this.Fixture.IndexName], collectionNames);
+        await base.ItCanGetAListOfExistingCollectionNamesAsync();
     }
-
 
     [PineconeFact]
     public void CreateCollectionUsingFactory()
@@ -45,10 +39,8 @@ public class PineconeVectorStoreTests(PineconeVectorStoreFixture fixture) : ICla
         Assert.Equal("factory" + this.Fixture.IndexName, factoryCollection.CollectionName);
     }
 
-
     private sealed class MyVectorStoreRecordCollectionFactory : IPineconeVectorStoreRecordCollectionFactory
     {
-
         public IVectorStoreRecordCollection<TKey, TRecord> CreateVectorStoreRecordCollection<TKey, TRecord>(
             Sdk.PineconeClient pineconeClient,
             string name,
@@ -62,7 +54,5 @@ public class PineconeVectorStoreTests(PineconeVectorStoreFixture fixture) : ICla
 
             return (new PineconeVectorStoreRecordCollection<TRecord>(pineconeClient, "factory" + name) as IVectorStoreRecordCollection<TKey, TRecord>)!;
         }
-
     }
-
 }
