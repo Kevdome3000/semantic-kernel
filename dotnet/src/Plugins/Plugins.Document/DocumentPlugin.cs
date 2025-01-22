@@ -83,7 +83,7 @@ public sealed class DocumentPlugin
     {
         if (string.IsNullOrWhiteSpace(filePath))
         {
-            throw new ArgumentException("Variable was null or whitespace", nameof(filePath));
+            throw new ArgumentException(@"Variable was null or whitespace", nameof(filePath));
         }
 
         // If the document already exists, open it. If not, create it.

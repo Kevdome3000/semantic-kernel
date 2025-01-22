@@ -781,7 +781,7 @@ After:
 
                 // Otherwise, fail.
                 throw new KernelException($"Missing service for function parameter '{parameter.Name}'",
-                    new ArgumentException("Missing service for function parameter", parameter.Name));
+                    new ArgumentException(@"Missing service for function parameter", parameter.Name));
             }, null);
         }
 
@@ -812,7 +812,7 @@ After:
 
             // 3. Otherwise, fail.
             throw new KernelException($"Missing argument for function parameter '{name}'",
-                new ArgumentException("Missing argument for function parameter", name));
+                new ArgumentException(@"Missing argument for function parameter", name));
 
             object? Process(object? value)
             {

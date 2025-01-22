@@ -111,7 +111,7 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
                     // Ensures that if a service id is specified it needs to match to the current key in the dictionary.
                     if (!string.IsNullOrWhiteSpace(kv.Value.ServiceId) && kv.Key != kv.Value.ServiceId)
                     {
-                        throw new ArgumentException($"Service id '{kv.Value.ServiceId}' must match the key '{kv.Key}'.", nameof(ExecutionSettings));
+                        throw new ArgumentException($@"Service id '{kv.Value.ServiceId}' must match the key '{kv.Key}'.", nameof(ExecutionSettings));
                     }
                 }
             }

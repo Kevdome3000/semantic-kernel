@@ -113,7 +113,7 @@ public class BinaryContent : KernelContent
 
         if (data.IsEmpty)
         {
-            throw new ArgumentException("Data cannot be empty", nameof(data));
+            throw new ArgumentException(@"Data cannot be empty", nameof(data));
         }
 
         MimeType = mimeType;

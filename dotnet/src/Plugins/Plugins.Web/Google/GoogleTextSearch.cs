@@ -186,7 +186,7 @@ public sealed class GoogleTextSearch : ITextSearch, IDisposable
                     }
                     else
                     {
-                        throw new ArgumentException($"Unknown equality filter clause field name '{equalityFilterClause.FieldName}', must be one of {string.Join(",", s_queryParameters)}", nameof(searchOptions));
+                        throw new ArgumentException($@"Unknown equality filter clause field name '{equalityFilterClause.FieldName}', must be one of {string.Join(",", s_queryParameters)}", nameof(searchOptions));
                     }
                 }
             }
@@ -272,7 +272,7 @@ public sealed class GoogleTextSearch : ITextSearch, IDisposable
         {
             if (result is not global::Google.Apis.CustomSearchAPI.v1.Data.Result googleResult)
             {
-                throw new ArgumentException("Result must be a Google Result", nameof(result));
+                throw new ArgumentException(@"Result must be a Google Result", nameof(result));
             }
 
             return googleResult.Snippet ?? string.Empty;
@@ -289,7 +289,7 @@ public sealed class GoogleTextSearch : ITextSearch, IDisposable
         {
             if (result is not global::Google.Apis.CustomSearchAPI.v1.Data.Result googleResult)
             {
-                throw new ArgumentException("Result must be a Google Result", nameof(result));
+                throw new ArgumentException(@"Result must be a Google Result", nameof(result));
             }
 
             return new TextSearchResult(googleResult.Snippet) { Name = googleResult.Title, Link = googleResult.Link };

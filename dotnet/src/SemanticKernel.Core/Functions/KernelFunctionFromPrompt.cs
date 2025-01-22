@@ -51,7 +51,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         {
             if (string.IsNullOrWhiteSpace(templateFormat))
             {
-                throw new ArgumentException($"Template format is required when providing a {nameof(promptTemplateFactory)}", nameof(templateFormat));
+                throw new ArgumentException($@"Template format is required when providing a {nameof(promptTemplateFactory)}", nameof(templateFormat));
             }
         }
 
@@ -105,7 +105,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         {
             if (string.IsNullOrWhiteSpace(templateFormat))
             {
-                throw new ArgumentException($"Template format is required when providing a {nameof(promptTemplateFactory)}", nameof(templateFormat));
+                throw new ArgumentException($@"Template format is required when providing a {nameof(promptTemplateFactory)}", nameof(templateFormat));
             }
         }
 

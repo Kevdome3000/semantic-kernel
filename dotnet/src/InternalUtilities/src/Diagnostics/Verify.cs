@@ -65,7 +65,7 @@ internal static partial class Verify
 
         if (list.Count == 0)
         {
-            throw new ArgumentException("The value cannot be empty.", paramName);
+            throw new ArgumentException(@"The value cannot be empty.", paramName);
         }
     }
 
@@ -111,7 +111,7 @@ internal static partial class Verify
         if (!FilenameRegex().
                 IsMatch(filename))
         {
-            throw new ArgumentException($"Invalid filename format: '{filename}'. Filename should consist of an actual name and a file extension.", paramName);
+            throw new ArgumentException($@"Invalid filename format: '{filename}'. Filename should consist of an actual name and a file extension.", paramName);
         }
     }
 
@@ -121,17 +121,17 @@ internal static partial class Verify
 
         if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || string.IsNullOrEmpty(uri.Host))
         {
-            throw new ArgumentException($"The `{url}` is not valid.", paramName);
+            throw new ArgumentException($@"The `{url}` is not valid.", paramName);
         }
 
         if (!allowQuery && !string.IsNullOrEmpty(uri.Query))
         {
-            throw new ArgumentException($"The `{url}` is not valid: it cannot contain query parameters.", paramName);
+            throw new ArgumentException($@"The `{url}` is not valid: it cannot contain query parameters.", paramName);
         }
 
         if (!string.IsNullOrEmpty(uri.Fragment))
         {
-            throw new ArgumentException($"The `{url}` is not valid: it cannot contain URL fragments.", paramName);
+            throw new ArgumentException($@"The `{url}` is not valid: it cannot contain URL fragments.", paramName);
         }
     }
 
@@ -200,7 +200,7 @@ internal static partial class Verify
 
     [DoesNotReturn]
     private static void ThrowArgumentInvalidName(string kind, string name, string? paramName) =>
-        throw new ArgumentException($"A {kind} can contain only ASCII letters, digits, and underscores: '{name}' is not a valid name.", paramName);
+        throw new ArgumentException($@"A {kind} can contain only ASCII letters, digits, and underscores: '{name}' is not a valid name.", paramName);
 
     [DoesNotReturn]
     internal static void ThrowArgumentNullException(string? paramName) =>
@@ -208,7 +208,7 @@ internal static partial class Verify
 
     [DoesNotReturn]
     internal static void ThrowArgumentWhiteSpaceException(string? paramName) =>
-        throw new ArgumentException("The value cannot be an empty string or composed entirely of whitespace.", paramName);
+        throw new ArgumentException(@"The value cannot be an empty string or composed entirely of whitespace.", paramName);
 
     [DoesNotReturn]
     internal static void ThrowArgumentOutOfRangeException<T>(string? paramName, T actualValue, string message) =>

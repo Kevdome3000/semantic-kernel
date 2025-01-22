@@ -217,7 +217,7 @@ public sealed class BingTextSearch : ITextSearch
         {
             if (result is not BingWebPage webPage)
             {
-                throw new ArgumentException("Result must be a BingWebPage", nameof(result));
+                throw new ArgumentException(@"Result must be a BingWebPage", nameof(result));
             }
 
             return webPage.Snippet ?? string.Empty;
@@ -234,7 +234,7 @@ public sealed class BingTextSearch : ITextSearch
         {
             if (result is not BingWebPage webPage)
             {
-                throw new ArgumentException("Result must be a BingWebPage", nameof(result));
+                throw new ArgumentException(@"Result must be a BingWebPage", nameof(result));
             }
 
             return new TextSearchResult(webPage.Snippet ?? string.Empty) { Name = webPage.Name, Link = webPage.Url };
@@ -270,7 +270,7 @@ public sealed class BingTextSearch : ITextSearch
                     }
                     else
                     {
-                        throw new ArgumentException($"Unknown equality filter clause field name '{equalityFilterClause.FieldName}', must be one of {string.Join(",", s_queryParameters)},{string.Join(",", s_advancedSearchKeywords)}", nameof(searchOptions));
+                        throw new ArgumentException($@"Unknown equality filter clause field name '{equalityFilterClause.FieldName}', must be one of {string.Join(",", s_queryParameters)},{string.Join(",", s_advancedSearchKeywords)}", nameof(searchOptions));
                     }
                 }
             }

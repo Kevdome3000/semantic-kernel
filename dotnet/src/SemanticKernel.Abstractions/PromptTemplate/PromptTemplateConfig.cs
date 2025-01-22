@@ -174,7 +174,7 @@ public sealed class PromptTemplateConfig
                     // Ensures that if a service id is provided it must match the key in the dictionary.
                     if (!string.IsNullOrWhiteSpace(kv.Value.ServiceId) && kv.Key != kv.Value.ServiceId)
                     {
-                        throw new ArgumentException($"Service id '{kv.Value.ServiceId}' must match the key '{kv.Key}'.", nameof(ExecutionSettings));
+                        throw new ArgumentException($@"Service id '{kv.Value.ServiceId}' must match the key '{kv.Key}'.", nameof(ExecutionSettings));
                     }
                 }
             }
@@ -220,14 +220,14 @@ public sealed class PromptTemplateConfig
 
         if (!string.IsNullOrWhiteSpace(serviceId) && !string.IsNullOrWhiteSpace(settings.ServiceId))
         {
-            throw new ArgumentException($"Service id must not be passed when '{nameof(settings.ServiceId)}' is already provided in execution settings.", nameof(serviceId));
+            throw new ArgumentException($@"Service id must not be passed when '{nameof(settings.ServiceId)}' is already provided in execution settings.", nameof(serviceId));
         }
 
         var key = serviceId ?? settings.ServiceId ?? PromptExecutionSettings.DefaultServiceId;
 
         if (ExecutionSettings.ContainsKey(key))
         {
-            throw new ArgumentException($"Execution settings for service id '{key}' already exists.", nameof(serviceId));
+            throw new ArgumentException($@"Execution settings for service id '{key}' already exists.", nameof(serviceId));
         }
 
         ExecutionSettings[key] = settings;
@@ -355,7 +355,7 @@ public sealed class PromptTemplateConfig
 
             if (config is null)
             {
-                throw new ArgumentException($"Unable to deserialize {nameof(PromptTemplateConfig)} from the specified JSON.", nameof(json));
+                throw new ArgumentException($@"Unable to deserialize {nameof(PromptTemplateConfig)} from the specified JSON.", nameof(json));
             }
 
             // Prevent the default value from being any type other than a string.
