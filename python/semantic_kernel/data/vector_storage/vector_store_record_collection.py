@@ -3,9 +3,16 @@
 import asyncio
 import contextlib
 import logging
+import sys
 from abc import abstractmethod
 from collections.abc import Awaitable, Callable, Mapping, Sequence
 from typing import Any, ClassVar, Generic, TypeVar
+
+if sys.version_info >= (3, 11):
+    from typing import Self  # pragma: no cover
+else:
+    from typing_extensions import Self  # pragma: no cover
+
 
 from pydantic import BaseModel, model_validator
 
@@ -22,7 +29,7 @@ from semantic_kernel.exceptions import (
 )
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.kernel_types import OneOrMany
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 TModel = TypeVar("TModel", bound=object)
 TKey = TypeVar("TKey")
@@ -31,7 +38,7 @@ _T = TypeVar("_T", bound="VectorStoreRecordCollection")
 logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
     """Base class for a vector store record collection."""
 
@@ -52,9 +59,9 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
 
     @model_validator(mode="before")
     @classmethod
-    def _ensure_data_model_definition(cls: type[_T], data: dict[str, Any]) -> dict[str, Any]:
+    def _ensure_data_model_definition(cls: type[_T], data: Any) -> dict[str, Any]:
         """Ensure there is a  data model definition, if it isn't passed, try to get it from the data model type."""
-        if not data.get("data_model_definition"):
+        if isinstance(data, dict) and not data.get("data_model_definition"):
             data["data_model_definition"] = getattr(
                 data["data_model_type"], "__kernel_vectorstoremodel_definition__", None
             )
@@ -64,7 +71,7 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
         """Post init function that sets the key field and container mode values, and validates the datamodel."""
         self._validate_data_model()
 
-    async def __aenter__(self) -> "VectorStoreRecordCollection":
+    async def __aenter__(self) -> Self:
         """Enter the context manager."""
         return self
 
@@ -518,10 +525,10 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
         """
         if self.data_model_definition.to_dict:
             return self.data_model_definition.to_dict(record, **kwargs)
-        if isinstance(record, BaseModel):
-            return self._serialize_vectors(record.model_dump())
         if isinstance(record, ToDictMethodProtocol):
             return self._serialize_vectors(record.to_dict())
+        if isinstance(record, BaseModel):
+            return self._serialize_vectors(record.model_dump())
 
         store_model = {}
         for field_name in self.data_model_definition.field_names:
@@ -611,14 +618,14 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
                     "Cannot deserialize multiple records to a single record unless you are using a container."
                 )
             record = record[0]
-        if issubclass(self.data_model_type, BaseModel):
-            if include_vectors:
-                record = self._deserialize_vector(record)
-            return self.data_model_type.model_validate(record)  # type: ignore
         if func := getattr(self.data_model_type, "from_dict", None):
             if include_vectors:
                 record = self._deserialize_vector(record)
             return func(record)
+        if issubclass(self.data_model_type, BaseModel):
+            if include_vectors:
+                record = self._deserialize_vector(record)
+            return self.data_model_type.model_validate(record)  # type: ignore
         data_model_dict: dict[str, Any] = {}
         for field_name in self.data_model_definition.fields:
             if not include_vectors and field_name in self.data_model_definition.vector_field_names:

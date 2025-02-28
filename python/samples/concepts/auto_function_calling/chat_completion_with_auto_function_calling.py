@@ -61,12 +61,13 @@ chat_function = kernel.add_function(
 # - Services.OLLAMA
 # - Services.ONNX
 # - Services.VERTEX_AI
+# - Services.DEEPSEEK
 # Please make sure you have configured your environment correctly for the selected chat completion service.
 chat_completion_service, request_settings = get_chat_completion_service_and_request_settings(Services.AZURE_OPENAI)
 
 # Configure the function choice behavior. Here, we set it to Auto, where auto_invoke=True by default.
 # With `auto_invoke=True`, the model will automatically choose and call functions as needed.
-request_settings.function_choice_behavior = FunctionChoiceBehavior.Auto()
+request_settings.function_choice_behavior = FunctionChoiceBehavior.Auto(filters={"excluded_plugins": ["ChatBot"]})
 
 kernel.add_service(chat_completion_service)
 

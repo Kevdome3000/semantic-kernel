@@ -276,7 +276,7 @@ public static partial class KernelPluginFactory
 
         var description = target.GetType().GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
 
-        return KernelPluginFactory.CreateFromFunctions(pluginName, description, functions);
+        return CreateFromFunctions(pluginName, description, functions);
     }
 
 #if NET

@@ -18,7 +18,7 @@ internal sealed class PromptRenderingResult
 
     public PromptRenderingResult(IAIService aiService, string renderedPrompt)
     {
-        this.AIService = aiService;
-        this.RenderedPrompt = renderedPrompt;
+        AIService = aiService;
+        RenderedPrompt = renderedPrompt;
     }
 }

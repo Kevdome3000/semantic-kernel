@@ -1,29 +1,26 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.PromptTemplates.Handlebars;
-
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
 using HandlebarsDotNet;
 using HandlebarsDotNet.Helpers;
-using Helpers;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.PromptTemplates.Handlebars.Helpers;
 
+namespace Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 
 /// <summary>
 /// Represents a Handlebars prompt template.
 /// </summary>
 internal sealed class HandlebarsPromptTemplate : IPromptTemplate
 {
-
     /// <summary>
     /// Default options for built-in Handlebars helpers.
     /// </summary>
     /// TODO [@teresaqhoang]: Support override of default options
     private readonly HandlebarsPromptTemplateOptions _options;
-
 
     /// <summary>
     /// Constructor for Handlebars PromptTemplate.
@@ -40,7 +37,6 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
         this._options = options ?? new();
     }
 
-
     /// <inheritdoc/>
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
     public async Task<string> RenderAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
@@ -55,22 +51,16 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
         this.RegisterHelpers(handlebarsInstance, kernel, arguments, cancellationToken);
 
         var template = handlebarsInstance.Compile(this._promptModel.Template);
-
-        return System.Net.WebUtility.HtmlDecode(template(arguments).
-            Trim());
+        var text = template(arguments).Trim();
+        return this._options.EnableHtmlDecoder ? System.Net.WebUtility.HtmlDecode(text) : text;
     }
-
 
     #region private
 
     private readonly ILoggerFactory _loggerFactory;
-
     private readonly ILogger _logger;
-
     private readonly PromptTemplateConfig _promptModel;
-
     private readonly bool _allowDangerouslySetContent;
-
 
     /// <summary>
     /// Registers kernel, system, and any custom helpers.
@@ -94,8 +84,7 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
         });
 
         // Add helpers for kernel functions
-        KernelFunctionHelpers.Register(handlebarsInstance, kernel, arguments, this._promptModel,
-            this._allowDangerouslySetContent, this._options.PrefixSeparator, cancellationToken);
+        KernelFunctionHelpers.Register(handlebarsInstance, kernel, arguments, this._promptModel, this._allowDangerouslySetContent, this._options.PrefixSeparator, cancellationToken);
 
         // Add any custom helpers
         this._options.RegisterCustomHelpers?.Invoke(
@@ -104,7 +93,6 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
             this._options,
             arguments);
     }
-
 
     /// <summary>
     /// Gets the variables for the prompt template, including setting any default values from the prompt config.
@@ -144,7 +132,6 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
         return result;
     }
 
-
     private bool ShouldEncodeTags(PromptTemplateConfig promptTemplateConfig, string propertyName, object? propertyValue)
     {
         if (propertyValue is null || propertyValue is not string || this._allowDangerouslySetContent)
@@ -164,6 +151,4 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
     }
 
     #endregion
-
-
 }

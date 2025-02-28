@@ -131,6 +131,7 @@ public static class EmbeddingGenerationExtensions
                 serviceKey is not null ? null :
                 serviceType.IsInstanceOfType(this) ? this :
                 serviceType.IsInstanceOfType(this._service) ? this._service :
+                serviceType.IsInstanceOfType(this.Metadata) ? this.Metadata :
                 null;
         }
     }
@@ -153,12 +154,12 @@ public static class EmbeddingGenerationExtensions
             var attrs = new Dictionary<string, object?>();
             Attributes = new ReadOnlyDictionary<string, object?>(attrs);
 
-            var metadata = generator.Metadata;
-            if (metadata.ProviderUri is not null)
+            var metadata = (EmbeddingGeneratorMetadata?)generator.GetService(typeof(EmbeddingGeneratorMetadata));
+            if (metadata?.ProviderUri is not null)
             {
                 attrs[AIServiceExtensions.EndpointKey] = metadata.ProviderUri.ToString();
             }
-            if (metadata.ModelId is not null)
+            if (metadata?.ModelId is not null)
             {
                 attrs[AIServiceExtensions.ModelIdKey] = metadata.ModelId;
             }

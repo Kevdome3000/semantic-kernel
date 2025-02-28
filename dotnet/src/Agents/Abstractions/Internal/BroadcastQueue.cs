@@ -5,6 +5,7 @@ namespace Microsoft.SemanticKernel.Agents.Internal;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -23,14 +24,15 @@ using System.Threading.Tasks;
 /// <see cref="BroadcastQueue"/> is never invoked concurrently, which eliminates
 /// race conditions over the queue dictionary.
 /// </remarks>
+[Experimental("SKEXP0110")]
 internal sealed class BroadcastQueue
 {
 
     private readonly Dictionary<string, QueueReference> _queues = [];
 
     /// <summary>
-    /// Defines the yield duration when waiting on a channel-queue to synchronize.
-    /// to drain.
+    /// Defines the yield duration when waiting on a channel-queue to synchronize
+    /// and drain.
     /// </summary>
     public TimeSpan BlockDuration { get; set; } = TimeSpan.FromSeconds(0.1);
 

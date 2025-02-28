@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
-using Microsoft.SemanticKernel.Agents.History;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace GettingStarted;
@@ -133,9 +133,9 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
         chat.AddChatMessage(message);
         this.WriteAgentChatMessage(message);
 
-        await foreach (ChatMessageContent responese in chat.InvokeAsync())
+        await foreach (ChatMessageContent response in chat.InvokeAsync())
         {
-            this.WriteAgentChatMessage(responese);
+            this.WriteAgentChatMessage(response);
         }
 
         Console.WriteLine($"\n[IS COMPLETED: {chat.IsComplete}]");

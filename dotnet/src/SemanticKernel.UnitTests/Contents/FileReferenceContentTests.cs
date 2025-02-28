@@ -1,18 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace SemanticKernel.UnitTests.Contents;
-
 using Microsoft.SemanticKernel;
 using Xunit;
 
-#pragma warning disable SKEXP0110
+namespace SemanticKernel.UnitTests.Contents;
 
+#pragma warning disable SKEXP0110
 
 /// <summary>
 /// Unit testing of <see cref="FileReferenceContent"/>.
 /// </summary>
 public class FileReferenceContentTests
 {
-
     /// <summary>
     /// Verify default state.
     /// </summary>
@@ -24,7 +22,6 @@ public class FileReferenceContentTests
         Assert.Empty(definition.FileId);
     }
 
-
     /// <summary>
     /// Verify usage.
     /// </summary>
@@ -34,6 +31,20 @@ public class FileReferenceContentTests
         FileReferenceContent definition = new(fileId: "testfile");
 
         Assert.Equal("testfile", definition.FileId);
+        Assert.Null(definition.Tools);
     }
 
+    /// <summary>
+    /// Verify usage.
+    /// </summary>
+    [Fact]
+    public void VerifyFileReferenceToolUsage()
+    {
+        FileReferenceContent definition = new(fileId: "testfile") { Tools = new[] { "a", "b", "c" } };
+
+        Assert.Equal("testfile", definition.FileId);
+        Assert.NotNull(definition.Tools);
+        Assert.Equal(3, definition.Tools.Count);
+        Assert.Equivalent(new[] { "a", "b", "c" }, definition.Tools);
+    }
 }

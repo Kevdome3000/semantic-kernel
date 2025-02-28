@@ -15,9 +15,6 @@ from pytest import fixture
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIEmbeddingPromptExecutionSettings,
 )
-from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
-    OpenAIFunctionExecutionParameters,
-)
 from semantic_kernel.data.record_definition.vector_store_model_decorator import vectorstoremodel
 from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.record_definition.vector_store_record_fields import (
@@ -110,9 +107,9 @@ def custom_plugin_class():
 @fixture(scope="session")
 def experimental_plugin_class():
     from semantic_kernel.functions.kernel_function_decorator import kernel_function
-    from semantic_kernel.utils.experimental_decorator import experimental_class
+    from semantic_kernel.utils.feature_stage_decorator import experimental
 
-    @experimental_class
+    @experimental
     class ExperimentalPlugin:
         @kernel_function(name="getLightStatus")
         def decorated_native_function(self) -> str:
@@ -358,6 +355,28 @@ def azure_ai_search_unit_test_env(monkeypatch, exclude_list, override_env_param_
         "AZURE_AI_SEARCH_ENDPOINT": "https://test-endpoint.com",
         "AZURE_AI_SEARCH_INDEX_NAME": "test-index-name",
     }
+
+    env_vars.update(override_env_param_dict)
+
+    for key, value in env_vars.items():
+        if key not in exclude_list:
+            monkeypatch.setenv(key, value)
+        else:
+            monkeypatch.delenv(key, raising=False)
+
+    return env_vars
+
+
+@fixture()
+def mongodb_atlas_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
+    """Fixture to set environment variables for MongoDB Atlas Unit Tests."""
+    if exclude_list is None:
+        exclude_list = []
+
+    if override_env_param_dict is None:
+        override_env_param_dict = {}
+
+    env_vars = {"MONGODB_ATLAS_CONNECTION_STRING": "mongodb://test", "MONGODB_ATLAS_DATABASE_NAME": "test-database"}
 
     env_vars.update(override_env_param_dict)
 
@@ -651,10 +670,3 @@ def data_model_type_with_key_as_key_field(
         key: Annotated[str, VectorStoreRecordKeyField()]
 
     return DataModelClass
-
-
-@fixture
-def define_openai_predicate_context():
-    from semantic_kernel.connectors.openapi_plugin import OperationSelectionPredicateContext  # noqa: F401
-
-    OpenAIFunctionExecutionParameters.model_rebuild()

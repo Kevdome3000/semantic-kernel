@@ -232,9 +232,9 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         KernelArguments arguments,
         CancellationToken cancellationToken = default)
     {
-        this.AddDefaultValues(arguments);
+        AddDefaultValues(arguments);
 
-        var promptRenderingResult = await this.RenderPromptAsync(
+        var promptRenderingResult = await RenderPromptAsync(
             kernel,
             arguments,
             isStreaming: false,
@@ -251,9 +251,9 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         return promptRenderingResult.AIService switch
         {
-            IChatCompletionService chatCompletion => await this.GetChatCompletionResultAsync(chatCompletion, kernel, promptRenderingResult, cancellationToken).
+            IChatCompletionService chatCompletion => await GetChatCompletionResultAsync(chatCompletion, kernel, promptRenderingResult, cancellationToken).
                 ConfigureAwait(false),
-            ITextGenerationService textGeneration => await this.GetTextGenerationResultAsync(textGeneration, kernel, promptRenderingResult, cancellationToken).
+            ITextGenerationService textGeneration => await GetTextGenerationResultAsync(textGeneration, kernel, promptRenderingResult, cancellationToken).
                 ConfigureAwait(false),
             // The service selector didn't find an appropriate service. This should only happen with a poorly implemented selector.
             _ => throw new NotSupportedException($"The AI service {promptRenderingResult.AIService.GetType()} is not supported. Supported services are {typeof(IChatCompletionService)} and {typeof(ITextGenerationService)}")
@@ -266,9 +266,9 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         KernelArguments arguments,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        this.AddDefaultValues(arguments);
+        AddDefaultValues(arguments);
 
-        var result = await this.RenderPromptAsync(
+        var result = await RenderPromptAsync(
             kernel,
             arguments,
             isStreaming: true,
@@ -321,19 +321,19 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     {
         Verify.NotNullOrWhiteSpace(pluginName, nameof(pluginName));
 
-        if (base.JsonSerializerOptions is not null)
+        if (JsonSerializerOptions is not null)
         {
             return new KernelFunctionFromPrompt(
-            this._promptTemplate,
-            this.Name,
+            _promptTemplate,
+            Name,
             pluginName,
-            this.Description,
-            this.Metadata.Parameters,
-            base.JsonSerializerOptions,
-            this.Metadata.ReturnParameter,
-            this.ExecutionSettings as Dictionary<string, PromptExecutionSettings> ?? this.ExecutionSettings!.ToDictionary(kv => kv.Key, kv => kv.Value),
-            this._inputVariables,
-            this._logger);
+            Description,
+            Metadata.Parameters,
+            JsonSerializerOptions,
+            Metadata.ReturnParameter,
+            ExecutionSettings as Dictionary<string, PromptExecutionSettings> ?? ExecutionSettings!.ToDictionary(kv => kv.Key, kv => kv.Value),
+            _inputVariables,
+            _logger);
         }
 
         [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "Non AOT scenario.")]
@@ -341,15 +341,15 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         KernelFunctionFromPrompt Clone()
         {
             return new KernelFunctionFromPrompt(
-            this._promptTemplate,
-            this.Name,
+            _promptTemplate,
+            Name,
             pluginName,
-            this.Description,
-            this.Metadata.Parameters,
-            this.Metadata.ReturnParameter,
-            this.ExecutionSettings as Dictionary<string, PromptExecutionSettings> ?? this.ExecutionSettings!.ToDictionary(kv => kv.Key, kv => kv.Value),
-            this._inputVariables,
-            this._logger);
+            Description,
+            Metadata.Parameters,
+            Metadata.ReturnParameter,
+            ExecutionSettings as Dictionary<string, PromptExecutionSettings> ?? ExecutionSettings!.ToDictionary(kv => kv.Key, kv => kv.Value),
+            _inputVariables,
+            _logger);
         }
 
         return Clone();
@@ -410,11 +410,11 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         returnParameter,
         executionSettings)
     {
-        this._logger = logger;
+        _logger = logger;
 
-        this._promptTemplate = template;
+        _promptTemplate = template;
 
-        this._inputVariables = inputVariables.Select(iv => new InputVariable(iv)).
+        _inputVariables = inputVariables.Select(iv => new InputVariable(iv)).
             ToList();
     }
 
@@ -437,10 +437,10 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             returnParameter,
             executionSettings)
     {
-        this._logger = logger;
+        _logger = logger;
 
-        this._promptTemplate = template;
-        this._inputVariables = inputVariables.Select(iv => new InputVariable(iv)).ToList();
+        _promptTemplate = template;
+        _inputVariables = inputVariables.Select(iv => new InputVariable(iv)).ToList();
     }
 
     #region private
@@ -452,9 +452,9 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     private readonly IPromptTemplate _promptTemplate;
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private string DebuggerDisplay => string.IsNullOrWhiteSpace(this.Description)
-        ? this.Name
-        : $"{this.Name} ({this.Description})";
+    private string DebuggerDisplay => string.IsNullOrWhiteSpace(Description)
+        ? Name
+        : $"{Name} ({Description})";
 
     /// <summary>The measurement tag name for the model used.</summary>
     private const string MeasurementModelTagName = "semantic_kernel.function.model_id";
@@ -474,7 +474,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     /// <summary>Add default values to the arguments if an argument is not defined</summary>
     private void AddDefaultValues(KernelArguments arguments)
     {
-        foreach (var parameter in this._inputVariables)
+        foreach (var parameter in _inputVariables)
         {
             if (!arguments.ContainsName(parameter.Name) && parameter.Default is not null)
             {
@@ -510,14 +510,14 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         Verify.NotNull(aiService);
 
-        var renderingContext = await kernel.OnPromptRenderAsync(this, arguments, isStreaming, async (context) =>
+        var renderingContext = await kernel.OnPromptRenderAsync(this, arguments, isStreaming, executionSettings, async (context) =>
             {
-                renderedPrompt = await this._promptTemplate.RenderAsync(kernel, context.Arguments, cancellationToken).
+                renderedPrompt = await _promptTemplate.RenderAsync(kernel, context.Arguments, cancellationToken).
                     ConfigureAwait(false);
 
-                if (this._logger.IsEnabled(LogLevel.Trace))
+                if (_logger.IsEnabled(LogLevel.Trace))
                 {
-                    this._logger.LogTrace("Rendered prompt: {Prompt}", renderedPrompt);
+                    _logger.LogTrace("Rendered prompt: {Prompt}", renderedPrompt);
                 }
 
                 context.RenderedPrompt = renderedPrompt;
@@ -529,9 +529,9 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         {
             renderedPrompt = renderingContext.RenderedPrompt!;
 
-            if (this._logger.IsEnabled(LogLevel.Trace))
+            if (_logger.IsEnabled(LogLevel.Trace))
             {
-                this._logger.LogTrace("Rendered prompt changed by prompt filter: {Prompt}", renderingContext.RenderedPrompt);
+                _logger.LogTrace("Rendered prompt changed by prompt filter: {Prompt}", renderingContext.RenderedPrompt);
             }
         }
 
@@ -583,7 +583,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "The warning is shown and should be addressed at the function creation site; there is no need to show it again at the function invocation sites.")]
         JsonElement SerializeToElement(object? value)
         {
-            return JsonSerializer.SerializeToElement(value, base.JsonSerializerOptions);
+            return JsonSerializer.SerializeToElement(value, JsonSerializerOptions);
         }
 
         var jsonObject = default(JsonElement);
@@ -606,7 +606,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         {
             TagList tags = new()
             {
-                { MeasurementFunctionTagName, this.Name },
+                { MeasurementFunctionTagName, Name },
                 { MeasurementModelTagName, modelId }
             };
 
@@ -619,7 +619,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             outputTokensJson.TryGetInt32(out int outputTokens))
         {
             TagList tags = new() {
-                { MeasurementFunctionTagName, this.Name },
+                { MeasurementFunctionTagName, Name },
                 { MeasurementModelTagName, modelId }
             };
 
@@ -652,7 +652,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         // Usage details are global and duplicated for each chat message content, use first one to get usage information
         var chatContent = chatContents[0];
-        this.CaptureUsageDetails(chatContent.ModelId, chatContent.Metadata, this._logger);
+        CaptureUsageDetails(chatContent.ModelId, chatContent.Metadata, _logger);
 
         // If collection has one element, return single result
         if (chatContents.Count == 1)
@@ -684,7 +684,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         // Usage details are global and duplicated for each text content, use first one to get usage information
         var textContent = textContents[0];
-        this.CaptureUsageDetails(textContent.ModelId, textContent.Metadata, this._logger);
+        CaptureUsageDetails(textContent.ModelId, textContent.Metadata, _logger);
 
         // If collection has one element, return single result
         if (textContents.Count == 1)

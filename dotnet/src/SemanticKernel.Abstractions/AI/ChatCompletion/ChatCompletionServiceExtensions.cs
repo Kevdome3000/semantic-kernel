@@ -169,9 +169,9 @@ public static class ChatCompletionServiceExtensions
                 case ImageContent ic:
                     aiContent =
                         ic.DataUri is not null
-                            ? new Extensions.AI.ImageContent(ic.DataUri, ic.MimeType)
+                            ? new Extensions.AI.DataContent(ic.DataUri, ic.MimeType ?? "image/*")
                             : ic.Uri is not null
-                                ? new Extensions.AI.ImageContent(ic.Uri, ic.MimeType)
+                                ? new Extensions.AI.DataContent(ic.Uri, ic.MimeType ?? "image/*")
                                 :
                         null;
                     break;
@@ -179,9 +179,9 @@ public static class ChatCompletionServiceExtensions
                 case AudioContent ac:
                     aiContent =
                         ac.DataUri is not null
-                            ? new Extensions.AI.AudioContent(ac.DataUri, ac.MimeType)
+                            ? new Extensions.AI.DataContent(ac.DataUri, ac.MimeType ?? "audio/*")
                             : ac.Uri is not null
-                                ? new Extensions.AI.AudioContent(ac.Uri, ac.MimeType)
+                                ? new Extensions.AI.DataContent(ac.Uri, ac.MimeType ?? "audio/*")
                                 :
                         null;
                     break;
@@ -201,7 +201,7 @@ public static class ChatCompletionServiceExtensions
                     break;
 
                 case FunctionResultContent frc:
-                    aiContent = new Extensions.AI.FunctionResultContent(frc.CallId ?? string.Empty, frc.FunctionName ?? string.Empty, frc.Result);
+                    aiContent = new Extensions.AI.FunctionResultContent(frc.CallId ?? string.Empty, frc.Result);
                     break;
             }
 
@@ -219,13 +219,13 @@ public static class ChatCompletionServiceExtensions
 
     /// <summary>Converts a <see cref="ChatMessage"/> to a <see cref="ChatMessageContent"/>.</summary>
     /// <remarks>This conversion should not be necessary once SK eventually adopts the shared content types.</remarks>
-    internal static ChatMessageContent ToChatMessageContent(ChatMessage message, Extensions.AI.ChatCompletion? completion = null)
+    internal static ChatMessageContent ToChatMessageContent(ChatMessage message, Extensions.AI.ChatResponse? response = null)
     {
         ChatMessageContent result = new()
         {
-            ModelId = completion?.ModelId,
+            ModelId = response?.ModelId,
             AuthorName = message.AuthorName,
-            InnerContent = completion?.RawRepresentation ?? message.RawRepresentation,
+            InnerContent = response?.RawRepresentation ?? message.RawRepresentation,
             Metadata = message.AdditionalProperties,
             Role = new AuthorRole(message.Role.Value),
         };
@@ -239,18 +239,18 @@ public static class ChatCompletionServiceExtensions
                     resultContent = new TextContent(tc.Text);
                     break;
 
-                case Extensions.AI.ImageContent ic:
-                    resultContent = ic.ContainsData ? new ImageContent(ic.Uri)
-                        : new ImageContent(new Uri(ic.Uri));
+                case Extensions.AI.DataContent dc when dc.MediaTypeStartsWith("image/"):
+                    resultContent = dc.Data is not null ? new ImageContent(dc.Uri)
+                        : new ImageContent(new Uri(dc.Uri));
                     break;
 
-                case Extensions.AI.AudioContent ac:
-                    resultContent = ac.ContainsData ? new AudioContent(ac.Uri)
-                        : new AudioContent(new Uri(ac.Uri));
+                case Extensions.AI.DataContent dc when dc.MediaTypeStartsWith("audio/"):
+                    resultContent = dc.Data is not null ? new AudioContent(dc.Uri)
+                        : new AudioContent(new Uri(dc.Uri));
                     break;
 
                 case DataContent dc:
-                    resultContent = dc.ContainsData ? new BinaryContent(dc.Uri)
+                    resultContent = dc.Data is not null ? new BinaryContent(dc.Uri)
                         : new BinaryContent(new Uri(dc.Uri));
                     break;
 
@@ -264,10 +264,9 @@ public static class ChatCompletionServiceExtensions
                     break;
 
                 case Extensions.AI.FunctionResultContent frc:
-                    resultContent = new FunctionResultContent(frc.Name,
-                        null,
+                    resultContent = new FunctionResultContent(callId:
                         frc.CallId,
-                        frc.Result);
+                       result: frc.Result);
                     break;
             }
 
@@ -275,7 +274,7 @@ public static class ChatCompletionServiceExtensions
             {
                 resultContent.Metadata = content.AdditionalProperties;
                 resultContent.InnerContent = content.RawRepresentation;
-                resultContent.ModelId = completion?.ModelId;
+                resultContent.ModelId = response?.ModelId;
                 result.Items.Add(resultContent);
             }
         }

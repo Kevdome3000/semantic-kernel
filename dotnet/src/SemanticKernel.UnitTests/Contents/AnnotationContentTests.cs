@@ -1,18 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace SemanticKernel.UnitTests.Contents;
-
-using Microsoft.SemanticKernel.Agents.OpenAI;
+using Microsoft.SemanticKernel.Agents;
 using Xunit;
 
-#pragma warning disable SKEXP0110
+namespace SemanticKernel.UnitTests.Contents;
 
+#pragma warning disable SKEXP0110
 
 /// <summary>
 /// Unit testing of <see cref="AnnotationContent"/>.
 /// </summary>
 public class AnnotationContentTests
 {
-
     /// <summary>
     /// Verify default state.
     /// </summary>
@@ -26,8 +24,6 @@ public class AnnotationContentTests
         Assert.Equal(0, definition.EndIndex);
         Assert.Null(definition.FileId);
     }
-
-
     /// <summary>
     /// Verify usage.
     /// </summary>
@@ -48,5 +44,4 @@ public class AnnotationContentTests
         Assert.Equal(49, definition.EndIndex);
         Assert.Equal("#id", definition.FileId);
     }
-
 }

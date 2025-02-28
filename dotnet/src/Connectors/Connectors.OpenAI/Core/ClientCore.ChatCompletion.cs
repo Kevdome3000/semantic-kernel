@@ -9,6 +9,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -26,6 +27,13 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// </summary>
 internal partial class ClientCore
 {
+#if NET
+    [GeneratedRegex("[^a-zA-Z0-9_-]")]
+    private static partial Regex DisallowedFunctionNameCharactersRegex();
+#else
+    private static Regex DisallowedFunctionNameCharactersRegex() => new("[^a-zA-Z0-9_-]", RegexOptions.Compiled);
+#endif
+
     protected const string ModelProvider = "openai";
     protected record ToolCallingConfig(IList<ChatTool>? Tools, ChatToolChoice? Choice, bool AutoInvoke, bool AllowAnyRequestedKernelFunction, FunctionChoiceBehaviorOptions? Options);
 
@@ -192,6 +200,7 @@ internal partial class ClientCore
             // In such cases, we'll return the last message in the chat history.
             var lastMessage = await this.FunctionCallsProcessor.ProcessFunctionCallsAsync(
                 chatMessageContent,
+                chatExecutionSettings,
                 chatHistory,
                 requestIndex,
                 (FunctionCallContent content) => IsRequestableTool(chatOptions.Tools, content),
@@ -332,7 +341,10 @@ internal partial class ClientCore
                                     callId: functionCallUpdate.ToolCallId,
                                     name: functionCallUpdate.FunctionName,
                                     arguments: streamingArguments,
-                                    functionCallIndex: functionCallUpdate.Index));
+                                    functionCallIndex: functionCallUpdate.Index)
+                                {
+                                    RequestIndex = requestIndex,
+                                });
                             }
                         }
                         streamedContents?.Add(openAIStreamingChatMessageContent);
@@ -370,9 +382,10 @@ internal partial class ClientCore
 
             // Process function calls by invoking the functions and adding the results to the chat history.
             // Each function call will trigger auto-function-invocation filters, which can terminate the process.
-            // In such cases, we'll return the last message in the chat history.  
+            // In such cases, we'll return the last message in the chat history.
             var lastMessage = await this.FunctionCallsProcessor.ProcessFunctionCallsAsync(
                 chatMessageContent,
+                chatExecutionSettings,
                 chatHistory,
                 requestIndex,
                 (FunctionCallContent content) => IsRequestableTool(chatOptions.Tools, content),
@@ -458,6 +471,7 @@ internal partial class ClientCore
             TopLogProbabilityCount = executionSettings.TopLogprobs,
             IncludeLogProbabilities = executionSettings.Logprobs,
             StoredOutputEnabled = executionSettings.Store,
+            ReasoningEffortLevel = GetEffortLevel(executionSettings),
         };
 
         var responseFormat = GetResponseFormat(executionSettings);
@@ -506,6 +520,33 @@ internal partial class ClientCore
         }
 
         return options;
+    }
+
+    protected static ChatReasoningEffortLevel? GetEffortLevel(OpenAIPromptExecutionSettings executionSettings)
+    {
+        var effortLevelObject = executionSettings.ReasoningEffort;
+        if (effortLevelObject is null)
+        {
+            return null;
+        }
+
+        if (effortLevelObject is ChatReasoningEffortLevel effort)
+        {
+            return effort;
+        }
+
+        if (effortLevelObject is string textEffortLevel)
+        {
+            return textEffortLevel.ToUpperInvariant() switch
+            {
+                "LOW" => ChatReasoningEffortLevel.Low,
+                "MEDIUM" => ChatReasoningEffortLevel.Medium,
+                "HIGH" => ChatReasoningEffortLevel.High,
+                _ => throw new NotSupportedException($"The provided reasoning effort '{textEffortLevel}' is not supported.")
+            };
+        }
+
+        throw new NotSupportedException($"The provided reasoning effort '{effortLevelObject.GetType()}' is not supported.");
     }
 
     /// <summary>
@@ -578,13 +619,14 @@ internal partial class ClientCore
     /// </summary>
     /// <param name="text">Optional chat instructions for the AI service</param>
     /// <param name="executionSettings">Execution settings</param>
+    /// <param name="textRole">Indicates what will be the role of the text. Defaults to system role prompt</param>
     /// <returns>Chat object</returns>
-    private static ChatHistory CreateNewChat(string? text = null, OpenAIPromptExecutionSettings? executionSettings = null)
+    private static ChatHistory CreateNewChat(string? text = null, OpenAIPromptExecutionSettings? executionSettings = null, AuthorRole? textRole = null)
     {
         var chat = new ChatHistory();
 
         // If settings is not provided, create a new chat with the text as the system prompt
-        AuthorRole textRole = AuthorRole.System;
+        textRole ??= AuthorRole.System;
 
         if (!string.IsNullOrWhiteSpace(executionSettings?.ChatSystemPrompt))
         {
@@ -592,9 +634,15 @@ internal partial class ClientCore
             textRole = AuthorRole.User;
         }
 
+        if (!string.IsNullOrWhiteSpace(executionSettings?.ChatDeveloperPrompt))
+        {
+            chat.AddDeveloperMessage(executionSettings!.ChatDeveloperPrompt!);
+            textRole = AuthorRole.User;
+        }
+
         if (!string.IsNullOrWhiteSpace(text))
         {
-            chat.AddMessage(textRole, text!);
+            chat.AddMessage(textRole.Value, text!);
         }
 
         return chat;
@@ -603,6 +651,11 @@ internal partial class ClientCore
     private static List<ChatMessage> CreateChatCompletionMessages(OpenAIPromptExecutionSettings executionSettings, ChatHistory chatHistory)
     {
         List<ChatMessage> messages = [];
+
+        if (!string.IsNullOrWhiteSpace(executionSettings.ChatDeveloperPrompt) && !chatHistory.Any(m => m.Role == AuthorRole.Developer))
+        {
+            messages.Add(new DeveloperChatMessage(executionSettings.ChatDeveloperPrompt));
+        }
 
         if (!string.IsNullOrWhiteSpace(executionSettings.ChatSystemPrompt) && !chatHistory.Any(m => m.Role == AuthorRole.System))
         {
@@ -619,6 +672,11 @@ internal partial class ClientCore
 
     private static List<ChatMessage> CreateRequestMessages(ChatMessageContent message)
     {
+        if (message.Role == AuthorRole.Developer)
+        {
+            return [new DeveloperChatMessage(message.Content) { ParticipantName = message.AuthorName }];
+        }
+
         if (message.Role == AuthorRole.System)
         {
             return [new SystemChatMessage(message.Content) { ParticipantName = message.AuthorName }];
@@ -688,8 +746,8 @@ internal partial class ClientCore
         {
             var toolCalls = new List<ChatToolCall>();
 
-            // Handling function calls supplied via either:  
-            // ChatCompletionsToolCall.ToolCalls collection items or  
+            // Handling function calls supplied via either:
+            // ChatCompletionsToolCall.ToolCalls collection items or
             // ChatMessageContent.Metadata collection item with 'ChatResponseMessage.FunctionToolCalls' key.
             IEnumerable<ChatToolCall>? tools = (message as OpenAIChatMessageContent)?.ToolCalls;
             if (tools is null && message.Metadata?.TryGetValue(OpenAIChatMessageContent.FunctionToolCallsProperty, out object? toolCallsObject) is true)
@@ -743,13 +801,13 @@ internal partial class ClientCore
             }
 
             // This check is necessary to prevent an exception that will be thrown if the toolCalls collection is empty.
-            // HTTP 400 (invalid_request_error:) [] should be non-empty - 'messages.3.tool_calls'  
+            // HTTP 400 (invalid_request_error:) [] should be non-empty - 'messages.3.tool_calls'
             if (toolCalls.Count == 0)
             {
                 return [new AssistantChatMessage(message.Content) { ParticipantName = message.AuthorName }];
             }
 
-            var assistantMessage = new AssistantChatMessage(toolCalls) { ParticipantName = message.AuthorName };
+            var assistantMessage = new AssistantChatMessage(SanitizeFunctionNames(toolCalls)) { ParticipantName = message.AuthorName };
 
             // If message content is null, adding it as empty string,
             // because chat message content must be string.
@@ -1020,7 +1078,7 @@ internal partial class ClientCore
 
             foreach (var function in functions)
             {
-                tools.Add(function.Metadata.ToOpenAIFunction().ToFunctionDefinition());
+                tools.Add(function.Metadata.ToOpenAIFunction().ToFunctionDefinition(config?.Options?.AllowStrictSchemaAdherence ?? false));
             }
         }
 
@@ -1050,5 +1108,28 @@ internal partial class ClientCore
 
             chatHistory.Add(message);
         }
+    }
+
+    /// <summary>
+    /// Sanitizes function names by replacing disallowed characters.
+    /// </summary>
+    /// <param name="toolCalls">The function calls containing the function names which need to be sanitized.</param>
+    /// <returns>The function calls with sanitized function names.</returns>
+    private static List<ChatToolCall> SanitizeFunctionNames(List<ChatToolCall> toolCalls)
+    {
+        for (int i = 0; i < toolCalls.Count; i++)
+        {
+            ChatToolCall tool = toolCalls[i];
+
+            // Check if function name contains disallowed characters and replace them with '_'.
+            if (DisallowedFunctionNameCharactersRegex().IsMatch(tool.FunctionName))
+            {
+                var sanitizedName = DisallowedFunctionNameCharactersRegex().Replace(tool.FunctionName, "_");
+
+                toolCalls[i] = ChatToolCall.CreateFunctionToolCall(tool.Id, sanitizedName, tool.FunctionArguments);
+            }
+        }
+
+        return toolCalls;
     }
 }

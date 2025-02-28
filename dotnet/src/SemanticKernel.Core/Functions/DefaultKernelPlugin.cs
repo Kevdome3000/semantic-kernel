@@ -23,7 +23,7 @@ internal sealed class DefaultKernelPlugin : KernelPlugin
     /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
     internal DefaultKernelPlugin(string name, string? description, IEnumerable<KernelFunction>? functions = null) : base(name, description)
     {
-        this._functions = new Dictionary<string, KernelFunction>(StringComparer.OrdinalIgnoreCase);
+        _functions = new Dictionary<string, KernelFunction>(StringComparer.OrdinalIgnoreCase);
 
         if (functions is not null)
         {
@@ -32,18 +32,18 @@ internal sealed class DefaultKernelPlugin : KernelPlugin
                 Verify.NotNull(f, nameof(functions));
 
                 var cloned = f.Clone(name);
-                this._functions.Add(cloned.Name, cloned);
+                _functions.Add(cloned.Name, cloned);
             }
         }
     }
 
     /// <inheritdoc/>
-    public override int FunctionCount => this._functions.Count;
+    public override int FunctionCount => _functions.Count;
 
     /// <inheritdoc/>
     public override bool TryGetFunction(string name, [NotNullWhen(true)] out KernelFunction? function) =>
-        this._functions.TryGetValue(name, out function);
+        _functions.TryGetValue(name, out function);
 
     /// <inheritdoc/>
-    public override IEnumerator<KernelFunction> GetEnumerator() => this._functions.Values.GetEnumerator();
+    public override IEnumerator<KernelFunction> GetEnumerator() => _functions.Values.GetEnumerator();
 }

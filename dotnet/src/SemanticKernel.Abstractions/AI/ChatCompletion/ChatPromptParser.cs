@@ -12,15 +12,10 @@ namespace Microsoft.SemanticKernel.ChatCompletion;
 /// </summary>
 internal static class ChatPromptParser
 {
-
     private const string MessageTagName = "message";
-
     private const string RoleAttributeName = "role";
-
     private const string ImageTagName = "image";
-
     private const string TextTagName = "text";
-
 
     /// <summary>
     /// Parses a prompt for an XML representation of a <see cref="ChatHistory"/>.
@@ -34,7 +29,6 @@ internal static class ChatPromptParser
         // The XML parsing is expensive, so we do a quick up-front check to make sure
         // the text contains "<message", as that's required in any valid XML prompt.
         const string MessageTagStart = "<" + MessageTagName;
-
         if (prompt is not null &&
 #if NET
             prompt.Contains(MessageTagStart, StringComparison.OrdinalIgnoreCase) &&
@@ -48,10 +42,8 @@ internal static class ChatPromptParser
         }
 
         chatHistory = null;
-
         return false;
     }
-
 
     /// <summary>
     /// Parses collection of <see cref="PromptNode"/> instances and sets output as <see cref="ChatHistory"/>.
@@ -71,7 +63,6 @@ internal static class ChatPromptParser
         return chatHistory is not null;
     }
 
-
     /// <summary>
     /// Parses a chat node and constructs a <see cref="ChatMessageContent"/> object.
     /// </summary>
@@ -80,7 +71,6 @@ internal static class ChatPromptParser
     private static ChatMessageContent ParseChatNode(PromptNode node)
     {
         ChatMessageContentItemCollection items = [];
-
         foreach (var childNode in node.ChildNodes.Where(childNode => childNode.Content is not null))
         {
             if (childNode.TagName.Equals(ImageTagName, StringComparison.OrdinalIgnoreCase))
@@ -113,7 +103,6 @@ internal static class ChatPromptParser
             : new ChatMessageContent(authorRole, node.Content);
     }
 
-
     /// <summary>
     /// Checks if <see cref="PromptNode"/> is valid chat message.
     /// </summary>
@@ -123,22 +112,12 @@ internal static class ChatPromptParser
     /// TagName = "message"<br/>
     /// Attributes = { "role" : "..." }<br/>
     /// optional one or more child nodes <image>...</image><br/>
-    /// content not null or single child node <text>...</text>
+    /// optional one or more child nodes <text>...</text>
     /// </remarks>
     private static bool IsValidChatMessage(PromptNode node)
     {
         return
             node.TagName.Equals(MessageTagName, StringComparison.OrdinalIgnoreCase) &&
-            node.Attributes.ContainsKey(RoleAttributeName) &&
-            IsValidChildNodes(node);
+            node.Attributes.ContainsKey(RoleAttributeName);
     }
-
-
-    private static bool IsValidChildNodes(PromptNode node)
-    {
-        var textTagsCount = node.ChildNodes.Count(n => n.TagName.Equals(TextTagName, StringComparison.OrdinalIgnoreCase));
-
-        return textTagsCount == 1 || (textTagsCount == 0 && node.Content is not null);
-    }
-
 }

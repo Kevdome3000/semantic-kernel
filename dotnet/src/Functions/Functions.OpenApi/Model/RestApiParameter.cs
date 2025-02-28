@@ -79,7 +79,15 @@ public sealed class RestApiParameter
     /// <summary>
     /// The schema of the parameter.
     /// </summary>
-    public KernelJsonSchema? Schema { get; }
+    public KernelJsonSchema? Schema
+    {
+        get => this._schema;
+        set
+        {
+            this._freezable.ThrowIfFrozen();
+            this._schema = value;
+        }
+    }
 
 
     /// <summary>
@@ -129,4 +137,5 @@ public sealed class RestApiParameter
 
     private readonly Freezable _freezable = new();
     private string? _argumentName;
+    private KernelJsonSchema? _schema;
 }

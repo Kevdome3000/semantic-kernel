@@ -11,7 +11,6 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 /// </summary>
 internal static partial class RestApiOperationExtensions
 {
-
     /// <summary>
     /// Returns list of REST API operation parameters.
     /// </summary>
@@ -45,17 +44,16 @@ internal static partial class RestApiOperationExtensions
 
         foreach (var parameter in parameters)
         {
-            // The functionality of replacing invalid symbols and setting the argument name   
-            // was introduced to handle dashes allowed in OpenAPI parameter names and   
-            // not supported by SK at that time. More context -   
-            // https://github.com/microsoft/semantic-kernel/pull/283#discussion_r1156286780   
-            // It's kept for backward compatibility only.  
+            // The functionality of replacing invalid symbols and setting the argument name
+            // was introduced to handle dashes allowed in OpenAPI parameter names and
+            // not supported by SK at that time. More context -
+            // https://github.com/microsoft/semantic-kernel/pull/283#discussion_r1156286780
+            // It's kept for backward compatibility only.
             parameter.ArgumentName ??= InvalidSymbolsRegex().Replace(parameter.Name, "_");
         }
 
         return parameters;
     }
-
 
     /// <summary>
     /// Returns the default return parameter metadata for a given REST API operation.
@@ -68,13 +66,10 @@ internal static partial class RestApiOperationExtensions
         RestApiExpectedResponse? restOperationResponse = GetDefaultResponse(operation.Responses, preferredResponses ??= s_preferredResponses);
 
         var returnParameter =
-            restOperationResponse is not null
-                ? new KernelReturnParameterMetadata { Description = restOperationResponse.Description, Schema = restOperationResponse.Schema }
-                : null;
+            restOperationResponse is not null ? new KernelReturnParameterMetadata { Description = restOperationResponse.Description, Schema = restOperationResponse.Schema } : null;
 
         return returnParameter;
     }
-
 
     /// <summary>
     /// Retrieves the default response.
@@ -95,7 +90,6 @@ internal static partial class RestApiOperationExtensions
         // If no appropriate response is found, return null or throw an exception
         return null;
     }
-
 
     /// <summary>
     /// Retrieves the payload parameters for a given REST API operation.
@@ -126,13 +120,20 @@ internal static partial class RestApiOperationExtensions
         }
 
         // Adding artificial 'payload' and 'content-type' in case parameters from payload metadata are not required.
+        if (parameterFilter is not null)
+        {
+            return new RestApiParameter[]
+            {
+                CreatePayloadArtificialParameter(operation),
+                CreateContentTypeArtificialParameter(operation)
+            }.Where(p => parameterFilter(new(operation, p)) is not null).ToList();
+        }
         return
         [
             CreatePayloadArtificialParameter(operation),
             CreateContentTypeArtificialParameter(operation)
         ];
     }
-
 
     /// <summary>
     /// Creates the 'content-type' artificial parameter for a REST API operation.
@@ -151,7 +152,6 @@ internal static partial class RestApiOperationExtensions
             description: "Content type of REST API request body.");
     }
 
-
     /// <summary>
     /// Creates the 'payload' artificial parameter for a REST API operation.
     /// </summary>
@@ -161,9 +161,7 @@ internal static partial class RestApiOperationExtensions
     {
         return new RestApiParameter(
             RestApiOperation.PayloadArgumentName,
-            operation.Payload?.MediaType == MediaTypeTextPlain
-                ? "string"
-                : "object",
+            operation.Payload?.MediaType == MediaTypeTextPlain ? "string" : "object",
             isRequired: true,
             expand: false,
             RestApiParameterLocation.Body,
@@ -171,7 +169,6 @@ internal static partial class RestApiOperationExtensions
             description: operation.Payload?.Description ?? "REST API request body.",
             schema: operation.Payload?.Schema);
     }
-
 
     /// <summary>
     /// Retrieves parameters from REST API payload metadata.
@@ -195,6 +192,12 @@ internal static partial class RestApiOperationExtensions
 
             if (!property.Properties.Any())
             {
+                // Assign an argument name (sanitized form of the property name) so that the parameter value look-up / resolution functionality in the RestApiOperationRunner
+                // class can find the value for the parameter by the argument name in the arguments dictionary. If the argument name is not assigned here, the resolution mechanism
+                // will try to find the parameter value by the parameter's original name. However, because the parameter was advertised with the sanitized name by the RestApiOperationExtensions.GetParameters
+                // method, no value will be found, and an exception will be thrown: "No argument is found for the 'customerid_contact@odata.bind' payload property."
+                property.ArgumentName ??= InvalidSymbolsRegex().Replace(parameterName, "_");
+
                 var parameter = new RestApiParameter(
                     name: parameterName,
                     type: property.Type,
@@ -222,7 +225,6 @@ internal static partial class RestApiOperationExtensions
         return parameters;
     }
 
-
     /// <summary>
     /// Gets the property name based on the provided parameters.
     /// </summary>
@@ -234,17 +236,13 @@ internal static partial class RestApiOperationExtensions
     {
         if (enableNamespacing)
         {
-            return string.IsNullOrEmpty(rootPropertyName)
-                ? property.Name
-                : $"{rootPropertyName}.{property.Name}";
+            return string.IsNullOrEmpty(rootPropertyName) ? property.Name : $"{rootPropertyName}.{property.Name}";
         }
 
         return property.Name;
     }
 
-
     private const string MediaTypeTextPlain = "text/plain";
-
     private static readonly string[] s_preferredResponses = ["200", "201", "202", "203", "204", "205", "206", "207", "208", "226", "2XX", "default"];
 
 #if NET
@@ -254,5 +252,4 @@ internal static partial class RestApiOperationExtensions
     private static Regex InvalidSymbolsRegex() => s_invalidSymbolsRegex;
     private static readonly Regex s_invalidSymbolsRegex = new("[^0-9A-Za-z_]+", RegexOptions.Compiled);
 #endif
-
 }

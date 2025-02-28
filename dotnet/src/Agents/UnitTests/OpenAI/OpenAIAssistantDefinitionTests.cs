@@ -4,6 +4,7 @@ namespace SemanticKernel.Agents.UnitTests.OpenAI;
 using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.SemanticKernel.Agents.OpenAI;
+using SemanticKernel.Agents.UnitTests.Test;
 using Xunit;
 
 

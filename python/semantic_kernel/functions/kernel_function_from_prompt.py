@@ -135,29 +135,30 @@ through prompt_template_config or in the prompt_template."
     @classmethod
     def rewrite_execution_settings(
         cls,
-        data: dict[str, Any],
+        data: Any,
     ) -> dict[str, PromptExecutionSettings]:
         """Rewrite execution settings to a dictionary.
 
         If the prompt_execution_settings is not a dictionary, it is converted to a dictionary.
         If it is not supplied, but prompt_template is, the prompt_template's execution settings are used.
         """
-        prompt_execution_settings = data.get("prompt_execution_settings")
-        prompt_template = data.get("prompt_template")
-        if not prompt_execution_settings:
-            if prompt_template:
-                prompt_execution_settings = prompt_template.prompt_template_config.execution_settings
-                data["prompt_execution_settings"] = prompt_execution_settings
+        if isinstance(data, dict):
+            prompt_execution_settings = data.get("prompt_execution_settings")
+            prompt_template = data.get("prompt_template")
             if not prompt_execution_settings:
-                return data
-        if isinstance(prompt_execution_settings, PromptExecutionSettings):
-            data["prompt_execution_settings"] = {
-                prompt_execution_settings.service_id or DEFAULT_SERVICE_NAME: prompt_execution_settings
-            }
-        if isinstance(prompt_execution_settings, Sequence):
-            data["prompt_execution_settings"] = {
-                s.service_id or DEFAULT_SERVICE_NAME: s for s in prompt_execution_settings
-            }
+                if prompt_template:
+                    prompt_execution_settings = prompt_template.prompt_template_config.execution_settings
+                    data["prompt_execution_settings"] = prompt_execution_settings
+                if not prompt_execution_settings:
+                    return data
+            if isinstance(prompt_execution_settings, PromptExecutionSettings):
+                data["prompt_execution_settings"] = {
+                    prompt_execution_settings.service_id or DEFAULT_SERVICE_NAME: prompt_execution_settings
+                }
+            if isinstance(prompt_execution_settings, Sequence):
+                data["prompt_execution_settings"] = {
+                    s.service_id or DEFAULT_SERVICE_NAME: s for s in prompt_execution_settings
+                }
         return data
 
     async def _invoke_internal(self, context: FunctionInvocationContext) -> None:
@@ -182,7 +183,10 @@ through prompt_template_config or in the prompt_template."
                 raise FunctionExecutionException(f"No completions returned while invoking function {self.name}")
 
             context.result = self._create_function_result(
-                completions=chat_message_contents, chat_history=chat_history, arguments=context.arguments
+                completions=chat_message_contents,
+                chat_history=chat_history,
+                arguments=context.arguments,
+                prompt=prompt_render_result.rendered_prompt,
             )
             return
 
@@ -204,7 +208,10 @@ through prompt_template_config or in the prompt_template."
 
     async def _invoke_internal_stream(self, context: FunctionInvocationContext) -> None:
         """Invokes the function stream with the given arguments."""
-        prompt_render_result = await self._render_prompt(context)
+        prompt_render_result = await self._render_prompt(context, is_streaming=True)
+        if prompt_render_result.function_result is not None:
+            context.result = prompt_render_result.function_result
+            return
 
         if isinstance(prompt_render_result.ai_service, ChatCompletionClientBase):
             chat_history = ChatHistory.from_rendered_prompt(prompt_render_result.rendered_prompt)
@@ -222,14 +229,20 @@ through prompt_template_config or in the prompt_template."
                 f"Service `{type(prompt_render_result.ai_service)}` is not a valid AI service"
             )
 
-        context.result = FunctionResult(function=self.metadata, value=value)
+        context.result = FunctionResult(
+            function=self.metadata, value=value, rendered_prompt=prompt_render_result.rendered_prompt
+        )
 
-    async def _render_prompt(self, context: FunctionInvocationContext) -> PromptRenderingResult:
+    async def _render_prompt(
+        self, context: FunctionInvocationContext, is_streaming: bool = False
+    ) -> PromptRenderingResult:
         """Render the prompt and apply the prompt rendering filters."""
         self.update_arguments_with_defaults(context.arguments)
 
         _rebuild_prompt_render_context()
-        prompt_render_context = PromptRenderContext(function=self, kernel=context.kernel, arguments=context.arguments)
+        prompt_render_context = PromptRenderContext(
+            function=self, kernel=context.kernel, arguments=context.arguments, is_streaming=is_streaming
+        )
 
         stack = context.kernel.construct_call_stack(
             filter_type=FilterTypes.PROMPT_RENDERING,
@@ -246,6 +259,7 @@ through prompt_template_config or in the prompt_template."
             rendered_prompt=prompt_render_context.rendered_prompt,
             ai_service=selected_service[0],
             execution_settings=selected_service[1],
+            function_result=prompt_render_context.function_result,
         )
 
     async def _inner_render_prompt(self, context: PromptRenderContext) -> None:
@@ -272,6 +286,7 @@ through prompt_template_config or in the prompt_template."
             function=self.metadata,
             value=completions,
             metadata=metadata,
+            rendered_prompt=prompt,
         )
 
     def update_arguments_with_defaults(self, arguments: KernelArguments) -> None:

@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging;
 /// generate logging code at compile time to achieve optimized code.
 /// </remarks>
 [ExcludeFromCodeCoverage]
+[Experimental("SKEXP0110")]
 internal static partial class AggregatorTerminationStrategyLogMessages
 {
 

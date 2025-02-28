@@ -12,7 +12,7 @@ public sealed class ChatPromptParserTests
     [Theory]
     [InlineData("This is plain prompt")]
     [InlineData("<message This is invalid chat prompt>")]
-    [InlineData("<message role='user'><text>This is invalid</text><text>chat prompt</text></message>")]
+    [InlineData("<message role='user'><text>This is an invalid chat prompt</message></text>")]
     public void ItReturnsNullChatHistoryWhenPromptIsPlainTextOrInvalid(string prompt)
     {
         // Act
@@ -22,7 +22,6 @@ public sealed class ChatPromptParserTests
         Assert.False(result);
         Assert.Null(chatHistory);
     }
-
 
     [Fact]
     public void ItReturnsChatHistoryWithValidRolesWhenPromptIsValid()
@@ -44,7 +43,6 @@ public sealed class ChatPromptParserTests
             c => c.Role = AuthorRole.System,
             c => c.Role = AuthorRole.User);
     }
-
 
     [Fact]
     public void ItReturnsChatHistoryWithValidContentWhenSimplePrompt()
@@ -70,7 +68,6 @@ public sealed class ChatPromptParserTests
             c => Assert.Equal("Hello, I'm a user.", c.Content));
     }
 
-
     [Fact]
     public void ItReturnsChatHistoryWithValidContentItemsWhenNestedPrompt()
     {
@@ -94,7 +91,6 @@ public sealed class ChatPromptParserTests
                              && ((ImageContent)c.Items![1]).Uri!.AbsoluteUri == "https://fake-link-to-image/"));
     }
 
-
     [Fact]
     public void ItReturnsChatHistoryWithValidContentItemsIncludeCData()
     {
@@ -117,7 +113,6 @@ public sealed class ChatPromptParserTests
                               <image>https://fake-link-to-image/</image>
                               """, c.Content));
     }
-
 
     [Fact]
     public void ItReturnsChatHistoryWithValidDataImageContent()
@@ -153,6 +148,85 @@ public sealed class ChatPromptParserTests
             });
     }
 
+    [Fact]
+    public void ItReturnsChatHistoryWithMultipleTextParts()
+    {
+        // Arrange
+        string prompt = GetValidPromptWithMultipleTextParts();
+
+        // Act
+        bool result = ChatPromptParser.TryParse(prompt, out var chatHistory);
+
+        // Assert
+        Assert.True(result);
+        Assert.NotNull(chatHistory);
+
+        Assert.Collection(chatHistory,
+            c => Assert.Equal("What can I help with?", c.Content),
+            c =>
+            {
+                Assert.Equal("Hello", c.Content);
+                Assert.Collection(c.Items,
+                    o =>
+                    {
+                        Assert.IsType<TextContent>(o);
+                        Assert.Equal("Hello", ((TextContent)o).Text);
+                    }, o =>
+                    {
+                        Assert.IsType<TextContent>(o);
+                        Assert.Equal("I am user", ((TextContent)o).Text);
+                    });
+            });
+    }
+
+    [Fact]
+    public void ItReturnsChatHistoryWithMixedXmlContent()
+    {
+        // Arrange
+        string prompt = GetValidPromptWithMixedXmlContent();
+
+        // Act
+        bool result = ChatPromptParser.TryParse(prompt, out var chatHistory);
+
+        // Assert
+        Assert.True(result);
+        Assert.NotNull(chatHistory);
+
+        Assert.Collection(chatHistory,
+            c => Assert.Equal("What can I help with?", c.Content),
+            c =>
+            {
+                Assert.Equal("Hi how are you?", c.Content);
+                Assert.Single(c.Items);
+            });
+    }
+
+    [Fact]
+    public void ItReturnsChatHistoryWithEmptyContent()
+    {
+        // Arrange
+        string prompt = GetValidPromptWithEmptyContent();
+
+        // Act
+        bool result = ChatPromptParser.TryParse(prompt, out var chatHistory);
+
+        // Assert
+        Assert.True(result);
+        Assert.NotNull(chatHistory);
+
+        Assert.Collection(chatHistory,
+            c => Assert.Equal("What can I help with?", c.Content),
+            c =>
+            {
+                Assert.Null(c.Content);
+                Assert.Empty(c.Items);
+            },
+            c =>
+            {
+                Assert.Null(c.Content);
+                Assert.Empty(c.Items);
+            });
+    }
 
     [Fact]
     public void ItReturnsChatHistoryWithValidContentItemsIncludeCode()
@@ -184,8 +258,8 @@ public sealed class ChatPromptParserTests
                                   </message>
                               </code>
                               """, c.Content),
-            // Since the third message entry inside prompt is HtmlEncoded, the single quotes are preserved.
-            c => Assert.Equal("""
+             // Since the third message entry inside prompt is HtmlEncoded, the single quotes are preserved.
+             c => Assert.Equal("""
                               <code>
                                   <message role='system'>
                                       <text>Text content</text>
@@ -202,7 +276,6 @@ public sealed class ChatPromptParserTests
                                 </code>
                               """, c.Content));
     }
-
 
     private static string GetSimpleValidPrompt()
     {
@@ -231,7 +304,6 @@ public sealed class ChatPromptParserTests
             """;
     }
 
-
     private static string GetNestedItemsValidPrompt()
     {
         return
@@ -252,7 +324,6 @@ public sealed class ChatPromptParserTests
             """;
     }
 
-
     private static string GetValidPromptWithDataUriImageContent()
     {
         return
@@ -268,6 +339,49 @@ public sealed class ChatPromptParserTests
             """;
     }
 
+    private static string GetValidPromptWithMultipleTextParts()
+    {
+        return
+            """
+
+            <message role="assistant">What can I help with?</message>
+
+            <message role='user'>
+                <text>Hello</text>
+                <text>I am user</text>
+            </message>
+
+            """;
+    }
+
+    private static string GetValidPromptWithMixedXmlContent()
+    {
+        return
+            """
+
+            <message role="assistant">What can I help with?</message>
+
+            <message role='user'>
+                This part will be discarded upon parsing
+                <text>Hi how are you?</text>
+                This part will also be discarded upon parsing
+            </message>
+
+            """;
+    }
+
+    private static string GetValidPromptWithEmptyContent()
+    {
+        return
+            """
+
+            <message role="assistant">What can I help with?</message>
+            <message role='user'/>
+            <message role='user'>
+            </message>
+
+            """;
+    }
 
     private static string GetValidPromptWithCDataSection()
     {
@@ -289,7 +403,6 @@ public sealed class ChatPromptParserTests
 
             """;
     }
-
 
     private static string GetValidPromptWithCodeBlock()
     {

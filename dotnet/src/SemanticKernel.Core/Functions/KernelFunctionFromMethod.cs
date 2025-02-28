@@ -359,7 +359,7 @@ After:
         KernelArguments arguments,
         CancellationToken cancellationToken)
     {
-        return this._function(kernel, this, arguments, cancellationToken);
+        return _function(kernel, this, arguments, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -368,7 +368,7 @@ After:
         KernelArguments arguments,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        FunctionResult functionResult = await this.InvokeCoreAsync(kernel, arguments, cancellationToken).
+        FunctionResult functionResult = await InvokeCoreAsync(kernel, arguments, cancellationToken).
             ConfigureAwait(false);
 
         if (functionResult.Value is TResult result)
@@ -404,24 +404,24 @@ After:
             yield break;
         }
 
-        throw new NotSupportedException($"Streaming function {this.Name} does not support type {typeof(TResult)}");
+        throw new NotSupportedException($"Streaming function {Name} does not support type {typeof(TResult)}");
     }
     /// <inheritdoc/>
     public override KernelFunction Clone(string pluginName)
     {
         Verify.NotNullOrWhiteSpace(pluginName, nameof(pluginName));
 
-        if (base.JsonSerializerOptions is not null)
+        if (JsonSerializerOptions is not null)
         {
             return new KernelFunctionFromMethod(
-            this._function,
-            this.Name,
+            _function,
+            Name,
             pluginName,
-            this.Description,
-            this.Metadata.Parameters,
-            this.Metadata.ReturnParameter,
-            base.JsonSerializerOptions,
-            this.Metadata.AdditionalProperties);
+            Description,
+            Metadata.Parameters,
+            Metadata.ReturnParameter,
+            JsonSerializerOptions,
+            Metadata.AdditionalProperties);
         }
 
         [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "Non AOT scenario.")]
@@ -429,13 +429,13 @@ After:
         KernelFunctionFromMethod Clone()
         {
             return new KernelFunctionFromMethod(
-            this._function,
-            this.Name,
+            _function,
+            Name,
             pluginName,
-            this.Description,
-            this.Metadata.Parameters,
-            this.Metadata.ReturnParameter,
-            this.Metadata.AdditionalProperties);
+            Description,
+            Metadata.Parameters,
+            Metadata.ReturnParameter,
+            Metadata.AdditionalProperties);
         }
 
         return Clone();
@@ -500,7 +500,7 @@ After:
     {
         Verify.ValidFunctionName(functionName);
 
-        this._function = implementationFunc;
+        _function = implementationFunc;
     }
 
     private KernelFunctionFromMethod(
@@ -516,7 +516,7 @@ After:
     {
         Verify.ValidFunctionName(functionName);
 
-        this._function = implementationFunc;
+        _function = implementationFunc;
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "This method is AOT save.")]
@@ -1244,9 +1244,9 @@ After:
         });
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private string DebuggerDisplay => string.IsNullOrWhiteSpace(this.Description)
-        ? this.Name
-        : $"{this.Name} ({this.Description})";
+    private string DebuggerDisplay => string.IsNullOrWhiteSpace(Description)
+        ? Name
+        : $"{Name} ({Description})";
 
     /// <summary>
     /// Remove characters from method name that are valid in metadata but invalid for SK.
