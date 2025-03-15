@@ -20,7 +20,6 @@ public sealed class AzureCosmosDBMongoDBVectorStoreTests
 {
     private readonly Mock<IMongoDatabase> _mockMongoDatabase = new();
 
-
     [Fact]
     public void GetCollectionWithNotSupportedKeyThrowsException()
     {
@@ -31,7 +30,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreTests
         Assert.Throws<NotSupportedException>(() => sut.GetCollection<Guid, AzureCosmosDBMongoDBHotelModel>("collection"));
     }
 
-
+#pragma warning disable CS0618 // IAzureCosmosDBMongoDBVectorStoreRecordCollectionFactory is obsolete
     [Fact]
     public void GetCollectionWithFactoryReturnsCustomCollection()
     {
@@ -60,7 +59,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreTests
             "collection",
             It.IsAny<VectorStoreRecordDefinition>()), Times.Once());
     }
-
+#pragma warning restore CS0618
 
     [Fact]
     public void GetCollectionWithoutFactoryReturnsDefaultCollection()
@@ -74,7 +73,6 @@ public sealed class AzureCosmosDBMongoDBVectorStoreTests
         // Assert
         Assert.NotNull(collection);
     }
-
 
     [Fact]
     public async Task ListCollectionNamesReturnsCollectionNamesAsync()

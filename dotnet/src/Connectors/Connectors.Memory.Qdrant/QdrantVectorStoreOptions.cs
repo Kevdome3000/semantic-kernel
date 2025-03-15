@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 /// <summary>
@@ -17,6 +19,7 @@ public sealed class QdrantVectorStoreOptions
     /// <summary>
     /// An optional factory to use for constructing <see cref="QdrantVectorStoreRecordCollection{TRecord}"/> instances, if a custom record collection is required.
     /// </summary>
+    [Obsolete("To control how collections are instantiated, extend your provider's IVectorStore implementation and override GetCollection()")]
     public IQdrantVectorStoreRecordCollectionFactory? VectorStoreCollectionFactory { get; init; }
 
 }

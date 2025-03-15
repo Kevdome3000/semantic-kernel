@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -9,17 +9,14 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Diagnostics;
+
 [ExcludeFromCodeCoverage]
 internal static class ActivityExtensions
 {
     /// <summary>
     /// Starts an activity with the specified name and tags.
     /// </summary>
-    public static Activity? StartActivityWithTags(
-        this ActivitySource source,
-        string name,
-        IEnumerable<KeyValuePair<string, object?>> tags,
-        ActivityKind kind = ActivityKind.Internal)
+    public static Activity? StartActivityWithTags(this ActivitySource source, string name, IEnumerable<KeyValuePair<string, object?>> tags, ActivityKind kind = ActivityKind.Internal)
         => source.StartActivity(name, kind, default(ActivityContext), tags);
 
     /// <summary>
@@ -31,7 +28,6 @@ internal static class ActivityExtensions
         {
             activity.SetTag(tag.Key, tag.Value);
         }
-
         ;
 
         return activity;
@@ -55,11 +51,8 @@ internal static class ActivityExtensions
     /// </summary>
     public static Activity SetError(this Activity activity, Exception exception)
     {
-        activity.SetTag("error.type", exception.GetType().
-            FullName);
-
+        activity.SetTag("error.type", exception.GetType().FullName);
         activity.SetStatus(ActivityStatusCode.Error, exception.Message);
-
         return activity;
     }
 

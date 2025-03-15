@@ -21,7 +21,7 @@ public interface ISemanticTextMemory
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Unique identifier of the saved memory record.</returns>
-    public Task<string> SaveInformationAsync(
+    Task<string> SaveInformationAsync(
         string collection,
         string text,
         string id,
@@ -42,7 +42,7 @@ public interface ISemanticTextMemory
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Unique identifier of the saved memory record.</returns>
-    public Task<string> SaveReferenceAsync(
+    Task<string> SaveReferenceAsync(
         string collection,
         string text,
         string externalId,
@@ -63,7 +63,7 @@ public interface ISemanticTextMemory
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Memory record, or null when nothing is found</returns>
-    public Task<MemoryQueryResult?> GetAsync(
+    Task<MemoryQueryResult?> GetAsync(
         string collection,
         string key,
         bool withEmbedding = false,
@@ -79,7 +79,7 @@ public interface ISemanticTextMemory
     /// <param name="key">Unique memory record identifier.</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    public Task RemoveAsync(
+    Task RemoveAsync(
         string collection,
         string key,
         Kernel? kernel = null,
@@ -96,7 +96,7 @@ public interface ISemanticTextMemory
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Memories found</returns>
-    public IAsyncEnumerable<MemoryQueryResult> SearchAsync(
+    IAsyncEnumerable<MemoryQueryResult> SearchAsync(
         string collection,
         string query,
         int limit = 1,
@@ -111,5 +111,5 @@ public interface ISemanticTextMemory
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A group of collection names.</returns>
-    public Task<IList<string>> GetCollectionsAsync(Kernel? kernel = null, CancellationToken cancellationToken = default);
+    Task<IList<string>> GetCollectionsAsync(Kernel? kernel = null, CancellationToken cancellationToken = default);
 }

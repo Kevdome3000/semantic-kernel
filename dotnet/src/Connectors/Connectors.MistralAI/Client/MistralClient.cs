@@ -685,7 +685,7 @@ internal sealed class MistralClient
         if (this._logger.IsEnabled(LogLevel.Trace))
         {
             this._logger.LogTrace("ChatHistory: {ChatHistory}, Settings: {Settings}",
-                JsonSerializer.Serialize(chatHistory),
+                JsonSerializer.Serialize(chatHistory, JsonOptionsCache.ChatHistory),
                 JsonSerializer.Serialize(executionSettings));
         }
 
