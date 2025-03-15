@@ -15,22 +15,17 @@ namespace Microsoft.SemanticKernel.Connectors.Redis.UnitTests;
 /// </summary>
 public class RedisVectorStoreTests
 {
-
     private const string TestCollectionName = "testcollection";
 
     private readonly Mock<IDatabase> _redisDatabaseMock;
-
 
     public RedisVectorStoreTests()
     {
         this._redisDatabaseMock = new Mock<IDatabase>(MockBehavior.Strict);
 
         var batchMock = new Mock<IBatch>();
-
-        this._redisDatabaseMock.Setup(x => x.CreateBatch(It.IsAny<object>())).
-            Returns(batchMock.Object);
+        this._redisDatabaseMock.Setup(x => x.CreateBatch(It.IsAny<object>())).Returns(batchMock.Object);
     }
-
 
     [Fact]
     public void GetCollectionReturnsJsonCollection()
@@ -46,7 +41,6 @@ public class RedisVectorStoreTests
         Assert.IsType<RedisJsonVectorStoreRecordCollection<SinglePropsModel<string>>>(actual);
     }
 
-
     [Fact]
     public void GetCollectionReturnsHashSetCollection()
     {
@@ -61,17 +55,16 @@ public class RedisVectorStoreTests
         Assert.IsType<RedisHashSetVectorStoreRecordCollection<SinglePropsModel<string>>>(actual);
     }
 
-
+#pragma warning disable CS0618 // IRedisVectorStoreRecordCollectionFactory is obsolete
     [Fact]
     public void GetCollectionCallsFactoryIfProvided()
     {
         // Arrange.
         var factoryMock = new Mock<IRedisVectorStoreRecordCollectionFactory>(MockBehavior.Strict);
         var collectionMock = new Mock<IVectorStoreRecordCollection<string, SinglePropsModel<string>>>(MockBehavior.Strict);
-
-        factoryMock.Setup(x => x.CreateVectorStoreRecordCollection<string, SinglePropsModel<string>>(It.IsAny<IDatabase>(), TestCollectionName, null)).
-            Returns(collectionMock.Object);
-
+        factoryMock
+            .Setup(x => x.CreateVectorStoreRecordCollection<string, SinglePropsModel<string>>(It.IsAny<IDatabase>(), TestCollectionName, null))
+            .Returns(collectionMock.Object);
         var sut = new RedisVectorStore(this._redisDatabaseMock.Object, new() { VectorStoreCollectionFactory = factoryMock.Object });
 
         // Act.
@@ -81,7 +74,7 @@ public class RedisVectorStoreTests
         Assert.Equal(collectionMock.Object, actual);
         factoryMock.Verify(x => x.CreateVectorStoreRecordCollection<string, SinglePropsModel<string>>(It.IsAny<IDatabase>(), TestCollectionName, null), Times.Once);
     }
-
+#pragma warning restore CS0618
 
     [Fact]
     public void GetCollectionThrowsForInvalidKeyType()
@@ -93,22 +86,20 @@ public class RedisVectorStoreTests
         Assert.Throws<NotSupportedException>(() => sut.GetCollection<int, SinglePropsModel<int>>(TestCollectionName));
     }
 
-
     [Fact]
     public async Task ListCollectionNamesCallsSDKAsync()
     {
         // Arrange.
         var redisResultStrings = new string[] { "collection1", "collection2" };
-
-        var results = redisResultStrings.Select(x => RedisResult.Create(new RedisValue(x))).
-            ToArray();
-
-        this._redisDatabaseMock.Setup(
+        var results = redisResultStrings
+            .Select(x => RedisResult.Create(new RedisValue(x)))
+            .ToArray();
+        this._redisDatabaseMock
+            .Setup(
                 x => x.ExecuteAsync(
                     It.IsAny<string>(),
-                    It.IsAny<object[]>())).
-            ReturnsAsync(RedisResult.Create(results));
-
+                It.IsAny<object[]>()))
+            .ReturnsAsync(RedisResult.Create(results));
         var sut = new RedisVectorStore(this._redisDatabaseMock.Object);
 
         // Act.
@@ -119,10 +110,8 @@ public class RedisVectorStoreTests
         Assert.Equal(new[] { "collection1", "collection2" }, collectionNamesList);
     }
 
-
     public sealed class SinglePropsModel<TKey>
     {
-
         [VectorStoreRecordKey]
         public required TKey Key { get; set; }
 
@@ -133,7 +122,5 @@ public class RedisVectorStoreTests
         public ReadOnlyMemory<float>? Vector { get; set; }
 
         public string? NotAnnotated { get; set; }
-
     }
-
 }

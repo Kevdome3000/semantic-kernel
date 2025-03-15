@@ -20,7 +20,6 @@ public sealed class AzureCosmosDBNoSQLVectorStoreTests
 {
     private readonly Mock<Database> _mockDatabase = new();
 
-
     [Fact]
     public void GetCollectionWithNotSupportedKeyThrowsException()
     {
@@ -30,7 +29,6 @@ public sealed class AzureCosmosDBNoSQLVectorStoreTests
         // Act & Assert
         Assert.Throws<NotSupportedException>(() => sut.GetCollection<Guid, AzureCosmosDBNoSQLHotel>("collection"));
     }
-
 
     [Fact]
     public void GetCollectionWithSupportedKeyReturnsCollection()
@@ -47,7 +45,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreTests
         Assert.NotNull(collectionWithCompositeKey);
     }
 
-
+#pragma warning disable CS0618 // IAzureCosmosDBNoSQLVectorStoreRecordCollectionFactory is obsolete
     [Fact]
     public void GetCollectionWithFactoryReturnsCustomCollection()
     {
@@ -76,7 +74,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreTests
             "collection",
             It.IsAny<VectorStoreRecordDefinition>()), Times.Once());
     }
-
+#pragma warning restore CS0618
 
     [Fact]
     public void GetCollectionWithoutFactoryReturnsDefaultCollection()
@@ -90,7 +88,6 @@ public sealed class AzureCosmosDBNoSQLVectorStoreTests
         // Assert
         Assert.NotNull(collection);
     }
-
 
     [Fact]
     public async Task ListCollectionNamesReturnsCollectionNamesAsync()

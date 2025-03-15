@@ -12,5 +12,5 @@ internal interface ITextRendering
     /// </summary>
     /// <param name="arguments">Optional arguments the block rendering</param>
     /// <returns>Rendered content</returns>
-    public object? Render(KernelArguments? arguments);
+    object? Render(KernelArguments? arguments);
 }

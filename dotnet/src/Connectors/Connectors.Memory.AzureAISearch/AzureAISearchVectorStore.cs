@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 /// <remarks>
 /// This class can be used with collections of any schema type, but requires you to provide schema information when getting a collection.
 /// </remarks>
-public sealed class AzureAISearchVectorStore : IVectorStore
+public class AzureAISearchVectorStore : IVectorStore
 {
 
     /// <summary>The name of this database for telemetry purposes.</summary>
@@ -45,13 +45,15 @@ public sealed class AzureAISearchVectorStore : IVectorStore
 
 
     /// <inheritdoc />
-    public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    public virtual IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
     {
+#pragma warning disable CS0618 // IAzureAISearchVectorStoreRecordCollectionFactor is obsolete
         if (this._options.VectorStoreCollectionFactory is not null)
         {
             return this._options.VectorStoreCollectionFactory.CreateVectorStoreRecordCollection<TKey, TRecord>(this._searchIndexClient, name, vectorStoreRecordDefinition);
         }
+#pragma warning restore CS0618
 
         if (typeof(TKey) != typeof(string))
         {
@@ -72,7 +74,7 @@ public sealed class AzureAISearchVectorStore : IVectorStore
 
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public virtual async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var indexNamesEnumerable = this._searchIndexClient.GetIndexNamesAsync(cancellationToken).ConfigureAwait(false);
 
