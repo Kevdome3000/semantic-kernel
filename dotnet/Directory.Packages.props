@@ -32,12 +32,14 @@
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="9.0.2" />
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="9.0.2" />
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="8.0.13" />
+    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="9.0.3" />
+    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="9.0.3" />
     <PackageVersion Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" Version="1.0.1" />
     <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="7.5.1" />
     <PackageVersion Include="Microsoft.VisualStudio.Threading" Version="17.12.19" />
-    <PackageVersion Include="Handlebars.Net.Helpers" Version="2.4.12"/>
-    <PackageVersion Include="Markdig" Version="0.40.0"/>
-    <PackageVersion Include="Handlebars.Net" Version="2.1.6"/>
+    <PackageVersion Include="Handlebars.Net.Helpers" Version="2.4.12" />
+    <PackageVersion Include="Markdig" Version="0.40.0" />
+    <PackageVersion Include="Handlebars.Net" Version="2.1.6" />
     <PackageVersion Include="HtmlAgilityPack" Version="1.11.72" />
     <PackageVersion Include="JsonSchema.Net" Version="5.4.2" />
     <PackageVersion Include="Markdig" Version="0.40.0" />
@@ -148,9 +150,9 @@
     <PackageVersion Include="Milvus.Client" Version="2.3.0-preview.1" />
     <PackageVersion Include="Testcontainers" Version="4.1.0" />
     <PackageVersion Include="Testcontainers.Milvus" Version="4.1.0" />
-    <PackageVersion Include="Testcontainers.MongoDB" Version="4.1.0"/>
-    <PackageVersion Include="Testcontainers.PostgreSql" Version="4.1.0"/>
-    <PackageVersion Include="Testcontainers.Redis" Version="4.1.0"/>
+    <PackageVersion Include="Testcontainers.MongoDB" Version="4.1.0" />
+    <PackageVersion Include="Testcontainers.PostgreSql" Version="4.1.0" />
+    <PackageVersion Include="Testcontainers.Redis" Version="4.1.0" />
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.2.2" />
     <PackageVersion Include="Qdrant.Client" Version="1.12.0" />
     <!-- Symbols -->
