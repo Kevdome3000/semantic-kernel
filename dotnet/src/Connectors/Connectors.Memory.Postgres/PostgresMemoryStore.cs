@@ -4,6 +4,7 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -21,6 +22,7 @@ using Pgvector;
 /// The embedded data is saved to the Postgres database specified in the constructor.
 /// Similarity search capability is provided through the pgvector extension. Use Postgres's "Table" to implement "Collection".
 /// </remarks>
+[Experimental("SKEXP0020")]
 public class PostgresMemoryStore : IMemoryStore, IDisposable
 {
     internal const string DefaultSchema = "public";

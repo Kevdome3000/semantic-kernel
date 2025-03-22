@@ -4,6 +4,7 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Pgvector;
@@ -12,6 +13,7 @@ using Pgvector;
 /// <summary>
 /// Interface for client managing postgres database operations for <see cref="PostgresMemoryStore"/>.
 /// </summary>
+[Experimental("SKEXP0020")]
 public interface IPostgresDbClient
 {
     /// <summary>

@@ -3,12 +3,14 @@
 namespace Microsoft.SemanticKernel.Connectors.Postgres;
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Pgvector;
 
 
 /// <summary>
 /// A postgres memory entry.
 /// </summary>
+[Experimental("SKEXP0020")]
 public record struct PostgresMemoryEntry
 {
     /// <summary>

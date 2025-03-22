@@ -15,9 +15,7 @@ namespace SemanticKernel.Connectors.Pinecone.UnitTests;
 /// </summary>
 public class PineconeVectorStoreRecordCollectionTests
 {
-
     private const string TestCollectionName = "testcollection";
-
 
     /// <summary>
     /// Tests that the collection can be created even if the definition and the type do not match.
@@ -37,8 +35,7 @@ public class PineconeVectorStoreRecordCollectionTests
                 new VectorStoreRecordVectorProperty("Embedding", typeof(ReadOnlyMemory<float>)) { Dimensions = 4 },
             }
         };
-
-        using var pineconeClient = new Sdk.PineconeClient("fake api key");
+        var pineconeClient = new Sdk.PineconeClient("fake api key");
 
         // Act.
         var sut = new PineconeVectorStoreRecordCollection<SinglePropsModel>(
@@ -47,10 +44,8 @@ public class PineconeVectorStoreRecordCollectionTests
             new() { VectorStoreRecordDefinition = definition, VectorCustomMapper = Mock.Of<IVectorStoreRecordMapper<SinglePropsModel, Sdk.Vector>>() });
     }
 
-
     public sealed class SinglePropsModel
     {
-
         public string Key { get; set; } = string.Empty;
 
         public string OriginalNameData { get; set; } = string.Empty;
@@ -58,7 +53,5 @@ public class PineconeVectorStoreRecordCollectionTests
         public string Data { get; set; } = string.Empty;
 
         public ReadOnlyMemory<float>? Vector { get; set; }
-
     }
-
 }

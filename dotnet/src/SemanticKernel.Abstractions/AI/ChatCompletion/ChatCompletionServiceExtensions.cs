@@ -169,9 +169,9 @@ public static class ChatCompletionServiceExtensions
                 case ImageContent ic:
                     aiContent =
                         ic.DataUri is not null
-                            ? new Extensions.AI.DataContent(ic.DataUri, ic.MimeType ?? "image/*")
+                            ? new DataContent(ic.DataUri, ic.MimeType)
                             : ic.Uri is not null
-                                ? new Extensions.AI.DataContent(ic.Uri, ic.MimeType ?? "image/*")
+                                ? new Extensions.AI.UriContent(ic.Uri, ic.MimeType ?? "image/*")
                                 :
                         null;
                     break;
@@ -179,20 +179,17 @@ public static class ChatCompletionServiceExtensions
                 case AudioContent ac:
                     aiContent =
                         ac.DataUri is not null
-                            ? new Extensions.AI.DataContent(ac.DataUri, ac.MimeType ?? "audio/*")
+                            ? new DataContent(ac.DataUri, ac.MimeType)
                             : ac.Uri is not null
-                                ? new Extensions.AI.DataContent(ac.Uri, ac.MimeType ?? "audio/*")
+                                ? new Extensions.AI.UriContent(ac.Uri, ac.MimeType ?? "audio/*")
                                 :
                         null;
                     break;
 
                 case BinaryContent bc:
                     aiContent =
-                        bc.DataUri is not null
-                            ? new DataContent(bc.DataUri, bc.MimeType)
-                            : bc.Uri is not null
-                                ? new DataContent(bc.Uri, bc.MimeType)
-                                :
+                        bc.DataUri is not null ? new DataContent(bc.DataUri, bc.MimeType) :
+                        bc.Uri is not null ? new Extensions.AI.UriContent(bc.Uri, bc.MimeType ?? "application/octet-stream") :
                         null;
                     break;
 
@@ -219,7 +216,7 @@ public static class ChatCompletionServiceExtensions
 
     /// <summary>Converts a <see cref="ChatMessage"/> to a <see cref="ChatMessageContent"/>.</summary>
     /// <remarks>This conversion should not be necessary once SK eventually adopts the shared content types.</remarks>
-    internal static ChatMessageContent ToChatMessageContent(ChatMessage message, Extensions.AI.ChatResponse? response = null)
+    internal static ChatMessageContent ToChatMessageContent(ChatMessage message, ChatResponse? response = null)
     {
         ChatMessageContent result = new()
         {
@@ -232,43 +229,19 @@ public static class ChatCompletionServiceExtensions
 
         foreach (AIContent content in message.Contents)
         {
-            KernelContent? resultContent = null;
-            switch (content)
+            KernelContent? resultContent = content switch
             {
-                case Extensions.AI.TextContent tc:
-                    resultContent = new TextContent(tc.Text);
-                    break;
-
-                case Extensions.AI.DataContent dc when dc.MediaTypeStartsWith("image/"):
-                    resultContent = dc.Data is not null ? new ImageContent(dc.Uri)
-                        : new ImageContent(new Uri(dc.Uri));
-                    break;
-
-                case Extensions.AI.DataContent dc when dc.MediaTypeStartsWith("audio/"):
-                    resultContent = dc.Data is not null ? new AudioContent(dc.Uri)
-                        : new AudioContent(new Uri(dc.Uri));
-                    break;
-
-                case DataContent dc:
-                    resultContent = dc.Data is not null ? new BinaryContent(dc.Uri)
-                        : new BinaryContent(new Uri(dc.Uri));
-                    break;
-
-                case Extensions.AI.FunctionCallContent fcc:
-                    resultContent = new FunctionCallContent(fcc.Name,
-                        null,
-                        fcc.CallId,
-                        fcc.Arguments is not null
-                            ? new KernelArguments(fcc.Arguments)
-                            : null);
-                    break;
-
-                case Extensions.AI.FunctionResultContent frc:
-                    resultContent = new FunctionResultContent(callId:
-                        frc.CallId,
-                       result: frc.Result);
-                    break;
-            }
+                Microsoft.Extensions.AI.TextContent tc => new TextContent(tc.Text),
+                DataContent dc when dc.HasTopLevelMediaType("image") => new ImageContent(dc.Uri),
+                Extensions.AI.UriContent uc when uc.HasTopLevelMediaType("image") => new ImageContent(uc.Uri),
+                DataContent dc when dc.HasTopLevelMediaType("audio") => new AudioContent(dc.Uri),
+                Extensions.AI.UriContent uc when uc.HasTopLevelMediaType("audio") => new AudioContent(uc.Uri),
+                DataContent dc => new BinaryContent(dc.Uri),
+                Extensions.AI.UriContent uc => new BinaryContent(uc.Uri),
+                Microsoft.Extensions.AI.FunctionCallContent fcc => new FunctionCallContent(fcc.Name, null, fcc.CallId, fcc.Arguments is not null ? new(fcc.Arguments) : null),
+                Microsoft.Extensions.AI.FunctionResultContent frc => new FunctionResultContent(callId: frc.CallId, result: frc.Result),
+                _ => null
+            };
 
             if (resultContent is not null)
             {

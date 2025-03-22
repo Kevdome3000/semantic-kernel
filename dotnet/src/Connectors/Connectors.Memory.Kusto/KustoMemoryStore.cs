@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Kusto;
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,13 +7,14 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using global::Kusto.Cloud.Platform.Utils;
-using global::Kusto.Data;
-using global::Kusto.Data.Common;
-using global::Kusto.Data.Net.Client;
-using Http;
-using Memory;
+using Kusto.Cloud.Platform.Utils;
+using Kusto.Data;
+using Kusto.Data.Common;
+using Kusto.Data.Net.Client;
+using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.Memory;
 
+namespace Microsoft.SemanticKernel.Connectors.Kusto;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> backed by a Kusto database.
@@ -26,7 +25,6 @@ using Memory;
 /// </remarks>
 public class KustoMemoryStore : IMemoryStore, IDisposable
 {
-
     /// <summary>
     /// Initializes a new instance of the <see cref="KustoMemoryStore"/> class.
     /// </summary>
@@ -43,7 +41,6 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         this._disposer = new Disposer(nameof(KustoMemoryStore), nameof(KustoMemoryStore));
     }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="KustoMemoryStore"/> class.
     /// </summary>
@@ -57,60 +54,48 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         this._disposer.Add(this._adminClient);
     }
 
-
     /// <inheritdoc/>
     public async Task CreateCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
-        using var resp = await this._adminClient.ExecuteControlCommandAsync(
+        using var resp = await this._adminClient
+            .ExecuteControlCommandAsync(
                 this._database,
                 CslCommandGenerator.GenerateTableCreateCommand(new TableSchema(GetTableName(collectionName, normalized: false), s_collectionColumns)),
                 GetClientRequestProperties()
-            ).
-            ConfigureAwait(false);
+            ).ConfigureAwait(false);
     }
-
 
     /// <inheritdoc/>
     public async Task DeleteCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
-        using var resp = await this._adminClient.ExecuteControlCommandAsync(
+        using var resp = await this._adminClient
+            .ExecuteControlCommandAsync(
                 this._database,
                 CslCommandGenerator.GenerateTableDropCommand(GetTableName(collectionName, normalized: false)),
                 GetClientRequestProperties()
-            ).
-            ConfigureAwait(false);
+            ).ConfigureAwait(false);
     }
-
 
     /// <inheritdoc/>
     public async Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancellationToken = default)
     {
         var command = CslCommandGenerator.GenerateTablesShowCommand() + $" | where TableName == '{GetTableName(collectionName, normalized: false)}' | project TableName";
-
-        var result = await this._adminClient.ExecuteControlCommandAsync<TablesShowCommandResult>(
+        var result = await this._adminClient
+            .ExecuteControlCommandAsync<TablesShowCommandResult>(
                 this._database,
                 command,
                 GetClientRequestProperties()
-            ).
-            ConfigureAwait(false);
+            ).ConfigureAwait(false);
 
         return result.Count() == 1;
     }
 
-
     /// <inheritdoc/>
-    public async Task<MemoryRecord?> GetAsync(
-        string collectionName,
-        string key,
-        bool withEmbedding = false,
-        CancellationToken cancellationToken = default)
+    public async Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancellationToken = default)
     {
         var result = this.GetBatchAsync(collectionName, [key], withEmbedding, cancellationToken);
-
-        return await result.FirstOrDefaultAsync(cancellationToken).
-            ConfigureAwait(false);
+        return await result.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
     }
-
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(
@@ -119,15 +104,14 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var inClauseValue = string.Join(",", keys.Select(k => $"'{k}'"));
-
+        var inClauseValue = string.Join(",", keys.Select(k => $"'{k.Replace("'", "''")}'"));
         var query = $"{this.GetBaseQuery(collectionName)} " +
-                    $"| where Key in ({inClauseValue}) " +
-                    "| project " +
-                    $"{s_keyColumn.Name}, " +
-                    $"{s_metadataColumn.Name}=tostring({s_metadataColumn.Name}), " +
-                    $"{s_timestampColumn.Name}, " +
-                    $"{s_embeddingColumn.Name}=tostring({s_embeddingColumn.Name})";
+            $"| where Key in ({inClauseValue}) " +
+            "| project " +
+            $"{s_keyColumn.Name}, " +
+            $"{s_metadataColumn.Name}=tostring({s_metadataColumn.Name}), " +
+            $"{s_timestampColumn.Name}, " +
+            $"{s_embeddingColumn.Name}=tostring({s_embeddingColumn.Name})";
 
         if (!withEmbeddings)
         {
@@ -135,27 +119,20 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
             query += " | extend Embedding = ''";
         }
 
-        using var reader = await this._queryClient.ExecuteQueryAsync(
+        using var reader = await this._queryClient
+            .ExecuteQueryAsync(
                 this._database,
                 query,
                 GetClientRequestProperties(),
                 cancellationToken
-            ).
-            ConfigureAwait(false);
+            ).ConfigureAwait(false);
 
         while (reader.Read())
         {
             var key = reader.GetString(0);
             var metadata = reader.GetString(1);
-
-            DateTime? timestamp = !reader.IsDBNull(2)
-                ? reader.GetDateTime(2)
-                : null;
-
-            var recordEmbedding = withEmbeddings
-                ? reader.GetString(3)
-                : default;
-
+            DateTime? timestamp = !reader.IsDBNull(2) ? reader.GetDateTime(2) : null;
+            var recordEmbedding = withEmbeddings ? reader.GetString(3) : default;
             var serializedMetadata = KustoSerializer.DeserializeMetadata(metadata);
             var serializedEmbedding = KustoSerializer.DeserializeEmbedding(recordEmbedding);
             var kustoRecord = new KustoMemoryRecord(key, serializedMetadata, serializedEmbedding, timestamp);
@@ -164,23 +141,21 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         }
     }
 
-
     /// <inheritdoc/>
     public async IAsyncEnumerable<string> GetCollectionsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var result = await this._adminClient.ExecuteControlCommandAsync<TablesShowCommandResult>(
+        var result = await this._adminClient
+            .ExecuteControlCommandAsync<TablesShowCommandResult>(
                 this._database,
                 CslCommandGenerator.GenerateTablesShowCommand(),
                 GetClientRequestProperties()
-            ).
-            ConfigureAwait(false);
+            ).ConfigureAwait(false);
 
         foreach (var item in result)
         {
             yield return GetCollectionName(item.TableName);
         }
     }
-
 
     /// <inheritdoc/>
     public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(
@@ -190,13 +165,9 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         bool withEmbedding = false,
         CancellationToken cancellationToken = default)
     {
-        var result = this.GetNearestMatchesAsync(collectionName, embedding, 1, minRelevanceScore,
-            withEmbedding, cancellationToken);
-
-        return await result.FirstOrDefaultAsync(cancellationToken).
-            ConfigureAwait(false);
+        var result = this.GetNearestMatchesAsync(collectionName, embedding, 1, minRelevanceScore, withEmbedding, cancellationToken);
+        return await result.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
     }
-
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(
@@ -221,53 +192,42 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         // reorder to make it easier to ignore the embedding (key, metadata, timestamp, similarity, embedding)
         // Using tostring to make it easier to parse the result. There are probably better ways we should explore.
         similarityQuery += "| project " +
-                           $"{s_keyColumn.Name}, " +
-                           $"{s_metadataColumn.Name}=tostring({s_metadataColumn.Name}), " +
-                           $"{s_timestampColumn.Name}, " +
-                           "similarity, " +
-                           $"{s_embeddingColumn.Name}=tostring({s_embeddingColumn.Name})";
+            $"{s_keyColumn.Name}, " +
+            $"{s_metadataColumn.Name}=tostring({s_metadataColumn.Name}), " +
+            $"{s_timestampColumn.Name}, " +
+            "similarity, " +
+            $"{s_embeddingColumn.Name}=tostring({s_embeddingColumn.Name})";
 
         if (!withEmbeddings)
         {
             similarityQuery += $" | project-away {s_embeddingColumn.Name} ";
         }
 
-        using var reader = await this._queryClient.ExecuteQueryAsync(
+        using var reader = await this._queryClient
+            .ExecuteQueryAsync(
                 this._database,
                 similarityQuery,
                 GetClientRequestProperties(),
                 cancellationToken
-            ).
-            ConfigureAwait(false);
+            ).ConfigureAwait(false);
 
         while (reader.Read())
         {
             var key = reader.GetString(0);
             var metadata = reader.GetString(1);
-
-            DateTime? timestamp = !reader.IsDBNull(2)
-                ? reader.GetDateTime(2)
-                : null;
-
+            DateTime? timestamp = !reader.IsDBNull(2) ? reader.GetDateTime(2) : null;
             var similarity = reader.GetDouble(3);
-
-            var recordEmbedding = withEmbeddings
-                ? reader.GetString(4)
-                : default;
-
+            var recordEmbedding = withEmbeddings ? reader.GetString(4) : default;
             var serializedMetadata = KustoSerializer.DeserializeMetadata(metadata);
             var serializedEmbedding = KustoSerializer.DeserializeEmbedding(recordEmbedding);
             var kustoRecord = new KustoMemoryRecord(key, serializedMetadata, serializedEmbedding, timestamp);
-
             yield return (kustoRecord.ToMemoryRecord(), similarity);
         }
     }
 
-
     /// <inheritdoc/>
     public Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default)
         => this.RemoveBatchAsync(collectionName, [key], cancellationToken);
-
 
     /// <inheritdoc/>
     public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default)
@@ -275,26 +235,21 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         if (keys is not null)
         {
             var keysString = string.Join(",", keys.Select(k => $"'{k}'"));
-
-            using var resp = await this._adminClient.ExecuteControlCommandAsync(
+            using var resp = await this._adminClient
+                .ExecuteControlCommandAsync(
                     this._database,
                     CslCommandGenerator.GenerateDeleteTableRecordsCommand(GetTableName(collectionName), $"{GetTableName(collectionName)} | where Key in ({keysString})"),
                     GetClientRequestProperties()
-                ).
-                ConfigureAwait(false);
+                ).ConfigureAwait(false);
         }
     }
-
 
     /// <inheritdoc/>
     public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default)
     {
         var result = this.UpsertBatchAsync(collectionName, [record], cancellationToken);
-
-        return await result.FirstOrDefaultAsync(cancellationToken).
-            ConfigureAwait(false) ?? string.Empty;
+        return await result.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false) ?? string.Empty;
     }
-
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<string> UpsertBatchAsync(
@@ -330,20 +285,18 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         stream.Seek(0, SeekOrigin.Begin);
 
         var command = CslCommandGenerator.GenerateTableIngestPushCommand(GetTableName(collectionName), false, stream);
-
-        await this._adminClient.ExecuteControlCommandAsync(
+        await this._adminClient
+            .ExecuteControlCommandAsync(
                 this._database,
                 command,
                 GetClientRequestProperties()
-            ).
-            ConfigureAwait(false);
+            ).ConfigureAwait(false);
 
         foreach (var key in keys)
         {
             yield return key;
         }
     }
-
 
     /// <summary>
     /// Disposes the <see cref="KustoMemoryStore"/> instance.
@@ -353,7 +306,6 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         this.Dispose(true);
         GC.SuppressFinalize(this);
     }
-
 
     /// <summary>
     /// Disposes the resources used by the <see cref="KustoMemoryStore"/> instance.
@@ -367,34 +319,26 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         }
     }
 
-
     #region private ================================================================================
 
     private readonly Disposer _disposer;
-
     private readonly object _lock = new();
 
     private readonly string _database;
-
 
     private static ClientRequestProperties GetClientRequestProperties() => new()
     {
         Application = HttpHeaderConstant.Values.UserAgent,
     };
 
-
     private bool _searchInitialized;
 
     private readonly ICslQueryProvider _queryClient;
-
     private readonly ICslAdminProvider _adminClient;
 
     private static readonly ColumnSchema s_keyColumn = new("Key", typeof(string).FullName);
-
     private static readonly ColumnSchema s_metadataColumn = new("Metadata", typeof(object).FullName);
-
     private static readonly ColumnSchema s_embeddingColumn = new("Embedding", typeof(object).FullName);
-
     private static readonly ColumnSchema s_timestampColumn = new("Timestamp", typeof(DateTime).FullName);
 
     private static readonly ColumnSchema[] s_collectionColumns =
@@ -405,7 +349,6 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         s_timestampColumn
     ];
 
-
     /// <summary>
     /// Converts collection name to Kusto table name.
     /// </summary>
@@ -415,10 +358,7 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
     /// <param name="collectionName">Kusto table name.</param>
     /// <param name="normalized">Boolean flag that indicates if table name normalization is needed.</param>
     private static string GetTableName(string collectionName, bool normalized = true)
-        => normalized
-            ? CslSyntaxGenerator.NormalizeName(collectionName)
-            : collectionName;
-
+        => normalized ? CslSyntaxGenerator.NormalizeName(collectionName) : collectionName;
 
     /// <summary>
     /// Converts Kusto table name to collection name.
@@ -428,9 +368,7 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
     /// </remarks>
     /// <param name="tableName">Kusto table name.</param>
     private static string GetCollectionName(string tableName)
-        => tableName.Replace("['", "").
-            Replace("']", "");
-
+        => tableName.Replace("['", "").Replace("']", "");
 
     /// <summary>
     /// Returns base Kusto query.
@@ -444,7 +382,6 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
     /// <param name="collection">Collection name.</param>
     private string GetBaseQuery(string collection)
         => $"{GetTableName(collection)} | summarize arg_max(ingestion_time(), *) by {s_keyColumn.Name} ";
-
 
     /// <summary>
     /// Initializes vector cosine similarity function for given database.
@@ -461,16 +398,17 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
             {
                 if (!this._searchInitialized)
                 {
-                    var resp = this._adminClient.ExecuteControlCommand<FunctionShowCommandResult>(
-                        this._database,
-                        ".create-or-alter function with (docstring = 'Calculate the Cosine similarity of 2 numerical arrays',folder = 'Vector') series_cosine_similarity_fl(vec1:dynamic,vec2:dynamic,vec1_size:real=real(null),vec2_size:real=real(null)) {" +
-                        "  let dp = series_dot_product(vec1, vec2);" +
-                        "  let v1l = iff(isnull(vec1_size), sqrt(series_dot_product(vec1, vec1)), vec1_size);" +
-                        "  let v2l = iff(isnull(vec2_size), sqrt(series_dot_product(vec2, vec2)), vec2_size);" +
-                        "  dp/(v1l*v2l)" +
-                        "}",
-                        GetClientRequestProperties()
-                    );
+                    var resp = this._adminClient
+                        .ExecuteControlCommand<FunctionShowCommandResult>(
+                            this._database,
+                            ".create-or-alter function with (docstring = 'Calculate the Cosine similarity of 2 numerical arrays',folder = 'Vector') series_cosine_similarity_fl(vec1:dynamic,vec2:dynamic,vec1_size:real=real(null),vec2_size:real=real(null)) {" +
+                            "  let dp = series_dot_product(vec1, vec2);" +
+                            "  let v1l = iff(isnull(vec1_size), sqrt(series_dot_product(vec1, vec1)), vec1_size);" +
+                            "  let v2l = iff(isnull(vec2_size), sqrt(series_dot_product(vec2, vec2)), vec2_size);" +
+                            "  dp/(v1l*v2l)" +
+                            "}",
+                            GetClientRequestProperties()
+                        );
 
                     this._searchInitialized = true;
                 }
@@ -479,6 +417,4 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
     }
 
     #endregion private ================================================================================
-
-
 }

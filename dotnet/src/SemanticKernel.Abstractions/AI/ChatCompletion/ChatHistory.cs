@@ -36,8 +36,8 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     {
         Verify.NotNullOrWhiteSpace(message);
 
-        this._messages = [];
-        this.Add(new ChatMessageContent(role, message));
+        _messages = [];
+        Add(new ChatMessageContent(role, message));
     }
 
     /// <summary>
@@ -128,7 +128,7 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// </summary>
     /// <param name="content">Message content</param>
     public void AddDeveloperMessage(string content) =>
-        this.AddMessage(AuthorRole.Developer, content);
+        AddMessage(AuthorRole.Developer, content);
 
     /// <summary>Adds a message to the history.</summary>
     /// <param name="item">The message to add.</param>

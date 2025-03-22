@@ -1,42 +1,37 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Google.Core;
-
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel.Connectors.Google.Core;
 
 internal sealed class GoogleAIEmbeddingRequest
 {
-
     [JsonPropertyName("requests")]
     public IList<RequestEmbeddingContent> Requests { get; set; } = null!;
 
-
-    public static GoogleAIEmbeddingRequest FromData(IEnumerable<string> data, string modelId) => new()
+    public static GoogleAIEmbeddingRequest FromData(IEnumerable<string> data, string modelId, int? dimensions = null) => new()
     {
         Requests = data.Select(text => new RequestEmbeddingContent
+        {
+            Model = $"models/{modelId}",
+            Content = new()
             {
-                Model = $"models/{modelId}",
-                Content = new()
-                {
-                    Parts =
-                    [
-                        new()
-                        {
-                            Text = text
-                        }
-                    ]
-                }
-            }).
-            ToList()
+                Parts =
+                [
+                    new()
+                    {
+                        Text = text
+                    }
+                ]
+            },
+            Dimensions = dimensions
+        }).ToList()
     };
-
 
     internal sealed class RequestEmbeddingContent
     {
-
         [JsonPropertyName("model")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? Model { get; set; }
@@ -52,6 +47,8 @@ internal sealed class GoogleAIEmbeddingRequest
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? TaskType { get; set; } // todo: enum
 
+        [JsonPropertyName("outputDimensionality")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public int? Dimensions { get; set; }
     }
-
 }

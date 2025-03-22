@@ -1,13 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
 /// <summary>
 /// A SQL Server or Azure SQL memory entry.
 /// </summary>
+[Experimental("SKEXP0020")]
 internal record struct SqlServerMemoryEntry
 {
-
     /// <summary>
     /// Unique identifier of the memory entry.
     /// </summary>
@@ -27,5 +30,4 @@ internal record struct SqlServerMemoryEntry
     /// Optional timestamp.
     /// </summary>
     public DateTimeOffset? Timestamp { get; set; }
-
 }

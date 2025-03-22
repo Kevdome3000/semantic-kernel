@@ -55,7 +55,7 @@ internal sealed class MistralClient
         var endpoint = this.GetEndpoint(mistralExecutionSettings, path: "chat/completions");
         var autoInvoke = kernel is not null && mistralExecutionSettings.ToolCallBehavior?.MaximumAutoInvokeAttempts > 0 && s_inflightAutoInvokes.Value < MaxInflightAutoInvokes;
 
-        for (int requestIndex = 1;; requestIndex++)
+        for (int requestIndex = 1; ; requestIndex++)
         {
             var chatRequest = this.CreateChatCompletionRequest(modelId, stream: false, chatHistory, mistralExecutionSettings, kernel);
 
@@ -91,7 +91,6 @@ internal sealed class MistralClient
                             {
                                 activity.SetPromptTokenUsage(promptTokens);
                             }
-
                             if (usage.CompletionTokens is int completionTokens)
                             {
                                 activity.SetCompletionTokenUsage(completionTokens);
@@ -128,7 +127,6 @@ internal sealed class MistralClient
             {
                 this._logger.LogDebug("Tool requests: {Requests}", chatChoice.ToolCallCount);
             }
-
             if (this._logger.IsEnabled(LogLevel.Trace))
             {
                 this._logger.LogTrace("Function call requests: {Requests}", string.Join(", ", chatChoice.ToolCalls!.Select(tc => $"{tc.Function?.Name}({tc.Function?.Parameters})")));
@@ -275,7 +273,7 @@ internal sealed class MistralClient
         var autoInvoke = kernel is not null && mistralExecutionSettings.ToolCallBehavior?.MaximumAutoInvokeAttempts > 0 && s_inflightAutoInvokes.Value < MaxInflightAutoInvokes;
 
         List<MistralToolCall>? toolCalls = null;
-        for (int requestIndex = 1;; requestIndex++)
+        for (int requestIndex = 1; ; requestIndex++)
         {
             var chatRequest = this.CreateChatCompletionRequest(modelId, stream: true, chatHistory, mistralExecutionSettings, kernel);
 
@@ -572,7 +570,6 @@ internal sealed class MistralClient
     }
 
     #region private
-
     private readonly string _modelId;
     private readonly string _apiKey;
     private readonly Uri? _endpoint;
@@ -672,7 +669,6 @@ internal sealed class MistralClient
         {
             throw new ArgumentException("Chat history must contain at least one message", nameof(chatHistory));
         }
-
         var firstRole = chatHistory[0].Role.ToString();
         if (firstRole is not "system" and not "user")
         {
@@ -702,6 +698,8 @@ internal sealed class MistralClient
             FrequencyPenalty = executionSettings.FrequencyPenalty,
             PresencePenalty = executionSettings.PresencePenalty,
             Stop = executionSettings.Stop,
+            DocumentImageLimit = executionSettings.DocumentImageLimit,
+            DocumentPageLimit = executionSettings.DocumentPageLimit
         };
 
         executionSettings.ToolCallBehavior?.ConfigureRequest(kernel, request);
@@ -771,12 +769,8 @@ internal sealed class MistralClient
                 });
             }
 
-            if (messages is not null)
-            {
-                return messages;
-            }
-
-            throw new NotSupportedException("No function result provided in the tool message.");
+            return messages
+                ?? throw new NotSupportedException("No function result provided in the tool message.");
         }
 
         if (chatMessage.Items.Count == 1 && chatMessage.Items[0] is TextContent text)
@@ -790,22 +784,31 @@ internal sealed class MistralClient
             if (item is TextContent textContent && !string.IsNullOrEmpty(textContent.Text))
             {
                 content.Add(new TextChunk(textContent.Text!));
+                continue;
             }
-            else if (item is ImageContent imageContent)
+
+            if (item is ImageContent imageContent)
             {
                 if (imageContent.Uri is not null)
                 {
                     content.Add(new ImageUrlChunk(imageContent.Uri.ToString()));
+                    continue;
                 }
-                else if (imageContent.DataUri is not null)
+
+                if (imageContent.DataUri is not null)
                 {
                     content.Add(new ImageUrlChunk(imageContent.DataUri));
+                    continue;
                 }
             }
-            else
+
+            if (item is BinaryContent binaryContent && binaryContent.Uri is not null)
             {
-                throw new NotSupportedException("Invalid message content, only text and image url are supported.");
+                content.Add(new DocumentUrlChunk(binaryContent.Uri.ToString()));
+                continue;
             }
+
+            throw new NotSupportedException("Invalid message content, only text, image url and document url are supported.");
         }
 
         return [new MistralChatMessage(chatMessage.Role.ToString(), content)];
@@ -1085,6 +1088,5 @@ internal sealed class MistralClient
             await functionCallCallback(context).ConfigureAwait(false);
         }
     }
-
     #endregion
 }
