@@ -43,7 +43,6 @@ public sealed class KernelReturnParameterMetadata
 
     /// <summary>Initializes the <see cref="KernelReturnParameterMetadata"/>.</summary>
     /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to generate JSON schema.</param>
-    [Experimental("SKEXP0120")]
     public KernelReturnParameterMetadata(JsonSerializerOptions jsonSerializerOptions)
     {
         _jsonSerializerOptions = jsonSerializerOptions;
@@ -63,7 +62,6 @@ public sealed class KernelReturnParameterMetadata
     /// <summary>Initializes a <see cref="KernelReturnParameterMetadata"/> as a copy of another <see cref="KernelReturnParameterMetadata"/>.</summary>
     /// <param name="metadata">The metadata to copy.</param>
     /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to generate JSON schema.</param>
-    [Experimental("SKEXP0120")]
     public KernelReturnParameterMetadata(KernelReturnParameterMetadata metadata, JsonSerializerOptions jsonSerializerOptions)
     {
         _description = metadata._description;

@@ -13,9 +13,14 @@ public sealed class Google_GeminiGetModelResult(ITestOutputHelper output) : Base
 {
 
     [Fact]
-    public async Task GetTokenUsageMetadataAsync()
+    public async Task GetTokenUsageMetadata()
     {
         Console.WriteLine("======== Inline Function Definition + Invocation ========");
+
+        Assert.NotNull(TestConfiguration.VertexAI.BearerKey);
+        Assert.NotNull(TestConfiguration.VertexAI.Location);
+        Assert.NotNull(TestConfiguration.VertexAI.ProjectId);
+        Assert.NotNull(TestConfiguration.VertexAI.Gemini.ModelId);
 
         // Create kernel
         Kernel kernel = Kernel.CreateBuilder().

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Collections.Generic;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -36,6 +37,17 @@ public interface IKernelFunction
     /// Provides execution settings for a kernel function.
     /// </summary>
     IReadOnlyDictionary<string, PromptExecutionSettings>? ExecutionSettings { get; }
+
+    /// <summary>
+    /// Gets the method information for the underlying implementation of the kernel function.
+    /// </summary>
+    /// <remarks>
+    /// This property provides access to the metadata and reflection details of the method
+    /// that implements the functionality of the kernel function. It can be used to inspect
+    /// or invoke the method dynamically when needed.
+    /// </remarks>
+    public MethodInfo? UnderlyingMethod { get; }
+
 
     /// <summary>
     /// Invokes a <see cref="IKernelFunction"/> asynchronously with the specified arguments.

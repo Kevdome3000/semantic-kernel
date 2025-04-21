@@ -1,6 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Bedrock;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace GettingStarted.BedrockAgents;
 
@@ -16,16 +19,17 @@ public class Step01_BedrockAgent(ITestOutputHelper output) : BaseBedrockAgentTes
     /// The agent will respond to the user query.
     /// </summary>
     [Fact]
-    public async Task UseNewAgentAsync()
+    public async Task UseNewAgent()
     {
         // Create the agent
         var bedrockAgent = await this.CreateAgentAsync("Step01_BedrockAgent");
 
         // Respond to user input
+        AgentThread bedrockAgentThread = new BedrockAgentThread(this.RuntimeClient);
         try
         {
-            var responses = bedrockAgent.InvokeAsync(BedrockAgent.CreateSessionId(), UserQuery, null);
-            await foreach (var response in responses)
+            var responses = bedrockAgent.InvokeAsync(new ChatMessageContent(AuthorRole.User, UserQuery), bedrockAgentThread, null);
+            await foreach (ChatMessageContent response in responses)
             {
                 this.Output.WriteLine(response.Content);
             }
@@ -33,6 +37,7 @@ public class Step01_BedrockAgent(ITestOutputHelper output) : BaseBedrockAgentTes
         finally
         {
             await bedrockAgent.Client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
+            await bedrockAgentThread.DeleteAsync();
         }
     }
 
@@ -41,7 +46,7 @@ public class Step01_BedrockAgent(ITestOutputHelper output) : BaseBedrockAgentTes
     /// The agent will respond to the user query.
     /// </summary>
     [Fact]
-    public async Task UseExistingAgentAsync()
+    public async Task UseExistingAgent()
     {
         // Retrieve the agent
         // Replace "bedrock-agent-id" with the ID of the agent you want to use
@@ -50,10 +55,18 @@ public class Step01_BedrockAgent(ITestOutputHelper output) : BaseBedrockAgentTes
         var bedrockAgent = new BedrockAgent(getAgentResponse.Agent, this.Client, this.RuntimeClient);
 
         // Respond to user input
-        var responses = bedrockAgent.InvokeAsync(BedrockAgent.CreateSessionId(), UserQuery, null);
-        await foreach (var response in responses)
+        AgentThread bedrockAgentThread = new BedrockAgentThread(this.RuntimeClient);
+        try
         {
-            this.Output.WriteLine(response.Content);
+            var responses = bedrockAgent.InvokeAsync(new ChatMessageContent(AuthorRole.User, UserQuery), bedrockAgentThread, null);
+            await foreach (ChatMessageContent response in responses)
+            {
+                this.Output.WriteLine(response.Content);
+            }
+        }
+        finally
+        {
+            await bedrockAgentThread.DeleteAsync();
         }
     }
 
@@ -62,16 +75,17 @@ public class Step01_BedrockAgent(ITestOutputHelper output) : BaseBedrockAgentTes
     /// The agent will respond to the user query.
     /// </summary>
     [Fact]
-    public async Task UseNewAgentStreamingAsync()
+    public async Task UseNewAgentStreaming()
     {
         // Create the agent
         var bedrockAgent = await this.CreateAgentAsync("Step01_BedrockAgent_Streaming");
+        AgentThread bedrockAgentThread = new BedrockAgentThread(this.RuntimeClient);
 
         // Respond to user input
         try
         {
-            var streamingResponses = bedrockAgent.InvokeStreamingAsync(BedrockAgent.CreateSessionId(), UserQuery, null);
-            await foreach (var response in streamingResponses)
+            var streamingResponses = bedrockAgent.InvokeStreamingAsync(new ChatMessageContent(AuthorRole.User, UserQuery), bedrockAgentThread, null);
+            await foreach (StreamingChatMessageContent response in streamingResponses)
             {
                 this.Output.WriteLine(response.Content);
             }
@@ -79,6 +93,7 @@ public class Step01_BedrockAgent(ITestOutputHelper output) : BaseBedrockAgentTes
         finally
         {
             await bedrockAgent.Client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
+            await bedrockAgentThread.DeleteAsync();
         }
     }
 

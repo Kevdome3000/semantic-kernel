@@ -1,19 +1,26 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Google;
-
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using ChatCompletion;
-using Core;
+using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.Google.Core;
 
+namespace Microsoft.SemanticKernel.Connectors.Google;
 
 /// <summary>
 /// Gemini specialized chat message content
 /// </summary>
 public sealed class GeminiChatMessageContent : ChatMessageContent
 {
+    /// <summary>
+    /// Creates a new instance of the <see cref="GeminiChatMessageContent"/> class
+    /// </summary>
+    [JsonConstructor]
+    public GeminiChatMessageContent()
+    {
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GeminiChatMessageContent"/> class.
@@ -32,7 +39,6 @@ public sealed class GeminiChatMessageContent : ChatMessageContent
 
         this.CalledToolResult = calledToolResult;
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GeminiChatMessageContent"/> class.
@@ -59,7 +65,6 @@ public sealed class GeminiChatMessageContent : ChatMessageContent
         this.CalledToolResult = calledToolResult;
     }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="GeminiChatMessageContent"/> class.
     /// </summary>
@@ -82,10 +87,8 @@ public sealed class GeminiChatMessageContent : ChatMessageContent
             encoding: Encoding.UTF8,
             metadata: metadata)
     {
-        this.ToolCalls = functionsToolCalls?.Select(tool => new GeminiFunctionToolCall(tool)).
-            ToList();
+        this.ToolCalls = functionsToolCalls?.Select(tool => new GeminiFunctionToolCall(tool)).ToList();
     }
-
 
     /// <summary>
     /// A list of the tools returned by the model with arguments.
@@ -101,5 +104,4 @@ public sealed class GeminiChatMessageContent : ChatMessageContent
     /// The metadata associated with the content.
     /// </summary>
     public new GeminiMetadata? Metadata => (GeminiMetadata?)base.Metadata;
-
 }

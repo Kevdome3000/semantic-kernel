@@ -3,6 +3,7 @@
 using System.ComponentModel;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.Bedrock;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace GettingStarted.BedrockAgents;
 
@@ -16,7 +17,7 @@ public class Step03_BedrockAgent_Functions(ITestOutputHelper output) : BaseBedro
     /// The agent will respond to the user query by calling kernel functions to provide weather information.
     /// </summary>
     [Fact]
-    public async Task UseAgentWithFunctionsAsync()
+    public async Task UseAgentWithFunctions()
     {
         // Create the agent
         var bedrockAgent = await this.CreateAgentAsync("Step03_BedrockAgent_Functions");
@@ -25,10 +26,9 @@ public class Step03_BedrockAgent_Functions(ITestOutputHelper output) : BaseBedro
         try
         {
             var responses = bedrockAgent.InvokeAsync(
-                BedrockAgent.CreateSessionId(),
-                "What is the weather in Seattle?",
+                new ChatMessageContent(AuthorRole.User, "What is the weather in Seattle?"),
                 null);
-            await foreach (var response in responses)
+            await foreach (ChatMessageContent response in responses)
             {
                 if (response.Content != null)
                 {
@@ -48,7 +48,7 @@ public class Step03_BedrockAgent_Functions(ITestOutputHelper output) : BaseBedro
     /// information about the menu.
     /// </summary>
     [Fact]
-    public async Task UseAgentWithFunctionsComplexTypeAsync()
+    public async Task UseAgentWithFunctionsComplexType()
     {
         // Create the agent
         var bedrockAgent = await this.CreateAgentAsync("Step03_BedrockAgent_Functions_Complex_Types");
@@ -57,10 +57,9 @@ public class Step03_BedrockAgent_Functions(ITestOutputHelper output) : BaseBedro
         try
         {
             var responses = bedrockAgent.InvokeAsync(
-                BedrockAgent.CreateSessionId(),
-                "What is the special soup and how much does it cost?",
+                 new ChatMessageContent(AuthorRole.User, "What is the special soup and how much does it cost?"),
                 null);
-            await foreach (var response in responses)
+            await foreach (ChatMessageContent response in responses)
             {
                 if (response.Content != null)
                 {
@@ -79,7 +78,7 @@ public class Step03_BedrockAgent_Functions(ITestOutputHelper output) : BaseBedro
     /// The agent will respond to the user query by calling kernel functions to provide weather information.
     /// </summary>
     [Fact]
-    public async Task UseAgentStreamingWithFunctionsAsync()
+    public async Task UseAgentStreamingWithFunctions()
     {
         // Create the agent
         var bedrockAgent = await this.CreateAgentAsync("Step03_BedrockAgent_Functions_Streaming");
@@ -88,10 +87,9 @@ public class Step03_BedrockAgent_Functions(ITestOutputHelper output) : BaseBedro
         try
         {
             var streamingResponses = bedrockAgent.InvokeStreamingAsync(
-                BedrockAgent.CreateSessionId(),
-                "What is the weather forecast in Seattle?",
+                new ChatMessageContent(AuthorRole.User, "What is the weather forecast in Seattle?"),
                 null);
-            await foreach (var response in streamingResponses)
+            await foreach (StreamingChatMessageContent response in streamingResponses)
             {
                 if (response.Content != null)
                 {
@@ -119,10 +117,9 @@ public class Step03_BedrockAgent_Functions(ITestOutputHelper output) : BaseBedro
         try
         {
             var responses = bedrockAgent.InvokeAsync(
-                BedrockAgent.CreateSessionId(),
-                "What is the current weather in Seattle and what is the weather forecast in Seattle?",
+                new ChatMessageContent(AuthorRole.User, "What is the current weather in Seattle and what is the weather forecast in Seattle?"),
                 null);
-            await foreach (var response in responses)
+            await foreach (ChatMessageContent response in responses)
             {
                 if (response.Content != null)
                 {
@@ -155,7 +152,7 @@ public class Step03_BedrockAgent_Functions(ITestOutputHelper output) : BaseBedro
 
     private sealed class WeatherPlugin
     {
-        [KernelFunction, Description("Provides realtime weather information.")]
+        [KernelFunction, Description("Provides real-time weather information.")]
         public string Current([Description("The location to get the weather for.")] string location)
         {
             return $"The current weather in {location} is 72 degrees.";

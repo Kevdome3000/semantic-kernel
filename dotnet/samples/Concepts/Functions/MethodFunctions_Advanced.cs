@@ -4,28 +4,27 @@ namespace Functions;
 
 using System.ComponentModel;
 using System.Globalization;
+using System.Reflection;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
 
 
-// This example shows different ways how to define and execute method functions using custom and primitive types.
+/// <summary>
+/// These samples show advanced usage of method functions.
+/// </summary>
 public class MethodFunctions_Advanced(ITestOutputHelper output) : BaseTest(output)
 {
-
-
-    #region Method Functions Chaining
-
     /// <summary>
     /// This example executes Function1, which in turn executes Function2.
     /// </summary>
     [Fact]
-    public async Task MethodFunctionsChainingAsync()
+    public async Task MethodFunctionsChaining()
     {
         Console.WriteLine("Running Method Function Chaining example...");
 
         var kernel = new Kernel();
 
-        var functions = kernel.ImportPluginFromType<FunctionsChainingPlugin>();
+        var functions = kernel.ImportPluginFromType<Plugin>();
 
         var customType = await kernel.InvokeAsync<MyCustomType>(functions["Function1"]);
 
@@ -35,12 +34,29 @@ public class MethodFunctions_Advanced(ITestOutputHelper output) : BaseTest(outpu
 
 
     /// <summary>
-    /// Plugin example with two method functions, where one function is called from another.
+    /// This example shows how to access the custom <see cref="InvocationSettingsAttribute"/> attribute the underlying method wrapped by Kernel Function is annotated with.
     /// </summary>
-    private sealed class FunctionsChainingPlugin
+    [Fact]
+    public async Task AccessUnderlyingMethodAttributes()
     {
 
-        private const string PluginName = nameof(FunctionsChainingPlugin);
+// Import the plugin containing the method with the InvocationSettingsAttribute custom attribute
+        var kernel = new Kernel();
+
+        var functions = kernel.ImportPluginFromType<Plugin>();
+
+        // Get the kernel function wrapping the method with the InvocationSettingsAttribute
+        var kernelFunction = functions[nameof(Plugin.FunctionWithInvocationSettingsAttribute)];
+
+        // Access the custom attribute the underlying method is annotated with
+        var invocationSettingsAttribute = kernelFunction.UnderlyingMethod!.GetCustomAttribute<InvocationSettingsAttribute>();
+
+        Console.WriteLine($"Priority: {invocationSettingsAttribute?.Priority}");
+    }
+
+    private sealed class Plugin
+    {
+        private const string PluginName = nameof(Plugin);
 
 
         [KernelFunction]
@@ -67,12 +83,12 @@ public class MethodFunctions_Advanced(ITestOutputHelper output) : BaseTest(outpu
             };
         }
 
+
+    [KernelFunction, InvocationSettingsAttribute(priority: Priority.High)]
+        public static void FunctionWithInvocationSettingsAttribute()
+        {
+        }
     }
-
-    #endregion
-
-
-    #region Custom Type
 
     /// <summary>
     /// In order to use custom types, <see cref="TypeConverter"/> should be specified,
@@ -130,7 +146,21 @@ public class MethodFunctions_Advanced(ITestOutputHelper output) : BaseTest(outpu
 
     }
 
-    #endregion
+    [AttributeUsage(AttributeTargets.Method)]
+    private sealed class InvocationSettingsAttribute : Attribute
+    {
+        public InvocationSettingsAttribute(Priority priority = Priority.Normal)
+        {
+            this.Priority = priority;
+        }
 
+        public Priority Priority { get; }
+    }
+
+    private enum Priority
+    {
+        Normal,
+        High,
+    }
 
 }

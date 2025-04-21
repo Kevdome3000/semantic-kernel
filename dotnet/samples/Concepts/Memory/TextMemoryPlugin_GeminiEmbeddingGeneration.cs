@@ -1,83 +1,63 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Memory;
-
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Google;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Memory;
 
+namespace Memory;
 
 /// <summary>
 /// Represents an example class for Gemini Embedding Generation with volatile memory store.
 /// </summary>
 public sealed class TextMemoryPlugin_GeminiEmbeddingGeneration(ITestOutputHelper output) : BaseTest(output)
 {
-
     private const string MemoryCollectionName = "aboutMe";
-
 
     [Fact]
     public async Task GoogleAIAsync()
     {
         Console.WriteLine("============= Google AI - Gemini Embedding Generation =============");
 
-        string googleAIApiKey = TestConfiguration.GoogleAI.ApiKey;
-        string geminiModelId = TestConfiguration.GoogleAI.Gemini.ModelId;
-        string embeddingModelId = TestConfiguration.GoogleAI.EmbeddingModelId;
+        Assert.NotNull(TestConfiguration.GoogleAI.ApiKey);
+        Assert.NotNull(TestConfiguration.GoogleAI.EmbeddingModelId);
 
-        if (googleAIApiKey is null || geminiModelId is null || embeddingModelId is null)
-        {
-            Console.WriteLine("GoogleAI credentials not found. Skipping example.");
-
-            return;
-        }
-
-        Kernel kernel = Kernel.CreateBuilder().
-            AddGoogleAIGeminiChatCompletion(
-                modelId: geminiModelId,
-                apiKey: googleAIApiKey).
-            AddGoogleAIEmbeddingGeneration(
-                modelId: embeddingModelId,
-                apiKey: googleAIApiKey).
-            Build();
+        Kernel kernel = Kernel.CreateBuilder()
+            .AddGoogleAIGeminiChatCompletion(
+                modelId: TestConfiguration.GoogleAI.EmbeddingModelId,
+                apiKey: TestConfiguration.GoogleAI.ApiKey)
+            .AddGoogleAIEmbeddingGeneration(
+                modelId: TestConfiguration.GoogleAI.EmbeddingModelId,
+                apiKey: TestConfiguration.GoogleAI.ApiKey)
+            .Build();
 
         await this.RunSimpleSampleAsync(kernel);
         await this.RunTextMemoryPluginSampleAsync(kernel);
     }
-
 
     [Fact]
     public async Task VertexAIAsync()
     {
         Console.WriteLine("============= Vertex AI - Gemini Embedding Generation =============");
 
-        string vertexBearerKey = TestConfiguration.VertexAI.BearerKey;
-        string geminiModelId = TestConfiguration.VertexAI.Gemini.ModelId;
-        string geminiLocation = TestConfiguration.VertexAI.Location;
-        string geminiProject = TestConfiguration.VertexAI.ProjectId;
-        string embeddingModelId = TestConfiguration.VertexAI.EmbeddingModelId;
+        Assert.NotNull(TestConfiguration.VertexAI.BearerKey);
+        Assert.NotNull(TestConfiguration.VertexAI.Location);
+        Assert.NotNull(TestConfiguration.VertexAI.ProjectId);
+        Assert.NotNull(TestConfiguration.VertexAI.Gemini.ModelId);
+        Assert.NotNull(TestConfiguration.VertexAI.EmbeddingModelId);
 
-        if (vertexBearerKey is null || geminiModelId is null || geminiLocation is null
-            || geminiProject is null || embeddingModelId is null)
-        {
-            Console.WriteLine("VertexAI credentials not found. Skipping example.");
-
-            return;
-        }
-
-        Kernel kernel = Kernel.CreateBuilder().
-            AddVertexAIGeminiChatCompletion(
-                modelId: geminiModelId,
-                bearerKey: vertexBearerKey,
-                location: geminiLocation,
-                projectId: geminiProject).
-            AddVertexAIEmbeddingGeneration(
-                modelId: embeddingModelId,
-                bearerKey: vertexBearerKey,
-                location: geminiLocation,
-                projectId: geminiProject).
-            Build();
+        Kernel kernel = Kernel.CreateBuilder()
+            .AddVertexAIGeminiChatCompletion(
+                modelId: TestConfiguration.VertexAI.Gemini.ModelId,
+                bearerKey: TestConfiguration.VertexAI.BearerKey,
+                location: TestConfiguration.VertexAI.Location,
+                projectId: TestConfiguration.VertexAI.ProjectId)
+            .AddVertexAIEmbeddingGeneration(
+                modelId: TestConfiguration.VertexAI.EmbeddingModelId,
+                bearerKey: TestConfiguration.VertexAI.BearerKey,
+                location: TestConfiguration.VertexAI.Location,
+                projectId: TestConfiguration.VertexAI.ProjectId)
+            .Build();
 
         // To generate bearer key, you need installed google sdk or use google web console with command:
         //
@@ -117,7 +97,6 @@ public sealed class TextMemoryPlugin_GeminiEmbeddingGeneration(ITestOutputHelper
         await this.RunTextMemoryPluginSampleAsync(kernel);
     }
 
-
     private async Task RunSimpleSampleAsync(Kernel kernel)
     {
         Console.WriteLine("== Simple Sample: Generating Embeddings ==");
@@ -126,13 +105,10 @@ public sealed class TextMemoryPlugin_GeminiEmbeddingGeneration(ITestOutputHelper
         var embeddingGenerator = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
 
         var generatedEmbeddings = await embeddingGenerator.GenerateEmbeddingAsync("My name is Andrea");
-
         Console.WriteLine($"Generated Embeddings count: {generatedEmbeddings.Length}, " +
-                          $"First five: {string.Join(", ", generatedEmbeddings[..5])}...");
-
+                       $"First five: {string.Join(", ", generatedEmbeddings[..5])}...");
         Console.WriteLine();
     }
-
 
     private async Task RunTextMemoryPluginSampleAsync(Kernel kernel)
     {
@@ -181,7 +157,6 @@ public sealed class TextMemoryPlugin_GeminiEmbeddingGeneration(ITestOutputHelper
 
         // Save a memory with the Kernel
         Console.WriteLine("Saving memory with key 'info5': \"My family is from New York\"");
-
         await kernel.InvokeAsync(memoryPlugin["Save"], new()
         {
             [Microsoft.SemanticKernel.Plugins.Memory.TextMemoryPlugin.InputParam] = "My family is from New York",
@@ -283,7 +258,6 @@ Answer:
 
         Console.WriteLine("Printing Collections in DB...");
         var collections = memoryStore.GetCollectionsAsync();
-
         await foreach (var collection in collections)
         {
             Console.WriteLine(collection);
@@ -297,11 +271,9 @@ Answer:
 
         Console.WriteLine($"Printing Collections in DB (after removing {MemoryCollectionName})...");
         collections = memoryStore.GetCollectionsAsync();
-
         await foreach (var collection in collections)
         {
             Console.WriteLine(collection);
         }
     }
-
 }

@@ -6,28 +6,29 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Azure.Identity;
 using Azure.Monitor.OpenTelemetry.Exporter;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.AzureAIInference;
 using Microsoft.SemanticKernel.Connectors.Google;
 using Microsoft.SemanticKernel.Connectors.HuggingFace;
 using Microsoft.SemanticKernel.Connectors.MistralAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Services;
 using OpenTelemetry;
+using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-
 
 /// <summary>
 /// Example of telemetry in Semantic Kernel using Application Insights within console application.
 /// </summary>
 public sealed class Program
 {
-
     /// <summary>
     /// The main entry point for the application.
     /// </summary>
@@ -41,22 +42,22 @@ public sealed class Program
         LoadUserSecrets();
 
         var connectionString = TestConfiguration.ApplicationInsights.ConnectionString;
+        var resourceBuilder = ResourceBuilder
+            .CreateDefault()
+            .AddService("TelemetryExample");
 
-        var resourceBuilder = ResourceBuilder.CreateDefault().
-            AddService("TelemetryExample");
+        using var traceProvider = Sdk.CreateTracerProviderBuilder()
+            .SetResourceBuilder(resourceBuilder)
+            .AddSource("Microsoft.SemanticKernel*")
+            .AddSource("Telemetry.Example")
+            .AddAzureMonitorTraceExporter(options => options.ConnectionString = connectionString)
+            .Build();
 
-        using var traceProvider = Sdk.CreateTracerProviderBuilder().
-            SetResourceBuilder(resourceBuilder).
-            AddSource("Microsoft.SemanticKernel*").
-            AddSource("Telemetry.Example").
-            AddAzureMonitorTraceExporter(options => options.ConnectionString = connectionString).
-            Build();
-
-        using var meterProvider = Sdk.CreateMeterProviderBuilder().
-            SetResourceBuilder(resourceBuilder).
-            AddMeter("Microsoft.SemanticKernel*").
-            AddAzureMonitorMetricExporter(options => options.ConnectionString = connectionString).
-            Build();
+        using var meterProvider = Sdk.CreateMeterProviderBuilder()
+            .SetResourceBuilder(resourceBuilder)
+            .AddMeter("Microsoft.SemanticKernel*")
+            .AddAzureMonitorMetricExporter(options => options.ConnectionString = connectionString)
+            .Build();
 
         using var loggerFactory = LoggerFactory.Create(builder =>
         {
@@ -69,7 +70,6 @@ public sealed class Program
                 options.IncludeFormattedMessage = true;
                 options.IncludeScopes = true;
             });
-
             builder.SetMinimumLevel(MinLogLevel);
         });
 
@@ -80,9 +80,10 @@ public sealed class Program
         Console.WriteLine();
 
         Console.WriteLine("Write a poem about John Doe and translate it to Italian.");
-
         using (var _ = s_activitySource.StartActivity("Chat"))
         {
+            await RunAzureAIInferenceChatAsync(kernel);
+            Console.WriteLine();
             await RunAzureOpenAIChatAsync(kernel);
             Console.WriteLine();
             await RunGoogleAIChatAsync(kernel);
@@ -96,7 +97,6 @@ public sealed class Program
         Console.WriteLine();
 
         Console.WriteLine("Get weather.");
-
         using (var _ = s_activitySource.StartActivity("ToolCalls"))
         {
             await RunAzureOpenAIToolCallsAsync(kernel);
@@ -104,9 +104,7 @@ public sealed class Program
         }
     }
 
-
     #region Private
-
     /// <summary>
     /// Log level to be used by <see cref="ILogger"/>.
     /// </summary>
@@ -122,23 +120,25 @@ public sealed class Program
     private static readonly ActivitySource s_activitySource = new("Telemetry.Example");
 
     private const string AzureOpenAIServiceKey = "AzureOpenAI";
-
     private const string GoogleAIGeminiServiceKey = "GoogleAIGemini";
-
     private const string HuggingFaceServiceKey = "HuggingFace";
-
     private const string MistralAIServiceKey = "MistralAI";
-
+    private const string AzureAIInferenceServiceKey = "AzureAIInference";
 
     #region chat completion
 
-    private static async Task RunAzureOpenAIChatAsync(Kernel kernel)
+    private static async Task RunAzureAIInferenceChatAsync(Kernel kernel)
     {
-        Console.WriteLine("============= Azure OpenAI Chat Completion =============");
+        Console.WriteLine("============= Azure AI Inference Chat Completion =============");
 
-        using var activity = s_activitySource.StartActivity(AzureOpenAIServiceKey);
-        SetTargetService(kernel, AzureOpenAIServiceKey);
+        if (TestConfiguration.AzureAIInference is null)
+        {
+            Console.WriteLine("Azure AI Inference is not configured. Skipping.");
+            return;
+        }
 
+        using var activity = s_activitySource.StartActivity(AzureAIInferenceServiceKey);
+        SetTargetService(kernel, AzureAIInferenceServiceKey);
         try
         {
             await RunChatAsync(kernel);
@@ -150,10 +150,38 @@ public sealed class Program
         }
     }
 
+    private static async Task RunAzureOpenAIChatAsync(Kernel kernel)
+    {
+        Console.WriteLine("============= Azure OpenAI Chat Completion =============");
+
+        if (TestConfiguration.AzureOpenAI is null)
+        {
+            Console.WriteLine("Azure OpenAI is not configured. Skipping.");
+            return;
+        }
+
+        using var activity = s_activitySource.StartActivity(AzureOpenAIServiceKey);
+        SetTargetService(kernel, AzureOpenAIServiceKey);
+        try
+        {
+            await RunChatAsync(kernel);
+        }
+        catch (Exception ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+    }
 
     private static async Task RunGoogleAIChatAsync(Kernel kernel)
     {
         Console.WriteLine("============= Google Gemini Chat Completion =============");
+
+        if (TestConfiguration.GoogleAI is null)
+        {
+            Console.WriteLine("Google AI is not configured. Skipping.");
+            return;
+        }
 
         using var activity = s_activitySource.StartActivity(GoogleAIGeminiServiceKey);
         SetTargetService(kernel, GoogleAIGeminiServiceKey);
@@ -169,10 +197,15 @@ public sealed class Program
         }
     }
 
-
     private static async Task RunHuggingFaceChatAsync(Kernel kernel)
     {
         Console.WriteLine("============= HuggingFace Chat Completion =============");
+
+        if (TestConfiguration.HuggingFace is null)
+        {
+            Console.WriteLine("Hugging Face is not configured. Skipping.");
+            return;
+        }
 
         using var activity = s_activitySource.StartActivity(HuggingFaceServiceKey);
         SetTargetService(kernel, HuggingFaceServiceKey);
@@ -188,10 +221,15 @@ public sealed class Program
         }
     }
 
-
     private static async Task RunMistralAIChatAsync(Kernel kernel)
     {
         Console.WriteLine("============= MistralAI Chat Completion =============");
+
+        if (TestConfiguration.MistralAI is null)
+        {
+            Console.WriteLine("Mistral AI is not configured. Skipping.");
+            return;
+        }
 
         using var activity = s_activitySource.StartActivity(MistralAIServiceKey);
         SetTargetService(kernel, MistralAIServiceKey);
@@ -207,7 +245,6 @@ public sealed class Program
         }
     }
 
-
     private static async Task RunChatAsync(Kernel kernel)
     {
         // Create the plugin from the sample plugins folder without registering it to the kernel.
@@ -221,36 +258,36 @@ public sealed class Program
         var poem = await kernel.InvokeAsync<string>(
             plugin["ShortPoem"],
             new KernelArguments { ["input"] = "Write a poem about John Doe." });
-
         Console.WriteLine($"Poem:\n{poem}\n");
 
         // Use streaming to translate the poem.
         Console.WriteLine("Translated Poem:");
-
         await foreach (var update in kernel.InvokeStreamingAsync<string>(
-                           plugin["Translate"],
-                           new KernelArguments
-                           {
-                               ["input"] = poem,
-                               ["language"] = "Italian"
-                           }))
+            plugin["Translate"],
+            new KernelArguments
+            {
+                ["input"] = poem,
+                ["language"] = "Italian"
+            }))
         {
             Console.Write(update);
         }
     }
-
     #endregion
 
-
     #region tool calls
-
     private static async Task RunAzureOpenAIToolCallsAsync(Kernel kernel)
     {
         Console.WriteLine("============= Azure OpenAI ToolCalls =============");
 
+        if (TestConfiguration.AzureOpenAI is null)
+        {
+            Console.WriteLine("Azure OpenAI is not configured. Skipping.");
+            return;
+        }
+
         using var activity = s_activitySource.StartActivity(AzureOpenAIServiceKey);
         SetTargetService(kernel, AzureOpenAIServiceKey);
-
         try
         {
             await RunAutoToolCallAsync(kernel);
@@ -262,16 +299,13 @@ public sealed class Program
         }
     }
 
-
     private static async Task RunAutoToolCallAsync(Kernel kernel)
     {
         var result = await kernel.InvokePromptAsync("What is the weather like in my location?");
 
         Console.WriteLine(result);
     }
-
     #endregion
-
 
     private static Kernel GetKernel(ILoggerFactory loggerFactory)
     {
@@ -281,26 +315,64 @@ public sealed class Program
 
         builder.Services.AddSingleton(loggerFactory);
 
-        builder.AddAzureOpenAIChatCompletion(
+        if (TestConfiguration.AzureOpenAI is not null)
+        {
+            builder.AddAzureOpenAIChatCompletion(
                 deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 modelId: TestConfiguration.AzureOpenAI.ChatModelId,
                 endpoint: TestConfiguration.AzureOpenAI.Endpoint,
                 apiKey: TestConfiguration.AzureOpenAI.ApiKey,
-                serviceId: AzureOpenAIServiceKey).
-            AddGoogleAIGeminiChatCompletion(
+                serviceId: AzureOpenAIServiceKey);
+        }
+
+        if (TestConfiguration.GoogleAI is not null)
+        {
+            builder.AddGoogleAIGeminiChatCompletion(
                 modelId: TestConfiguration.GoogleAI.Gemini.ModelId,
                 apiKey: TestConfiguration.GoogleAI.ApiKey,
-                serviceId: GoogleAIGeminiServiceKey).
-            AddHuggingFaceChatCompletion(
+                serviceId: GoogleAIGeminiServiceKey);
+        }
+
+        if (TestConfiguration.HuggingFace is not null)
+        {
+            builder.AddHuggingFaceChatCompletion(
                 model: TestConfiguration.HuggingFace.ModelId,
                 endpoint: new Uri("https://api-inference.huggingface.co"),
                 apiKey: TestConfiguration.HuggingFace.ApiKey,
-                serviceId: HuggingFaceServiceKey).
-            AddMistralChatCompletion(
+                serviceId: HuggingFaceServiceKey);
+        }
+
+        if (TestConfiguration.MistralAI is not null)
+        {
+            builder.AddMistralChatCompletion(
                 modelId: TestConfiguration.MistralAI.ChatModelId,
                 apiKey: TestConfiguration.MistralAI.ApiKey,
-                serviceId: MistralAIServiceKey
-            );
+                serviceId: MistralAIServiceKey);
+        }
+
+        if (TestConfiguration.AzureAIInference is not null)
+        {
+            if (string.IsNullOrEmpty(TestConfiguration.AzureAIInference.ApiKey))
+            {
+                builder.AddAzureAIInferenceChatCompletion(
+                    modelId: TestConfiguration.AzureAIInference.ModelId,
+                    credential: new DefaultAzureCredential(),
+                    endpoint: TestConfiguration.AzureAIInference.Endpoint,
+                    serviceId: AzureAIInferenceServiceKey,
+                    openTelemetrySourceName: "Telemetry.Example",
+                    openTelemetryConfig: c => c.EnableSensitiveData = true);
+            }
+            else
+            {
+                builder.AddAzureAIInferenceChatCompletion(
+                    modelId: TestConfiguration.AzureAIInference.ModelId,
+                    apiKey: TestConfiguration.AzureAIInference.ApiKey,
+                    endpoint: TestConfiguration.AzureAIInference.Endpoint,
+                    serviceId: AzureAIInferenceServiceKey,
+                    openTelemetrySourceName: "Telemetry.Example",
+                    openTelemetryConfig: c => c.EnableSensitiveData = true);
+            }
+        }
 
         builder.Services.AddSingleton<IAIServiceSelector>(new AIServiceSelector());
         builder.Plugins.AddFromType<WeatherPlugin>();
@@ -308,7 +380,6 @@ public sealed class Program
 
         return builder.Build();
     }
-
 
     private static void SetTargetService(Kernel kernel, string targetServiceKey)
     {
@@ -322,40 +393,29 @@ public sealed class Program
         }
     }
 
-
     private static void LoadUserSecrets()
     {
-        IConfigurationRoot configRoot = new ConfigurationBuilder().AddEnvironmentVariables().
-            AddUserSecrets<Program>().
-            Build();
+        IConfigurationRoot configRoot = new ConfigurationBuilder()
+            .AddEnvironmentVariables()
+            .AddUserSecrets<Program>()
+            .Build();
 
         TestConfiguration.Initialize(configRoot);
     }
 
-
     private sealed class AIServiceSelector : IAIServiceSelector
     {
-
         public bool TrySelectAIService<T>(
-            Kernel kernel,
-            KernelFunction function,
-            KernelArguments arguments,
-            [NotNullWhen(true)] out T? service,
-            out PromptExecutionSettings? serviceSettings) where T : class, IAIService
+            Kernel kernel, KernelFunction function, KernelArguments arguments,
+            [NotNullWhen(true)] out T? service, out PromptExecutionSettings? serviceSettings) where T : class, IAIService
         {
-            var targetServiceKey = kernel.Data.TryGetValue("TargetService", out object? value)
-                ? value
-                : null;
-
+            var targetServiceKey = kernel.Data.TryGetValue("TargetService", out object? value) ? value : null;
             if (targetServiceKey is not null)
             {
-                var targetService = kernel.Services.GetKeyedServices<T>(targetServiceKey).
-                    FirstOrDefault();
-
+                var targetService = kernel.Services.GetKeyedServices<T>(targetServiceKey).FirstOrDefault();
                 if (targetService is not null)
                 {
                     service = targetService;
-
                     serviceSettings = targetServiceKey switch
                     {
                         AzureOpenAIServiceKey => new OpenAIPromptExecutionSettings()
@@ -379,6 +439,16 @@ public sealed class Program
                             Temperature = 0,
                             ToolCallBehavior = MistralAIToolCallBehavior.AutoInvokeKernelFunctions
                         },
+                        AzureAIInferenceServiceKey => new AzureAIInferencePromptExecutionSettings()
+                        {
+                            Temperature = 0,
+
+                            // Function/Tool calling enabled models in Azure AI Inference are listed in the below page as "Tool calling: Yes/No"
+                            // https://learn.microsoft.com/en-us/azure/ai-foundry/model-inference/concepts/models, 
+                            // Ensure your model support tool calling before enabling the setting below.
+
+                            // FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+                        },
                         _ => null,
                     };
 
@@ -388,38 +458,27 @@ public sealed class Program
 
             service = null;
             serviceSettings = null;
-
             return false;
         }
-
     }
-
     #endregion
-
 
     #region Plugins
 
     public sealed class WeatherPlugin
     {
-
         [KernelFunction]
         public string GetWeather(string location) => $"Weather in {location} is 70°F.";
-
     }
-
 
     public sealed class LocationPlugin
     {
-
         [KernelFunction]
         public string GetCurrentLocation()
         {
             return "Seattle";
         }
-
     }
 
     #endregion
-
-
 }

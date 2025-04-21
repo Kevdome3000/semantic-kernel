@@ -36,7 +36,7 @@ public sealed class AggregatorPromptTemplateFactoryTests
 
 
     [Fact]
-    public void ItThrowsExceptionForUnknowPromptTemplateFormat()
+    public void ItThrowsExceptionForUnknownPromptTemplateFormat()
     {
         // Arrange
         var templateString = "{{$input}}";
