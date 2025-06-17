@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -12,37 +13,41 @@ namespace Agents;
 /// </summary>
 public class ChatCompletion_HistoryReducer(ITestOutputHelper output) : BaseTest(output)
 {
-
     private const string TranslatorName = "NumeroTranslator";
-
     private const string TranslatorInstructions = "Add one to latest user number and spell it in spanish without explanation.";
-
 
     /// <summary>
     /// Demonstrate the use of <see cref="ChatHistoryTruncationReducer"/> when directly
     /// invoking a <see cref="ChatCompletionAgent"/>.
     /// </summary>
-    [Fact]
-    public async Task TruncatedAgentReductionAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task TruncatedAgentReduction(bool useChatClient)
     {
         // Define the agent
-        ChatCompletionAgent agent = CreateTruncatingAgent(10, 10);
+        ChatCompletionAgent agent = CreateTruncatingAgent(10, 10, useChatClient, out var chatClient);
 
         await InvokeAgentAsync(agent, 50);
-    }
 
+        chatClient?.Dispose();
+    }
 
     /// <summary>
     /// Demonstrate the use of <see cref="ChatHistorySummarizationReducer"/> when directly
     /// invoking a <see cref="ChatCompletionAgent"/>.
     /// </summary>
-    [Fact]
-    public async Task SummarizedAgentReductionAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task SummarizedAgentReduction(bool useChatClient)
     {
         // Define the agent
-        ChatCompletionAgent agent = CreateSummarizingAgent(10, 10);
+        ChatCompletionAgent agent = CreateSummarizingAgent(10, 10, useChatClient, out var chatClient);
 
         await InvokeAgentAsync(agent, 50);
+
+        chatClient?.Dispose();
     }
 
     // Proceed with dialog by directly invoking the agent and explicitly managing the history.
@@ -51,7 +56,6 @@ public class ChatCompletion_HistoryReducer(ITestOutputHelper output) : BaseTest(
         ChatHistoryAgentThread agentThread = new();
 
         int index = 1;
-
         while (index <= messageCount)
         {
             // Provide user input
@@ -75,9 +79,7 @@ public class ChatCompletion_HistoryReducer(ITestOutputHelper output) : BaseTest(
             if (isReduced)
             {
                 int summaryIndex = 0;
-
-                while (agentThread.ChatHistory[summaryIndex].
-                           Metadata?.ContainsKey(ChatHistorySummarizationReducer.SummaryMetadataKey) ?? false)
+                while (agentThread.ChatHistory[summaryIndex].Metadata?.ContainsKey(ChatHistorySummarizationReducer.SummaryMetadataKey) ?? false)
                 {
                     Console.WriteLine($"\tSummary: {agentThread.ChatHistory[summaryIndex].Content}");
                     ++summaryIndex;
@@ -86,9 +88,13 @@ public class ChatCompletion_HistoryReducer(ITestOutputHelper output) : BaseTest(
         }
     }
 
-    private ChatCompletionAgent CreateSummarizingAgent(int reducerMessageCount, int reducerThresholdCount)
+    private ChatCompletionAgent CreateSummarizingAgent(int reducerMessageCount, int reducerThresholdCount, bool useChatClient, out IChatClient? chatClient)
     {
-        Kernel kernel = this.CreateKernelWithChatCompletion();
+        Kernel kernel = this.CreateKernelWithChatCompletion(useChatClient, out chatClient);
+
+        var service = useChatClient
+            ? kernel.GetRequiredService<IChatClient>().AsChatCompletionService()
+            : kernel.GetRequiredService<IChatCompletionService>();
 
         return
             new()
@@ -96,18 +102,16 @@ public class ChatCompletion_HistoryReducer(ITestOutputHelper output) : BaseTest(
                 Name = TranslatorName,
                 Instructions = TranslatorInstructions,
                 Kernel = kernel,
-                HistoryReducer = new ChatHistorySummarizationReducer(kernel.GetRequiredService<IChatCompletionService>(), reducerMessageCount, reducerThresholdCount),
+                HistoryReducer = new ChatHistorySummarizationReducer(service, reducerMessageCount, reducerThresholdCount),
             };
     }
 
-
-    private ChatCompletionAgent CreateTruncatingAgent(int reducerMessageCount, int reducerThresholdCount) =>
+    private ChatCompletionAgent CreateTruncatingAgent(int reducerMessageCount, int reducerThresholdCount, bool useChatClient, out IChatClient? chatClient) =>
         new()
         {
             Name = TranslatorName,
             Instructions = TranslatorInstructions,
-            Kernel = this.CreateKernelWithChatCompletion(),
+            Kernel = this.CreateKernelWithChatCompletion(useChatClient, out chatClient),
             HistoryReducer = new ChatHistoryTruncationReducer(reducerMessageCount, reducerThresholdCount),
         };
-
 }

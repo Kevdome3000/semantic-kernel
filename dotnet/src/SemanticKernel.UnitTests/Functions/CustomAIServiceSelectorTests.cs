@@ -1,17 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.UnitTests.Functions;
-
+using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Services;
 using Xunit;
 
+namespace SemanticKernel.UnitTests.Functions;
 
 public class CustomAIServiceSelectorTests
 {
-
     [Fact]
     public void ItGetsAIServiceUsingArbitraryAttributes()
     {
@@ -32,45 +32,35 @@ public class CustomAIServiceSelectorTests
         Assert.Null(defaultExecutionSettings);
     }
 
-
     private sealed class CustomAIServiceSelector : IAIServiceSelector
     {
-
 #pragma warning disable CS8769 // Nullability of reference types in value doesn't match target type. Cannot use [NotNullWhen] because of access to internals from abstractions.
-        bool IAIServiceSelector.TrySelectAIService<T>(
-            Kernel kernel,
-            KernelFunction function,
-            KernelArguments arguments,
-            out T? service,
-            out PromptExecutionSettings? serviceSettings) where T : class
+        public bool TrySelectAIService<T>(Kernel kernel, KernelFunction function, KernelArguments arguments, [NotNullWhen(true)] out T? service, out PromptExecutionSettings? serviceSettings)
+            where T : class, IAIService
         {
             var keyedService = (kernel.Services as IKeyedServiceProvider)?.GetKeyedService<T>("service1");
-
             if (keyedService is null || keyedService.Attributes is null)
             {
                 service = null;
                 serviceSettings = null;
-
                 return false;
             }
 
-            service = keyedService.Attributes.ContainsKey("Key1")
-                ? keyedService as T
-                : null;
-
+            service = keyedService.Attributes.ContainsKey("Key1") ? keyedService as T : null;
             serviceSettings = null;
+
+            if (service is null)
+            {
+                throw new InvalidOperationException("Service not found");
+            }
 
             return true;
         }
-
     }
-
 
     private sealed class AIService : IAIService
     {
-
         public IReadOnlyDictionary<string, object?> Attributes => this._attributes;
-
 
         public AIService()
         {
@@ -80,9 +70,6 @@ public class CustomAIServiceSelectorTests
             };
         }
 
-
         private readonly Dictionary<string, object?> _attributes;
-
     }
-
 }

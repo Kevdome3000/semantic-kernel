@@ -1,6 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace Agents;
-
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
@@ -8,16 +6,14 @@ using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI.Assistants;
 
-
+namespace Agents;
 /// <summary>
 /// Demonstrate that two different agent types are able to participate in the same conversation.
 /// In this case a <see cref="ChatCompletionAgent"/> and <see cref="OpenAIAssistantAgent"/> participate.
 /// </summary>
 public class MixedChat_Agents(ITestOutputHelper output) : BaseAssistantTest(output)
 {
-
     private const string ReviewerName = "ArtDirector";
-
     private const string ReviewerInstructions =
         """
         You are an art director who has opinions about copywriting born of a love for David Ogilvy.
@@ -27,7 +23,6 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseAssistantTest(outp
         """;
 
     private const string CopyWriterName = "CopyWriter";
-
     private const string CopyWriterInstructions =
         """
         You are a copywriter with ten years of experience and are known for brevity and a dry humor.
@@ -38,9 +33,10 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseAssistantTest(outp
         Consider suggestions when refining an idea.
         """;
 
-
-    [Fact]
-    public async Task ChatWithOpenAIAssistantAgentAndChatCompletionAgentAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ChatWithOpenAIAssistantAgentAndChatCompletionAgent(bool useChatClient)
     {
         // Define the agents: one of each type
         ChatCompletionAgent agentReviewer =
@@ -48,7 +44,7 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseAssistantTest(outp
             {
                 Instructions = ReviewerInstructions,
                 Name = ReviewerName,
-                Kernel = this.CreateKernelWithChatCompletion(),
+                Kernel = this.CreateKernelWithChatCompletion(useChatClient, out var chatClient),
             };
 
         // Define the assistant
@@ -93,17 +89,14 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseAssistantTest(outp
         }
 
         Console.WriteLine($"\n[IS COMPLETED: {chat.IsComplete}]");
-    }
 
+        chatClient?.Dispose();
+    }
 
     private sealed class ApprovalTerminationStrategy : TerminationStrategy
     {
-
         // Terminate when the final message contains the term "approve"
         protected override Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken)
-            => Task.FromResult(history[history.Count - 1].
-                Content?.Contains("approve", StringComparison.OrdinalIgnoreCase) ?? false);
-
+            => Task.FromResult(history[history.Count - 1].Content?.Contains("approve", StringComparison.OrdinalIgnoreCase) ?? false);
     }
-
 }

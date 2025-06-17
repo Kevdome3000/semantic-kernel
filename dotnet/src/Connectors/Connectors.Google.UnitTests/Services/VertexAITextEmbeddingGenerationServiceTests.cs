@@ -1,16 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Connectors.Google.UnitTests.Services;
-
+using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.Google;
 using Microsoft.SemanticKernel.Services;
 using Xunit;
 
+namespace SemanticKernel.Connectors.Google.UnitTests.Services;
 
+[Obsolete("Temporary test for Obsolete ITextEmbeddingGenerationService")]
 public sealed class VertexAITextEmbeddingGenerationServiceTests
 {
-
     [Fact]
     public void AttributesShouldContainModelIdBearerAsString()
     {
@@ -22,7 +22,6 @@ public sealed class VertexAITextEmbeddingGenerationServiceTests
         Assert.Equal(model, service.Attributes[AIServiceExtensions.ModelIdKey]);
     }
 
-
     [Fact]
     public void AttributesShouldContainModelIdBearerAsFunc()
     {
@@ -33,5 +32,4 @@ public sealed class VertexAITextEmbeddingGenerationServiceTests
         // Assert
         Assert.Equal(model, service.Attributes[AIServiceExtensions.ModelIdKey]);
     }
-
 }

@@ -15,7 +15,7 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
     /// <summary>
     /// Indicates whether the functions should be automatically invoked by AI connectors.
     /// </summary>
-    private readonly bool _autoInvoke = true;
+    internal readonly bool AutoInvoke = true;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RequiredFunctionChoiceBehavior"/> class.
@@ -42,7 +42,7 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
         FunctionChoiceBehaviorOptions? options = null) : base(functions)
     {
         Functions = functions?.Select(f => FunctionName.ToFullyQualifiedName(f.Name, f.PluginName, FunctionNameSeparator)).ToList();
-        _autoInvoke = autoInvoke;
+        AutoInvoke = autoInvoke;
         Options = options;
     }
 
@@ -73,17 +73,17 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
             {
                 Choice = FunctionChoice.Required,
                 Functions = null,
-                AutoInvoke = _autoInvoke
+                AutoInvoke = AutoInvoke,
             };
         }
 
-        var functions = GetFunctions(Functions, context.Kernel, _autoInvoke);
+        var functions = base.GetFunctions(Functions, context.Kernel, AutoInvoke);
 
         return new FunctionChoiceBehaviorConfiguration(Options ?? DefaultOptions)
         {
             Choice = FunctionChoice.Required,
             Functions = functions,
-            AutoInvoke = _autoInvoke
+            AutoInvoke = AutoInvoke,
         };
     }
 }

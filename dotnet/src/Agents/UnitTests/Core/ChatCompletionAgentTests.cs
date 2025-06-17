@@ -1,8 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
@@ -158,7 +161,7 @@ public class ChatCompletionAgentTests
             };
 
         // Act
-        ChatMessageContent[] result = await agent.InvokeAsync([]).ToArrayAsync();
+        AgentResponseItem<ChatMessageContent>[] result = await agent.InvokeAsync(Array.Empty<ChatMessageContent>() as ICollection<ChatMessageContent>).ToArrayAsync();
 
         // Assert
         Assert.Single(result);
@@ -169,6 +172,43 @@ public class ChatCompletionAgentTests
                     It.IsAny<ChatHistory>(),
                     It.IsAny<PromptExecutionSettings>(),
                     It.IsAny<Kernel>(),
+                    It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    /// <summary>
+    /// Verify the invocation and response of <see cref="ChatCompletionAgent"/> using <see cref="IChatClient"/>.
+    /// </summary>
+    [Fact]
+    public async Task VerifyChatClientAgentInvocationAsync()
+    {
+        // Arrange
+        Mock<IChatClient> mockService = new();
+        mockService.Setup(
+            s => s.GetResponseAsync(
+                It.IsAny<IEnumerable<ChatMessage>>(),
+                It.IsAny<ChatOptions>(),
+                It.IsAny<CancellationToken>())).ReturnsAsync(new ChatResponse([new(ChatRole.Assistant, "what?")]));
+
+        ChatCompletionAgent agent =
+            new()
+            {
+                Instructions = "test instructions",
+                Kernel = CreateKernel(mockService.Object),
+                Arguments = [],
+            };
+
+        // Act
+        AgentResponseItem<ChatMessageContent>[] result = await agent.InvokeAsync(Array.Empty<ChatMessageContent>() as ICollection<ChatMessageContent>).ToArrayAsync();
+
+        // Assert
+        Assert.Single(result);
+
+        mockService.Verify(
+            x =>
+                x.GetResponseAsync(
+                    It.IsAny<IEnumerable<ChatMessage>>(),
+                    It.IsAny<ChatOptions>(),
                     It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -203,7 +243,7 @@ public class ChatCompletionAgentTests
             };
 
         // Act
-        StreamingChatMessageContent[] result = await agent.InvokeStreamingAsync([]).ToArrayAsync();
+        AgentResponseItem<StreamingChatMessageContent>[] result = await agent.InvokeStreamingAsync(Array.Empty<ChatMessageContent>() as ICollection<ChatMessageContent>).ToArrayAsync();
 
         // Assert
         Assert.Equal(2, result.Length);
@@ -214,6 +254,49 @@ public class ChatCompletionAgentTests
                     It.IsAny<ChatHistory>(),
                     It.IsAny<PromptExecutionSettings>(),
                     It.IsAny<Kernel>(),
+                    It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    /// <summary>
+    /// Verify the streaming invocation and response of <see cref="ChatCompletionAgent"/> using <see cref="IChatClient"/>.
+    /// </summary>
+    [Fact]
+    public async Task VerifyChatClientAgentStreamingAsync()
+    {
+        // Arrange
+        ChatResponseUpdate[] returnUpdates =
+        [
+            new ChatResponseUpdate(role: ChatRole.Assistant, content: "wh"),
+            new ChatResponseUpdate(role: null, content: "at?"),
+        ];
+
+        Mock<IChatClient> mockService = new();
+        mockService.Setup(
+            s => s.GetStreamingResponseAsync(
+                It.IsAny<IEnumerable<ChatMessage>>(),
+                It.IsAny<ChatOptions>(),
+                It.IsAny<CancellationToken>())).Returns(returnUpdates.ToAsyncEnumerable());
+
+        ChatCompletionAgent agent =
+            new()
+            {
+                Instructions = "test instructions",
+                Kernel = CreateKernel(mockService.Object),
+                Arguments = [],
+            };
+
+        // Act
+        AgentResponseItem<StreamingChatMessageContent>[] result = await agent.InvokeStreamingAsync(Array.Empty<ChatMessageContent>() as ICollection<ChatMessageContent>).ToArrayAsync();
+
+        // Assert
+        Assert.Equal(2, result.Length);
+
+        mockService.Verify(
+            x =>
+                x.GetStreamingResponseAsync(
+                    It.IsAny<IEnumerable<ChatMessage>>(),
+                    It.IsAny<ChatOptions>(),
                     It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -245,6 +328,32 @@ public class ChatCompletionAgentTests
     }
 
     /// <summary>
+    /// Verify the invocation and response of <see cref="ChatCompletionAgent.GetChatCompletionService"/> using <see cref="IChatClient"/>.
+    /// </summary>
+    [Fact]
+    public void VerifyChatClientSelection()
+    {
+        // Arrange
+        Mock<IChatClient> mockClient = new();
+        Kernel kernel = CreateKernel(mockClient.Object);
+
+        // Act
+        (IChatCompletionService client, PromptExecutionSettings? settings) = ChatCompletionAgent.GetChatCompletionService(kernel, null);
+        // Assert
+        Assert.Equal("ChatClientChatCompletionService", client.GetType().Name);
+        Assert.Null(settings);
+
+        // Act
+        (client, settings) = ChatCompletionAgent.GetChatCompletionService(kernel, []);
+        // Assert
+        Assert.Equal("ChatClientChatCompletionService", client.GetType().Name);
+        Assert.Null(settings);
+
+        // Act and Assert
+        Assert.Throws<KernelException>(() => ChatCompletionAgent.GetChatCompletionService(kernel, new KernelArguments(new PromptExecutionSettings() { ServiceId = "anything" })));
+    }
+
+    /// <summary>
     /// Verify the invocation and response of <see cref="ChatCompletionAgent.GetChatCompletionService"/>.
     /// </summary>
     [Fact]
@@ -268,6 +377,13 @@ public class ChatCompletionAgentTests
     {
         var builder = Kernel.CreateBuilder();
         builder.Services.AddSingleton<IChatCompletionService>(chatCompletionService);
+        return builder.Build();
+    }
+
+    private static Kernel CreateKernel(IChatClient chatClient)
+    {
+        var builder = Kernel.CreateBuilder();
+        builder.Services.AddSingleton<IChatClient>(chatClient);
         return builder.Build();
     }
 }

@@ -17,6 +17,7 @@ using Microsoft.SemanticKernel.Embeddings;
 using Xunit;
 
 
+[Obsolete("Temporary test for Obsoleted BertOnnxTextEmbeddingGenerationService.")]
 public class BertOnnxTextEmbeddingGenerationServiceTests
 {
 

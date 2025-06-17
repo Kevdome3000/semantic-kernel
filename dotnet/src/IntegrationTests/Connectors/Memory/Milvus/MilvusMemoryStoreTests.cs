@@ -4,6 +4,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Milvus;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using global::Milvus.Client;
@@ -12,6 +13,7 @@ using Microsoft.SemanticKernel.Memory;
 using Xunit;
 
 
+[Experimental("SKEXP0020")]
 public class MilvusMemoryStoreTests(MilvusFixture milvusFixture) : IClassFixture<MilvusFixture>, IAsyncLifetime
 {
 

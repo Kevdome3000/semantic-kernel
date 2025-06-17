@@ -7,47 +7,48 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.Plugins.Core.CodeInterpreter;
 
 /// <summary>
-/// Metadata for a file in the session.
+/// Metadata for an entity: file or directory in the session.
 /// </summary>
-public class SessionsRemoteFileMetadata
+public sealed class SessionsRemoteFileMetadata
 {
+    /// <summary>
+    /// The name of the entity.
+    /// </summary>
+    [Description("The name of the entity.")]
+    [JsonPropertyName("name")]
+    public required string Name { get; set; }
 
     /// <summary>
-    /// Initializes a new instance of the SessionRemoteFileMetadata class.
+    /// The size of the entity in bytes.
     /// </summary>
-    [JsonConstructor]
-    public SessionsRemoteFileMetadata(string filename, int size)
-    {
-        this.Filename = filename;
-        this.Size = size;
-    }
-
+    [Description("The size of the entity in bytes.")]
+    [JsonPropertyName("sizeInBytes")]
+    public int? SizeInBytes { get; set; }
 
     /// <summary>
-    /// The filename relative to `/mnt/data`.
+    /// The entity last modified time.
     /// </summary>
-    [Description("The filename relative to `/mnt/data`.")]
-    [JsonPropertyName("filename")]
-    public string Filename { get; set; }
+    [Description("The entity last modified time.")]
+    [JsonPropertyName("lastModifiedAt")]
+    public required DateTime LastModifiedAt { get; set; }
 
     /// <summary>
-    /// The size of the file in bytes.
+    /// The type of the entity content.
     /// </summary>
-    [Description("The size of the file in bytes.")]
-    [JsonPropertyName("size")]
-    public int Size { get; set; }
+    [Description("The type of the entity content.")]
+    [JsonPropertyName("contentType")]
+    public string? ContentType { get; set; }
 
     /// <summary>
-    /// The last modified time.
+    /// Specifies the type of the entity. Can be either `file` or `directory`.
     /// </summary>
-    [Description("Last modified time.")]
-    [JsonPropertyName("lastModifiedTime")]
-    public DateTime? LastModifiedTime { get; set; }
+    [Description("The type of the entity.")]
+    [JsonPropertyName("type")]
+    public required string Type { get; set; }
 
     /// <summary>
-    /// The full path of the file.
+    /// The full path of the entity.
     /// </summary>
-    [Description("The full path of the file.")]
-    public string FullPath => $"/mnt/data/{this.Filename}";
-
+    [Description("The full path of the entity.")]
+    public string FullPath => $"/mnt/data/{this.Name}";
 }

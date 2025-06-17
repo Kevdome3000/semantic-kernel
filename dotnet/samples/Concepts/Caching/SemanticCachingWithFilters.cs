@@ -1,14 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Caching;
-
 using System.Diagnostics;
 using Azure.Identity;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Embeddings;
 
+namespace Caching;
 
 /// <summary>
 /// This example shows how to achieve Semantic Caching with Filters.
@@ -48,7 +47,6 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
         */
     }
 
-
     /// <summary>
     /// Executing similar requests two times using Redis caching store to compare execution time and results.
     /// Second execution is faster, because the result is returned from cache.
@@ -78,20 +76,19 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
         */
     }
 
-
     /// <summary>
     /// Executing similar requests two times using Azure Cosmos DB for MongoDB caching store to compare execution time and results.
     /// Second execution is faster, because the result is returned from cache.
     /// How to setup Azure Cosmos DB for MongoDB cluster: https://learn.microsoft.com/en-gb/azure/cosmos-db/mongodb/vcore/quickstart-portal
     /// </summary>
     [Fact]
-    public async Task AzureCosmosDBMongoDBCacheAsync()
+    public async Task CosmosMongoDBCacheAsync()
     {
         var kernel = GetKernelWithCache(services =>
         {
-            services.AddAzureCosmosDBMongoDBVectorStore(
-                TestConfiguration.AzureCosmosDbMongoDb.ConnectionString,
-                TestConfiguration.AzureCosmosDbMongoDb.DatabaseName);
+            services.AddCosmosMongoVectorStore(
+                TestConfiguration.CosmosMongo.ConnectionString,
+                TestConfiguration.CosmosMongo.DatabaseName);
         });
 
         var result1 = await ExecuteAsync(kernel, "First run", "What's the tallest building in New York?");
@@ -110,7 +107,6 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
         */
     }
 
-
     #region Configuration
 
     /// <summary>
@@ -128,8 +124,8 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey);
 
-            // Add Azure OpenAI text embedding generation service
-            builder.AddAzureOpenAITextEmbeddingGeneration(
+            // Add Azure OpenAI embedding generator
+            builder.AddAzureOpenAIEmbeddingGenerator(
                 TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
                 TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey);
@@ -142,8 +138,8 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
                 TestConfiguration.AzureOpenAI.Endpoint,
                 new AzureCliCredential());
 
-            // Add Azure OpenAI text embedding generation service
-            builder.AddAzureOpenAITextEmbeddingGeneration(
+            // Add Azure OpenAI embedding generator
+            builder.AddAzureOpenAIEmbeddingGenerator(
                 TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
                 TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
                 new AzureCliCredential());
@@ -163,7 +159,6 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
 
     #endregion
 
-
     #region Cache Filters
 
     /// <summary>
@@ -171,7 +166,6 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
     /// </summary>
     public class CacheBaseFilter
     {
-
         /// <summary>
         /// Collection/table name in cache to use.
         /// </summary>
@@ -181,19 +175,16 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
         /// Metadata key in function result for cache record id, which is used to overwrite previously cached response.
         /// </summary>
         protected const string RecordIdKey = "CacheRecordId";
-
     }
-
 
     /// <summary>
     /// Filter which is executed during prompt rendering operation.
     /// </summary>
     public sealed class PromptCacheFilter(
-        ITextEmbeddingGenerationService textEmbeddingGenerationService,
-        IVectorStore vectorStore)
+        IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
+        VectorStore vectorStore)
         : CacheBaseFilter, IPromptRenderFilter
     {
-
         public async Task OnPromptRenderAsync(PromptRenderContext context, Func<PromptRenderContext, Task> next)
         {
             // Trigger prompt rendering operation
@@ -202,15 +193,14 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
             // Get rendered prompt
             var prompt = context.RenderedPrompt!;
 
-            var promptEmbedding = await textEmbeddingGenerationService.GenerateEmbeddingAsync(prompt);
+            var promptEmbedding = await embeddingGenerator.GenerateAsync(prompt);
 
             var collection = vectorStore.GetCollection<string, CacheRecord>(CollectionName);
-            await collection.CreateCollectionIfNotExistsAsync();
+            await collection.EnsureCollectionExistsAsync();
 
             // Search for similar prompts in cache.
-            var searchResults = await collection.VectorizedSearchAsync(promptEmbedding, new() { Top = 1 }, context.CancellationToken);
-                    var searchResult = (await searchResults.Results.
-                FirstOrDefaultAsync())?.Record;
+            var searchResult = (await collection.SearchAsync(promptEmbedding, top: 1, cancellationToken: context.CancellationToken)
+                .FirstOrDefaultAsync())?.Record;
 
             // If result exists, return it.
             if (searchResult is not null)
@@ -222,20 +212,17 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
                 };
             }
         }
-
     }
-
 
     /// <summary>
     /// Filter which is executed during function invocation.
     /// </summary>
     public sealed class FunctionCacheFilter(
-        ITextEmbeddingGenerationService textEmbeddingGenerationService,
-        IVectorStore vectorStore)
+        IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
+        VectorStore vectorStore)
         : CacheBaseFilter, IFunctionInvocationFilter
     {
-
-        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
+        public async Task OnFunctionInvocationAsync(Microsoft.SemanticKernel.FunctionInvocationContext context, Func<Microsoft.SemanticKernel.FunctionInvocationContext, Task> next)
         {
             // Trigger function invocation
             await next(context);
@@ -247,32 +234,29 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
             if (!string.IsNullOrEmpty(context.Result.RenderedPrompt))
             {
                 // Get cache record id if result was cached previously or generate new id.
-                var recordId = context.Result.Metadata?.GetValueOrDefault(RecordIdKey, Guid.NewGuid().
-                    ToString()) as string;
+                var recordId = context.Result.Metadata?.GetValueOrDefault(RecordIdKey, Guid.NewGuid().ToString()) as string;
 
                 // Generate prompt embedding.
-                var promptEmbedding = await textEmbeddingGenerationService.GenerateEmbeddingAsync(context.Result.RenderedPrompt);
+                var promptEmbedding = await embeddingGenerator.GenerateAsync(context.Result.RenderedPrompt);
 
                 // Cache rendered prompt and LLM result.
                 var collection = vectorStore.GetCollection<string, CacheRecord>(CollectionName);
-                await collection.CreateCollectionIfNotExistsAsync();
+                await collection.EnsureCollectionExistsAsync();
 
                 var cacheRecord = new CacheRecord
                 {
                     Id = recordId!,
                     Prompt = context.Result.RenderedPrompt,
                     Result = result.ToString(),
-                    PromptEmbedding = promptEmbedding
+                    PromptEmbedding = promptEmbedding.Vector
                 };
 
                 await collection.UpsertAsync(cacheRecord, cancellationToken: context.CancellationToken);
             }
         }
-
     }
 
     #endregion
-
 
     #region Execution
 
@@ -300,20 +284,18 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
 
     private sealed class CacheRecord
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public string Id { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Prompt { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Result { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 1536)]
+        [VectorStoreVector(Dimensions: 1536)]
         public ReadOnlyMemory<float> PromptEmbedding { get; set; }
     }
 
     #endregion
-
-
 }

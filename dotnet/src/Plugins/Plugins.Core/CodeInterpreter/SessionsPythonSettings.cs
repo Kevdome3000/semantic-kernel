@@ -3,6 +3,7 @@
 namespace Microsoft.SemanticKernel.Plugins.Core.CodeInterpreter;
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text.Json.Serialization;
 
@@ -24,6 +25,11 @@ public class SessionsPythonSettings
     /// </summary>
     [JsonIgnore]
     public Uri Endpoint { get; set; }
+
+    /// <summary>
+    /// List of allowed domains to download from.
+    /// </summary>
+    public IEnumerable<string>? AllowedDomains { get; set; }
 
     /// <summary>
     /// The session identifier.

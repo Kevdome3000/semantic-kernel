@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Google.Core;
-
 using System.Collections.Generic;
-using System.Text.Json.Nodes;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel.Connectors.Google.Core;
 
 /// <summary>
 /// A Tool is a piece of code that enables the system to interact with external systems to perform an action,
@@ -13,7 +12,6 @@ using System.Text.Json.Serialization;
 /// </summary>
 internal sealed class GeminiTool
 {
-
     /// <summary>
     /// A list of FunctionDeclarations available to the model that can be used for function calling.
     /// </summary>
@@ -27,7 +25,6 @@ internal sealed class GeminiTool
     [JsonPropertyName("functionDeclarations")]
     public IList<FunctionDeclaration> Functions { get; set; } = [];
 
-
     /// <summary>
     /// Structured representation of a function declaration as defined by the OpenAPI 3.03 specification.
     /// Included in this declaration are the function name and parameters.
@@ -35,7 +32,6 @@ internal sealed class GeminiTool
     /// </summary>
     internal sealed class FunctionDeclaration
     {
-
         /// <summary>
         /// Required. Name of function.
         /// </summary>
@@ -58,8 +54,6 @@ internal sealed class GeminiTool
         /// </summary>
         [JsonPropertyName("parameters")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public JsonNode? Parameters { get; set; }
-
+        public JsonElement? Parameters { get; set; }
     }
-
 }

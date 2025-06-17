@@ -16,6 +16,7 @@ using Xunit;
 /// <summary>
 /// Unit tests for <see cref="HuggingFaceTextEmbeddingGenerationService"/> class.
 /// </summary>
+[Obsolete("This test class uses obsolete APIs. Use HuggingFaceEmbeddingGeneratorTests instead.")]
 public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
 {
 

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.UnitTests.Memory;
-
+using System;
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -10,13 +9,13 @@ using Microsoft.SemanticKernel.Memory;
 using Moq;
 using Xunit;
 
+namespace SemanticKernel.UnitTests.Memory;
 
 /// <summary>
 /// Unit tests for <see cref="MemoryBuilder"/> class.
 /// </summary>
 public sealed class MemoryBuilderTests
 {
-
     [Fact]
     public void ItThrowsExceptionWhenMemoryStoreIsNotProvided()
     {
@@ -30,12 +29,12 @@ public sealed class MemoryBuilderTests
         Assert.Equal("IMemoryStore dependency was not provided. Use WithMemoryStore method.", exception.Message);
     }
 
-
     [Fact]
     public void ItThrowsExceptionWhenEmbeddingGenerationIsNotProvided()
     {
         // Arrange
-        var builder = new MemoryBuilder().WithMemoryStore(Mock.Of<IMemoryStore>());
+        var builder = new MemoryBuilder()
+            .WithMemoryStore(Mock.Of<IMemoryStore>());
 
         // Act
         var exception = Assert.Throws<KernelException>(builder.Build);
@@ -44,13 +43,14 @@ public sealed class MemoryBuilderTests
         Assert.Equal("ITextEmbeddingGenerationService dependency was not provided. Use WithTextEmbeddingGeneration method.", exception.Message);
     }
 
-
     [Fact]
+    [Obsolete("Temporary test for obsolete ITextEmbeddingGenerationService MemoryBuilder extensions.")]
     public void ItInitializesMemoryWhenRequiredDependenciesAreProvided()
     {
         // Arrange
-        var builder = new MemoryBuilder().WithMemoryStore(Mock.Of<IMemoryStore>()).
-            WithTextEmbeddingGeneration(Mock.Of<ITextEmbeddingGenerationService>());
+        var builder = new MemoryBuilder()
+            .WithMemoryStore(Mock.Of<IMemoryStore>())
+            .WithTextEmbeddingGeneration(Mock.Of<ITextEmbeddingGenerationService>());
 
         // Act
         var memory = builder.Build();
@@ -59,8 +59,8 @@ public sealed class MemoryBuilderTests
         Assert.NotNull(memory);
     }
 
-
     [Fact]
+    [Obsolete("Temporary test for obsolete ITextEmbeddingGenerationService MemoryBuilder extensions.")]
     public void ItUsesProvidedLoggerFactory()
     {
         // Arrange
@@ -68,26 +68,27 @@ public sealed class MemoryBuilderTests
         var loggerFactoryUnused = Mock.Of<ILoggerFactory>();
 
         // Act & Assert
-        var builder = new MemoryBuilder().WithLoggerFactory(loggerFactoryUsed).
-            WithMemoryStore((loggerFactory) =>
+        var builder = new MemoryBuilder()
+            .WithLoggerFactory(loggerFactoryUsed)
+            .WithMemoryStore((loggerFactory) =>
             {
                 Assert.Same(loggerFactoryUsed, loggerFactory);
                 Assert.NotSame(loggerFactoryUnused, loggerFactory);
 
                 return Mock.Of<IMemoryStore>();
-            }).
-            WithTextEmbeddingGeneration((loggerFactory, httpClient) =>
+            })
+            .WithTextEmbeddingGeneration((loggerFactory, httpClient) =>
             {
                 Assert.Same(loggerFactoryUsed, loggerFactory);
                 Assert.NotSame(loggerFactoryUnused, loggerFactory);
 
                 return Mock.Of<ITextEmbeddingGenerationService>();
-            }).
-            Build();
+            })
+            .Build();
     }
 
-
     [Fact]
+    [Obsolete("Temporary test for obsolete ITextEmbeddingGenerationService MemoryBuilder extensions.")]
     public void ItUsesProvidedHttpClientFactory()
     {
         // Arrange
@@ -95,22 +96,22 @@ public sealed class MemoryBuilderTests
         using var httpClientUnused = new HttpClient();
 
         // Act & Assert
-        var builder = new MemoryBuilder().WithHttpClient(httpClientUsed).
-            WithMemoryStore((loggerFactory, httpClient) =>
+        var builder = new MemoryBuilder()
+            .WithHttpClient(httpClientUsed)
+            .WithMemoryStore((loggerFactory, httpClient) =>
             {
                 Assert.Same(httpClientUsed, httpClient);
                 Assert.NotSame(httpClientUnused, httpClient);
 
                 return Mock.Of<IMemoryStore>();
-            }).
-            WithTextEmbeddingGeneration((loggerFactory, httpClient) =>
+            })
+            .WithTextEmbeddingGeneration((loggerFactory, httpClient) =>
             {
                 Assert.Same(httpClientUsed, httpClient);
                 Assert.NotSame(httpClientUnused, httpClient);
 
                 return Mock.Of<ITextEmbeddingGenerationService>();
-            }).
-            Build();
+            })
+            .Build();
     }
-
 }

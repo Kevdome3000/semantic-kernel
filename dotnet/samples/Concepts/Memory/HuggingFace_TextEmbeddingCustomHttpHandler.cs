@@ -1,14 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.Json;
+using Microsoft.Extensions.VectorData;
+using Microsoft.SemanticKernel.Connectors.HuggingFace;
+using Microsoft.SemanticKernel.Connectors.SqliteVec;
+using Microsoft.SemanticKernel.Embeddings;
+
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
 
 namespace Memory;
-
-using System.Text.Json;
-using Microsoft.SemanticKernel.Connectors.HuggingFace;
-using Microsoft.SemanticKernel.Connectors.Sqlite;
-using Microsoft.SemanticKernel.Memory;
-
 
 /// <summary>
 /// This example shows how to use custom <see cref="HttpClientHandler"/> to override Hugging Face HTTP response.
@@ -16,9 +16,9 @@ using Microsoft.SemanticKernel.Memory;
 /// For example, the <a href="https://huggingface.co/cointegrated/LaBSE-en-ru">cointegrated/LaBSE-en-ru</a> model returns results as a 1 * 1 * 4 * 768 matrix, which is different from Hugging Face embedding generation service implementation.
 /// To address this, a custom <see cref="HttpClientHandler"/> can be used to modify the response before sending it back.
 /// </summary>
+[Obsolete("The IMemoryStore abstraction is being obsoleted")]
 public class HuggingFace_TextEmbeddingCustomHttpHandler(ITestOutputHelper output) : BaseTest(output)
 {
-
     public async Task RunInferenceApiEmbeddingCustomHttpHandlerAsync()
     {
         Console.WriteLine("\n======= Hugging Face Inference API - Embedding Example ========\n");
@@ -32,22 +32,34 @@ public class HuggingFace_TextEmbeddingCustomHttpHandler(ITestOutputHelper output
             })
         );
 
-        var sqliteMemory = await SqliteMemoryStore.ConnectAsync("./../../../Sqlite.sqlite");
+        var sqliteCollection = new SqliteCollection<string, Record>(
+            "Data Source=./../../../Sqlite.sqlite",
+            name: "Test",
+            new() { EmbeddingGenerator = hf.AsEmbeddingGenerator() });
 
-        var skMemory = new MemoryBuilder().WithTextEmbeddingGeneration(hf).
-            WithMemoryStore(sqliteMemory).
-            Build();
-
-        await skMemory.SaveInformationAsync("Test", "THIS IS A SAMPLE", "sample", "TEXT");
+        await sqliteCollection.UpsertAsync(new Record
+        {
+            Id = "1",
+            Text = "THIS IS A SAMPLE",
+            Embedding = "An embedding will be generated from this text"
+        });
     }
 
+    public class Record
+    {
+        [VectorStoreKey]
+        public string Id { get; set; }
+
+        [VectorStoreData]
+        public string Text { get; set; }
+
+        [VectorStoreVector(Dimensions: 768)]
+        public string Embedding { get; set; }
+    }
 
     private sealed class CustomHttpClientHandler : HttpClientHandler
     {
-
         private readonly JsonSerializerOptions _jsonOptions = new();
-
-
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             // Log the request URI
@@ -64,24 +76,15 @@ public class HuggingFace_TextEmbeddingCustomHttpHandler(ITestOutputHelper output
             // response.Headers.Add("X-Custom-Header", "CustomValue");
 
             // For example, modify the response content
-            Stream originalContent = await response.Content.ReadAsStreamAsync(cancellationToken).
-                ConfigureAwait(false);
-
-            List<List<List<ReadOnlyMemory<float>>>> modifiedContent = (await JsonSerializer.DeserializeAsync<List<List<List<ReadOnlyMemory<float>>>>>(originalContent, _jsonOptions, cancellationToken).
-                ConfigureAwait(false))!;
+            Stream originalContent = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            List<List<List<ReadOnlyMemory<float>>>> modifiedContent = (await JsonSerializer.DeserializeAsync<List<List<List<ReadOnlyMemory<float>>>>>(originalContent, _jsonOptions, cancellationToken).ConfigureAwait(false))!;
 
             Stream modifiedStream = new MemoryStream();
-
-            await JsonSerializer.SerializeAsync(modifiedStream, modifiedContent[0][0].
-                    ToList(), _jsonOptions, cancellationToken).
-                ConfigureAwait(false);
-
+            await JsonSerializer.SerializeAsync(modifiedStream, modifiedContent[0][0].ToList(), _jsonOptions, cancellationToken).ConfigureAwait(false);
             response.Content = new StreamContent(modifiedStream);
 
             // Return the modified response
             return response;
         }
-
     }
-
 }

@@ -1,20 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Connectors.MistralAI.UnitTests.Services;
-
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.MistralAI;
 using Xunit;
 
+namespace SemanticKernel.Connectors.MistralAI.UnitTests.Services;
 
 /// <summary>
 /// Unit tests for <see cref="MistralAITextEmbeddingGenerationService"/>.
 /// </summary>
+[Obsolete("This class is deprecated and will be removed in a future release.")]
 public sealed class MistralAITextEmbeddingGenerationServiceTests : MistralTestBase
 {
-
     [Fact]
     public async Task ValidateGenerateEmbeddingsAsync()
     {
@@ -34,5 +34,4 @@ public sealed class MistralAITextEmbeddingGenerationServiceTests : MistralTestBa
         Assert.Equal(1024, response[0].Length);
         Assert.Equal(1024, response[1].Length);
     }
-
 }

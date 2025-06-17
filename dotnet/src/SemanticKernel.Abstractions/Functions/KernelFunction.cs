@@ -20,13 +20,17 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions;
 
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Represents a function that can be invoked as part of a Semantic Kernel workload.
 /// </summary>
-public abstract class KernelFunction : IKernelFunction
+public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
 {
+    private static readonly JsonElement s_defaultSchema = JsonDocument.Parse("{}").RootElement;
+
     /// <summary>The measurement tag name for the function name.</summary>
     private protected const string MeasurementFunctionTagName = "semantic_kernel.function.name";
 
@@ -38,6 +42,18 @@ public abstract class KernelFunction : IKernelFunction
 
     /// <summary><see cref="Meter"/> for function-related metrics.</summary>
     private protected static readonly Meter s_meter = new("Microsoft.SemanticKernel");
+
+    /// <summary>The <see cref="JsonSerializerOptions"/> to use for serialization and deserialization of various aspects of the function.</summary>
+    private readonly JsonSerializerOptions? _jsonSerializerOptions;
+
+    /// <summary>The underlying method, if this function was created from a method.</summary>
+#pragma warning disable CA1051
+    protected MethodInfo? _underlyingMethod;
+#pragma warning restore CA1051
+
+    /// <summary>The <see cref="Kernel"/> instance that will be prioritized when invoking without a provided <see cref="Kernel"/> argument.</summary>
+    /// <remarks>This will be normally used when the function is invoked using the <see cref="AIFunction.InvokeAsync(AIFunctionArguments?, CancellationToken)"/> interface.</remarks>
+    internal Kernel? Kernel { get; set; }
 
     /// <summary><see cref="Histogram{T}"/> to record function invocation duration.</summary>
     private static readonly Histogram<double> s_invocationDuration = s_meter.CreateHistogram<double>(
@@ -55,9 +71,6 @@ public abstract class KernelFunction : IKernelFunction
         "s",
         "Measures the duration of a function's streaming execution");
 
-    /// <summary>The <see cref="JsonSerializerOptions"/> to use for serialization and deserialization of various aspects of the function.</summary>
-    protected JsonSerializerOptions? JsonSerializerOptions { get; set; }
-
     /// <summary>
     /// Gets the name of the function.
     /// </summary>
@@ -68,7 +81,7 @@ public abstract class KernelFunction : IKernelFunction
     /// </remarks>\
     [JsonPropertyName("name")]
     [JsonInclude]
-    public string Name => Metadata.Name;
+    public virtual new string Name => Metadata.Name;
 
     /// <summary>
     /// Gets the name of the plugin this function was added to.
@@ -77,7 +90,7 @@ public abstract class KernelFunction : IKernelFunction
     /// The plugin name will be null if the function has not been added to a plugin.
     /// When a function is added to a plugin it will be cloned and the plugin name will be set.
     /// </remarks>
-    public string? PluginName => Metadata.PluginName;
+    public virtual string? PluginName => Metadata.PluginName;
 
     /// <summary>
     /// Gets a description of the function.
@@ -86,16 +99,7 @@ public abstract class KernelFunction : IKernelFunction
     /// The description may be supplied to a model in order to elaborate on the function's purpose,
     /// in case it may be beneficial for the model to recommend invoking the function.
     /// </remarks>
-    [JsonPropertyName("description")]
-    [JsonInclude]
-    public string Description => Metadata.Description;
-
-    /// <summary>
-    /// Gets the metadata describing the function.
-    /// </summary>
-    /// <returns>An instance of <see cref="KernelFunctionMetadata"/> describing the function</returns>
-    [JsonIgnore]
-    public KernelFunctionMetadata Metadata { get; protected set; }
+    public override string Description => this.Metadata.Description;
 
     /// <summary>
     /// Gets the prompt execution settings.
@@ -107,19 +111,10 @@ public abstract class KernelFunction : IKernelFunction
     public IReadOnlyDictionary<string, PromptExecutionSettings>? ExecutionSettings { get; }
 
     /// <summary>
-    /// Gets the underlying <see cref="MethodInfo"/> that this function might be wrapping.
-    /// </summary>
-    /// <remarks>
-    /// Provides additional metadata on the function and its signature. Implementations not wrapping .NET methods may return null.
-    /// </remarks>
-    [Experimental("SKEXP0001")]
-    public MethodInfo? UnderlyingMethod { get; internal init; }
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunction"/> class.
     /// </summary>
-    /// <param name="name">A name of the function to use as its <see cref="KernelFunction.Name"/>.</param>
-    /// <param name="description">The description of the function to use as its <see cref="KernelFunction.Description"/>.</param>
+    /// <param name="name">A name of the function to use as its <see cref="AITool.Name"/>.</param>
+    /// <param name="description">The description of the function to use as its <see cref="AITool.Description"/>.</param>
     /// <param name="parameters">The metadata describing the parameters to the function.</param>
     /// <param name="returnParameter">The metadata describing the return parameter of the function.</param>
     /// <param name="executionSettings">
@@ -147,8 +142,8 @@ public abstract class KernelFunction : IKernelFunction
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunction"/> class.
     /// </summary>
-    /// <param name="name">A name of the function to use as its <see cref="KernelFunction.Name"/>.</param>
-    /// <param name="description">The description of the function to use as its <see cref="KernelFunction.Description"/>.</param>
+    /// <param name="name">A name of the function to use as its <see cref="AITool.Name"/>.</param>
+    /// <param name="description">The description of the function to use as its <see cref="AITool.Description"/>.</param>
     /// <param name="parameters">The metadata describing the parameters to the function.</param>
     /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to use for serialization and deserialization of various aspects of the function.</param>
     /// <param name="returnParameter">The metadata describing the return parameter of the function.</param>
@@ -177,9 +172,9 @@ public abstract class KernelFunction : IKernelFunction
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunction"/> class.
     /// </summary>
-    /// <param name="name">A name of the function to use as its <see cref="KernelFunction.Name"/>.</param>
+    /// <param name="name">A name of the function to use as its <see cref="AITool.Name"/>.</param>
     /// <param name="pluginName">The name of the plugin this function instance has been added to.</param>
-    /// <param name="description">The description of the function to use as its <see cref="KernelFunction.Description"/>.</param>
+    /// <param name="description">The description of the function to use as its <see cref="AITool.Description"/>.</param>
     /// <param name="parameters">The metadata describing the parameters to the function.</param>
     /// <param name="returnParameter">The metadata describing the return parameter of the function.</param>
     /// <param name="executionSettings">
@@ -189,26 +184,17 @@ public abstract class KernelFunction : IKernelFunction
     /// <param name="additionalMetadata">Properties/metadata associated with the function itself rather than its parameters and return type.</param>
     [RequiresUnreferencedCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
-    protected KernelFunction(
-        string name,
-        string? pluginName,
-        string description,
-        IReadOnlyList<KernelParameterMetadata> parameters,
-        KernelReturnParameterMetadata? returnParameter = null,
-        Dictionary<string, PromptExecutionSettings>? executionSettings = null,
-        ReadOnlyDictionary<string, object?>? additionalMetadata = null)
-    {
-        Verify.NotNull(name);
-        Verify.ParametersUniqueness(parameters);
-
-        Metadata = new KernelFunctionMetadata(name)
+    protected KernelFunction(string name, string? pluginName, string description, IReadOnlyList<KernelParameterMetadata> parameters, KernelReturnParameterMetadata? returnParameter = null, Dictionary<string, PromptExecutionSettings>? executionSettings = null, ReadOnlyDictionary<string, object?>? additionalMetadata = null)
+        : base(new KernelFunctionMetadata(Throw.IfNull(name))
         {
             PluginName = pluginName,
             Description = description,
-            Parameters = parameters,
+            Parameters = KernelVerify.ParametersUniqueness(parameters),
             ReturnParameter = returnParameter ?? KernelReturnParameterMetadata.Empty,
             AdditionalProperties = additionalMetadata ?? KernelFunctionMetadata.s_emptyDictionary
-        };
+        })
+    {
+        this.BuildFunctionSchema();
 
         if (executionSettings is not null)
         {
@@ -225,12 +211,15 @@ public abstract class KernelFunction : IKernelFunction
     }
 
 
+    /// <inheritdoc/>
+    public override JsonElement JsonSchema => this._jsonSchema;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunction"/> class.
     /// </summary>
-    /// <param name="name">A name of the function to use as its <see cref="KernelFunction.Name"/>.</param>
+    /// <param name="name">A name of the function to use as its <see cref="AITool.Name"/>.</param>
     /// <param name="pluginName">The name of the plugin this function instance has been added to.</param>
-    /// <param name="description">The description of the function to use as its <see cref="KernelFunction.Description"/>.</param>
+    /// <param name="description">The description of the function to use as its <see cref="AITool.Description"/>.</param>
     /// <param name="parameters">The metadata describing the parameters to the function.</param>
     /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to use for serialization and deserialization of various aspects of the function.</param>
     /// <param name="returnParameter">The metadata describing the return parameter of the function.</param>
@@ -239,28 +228,19 @@ public abstract class KernelFunction : IKernelFunction
     /// overridden by settings passed into the invocation of the function.
     /// </param>
     /// <param name="additionalMetadata">Properties/metadata associated with the function itself rather than its parameters and return type.</param>
-    internal KernelFunction(
-        string name,
-        string? pluginName,
-        string description,
-        IReadOnlyList<KernelParameterMetadata> parameters,
-        JsonSerializerOptions jsonSerializerOptions,
-        KernelReturnParameterMetadata? returnParameter = null,
-        Dictionary<string, PromptExecutionSettings>? executionSettings = null,
-        ReadOnlyDictionary<string, object?>? additionalMetadata = null)
-    {
-        Verify.NotNull(name);
-        Verify.ParametersUniqueness(parameters);
-        Verify.NotNull(jsonSerializerOptions);
-
-        Metadata = new KernelFunctionMetadata(name)
+    internal KernelFunction(string name, string? pluginName, string description, IReadOnlyList<KernelParameterMetadata> parameters, JsonSerializerOptions jsonSerializerOptions, KernelReturnParameterMetadata? returnParameter = null, Dictionary<string, PromptExecutionSettings>? executionSettings = null, ReadOnlyDictionary<string, object?>? additionalMetadata = null)
+        : base(new KernelFunctionMetadata(Throw.IfNull(name))
         {
             PluginName = pluginName,
             Description = description,
-            Parameters = parameters,
+            Parameters = KernelVerify.ParametersUniqueness(parameters),
             ReturnParameter = returnParameter ?? KernelReturnParameterMetadata.Empty,
             AdditionalProperties = additionalMetadata ?? KernelFunctionMetadata.s_emptyDictionary
-        };
+        })
+    {
+        Verify.NotNull(jsonSerializerOptions);
+
+        this.BuildFunctionSchema();
 
         if (executionSettings is not null)
         {
@@ -274,9 +254,14 @@ public abstract class KernelFunction : IKernelFunction
                 });
         }
 
-        JsonSerializerOptions = jsonSerializerOptions;
+        this._jsonSerializerOptions = jsonSerializerOptions;
     }
 
+    /// <inheritdoc/>
+    public override JsonSerializerOptions JsonSerializerOptions => this._jsonSerializerOptions ?? base.JsonSerializerOptions;
+
+    /// <inheritdoc/>
+    public override MethodInfo? UnderlyingMethod => this._underlyingMethod;
 
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/>.
@@ -291,9 +276,10 @@ public abstract class KernelFunction : IKernelFunction
         KernelArguments? arguments = null,
         CancellationToken cancellationToken = default)
     {
+        kernel ??= this.Kernel;
         Verify.NotNull(kernel);
 
-        using var activity = s_activitySource.StartActivity(Name);
+        using var activity = s_activitySource.StartFunctionActivity(Name, this.Description);
         ILogger logger = kernel.LoggerFactory.CreateLogger(typeof(KernelFunction));
 
         // Ensure arguments are initialized.
@@ -420,9 +406,10 @@ public abstract class KernelFunction : IKernelFunction
         KernelArguments? arguments = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        kernel ??= this.Kernel;
         Verify.NotNull(kernel);
 
-        using var activity = s_activitySource.StartActivity(Name);
+        using var activity = s_activitySource.StartFunctionActivity(Name, this.Description);
         ILogger logger = kernel.LoggerFactory.CreateLogger(Name) ?? NullLogger.Instance;
 
         arguments ??= [];
@@ -530,12 +517,12 @@ public abstract class KernelFunction : IKernelFunction
     /// Creates a new <see cref="KernelFunction"/> object that is a copy of the current instance
     /// but the <see cref="KernelFunctionMetadata"/> has the plugin name set.
     /// </summary>
-    /// <param name="pluginName">The name of the plugin this function instance will be added to.</param>
+    /// <param name="pluginName">The optional name of the plugin this function instance will be added to.</param>
     /// <remarks>
     /// This method should only be used to create a new instance of a <see cref="KernelFunction"/> when adding
     /// a function to a <see cref="KernelPlugin"/>.
     /// </remarks>
-    public abstract KernelFunction Clone(string pluginName);
+    public abstract KernelFunction Clone(string? pluginName = null);
 
 
     /// <inheritdoc/>
@@ -559,6 +546,38 @@ public abstract class KernelFunction : IKernelFunction
         KernelArguments arguments,
         CancellationToken cancellationToken);
 
+    /// <summary>
+    /// Invokes the <see cref="KernelFunction"/> using the <see cref="AIFunction"/> interface.
+    /// </summary>
+    /// <remarks>
+    /// When using the <see cref="AIFunction.InvokeAsync"/> interface, the <see cref="Kernel"/> will be acquired as follows, in order of priority:
+    /// <list type="number">
+    /// <item>From the <see cref="AIFunctionArguments"/> dictionary with the <see cref="AIFunctionArgumentsExtensions.KernelAIFunctionArgumentKey"/> key.</item>
+    /// <item>From the <see cref="AIFunctionArguments"/>.<see cref="AIFunctionArguments.Services"/> service provider.</item>
+    /// <item>From the <see cref="Kernel"/> provided in <see cref="KernelFunctionExtensions.WithKernel"/> when Cloning the <see cref="KernelFunction"/>.</item>
+    /// <item>A new <see cref="Kernel"/> instance will be created using the same service provider in the <see cref="AIFunctionArguments"/>.<see cref="AIFunctionArguments.Services"/>.</item>
+    /// </list>
+    /// </remarks>
+    /// <param name="arguments">The arguments to pass to the function's invocation.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
+    /// <returns>The result of the function's execution.</returns>
+    protected override async ValueTask<object?> InvokeCoreAsync(AIFunctionArguments arguments, CancellationToken cancellationToken)
+    {
+        Kernel kernel = (arguments.TryGetValue(AIFunctionArgumentsExtensions.KernelAIFunctionArgumentKey, out var kernelObject) && kernelObject is not null)
+            ? (kernelObject as Kernel)!
+            : arguments.Services?.GetService(typeof(Kernel)) as Kernel
+            ?? this.Kernel
+            ?? new(arguments.Services);
+
+        var kernelArguments = new KernelArguments(arguments);
+
+        var result = await this.InvokeCoreAsync(kernel, kernelArguments, cancellationToken).ConfigureAwait(false);
+
+        // Serialize the result to JSON, as with AIFunctionFactory.Create AIFunctions.
+        return result.Value is object value ?
+            JsonSerializer.SerializeToElement(value, AbstractionsJsonContext.GetTypeInfo(value.GetType(), this.JsonSerializerOptions)) :
+            null;
+    }
 
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/> and streams its results.
@@ -611,6 +630,25 @@ public abstract class KernelFunction : IKernelFunction
         }
     }
 
+    private void BuildFunctionSchema()
+    {
+        KernelFunctionSchemaModel schemaModel = new()
+        {
+            Type = "object",
+            Description = this.Description,
+        };
+
+        foreach (var parameter in this.Metadata.Parameters)
+        {
+            schemaModel.Properties[parameter.Name] = parameter.Schema?.RootElement ?? s_defaultSchema;
+            if (parameter.IsRequired)
+            {
+                (schemaModel.Required ??= []).Add(parameter.Name);
+            }
+        }
+
+        this._jsonSchema = JsonSerializer.SerializeToElement(schemaModel, AbstractionsJsonContext.Default.KernelFunctionSchemaModel);
+    }
 
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "The warning is shown and should be addressed at the function creation site; there is no need to show it again at the function invocation sites.")]
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "The warning is shown and should be addressed at the function creation site; there is no need to show it again at the function invocation sites.")]
@@ -648,13 +686,18 @@ public abstract class KernelFunction : IKernelFunction
     /// </param>
     /// <returns>An instance of <see cref="AIFunction"/> that, when invoked, will in turn invoke the current <see cref="KernelFunction"/>.</returns>
     [Experimental("SKEXP0001")]
+    [Obsolete("Use the kernel function directly or for similar behavior use Clone(Kernel) method instead.")]
     public AIFunction AsAIFunction(Kernel? kernel = null)
     {
         return new KernelAIFunction(this, kernel);
     }
 
+    #region Private
+
+    private JsonElement _jsonSchema;
 
     /// <summary>An <see cref="AIFunction"/> wrapper around a <see cref="KernelFunction"/>.</summary>
+    [Obsolete("Use the kernel function directly or for similar behavior use Clone(Kernel) method instead.")]
     private sealed class KernelAIFunction : AIFunction
     {
         private static readonly JsonElement s_defaultSchema = JsonDocument.Parse("{}").RootElement;
@@ -672,8 +715,7 @@ public abstract class KernelFunction : IKernelFunction
 
             this.JsonSchema = BuildFunctionSchema(kernelFunction);
         }
-
-
+        
         public override string Name { get; }
         public override JsonElement JsonSchema { get; }
         public override string Description => this._kernelFunction.Description;
@@ -722,4 +764,6 @@ public abstract class KernelFunction : IKernelFunction
             return JsonSerializer.SerializeToElement(schemaModel, AbstractionsJsonContext.Default.KernelFunctionSchemaModel);
         }
     }
+
+    #endregion
 }

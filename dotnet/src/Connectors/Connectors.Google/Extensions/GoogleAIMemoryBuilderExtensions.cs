@@ -1,19 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel;
-
+using System;
 using System.Net.Http;
-using Connectors.Google;
-using Http;
-using Memory;
+using Microsoft.SemanticKernel.Connectors.Google;
+using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.Memory;
 
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Provides extension methods for the <see cref="MemoryBuilder"/> class to configure GoogleAI connector.
 /// </summary>
 public static class GoogleAIMemoryBuilderExtensions
 {
-
     /// <summary>
     /// Add GoogleAI embeddings generation service to the memory builder.
     /// </summary>
@@ -24,6 +23,7 @@ public static class GoogleAIMemoryBuilderExtensions
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <param name="dimensions">The optional number of dimensions that the model should use. If not specified, the default number of dimensions will be used.</param>
     /// <returns>The updated memory builder.</returns>
+    [Obsolete("This method is now obsolete and will be removed in future. Use an EmbeddingGenerator with your VectorStore instead.")]
     public static MemoryBuilder WithGoogleAITextEmbeddingGeneration(
         this MemoryBuilder builder,
         string modelId,
@@ -45,5 +45,4 @@ public static class GoogleAIMemoryBuilderExtensions
                 loggerFactory: loggerFactory,
                 dimensions: dimensions));
     }
-
 }

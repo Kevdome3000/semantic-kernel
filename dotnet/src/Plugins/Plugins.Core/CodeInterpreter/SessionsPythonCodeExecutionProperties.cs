@@ -11,12 +11,6 @@ internal sealed class SessionsPythonCodeExecutionProperties
 {
 
     /// <summary>
-    /// The session identifier.
-    /// </summary>
-    [JsonPropertyName("identifier")]
-    public string Identifier { get; }
-
-    /// <summary>
     /// Code input type.
     /// </summary>
     [JsonPropertyName("codeInputType")]
@@ -37,13 +31,12 @@ internal sealed class SessionsPythonCodeExecutionProperties
     /// <summary>
     /// The Python code to execute.
     /// </summary>
-    [JsonPropertyName("pythonCode")]
-    public string? PythonCode { get; }
+    [JsonPropertyName("code")]
+    public string PythonCode { get; }
 
 
     public SessionsPythonCodeExecutionProperties(SessionsPythonSettings settings, string pythonCode)
     {
-        this.Identifier = settings.SessionId;
         this.PythonCode = pythonCode;
         this.TimeoutInSeconds = settings.TimeoutInSeconds;
         this.CodeInputType = settings.CodeInputType;

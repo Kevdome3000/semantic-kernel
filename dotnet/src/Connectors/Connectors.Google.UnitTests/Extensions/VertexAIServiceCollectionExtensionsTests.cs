@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Connectors.Google.UnitTests.Extensions;
-
+using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -10,13 +10,13 @@ using Microsoft.SemanticKernel.Connectors.Google;
 using Microsoft.SemanticKernel.Embeddings;
 using Xunit;
 
+namespace SemanticKernel.Connectors.Google.UnitTests.Extensions;
 
 /// <summary>
-/// Unit tests for <see cref="VertexAIServiceCollectionExtensions"/> and <see cref="VertexAIKernelBuilderExtensions"/> classes.
+/// Unit tests for <see cref="Microsoft.SemanticKernel.VertexAIServiceCollectionExtensions"/> and <see cref="VertexAIKernelBuilderExtensions"/> classes.
 /// </summary>
 public sealed class VertexAIServiceCollectionExtensionsTests
 {
-
     [Fact]
     public void VertexAIGeminiChatCompletionServiceShouldBeRegisteredInKernelServicesBearerAsString()
     {
@@ -32,7 +32,6 @@ public sealed class VertexAIServiceCollectionExtensionsTests
         Assert.NotNull(chatCompletionService);
         Assert.IsType<VertexAIGeminiChatCompletionService>(chatCompletionService);
     }
-
 
     [Fact]
     public void VertexAIGeminiChatCompletionServiceShouldBeRegisteredInKernelServicesBearerAsFunc()
@@ -50,7 +49,6 @@ public sealed class VertexAIServiceCollectionExtensionsTests
         Assert.IsType<VertexAIGeminiChatCompletionService>(chatCompletionService);
     }
 
-
     [Fact]
     public void VertexAIGeminiChatCompletionServiceShouldBeRegisteredInServiceCollectionBearerAsString()
     {
@@ -66,7 +64,6 @@ public sealed class VertexAIServiceCollectionExtensionsTests
         Assert.NotNull(chatCompletionService);
         Assert.IsType<VertexAIGeminiChatCompletionService>(chatCompletionService);
     }
-
 
     [Fact]
     public void VertexAIGeminiChatCompletionServiceShouldBeRegisteredInServiceCollectionBearerAsFunc()
@@ -84,8 +81,8 @@ public sealed class VertexAIServiceCollectionExtensionsTests
         Assert.IsType<VertexAIGeminiChatCompletionService>(chatCompletionService);
     }
 
-
     [Fact]
+    [Obsolete("Temporary Test for VertexAITextEmbeddingGenerationService")]
     public void VertexAIEmbeddingGenerationServiceShouldBeRegisteredInKernelServicesBearerAsString()
     {
         // Arrange
@@ -101,8 +98,24 @@ public sealed class VertexAIServiceCollectionExtensionsTests
         Assert.IsType<VertexAITextEmbeddingGenerationService>(embeddingsGenerationService);
     }
 
+    [Fact]
+    public void VertexAIEmbeddingGeneratorShouldBeRegisteredInKernelServicesBearerAsString()
+    {
+        // Arrange
+        var kernelBuilder = Kernel.CreateBuilder();
+
+        // Act
+        kernelBuilder.AddVertexAIEmbeddingGenerator("modelId", "apiKey", location: "test2", projectId: "projectId");
+        var kernel = kernelBuilder.Build();
+
+        // Assert
+        var embeddingsGenerationService = kernel.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
+        Assert.NotNull(embeddingsGenerationService);
+        Assert.IsType<VertexAIEmbeddingGenerator>(embeddingsGenerationService);
+    }
 
     [Fact]
+    [Obsolete("Temporary Test for VertexAITextEmbeddingGenerationService")]
     public void VertexAIEmbeddingGenerationServiceShouldBeRegisteredInKernelServicesBearerAsFunc()
     {
         // Arrange
@@ -118,8 +131,24 @@ public sealed class VertexAIServiceCollectionExtensionsTests
         Assert.IsType<VertexAITextEmbeddingGenerationService>(embeddingsGenerationService);
     }
 
+    [Fact]
+    public void VertexAIEmbeddingGeneratorShouldBeRegisteredInKernelServicesBearerAsFunc()
+    {
+        // Arrange
+        var kernelBuilder = Kernel.CreateBuilder();
+
+        // Act
+        kernelBuilder.AddVertexAIEmbeddingGenerator("modelId", () => ValueTask.FromResult("apiKey"), location: "test2", projectId: "projectId");
+        var kernel = kernelBuilder.Build();
+
+        // Assert
+        var embeddingsGenerationService = kernel.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
+        Assert.NotNull(embeddingsGenerationService);
+        Assert.IsType<VertexAIEmbeddingGenerator>(embeddingsGenerationService);
+    }
 
     [Fact]
+    [Obsolete("Temporary Test for VertexAITextEmbeddingGenerationService")]
     public void VertexAIEmbeddingGenerationServiceShouldBeRegisteredInServiceCollectionBearerAsString()
     {
         // Arrange
@@ -135,8 +164,24 @@ public sealed class VertexAIServiceCollectionExtensionsTests
         Assert.IsType<VertexAITextEmbeddingGenerationService>(embeddingsGenerationService);
     }
 
+    [Fact]
+    public void VertexAIEmbeddingGeneratorShouldBeRegisteredInServiceCollectionBearerAsString()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddVertexAIEmbeddingGenerator("modelId", "apiKey", location: "test2", projectId: "projectId");
+        var serviceProvider = services.BuildServiceProvider();
+
+        // Assert
+        var embeddingsGenerationService = serviceProvider.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
+        Assert.NotNull(embeddingsGenerationService);
+        Assert.IsType<VertexAIEmbeddingGenerator>(embeddingsGenerationService);
+    }
 
     [Fact]
+    [Obsolete("Temporary Test for VertexAITextEmbeddingGenerationService")]
     public void VertexAIEmbeddingGenerationServiceShouldBeRegisteredInServiceCollectionBearerAsFunc()
     {
         // Arrange
@@ -152,4 +197,19 @@ public sealed class VertexAIServiceCollectionExtensionsTests
         Assert.IsType<VertexAITextEmbeddingGenerationService>(embeddingsGenerationService);
     }
 
+    [Fact]
+    public void VertexAIEmbeddingGeneratorShouldBeRegisteredInServiceCollectionBearerAsFunc()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddVertexAIEmbeddingGenerator("modelId", () => ValueTask.FromResult("apiKey"), location: "test2", projectId: "projectId");
+        var serviceProvider = services.BuildServiceProvider();
+
+        // Assert
+        var embeddingsGenerationService = serviceProvider.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
+        Assert.NotNull(embeddingsGenerationService);
+        Assert.IsType<VertexAIEmbeddingGenerator>(embeddingsGenerationService);
+    }
 }

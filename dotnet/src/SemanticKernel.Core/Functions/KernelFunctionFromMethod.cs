@@ -405,13 +405,14 @@ After:
         throw new NotSupportedException($"Streaming function {Name} does not support type {typeof(TResult)}");
     }
     /// <inheritdoc/>
-    public override KernelFunction Clone(string pluginName)
+    public override KernelFunction Clone(string? pluginName = null)
     {
-        Verify.NotNullOrWhiteSpace(pluginName, nameof(pluginName));
-
-        if (JsonSerializerOptions is not null)
+        if (pluginName is not null)
         {
-            return new KernelFunctionFromMethod(
+            Verify.NotNullOrWhiteSpace(pluginName, nameof(pluginName));
+        }
+
+        return new KernelFunctionFromMethod(
             this.UnderlyingMethod!,
             this._function,
             this.Name,
@@ -421,24 +422,6 @@ After:
             Metadata.ReturnParameter,
             JsonSerializerOptions,
             Metadata.AdditionalProperties);
-        }
-
-        [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "Non AOT scenario.")]
-        [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "Non AOT scenario.")]
-        KernelFunctionFromMethod Clone()
-        {
-            return new KernelFunctionFromMethod(
-            this.UnderlyingMethod!,
-            this._function,
-            this.Name,
-            pluginName,
-            Description,
-            Metadata.Parameters,
-            Metadata.ReturnParameter,
-            Metadata.AdditionalProperties);
-        }
-
-        return Clone();
     }
 
     /// <summary>Delegate used to invoke the underlying delegate.</summary>
@@ -501,10 +484,10 @@ After:
         base(functionName, pluginName, description, parameters,
             returnParameter, additionalMetadata: additionalMetadata)
     {
-        Verify.ValidFunctionName(functionName);
+        KernelVerify.ValidFunctionName(functionName);
 
         _function = implementationFunc;
-        this.UnderlyingMethod = method;
+        this._underlyingMethod = method;
     }
 
     private KernelFunctionFromMethod(
@@ -519,10 +502,10 @@ After:
         ReadOnlyDictionary<string, object?>? additionalMetadata = null) :
         base(functionName, pluginName, description, parameters, jsonSerializerOptions, returnParameter, additionalMetadata: additionalMetadata)
     {
-        Verify.ValidFunctionName(functionName);
+        KernelVerify.ValidFunctionName(functionName);
 
         _function = implementationFunc;
-        this.UnderlyingMethod = method;
+        this._underlyingMethod = method;
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "This method is AOT save.")]
@@ -561,7 +544,7 @@ After:
             }
         }
 
-        Verify.ValidFunctionName(functionName);
+        KernelVerify.ValidFunctionName(functionName);
 
         // Build up a list of KernelParameterMetadata for the parameters we expect to be populated
         // from arguments. Some arguments are populated specially, not from arguments, and thus
@@ -583,7 +566,7 @@ After:
         }
 
         // Check for param names conflict
-        Verify.ParametersUniqueness(argParameterViews);
+        KernelVerify.ParametersUniqueness(argParameterViews);
 
         // Get the return type and a marshaling func for the return value.
         (Type returnType, Func<Kernel, KernelFunction, object?, ValueTask<FunctionResult>> returnFunc) = GetReturnValueMarshalerDelegate(method);

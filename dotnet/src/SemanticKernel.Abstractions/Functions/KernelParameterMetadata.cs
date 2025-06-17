@@ -3,6 +3,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel;
 /// <summary>
@@ -34,10 +35,8 @@ public sealed class KernelParameterMetadata
     [RequiresUnreferencedCode("Uses reflection to generate schema, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to generate schema, making it incompatible with AOT scenarios.")]
     public KernelParameterMetadata(string name)
-    {
-        Name = name;
-    }
-
+        : this(name, null!)
+    { }
 
     /// <summary>Initializes the <see cref="KernelParameterMetadata"/> for a parameter with the specified name.</summary>
     /// <param name="name">The name of the parameter.</param>
@@ -88,7 +87,7 @@ public sealed class KernelParameterMetadata
     public string Name
     {
         get => _name;
-        init
+        set
         {
             Verify.NotNullOrWhiteSpace(value);
             _name = value;
@@ -100,7 +99,7 @@ public sealed class KernelParameterMetadata
     public string Description
     {
         get => _description;
-        init
+        set
         {
             string newDescription = value ?? string.Empty;
 
@@ -117,7 +116,7 @@ public sealed class KernelParameterMetadata
     public object? DefaultValue
     {
         get => _defaultValue;
-        init
+        set
         {
             if (value != _defaultValue && _schema?.Inferred is true)
             {
@@ -129,13 +128,14 @@ public sealed class KernelParameterMetadata
     }
 
     /// <summary>Gets whether the parameter is required.</summary>
-    public bool IsRequired { get; init; }
+    public bool IsRequired { get; set; }
 
     /// <summary>Gets the .NET type of the parameter.</summary>
+    [JsonIgnore]
     public Type? ParameterType
     {
         get => _parameterType;
-        init
+        set
         {
             if (value != _parameterType && _schema?.Inferred is true)
             {
@@ -155,7 +155,7 @@ public sealed class KernelParameterMetadata
             DefaultValue,
             Description,
             _jsonSerializerOptions)).Schema;
-        init => _schema = value is null
+        set => _schema = value is null
             ? null
             : new() { Inferred = false, Schema = value };
     }

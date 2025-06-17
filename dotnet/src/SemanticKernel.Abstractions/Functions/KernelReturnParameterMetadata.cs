@@ -75,7 +75,7 @@ public sealed class KernelReturnParameterMetadata
     public string Description
     {
         get => _description;
-        init
+        set
         {
             string newDescription = value ?? string.Empty;
 
@@ -91,7 +91,7 @@ public sealed class KernelReturnParameterMetadata
     public Type? ParameterType
     {
         get => _parameterType;
-        init
+        set
         {
             if (value != _parameterType && _schema?.Inferred is true)
             {
@@ -110,7 +110,7 @@ public sealed class KernelReturnParameterMetadata
             null,
             Description,
             _jsonSerializerOptions)).Schema;
-        init => _schema = value is null
+        set => _schema = value is null
             ? null
             : new InitializedSchema { Inferred = false, Schema = value };
     }

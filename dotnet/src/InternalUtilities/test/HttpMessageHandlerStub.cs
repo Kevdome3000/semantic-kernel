@@ -11,10 +11,9 @@ using System.Threading;
 using System.Threading.Tasks;
 
 #pragma warning disable CA1812 // Internal class that is apparently never instantiated; this class is compiled in tests projects
-internal sealed class HttpMessageHandlerStub : DelegatingHandler
+internal sealed class HttpMessageHandlerStub : HttpMessageHandler
 #pragma warning restore CA1812 // Internal class that is apparently never instantiated
 {
-
     public HttpRequestHeaders? RequestHeaders { get; private set; }
 
     public HttpContentHeaders? ContentHeaders { get; private set; }
@@ -28,9 +27,7 @@ internal sealed class HttpMessageHandlerStub : DelegatingHandler
     public HttpResponseMessage ResponseToReturn { get; set; }
 
     public Queue<HttpResponseMessage> ResponseQueue { get; } = new();
-
     public byte[]? FirstMultipartContent { get; private set; }
-
 
     public HttpMessageHandlerStub()
     {
@@ -40,31 +37,30 @@ internal sealed class HttpMessageHandlerStub : DelegatingHandler
         };
     }
 
+#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
+    protected override HttpResponseMessage Send(HttpRequestMessage request, CancellationToken cancellationToken) =>
+        this.SendAsync(request, cancellationToken).GetAwaiter().GetResult();
+#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
 
-    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    protected async override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         this.Method = request.Method;
         this.RequestUri = request.RequestUri;
         this.RequestHeaders = request.Headers;
-
-        this.RequestContent = request.Content is null
-            ? null
-            : await request.Content.ReadAsByteArrayAsync(cancellationToken);
+        this.RequestContent = request.Content is null ? null : await request.Content.ReadAsByteArrayAsync(cancellationToken);
 
         if (request.Content is MultipartContent multipartContent)
         {
-            this.FirstMultipartContent = await multipartContent.First().
-                ReadAsByteArrayAsync(cancellationToken);
+            this.FirstMultipartContent = await multipartContent.First().ReadAsByteArrayAsync(cancellationToken);
         }
 
         this.ContentHeaders = request.Content?.Headers;
 
         HttpResponseMessage response =
-            this.ResponseQueue.Count == 0
-                ? this.ResponseToReturn
-                : this.ResponseToReturn = this.ResponseQueue.Dequeue();
+            this.ResponseQueue.Count == 0 ?
+                this.ResponseToReturn :
+                this.ResponseToReturn = this.ResponseQueue.Dequeue();
 
-        return await Task.FromResult(response);
+        return response;
     }
-
 }

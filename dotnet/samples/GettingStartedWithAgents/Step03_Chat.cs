@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace GettingStarted;
-
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
 using Microsoft.SemanticKernel.ChatCompletion;
 
+namespace GettingStarted;
 
 /// <summary>
 /// Demonstrate creation of <see cref="AgentChat"/> with <see cref="AgentGroupChatSettings"/>
@@ -14,9 +13,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 /// </summary>
 public class Step03_Chat(ITestOutputHelper output) : BaseAgentsTest(output)
 {
-
     private const string ReviewerName = "ArtDirector";
-
     private const string ReviewerInstructions =
         """
         You are an art director who has opinions about copywriting born of a love for David Ogilvy.
@@ -26,7 +23,6 @@ public class Step03_Chat(ITestOutputHelper output) : BaseAgentsTest(output)
         """;
 
     private const string CopyWriterName = "CopyWriter";
-
     private const string CopyWriterInstructions =
         """
         You are a copywriter with ten years of experience and are known for brevity and a dry humor.
@@ -37,9 +33,10 @@ public class Step03_Chat(ITestOutputHelper output) : BaseAgentsTest(output)
         Consider suggestions when refining an idea.
         """;
 
-
-    [Fact]
-    public async Task UseAgentGroupChatWithTwoAgents()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task UseAgentGroupChatWithTwoAgents(bool useChatClient)
     {
         // Define the agents
         ChatCompletionAgent agentReviewer =
@@ -47,7 +44,7 @@ public class Step03_Chat(ITestOutputHelper output) : BaseAgentsTest(output)
             {
                 Instructions = ReviewerInstructions,
                 Name = ReviewerName,
-                Kernel = this.CreateKernelWithChatCompletion(),
+                Kernel = this.CreateKernelWithChatCompletion(useChatClient, out var chatClient1),
             };
 
         ChatCompletionAgent agentWriter =
@@ -55,7 +52,7 @@ public class Step03_Chat(ITestOutputHelper output) : BaseAgentsTest(output)
             {
                 Instructions = CopyWriterInstructions,
                 Name = CopyWriterName,
-                Kernel = this.CreateKernelWithChatCompletion(),
+                Kernel = this.CreateKernelWithChatCompletion(useChatClient, out var chatClient2),
             };
 
         // Create a chat for agent interaction.
@@ -89,17 +86,15 @@ public class Step03_Chat(ITestOutputHelper output) : BaseAgentsTest(output)
         }
 
         Console.WriteLine($"\n[IS COMPLETED: {chat.IsComplete}]");
-    }
 
+        chatClient1?.Dispose();
+        chatClient2?.Dispose();
+    }
 
     private sealed class ApprovalTerminationStrategy : TerminationStrategy
     {
-
         // Terminate when the final message contains the term "approve"
         protected override Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken)
-            => Task.FromResult(history[history.Count - 1].
-                Content?.Contains("approve", StringComparison.OrdinalIgnoreCase) ?? false);
-
+            => Task.FromResult(history[history.Count - 1].Content?.Contains("approve", StringComparison.OrdinalIgnoreCase) ?? false);
     }
-
 }

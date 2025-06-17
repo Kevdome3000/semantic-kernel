@@ -3,6 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel;
 /// <summary>
@@ -41,8 +43,27 @@ internal sealed class DefaultKernelPlugin : KernelPlugin
     public override int FunctionCount => _functions.Count;
 
     /// <inheritdoc/>
-    public override bool TryGetFunction(string name, [NotNullWhen(true)] out KernelFunction? function) =>
-        _functions.TryGetValue(name, out function);
+    public override bool TryGetFunction(string name, [NotNullWhen(true)] out KernelFunction? function)
+    {
+        if (this._functions.TryGetValue(name, out function))
+        {
+            return true;
+        }
+
+        if (this._functions.Count == 0 || name.Length <= this.Name.Length)
+        {
+            // The function name is too short to have the plugin name aborting the search.
+            function = null;
+            return false;
+        }
+
+        // When a kernel function is used as an ai function by IChatClients it needs to be discoverable by the FQN.
+        function = (KernelFunction?)this._functions.Values
+            .Select(f => f as AIFunction)
+            .FirstOrDefault(aiFunction => aiFunction.Name == name);
+
+        return function is not null;
+    }
 
     /// <inheritdoc/>
     public override IEnumerator<KernelFunction> GetEnumerator() => _functions.Values.GetEnumerator();
