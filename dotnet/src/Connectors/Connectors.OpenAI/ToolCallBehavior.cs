@@ -271,7 +271,7 @@ public abstract class ToolCallBehavior
 
         /// <summary>Gets how many requests are part of a single interaction should include this tool in the request.</summary>
         /// <remarks>
-        /// Unlike <see cref="EnabledFunctions"/> and <see cref="KernelFunctions"/>, this must use 1 as the maximum
+        /// Unlike <see cref="ToolCallBehavior.EnabledFunctions"/> and <see cref="ToolCallBehavior.KernelFunctions"/>, this must use 1 as the maximum
         /// use attempts. Otherwise, every call back to the model _requires_ it to invoke the function (as opposed
         /// to allows it), which means we end up doing the same work over and over and over until the maximum is reached.
         /// Thus for "requires", we must send the tool information only once.

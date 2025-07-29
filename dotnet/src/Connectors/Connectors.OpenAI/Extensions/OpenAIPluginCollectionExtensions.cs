@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using OpenAI.Chat;
+
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 using System.Diagnostics.CodeAnalysis;
