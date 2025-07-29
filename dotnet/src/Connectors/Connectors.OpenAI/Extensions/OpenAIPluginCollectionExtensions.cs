@@ -5,7 +5,6 @@ using OpenAI.Chat;
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 using System.Diagnostics.CodeAnalysis;
-using OpenAI.Chat;
 
 
 /// <summary>
