@@ -1,16 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Google;
-
 using System.Collections.Generic;
 using System.Linq;
-using Core;
+using Microsoft.SemanticKernel.Connectors.Google.Core;
 
+namespace Microsoft.SemanticKernel.Connectors.Google;
 
 /// <summary>Represents a behavior for Gemini tool calls.</summary>
 public abstract class GeminiToolCallBehavior
 {
-
     // NOTE: Right now, the only tools that are available are for function calling. In the future,
     // this class can be extended to support additional kinds of tools, including composite ones:
     // the GeminiPromptExecutionSettings has a single ToolCallBehavior property, but we could
@@ -56,7 +54,6 @@ public abstract class GeminiToolCallBehavior
     /// </remarks>
     public static GeminiToolCallBehavior AutoInvokeKernelFunctions => new KernelFunctions(autoInvoke: true);
 
-
     /// <summary>Gets an instance that will provide the specified list of functions to the model.</summary>
     /// <param name="functions">The functions that should be made available to the model.</param>
     /// <param name="autoInvoke">true to attempt to automatically handle function call requests; otherwise, false.</param>
@@ -67,19 +64,14 @@ public abstract class GeminiToolCallBehavior
     public static GeminiToolCallBehavior EnableFunctions(IEnumerable<GeminiFunction> functions, bool autoInvoke = false)
     {
         Verify.NotNull(functions);
-
         return new EnabledFunctions(functions, autoInvoke);
     }
-
 
     /// <summary>Initializes the instance; prevents external instantiation.</summary>
     private GeminiToolCallBehavior(bool autoInvoke)
     {
-        this.MaximumAutoInvokeAttempts = autoInvoke
-            ? DefaultMaximumAutoInvokeAttempts
-            : 0;
+        this.MaximumAutoInvokeAttempts = autoInvoke ? DefaultMaximumAutoInvokeAttempts : 0;
     }
-
 
     /// <summary>Gets how many requests are part of a single interaction should include this tool in the request.</summary>
     /// <remarks>
@@ -103,19 +95,16 @@ public abstract class GeminiToolCallBehavior
     /// false if a request needs to be validated against an allow list.</value>
     internal virtual bool AllowAnyRequestedKernelFunction => false;
 
-
     /// <summary>Configures the <paramref name="request"/> with any tools this <see cref="GeminiToolCallBehavior"/> provides.</summary>
     /// <param name="kernel">The <see cref="Kernel"/> used for the operation.
     /// This can be queried to determine what tools to provide into the <paramref name="request"/>.</param>
     /// <param name="request">The destination <see cref="GeminiRequest"/> to configure.</param>
     internal abstract void ConfigureGeminiRequest(Kernel? kernel, GeminiRequest request);
 
-
     internal GeminiToolCallBehavior Clone()
     {
         return (GeminiToolCallBehavior)this.MemberwiseClone();
     }
-
 
     /// <summary>
     /// Represents a <see cref="GeminiToolCallBehavior"/> that will provide to the model all available functions from a
@@ -123,14 +112,9 @@ public abstract class GeminiToolCallBehavior
     /// </summary>
     internal sealed class KernelFunctions : GeminiToolCallBehavior
     {
-
-        internal KernelFunctions(bool autoInvoke) : base(autoInvoke)
-        {
-        }
-
+        internal KernelFunctions(bool autoInvoke) : base(autoInvoke) { }
 
         public override string ToString() => $"{nameof(KernelFunctions)}(autoInvoke:{this.MaximumAutoInvokeAttempts != 0})";
-
 
         internal override void ConfigureGeminiRequest(Kernel? kernel, GeminiRequest request)
         {
@@ -143,73 +127,23 @@ public abstract class GeminiToolCallBehavior
             // Provide all functions from the kernel.
             foreach (var functionMetadata in kernel.Plugins.GetFunctionsMetadata())
             {
-                request.AddFunction(FunctionMetadataAsGeminiFunction(functionMetadata));
+                request.AddFunction(functionMetadata.ToGeminiFunction());
             }
         }
-
 
         internal override bool AllowAnyRequestedKernelFunction => true;
-
-
-        /// <summary>
-        /// Convert a <see cref="KernelFunctionMetadata"/> to an <see cref="GeminiFunction"/>.
-        /// </summary>
-        /// <param name="metadata">The <see cref="KernelFunctionMetadata"/> object to convert.</param>
-        /// <returns>An <see cref="GeminiFunction"/> object.</returns>
-        private static GeminiFunction FunctionMetadataAsGeminiFunction(KernelFunctionMetadata metadata)
-        {
-            IReadOnlyList<KernelParameterMetadata> metadataParams = metadata.Parameters;
-
-            var openAIParams = new GeminiFunctionParameter[metadataParams.Count];
-
-            for (int i = 0; i < openAIParams.Length; i++)
-            {
-                var param = metadataParams[i];
-
-                openAIParams[i] = new GeminiFunctionParameter(
-                    param.Name,
-                    GetDescription(param),
-                    param.IsRequired,
-                    param.ParameterType,
-                    param.Schema);
-            }
-
-            return new GeminiFunction(
-                metadata.PluginName,
-                metadata.Name,
-                metadata.Description,
-                openAIParams,
-                new GeminiFunctionReturnParameter(
-                    metadata.ReturnParameter.Description,
-                    metadata.ReturnParameter.ParameterType,
-                    metadata.ReturnParameter.Schema));
-
-            static string GetDescription(KernelParameterMetadata param)
-            {
-                string? stringValue = InternalTypeConverter.ConvertToString(param.DefaultValue);
-
-                return !string.IsNullOrEmpty(stringValue)
-                    ? $"{param.Description} (default value: {stringValue})"
-                    : param.Description;
-            }
-        }
-
     }
-
 
     /// <summary>
     /// Represents a <see cref="GeminiToolCallBehavior"/> that provides a specified list of functions to the model.
     /// </summary>
     internal sealed class EnabledFunctions(IEnumerable<GeminiFunction> functions, bool autoInvoke) : GeminiToolCallBehavior(autoInvoke)
     {
-
         private readonly GeminiFunction[] _functions = functions.ToArray();
-
 
         public override string ToString() =>
             $"{nameof(EnabledFunctions)}(autoInvoke:{this.MaximumAutoInvokeAttempts != 0}): " +
             $"{string.Join(", ", this._functions.Select(f => f.FunctionName))}";
-
 
         internal override void ConfigureGeminiRequest(Kernel? kernel, GeminiRequest request)
         {
@@ -246,7 +180,5 @@ public abstract class GeminiToolCallBehavior
                 request.AddFunction(func);
             }
         }
-
     }
-
 }

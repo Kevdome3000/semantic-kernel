@@ -1,22 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.UnitTests.Text;
-
 using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.SemanticKernel.Text;
 using Xunit;
 
+namespace SemanticKernel.UnitTests.Text;
 
 public sealed class TextChunkerTests
 {
-
     [Fact]
     public void CanSplitPlainTextLines()
     {
         const string Input = "This is a test of the emergency broadcast system. This is only a test.";
-
         var expected = new[]
         {
             "This is a test of the emergency broadcast system.",
@@ -28,7 +25,6 @@ public sealed class TextChunkerTests
         Assert.Equal(expected, result);
     }
 
-
     [Fact]
     public void CanSplitMarkdownParagraphs()
     {
@@ -37,7 +33,6 @@ public sealed class TextChunkerTests
             "This is a test of the emergency broadcast system. This is only a test.",
             "We repeat, this is only a test. A unit test."
         ];
-
         var expected = new[]
         {
             "This is a test of the emergency broadcast system.",
@@ -49,7 +44,6 @@ public sealed class TextChunkerTests
 
         Assert.Equal(expected, result);
     }
-
 
     [Fact]
     public void CanSplitMarkdownParagraphsWithOverlap()
@@ -74,7 +68,6 @@ public sealed class TextChunkerTests
         Assert.Equal(expected, result);
     }
 
-
     [Fact]
     public void CanSplitTextParagraphs()
     {
@@ -95,7 +88,6 @@ public sealed class TextChunkerTests
 
         Assert.Equal(expected, result);
     }
-
 
     [Fact]
     public void CanSplitTextParagraphsWithOverlap()
@@ -120,12 +112,10 @@ public sealed class TextChunkerTests
         Assert.Equal(expected, result);
     }
 
-
     [Fact]
     public void CanSplitMarkDownLines()
     {
         const string Input = "This is a test of the emergency broadcast system. This is only a test.";
-
         var expected = new[]
         {
             "This is a test of the emergency broadcast system.",
@@ -136,7 +126,6 @@ public sealed class TextChunkerTests
 
         Assert.Equal(expected, result);
     }
-
 
     [Fact]
     public void CanSplitTextParagraphsWithEmptyInput()
@@ -150,7 +139,6 @@ public sealed class TextChunkerTests
         Assert.Equal(expected, result);
     }
 
-
     [Fact]
     public void CanSplitMarkdownParagraphsWithEmptyInput()
     {
@@ -162,7 +150,6 @@ public sealed class TextChunkerTests
 
         Assert.Equal(expected, result);
     }
-
 
     [Fact]
     public void CanSplitTextParagraphsEvenly()
@@ -189,7 +176,6 @@ public sealed class TextChunkerTests
         Assert.Equal(expected, result);
     }
 
-
     // a plaintext example that splits on \r or \n
     [Fact]
     public void CanSplitTextParagraphsOnNewlines()
@@ -215,7 +201,6 @@ public sealed class TextChunkerTests
 
         Assert.Equal(expected, result);
     }
-
 
     // a plaintext example that splits on ? or !
     [Fact]
@@ -244,7 +229,6 @@ public sealed class TextChunkerTests
         Assert.Equal(expected, result);
     }
 
-
     // a plaintext example that splits on ;
     [Fact]
     public void CanSplitTextParagraphsOnSemicolons()
@@ -270,7 +254,6 @@ public sealed class TextChunkerTests
 
         Assert.Equal(expected, result);
     }
-
 
     // a plaintext example that splits on :
     [Fact]
@@ -298,7 +281,6 @@ public sealed class TextChunkerTests
         Assert.Equal(expected, result);
     }
 
-
     // a plaintext example that splits on ,
     [Fact]
     public void CanSplitTextParagraphsOnCommas()
@@ -324,7 +306,6 @@ public sealed class TextChunkerTests
 
         Assert.Equal(expected, result);
     }
-
 
     // a plaintext example that splits on ) or ] or }
     [Fact]
@@ -352,7 +333,6 @@ public sealed class TextChunkerTests
         Assert.Equal(expected, result);
     }
 
-
     // a plaintext example that splits on ' '
     [Fact]
     public void CanSplitTextParagraphsOnSpaces()
@@ -379,7 +359,6 @@ public sealed class TextChunkerTests
         Assert.Equal(expected, result);
     }
 
-
     // a plaintext example that splits on '-'
     [Fact]
     public void CanSplitTextParagraphsOnHyphens()
@@ -405,7 +384,6 @@ public sealed class TextChunkerTests
 
         Assert.Equal(expected, result);
     }
-
 
     // a plaintext example that does not have any of the above characters
     [Fact]
@@ -434,7 +412,6 @@ public sealed class TextChunkerTests
         Assert.Equal(expected, result);
     }
 
-
     // a markdown example that splits on .
 
     // a markdown example that splits on ? or !
@@ -450,7 +427,6 @@ public sealed class TextChunkerTests
     // a markdown example that splits on ' '
 
     // a markdown example that splits on '-'
-
 
     // a markdown example that splits on '\r' or '\n'
     [Fact]
@@ -478,9 +454,7 @@ public sealed class TextChunkerTests
         Assert.Equal(expected, result);
     }
 
-
     // a markdown example that does not have any of the above characters
-
 
     [Fact]
     public void CanSplitVeryLargeDocumentsWithoutStackOverflowing()
@@ -488,16 +462,13 @@ public sealed class TextChunkerTests
 #pragma warning disable CA5394 // this test relies on repeatable pseudo-random numbers
         var rand = new Random(42);
         var sb = new StringBuilder(100_000 * 11);
-
         for (int wordNum = 0; wordNum < 100_000; wordNum++)
         {
             int wordLength = rand.Next(1, 10);
-
             for (int charNum = 0; charNum < wordLength; charNum++)
             {
                 sb.Append((char)('a' + rand.Next(0, 26)));
             }
-
             sb.Append(' ');
         }
 
@@ -508,12 +479,10 @@ public sealed class TextChunkerTests
 #pragma warning restore CA5394
     }
 
-
     [Fact]
     public void CanSplitPlainTextLinesWithCustomTokenCounter()
     {
         const string Input = "This is a test of the emergency broadcast system. This is only a test.";
-
         var expected = new[]
         {
             "This is a test of the emergency broadcast system.",
@@ -525,7 +494,6 @@ public sealed class TextChunkerTests
         Assert.Equal(expected, result);
     }
 
-
     [Fact]
     public void CanSplitMarkdownParagraphsWithCustomTokenCounter()
     {
@@ -534,7 +502,6 @@ public sealed class TextChunkerTests
             "This is a test of the emergency broadcast system. This is only a test.",
             "We repeat, this is only a test. A unit test."
         ];
-
         var expected = new[]
         {
             "This is a test of the emergency broadcast system.",
@@ -546,7 +513,6 @@ public sealed class TextChunkerTests
 
         Assert.Equal(expected, result);
     }
-
 
     [Fact]
     public void CanSplitMarkdownParagraphsWithOverlapAndCustomTokenCounter()
@@ -571,7 +537,6 @@ public sealed class TextChunkerTests
         Assert.Equal(expected, result);
     }
 
-
     [Fact]
     public void CanSplitTextParagraphsWithCustomTokenCounter()
     {
@@ -592,7 +557,6 @@ public sealed class TextChunkerTests
 
         Assert.Equal(expected, result);
     }
-
 
     [Fact]
     public void CanSplitTextParagraphsWithOverlapAndCustomTokenCounter()
@@ -617,12 +581,10 @@ public sealed class TextChunkerTests
         Assert.Equal(expected, result);
     }
 
-
     [Fact]
     public void CanSplitMarkDownLinesWithCustomTokenCounter()
     {
         const string Input = "This is a test of the emergency broadcast system. This is only a test.";
-
         var expected = new[]
         {
             "This is a test of the emergency broadcast system.",
@@ -634,18 +596,15 @@ public sealed class TextChunkerTests
         Assert.Equal(expected, result);
     }
 
-
     [Fact]
     public void CanSplitMarkdownParagraphsWithHeader()
     {
         const string ChunkHeader = "DOCUMENT NAME: test.txt\n\n";
-
         List<string> input =
         [
             "This is a test of the emergency broadcast system. This is only a test.",
             "We repeat, this is only a test. A unit test."
         ];
-
         var expected = new[]
         {
             $"{ChunkHeader}This is a test of the emergency broadcast system.",
@@ -658,12 +617,10 @@ public sealed class TextChunkerTests
         Assert.Equal(expected, result);
     }
 
-
     [Fact]
     public void CanSplitMarkdownParagraphsWithOverlapAndHeader()
     {
         const string ChunkHeader = "DOCUMENT NAME: test.txt\n\n";
-
         List<string> input =
         [
             "This is a test of the emergency broadcast system. This is only a test.",
@@ -684,12 +641,10 @@ public sealed class TextChunkerTests
         Assert.Equal(expected, result);
     }
 
-
     [Fact]
     public void CanSplitTextParagraphsWithHeader()
     {
         const string ChunkHeader = "DOCUMENT NAME: test.txt\n\n";
-
         List<string> input =
         [
             "This is a test of the emergency broadcast system. This is only a test.",
@@ -708,12 +663,10 @@ public sealed class TextChunkerTests
         Assert.Equal(expected, result);
     }
 
-
     [Fact]
     public void CanSplitTextParagraphsWithOverlapAndHeader()
     {
         const string ChunkHeader = "DOCUMENT NAME: test.txt\n\n";
-
         List<string> input =
         [
             "This is a test of the emergency broadcast system. This is only a test.",
@@ -734,18 +687,15 @@ public sealed class TextChunkerTests
         Assert.Equal(expected, result);
     }
 
-
     [Fact]
     public void CanSplitMarkdownParagraphsWithHeaderAndCustomTokenCounter()
     {
         const string ChunkHeader = "DOCUMENT NAME: test.txt\n\n";
-
         List<string> input =
         [
             "This is a test of the emergency broadcast system. This is only a test.",
             "We repeat, this is only a test. A unit test."
         ];
-
         var expected = new[]
         {
             $"{ChunkHeader}This is a test of the emergency broadcast system.",
@@ -758,12 +708,10 @@ public sealed class TextChunkerTests
         Assert.Equal(expected, result);
     }
 
-
     [Fact]
     public void CanSplitMarkdownParagraphsWithOverlapAndHeaderAndCustomTokenCounter()
     {
         const string ChunkHeader = "DOCUMENT NAME: test.txt\n\n";
-
         List<string> input =
         [
             "This is a test of the emergency broadcast system. This is only a test.",
@@ -779,18 +727,15 @@ public sealed class TextChunkerTests
             $"{ChunkHeader}A unit test."
         };
 
-        var result = TextChunker.SplitMarkdownParagraphs(input, 100, 40, chunkHeader: ChunkHeader,
-            tokenCounter: (input) => input.Length);
+        var result = TextChunker.SplitMarkdownParagraphs(input, 100, 40, chunkHeader: ChunkHeader, tokenCounter: (input) => input.Length);
 
         Assert.Equal(expected, result);
     }
-
 
     [Fact]
     public void CanSplitTextParagraphsWithHeaderAndCustomTokenCounter()
     {
         const string ChunkHeader = "DOCUMENT NAME: test.txt\n\n";
-
         List<string> input =
         [
             "This is a test of the emergency broadcast system. This is only a test.",
@@ -809,12 +754,10 @@ public sealed class TextChunkerTests
         Assert.Equal(expected, result);
     }
 
-
     [Fact]
     public void CanSplitTextParagraphsWithOverlapAndHeaderAndCustomTokenCounter()
     {
         const string ChunkHeader = "DOCUMENT NAME: test.txt\n\n";
-
         List<string> input =
         [
             "This is a test of the emergency broadcast system. This is only a test.",
@@ -830,10 +773,50 @@ public sealed class TextChunkerTests
             $"{ChunkHeader}A unit test."
         };
 
-        var result = TextChunker.SplitPlainTextParagraphs(input, 100, 40, chunkHeader: ChunkHeader,
-            tokenCounter: (input) => input.Length);
+        var result = TextChunker.SplitPlainTextParagraphs(input, 100, 40, chunkHeader: ChunkHeader, tokenCounter: (input) => input.Length);
 
         Assert.Equal(expected, result);
     }
 
+    [Fact]
+    public void SplitPlainTextParagraphsHandlesExampleFromIssue()
+    {
+        var lines = new[] { "First line\nSecond line\nThird line" };
+
+        var result = TextChunker.SplitPlainTextParagraphs(lines, 100);
+
+        Assert.Equal("First line\nSecond line\nThird line", result[0]);
+    }
+
+    [Theory]
+    [InlineData("First line\r\nSecond line\r\nThird line")]
+    [InlineData("First line\nSecond line\nThird line")]
+    [InlineData("First line\rSecond line\rThird line")]
+    public void SplitPlainTextParagraphsNormalizesNewlinesButDoesNotSplit(string input)
+    {
+        var lines = new[] { input };
+
+        var result = TextChunker.SplitPlainTextParagraphs(lines, 100);
+
+        Assert.Single(result);
+        Assert.DoesNotContain('\r', result[0]);
+        Assert.Contains("First line", result[0]);
+        Assert.Contains("Second line", result[0]);
+        Assert.Contains("Third line", result[0]);
+    }
+
+    [Fact]
+    public void SplitPlainTextParagraphsSplitsWhenExceedingTokenLimit()
+    {
+        var lines = new[] { "First line\nSecond line\nThird line" };
+
+        var result = TextChunker.SplitPlainTextParagraphs(lines, 5);
+
+        Assert.True(result.Count > 1);
+
+        var combined = string.Join(" ", result);
+        Assert.Contains("First line", combined);
+        Assert.Contains("Second line", combined);
+        Assert.Contains("Third line", combined);
+    }
 }

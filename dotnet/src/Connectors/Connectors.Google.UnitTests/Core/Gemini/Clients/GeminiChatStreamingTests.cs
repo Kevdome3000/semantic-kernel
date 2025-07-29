@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Connectors.Google.UnitTests.Core.Gemini.Clients;
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,32 +13,25 @@ using Microsoft.SemanticKernel.Connectors.Google.Core;
 using Microsoft.SemanticKernel.Http;
 using Xunit;
 
+namespace SemanticKernel.Connectors.Google.UnitTests.Core.Gemini.Clients;
 
 public sealed class GeminiChatStreamingTests : IDisposable
 {
-
     private readonly HttpClient _httpClient;
-
     private readonly HttpMessageHandlerStub _messageHandlerStub;
-
     private readonly string _responseContentFinishReasonOther;
-
     private const string StreamTestDataFilePath = "./TestData/chat_stream_response.json";
-
     private const string StreamTestDataFinishReasonOtherFilePath = "./TestData/chat_stream_finish_reason_other_response.json";
-
 
     public GeminiChatStreamingTests()
     {
         this._responseContentFinishReasonOther = File.ReadAllText(StreamTestDataFinishReasonOtherFilePath);
         this._messageHandlerStub = new HttpMessageHandlerStub();
-
         this._messageHandlerStub.ResponseToReturn.Content = new StringContent(
             File.ReadAllText(StreamTestDataFilePath));
 
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
     }
-
 
     [Fact]
     public async Task ShouldReturnEmptyMessageContentAndNullMetadataIfEmptyJsonInResponseAsync()
@@ -69,15 +60,13 @@ public sealed class GeminiChatStreamingTests : IDisposable
         var chatHistory = CreateSampleChatHistory();
 
         // Act
-        var messages = await client.StreamGenerateChatMessageAsync(chatHistory).
-            ToListAsync();
+        var messages = await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
 
         // Assert
         Assert.Single(messages, item =>
             item.Role == AuthorRole.Assistant && string.IsNullOrEmpty(item.Content) &&
             ((GeminiMetadata)item.Metadata!).FinishReason == GeminiFinishReason.Other);
     }
-
 
     [Fact]
     public async Task ShouldContainModelInRequestUriAsync()
@@ -88,14 +77,12 @@ public sealed class GeminiChatStreamingTests : IDisposable
         var chatHistory = CreateSampleChatHistory();
 
         // Act
-        await client.StreamGenerateChatMessageAsync(chatHistory).
-            ToListAsync();
+        await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
 
         // Assert
         Assert.NotNull(this._messageHandlerStub.RequestUri);
         Assert.Contains(modelId, this._messageHandlerStub.RequestUri.ToString(), StringComparison.Ordinal);
     }
-
 
     [Fact]
     public async Task ShouldContainRolesInRequestAsync()
@@ -105,19 +92,16 @@ public sealed class GeminiChatStreamingTests : IDisposable
         var chatHistory = CreateSampleChatHistory();
 
         // Act
-        await client.StreamGenerateChatMessageAsync(chatHistory).
-            ToListAsync();
+        await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
 
         // Assert
         GeminiRequest? request = JsonSerializer.Deserialize<GeminiRequest>(this._messageHandlerStub.RequestContent);
         Assert.NotNull(request);
-
         Assert.Collection(request.Contents,
             item => Assert.Equal(chatHistory[0].Role, item.Role),
             item => Assert.Equal(chatHistory[1].Role, item.Role),
             item => Assert.Equal(chatHistory[2].Role, item.Role));
     }
-
 
     [Fact]
     public async Task ShouldReturnValidChatResponseAsync()
@@ -130,8 +114,7 @@ public sealed class GeminiChatStreamingTests : IDisposable
         chatHistory.AddUserMessage("Explain me world in many word ;)");
 
         // Act
-        var chatMessageContents = await client.StreamGenerateChatMessageAsync(chatHistory).
-            ToListAsync();
+        var chatMessageContents = await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
 
         // Assert
         List<GeminiResponse> testDataResponse = JsonSerializer.Deserialize<List<GeminiResponse>>(
@@ -139,19 +122,16 @@ public sealed class GeminiChatStreamingTests : IDisposable
 
         Assert.NotEmpty(chatMessageContents);
         Assert.Equal(testDataResponse.Count, chatMessageContents.Count);
-
         for (int i = 0; i < testDataResponse.Count; i++)
         {
             Assert.Equal(
                 testDataResponse[i].Candidates![0].Content!.Parts![0].Text,
                 chatMessageContents[i].Content);
-
             Assert.Equal(
                 testDataResponse[i].Candidates![0].Content!.Role,
                 chatMessageContents[i].Role);
         }
     }
-
 
     [Fact]
     public async Task ShouldReturnValidGeminiMetadataAsync()
@@ -162,13 +142,11 @@ public sealed class GeminiChatStreamingTests : IDisposable
 
         // Act
         var chatMessageContents =
-            await client.StreamGenerateChatMessageAsync(chatHistory).
-                ToListAsync();
+            await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
 
         // Assert
         GeminiResponse testDataResponse = JsonSerializer.Deserialize<List<GeminiResponse>>(
             await File.ReadAllTextAsync(StreamTestDataFilePath))![0];
-
         var testDataCandidate = testDataResponse.Candidates![0];
         var textContent = chatMessageContents.FirstOrDefault();
         Assert.NotNull(textContent);
@@ -177,13 +155,10 @@ public sealed class GeminiChatStreamingTests : IDisposable
         Assert.Equal(testDataResponse.PromptFeedback!.BlockReason, metadata.PromptFeedbackBlockReason);
         Assert.Equal(testDataCandidate.FinishReason, metadata.FinishReason);
         Assert.Equal(testDataCandidate.Index, metadata.Index);
-
         Assert.True(metadata.ResponseSafetyRatings!.Count
                     == testDataCandidate.SafetyRatings!.Count);
-
         Assert.True(metadata.PromptFeedbackSafetyRatings!.Count
                     == testDataResponse.PromptFeedback.SafetyRatings.Count);
-
         for (var i = 0; i < metadata.ResponseSafetyRatings.Count; i++)
         {
             Assert.Equal(testDataCandidate.SafetyRatings[i].Block, metadata.ResponseSafetyRatings[i].Block);
@@ -204,7 +179,6 @@ public sealed class GeminiChatStreamingTests : IDisposable
         Assert.Equal(testDataResponse.UsageMetadata.TotalTokenCount, metadata.TotalTokenCount);
     }
 
-
     [Fact]
     public async Task ShouldReturnValidDictionaryMetadataAsync()
     {
@@ -214,13 +188,11 @@ public sealed class GeminiChatStreamingTests : IDisposable
 
         // Act
         var chatMessageContents =
-            await client.StreamGenerateChatMessageAsync(chatHistory).
-                ToListAsync();
+            await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
 
         // Assert
         GeminiResponse testDataResponse = JsonSerializer.Deserialize<List<GeminiResponse>>(
             await File.ReadAllTextAsync(StreamTestDataFilePath))![0];
-
         var testDataCandidate = testDataResponse.Candidates![0];
         var textContent = chatMessageContents.FirstOrDefault();
         Assert.NotNull(textContent);
@@ -230,7 +202,6 @@ public sealed class GeminiChatStreamingTests : IDisposable
         Assert.Equal(testDataCandidate.FinishReason, metadata[nameof(GeminiMetadata.FinishReason)]);
         Assert.Equal(testDataCandidate.Index, metadata[nameof(GeminiMetadata.Index)]);
         var responseSafetyRatings = (IList<GeminiSafetyRating>)metadata[nameof(GeminiMetadata.ResponseSafetyRatings)]!;
-
         for (var i = 0; i < responseSafetyRatings.Count; i++)
         {
             Assert.Equal(testDataCandidate.SafetyRatings![i].Block, responseSafetyRatings[i].Block);
@@ -239,7 +210,6 @@ public sealed class GeminiChatStreamingTests : IDisposable
         }
 
         var promptSafetyRatings = (IList<GeminiSafetyRating>)metadata[nameof(GeminiMetadata.PromptFeedbackSafetyRatings)]!;
-
         for (var i = 0; i < promptSafetyRatings.Count; i++)
         {
             Assert.Equal(testDataResponse.PromptFeedback.SafetyRatings[i].Block, promptSafetyRatings[i].Block);
@@ -253,7 +223,6 @@ public sealed class GeminiChatStreamingTests : IDisposable
         Assert.Equal(testDataResponse.UsageMetadata.TotalTokenCount, metadata[nameof(GeminiMetadata.TotalTokenCount)]);
     }
 
-
     [Fact]
     public async Task ShouldReturnResponseWithModelIdAsync()
     {
@@ -264,8 +233,7 @@ public sealed class GeminiChatStreamingTests : IDisposable
 
         // Act
         var chatMessageContents =
-            await client.StreamGenerateChatMessageAsync(chatHistory).
-                ToListAsync();
+            await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
 
         // Assert
         var chatMessageContent = chatMessageContents.FirstOrDefault();
@@ -273,14 +241,12 @@ public sealed class GeminiChatStreamingTests : IDisposable
         Assert.Equal(modelId, chatMessageContent.ModelId);
     }
 
-
     [Fact]
     public async Task ShouldUsePromptExecutionSettingsAsync()
     {
         // Arrange
         var client = this.CreateChatCompletionClient();
         var chatHistory = CreateSampleChatHistory();
-
         var executionSettings = new GeminiPromptExecutionSettings()
         {
             MaxTokens = 102,
@@ -289,8 +255,7 @@ public sealed class GeminiChatStreamingTests : IDisposable
         };
 
         // Act
-        await client.StreamGenerateChatMessageAsync(chatHistory, executionSettings: executionSettings).
-            ToListAsync();
+        await client.StreamGenerateChatMessageAsync(chatHistory, executionSettings: executionSettings).ToListAsync();
 
         // Assert
         var geminiRequest = JsonSerializer.Deserialize<GeminiRequest>(this._messageHandlerStub.RequestContent);
@@ -299,7 +264,6 @@ public sealed class GeminiChatStreamingTests : IDisposable
         Assert.Equal(executionSettings.Temperature, geminiRequest.Configuration!.Temperature);
         Assert.Equal(executionSettings.TopP, geminiRequest.Configuration!.TopP);
     }
-
 
     [Fact]
     public async Task ShouldPassSystemMessageToRequestAsync()
@@ -311,8 +275,7 @@ public sealed class GeminiChatStreamingTests : IDisposable
         chatHistory.AddUserMessage("Hello");
 
         // Act
-        await client.StreamGenerateChatMessageAsync(chatHistory).
-            ToListAsync();
+        await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
 
         // Assert
         GeminiRequest? request = JsonSerializer.Deserialize<GeminiRequest>(this._messageHandlerStub.RequestContent);
@@ -322,7 +285,6 @@ public sealed class GeminiChatStreamingTests : IDisposable
         Assert.Null(request.SystemInstruction.Role);
         Assert.Equal(message, systemMessage);
     }
-
 
     [Fact]
     public async Task ShouldPassMultipleSystemMessagesToRequestAsync()
@@ -336,21 +298,18 @@ public sealed class GeminiChatStreamingTests : IDisposable
         chatHistory.AddUserMessage("Hello");
 
         // Act
-        await client.StreamGenerateChatMessageAsync(chatHistory).
-            ToListAsync();
+        await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
 
         // Assert
         GeminiRequest? request = JsonSerializer.Deserialize<GeminiRequest>(this._messageHandlerStub.RequestContent);
         Assert.NotNull(request);
         Assert.NotNull(request.SystemInstruction);
         Assert.Null(request.SystemInstruction.Role);
-
         Assert.Collection(request.SystemInstruction.Parts!,
             item => Assert.Equal(messages[0], item.Text),
             item => Assert.Equal(messages[1], item.Text),
             item => Assert.Equal(messages[2], item.Text));
     }
-
 
     [Theory]
     [InlineData(0)]
@@ -359,7 +318,6 @@ public sealed class GeminiChatStreamingTests : IDisposable
     {
         // Arrange
         var client = this.CreateChatCompletionClient();
-
         GeminiPromptExecutionSettings executionSettings = new()
         {
             MaxTokens = maxTokens
@@ -367,10 +325,8 @@ public sealed class GeminiChatStreamingTests : IDisposable
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(
-            async () => await client.StreamGenerateChatMessageAsync(CreateSampleChatHistory(), executionSettings: executionSettings).
-                ToListAsync());
+            async () => await client.StreamGenerateChatMessageAsync(CreateSampleChatHistory(), executionSettings: executionSettings).ToListAsync());
     }
-
 
     [Fact]
     public async Task ItCreatesPostRequestIfBearerIsSpecifiedWithAuthorizationHeaderAsync()
@@ -381,15 +337,13 @@ public sealed class GeminiChatStreamingTests : IDisposable
         var chatHistory = CreateSampleChatHistory();
 
         // Act
-        await client.StreamGenerateChatMessageAsync(chatHistory).
-            ToListAsync();
+        await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
 
         // Assert
         Assert.NotNull(this._messageHandlerStub.RequestHeaders);
         Assert.NotNull(this._messageHandlerStub.RequestHeaders.Authorization);
         Assert.Equal($"Bearer {bearerKey}", this._messageHandlerStub.RequestHeaders.Authorization.ToString());
     }
-
 
     [Fact]
     public async Task ItCreatesPostRequestAsync()
@@ -399,13 +353,11 @@ public sealed class GeminiChatStreamingTests : IDisposable
         var chatHistory = CreateSampleChatHistory();
 
         // Act
-        await client.StreamGenerateChatMessageAsync(chatHistory).
-            ToListAsync();
+        await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
 
         // Assert
         Assert.Equal(HttpMethod.Post, this._messageHandlerStub.Method);
     }
-
 
     [Fact]
     public async Task ItCreatesPostRequestWithValidUserAgentAsync()
@@ -415,14 +367,12 @@ public sealed class GeminiChatStreamingTests : IDisposable
         var chatHistory = CreateSampleChatHistory();
 
         // Act
-        await client.StreamGenerateChatMessageAsync(chatHistory).
-            ToListAsync();
+        await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
 
         // Assert
         Assert.NotNull(this._messageHandlerStub.RequestHeaders);
         Assert.Equal(HttpHeaderConstant.Values.UserAgent, this._messageHandlerStub.RequestHeaders.UserAgent.ToString());
     }
-
 
     [Fact]
     public async Task ItCreatesPostRequestWithSemanticKernelVersionHeaderAsync()
@@ -433,19 +383,46 @@ public sealed class GeminiChatStreamingTests : IDisposable
         var expectedVersion = HttpHeaderConstant.Values.GetAssemblyVersion(typeof(ClientBase));
 
         // Act
-        await client.StreamGenerateChatMessageAsync(chatHistory).
-            ToListAsync();
+        await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
 
         // Assert
         Assert.NotNull(this._messageHandlerStub.RequestHeaders);
-
-        var header = this._messageHandlerStub.RequestHeaders.GetValues(HttpHeaderConstant.Names.SemanticKernelVersion).
-            SingleOrDefault();
-
+        var header = this._messageHandlerStub.RequestHeaders.GetValues(HttpHeaderConstant.Names.SemanticKernelVersion).SingleOrDefault();
         Assert.NotNull(header);
         Assert.Equal(expectedVersion, header);
     }
 
+    [Fact]
+    public async Task ItCreatesPostRequestWithApiKeyInHeaderAsync()
+    {
+        // Arrange
+        var client = this.CreateChatCompletionClient();
+        var chatHistory = CreateSampleChatHistory();
+
+        // Act
+        await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestHeaders);
+        var apiKeyHeader = this._messageHandlerStub.RequestHeaders.GetValues("x-goog-api-key").SingleOrDefault();
+        Assert.NotNull(apiKeyHeader);
+        Assert.Equal("fake-key", apiKeyHeader);
+    }
+
+    [Fact]
+    public async Task ItCreatesPostRequestWithoutApiKeyInUrlAsync()
+    {
+        // Arrange
+        var client = this.CreateChatCompletionClient();
+        var chatHistory = CreateSampleChatHistory();
+
+        // Act
+        await client.StreamGenerateChatMessageAsync(chatHistory).ToListAsync();
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestUri);
+        Assert.DoesNotContain("key=", this._messageHandlerStub.RequestUri.ToString());
+    }
 
     private static ChatHistory CreateSampleChatHistory()
     {
@@ -453,10 +430,8 @@ public sealed class GeminiChatStreamingTests : IDisposable
         chatHistory.AddUserMessage("Hello");
         chatHistory.AddAssistantMessage("Hi");
         chatHistory.AddUserMessage("How are you?");
-
         return chatHistory;
     }
-
 
     private GeminiChatCompletionClient CreateChatCompletionClient(
         string modelId = "fake-model",
@@ -481,11 +456,9 @@ public sealed class GeminiChatStreamingTests : IDisposable
             apiKey: "fake-key");
     }
 
-
     public void Dispose()
     {
         this._httpClient.Dispose();
         this._messageHandlerStub.Dispose();
     }
-
 }

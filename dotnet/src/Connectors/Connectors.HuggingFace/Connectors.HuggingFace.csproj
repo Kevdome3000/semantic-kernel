@@ -4,8 +4,9 @@
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
     <AssemblyName>Microsoft.SemanticKernel.Connectors.HuggingFace</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
-      <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
-      <VersionSuffix>preview</VersionSuffix>
+    <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
+    <NoWarn>$(NoWarn);SKEXP0001</NoWarn>
+    <VersionSuffix>preview</VersionSuffix>
   </PropertyGroup>
 
   <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->
@@ -18,11 +19,11 @@
     <Description>Semantic Kernel connectors for Hugging Face. Contains clients for text generation and text embedding generation.</Description>
   </PropertyGroup>
 
-    <ItemGroup>
-        <InternalsVisibleTo Include="SemanticKernel.Connectors.HuggingFace.UnitTests"/>
-    </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="SemanticKernel.Connectors.HuggingFace.UnitTests" />
+  </ItemGroup>
 
-    <ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
 

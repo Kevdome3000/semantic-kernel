@@ -7,7 +7,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ImageToText;
 
 #pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
-#pragma warning disable SKEXP0070 // Type is for evaluation purposes only and is subject to change or removal in future updates.
 
 
 /// <summary>

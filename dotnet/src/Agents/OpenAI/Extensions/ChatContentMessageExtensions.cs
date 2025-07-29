@@ -43,12 +43,13 @@ public static class ChatContentMessageExtensions
     /// <returns>A <see cref="ResponseItem"/> instance.</returns>
     public static ResponseItem ToResponseItem(this ChatMessageContent message)
     {
-        return message.Role.Label switch
+        string content = message.Content ?? string.Empty;
+        return message.Role.Label.ToUpperInvariant() switch
         {
-            "system" => ResponseItem.CreateSystemMessageItem(message.Content),
-            "user" => ResponseItem.CreateUserMessageItem(message.Content),
-            "developer" => ResponseItem.CreateDeveloperMessageItem(message.Content),
-            "assistant" => ResponseItem.CreateAssistantMessageItem(message.Content),
+            "SYSTEM" => ResponseItem.CreateSystemMessageItem(content),
+            "USER" => ResponseItem.CreateUserMessageItem(content),
+            "DEVELOPER" => ResponseItem.CreateDeveloperMessageItem(content),
+            "ASSISTANT" => ResponseItem.CreateAssistantMessageItem(content),
             _ => throw new NotSupportedException($"Unsupported role {message.Role.Label}. Only system, user, developer or assistant roles are allowed."),
         };
     }
