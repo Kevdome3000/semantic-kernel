@@ -20,7 +20,7 @@ internal sealed class KernelFunctionInvokingChatClient : FunctionInvokingChatCli
     public KernelFunctionInvokingChatClient(IChatClient innerClient, ILoggerFactory? loggerFactory = null, IServiceProvider? functionInvocationServices = null)
         : base(innerClient, loggerFactory, functionInvocationServices)
     {
-        this.MaximumIterationsPerRequest = 128;
+        MaximumIterationsPerRequest = 128;
     }
 
     /// <summary>
@@ -33,7 +33,7 @@ internal sealed class KernelFunctionInvokingChatClient : FunctionInvokingChatCli
         AutoFunctionInvocationContext context,
         Func<AutoFunctionInvocationContext, Task> functionCallCallback)
     {
-        await this.InvokeFilterOrFunctionAsync(functionCallCallback, context).ConfigureAwait(false);
+        await InvokeFilterOrFunctionAsync(functionCallCallback, context).ConfigureAwait(false);
 
         return context;
     }
@@ -56,7 +56,7 @@ internal sealed class KernelFunctionInvokingChatClient : FunctionInvokingChatCli
         {
             await autoFunctionInvocationFilters[index].OnAutoFunctionInvocationAsync(
                 context,
-                (ctx) => this.InvokeFilterOrFunctionAsync(functionCallCallback, ctx, index + 1)
+                (ctx) => InvokeFilterOrFunctionAsync(functionCallCallback, ctx, index + 1)
             ).ConfigureAwait(false);
         }
         else
@@ -66,7 +66,7 @@ internal sealed class KernelFunctionInvokingChatClient : FunctionInvokingChatCli
     }
 
     /// <inheritdoc/>
-    protected override async ValueTask<object?> InvokeFunctionAsync(Microsoft.Extensions.AI.FunctionInvocationContext context, CancellationToken cancellationToken)
+    protected override async ValueTask<object?> InvokeFunctionAsync(FunctionInvocationContext context, CancellationToken cancellationToken)
     {
         if (context.Options is null || context.Options is not KernelChatOptions kernelChatOptions)
         {
@@ -80,7 +80,7 @@ internal sealed class KernelFunctionInvokingChatClient : FunctionInvokingChatCli
         var autoContext = new AutoFunctionInvocationContext(kernelChatOptions, context.Function)
         {
             AIFunction = context.Function,
-            Arguments = new KernelArguments(context.Arguments) { Services = this.FunctionInvocationServices },
+            Arguments = new KernelArguments(context.Arguments) { Services = FunctionInvocationServices },
             Messages = context.Messages,
             CallContent = context.CallContent,
             Iteration = context.Iteration,
@@ -89,7 +89,7 @@ internal sealed class KernelFunctionInvokingChatClient : FunctionInvokingChatCli
             IsStreaming = context.IsStreaming
         };
 
-        autoContext = await this.OnAutoFunctionInvocationAsync(
+        autoContext = await OnAutoFunctionInvocationAsync(
             autoContext,
             async (ctx) =>
             {
@@ -120,7 +120,7 @@ internal sealed class KernelFunctionInvokingChatClient : FunctionInvokingChatCli
             ))
         {
             // Skip function invocation
-            return base.InnerClient.GetResponseAsync(messages, options, cancellationToken);
+            return InnerClient.GetResponseAsync(messages, options, cancellationToken);
         }
 
         return base.GetResponseAsync(messages, options, cancellationToken);
@@ -135,7 +135,7 @@ internal sealed class KernelFunctionInvokingChatClient : FunctionInvokingChatCli
             ))
         {
             // Skip function invocation
-            return base.InnerClient.GetStreamingResponseAsync(messages, options, cancellationToken);
+            return InnerClient.GetStreamingResponseAsync(messages, options, cancellationToken);
         }
 
         return base.GetStreamingResponseAsync(messages, options, cancellationToken);

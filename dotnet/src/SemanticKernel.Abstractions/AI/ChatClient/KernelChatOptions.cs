@@ -24,27 +24,27 @@ internal class KernelChatOptions : ChatOptions
 
         if (options is not null)
         {
-            this.AdditionalProperties = options.AdditionalProperties;
-            this.AllowMultipleToolCalls = options.AllowMultipleToolCalls;
-            this.Tools = options.Tools;
-            this.Temperature = options.Temperature;
-            this.TopP = options.TopP;
-            this.TopK = options.TopK;
-            this.Seed = options.Seed;
-            this.ResponseFormat = options.ResponseFormat;
-            this.MaxOutputTokens = options.MaxOutputTokens;
-            this.FrequencyPenalty = options.FrequencyPenalty;
-            this.PresencePenalty = options.PresencePenalty;
-            this.StopSequences = options.StopSequences;
-            this.RawRepresentationFactory = options.RawRepresentationFactory;
-            this.ConversationId = options.ConversationId;
-            this.Seed = options.Seed;
-            this.ToolMode = options.ToolMode;
-            this.ModelId = options.ModelId;
+            AdditionalProperties = options.AdditionalProperties;
+            AllowMultipleToolCalls = options.AllowMultipleToolCalls;
+            Tools = options.Tools;
+            Temperature = options.Temperature;
+            TopP = options.TopP;
+            TopK = options.TopK;
+            Seed = options.Seed;
+            ResponseFormat = options.ResponseFormat;
+            MaxOutputTokens = options.MaxOutputTokens;
+            FrequencyPenalty = options.FrequencyPenalty;
+            PresencePenalty = options.PresencePenalty;
+            StopSequences = options.StopSequences;
+            RawRepresentationFactory = options.RawRepresentationFactory;
+            ConversationId = options.ConversationId;
+            Seed = options.Seed;
+            ToolMode = options.ToolMode;
+            ModelId = options.ModelId;
         }
 
-        this.ExecutionSettings = settings;
-        this.Kernel = kernel;
+        ExecutionSettings = settings;
+        Kernel = kernel;
     }
 
     [JsonIgnore]

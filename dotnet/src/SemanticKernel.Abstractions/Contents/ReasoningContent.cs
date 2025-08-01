@@ -19,8 +19,8 @@ public sealed class ReasoningContent : KernelContent
     [AllowNull]
     public string Text
     {
-        get => this._text ?? string.Empty;
-        init => this._text = value;
+        get => _text ?? string.Empty;
+        init => _text = value;
     }
 
     /// <summary>
@@ -30,9 +30,9 @@ public sealed class ReasoningContent : KernelContent
     [JsonConstructor]
     public ReasoningContent(string? text = null)
     {
-        this._text = text;
+        _text = text;
     }
 
     /// <inheritdoc/>
-    public override string ToString() => this.Text;
+    public override string ToString() => Text;
 }

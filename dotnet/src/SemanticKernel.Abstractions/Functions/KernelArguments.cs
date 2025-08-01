@@ -83,7 +83,7 @@ public sealed class KernelArguments : AIFunctionArguments
     public KernelArguments(IDictionary<string, object?> source, Dictionary<string, PromptExecutionSettings>? executionSettings = null)
         : base(source, StringComparer.OrdinalIgnoreCase)
     {
-        this.ExecutionSettings = executionSettings ?? (source as KernelArguments)?.ExecutionSettings;
+        ExecutionSettings = executionSettings ?? (source as KernelArguments)?.ExecutionSettings;
     }
 
     /// <summary>
@@ -121,9 +121,9 @@ public sealed class KernelArguments : AIFunctionArguments
     public bool ContainsName(string name)
     {
         Verify.NotNull(name);
-        return base.ContainsKey(name);
+        return ContainsKey(name);
     }
 
     /// <summary>Gets an <see cref="ICollection{String}"/> of all of the arguments names.</summary>
-    public ICollection<string> Names => this.Keys;
+    public ICollection<string> Names => Keys;
 }

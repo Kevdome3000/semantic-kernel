@@ -42,7 +42,7 @@ public readonly struct AnnotationKind : IEquatable<AnnotationKind>
     public AnnotationKind(string label)
     {
         Verify.NotNullOrWhiteSpace(label, nameof(label));
-        this.Label = label!;
+        Label = label!;
     }
 
     /// <summary>
@@ -71,12 +71,12 @@ public readonly struct AnnotationKind : IEquatable<AnnotationKind>
 
     /// <inheritdoc/>
     public bool Equals(AnnotationKind other)
-        => string.Equals(this.Label, other.Label, StringComparison.OrdinalIgnoreCase);
+        => string.Equals(Label, other.Label, StringComparison.OrdinalIgnoreCase);
 
     /// <inheritdoc/>
     public override int GetHashCode()
-        => StringComparer.OrdinalIgnoreCase.GetHashCode(this.Label);
+        => StringComparer.OrdinalIgnoreCase.GetHashCode(Label);
 
     /// <inheritdoc/>
-    public override string ToString() => this.Label;
+    public override string ToString() => Label;
 }

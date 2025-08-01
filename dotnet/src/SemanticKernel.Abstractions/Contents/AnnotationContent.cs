@@ -18,7 +18,7 @@ public class AnnotationContent : KernelContent
     [Obsolete("Use `ReferenceId` property instead.")]
     public string? FileId
     {
-        get => this.ReferenceId;
+        get => ReferenceId;
         //init => this.ReferenceId = value ?? string.Empty;
     }
 
@@ -27,7 +27,7 @@ public class AnnotationContent : KernelContent
     /// </summary>
     [JsonIgnore]
     [Obsolete("Use `Label` property instead.")]
-    public string Quote => this.Label;
+    public string Quote => Label;
 
     /// <summary>
     /// Describes the annotation kind.
@@ -83,8 +83,8 @@ public class AnnotationContent : KernelContent
         Verify.NotNullOrWhiteSpace(label, nameof(label));
         Verify.NotNullOrWhiteSpace(referenceId, nameof(referenceId));
 
-        this.Kind = kind;
-        this.Label = label;
-        this.ReferenceId = referenceId;
+        Kind = kind;
+        Label = label;
+        ReferenceId = referenceId;
     }
 }

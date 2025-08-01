@@ -28,36 +28,36 @@ public static class ChatMessageContentExtensions
             AIContent? aiContent = null;
             switch (item)
             {
-                case Microsoft.SemanticKernel.TextContent tc:
+                case TextContent tc:
                     aiContent = new Microsoft.Extensions.AI.TextContent(tc.Text);
                     break;
 
-                case Microsoft.SemanticKernel.ImageContent ic:
+                case ImageContent ic:
                     aiContent =
-                        ic.DataUri is not null ? new Microsoft.Extensions.AI.DataContent(ic.DataUri, ic.MimeType) :
-                        ic.Uri is not null ? new Microsoft.Extensions.AI.UriContent(ic.Uri, ic.MimeType ?? "image/*") :
+                        ic.DataUri is not null ? new DataContent(ic.DataUri, ic.MimeType) :
+                        ic.Uri is not null ? new UriContent(ic.Uri, ic.MimeType ?? "image/*") :
                         null;
                     break;
 
-                case Microsoft.SemanticKernel.AudioContent ac:
+                case AudioContent ac:
                     aiContent =
-                        ac.DataUri is not null ? new Microsoft.Extensions.AI.DataContent(ac.DataUri, ac.MimeType) :
-                        ac.Uri is not null ? new Microsoft.Extensions.AI.UriContent(ac.Uri, ac.MimeType ?? "audio/*") :
+                        ac.DataUri is not null ? new DataContent(ac.DataUri, ac.MimeType) :
+                        ac.Uri is not null ? new UriContent(ac.Uri, ac.MimeType ?? "audio/*") :
                         null;
                     break;
 
-                case Microsoft.SemanticKernel.BinaryContent bc:
+                case BinaryContent bc:
                     aiContent =
-                        bc.DataUri is not null ? new Microsoft.Extensions.AI.DataContent(bc.DataUri, bc.MimeType) :
-                        bc.Uri is not null ? new Microsoft.Extensions.AI.UriContent(bc.Uri, bc.MimeType ?? "application/octet-stream") :
+                        bc.DataUri is not null ? new DataContent(bc.DataUri, bc.MimeType) :
+                        bc.Uri is not null ? new UriContent(bc.Uri, bc.MimeType ?? "application/octet-stream") :
                         null;
                     break;
 
-                case Microsoft.SemanticKernel.FunctionCallContent fcc:
+                case FunctionCallContent fcc:
                     aiContent = new Microsoft.Extensions.AI.FunctionCallContent(fcc.Id ?? string.Empty, fcc.FunctionName, fcc.Arguments);
                     break;
 
-                case Microsoft.SemanticKernel.FunctionResultContent frc:
+                case FunctionResultContent frc:
                     aiContent = new Microsoft.Extensions.AI.FunctionResultContent(frc.CallId ?? string.Empty, frc.Result);
                     break;
             }

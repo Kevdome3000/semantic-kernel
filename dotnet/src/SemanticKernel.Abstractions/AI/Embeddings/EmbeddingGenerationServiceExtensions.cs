@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -149,8 +150,8 @@ public static class EmbeddingGenerationExtensions
             return
                 serviceKey is not null ? null :
                 serviceType.IsInstanceOfType(this) ? this :
-                serviceType.IsInstanceOfType(this._service) ? this._service :
-                serviceType.IsInstanceOfType(this.Metadata) ? this.Metadata :
+                serviceType.IsInstanceOfType(_service) ? _service :
+                serviceType.IsInstanceOfType(Metadata) ? Metadata :
                 null;
         }
     }

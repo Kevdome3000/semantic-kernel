@@ -122,11 +122,11 @@ public sealed class FunctionResult
             if (typeof(T) == typeof(ChatResponse)
                 && content is ChatMessageContent singleChoiceMessageContent)
             {
-                return (T?)(object)new Microsoft.Extensions.AI.ChatResponse(singleChoiceMessageContent.ToChatMessage());
+                return (T?)(object)new ChatResponse(singleChoiceMessageContent.ToChatMessage());
             }
         }
 
-        if (this.Value is IReadOnlyList<ChatMessageContent> messageContentList)
+        if (Value is IReadOnlyList<ChatMessageContent> messageContentList)
         {
             if (messageContentList.Count == 0)
             {
@@ -146,7 +146,7 @@ public sealed class FunctionResult
             }
         }
 
-        if (this.Value is Microsoft.Extensions.AI.ChatResponse chatResponse)
+        if (Value is ChatResponse chatResponse)
         {
             // If no choices are present, return default
             if (chatResponse.Messages.Count == 0)
@@ -166,7 +166,7 @@ public sealed class FunctionResult
                 return (T?)(object)chatMessage;
             }
 
-            if (typeof(Microsoft.Extensions.AI.AIContent).IsAssignableFrom(typeof(T)))
+            if (typeof(AIContent).IsAssignableFrom(typeof(T)))
             {
                 // Return the first matching content type of a message if any
                 var updateContent = chatMessage.Contents.FirstOrDefault(c => c is T);
@@ -191,7 +191,7 @@ public sealed class FunctionResult
                 return rawMessageRepresentation;
             }
 
-            if (typeof(Microsoft.Extensions.AI.AIContent).IsAssignableFrom(typeof(T)))
+            if (typeof(AIContent).IsAssignableFrom(typeof(T)))
             {
                 // Return the first matching content type of a message if any
                 var updateContent = chatMessage.Contents.FirstOrDefault(c => c is T);

@@ -81,7 +81,7 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
     /// </remarks>\
     [JsonPropertyName("name")]
     [JsonInclude]
-    public virtual new string Name => Metadata.Name;
+    public new virtual string Name => Metadata.Name;
 
     /// <summary>
     /// Gets the name of the plugin this function was added to.
@@ -99,7 +99,7 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
     /// The description may be supplied to a model in order to elaborate on the function's purpose,
     /// in case it may be beneficial for the model to recommend invoking the function.
     /// </remarks>
-    public override string Description => this.Metadata.Description;
+    public override string Description => Metadata.Description;
 
     /// <summary>
     /// Gets the prompt execution settings.
@@ -109,6 +109,7 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
     /// </remarks>
     [JsonIgnore]
     public IReadOnlyDictionary<string, PromptExecutionSettings>? ExecutionSettings { get; }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunction"/> class.
@@ -184,7 +185,14 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
     /// <param name="additionalMetadata">Properties/metadata associated with the function itself rather than its parameters and return type.</param>
     [RequiresUnreferencedCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
-    protected KernelFunction(string name, string? pluginName, string description, IReadOnlyList<KernelParameterMetadata> parameters, KernelReturnParameterMetadata? returnParameter = null, Dictionary<string, PromptExecutionSettings>? executionSettings = null, ReadOnlyDictionary<string, object?>? additionalMetadata = null)
+    protected KernelFunction(
+        string name,
+        string? pluginName,
+        string description,
+        IReadOnlyList<KernelParameterMetadata> parameters,
+        KernelReturnParameterMetadata? returnParameter = null,
+        Dictionary<string, PromptExecutionSettings>? executionSettings = null,
+        ReadOnlyDictionary<string, object?>? additionalMetadata = null)
         : base(new KernelFunctionMetadata(Throw.IfNull(name))
         {
             PluginName = pluginName,
@@ -194,7 +202,7 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
             AdditionalProperties = additionalMetadata ?? KernelFunctionMetadata.s_emptyDictionary
         })
     {
-        this.BuildFunctionSchema();
+        BuildFunctionSchema();
 
         if (executionSettings is not null)
         {
@@ -202,7 +210,7 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
                 entry => entry.Key,
                 entry =>
                 {
-                    var clone = entry.Value.Clone();
+                    PromptExecutionSettings clone = entry.Value.Clone();
                     clone.Freeze();
 
                     return clone;
@@ -212,7 +220,8 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
 
 
     /// <inheritdoc/>
-    public override JsonElement JsonSchema => this._jsonSchema;
+    public override JsonElement JsonSchema => _jsonSchema;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunction"/> class.
@@ -228,7 +237,15 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
     /// overridden by settings passed into the invocation of the function.
     /// </param>
     /// <param name="additionalMetadata">Properties/metadata associated with the function itself rather than its parameters and return type.</param>
-    internal KernelFunction(string name, string? pluginName, string description, IReadOnlyList<KernelParameterMetadata> parameters, JsonSerializerOptions jsonSerializerOptions, KernelReturnParameterMetadata? returnParameter = null, Dictionary<string, PromptExecutionSettings>? executionSettings = null, ReadOnlyDictionary<string, object?>? additionalMetadata = null)
+    internal KernelFunction(
+        string name,
+        string? pluginName,
+        string description,
+        IReadOnlyList<KernelParameterMetadata> parameters,
+        JsonSerializerOptions jsonSerializerOptions,
+        KernelReturnParameterMetadata? returnParameter = null,
+        Dictionary<string, PromptExecutionSettings>? executionSettings = null,
+        ReadOnlyDictionary<string, object?>? additionalMetadata = null)
         : base(new KernelFunctionMetadata(Throw.IfNull(name))
         {
             PluginName = pluginName,
@@ -240,7 +257,7 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
     {
         Verify.NotNull(jsonSerializerOptions);
 
-        this.BuildFunctionSchema();
+        BuildFunctionSchema();
 
         if (executionSettings is not null)
         {
@@ -248,20 +265,22 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
                 entry => entry.Key,
                 entry =>
                 {
-                    var clone = entry.Value.Clone();
+                    PromptExecutionSettings clone = entry.Value.Clone();
                     clone.Freeze();
                     return clone;
                 });
         }
 
-        this._jsonSerializerOptions = jsonSerializerOptions;
+        _jsonSerializerOptions = jsonSerializerOptions;
     }
 
-    /// <inheritdoc/>
-    public override JsonSerializerOptions JsonSerializerOptions => this._jsonSerializerOptions ?? base.JsonSerializerOptions;
 
     /// <inheritdoc/>
-    public override MethodInfo? UnderlyingMethod => this._underlyingMethod;
+    public override JsonSerializerOptions JsonSerializerOptions => _jsonSerializerOptions ?? base.JsonSerializerOptions;
+
+    /// <inheritdoc/>
+    public override MethodInfo? UnderlyingMethod => _underlyingMethod;
+
 
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/>.
@@ -276,10 +295,10 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
         KernelArguments? arguments = null,
         CancellationToken cancellationToken = default)
     {
-        kernel ??= this.Kernel;
+        kernel ??= Kernel;
         Verify.NotNull(kernel);
 
-        using var activity = s_activitySource.StartFunctionActivity(Name, this.Description);
+        using Activity? activity = s_activitySource.StartFunctionActivity(Name, Description);
         ILogger logger = kernel.LoggerFactory.CreateLogger(typeof(KernelFunction));
 
         // Ensure arguments are initialized.
@@ -300,7 +319,7 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
             // Quick check for cancellation after logging about function start but before doing any real work.
             cancellationToken.ThrowIfCancellationRequested();
 
-            var invocationContext = await kernel.OnFunctionInvocationAsync(this,
+            FunctionInvocationContext? invocationContext = await kernel.OnFunctionInvocationAsync(this,
                     arguments,
                     functionResult,
                     false,
@@ -406,10 +425,10 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
         KernelArguments? arguments = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        kernel ??= this.Kernel;
+        kernel ??= Kernel;
         Verify.NotNull(kernel);
 
-        using var activity = s_activitySource.StartFunctionActivity(Name, this.Description);
+        using Activity? activity = s_activitySource.StartFunctionActivity(Name, Description);
         ILogger logger = kernel.LoggerFactory.CreateLogger(Name) ?? NullLogger.Instance;
 
         arguments ??= [];
@@ -434,25 +453,25 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
 
                 FunctionResult functionResult = new(this, culture: kernel.Culture);
 
-                var invocationContext = await kernel.OnFunctionInvocationAsync(this,
-                    arguments,
-                    functionResult,
-                    true,
-                    context =>
-                    {
-                        // Invoke the function and get its streaming enumerable.
-                        var enumerable = InvokeStreamingCoreAsync<TResult>(kernel, context.Arguments, cancellationToken);
+                FunctionInvocationContext? invocationContext = await kernel.OnFunctionInvocationAsync(this,
+                        arguments,
+                        functionResult,
+                        true,
+                        context =>
+                        {
+                            // Invoke the function and get its streaming enumerable.
+                            IAsyncEnumerable<TResult> enumerable = InvokeStreamingCoreAsync<TResult>(kernel, context.Arguments, cancellationToken);
 
-                        // Update context with enumerable as result value.
-                        context.Result = new FunctionResult(this, enumerable, kernel.Culture);
+                            // Update context with enumerable as result value.
+                            context.Result = new FunctionResult(this, enumerable, kernel.Culture);
 
-                        return Task.CompletedTask;
-                    },
-                    cancellationToken)
+                            return Task.CompletedTask;
+                        },
+                        cancellationToken)
                     .ConfigureAwait(false);
 
                 // Apply changes from the function filters to final result.
-                var enumerable = invocationContext.Result.GetValue<IAsyncEnumerable<TResult>>() ?? AsyncEnumerable.Empty<TResult>();
+                IAsyncEnumerable<TResult> enumerable = invocationContext.Result.GetValue<IAsyncEnumerable<TResult>>() ?? AsyncEnumerable.Empty<TResult>();
                 enumerator = enumerable.GetAsyncEnumerator(cancellationToken);
 
                 // yielding within a try/catch isn't currently supported, so we break out of the try block
@@ -546,6 +565,7 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
         KernelArguments arguments,
         CancellationToken cancellationToken);
 
+
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/> using the <see cref="AIFunction"/> interface.
     /// </summary>
@@ -563,21 +583,22 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
     /// <returns>The result of the function's execution.</returns>
     protected override async ValueTask<object?> InvokeCoreAsync(AIFunctionArguments arguments, CancellationToken cancellationToken)
     {
-        Kernel kernel = (arguments.TryGetValue(AIFunctionArgumentsExtensions.KernelAIFunctionArgumentKey, out var kernelObject) && kernelObject is not null)
+        Kernel kernel = arguments.TryGetValue(AIFunctionArgumentsExtensions.KernelAIFunctionArgumentKey, out object? kernelObject) && kernelObject is not null
             ? (kernelObject as Kernel)!
             : arguments.Services?.GetService(typeof(Kernel)) as Kernel
-            ?? this.Kernel
-            ?? new(arguments.Services);
+            ?? Kernel
+            ?? new Kernel(arguments.Services);
 
-        var kernelArguments = new KernelArguments(arguments);
+        KernelArguments kernelArguments = new(arguments);
 
-        var result = await this.InvokeCoreAsync(kernel, kernelArguments, cancellationToken).ConfigureAwait(false);
+        FunctionResult? result = await InvokeCoreAsync(kernel, kernelArguments, cancellationToken).ConfigureAwait(false);
 
         // Serialize the result to JSON, as with AIFunctionFactory.Create AIFunctions.
-        return result.Value is object value ?
-            JsonSerializer.SerializeToElement(value, AbstractionsJsonContext.GetTypeInfo(value.GetType(), this.JsonSerializerOptions)) :
-            null;
+        return result.Value is object value
+            ? JsonSerializer.SerializeToElement(value, AbstractionsJsonContext.GetTypeInfo(value.GetType(), JsonSerializerOptions))
+            : null;
     }
+
 
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/> and streams its results.
@@ -607,7 +628,10 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
         tags.Add(MeasurementErrorTagName, ex.GetType().FullName);
 
         activity?.SetError(ex);
-        logger.LogFunctionError(kernelFunction.PluginName, kernelFunction.Name, ex, ex.Message);
+        logger.LogFunctionError(kernelFunction.PluginName,
+            kernelFunction.Name,
+            ex,
+            ex.Message);
 
         // If the exception is an OperationCanceledException, wrap it in a KernelFunctionCanceledException
         // in order to convey additional details about what function was canceled. This is particularly
@@ -621,6 +645,7 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
                 arguments,
                 result,
                 cancelEx);
+
             foreach (DictionaryEntry entry in cancelEx.Data)
             {
                 kernelEx.Data.Add(entry.Key, entry.Value);
@@ -630,33 +655,43 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
         }
     }
 
+
     private void BuildFunctionSchema()
     {
         KernelFunctionSchemaModel schemaModel = new()
         {
             Type = "object",
-            Description = this.Description,
+            Description = Description
         };
 
-        foreach (var parameter in this.Metadata.Parameters)
+        foreach (KernelParameterMetadata? parameter in Metadata.Parameters)
         {
             schemaModel.Properties[parameter.Name] = parameter.Schema?.RootElement ?? s_defaultSchema;
+
             if (parameter.IsRequired)
             {
                 (schemaModel.Required ??= []).Add(parameter.Name);
             }
         }
 
-        this._jsonSchema = JsonSerializer.SerializeToElement(schemaModel, AbstractionsJsonContext.Default.KernelFunctionSchemaModel);
+        _jsonSchema = JsonSerializer.SerializeToElement(schemaModel, AbstractionsJsonContext.Default.KernelFunctionSchemaModel);
     }
+
 
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "The warning is shown and should be addressed at the function creation site; there is no need to show it again at the function invocation sites.")]
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "The warning is shown and should be addressed at the function creation site; there is no need to show it again at the function invocation sites.")]
-    private void LogFunctionArguments(ILogger logger, string? pluginName, string functionName, KernelArguments arguments)
+    private void LogFunctionArguments(
+        ILogger logger,
+        string? pluginName,
+        string functionName,
+        KernelArguments arguments)
     {
         if (JsonSerializerOptions is not null)
         {
-            logger.LogFunctionArguments(pluginName, functionName, arguments, JsonSerializerOptions);
+            logger.LogFunctionArguments(pluginName,
+                functionName,
+                arguments,
+                JsonSerializerOptions);
         }
         else
         {
@@ -667,11 +702,18 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
 
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "The warning is shown and should be addressed at the function creation site; there is no need to show it again at the function invocation sites.")]
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "The warning is shown and should be addressed at the function creation site; there is no need to show it again at the function invocation sites.")]
-    private void LogFunctionResult(ILogger logger, string? pluginName, string functionName, FunctionResult functionResult)
+    private void LogFunctionResult(
+        ILogger logger,
+        string? pluginName,
+        string functionName,
+        FunctionResult functionResult)
     {
         if (JsonSerializerOptions is not null)
         {
-            logger.LogFunctionResultValue(pluginName, functionName, functionResult, JsonSerializerOptions);
+            logger.LogFunctionResultValue(pluginName,
+                functionName,
+                functionResult,
+                JsonSerializerOptions);
         }
         else
         {
@@ -692,9 +734,11 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
         return new KernelAIFunction(this, kernel);
     }
 
+
     #region Private
 
     private JsonElement _jsonSchema;
+
 
     /// <summary>An <see cref="AIFunction"/> wrapper around a <see cref="KernelFunction"/>.</summary>
     [Obsolete("Use the kernel function directly or for similar behavior use Clone(Kernel) method instead.")]
@@ -709,20 +753,22 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
         {
             _kernelFunction = kernelFunction;
             _kernel = kernel;
-            this.Name = string.IsNullOrWhiteSpace(kernelFunction.PluginName)
+            Name = string.IsNullOrWhiteSpace(kernelFunction.PluginName)
                 ? kernelFunction.Name
                 : $"{kernelFunction.PluginName}_{kernelFunction.Name}";
 
-            this.JsonSchema = BuildFunctionSchema(kernelFunction);
+            JsonSchema = BuildFunctionSchema(kernelFunction);
         }
-        
+
+
         public override string Name { get; }
         public override JsonElement JsonSchema { get; }
-        public override string Description => this._kernelFunction.Description;
-        public override JsonSerializerOptions JsonSerializerOptions => this._kernelFunction.JsonSerializerOptions ?? base.JsonSerializerOptions;
+        public override string Description => _kernelFunction.Description;
+        public override JsonSerializerOptions JsonSerializerOptions => _kernelFunction.JsonSerializerOptions ?? base.JsonSerializerOptions;
 
 
-        protected override async ValueTask<object?> InvokeCoreAsync(AIFunctionArguments? arguments = null,
+        protected override async ValueTask<object?> InvokeCoreAsync(
+            AIFunctionArguments? arguments = null,
             CancellationToken cancellationToken = default)
         {
             Verify.NotNull(arguments);
@@ -730,13 +776,13 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
             // Create the KernelArguments from the supplied arguments.
             KernelArguments args = [];
 
-            foreach (var argument in arguments)
+            foreach (KeyValuePair<string, object?> argument in arguments)
             {
                 args[argument.Key] = argument.Value;
             }
 
             // Invoke the KernelFunction.
-            var functionResult = await _kernelFunction.InvokeAsync(_kernel ?? new Kernel(), args, cancellationToken).ConfigureAwait(false);
+            FunctionResult? functionResult = await _kernelFunction.InvokeAsync(_kernel ?? new Kernel(), args, cancellationToken).ConfigureAwait(false);
 
             // Serialize the result to JSON, as with AIFunctionFactory.Create AIFunctions.
             return functionResult.Value is object value
@@ -744,17 +790,19 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
                 : null;
         }
 
+
         private static JsonElement BuildFunctionSchema(KernelFunction function)
         {
             KernelFunctionSchemaModel schemaModel = new()
             {
                 Type = "object",
-                Description = function.Description,
+                Description = function.Description
             };
 
-            foreach (var parameter in function.Metadata.Parameters)
+            foreach (KernelParameterMetadata? parameter in function.Metadata.Parameters)
             {
                 schemaModel.Properties[parameter.Name] = parameter.Schema?.RootElement ?? s_defaultSchema;
+
                 if (parameter.IsRequired)
                 {
                     (schemaModel.Required ??= []).Add(parameter.Name);
@@ -766,4 +814,6 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
     }
 
     #endregion
+
+
 }

@@ -20,11 +20,11 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector, IChatClient
     /// <inheritdoc/>
     [Experimental("SKEXP0001")]
     public bool TrySelectChatClient<T>(Kernel kernel, KernelFunction function, KernelArguments arguments, [NotNullWhen(true)] out T? service, out PromptExecutionSettings? serviceSettings) where T : class, IChatClient
-        => this.TrySelect(kernel, function, arguments, out service, out serviceSettings);
+        => TrySelect(kernel, function, arguments, out service, out serviceSettings);
 
     /// <inheritdoc/>
     public bool TrySelectAIService<T>(Kernel kernel, KernelFunction function, KernelArguments arguments, [NotNullWhen(true)] out T? service, out PromptExecutionSettings? serviceSettings) where T : class, IAIService
-        => this.TrySelect(kernel, function, arguments, out service, out serviceSettings);
+        => TrySelect(kernel, function, arguments, out service, out serviceSettings);
 
     private bool TrySelect<T>(
         Kernel kernel,

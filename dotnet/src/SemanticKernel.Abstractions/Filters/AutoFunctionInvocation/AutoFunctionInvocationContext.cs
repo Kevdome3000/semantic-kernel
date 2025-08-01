@@ -31,10 +31,10 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
         Verify.NotNull(autoInvocationChatOptions.Kernel);
         Verify.NotNull(autoInvocationChatOptions.ChatMessageContent);
 
-        this.Options = autoInvocationChatOptions;
-        this.ExecutionSettings = autoInvocationChatOptions.ExecutionSettings;
-        this.AIFunction = aiFunction;
-        this.Result = new FunctionResult(kernelFunction) { Culture = autoInvocationChatOptions.Kernel.Culture };
+        Options = autoInvocationChatOptions;
+        ExecutionSettings = autoInvocationChatOptions.ExecutionSettings;
+        AIFunction = aiFunction;
+        Result = new FunctionResult(kernelFunction) { Culture = autoInvocationChatOptions.Kernel.Culture };
     }
 
     /// <summary>
@@ -58,16 +58,16 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
         Verify.NotNull(chatHistory);
         Verify.NotNull(chatMessageContent);
 
-        this.Options = new KernelChatOptions(kernel)
+        Options = new KernelChatOptions(kernel)
         {
             ChatMessageContent = chatMessageContent,
         };
 
-        this._chatHistory = chatHistory;
-        this.Messages = chatHistory.ToChatMessageList();
-        chatHistory.SetChatMessageHandlers(this.Messages);
+        _chatHistory = chatHistory;
+        Messages = chatHistory.ToChatMessageList();
+        chatHistory.SetChatMessageHandlers(Messages);
         base.Function = function;
-        this.Result = result;
+        Result = result;
     }
 
     /// <summary>
@@ -103,8 +103,8 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
     /// </summary>
     public int RequestSequenceIndex
     {
-        get => this.Iteration;
-        init => this.Iteration = value;
+        get => Iteration;
+        init => Iteration = value;
     }
 
     /// <summary>
@@ -112,8 +112,8 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
     /// </summary>
     public int FunctionSequenceIndex
     {
-        get => this.FunctionCallIndex;
-        init => this.FunctionCallIndex = value;
+        get => FunctionCallIndex;
+        init => FunctionCallIndex = value;
     }
 
     /// <summary>
@@ -121,38 +121,38 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
     /// </summary>
     public string? ToolCallId
     {
-        get => this.CallContent.CallId;
+        get => CallContent.CallId;
         init
         {
-            this.CallContent = new Microsoft.Extensions.AI.FunctionCallContent(
+            CallContent = new Microsoft.Extensions.AI.FunctionCallContent(
                 callId: value ?? string.Empty,
-                name: this.CallContent.Name,
-                arguments: this.CallContent.Arguments);
+                name: CallContent.Name,
+                arguments: CallContent.Arguments);
         }
     }
 
     /// <summary>
     /// The chat message content associated with automatic function invocation.
     /// </summary>
-    public ChatMessageContent ChatMessageContent => (this.Options as KernelChatOptions)!.ChatMessageContent!;
+    public ChatMessageContent ChatMessageContent => (Options as KernelChatOptions)!.ChatMessageContent!;
 
     /// <summary>
     /// The execution settings associated with the operation.
     /// </summary>
     public PromptExecutionSettings? ExecutionSettings
     {
-        get => ((KernelChatOptions)this.Options!).ExecutionSettings;
+        get => ((KernelChatOptions)Options!).ExecutionSettings;
         init
         {
-            this.Options ??= new KernelChatOptions(this.Kernel);
-            ((KernelChatOptions)this.Options!).ExecutionSettings = value;
+            Options ??= new KernelChatOptions(Kernel);
+            ((KernelChatOptions)Options!).ExecutionSettings = value;
         }
     }
 
     /// <summary>
     /// Gets the <see cref="Microsoft.SemanticKernel.ChatCompletion.ChatHistory"/> associated with automatic function invocation.
     /// </summary>
-    public ChatHistory ChatHistory => this._chatHistory ??= new ChatMessageHistory(this.Messages);
+    public ChatHistory ChatHistory => _chatHistory ??= new ChatMessageHistory(Messages);
 
     /// <summary>
     /// Gets the <see cref="KernelFunction"/> with which this filter is associated.
@@ -165,7 +165,7 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
     {
         get
         {
-            if (this.AIFunction is KernelFunction kf)
+            if (AIFunction is KernelFunction kf)
             {
                 return kf;
             }
@@ -177,7 +177,7 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
     /// <summary>
     /// Gets the <see cref="Microsoft.SemanticKernel.Kernel"/> containing services, plugins, and other state for use throughout the operation.
     /// </summary>
-    public Kernel Kernel => ((KernelChatOptions)this.Options!).Kernel!;
+    public Kernel Kernel => ((KernelChatOptions)Options!).Kernel!;
 
     /// <summary>
     /// Gets or sets the result of the function's invocation.
@@ -214,19 +214,19 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
 
         internal ChatMessageHistory(IEnumerable<ChatMessage> messages) : base(messages.ToChatHistory())
         {
-            this._messages = new List<ChatMessage>(messages);
+            _messages = new List<ChatMessage>(messages);
         }
 
         public override void Add(ChatMessageContent item)
         {
             base.Add(item);
-            this._messages.Add(item.ToChatMessage());
+            _messages.Add(item.ToChatMessage());
         }
 
         public override void Clear()
         {
             base.Clear();
-            this._messages.Clear();
+            _messages.Clear();
         }
 
         public override bool Remove(ChatMessageContent item)
@@ -238,7 +238,7 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
                 return false;
             }
 
-            this._messages.RemoveAt(index);
+            _messages.RemoveAt(index);
             base.RemoveAt(index);
 
             return true;
@@ -247,36 +247,36 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
         public override void Insert(int index, ChatMessageContent item)
         {
             base.Insert(index, item);
-            this._messages.Insert(index, item.ToChatMessage());
+            _messages.Insert(index, item.ToChatMessage());
         }
 
         public override void RemoveAt(int index)
         {
-            this._messages.RemoveAt(index);
+            _messages.RemoveAt(index);
             base.RemoveAt(index);
         }
 
         public override ChatMessageContent this[int index]
         {
-            get => this._messages[index].ToChatMessageContent();
+            get => _messages[index].ToChatMessageContent();
             set
             {
-                this._messages[index] = value.ToChatMessage();
+                _messages[index] = value.ToChatMessage();
                 base[index] = value;
             }
         }
 
         public override void RemoveRange(int index, int count)
         {
-            this._messages.RemoveRange(index, count);
+            _messages.RemoveRange(index, count);
             base.RemoveRange(index, count);
         }
 
         public override void CopyTo(ChatMessageContent[] array, int arrayIndex)
         {
-            for (int i = 0; i < this._messages.Count; i++)
+            for (int i = 0; i < _messages.Count; i++)
             {
-                array[arrayIndex + i] = this._messages[i].ToChatMessageContent();
+                array[arrayIndex + i] = _messages[i].ToChatMessageContent();
             }
         }
 
@@ -287,15 +287,15 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
         public override void AddRange(IEnumerable<ChatMessageContent> items)
         {
             base.AddRange(items);
-            this._messages.AddRange(items.Select(i => i.ToChatMessage()));
+            _messages.AddRange(items.Select(i => i.ToChatMessage()));
         }
 
-        public override int Count => this._messages.Count;
+        public override int Count => _messages.Count;
 
         // Explicit implementation of IEnumerable<ChatMessageContent>.GetEnumerator()
         IEnumerator<ChatMessageContent> IEnumerable<ChatMessageContent>.GetEnumerator()
         {
-            foreach (var message in this._messages)
+            foreach (var message in _messages)
             {
                 yield return message.ToChatMessageContent(); // Convert and yield each item
             }
@@ -310,6 +310,6 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
     ~AutoFunctionInvocationContext()
     {
         // The moment this class is destroyed, we need to clear the update message overrides
-        this._chatHistory?.ClearOverrides();
+        _chatHistory?.ClearOverrides();
     }
 }

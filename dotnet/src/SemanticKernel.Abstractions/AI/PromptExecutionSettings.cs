@@ -182,7 +182,7 @@ public class PromptExecutionSettings
     /// </summary>
     /// <param name="chatHistory">Target chat history to prepare.</param>
     /// <returns>Prepared chat history.</returns>
-    internal ChatHistory ChatClientPrepareChatHistoryForRequest(ChatHistory chatHistory) => this.PrepareChatHistoryForRequest(chatHistory);
+    internal ChatHistory ChatClientPrepareChatHistoryForRequest(ChatHistory chatHistory) => PrepareChatHistoryForRequest(chatHistory);
 
     #region private ================================================================================
 

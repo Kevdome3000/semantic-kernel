@@ -62,7 +62,7 @@ public sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
     /// <inheritdoc />
     public override FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorConfigurationContext context)
     {
-        var functions = base.GetFunctions(Functions, context.Kernel, AutoInvoke);
+        var functions = GetFunctions(Functions, context.Kernel, AutoInvoke);
 
         return new FunctionChoiceBehaviorConfiguration(Options ?? DefaultOptions)
         {

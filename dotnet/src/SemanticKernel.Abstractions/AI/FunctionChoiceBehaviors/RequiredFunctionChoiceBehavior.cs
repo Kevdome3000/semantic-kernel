@@ -77,7 +77,7 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
             };
         }
 
-        var functions = base.GetFunctions(Functions, context.Kernel, AutoInvoke);
+        var functions = GetFunctions(Functions, context.Kernel, AutoInvoke);
 
         return new FunctionChoiceBehaviorConfiguration(Options ?? DefaultOptions)
         {

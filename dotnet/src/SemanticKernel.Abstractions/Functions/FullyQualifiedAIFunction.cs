@@ -15,7 +15,7 @@ public abstract class FullyQualifiedAIFunction : AIFunction
     /// <param name="metadata">The metadata describing the function.</param>
     internal FullyQualifiedAIFunction(KernelFunctionMetadata metadata)
     {
-        this.Metadata = metadata;
+        Metadata = metadata;
     }
 
     /// <summary>
@@ -33,7 +33,7 @@ public abstract class FullyQualifiedAIFunction : AIFunction
     /// handled in an ordinal case-insensitive manner.
     /// </remarks>
     public override string Name
-        => !string.IsNullOrWhiteSpace(this.Metadata.PluginName)
-            ? $"{this.Metadata.PluginName}_{this.Metadata.Name}"
-            : this.Metadata.Name;
+        => !string.IsNullOrWhiteSpace(Metadata.PluginName)
+            ? $"{Metadata.PluginName}_{Metadata.Name}"
+            : Metadata.Name;
 }

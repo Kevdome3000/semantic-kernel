@@ -34,6 +34,6 @@ public class FileReferenceContent : KernelContent
     {
         Verify.NotNullOrWhiteSpace(fileId, nameof(fileId));
 
-        this.FileId = fileId;
+        FileId = fileId;
     }
 }

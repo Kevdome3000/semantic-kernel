@@ -18,11 +18,11 @@ public sealed class ActionContent : KernelContent
     /// </summary>
     public string Text
     {
-        get => this._text;
+        get => _text;
         init
         {
-            Verify.NotNull(value, nameof(this.Text));
-            this._text = value;
+            Verify.NotNull(value, nameof(Text));
+            _text = value;
         }
     }
 
@@ -35,9 +35,9 @@ public sealed class ActionContent : KernelContent
     {
         Verify.NotNullOrWhiteSpace(text, nameof(text));
 
-        this._text = text;
+        _text = text;
     }
 
     /// <inheritdoc/>
-    public override string ToString() => this.Text;
+    public override string ToString() => Text;
 }

@@ -209,7 +209,7 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// <exception cref="ArgumentNullException"><paramref name="array"/> is null.</exception>
     /// <exception cref="ArgumentException">The number of messages in the history is greater than the available space from <paramref name="arrayIndex"/> to the end of <paramref name="array"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="arrayIndex"/> is less than 0.</exception>
-    public virtualvoid CopyTo(ChatMessageContent[] array, int arrayIndex)
+    public virtual void CopyTo(ChatMessageContent[] array, int arrayIndex)
     {
         _messages.CopyTo(array, arrayIndex);
     }

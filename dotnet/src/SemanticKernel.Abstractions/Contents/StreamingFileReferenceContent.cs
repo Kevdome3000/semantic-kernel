@@ -25,18 +25,18 @@ public class StreamingFileReferenceContent : StreamingKernelContent
     {
         Verify.NotNullOrWhiteSpace(fileId, nameof(fileId));
 
-        this.FileId = fileId;
+        FileId = fileId;
     }
 
     /// <inheritdoc/>
     public override string ToString()
     {
-        return this.FileId;
+        return FileId;
     }
 
     /// <inheritdoc/>
     public override byte[] ToByteArray()
     {
-        return Encoding.UTF8.GetBytes(this.ToString());
+        return Encoding.UTF8.GetBytes(ToString());
     }
 }

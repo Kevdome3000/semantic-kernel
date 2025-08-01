@@ -28,18 +28,18 @@ internal sealed class ChatClientAIService : IAIService, IChatClient
     internal ChatClientAIService(IChatClient chatClient)
     {
         Verify.NotNull(chatClient);
-        this._chatClient = chatClient;
+        _chatClient = chatClient;
 
-        var metadata = this._chatClient.GetService<ChatClientMetadata>();
+        var metadata = _chatClient.GetService<ChatClientMetadata>();
         Verify.NotNull(metadata);
 
-        this._internalAttributes[AIServiceExtensions.ModelIdKey] = metadata.DefaultModelId;
-        this._internalAttributes[nameof(metadata.ProviderName)] = metadata.ProviderName;
-        this._internalAttributes[nameof(metadata.ProviderUri)] = metadata.ProviderUri;
+        _internalAttributes[AIServiceExtensions.ModelIdKey] = metadata.DefaultModelId;
+        _internalAttributes[nameof(metadata.ProviderName)] = metadata.ProviderName;
+        _internalAttributes[nameof(metadata.ProviderUri)] = metadata.ProviderUri;
     }
 
     /// <inheritdoc />
-    public IReadOnlyDictionary<string, object?> Attributes => this._internalAttributes;
+    public IReadOnlyDictionary<string, object?> Attributes => _internalAttributes;
 
     /// <inheritdoc />
     public void Dispose()
@@ -48,13 +48,13 @@ internal sealed class ChatClientAIService : IAIService, IChatClient
 
     /// <inheritdoc />
     public Task<ChatResponse> GetResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
-        => this._chatClient.GetResponseAsync(messages, options, cancellationToken);
+        => _chatClient.GetResponseAsync(messages, options, cancellationToken);
 
     /// <inheritdoc />
     public object? GetService(Type serviceType, object? serviceKey = null)
-        => this._chatClient.GetService(serviceType, serviceKey);
+        => _chatClient.GetService(serviceType, serviceKey);
 
     /// <inheritdoc />
     public IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
-        => this._chatClient.GetStreamingResponseAsync(messages, options, cancellationToken);
+        => _chatClient.GetStreamingResponseAsync(messages, options, cancellationToken);
 }

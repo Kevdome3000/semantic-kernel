@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.ChatCompletion;
 internal static class ChatMessageExtensions
 {
     /// <summary>Converts a <see cref="ChatMessage"/> to a <see cref="ChatMessageContent"/>.</summary>
-    internal static ChatMessageContent ToChatMessageContent(this ChatMessage message, Microsoft.Extensions.AI.ChatResponse? response = null)
+    internal static ChatMessageContent ToChatMessageContent(this ChatMessage message, ChatResponse? response = null)
     {
         ChatMessageContent result = new()
         {
@@ -24,18 +24,18 @@ internal static class ChatMessageExtensions
         {
             KernelContent? resultContent = content switch
             {
-                Microsoft.Extensions.AI.TextContent tc => new Microsoft.SemanticKernel.TextContent(tc.Text),
-                Microsoft.Extensions.AI.DataContent dc when dc.HasTopLevelMediaType("image") => new Microsoft.SemanticKernel.ImageContent(dc.Uri),
-                Microsoft.Extensions.AI.UriContent uc when uc.HasTopLevelMediaType("image") => new Microsoft.SemanticKernel.ImageContent(uc.Uri),
-                Microsoft.Extensions.AI.DataContent dc when dc.HasTopLevelMediaType("audio") => new Microsoft.SemanticKernel.AudioContent(dc.Uri),
-                Microsoft.Extensions.AI.UriContent uc when uc.HasTopLevelMediaType("audio") => new Microsoft.SemanticKernel.AudioContent(uc.Uri),
-                Microsoft.Extensions.AI.DataContent dc => new Microsoft.SemanticKernel.BinaryContent(dc.Uri),
-                Microsoft.Extensions.AI.UriContent uc => new Microsoft.SemanticKernel.BinaryContent(uc.Uri),
-                Microsoft.Extensions.AI.FunctionCallContent fcc => new Microsoft.SemanticKernel.FunctionCallContent(
+                Microsoft.Extensions.AI.TextContent tc => new TextContent(tc.Text),
+                DataContent dc when dc.HasTopLevelMediaType("image") => new ImageContent(dc.Uri),
+                UriContent uc when uc.HasTopLevelMediaType("image") => new ImageContent(uc.Uri),
+                DataContent dc when dc.HasTopLevelMediaType("audio") => new AudioContent(dc.Uri),
+                UriContent uc when uc.HasTopLevelMediaType("audio") => new AudioContent(uc.Uri),
+                DataContent dc => new BinaryContent(dc.Uri),
+                UriContent uc => new BinaryContent(uc.Uri),
+                Microsoft.Extensions.AI.FunctionCallContent fcc => new FunctionCallContent(
                     functionName: fcc.Name,
                     id: fcc.CallId,
                     arguments: fcc.Arguments is not null ? new(fcc.Arguments) : null),
-                Microsoft.Extensions.AI.FunctionResultContent frc => new Microsoft.SemanticKernel.FunctionResultContent(
+                Microsoft.Extensions.AI.FunctionResultContent frc => new FunctionResultContent(
                     functionName: GetFunctionCallContent(frc.CallId)?.Name,
                     callId: frc.CallId,
                     result: frc.Result),

@@ -23,7 +23,7 @@ public class StreamingAnnotationContent : StreamingKernelContent
     [Obsolete("Use `ReferenceId` property instead.")]
     public string FileId
     {
-        get => this.ReferenceId;
+        get => ReferenceId;
     }
 
     /// <summary>
@@ -31,7 +31,7 @@ public class StreamingAnnotationContent : StreamingKernelContent
     /// </summary>
     [JsonIgnore]
     [Obsolete("Use `Label` property instead.")]
-    public string? Quote => this.Label;
+    public string? Quote => Label;
 
     /// <summary>
     /// Describes the annotation kind.
@@ -86,16 +86,16 @@ public class StreamingAnnotationContent : StreamingKernelContent
     {
         Verify.NotNullOrWhiteSpace(referenceId, nameof(referenceId));
 
-        this.Kind = kind;
-        this.ReferenceId = referenceId;
+        Kind = kind;
+        ReferenceId = referenceId;
     }
 
     /// <inheritdoc/>
     public override string ToString()
     {
-        bool hasLabel = !string.IsNullOrEmpty(this.ReferenceId);
+        bool hasLabel = !string.IsNullOrEmpty(ReferenceId);
 
-        return hasLabel ? $"{this.Label}: {this.ReferenceId}" : this.ReferenceId;
+        return hasLabel ? $"{Label}: {ReferenceId}" : ReferenceId;
     }
 
     /// <inheritdoc/>

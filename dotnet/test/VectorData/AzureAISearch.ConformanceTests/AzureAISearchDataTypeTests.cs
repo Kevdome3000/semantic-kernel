@@ -65,7 +65,7 @@ public class AzureAISearchDataTypeTests(AzureAISearchDataTypeTests.Fixture fixtu
 #endif
             ).ToList();
 
-        public class AzureAISearchRecord : RecordBase
+        public class AzureAISearchRecord : DataTypeTests<>.RecordBase
         {
             public int Int { get; set; }
             public long Long { get; set; }

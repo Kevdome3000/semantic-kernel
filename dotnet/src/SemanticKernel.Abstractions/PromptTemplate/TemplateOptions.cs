@@ -16,11 +16,11 @@ public class TemplateOptions
     /// </remarks>
     public string? Format
     {
-        get => this._format;
+        get => _format;
         set
         {
             Verify.NotNull(value);
-            this._format = value;
+            _format = value;
         }
     }
 
@@ -39,11 +39,11 @@ public class TemplateOptions
     /// </remarks>
     public string? Parser
     {
-        get => this._parser;
+        get => _parser;
         set
         {
             Verify.NotNull(value);
-            this._parser = value;
+            _parser = value;
         }
     }
 

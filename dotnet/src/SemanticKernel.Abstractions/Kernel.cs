@@ -118,11 +118,11 @@ public sealed class Kernel
                 ? new KernelPluginCollection(_plugins)
             : null)
         {
-            _functionInvocationFilters = this._functionInvocationFilters is { Count: > 0 } ? new NonNullCollection<IFunctionInvocationFilter>(this._functionInvocationFilters) : null,
-            _promptRenderFilters = this._promptRenderFilters is { Count: > 0 } ? new NonNullCollection<IPromptRenderFilter>(this._promptRenderFilters) : null,
-            _autoFunctionInvocationFilters = this._autoFunctionInvocationFilters is { Count: > 0 } ? new NonNullCollection<IAutoFunctionInvocationFilter>(this._autoFunctionInvocationFilters) : null,
-            _data = this._data is { Count: > 0 } ? new Dictionary<string, object?>(this._data) : null,
-            _culture = this._culture,
+            _functionInvocationFilters = _functionInvocationFilters is { Count: > 0 } ? new NonNullCollection<IFunctionInvocationFilter>(_functionInvocationFilters) : null,
+            _promptRenderFilters = _promptRenderFilters is { Count: > 0 } ? new NonNullCollection<IPromptRenderFilter>(_promptRenderFilters) : null,
+            _autoFunctionInvocationFilters = _autoFunctionInvocationFilters is { Count: > 0 } ? new NonNullCollection<IAutoFunctionInvocationFilter>(_autoFunctionInvocationFilters) : null,
+            _data = _data is { Count: > 0 } ? new Dictionary<string, object?>(_data) : null,
+            _culture = _culture,
         };
 
     /// <summary>

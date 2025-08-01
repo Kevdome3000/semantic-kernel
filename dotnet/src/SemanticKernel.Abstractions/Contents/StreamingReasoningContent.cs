@@ -20,8 +20,8 @@ public sealed class StreamingReasoningContent : StreamingKernelContent
     [AllowNull]
     public string Text
     {
-        get => this._text ?? string.Empty;
-        init => this._text = value;
+        get => _text ?? string.Empty;
+        init => _text = value;
     }
 
     /// <summary>
@@ -31,15 +31,15 @@ public sealed class StreamingReasoningContent : StreamingKernelContent
     [JsonConstructor]
     public StreamingReasoningContent(string? text = null)
     {
-        this._text = text;
+        _text = text;
     }
 
     /// <inheritdoc/>
-    public override string ToString() => this.Text;
+    public override string ToString() => Text;
 
     /// <inheritdoc/>
     public override byte[] ToByteArray()
     {
-        return Encoding.UTF8.GetBytes(this.ToString());
+        return Encoding.UTF8.GetBytes(ToString());
     }
 }

@@ -26,9 +26,9 @@ internal static class ChatResponseUpdateExtensions
         foreach (AIContent item in update.Contents)
         {
             StreamingKernelContent? resultContent =
-                item is Microsoft.Extensions.AI.TextContent tc ? new Microsoft.SemanticKernel.StreamingTextContent(tc.Text) :
-                item is Microsoft.Extensions.AI.FunctionCallContent fcc ?
-                    new Microsoft.SemanticKernel.StreamingFunctionCallUpdateContent(fcc.CallId, fcc.Name, fcc.Arguments is not null ?
+                item is TextContent tc ? new StreamingTextContent(tc.Text) :
+                item is FunctionCallContent fcc ?
+                    new StreamingFunctionCallUpdateContent(fcc.CallId, fcc.Name, fcc.Arguments is not null ?
                         JsonSerializer.Serialize(fcc.Arguments!, AbstractionsJsonContext.Default.IDictionaryStringObject!) :
                         null) :
                 null;
@@ -40,7 +40,7 @@ internal static class ChatResponseUpdateExtensions
                 content.Items.Add(resultContent);
             }
 
-            if (item is Microsoft.Extensions.AI.UsageContent uc)
+            if (item is UsageContent uc)
             {
                 content.Metadata = new Dictionary<string, object?>(update.AdditionalProperties ?? [])
                 {

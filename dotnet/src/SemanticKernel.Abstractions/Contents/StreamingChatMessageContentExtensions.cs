@@ -31,11 +31,11 @@ public static class StreamingChatMessageContentExtensions
             AIContent? aiContent = null;
             switch (item)
             {
-                case Microsoft.SemanticKernel.StreamingTextContent tc:
+                case StreamingTextContent tc:
                     aiContent = new Microsoft.Extensions.AI.TextContent(tc.Text);
                     break;
 
-                case Microsoft.SemanticKernel.StreamingFunctionCallUpdateContent fcc:
+                case StreamingFunctionCallUpdateContent fcc:
                     aiContent = new Microsoft.Extensions.AI.FunctionCallContent(
                         fcc.CallId ?? string.Empty,
                         fcc.Name ?? string.Empty,

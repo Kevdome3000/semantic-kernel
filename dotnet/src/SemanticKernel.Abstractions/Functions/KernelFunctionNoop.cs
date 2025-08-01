@@ -28,7 +28,7 @@ internal sealed class KernelFunctionNoop : KernelFunction
     /// <inheritdoc/>
     public override KernelFunction Clone(string? pluginName = null)
     {
-        Dictionary<string, PromptExecutionSettings>? executionSettings = this.ExecutionSettings?.ToDictionary(kv => kv.Key, kv => kv.Value);
+        Dictionary<string, PromptExecutionSettings>? executionSettings = ExecutionSettings?.ToDictionary(kv => kv.Key, kv => kv.Value);
         return new KernelFunctionNoop(executionSettings);
     }
 
