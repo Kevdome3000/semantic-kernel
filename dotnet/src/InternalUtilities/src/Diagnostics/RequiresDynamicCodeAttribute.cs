@@ -26,6 +26,7 @@ internal sealed class RequiresDynamicCodeAttribute : Attribute
         Message = message;
     }
 
+
     /// <summary>
     /// Gets a message that contains information about the usage of dynamic code.
     /// </summary>

@@ -38,6 +38,7 @@ internal static partial class LoggingExtensions
         }
     }
 
+
     internal static async Task<TResult> RunWithLoggingAsync<TResult>(
         ILogger logger,
         string operationName,
@@ -64,6 +65,7 @@ internal static partial class LoggingExtensions
             throw;
         }
     }
+
 
     internal static async IAsyncEnumerable<TResult> RunWithLoggingAsync<TResult>(
         ILogger logger,
@@ -123,14 +125,18 @@ internal static partial class LoggingExtensions
         }
     }
 
+
     [LoggerMessage(LogLevel.Debug, "{OperationName} invoked.")]
     private static partial void LogInvoked(this ILogger logger, string operationName);
+
 
     [LoggerMessage(LogLevel.Debug, "{OperationName} completed.")]
     private static partial void LogCompleted(this ILogger logger, string operationName);
 
+
     [LoggerMessage(LogLevel.Debug, "{OperationName} canceled.")]
     private static partial void LogInvocationCanceled(this ILogger logger, string operationName);
+
 
     [LoggerMessage(LogLevel.Error, "{OperationName} failed.")]
     private static partial void LogInvocationFailed(this ILogger logger, string operationName, Exception exception);

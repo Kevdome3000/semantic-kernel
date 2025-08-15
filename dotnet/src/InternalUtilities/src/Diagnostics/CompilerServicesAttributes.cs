@@ -12,30 +12,34 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace System.Runtime.CompilerServices;
 
-[AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = false)]
+[AttributeUsage(AttributeTargets.Parameter)]
 [ExcludeFromCodeCoverage]
 internal sealed class CallerArgumentExpressionAttribute : Attribute
 {
     public CallerArgumentExpressionAttribute(string parameterName)
     {
-        this.ParameterName = parameterName;
+        ParameterName = parameterName;
     }
+
 
     public string ParameterName { get; }
 }
 
+
 /// <summary>Specifies that a type has required members or that a member is required.</summary>
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Field | AttributeTargets.Property, Inherited = false)]
 [EditorBrowsable(EditorBrowsableState.Never)]
 internal sealed class RequiredMemberAttribute : Attribute;
+
 
 [AttributeUsage(AttributeTargets.All, AllowMultiple = true, Inherited = false)]
 internal sealed class CompilerFeatureRequiredAttribute : Attribute
 {
     public CompilerFeatureRequiredAttribute(string featureName)
     {
-        this.FeatureName = featureName;
+        FeatureName = featureName;
     }
+
 
     /// <summary>
     /// The name of the compiler feature.

@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -20,8 +21,8 @@ namespace Microsoft.SemanticKernel.Diagnostics;
 ///    `SEMANTICKERNEL_EXPERIMENTAL_GENAI_ENABLE_OTEL_DIAGNOSTICS`
 ///    `SEMANTICKERNEL_EXPERIMENTAL_GENAI_ENABLE_OTEL_DIAGNOSTICS_SENSITIVE`
 /// </summary>
-[System.Diagnostics.CodeAnalysis.Experimental("SKEXP0001")]
-[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+[Experimental("SKEXP0001")]
+[ExcludeFromCodeCoverage]
 internal static class ModelDiagnostics
 {
     private static readonly string s_namespace = typeof(ModelDiagnostics).Namespace!;
@@ -34,6 +35,7 @@ internal static class ModelDiagnostics
 
     private static readonly bool s_enableDiagnostics = AppContextSwitchHelper.GetConfigValue(EnableDiagnosticsSwitch, EnableDiagnosticsEnvVar);
     private static readonly bool s_enableSensitiveEvents = AppContextSwitchHelper.GetConfigValue(EnableSensitiveEventsSwitch, EnableSensitiveEventsEnvVar);
+
 
     /// <summary>
     /// Start a text completion activity for a given model.
@@ -55,9 +57,9 @@ internal static class ModelDiagnostics
         var activity = s_activitySource.StartActivityWithTags(
             $"{OperationName} {modelName}",
             [
-                new(ModelDiagnosticsTags.Operation, OperationName),
-                new(ModelDiagnosticsTags.System, modelProvider),
-                new(ModelDiagnosticsTags.Model, modelName),
+                new KeyValuePair<string, object?>(ModelDiagnosticsTags.Operation, OperationName),
+                new KeyValuePair<string, object?>(ModelDiagnosticsTags.System, modelProvider),
+                new KeyValuePair<string, object?>(ModelDiagnosticsTags.Model, modelName)
             ],
             ActivityKind.Client);
 
@@ -65,8 +67,8 @@ internal static class ModelDiagnostics
         {
             activity?.SetTags([
                 // Skip the query string in the uri as it may contain keys
-                new(ModelDiagnosticsTags.Address, endpoint.GetLeftPart(UriPartial.Path)),
-                new(ModelDiagnosticsTags.Port, endpoint.Port),
+                new KeyValuePair<string, object?>(ModelDiagnosticsTags.Address, endpoint.GetLeftPart(UriPartial.Path)),
+                new KeyValuePair<string, object?>(ModelDiagnosticsTags.Port, endpoint.Port)
             ]);
         }
 
@@ -77,13 +79,14 @@ internal static class ModelDiagnostics
             activity?.AttachSensitiveDataAsEvent(
                 ModelDiagnosticsTags.UserMessage,
                 [
-                    new(ModelDiagnosticsTags.EventName, prompt),
-                    new(ModelDiagnosticsTags.System, modelProvider),
+                    new KeyValuePair<string, object?>(ModelDiagnosticsTags.EventName, prompt),
+                    new KeyValuePair<string, object?>(ModelDiagnosticsTags.System, modelProvider)
                 ]);
         }
 
         return activity;
     }
+
 
     /// <summary>
     /// Start a chat completion activity for a given model.
@@ -105,9 +108,9 @@ internal static class ModelDiagnostics
         var activity = s_activitySource.StartActivityWithTags(
             $"{OperationName} {modelName}",
             [
-                new(ModelDiagnosticsTags.Operation, OperationName),
-                new(ModelDiagnosticsTags.System, modelProvider),
-                new(ModelDiagnosticsTags.Model, modelName),
+                new KeyValuePair<string, object?>(ModelDiagnosticsTags.Operation, OperationName),
+                new KeyValuePair<string, object?>(ModelDiagnosticsTags.System, modelProvider),
+                new KeyValuePair<string, object?>(ModelDiagnosticsTags.Model, modelName)
             ],
             ActivityKind.Client);
 
@@ -115,8 +118,8 @@ internal static class ModelDiagnostics
         {
             activity?.SetTags([
                 // Skip the query string in the uri as it may contain keys
-                new(ModelDiagnosticsTags.Address, endpoint.GetLeftPart(UriPartial.Path)),
-                new(ModelDiagnosticsTags.Port, endpoint.Port),
+                new KeyValuePair<string, object?>(ModelDiagnosticsTags.Address, endpoint.GetLeftPart(UriPartial.Path)),
+                new KeyValuePair<string, object?>(ModelDiagnosticsTags.Port, endpoint.Port)
             ]);
         }
 
@@ -130,14 +133,15 @@ internal static class ModelDiagnostics
                 activity?.AttachSensitiveDataAsEvent(
                     ModelDiagnosticsTags.RoleToEventMap[message.Role],
                     [
-                        new(ModelDiagnosticsTags.EventName, formattedContent),
-                        new(ModelDiagnosticsTags.System, modelProvider),
+                        new KeyValuePair<string, object?>(ModelDiagnosticsTags.EventName, formattedContent),
+                        new KeyValuePair<string, object?>(ModelDiagnosticsTags.System, modelProvider)
                     ]);
             }
         }
 
         return activity;
     }
+
 
     /// <summary>
     /// Start an agent invocation activity and return the activity.
@@ -157,11 +161,10 @@ internal static class ModelDiagnostics
         var activity = s_activitySource.StartActivityWithTags(
             $"{OperationName} {agentName}",
             [
-                new(ModelDiagnosticsTags.Operation, OperationName),
-                new(ModelDiagnosticsTags.AgentId, agentId),
-                new(ModelDiagnosticsTags.AgentName, agentName)
-            ],
-            ActivityKind.Internal);
+                new KeyValuePair<string, object?>(ModelDiagnosticsTags.Operation, OperationName),
+                new KeyValuePair<string, object?>(ModelDiagnosticsTags.AgentId, agentId),
+                new KeyValuePair<string, object?>(ModelDiagnosticsTags.AgentName, agentName)
+            ]);
 
         if (!string.IsNullOrWhiteSpace(agentDescription))
         {
@@ -171,19 +174,42 @@ internal static class ModelDiagnostics
         return activity;
     }
 
+
     /// <summary>
     /// Set the text completion response for a given activity.
     /// The activity will be enriched with the response attributes specified by the semantic conventions.
     /// </summary>
-    internal static void SetCompletionResponse(this Activity activity, IEnumerable<TextContent> completions, int? promptTokens = null, int? completionTokens = null)
-        => SetCompletionResponse(activity, completions, promptTokens, completionTokens, ToGenAIConventionsChoiceFormat);
+    internal static void SetCompletionResponse(
+        this Activity activity,
+        IEnumerable<TextContent> completions,
+        int? promptTokens = null,
+        int? completionTokens = null)
+    {
+        SetCompletionResponse(activity,
+            completions,
+            promptTokens,
+            completionTokens,
+            ToGenAIConventionsChoiceFormat);
+    }
+
 
     /// <summary>
     /// Set the chat completion response for a given activity.
     /// The activity will be enriched with the response attributes specified by the semantic conventions.
     /// </summary>
-    internal static void SetCompletionResponse(this Activity activity, IEnumerable<ChatMessageContent> completions, int? promptTokens = null, int? completionTokens = null)
-        => SetCompletionResponse(activity, completions, promptTokens, completionTokens, ToGenAIConventionsChoiceFormat);
+    internal static void SetCompletionResponse(
+        this Activity activity,
+        IEnumerable<ChatMessageContent> completions,
+        int? promptTokens = null,
+        int? completionTokens = null)
+    {
+        SetCompletionResponse(activity,
+            completions,
+            promptTokens,
+            completionTokens,
+            ToGenAIConventionsChoiceFormat);
+    }
+
 
     /// <summary>
     /// Notify the end of streaming for a given activity.
@@ -198,9 +224,14 @@ internal static class ModelDiagnostics
         if (IsModelDiagnosticsEnabled())
         {
             var choices = OrganizeStreamingContent(contents);
-            SetCompletionResponse(activity, choices, toolCalls, promptTokens, completionTokens);
+            SetCompletionResponse(activity,
+                choices,
+                toolCalls,
+                promptTokens,
+                completionTokens);
         }
     }
+
 
     /// <summary>
     /// Set the response id for a given activity.
@@ -208,7 +239,11 @@ internal static class ModelDiagnostics
     /// <param name="activity">The activity to set the response id</param>
     /// <param name="responseId">The response id</param>
     /// <returns>The activity with the response id set for chaining</returns>
-    internal static Activity SetResponseId(this Activity activity, string responseId) => activity.SetTag(ModelDiagnosticsTags.ResponseId, responseId);
+    internal static Activity SetResponseId(this Activity activity, string responseId)
+    {
+        return activity.SetTag(ModelDiagnosticsTags.ResponseId, responseId);
+    }
+
 
     /// <summary>
     /// Set the input tokens usage for a given activity.
@@ -216,7 +251,11 @@ internal static class ModelDiagnostics
     /// <param name="activity">The activity to set the input tokens usage</param>
     /// <param name="inputTokens">The number of input tokens used</param>
     /// <returns>The activity with the input tokens usage set for chaining</returns>
-    internal static Activity SetInputTokensUsage(this Activity activity, int inputTokens) => activity.SetTag(ModelDiagnosticsTags.InputTokens, inputTokens);
+    internal static Activity SetInputTokensUsage(this Activity activity, int inputTokens)
+    {
+        return activity.SetTag(ModelDiagnosticsTags.InputTokens, inputTokens);
+    }
+
 
     /// <summary>
     /// Set the output tokens usage for a given activity.
@@ -224,7 +263,11 @@ internal static class ModelDiagnostics
     /// <param name="activity">The activity to set the output tokens usage</param>
     /// <param name="outputTokens">The number of output tokens used</param>
     /// <returns>The activity with the output tokens usage set for chaining</returns>
-    internal static Activity SetOutputTokensUsage(this Activity activity, int outputTokens) => activity.SetTag(ModelDiagnosticsTags.OutputTokens, outputTokens);
+    internal static Activity SetOutputTokensUsage(this Activity activity, int outputTokens)
+    {
+        return activity.SetTag(ModelDiagnosticsTags.OutputTokens, outputTokens);
+    }
+
 
     /// <summary>
     /// Check if model diagnostics is enabled
@@ -235,15 +278,25 @@ internal static class ModelDiagnostics
         return (s_enableDiagnostics || s_enableSensitiveEvents) && s_activitySource.HasListeners();
     }
 
+
     /// <summary>
     /// Check if sensitive events are enabled.
     /// Sensitive events are enabled if EnableSensitiveEvents is set to true and there are listeners.
     /// </summary>
-    internal static bool IsSensitiveEventsEnabled() => s_enableSensitiveEvents && s_activitySource.HasListeners();
+    internal static bool IsSensitiveEventsEnabled()
+    {
+        return s_enableSensitiveEvents && s_activitySource.HasListeners();
+    }
 
-    internal static bool HasListeners() => s_activitySource.HasListeners();
+
+    internal static bool HasListeners()
+    {
+        return s_activitySource.HasListeners();
+    }
+
 
     #region Private
+
     private static void AddOptionalTags<TPromptExecutionSettings>(Activity? activity, TPromptExecutionSettings? executionSettings)
         where TPromptExecutionSettings : PromptExecutionSettings
     {
@@ -254,6 +307,7 @@ internal static class ModelDiagnostics
 
         // Serialize and deserialize the execution settings to get the extension data
         var deserializedSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(JsonSerializer.Serialize(executionSettings));
+
         if (deserializedSettings is null || deserializedSettings.ExtensionData is null)
         {
             return;
@@ -272,6 +326,7 @@ internal static class ModelDiagnostics
         TryAddTag("top_p", ModelDiagnosticsTags.TopP);
     }
 
+
     /// <summary>
     /// Convert a chat message to a string aligned with the OTel GenAI Semantic Conventions format
     /// </summary>
@@ -283,6 +338,7 @@ internal static class ModelDiagnostics
         sb.Append(chatMessage.Role);
         sb.Append("\", \"content\": ");
         sb.Append(JsonSerializer.Serialize(chatMessage.Content));
+
         if (chatMessage.Items.OfType<FunctionCallContent>().Any())
         {
             sb.Append(", \"tool_calls\": ");
@@ -293,6 +349,7 @@ internal static class ModelDiagnostics
         return sb.ToString();
     }
 
+
     /// <summary>
     /// Helper method to convert tool calls to a string aligned with the OTel GenAI Semantic Conventions format
     /// </summary>
@@ -302,6 +359,7 @@ internal static class ModelDiagnostics
 
         sb.Append('[');
         var isFirst = true;
+
         foreach (var functionCall in chatMessageContentItems.OfType<FunctionCallContent>())
         {
             if (!isFirst)
@@ -324,6 +382,7 @@ internal static class ModelDiagnostics
         sb.Append(']');
     }
 
+
     /// <summary>
     /// Convert a chat model response to a string aligned with the OTel GenAI Semantic Conventions format
     /// </summary>
@@ -337,6 +396,7 @@ internal static class ModelDiagnostics
         ToGenAIConventionsFormat(chatMessage, sb);
         sb.Append(", \"tool_calls\": ");
         ToGenAIConventionsFormat(chatMessage.Items, sb);
+
         if (chatMessage.Metadata?.TryGetValue("FinishReason", out var finishReason) == true)
         {
             sb.Append(", \"finish_reason\": ");
@@ -346,6 +406,7 @@ internal static class ModelDiagnostics
 
         return sb.ToString();
     }
+
 
     /// <summary>
     /// Convert a text model response to a string aligned with the OTel GenAI Semantic Conventions format
@@ -358,6 +419,7 @@ internal static class ModelDiagnostics
         sb.Append(index);
         sb.Append(", \"message\": ");
         sb.Append(JsonSerializer.Serialize(textContent.Text));
+
         if (textContent.Metadata?.TryGetValue("FinishReason", out var finishReason) == true)
         {
             sb.Append(", \"finish_reason\": ");
@@ -367,6 +429,7 @@ internal static class ModelDiagnostics
 
         return sb.ToString();
     }
+
 
     /// <summary>
     /// Set the completion response for a given activity.
@@ -400,6 +463,7 @@ internal static class ModelDiagnostics
         {
             bool responseIdSet = false;
             int index = 0;
+
             foreach (var completion in completions)
             {
                 if (!responseIdSet)
@@ -412,7 +476,7 @@ internal static class ModelDiagnostics
                 activity.AttachSensitiveDataAsEvent(
                     ModelDiagnosticsTags.Choice,
                     [
-                        new(ModelDiagnosticsTags.EventName, formattedContent),
+                        new KeyValuePair<string, object?>(ModelDiagnosticsTags.EventName, formattedContent)
                     ]);
             }
         }
@@ -421,6 +485,7 @@ internal static class ModelDiagnostics
             activity.SetResponseId(completions.FirstOrDefault());
         }
     }
+
 
     /// <summary>
     /// Set the streaming completion response for a given activity.
@@ -446,26 +511,36 @@ internal static class ModelDiagnostics
                         var lastContent = (StreamingTextContent)choiceContents.Value.Last();
                         var text = choiceContents.Value.Select(c => c.ToString()).Aggregate((a, b) => a + b);
                         return new TextContent(text, metadata: lastContent.Metadata);
-                    }).ToList();
-                SetCompletionResponse(activity, textCompletions, promptTokens, completionTokens);
+                    })
+                    .ToList();
+                SetCompletionResponse(activity,
+                    textCompletions,
+                    promptTokens,
+                    completionTokens);
                 break;
             case StreamingChatMessageContent:
                 var chatCompletions = choices.Select(choiceContents =>
-                {
-                    var lastContent = (StreamingChatMessageContent)choiceContents.Value.Last();
-                    var chatMessage = choiceContents.Value.Select(c => c.ToString()).Aggregate((a, b) => a + b);
-                    return new ChatMessageContent(lastContent.Role ?? AuthorRole.Assistant, chatMessage, metadata: lastContent.Metadata);
-                }).ToList();
+                    {
+                        var lastContent = (StreamingChatMessageContent)choiceContents.Value.Last();
+                        var chatMessage = choiceContents.Value.Select(c => c.ToString()).Aggregate((a, b) => a + b);
+                        return new ChatMessageContent(lastContent.Role ?? AuthorRole.Assistant, chatMessage, metadata: lastContent.Metadata);
+                    })
+                    .ToList();
+
                 // It's currently not allowed to request multiple results per prompt while auto-invoke is enabled.
                 // Therefore, we can assume that there is only one completion per prompt when tool calls are present.
                 foreach (var functionCall in toolCalls ?? [])
                 {
                     chatCompletions.FirstOrDefault()?.Items.Add(functionCall);
                 }
-                SetCompletionResponse(activity, chatCompletions, promptTokens, completionTokens);
+                SetCompletionResponse(activity,
+                    chatCompletions,
+                    promptTokens,
+                    completionTokens);
                 break;
         }
     }
+
 
     // Returns an activity for chaining
     private static Activity SetFinishReasons(this Activity activity, IEnumerable<KernelContent> completions)
@@ -482,12 +557,14 @@ internal static class ModelDiagnostics
 
         if (finishReasons.Any())
         {
-            activity.SetTag(ModelDiagnosticsTags.FinishReason, $"[{string.Join(",",
-                finishReasons.Select(finishReason => $"\"{finishReason}\""))}]");
+            activity.SetTag(ModelDiagnosticsTags.FinishReason,
+                $"[{string.Join(",",
+                    finishReasons.Select(finishReason => $"\"{finishReason}\""))}]");
         }
 
         return activity;
     }
+
 
     // Returns an activity for chaining
     private static Activity SetResponseId(this Activity activity, KernelContent? completion)
@@ -500,12 +577,14 @@ internal static class ModelDiagnostics
         return activity;
     }
 
+
     /// <summary>
     /// Organize streaming content by choice index
     /// </summary>
     private static Dictionary<int, List<StreamingKernelContent>> OrganizeStreamingContent(IEnumerable<StreamingKernelContent>? contents)
     {
         Dictionary<int, List<StreamingKernelContent>> choices = [];
+
         if (contents is null)
         {
             return choices;
@@ -524,6 +603,7 @@ internal static class ModelDiagnostics
 
         return choices;
     }
+
 
     /// <summary>
     /// Tags used in model diagnostics
@@ -555,13 +635,17 @@ internal static class ModelDiagnostics
         public const string AssistantMessage = "gen_ai.assistant.message";
         public const string ToolMessage = "gen_ai.tool.message";
         public const string Choice = "gen_ai.choice";
+
         public static readonly Dictionary<AuthorRole, string> RoleToEventMap = new()
-            {
-                { AuthorRole.System, SystemMessage },
-                { AuthorRole.User, UserMessage },
-                { AuthorRole.Assistant, AssistantMessage },
-                { AuthorRole.Tool, ToolMessage }
-            };
+        {
+            { AuthorRole.System, SystemMessage },
+            { AuthorRole.User, UserMessage },
+            { AuthorRole.Assistant, AssistantMessage },
+            { AuthorRole.Tool, ToolMessage }
+        };
     }
+
     # endregion
+
+
 }

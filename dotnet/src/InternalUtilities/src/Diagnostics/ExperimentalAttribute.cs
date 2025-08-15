@@ -15,18 +15,7 @@ namespace System.Diagnostics.CodeAnalysis;
 ///   feature is used. Authors can use this attribute to ship preview features in their assemblies.
 /// </remarks>
 [ExcludeFromCodeCoverage]
-[AttributeUsage(AttributeTargets.Assembly |
-                AttributeTargets.Module |
-                AttributeTargets.Class |
-                AttributeTargets.Struct |
-                AttributeTargets.Enum |
-                AttributeTargets.Constructor |
-                AttributeTargets.Method |
-                AttributeTargets.Property |
-                AttributeTargets.Field |
-                AttributeTargets.Event |
-                AttributeTargets.Interface |
-                AttributeTargets.Delegate, Inherited = false)]
+[AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Module | AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum | AttributeTargets.Constructor | AttributeTargets.Method | AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Event | AttributeTargets.Interface | AttributeTargets.Delegate, Inherited = false)]
 internal sealed class ExperimentalAttribute : Attribute
 {
     /// <summary>
@@ -38,6 +27,7 @@ internal sealed class ExperimentalAttribute : Attribute
     {
         DiagnosticId = diagnosticId;
     }
+
 
     /// <summary>
     ///  Gets the ID that the compiler will use when reporting a use of the API the attribute applies to.

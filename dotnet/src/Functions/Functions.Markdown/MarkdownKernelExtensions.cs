@@ -28,6 +28,9 @@ public static class MarkdownKernelExtensions
         Verify.NotNull(text);
         Verify.NotNull(functionName);
 
-        return KernelFunctionMarkdown.FromPromptMarkdown(text, functionName, promptTemplateFactory, kernel.LoggerFactory);
+        return KernelFunctionMarkdown.FromPromptMarkdown(text,
+            functionName,
+            promptTemplateFactory,
+            kernel.LoggerFactory);
     }
 }

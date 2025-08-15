@@ -27,6 +27,7 @@ internal sealed class RequiresUnreferencedCodeAttribute : Attribute
         Message = message;
     }
 
+
     /// <summary>
     /// Gets a message that contains information about the usage of unreferenced code.
     /// </summary>

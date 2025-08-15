@@ -4,6 +4,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// Helper class to get app context switch value
 /// </summary>

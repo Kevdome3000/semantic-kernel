@@ -46,8 +46,7 @@ public interface IKernelFunction
     /// that implements the functionality of the kernel function. It can be used to inspect
     /// or invoke the method dynamically when needed.
     /// </remarks>
-    public MethodInfo? UnderlyingMethod { get; }
-
+    MethodInfo? UnderlyingMethod { get; }
 
     /// <summary>
     /// Invokes a <see cref="IKernelFunction"/> asynchronously with the specified arguments.

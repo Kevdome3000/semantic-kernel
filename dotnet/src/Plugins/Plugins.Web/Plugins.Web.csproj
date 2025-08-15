@@ -4,7 +4,7 @@
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
     <AssemblyName>Microsoft.SemanticKernel.Plugins.Web</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
-      <TargetFrameworks>netstandard2.0;net9.0</TargetFrameworks>
+      <TargetFramework>net9.0</TargetFramework>
       <VersionSuffix>alpha</VersionSuffix>
   </PropertyGroup>
 

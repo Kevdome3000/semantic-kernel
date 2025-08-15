@@ -1,13 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel;
-
 using System.Collections.Generic;
 using System.Text.Json;
-using Extensions.Logging;
 using Markdig;
 using Markdig.Syntax;
+using Microsoft.Extensions.Logging;
 
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Factory methods for creating <seealso cref="KernelFunction"/> instances.

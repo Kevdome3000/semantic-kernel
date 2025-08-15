@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 #if !NET8_0_OR_GREATER
-
 // Polyfill for using UnreachableException with .NET Standard 2.0
 
 namespace System.Diagnostics;
 
 #pragma warning disable CA1064 // Exceptions should be public
 #pragma warning disable CA1812 // Internal class that is (sometimes) never instantiated.
+
 
 /// <summary>
 /// Exception thrown when the program executes an instruction that was thought to be unreachable.
@@ -16,6 +16,7 @@ internal sealed class UnreachableException : Exception
 {
     private const string MessageText = "The program executed an instruction that was thought to be unreachable.";
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="UnreachableException"/> class with the default error message.
     /// </summary>
@@ -23,6 +24,7 @@ internal sealed class UnreachableException : Exception
         : base(MessageText)
     {
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UnreachableException"/>
@@ -33,6 +35,7 @@ internal sealed class UnreachableException : Exception
         : base(message ?? MessageText)
     {
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UnreachableException"/>

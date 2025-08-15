@@ -27,10 +27,8 @@ namespace System.Diagnostics.CodeAnalysis;
 /// will use it there).
 /// </remarks>
 [AttributeUsage(
-        AttributeTargets.Field | AttributeTargets.ReturnValue | AttributeTargets.GenericParameter |
-        AttributeTargets.Parameter | AttributeTargets.Property | AttributeTargets.Method |
-        AttributeTargets.Class | AttributeTargets.Interface | AttributeTargets.Struct,
-        Inherited = false)]
+    AttributeTargets.Field | AttributeTargets.ReturnValue | AttributeTargets.GenericParameter | AttributeTargets.Parameter | AttributeTargets.Property | AttributeTargets.Method | AttributeTargets.Class | AttributeTargets.Interface | AttributeTargets.Struct,
+    Inherited = false)]
 internal sealed class DynamicallyAccessedMembersAttribute : Attribute
 {
     /// <summary>
@@ -43,12 +41,14 @@ internal sealed class DynamicallyAccessedMembersAttribute : Attribute
         MemberTypes = memberTypes;
     }
 
+
     /// <summary>
     /// Gets the <see cref="DynamicallyAccessedMemberTypes"/> which specifies the type
     /// of members dynamically accessed.
     /// </summary>
     public DynamicallyAccessedMemberTypes MemberTypes { get; }
 }
+
 
 /// <summary>
 /// Specifies the types of members that are dynamically accessed.

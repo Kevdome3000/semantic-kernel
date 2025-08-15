@@ -28,6 +28,7 @@ internal sealed class UnconditionalSuppressMessageAttribute : Attribute
         CheckId = checkId;
     }
 
+
     /// <summary>
     /// Gets the category identifying the classification of the attribute.
     /// </summary>

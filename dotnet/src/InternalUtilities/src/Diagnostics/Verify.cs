@@ -12,15 +12,21 @@ using System.Text.RegularExpressions;
 namespace Microsoft.SemanticKernel;
 
 [ExcludeFromCodeCoverage]
-internal static partial class Verify
+internal static class Verify
 {
 #if NET
     [GeneratedRegex("^[^.]+\\.[^.]+$")]
     private static partial Regex FilenameRegex();
 #else
-    private static Regex FilenameRegex() => s_filenameRegex;
+    private static Regex FilenameRegex()
+    {
+        return s_filenameRegex;
+    }
+
+
     private static readonly Regex s_filenameRegex = new("^[^.]+\\.[^.]+$", RegexOptions.Compiled);
 #endif
+
 
     /// <summary>
     /// Equivalent of ArgumentNullException.ThrowIfNull
@@ -38,6 +44,7 @@ internal static partial class Verify
 #endif
     }
 
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void NotNullOrWhiteSpace([NotNull] string? str, [CallerArgumentExpression(nameof(str))] string? paramName = null)
     {
@@ -45,6 +52,7 @@ internal static partial class Verify
         ArgumentException.ThrowIfNullOrWhiteSpace(str, paramName);
 #else
         NotNull(str, paramName);
+
         if (string.IsNullOrWhiteSpace(str))
         {
             ThrowArgumentWhiteSpaceException(paramName);
@@ -52,14 +60,17 @@ internal static partial class Verify
 #endif
     }
 
+
     internal static void NotNullOrEmpty<T>(IList<T> list, [CallerArgumentExpression(nameof(list))] string? paramName = null)
     {
         NotNull(list, paramName);
+
         if (list.Count == 0)
         {
             throw new ArgumentException("The value cannot be empty.", paramName);
         }
     }
+
 
     public static void True(bool condition, string message, [CallerArgumentExpression(nameof(condition))] string? paramName = null)
     {
@@ -69,14 +80,17 @@ internal static partial class Verify
         }
     }
 
+
     internal static void ValidFilename([NotNull] string? filename, [CallerArgumentExpression(nameof(filename))] string? paramName = null)
     {
         NotNullOrWhiteSpace(filename);
+
         if (!FilenameRegex().IsMatch(filename))
         {
             throw new ArgumentException($"Invalid filename format: '{filename}'. Filename should consist of an actual name and a file extension.", paramName);
         }
     }
+
 
     public static void ValidateUrl(string url, bool allowQuery = false, [CallerArgumentExpression(nameof(url))] string? paramName = null)
     {
@@ -98,16 +112,24 @@ internal static partial class Verify
         }
     }
 
-    internal static void StartsWith([NotNull] string? text, string prefix, string message, [CallerArgumentExpression(nameof(text))] string? textParamName = null)
+
+    internal static void StartsWith(
+        [NotNull] string? text,
+        string prefix,
+        string message,
+        [CallerArgumentExpression(nameof(text))]
+        string? textParamName = null)
     {
         Debug.Assert(prefix is not null);
 
         NotNullOrWhiteSpace(text, textParamName);
+
         if (!text.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
         {
             throw new ArgumentException(textParamName, message);
         }
     }
+
 
     internal static void DirectoryExists(string path)
     {
@@ -117,23 +139,37 @@ internal static partial class Verify
         }
     }
 
+
     [DoesNotReturn]
-    internal static void ThrowArgumentInvalidName(string kind, string name, string? paramName) =>
+    internal static void ThrowArgumentInvalidName(string kind, string name, string? paramName)
+    {
         throw new ArgumentException($"A {kind} can contain only ASCII letters, digits, and underscores: '{name}' is not a valid name.", paramName);
+    }
+
 
     [DoesNotReturn]
-    internal static void ThrowArgumentNullException(string? paramName) =>
+    internal static void ThrowArgumentNullException(string? paramName)
+    {
         throw new ArgumentNullException(paramName);
+    }
+
 
     [DoesNotReturn]
-    internal static void ThrowArgumentWhiteSpaceException(string? paramName) =>
+    internal static void ThrowArgumentWhiteSpaceException(string? paramName)
+    {
         throw new ArgumentException("The value cannot be an empty string or composed entirely of whitespace.", paramName);
+    }
+
 
     [DoesNotReturn]
-    internal static void ThrowArgumentOutOfRangeException<T>(string? paramName, T actualValue, string message) =>
+    internal static void ThrowArgumentOutOfRangeException<T>(string? paramName, T actualValue, string message)
+    {
         throw new ArgumentOutOfRangeException(paramName, actualValue, message);
+    }
 
-    private static readonly HashSet<string> s_invalidLocationCharacters = [
+
+    private static readonly HashSet<string> s_invalidLocationCharacters =
+    [
         "://",
         "..",
         "\\",
@@ -154,6 +190,7 @@ internal static partial class Verify
         "="
     ];
 
+
     /// <summary>
     /// Validates that a hostname segment string is safe for use as a URL segment, preventing URL injection.
     /// </summary>
@@ -170,11 +207,12 @@ internal static partial class Verify
 
         // Validate location format (allows alphanumeric, hyphens, and underscores)
         // Common format examples: us-east1, europe-west4, asia-northeast1
-        if (!System.Text.RegularExpressions.Regex.IsMatch(hostNameSegment, @"^[a-zA-Z0-9][a-zA-Z0-9\-_]*[a-zA-Z0-9]$"))
+        if (!Regex.IsMatch(hostNameSegment, @"^[a-zA-Z0-9][a-zA-Z0-9\-_]*[a-zA-Z0-9]$"))
         {
             throw new ArgumentException($"The location '{hostNameSegment}' is not valid. Location must start and end with alphanumeric characters and can contain hyphens and underscores.", paramName);
         }
     }
+
 
     internal static void NotLessThan(int value, int limit, [CallerArgumentExpression(nameof(value))] string? paramName = null)
     {

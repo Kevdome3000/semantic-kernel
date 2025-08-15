@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
 #if !NET8_0_OR_GREATER
-
 namespace System.Runtime.CompilerServices;
 
 /// <summary>

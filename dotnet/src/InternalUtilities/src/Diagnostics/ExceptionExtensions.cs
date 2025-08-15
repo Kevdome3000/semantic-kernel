@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
 namespace System;
+
 /// <summary>
 /// Exception extension methods.
 /// </summary>
@@ -16,10 +17,12 @@ internal static class ExceptionExtensions
     /// <param name="ex">Exception.</param>
     /// <returns>True if <paramref name="ex"/> is a critical exception and should not be caught.</returns>
     internal static bool IsCriticalException(this Exception ex)
-        => ex is ThreadAbortException
+    {
+        return ex is ThreadAbortException
             or AccessViolationException
             or AppDomainUnloadedException
             or BadImageFormatException
             or CannotUnloadAppDomainException
             or InvalidProgramException;
+    }
 }

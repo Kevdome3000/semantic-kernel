@@ -14,7 +14,6 @@ namespace Microsoft.SemanticKernel.Text;
 /// For plain text, split looking at new lines first, then periods, and so on.
 /// For markdown, split looking at punctuation first, and so on.
 /// </summary>
-[Experimental("SKEXP0050")]
 public static class TextChunker
 {
     /// <summary>

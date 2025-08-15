@@ -20,18 +20,30 @@ internal static class ActivityExtensions
     {
         const string OperationName = "execute_tool";
 
-        return source.StartActivityWithTags($"{OperationName} {functionName}", [
+        return source.StartActivityWithTags($"{OperationName} {functionName}",
+        [
             new KeyValuePair<string, object?>("gen_ai.operation.name", OperationName),
             new KeyValuePair<string, object?>("gen_ai.tool.name", functionName),
             new KeyValuePair<string, object?>("gen_ai.tool.description", functionDescription)
-        ], ActivityKind.Internal);
+        ]);
     }
+
 
     /// <summary>
     /// Starts an activity with the specified name and tags.
     /// </summary>
-    public static Activity? StartActivityWithTags(this ActivitySource source, string name, IEnumerable<KeyValuePair<string, object?>> tags, ActivityKind kind = ActivityKind.Internal)
-        => source.StartActivity(name, kind, default(ActivityContext), tags);
+    public static Activity? StartActivityWithTags(
+        this ActivitySource source,
+        string name,
+        IEnumerable<KeyValuePair<string, object?>> tags,
+        ActivityKind kind = ActivityKind.Internal)
+    {
+        return source.StartActivity(name,
+            kind,
+            default(ActivityContext),
+            tags);
+    }
+
 
     /// <summary>
     /// Adds tags to the activity.
@@ -47,6 +59,7 @@ internal static class ActivityExtensions
         return activity;
     }
 
+
     /// <summary>
     /// Adds an event to the activity. Should only be used for events that contain sensitive data.
     /// </summary>
@@ -60,6 +73,7 @@ internal static class ActivityExtensions
         return activity;
     }
 
+
     /// <summary>
     /// Sets the error status and type on the activity.
     /// </summary>
@@ -69,6 +83,7 @@ internal static class ActivityExtensions
         activity.SetStatus(ActivityStatusCode.Error, exception.Message);
         return activity;
     }
+
 
     public static async IAsyncEnumerable<TResult> RunWithActivityAsync<TResult>(
         Func<Activity?> getActivity,
