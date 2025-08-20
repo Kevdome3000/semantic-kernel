@@ -1,16 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors;
-
 using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Diagnostics;
-using Graph;
+using Microsoft.Graph;
+using Microsoft.Graph.Models;
+using Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.Diagnostics;
 
+namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors;
 
 /// <summary>
 /// Connector for OneDrive API
@@ -18,7 +18,6 @@ using Graph;
 public class OneDriveConnector : ICloudDriveConnector
 {
     private readonly GraphServiceClient _graphServiceClient;
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OneDriveConnector"/> class.
@@ -29,18 +28,18 @@ public class OneDriveConnector : ICloudDriveConnector
         this._graphServiceClient = graphServiceClient;
     }
 
-
     /// <inheritdoc/>
-    public async Task<Stream> GetFileContentStreamAsync(string filePath, CancellationToken cancellationToken = default)
+    public async Task<Stream?> GetFileContentStreamAsync(string filePath, CancellationToken cancellationToken = default)
     {
         Ensure.NotNullOrWhitespace(filePath, nameof(filePath));
 
-        return await this._graphServiceClient.Me
-            .Drive.Root
-            .ItemWithPath(filePath).Content
-            .Request().GetAsync(cancellationToken).ConfigureAwait(false);
-    }
+        var myDrive = await this._graphServiceClient.Me.Drive.GetAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
+        return await this._graphServiceClient
+            .Drives[myDrive!.Id].Root.ItemWithPath(filePath).Content
+            .GetAsync(cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+    }
 
     /// <summary>
     /// Checks if a file exists at the specified path in OneDrive.
@@ -54,9 +53,10 @@ public class OneDriveConnector : ICloudDriveConnector
 
         try
         {
-            await this._graphServiceClient.Me
-                .Drive.Root
-                .ItemWithPath(filePath).Request().GetAsync(cancellationToken).ConfigureAwait(false);
+            var myDrive = await this._graphServiceClient.Me.Drive.GetAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            await this._graphServiceClient
+                .Drives[myDrive!.Id].Root.ItemWithPath(filePath).GetAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
             // If no exception is thrown, the file exists.
             return true;
@@ -64,15 +64,14 @@ public class OneDriveConnector : ICloudDriveConnector
         catch (ServiceException ex)
         {
             // If the exception is a 404 Not Found, the file does not exist.
-            if (ex.StatusCode == HttpStatusCode.NotFound)
+            if (ex.ResponseStatusCode == (int)HttpStatusCode.NotFound)
             {
                 return false;
             }
 
-            throw new HttpOperationException(ex.StatusCode, responseContent: null, ex.Message, ex);
+            throw new HttpOperationException((HttpStatusCode)ex.ResponseStatusCode, responseContent: null, ex.Message, ex);
         }
     }
-
 
     /// <inheritdoc/>
     public async Task UploadSmallFileAsync(string filePath, string destinationPath, CancellationToken cancellationToken = default)
@@ -83,7 +82,6 @@ public class OneDriveConnector : ICloudDriveConnector
         filePath = Environment.ExpandEnvironmentVariables(filePath);
 
         long fileSize = new FileInfo(filePath).Length;
-
         if (fileSize > 4 * 1024 * 1024)
         {
             throw new IOException("File is too large to upload - function currently only supports files up to 4MB.");
@@ -91,62 +89,64 @@ public class OneDriveConnector : ICloudDriveConnector
 
         using FileStream fileContentStream = new(filePath, FileMode.Open, FileAccess.Read);
 
-        GraphResponse<DriveItem>? response = null;
+        DriveItem? response = null;
 
         try
         {
-            response = await this._graphServiceClient.Me
-                .Drive.Root
-                .ItemWithPath(destinationPath).Content
-                .Request().PutResponseAsync<DriveItem>(fileContentStream, cancellationToken, HttpCompletionOption.ResponseContentRead).ConfigureAwait(false);
+            var myDrive = await this._graphServiceClient.Me.Drive.GetAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            response.ToHttpResponseMessage().EnsureSuccessStatusCode();
+            response = await this._graphServiceClient
+                .Drives[myDrive!.Id].Root
+                .ItemWithPath(destinationPath).Content.PutAsync(fileContentStream, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
         catch (ServiceException ex)
         {
-            throw new HttpOperationException(ex.StatusCode, responseContent: null, ex.Message, ex);
+            throw new HttpOperationException((HttpStatusCode)ex.ResponseStatusCode, responseContent: null, ex.Message, ex);
         }
         catch (HttpRequestException ex)
         {
-            throw new HttpOperationException(response?.StatusCode, responseContent: null, ex.Message, ex);
+#if NET8_0_OR_GREATER
+            throw new HttpOperationException(ex.StatusCode, responseContent: null, ex.Message, ex);
+#else
+            throw new HttpOperationException(null, responseContent: null, ex.Message, ex);
+#endif
         }
     }
 
-
     /// <inheritdoc/>
-    public async Task<string> CreateShareLinkAsync(
-        string filePath,
-        string type = "view",
-        string scope = "anonymous",
+    public async Task<string> CreateShareLinkAsync(string filePath, string type = "view", string scope = "anonymous",
         CancellationToken cancellationToken = default)
     {
         Ensure.NotNullOrWhitespace(filePath, nameof(filePath));
         Ensure.NotNullOrWhitespace(type, nameof(type));
         Ensure.NotNullOrWhitespace(scope, nameof(scope));
 
-        GraphResponse<Permission>? response = null;
+        Permission? response = null;
 
         try
         {
-            response = await this._graphServiceClient.Me
-                .Drive.Root
-                .ItemWithPath(filePath)
-                .CreateLink(type, scope)
-                .Request().PostResponseAsync(cancellationToken).ConfigureAwait(false);
+            var myDrive = await this._graphServiceClient.Me.Drive.GetAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            response.ToHttpResponseMessage().EnsureSuccessStatusCode();
+            response = await this._graphServiceClient
+               .Drives[myDrive!.Id].Root
+               .ItemWithPath(filePath)
+               .CreateLink.PostAsync(new() { Type = type, Scope = scope }, cancellationToken: cancellationToken)
+               .ConfigureAwait(false);
         }
         catch (ServiceException ex)
         {
-            throw new HttpOperationException(ex.StatusCode, responseContent: null, ex.Message, ex);
+            throw new HttpOperationException((HttpStatusCode)ex.ResponseStatusCode, responseContent: null, ex.Message, ex);
         }
         catch (HttpRequestException ex)
         {
-            throw new HttpOperationException(response?.StatusCode, responseContent: null, ex.Message, ex);
+#if NET8_0_OR_GREATER
+            throw new HttpOperationException(ex.StatusCode, responseContent: null, ex.Message, ex);
+#else
+            throw new HttpOperationException(null, responseContent: null, ex.Message, ex);
+#endif
         }
 
-        string? result = (await response.GetResponseObjectAsync().ConfigureAwait(false)).Link?.WebUrl;
-
+        string? result = response?.Link?.WebUrl;
         if (string.IsNullOrWhiteSpace(result))
         {
             throw new KernelException("Shareable file link was null or whitespace.");

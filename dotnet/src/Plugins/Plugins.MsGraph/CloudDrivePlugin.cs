@@ -1,27 +1,23 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Plugins.MsGraph;
-
 using System;
 using System.ComponentModel;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Diagnostics;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Plugins.MsGraph.Diagnostics;
 
+namespace Microsoft.SemanticKernel.Plugins.MsGraph;
 
 /// <summary>
 /// Cloud drive plugin (e.g. OneDrive).
 /// </summary>
 public sealed class CloudDrivePlugin
 {
-
     private readonly ICloudDriveConnector _connector;
-
     private readonly ILogger _logger;
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CloudDrivePlugin"/> class.
@@ -36,7 +32,6 @@ public sealed class CloudDrivePlugin
         this._logger = loggerFactory?.CreateLogger(typeof(CloudDrivePlugin)) ?? NullLogger.Instance;
     }
 
-
     /// <summary>
     /// Get the contents of a file stored in a cloud drive.
     /// </summary>
@@ -44,25 +39,26 @@ public sealed class CloudDrivePlugin
     /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
     /// <returns>A string containing the file content.</returns>
     [KernelFunction, Description("Get the contents of a file in a cloud drive.")]
-    public async Task<string> GetFileContentAsync(
+    public async Task<string?> GetFileContentAsync(
         [Description("Path to file")] string filePath,
         CancellationToken cancellationToken = default)
     {
         this._logger.LogDebug("Getting file content for '{0}'", filePath);
+        Stream? fileContentStream = await this._connector.GetFileContentStreamAsync(filePath, cancellationToken).ConfigureAwait(false);
 
-        Stream fileContentStream = await this._connector.GetFileContentStreamAsync(filePath, cancellationToken).
-            ConfigureAwait(false);
+        if (fileContentStream is null)
+        {
+            this._logger.LogDebug("File content stream for '{0}' is null", filePath);
+            return null;
+        }
 
         using StreamReader sr = new(fileContentStream);
-
         return await sr.ReadToEndAsync(
 #if NET
             cancellationToken
 #endif
-            ).
-            ConfigureAwait(false);
+            ).ConfigureAwait(false);
     }
-
 
     /// <summary>
     /// Upload a small file to OneDrive (less than 4MB).
@@ -73,8 +69,7 @@ public sealed class CloudDrivePlugin
     [KernelFunction, Description("Upload a small file to OneDrive (less than 4MB).")]
     public async Task UploadFileAsync(
         [Description("Path to file")] string filePath,
-        [Description("Remote path to store the file")]
-        string destinationPath,
+        [Description("Remote path to store the file")] string destinationPath,
         CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(destinationPath))
@@ -85,10 +80,8 @@ public sealed class CloudDrivePlugin
         this._logger.LogDebug("Uploading file '{0}'", filePath);
 
         // TODO Add support for large file uploads (i.e. upload sessions)
-        await this._connector.UploadSmallFileAsync(filePath, destinationPath, cancellationToken).
-            ConfigureAwait(false);
+        await this._connector.UploadSmallFileAsync(filePath, destinationPath, cancellationToken).ConfigureAwait(false);
     }
-
 
     /// <summary>
     /// Create a sharable link to a file stored in a cloud drive.
@@ -105,8 +98,6 @@ public sealed class CloudDrivePlugin
         const string Type = "view"; // TODO expose this as an SK variable
         const string Scope = "anonymous"; // TODO expose this as an SK variable
 
-        return await this._connector.CreateShareLinkAsync(filePath, Type, Scope, cancellationToken).
-            ConfigureAwait(false);
+        return await this._connector.CreateShareLinkAsync(filePath, Type, Scope, cancellationToken).ConfigureAwait(false);
     }
-
 }

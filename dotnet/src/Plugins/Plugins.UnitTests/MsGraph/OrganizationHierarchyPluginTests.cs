@@ -65,7 +65,7 @@ public class OrganizationHierarchyPluginTests
         OrganizationHierarchyPlugin target = new(connectorMock.Object);
 
         // Act
-        string actual = await target.GetMyManagerEmailAsync();
+        string? actual = await target.GetMyManagerEmailAsync();
 
         // Assert
         Assert.Equal(anyManagerEmail, actual);
@@ -88,7 +88,7 @@ public class OrganizationHierarchyPluginTests
         OrganizationHierarchyPlugin target = new(connectorMock.Object);
 
         // Act
-        string actual = await target.GetMyManagerNameAsync();
+        string? actual = await target.GetMyManagerNameAsync();
 
         // Assert
         Assert.Equal(anyManagerName, actual);

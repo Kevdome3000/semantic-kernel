@@ -1,29 +1,25 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using TaskStatus = Microsoft.Graph.TaskStatus;
-
-namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors;
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Diagnostics;
-using Graph;
-using Models;
-using TaskStatus = Graph.TaskStatus;
+using Microsoft.Graph;
+using Microsoft.Graph.Models;
+using Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.Diagnostics;
+using Microsoft.SemanticKernel.Plugins.MsGraph.Models;
+using TaskStatus = Microsoft.Graph.Models.TaskStatus;
 
+namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors;
 
 /// <summary>
 /// Connector for Microsoft To-Do API
 /// </summary>
 public class MicrosoftToDoConnector : ITaskManagementConnector
 {
-
     private readonly GraphServiceClient _graphServiceClient;
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MicrosoftToDoConnector"/> class.
@@ -34,108 +30,135 @@ public class MicrosoftToDoConnector : ITaskManagementConnector
         this._graphServiceClient = graphServiceClient;
     }
 
-
     /// <inheritdoc/>
     public async Task<TaskManagementTaskList?> GetDefaultTaskListAsync(CancellationToken cancellationToken = default)
     {
         // .Filter("wellknownListName eq 'defaultList'") does not work as expected so we grab all the lists locally and filter them by name.
         // GH issue: https://github.com/microsoftgraph/microsoft-graph-docs/issues/17694
 
-        ITodoListsCollectionPage lists = await this._graphServiceClient.Me.Todo.Lists.Request().
-            GetAsync(cancellationToken).
-            ConfigureAwait(false);
+        // Get the initial page (response won't be null if successful; exceptions are thrown on failure)
+        var initialPage = await this._graphServiceClient.Me.Todo.Lists.GetAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        TodoTaskList? result = lists.SingleOrDefault(list => list.WellknownListName == WellknownListName.DefaultList);
+        TodoTaskList? result = null;
 
-        while (result is null && lists.Count != 0 && lists.NextPageRequest is not null)
+        if (initialPage is null)
         {
-            lists = await lists.NextPageRequest.GetAsync(cancellationToken).
-                ConfigureAwait(false);
-
-            result = lists.SingleOrDefault(list => list.WellknownListName == WellknownListName.DefaultList);
+            return null;
         }
+
+        var pageIterator = PageIterator<TodoTaskList, TodoTaskListCollectionResponse>.CreatePageIterator(
+            this._graphServiceClient,
+            initialPage,
+            (list) =>
+            {
+                if (list?.WellknownListName == WellknownListName.DefaultList)
+                {
+                    result = list;
+                    return false; // Stop iterating once found
+                }
+                return true; // Continue to next item/page
+            });
+
+        await pageIterator.IterateAsync(cancellationToken).ConfigureAwait(false);
 
         if (result is null)
         {
-            throw new KernelException("Could not find default task list.");
+            return null; // No default list found
         }
 
-        return new TaskManagementTaskList(result.Id, result.DisplayName);
-    }
-
-
-    /// <inheritdoc/>
-    public async Task<IEnumerable<TaskManagementTaskList>> GetTaskListsAsync(CancellationToken cancellationToken = default)
-    {
-        ITodoListsCollectionPage lists = await this._graphServiceClient.Me.Todo.Lists.Request().
-            GetAsync(cancellationToken).
-            ConfigureAwait(false);
-
-        List<TodoTaskList> taskLists = [.. lists];
-
-        while (lists.Count != 0 && lists.NextPageRequest is not null)
+        if (string.IsNullOrEmpty(result.Id))
         {
-            lists = await lists.NextPageRequest.GetAsync(cancellationToken).
-                ConfigureAwait(false);
-
-            taskLists.AddRange(lists);
+            return null; // Ensure the ID is not null or empty
         }
 
-        return taskLists.Select(list => new TaskManagementTaskList(
-            id: list.Id,
-            name: list.DisplayName));
+        return new TaskManagementTaskList(
+            result.Id,  // We've checked it's not null/empty
+            result.DisplayName ?? "Unnamed Default List"  // Coalesce to a fallback if null
+        );
+    }
+    /// <inheritdoc/>
+    public async Task<IEnumerable<TaskManagementTaskList>?> GetTaskListsAsync(CancellationToken cancellationToken = default)
+    {
+        // Get the initial page (response won't be null if successful; exceptions thrown on failure)
+        var response = await this._graphServiceClient.Me.Todo.Lists
+            .GetAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+
+        if (response?.Value == null)
+        {
+            return null;
+        }
+
+        List<TodoTaskList>? taskLists = null;
+
+        var pageIterator = PageIterator<TodoTaskList, TodoTaskListCollectionResponse>.CreatePageIterator(
+            this._graphServiceClient,
+            response,
+            (list) =>
+            {
+                (taskLists = []).Add(list);
+                return true; // Continue to fetch all pages
+            });
+
+        await pageIterator.IterateAsync(cancellationToken).ConfigureAwait(false);
+
+        return taskLists?.Select(list => new TaskManagementTaskList(
+            id: list?.Id,
+            name: list?.DisplayName));
     }
 
-
     /// <inheritdoc/>
-    public async Task<IEnumerable<TaskManagementTask>> GetTasksAsync(string listId, bool includeCompleted, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<TaskManagementTask>?> GetTasksAsync(string listId, bool includeCompleted, CancellationToken cancellationToken = default)
     {
         Ensure.NotNullOrWhitespace(listId, nameof(listId));
 
-        string filterValue = string.Empty;
+        // Get the initial page with optional filter
+        var response = await this._graphServiceClient.Me.Todo.Lists[listId].Tasks
+            .GetAsync(requestConfig =>
+            {
+                if (!includeCompleted)
+                {
+                    requestConfig.QueryParameters.Filter = "status ne 'completed'";
+                }
+            }, cancellationToken).ConfigureAwait(false);
 
-        if (!includeCompleted)
+        if (response?.Value == null)
         {
-            filterValue = "status ne 'completed'";
+            return Enumerable.Empty<TaskManagementTask>();
         }
 
-        ITodoTaskListTasksCollectionPage tasksPage = await this._graphServiceClient.Me.Todo.Lists[listId].
-            Tasks.Request().
-            Filter(filterValue).
-            GetAsync(cancellationToken).
-            ConfigureAwait(false);
+        List<TodoTask>? tasks = null;
 
-        List<TodoTask> tasks = [.. tasksPage];
+        var pageIterator = PageIterator<TodoTask, TodoTaskCollectionResponse>.CreatePageIterator(
+            this._graphServiceClient,
+            response,
+            (task) =>
+            {
+                (tasks = []).Add(task);
+                return true; // Continue to fetch all pages
+            });
 
-        while (tasksPage.Count != 0 && tasksPage.NextPageRequest is not null)
-        {
-            tasksPage = await tasksPage.NextPageRequest.GetAsync(cancellationToken).
-                ConfigureAwait(false);
+        await pageIterator.IterateAsync(cancellationToken).ConfigureAwait(false);
 
-            tasks.AddRange(tasksPage);
-        }
-
-        return tasks.Select(task => new TaskManagementTask(
-            id: task.Id,
-            title: task.Title,
-            reminder: task.ReminderDateTime?.DateTime,
-            due: task.DueDateTime?.DateTime,
-            isCompleted: task.Status == TaskStatus.Completed));
+        return tasks?.Select(task => new TaskManagementTask(
+            id: task?.Id,
+            title: task?.Title,
+            reminder: task?.ReminderDateTime?.DateTime,
+            due: task?.DueDateTime?.DateTime,
+            isCompleted: task?.Status == TaskStatus.Completed));
     }
 
-
     /// <inheritdoc/>
-    public async Task<TaskManagementTask> AddTaskAsync(string listId, TaskManagementTask task, CancellationToken cancellationToken = default)
+    public async Task<TaskManagementTask?> AddTaskAsync(string listId, TaskManagementTask task, CancellationToken cancellationToken = default)
     {
         Ensure.NotNullOrWhitespace(listId, nameof(listId));
         Ensure.NotNull(task, nameof(task));
 
-        return ToTaskListTask(await this._graphServiceClient.Me.Todo.Lists[listId].
-            Tasks.Request().
-            AddAsync(FromTaskListTask(task), cancellationToken).
-            ConfigureAwait(false));
-    }
+        var createdTask = await this._graphServiceClient.Me.Todo.Lists[listId].Tasks
+            .PostAsync(FromTaskListTask(task), cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
 
+        return createdTask != null ? ToTaskListTask(createdTask) : null;
+    }
 
     /// <inheritdoc/>
     public Task DeleteTaskAsync(string listId, string taskId, CancellationToken cancellationToken = default)
@@ -143,12 +166,10 @@ public class MicrosoftToDoConnector : ITaskManagementConnector
         Ensure.NotNullOrWhitespace(listId, nameof(listId));
         Ensure.NotNullOrWhitespace(taskId, nameof(taskId));
 
-        return this._graphServiceClient.Me.Todo.Lists[listId].
-            Tasks[taskId].
-            Request().
-            DeleteAsync(cancellationToken);
+        return this._graphServiceClient.Me
+            .Todo.Lists[listId]
+            .Tasks[taskId].DeleteAsync(cancellationToken: cancellationToken);
     }
-
 
     private static TodoTask FromTaskListTask(TaskManagementTask task)
     {
@@ -159,16 +180,13 @@ public class MicrosoftToDoConnector : ITaskManagementConnector
             Title = task.Title,
             ReminderDateTime = task.Reminder is null
                 ? null
-                : DateTimeTimeZone.FromDateTimeOffset(DateTimeOffset.Parse(task.Reminder, CultureInfo.InvariantCulture.DateTimeFormat)),
+                : DateTimeOffset.Parse(task.Reminder, CultureInfo.InvariantCulture.DateTimeFormat).ToDateTimeTimeZone(),
             DueDateTime = task.Due is null
                 ? null
-                : DateTimeTimeZone.FromDateTimeOffset(DateTimeOffset.Parse(task.Due, CultureInfo.InvariantCulture.DateTimeFormat)),
-            Status = task.IsCompleted
-                ? TaskStatus.Completed
-                : TaskStatus.NotStarted
+                : DateTimeOffset.Parse(task.Due, CultureInfo.InvariantCulture.DateTimeFormat).ToDateTimeTimeZone(),
+            Status = task.IsCompleted ? TaskStatus.Completed : TaskStatus.NotStarted
         };
     }
-
 
     private static TaskManagementTask ToTaskListTask(TodoTask task)
     {
@@ -181,5 +199,4 @@ public class MicrosoftToDoConnector : ITaskManagementConnector
             due: task.DueDateTime?.DateTime,
             isCompleted: task.Status == TaskStatus.Completed);
     }
-
 }
