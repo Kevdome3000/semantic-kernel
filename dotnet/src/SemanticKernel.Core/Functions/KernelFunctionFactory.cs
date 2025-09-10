@@ -204,68 +204,7 @@ public static class KernelFunctionFactory
             description,
             templateFormat,
             promptTemplateFactory,
-            loggerFactory);
-
-    /// <summary>
-    /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template.
-    /// </summary>
-    /// <param name="promptTemplate">Prompt template for the function.</param>
-    /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to use for serialization and deserialization of various aspects of the function.</param>
-    /// <param name="executionSettings">Default execution settings to use when invoking this prompt function.</param>
-    /// <param name="functionName">The name to use for the function. If null, it will default to a randomly generated name.</param>
-    /// <param name="description">The description to use for the function.</param>
-    /// <param name="templateFormat">The template format of <paramref name="promptTemplate"/>. This must be provided if <paramref name="promptTemplateFactory"/> is not null.</param>
-    /// <param name="promptTemplateFactory">
-    /// The <see cref="IPromptTemplateFactory"/> to use when interpreting the <paramref name="promptTemplate"/> into a <see cref="IPromptTemplate"/>.
-    /// If null, a default factory will be used.
-    /// </param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <returns>The created <see cref="KernelFunction"/> for invoking the prompt.</returns>
-    public static KernelFunction CreateFromPrompt(
-        string promptTemplate,
-        JsonSerializerOptions jsonSerializerOptions,
-        PromptExecutionSettings? executionSettings = null,
-        string? functionName = null,
-        string? description = null,
-        string? templateFormat = null,
-        IPromptTemplateFactory? promptTemplateFactory = null,
-        ILoggerFactory? loggerFactory = null) =>
-        KernelFunctionFromPrompt.Create(
-            promptTemplate,
-            jsonSerializerOptions,
-            CreateSettingsDictionary(executionSettings is null ? null : [executionSettings]),
-            functionName,
-            description,
-            templateFormat,
-            promptTemplateFactory,
-            loggerFactory);
-
-    /// <summary>
-    /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template.
-    /// </summary>
-    /// <param name="promptTemplate">Prompt template for the function.</param>
-    /// <param name="executionSettings">Default execution settings to use when invoking this prompt function.</param>
-    /// <param name="functionName">The name to use for the function. If null, it will default to a randomly generated name.</param>
-    /// <param name="description">The description to use for the function.</param>
-    /// <param name="templateFormat">The template format of <paramref name="promptTemplate"/>. This must be provided if <paramref name="promptTemplateFactory"/> is not null.</param>
-    /// <param name="promptTemplateFactory">
-    /// The <see cref="IPromptTemplateFactory"/> to use when interpreting the <paramref name="promptTemplate"/> into a <see cref="IPromptTemplate"/>.
-    /// If null, a default factory will be used.
-    /// </param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <returns>The created <see cref="KernelFunction"/> for invoking the prompt.</returns>
-    [RequiresUnreferencedCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
-    [RequiresDynamicCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
-    public static KernelFunction CreateFromPrompt(
-        string promptTemplate,
-        IEnumerable<PromptExecutionSettings>? executionSettings,
-        string? functionName = null,
-        string? description = null,
-        string? templateFormat = null,
-        IPromptTemplateFactory? promptTemplateFactory = null,
-        ILoggerFactory? loggerFactory = null) =>
-        KernelFunctionFromPrompt.Create(promptTemplate, CreateSettingsDictionary(executionSettings), functionName, description,
-            templateFormat, promptTemplateFactory, loggerFactory);
+            loggerFactory: loggerFactory);
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template.
@@ -291,7 +230,7 @@ public static class KernelFunctionFactory
         string? templateFormat = null,
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null) =>
-        KernelFunctionFromPrompt.Create(promptTemplate, jsonSerializerOptions, CreateSettingsDictionary(executionSettings), functionName, description, templateFormat, promptTemplateFactory, loggerFactory);
+        KernelFunctionFromPrompt.Create(promptTemplate, jsonSerializerOptions, CreateSettingsDictionary(executionSettings), functionName, description, templateFormat, promptTemplateFactory, loggerFactory: loggerFactory);
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template configuration.

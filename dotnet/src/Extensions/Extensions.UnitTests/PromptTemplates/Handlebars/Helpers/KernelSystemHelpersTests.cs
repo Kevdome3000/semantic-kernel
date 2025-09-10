@@ -1,10 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using static Extensions.UnitTests.PromptTemplates.Handlebars.TestUtilities;
-
-namespace SemanticKernel.Extensions.UnitTests.PromptTemplates.Handlebars.Helpers;
-
 using System;
+using System.Collections.Generic;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using System.Web;
@@ -12,23 +9,18 @@ using HandlebarsDotNet;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using Xunit;
+using static Extensions.UnitTests.PromptTemplates.Handlebars.TestUtilities;
 
+namespace SemanticKernel.Extensions.UnitTests.PromptTemplates.Handlebars.Helpers;
 
 public sealed class KernelSystemHelpersTests
 {
-
     public KernelSystemHelpersTests()
     {
         this._factory = new();
         this._kernel = new();
-
-        this._arguments = new()
-        {
-            ["input"] = Guid.NewGuid().
-                ToString("X")
-        };
+        this._arguments = new() { ["input"] = Guid.NewGuid().ToString("X") };
     }
-
 
     [Fact]
     public async Task ItRendersTemplateWithMessageHelperAsync()
@@ -42,7 +34,6 @@ public sealed class KernelSystemHelpersTests
         // Assert
         Assert.Equal("<title~>Hello World!</title~>", result);
     }
-
 
     [Theory]
     [InlineData("{{set name=\"x\" value=10}}{{json x}}")]
@@ -59,26 +50,25 @@ public sealed class KernelSystemHelpersTests
         Assert.Equal("10", result);
     }
 
-
     [Theory]
     [MemberData(nameof(JsonObjectsToParse))]
     public async Task ItRendersTemplateWithJsonHelperAsync(object json)
     {
         // Arrange
         var template = "{{json person}}";
-
         var arguments = new KernelArguments
-        {
-            { "person", json }
-        };
+            {
+                { "person", json }
+            };
+
+        var inputVariables = new List<InputVariable> { new() { Name = "person", AllowDangerouslySetContent = true } };
 
         // Act
-        var result = await this.RenderPromptTemplateAsync(template, arguments);
+        var result = await this.RenderPromptTemplateAsync(template, arguments, inputVariables);
 
         // Assert
         Assert.Equal("""{"name":"Alice","age":25}""", HttpUtility.HtmlDecode(result));
     }
-
 
     [Fact]
     public async Task ItThrowsExceptionWithJsonHelperWithoutArgumentsAsync()
@@ -93,63 +83,62 @@ public sealed class KernelSystemHelpersTests
         Assert.Equal("`json` helper requires a value to be passed in.", exception.Message);
     }
 
-
     [Fact]
     public async Task ComplexVariableTypeReturnsObjectAsync()
     {
         // Arrange
         var template = "{{person}}";
-
         var arguments = new KernelArguments
-        {
-            { "person", new { name = "Alice", age = 25 } }
-        };
+            {
+                { "person", new { name = "Alice", age = 25 } }
+            };
+
+        var inputVariables = new List<InputVariable> { new() { Name = "person", AllowDangerouslySetContent = true } };
 
         // Act
-        var result = await this.RenderPromptTemplateAsync(template, arguments);
+        var result = await this.RenderPromptTemplateAsync(template, arguments, inputVariables);
 
         // Assert  
         Assert.Equal("{ name = Alice, age = 25 }", result);
     }
-
 
     [Fact]
     public async Task VariableWithPropertyReferenceReturnsPropertyValueAsync()
     {
         // Arrange
         var template = "{{person.name}}";
-
         var arguments = new KernelArguments
-        {
-            { "person", new { name = "Alice", age = 25 } }
-        };
+            {
+                { "person", new { name = "Alice", age = 25 } }
+            };
+
+        var inputVariables = new List<InputVariable> { new() { Name = "person", AllowDangerouslySetContent = true } };
 
         // Act
-        var result = await this.RenderPromptTemplateAsync(template, arguments);
+        var result = await this.RenderPromptTemplateAsync(template, arguments, inputVariables);
 
         // Assert
         Assert.Equal("Alice", result);
     }
-
 
     [Fact]
     public async Task VariableWithNestedObjectReturnsNestedObjectAsync()
     {
         // Arrange  
         var template = "{{person.Address}}";
-
         var arguments = new KernelArguments
         {
             { "person", new { Name = "Alice", Age = 25, Address = new { City = "New York", Country = "USA" } } }
         };
 
-        // Act  
-        var result = await this.RenderPromptTemplateAsync(template, arguments);
+        var inputVariables = new List<InputVariable> { new() { Name = "person", AllowDangerouslySetContent = true } };
+
+        // Act
+        var result = await this.RenderPromptTemplateAsync(template, arguments, inputVariables);
 
         // Assert  
         Assert.Equal("{ City = New York, Country = USA }", result);
     }
-
 
     [Fact]
     public async Task ItRendersTemplateWithArrayHelperAsync()
@@ -164,26 +153,29 @@ public sealed class KernelSystemHelpersTests
         Assert.Equal("123", result);
     }
 
-
     [Fact]
     public async Task ItRendersTemplateWithArrayHelperAndVariableReferenceAsync()
     {
         // Arrange
         var template = """{{array "hi" " " name "!" "Welcome to" " " Address.City}}""";
-
         var arguments = new KernelArguments
         {
             { "name", "Alice" },
-            { "Address", new { City = "New York", Country = "USA" } }
+            { "Address", new { City = "New York", Country = "USA"  } }
+        };
+
+        var inputVariables = new List<InputVariable>
+        {
+            new() { Name = "person" },
+            new() { Name = "Address", AllowDangerouslySetContent = true },
         };
 
         // Act
-        var result = await this.RenderPromptTemplateAsync(template, arguments);
+        var result = await this.RenderPromptTemplateAsync(template, arguments, inputVariables);
 
         // Assert
         Assert.Equal("hi, ,Alice,!,Welcome to, ,New York", result);
     }
-
 
     [Fact]
     public async Task ItRendersTemplateWithRawHelperAsync()
@@ -198,7 +190,6 @@ public sealed class KernelSystemHelpersTests
         Assert.Equal("{{x}}", result);
     }
 
-
     [Fact]
     public async Task ItRendersTemplateWithRangeHelperAsync()
     {
@@ -212,17 +203,15 @@ public sealed class KernelSystemHelpersTests
         Assert.Equal("12345", result);
     }
 
-
     [Fact]
     public async Task ItRendersTemplateWithConcatHelperAsync()
     {
         // Arrange
         var template = """{{concat "Hello" " " name "!"}}""";
-
         var arguments = new KernelArguments
-        {
-            { "name", "Alice" }
-        };
+            {
+                { "name", "Alice" }
+            };
 
         // Act
         var result = await this.RenderPromptTemplateAsync(template, arguments);
@@ -230,7 +219,6 @@ public sealed class KernelSystemHelpersTests
         // Assert
         Assert.Equal("Hello Alice!", result);
     }
-
 
     [Fact]
     public async Task ItRendersTemplateWithdSetAndConcatHelpersAsync()
@@ -244,7 +232,6 @@ public sealed class KernelSystemHelpersTests
         // Assert
         Assert.Equal("Hello Alice!", result);
     }
-
 
     [Theory]
     [InlineData("{{or true true}}", "True")]
@@ -268,7 +255,6 @@ public sealed class KernelSystemHelpersTests
         Assert.Equal(expectedResult, result);
     }
 
-
     [Theory]
     [InlineData("{{#if (equals x y)}}Equal{{else}}Not equal{{/if}}", "Equal")]
     [InlineData("{{#if (equals x)}}Equal{{else}}Not equal{{/if}}", "Not equal")]
@@ -286,7 +272,6 @@ public sealed class KernelSystemHelpersTests
         Assert.Equal(expectedResult, result);
     }
 
-
     [Fact]
     public async Task ItThrowsExceptionIfMessageDoesNotContainRoleAsync()
     {
@@ -300,7 +285,6 @@ public sealed class KernelSystemHelpersTests
         Assert.Equal("Message must have a role.", exception.Message);
     }
 
-
     public static TheoryData<object> JsonObjectsToParse => new()
     {
         new { name = "Alice", age = 25 },
@@ -308,19 +292,18 @@ public sealed class KernelSystemHelpersTests
         JsonNode.Parse("{\"name\":\"Alice\",\"age\":25}")!
     };
 
-
     #region private
 
     private readonly HandlebarsPromptTemplateFactory _factory;
-
     private readonly Kernel _kernel;
-
     private readonly KernelArguments _arguments;
 
-
-    private async Task<string> RenderPromptTemplateAsync(string template, KernelArguments? args = null)
+    private async Task<string> RenderPromptTemplateAsync(
+        string template,
+        KernelArguments? args = null,
+        List<InputVariable>? inputVariables = null)
     {
-        var resultConfig = InitializeHbPromptConfig(template);
+        var resultConfig = InitializeHbPromptConfig(template, inputVariables);
         var target = (HandlebarsPromptTemplate)this._factory.Create(resultConfig);
 
         // Act
@@ -330,6 +313,4 @@ public sealed class KernelSystemHelpersTests
     }
 
     #endregion
-
-
 }

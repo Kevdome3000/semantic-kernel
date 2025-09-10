@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -67,7 +66,6 @@ public class StreamingChatMessageContent : StreamingKernelContent
     /// Name of the author of the message
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    [Experimental("SKEXP0001")]
     public string? AuthorName
     {
         get => _authorName;
