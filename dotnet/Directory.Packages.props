@@ -42,33 +42,31 @@
     <PackageVersion Include="Grpc.AspNetCore.Web" Version="2.71.0" />
     <PackageVersion Include="Grpc.Net.Client" Version="2.71.0" />
     <PackageVersion Include="Grpc.Tools" Version="2.72.0" />
-    <PackageVersion Include="Handlebars.Net.Helpers" Version="2.5.2" />
+    <PackageVersion Include="Handlebars.Net.Helpers" Version="2.5.3" />
     <PackageVersion Include="Handlebars.Net" Version="2.1.6" />
     <PackageVersion Include="HtmlAgilityPack" Version="1.11.72" />
     <PackageVersion Include="JmesPath.Net" Version="1.0.330" />
-    <PackageVersion Include="JsonSchema.Net" Version="7.3.4" />
+    <PackageVersion Include="JsonSchema.Net" Version="7.4.0" />
     <PackageVersion Include="JsonSchema.Net.Generation" Version="5.0.2" />
-    <PackageVersion Include="Markdig" Version="0.40.0" />
+    <PackageVersion Include="Markdig" Version="0.42.0" />
     <PackageVersion Include="Microsoft.Agents.CopilotStudio.Client" Version="1.1.107-beta" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.13" />
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="8.0.14" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker" Version="2.0.0" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.3.0" />
-    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore"
-      Version="2.0.0" />
-    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Storage.Queues"
-      Version="5.5.0" />
+    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore" Version="2.0.0" />
+    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Storage.Queues" Version="5.5.0" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.SDK" Version="2.0.0" />
     <PackageVersion Include="Microsoft.Azure.Kusto.Data" Version="12.2.8" />
-        <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions.OpenApi" Version="1.5.1"/>
-        <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions.Storage" Version="5.3.2"/>
-        <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="9.0.8"/>
-        <PackageVersion Include="Microsoft.Bcl.HashCode" Version="6.0.0"/>
+    <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions.OpenApi" Version="1.5.1" />
+    <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions.Storage" Version="5.3.2" />
+    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="9.0.8" />
+    <PackageVersion Include="Microsoft.Bcl.HashCode" Version="6.0.0" />
     <PackageVersion Include="Microsoft.Bcl.Numerics" Version="9.0.5" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="4.13.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.13.0" />
-    <PackageVersion Include="Microsoft.Identity.Client" Version="4.74.1" />
-    <PackageVersion Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.74.1" />
+    <PackageVersion Include="Microsoft.Identity.Client" Version="4.77.0" />
+    <PackageVersion Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.77.0" />
     <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.13.0" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.22.1" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntime.Gpu" Version="1.22.1" />
@@ -98,11 +96,11 @@
     <PackageVersion Include="PuppeteerSharp" Version="20.0.5" />
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="8.0.1" />
     <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.6.1" />
-    <PackageVersion Include="System.IO.Packaging" Version="8.0.1" />
+    <PackageVersion Include="System.IO.Packaging" Version="9.0.9" />
     <PackageVersion Include="System.Linq.AsyncEnumerable" Version="10.0.0-preview.5.25277.114" />
     <PackageVersion Include="System.Memory.Data" Version="8.0.1" />
     <PackageVersion Include="System.Net.Http" Version="4.3.4" />
-    <PackageVersion Include="System.Numerics.Tensors" Version="9.0.8" />
+    <PackageVersion Include="System.Numerics.Tensors" Version="9.0.9" />
     <PackageVersion Include="System.Text.Json" Version="9.0.8" />
     <PackageVersion Include="System.ValueTuple" Version="4.6.1" />
     <PackageVersion Include="System.Threading.Tasks.Extensions" Version="4.6.3" />
@@ -119,26 +117,25 @@
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.2" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables"
-      Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.FileExtensions" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="8.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.9" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.8" />
     <PackageVersion Include="Microsoft.Extensions.Diagnostics.Testing" Version="9.0.0" />
-      <PackageVersion Include="Microsoft.Extensions.Hosting" Version="9.0.3"/>
-      <PackageVersion Include="Microsoft.Extensions.Http" Version="9.0.8"/>
-      <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="9.3.0"/>
-      <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="9.1.0"/>
-      <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.3"/>
-      <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.3"/>
-      <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="9.0.3"/>
-      <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="9.0.3"/>
-      <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="9.0.3"/>
-      <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="9.10.0"/>
-      <PackageVersion Include="Microsoft.Extensions.FileProviders.Physical" Version="9.0.3"/>
-      <PackageVersion Include="Microsoft.Extensions.FileProviders.Embedded" Version="9.0.3"/>
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="9.0.3" />
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="9.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="9.3.0" />
+    <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="9.1.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.3" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.3" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="9.0.3" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="9.0.3" />
+    <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="9.0.3" />
+    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="9.10.0" />
+    <PackageVersion Include="Microsoft.Extensions.FileProviders.Physical" Version="9.0.3" />
+    <PackageVersion Include="Microsoft.Extensions.FileProviders.Embedded" Version="9.0.3" />
     <!-- Test -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageVersion Include="Moq" Version="[4.18.4]" />
@@ -159,8 +156,8 @@
     <PackageVersion Include="DuckDB.NET.Data" Version="1.1.3" />
     <PackageVersion Include="MongoDB.Driver" Version="2.30.0" />
     <PackageVersion Include="Microsoft.Graph" Version="5.90.0" />
-    <PackageVersion Include="Microsoft.OpenApi" Version="1.6.24" />
-    <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.24" />
+    <PackageVersion Include="Microsoft.OpenApi" Version="2.3.1" />
+    <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.25" />
     <PackageVersion Include="Microsoft.OpenApi.ApiManifest" Version="0.5.6-preview" />
     <PackageVersion Include="Microsoft.Plugins.Manifest" Version="1.0.0-rc3" />
     <PackageVersion Include="protobuf-net" Version="3.2.45" />
@@ -195,12 +192,12 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageVersion Include="xunit.analyzers" Version="1.23.0" />
+    <PackageVersion Include="xunit.analyzers" Version="1.24.0" />
     <PackageReference Include="xunit.analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageVersion Include="Moq.Analyzers" Version="0.3.0" />
+    <PackageVersion Include="Moq.Analyzers" Version="0.3.1" />
     <PackageReference Include="Moq.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
