@@ -36,7 +36,6 @@ public static partial class KernelPluginFactory
     public static KernelPlugin CreateFromType<T>(string? pluginName = null, IServiceProvider? serviceProvider = null)
     {
         serviceProvider ??= EmptyServiceProvider.Instance;
-
         return CreateFromObject(ActivatorUtilities.CreateInstance<T>(serviceProvider)!, pluginName, serviceProvider?.GetService<ILoggerFactory>());
     }
 
@@ -280,8 +279,6 @@ public static partial class KernelPluginFactory
     private static partial Regex InvalidPluginNameCharactersRegex();
 #else
     private static Regex InvalidPluginNameCharactersRegex() => s_invalidPluginNameCharactersRegex;
-
     private static readonly Regex s_invalidPluginNameCharactersRegex = new("[^0-9A-Za-z_]", RegexOptions.Compiled);
 #endif
-
 }

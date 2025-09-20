@@ -33,9 +33,9 @@ public class ChatHistoryTruncationReducer : IChatHistoryReducer
         Verify.True(targetCount > 0, "Target message count must be greater than zero.");
         Verify.True(!thresholdCount.HasValue || thresholdCount > 0, "The reduction threshold length must be greater than zero.");
 
-        this._targetCount = targetCount;
+        _targetCount = targetCount;
 
-        this._thresholdCount = thresholdCount ?? 0;
+        _thresholdCount = thresholdCount ?? 0;
     }
 
     /// <inheritdoc/>
@@ -44,7 +44,7 @@ public class ChatHistoryTruncationReducer : IChatHistoryReducer
         var systemMessage = chatHistory.FirstOrDefault(l => l.Role == AuthorRole.System);
 
         // First pass to determine the truncation index
-        int truncationIndex = chatHistory.LocateSafeReductionIndex(this._targetCount, this._thresholdCount, hasSystemMessage: systemMessage is not null);
+        int truncationIndex = chatHistory.LocateSafeReductionIndex(_targetCount, _thresholdCount, hasSystemMessage: systemMessage is not null);
 
         IEnumerable<ChatMessageContent>? truncatedHistory = null;
 
@@ -63,13 +63,13 @@ public class ChatHistoryTruncationReducer : IChatHistoryReducer
         ChatHistoryTruncationReducer? other = obj as ChatHistoryTruncationReducer;
 
         return other != null &&
-               this._thresholdCount == other._thresholdCount &&
-               this._targetCount == other._targetCount;
+               _thresholdCount == other._thresholdCount &&
+               _targetCount == other._targetCount;
     }
 
 
     /// <inheritdoc/>
-    public override int GetHashCode() => HashCode.Combine(nameof(ChatHistoryTruncationReducer), this._thresholdCount, this._targetCount);
+    public override int GetHashCode() => HashCode.Combine(nameof(ChatHistoryTruncationReducer), _thresholdCount, _targetCount);
 
 
     private readonly int _thresholdCount;

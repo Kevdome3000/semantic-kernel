@@ -29,10 +29,10 @@ public sealed class SessionsPythonCodeExecutionResult
     {
         return JsonSerializer.Serialize(new
         {
-            status = this.Status,
-            result = this.Result?.ExecutionResult,
-            stdOut = this.Result?.StdOut,
-            stdErr = this.Result?.StdErr
+            status = Status,
+            result = Result?.ExecutionResult,
+            stdOut = Result?.StdOut,
+            stdErr = Result?.StdErr
         });
     }
 

@@ -37,10 +37,10 @@ internal sealed class SessionsPythonCodeExecutionProperties
 
     public SessionsPythonCodeExecutionProperties(SessionsPythonSettings settings, string pythonCode)
     {
-        this.PythonCode = pythonCode;
-        this.TimeoutInSeconds = settings.TimeoutInSeconds;
-        this.CodeInputType = settings.CodeInputType;
-        this.CodeExecutionType = settings.CodeExecutionType;
+        PythonCode = pythonCode;
+        TimeoutInSeconds = settings.TimeoutInSeconds;
+        CodeInputType = settings.CodeInputType;
+        CodeExecutionType = settings.CodeExecutionType;
     }
 
 }

@@ -268,7 +268,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
                 ConfigureAwait(false),
             ITextGenerationService textGeneration => await GetTextGenerationResultAsync(textGeneration, kernel, promptRenderingResult, cancellationToken).
                 ConfigureAwait(false),
-            IChatClient chatClient => await this.GetChatClientResultAsync(chatClient, kernel, promptRenderingResult, cancellationToken).ConfigureAwait(false),
+            IChatClient chatClient => await GetChatClientResultAsync(chatClient, kernel, promptRenderingResult, cancellationToken).ConfigureAwait(false),
             // The service selector didn't find an appropriate service. This should only happen with a poorly implemented selector.
             _ => throw new NotSupportedException($"The AI service {promptRenderingResult.AIService.GetType()} is not supported. Supported services are {typeof(IChatCompletionService)} and {typeof(ITextGenerationService)}")
         };
@@ -376,7 +376,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
                     continue;
                 }
 
-                if (typeof(Microsoft.Extensions.AI.AIContent).IsAssignableFrom(typeof(TResult)))
+                if (typeof(AIContent).IsAssignableFrom(typeof(TResult)))
                 {
                     // Return the first matching content type of an update if any
                     var updateContent = chatUpdate.Contents.FirstOrDefault(c => c is TResult);
@@ -596,15 +596,15 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         if (aiService is null)
         {
             var message = new StringBuilder().Append("No service was found for any of the supported types: ").Append(typeof(IChatCompletionService)).Append(", ").Append(typeof(ITextGenerationService)).Append(", ").Append(typeof(IChatClient)).Append('.');
-            if (this.ExecutionSettings is not null)
+            if (ExecutionSettings is not null)
             {
-                string serviceIds = string.Join("|", this.ExecutionSettings.Keys);
+                string serviceIds = string.Join("|", ExecutionSettings.Keys);
                 if (!string.IsNullOrEmpty(serviceIds))
                 {
                     message.Append(" Expected serviceIds: ").Append(serviceIds).Append('.');
                 }
 
-                string modelIds = string.Join("|", this.ExecutionSettings.Values.Select(model => model.ModelId));
+                string modelIds = string.Join("|", ExecutionSettings.Values.Select(model => model.ModelId));
                 if (!string.IsNullOrEmpty(modelIds))
                 {
                     message.Append(" Expected modelIds: ").Append(modelIds).Append('.');
@@ -727,7 +727,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             pascalOutputTokensJson.TryGetInt32(out int pascalOutputTokens))
         {
             TagList tags = new() {
-                { MeasurementFunctionTagName, this.Name },
+                { MeasurementFunctionTagName, Name },
                 { MeasurementModelTagName, modelId }
             };
 
@@ -782,7 +782,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         if (usageDetails.InputTokenCount.HasValue && usageDetails.OutputTokenCount.HasValue)
         {
             TagList tags = new() {
-                { MeasurementFunctionTagName, this.Name },
+                { MeasurementFunctionTagName, Name },
                 { MeasurementModelTagName, modelId }
             };
             s_invocationTokenUsagePrompt.Record(usageDetails.InputTokenCount.Value, in tags);
@@ -850,7 +850,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         var modelId = chatClient.GetService<ChatClientMetadata>()?.DefaultModelId;
 
         // Usage details are global and duplicated for each chat message content, use first one to get usage information
-        this.CaptureUsageDetails(chatClient.GetService<ChatClientMetadata>()?.DefaultModelId, chatResponse.Usage, this._logger);
+        CaptureUsageDetails(chatClient.GetService<ChatClientMetadata>()?.DefaultModelId, chatResponse.Usage, _logger);
 
         return new FunctionResult(this, chatResponse)
         {

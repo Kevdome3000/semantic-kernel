@@ -24,7 +24,7 @@ public static class WebKernelBuilderExtensions
         this IKernelBuilder builder,
         string apiKey,
         BingTextSearchOptions? options = null,
-        string? serviceId = default)
+        string? serviceId = null)
     {
         Verify.NotNull(builder);
         builder.Services.AddBingTextSearch(apiKey, options, serviceId);
@@ -42,7 +42,7 @@ public static class WebKernelBuilderExtensions
         this IKernelBuilder builder,
         string apiKey,
         BraveTextSearchOptions? options = null,
-        string? serviceId = default)
+        string? serviceId = null)
     {
         builder.Services.AddBraveTextSearch(apiKey, options, serviceId);
 
@@ -62,7 +62,7 @@ public static class WebKernelBuilderExtensions
         string searchEngineId,
         string apiKey,
         GoogleTextSearchOptions? options = null,
-        string? serviceId = default)
+        string? serviceId = null)
     {
         Verify.NotNull(builder);
         builder.Services.AddGoogleTextSearch(searchEngineId, apiKey, options, serviceId);
@@ -81,7 +81,7 @@ public static class WebKernelBuilderExtensions
         this IKernelBuilder builder,
         string apiKey,
         TavilyTextSearchOptions? options = null,
-        string? serviceId = default)
+        string? serviceId = null)
     {
         Verify.NotNull(builder);
         builder.Services.AddTavilyTextSearch(apiKey, options, serviceId);

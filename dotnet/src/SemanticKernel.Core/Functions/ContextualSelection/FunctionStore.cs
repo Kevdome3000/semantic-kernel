@@ -51,15 +51,15 @@ internal sealed class FunctionStore
         Verify.NotNull(functions);
         Verify.True(maxNumberOfFunctions > 0, "Max number of functions must be greater than 0");
 
-        this._vectorStore = vectorStore;
-        this._collectionName = collectionName;
-        this._functionByName = functions.ToDictionary(function => function.Name);
-        this._maxNumberOfFunctions = maxNumberOfFunctions;
-        this._logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<FunctionStore>();
-        this._options = options ?? new FunctionStoreOptions();
+        _vectorStore = vectorStore;
+        _collectionName = collectionName;
+        _functionByName = functions.ToDictionary(function => function.Name);
+        _maxNumberOfFunctions = maxNumberOfFunctions;
+        _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<FunctionStore>();
+        _options = options ?? new FunctionStoreOptions();
 
         // Create and assert the collection support record keys of string type
-        this._collection = this._vectorStore.GetDynamicCollection(collectionName, new VectorStoreCollectionDefinition()
+        _collection = _vectorStore.GetDynamicCollection(collectionName, new VectorStoreCollectionDefinition()
         {
             Properties = [
                 new VectorStoreKeyProperty("Name", typeof(string)),
@@ -75,7 +75,7 @@ internal sealed class FunctionStore
     public async Task SaveAsync(CancellationToken cancellationToken = default)
     {
         // Get function data to vectorize
-        var nameSourcePairs = await this.GetFunctionsVectorizationInfoAsync(cancellationToken).ConfigureAwait(false);
+        var nameSourcePairs = await GetFunctionsVectorizationInfoAsync(cancellationToken).ConfigureAwait(false);
 
         var functionRecords = new List<Dictionary<string, object?>>(nameSourcePairs.Count);
 
@@ -92,9 +92,9 @@ internal sealed class FunctionStore
         }
 
         // Create collection and upsert all vector store records
-        await this._collection.EnsureCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
+        await _collection.EnsureCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
 
-        await this._collection.UpsertAsync(functionRecords, cancellationToken: cancellationToken).ConfigureAwait(false);
+        await _collection.UpsertAsync(functionRecords, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -104,16 +104,16 @@ internal sealed class FunctionStore
     /// <param name="cancellationToken">The cancellation token to use for cancellation.</param>
     public async Task<IEnumerable<AIFunction>> SearchAsync(string context, CancellationToken cancellationToken = default)
     {
-        await this.AssertCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
+        await AssertCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
 
-        var results = await this._collection
-            .SearchAsync(context, top: this._maxNumberOfFunctions, cancellationToken: cancellationToken)
+        var results = await _collection
+            .SearchAsync(context, top: _maxNumberOfFunctions, cancellationToken: cancellationToken)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        this._logger.LogFunctionsSearchResults(context, this._maxNumberOfFunctions, results);
+        _logger.LogFunctionsSearchResults(context, _maxNumberOfFunctions, results);
 
-        return results.Select(result => this._functionByName[(string)result.Record["Name"]!]);
+        return results.Select(result => _functionByName[(string)result.Record["Name"]!]);
     }
 
     /// <summary>
@@ -123,22 +123,22 @@ internal sealed class FunctionStore
     /// <returns>The function name and vectorization source pairs.</returns>
     private async Task<List<FunctionVectorizationInfo>> GetFunctionsVectorizationInfoAsync(CancellationToken cancellationToken)
     {
-        List<FunctionVectorizationInfo> nameSourcePairs = new(this._functionByName.Count);
+        List<FunctionVectorizationInfo> nameSourcePairs = new(_functionByName.Count);
 
-        var provider = (Func<AIFunction, CancellationToken, Task<string>>?)this._options.EmbeddingValueProvider ?? ((function, _) =>
+        var provider = (Func<AIFunction, CancellationToken, Task<string>>?)_options.EmbeddingValueProvider ?? ((function, _) =>
         {
             string descriptionPart = string.IsNullOrEmpty(function.Description) ? string.Empty : $", description: {function.Description}";
             return Task.FromResult($"Function name: {function.Name}{descriptionPart}");
         });
 
-        foreach (KeyValuePair<string, AIFunction> pair in this._functionByName)
+        foreach (KeyValuePair<string, AIFunction> pair in _functionByName)
         {
             var vectorizationSource = await provider.Invoke(pair.Value, cancellationToken).ConfigureAwait(false);
 
             nameSourcePairs.Add(new FunctionVectorizationInfo(pair.Key, vectorizationSource));
         }
 
-        this._logger.LogFunctionsVectorizationInfo(nameSourcePairs);
+        _logger.LogFunctionsVectorizationInfo(nameSourcePairs);
 
         return nameSourcePairs;
     }
@@ -149,14 +149,14 @@ internal sealed class FunctionStore
     /// <param name="cancellationToken">The cancellation token to use for cancellation.</param>
     private async Task AssertCollectionExistsAsync(CancellationToken cancellationToken)
     {
-        if (!this._isCollectionExistenceAsserted)
+        if (!_isCollectionExistenceAsserted)
         {
-            if (!await this._collection.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
+            if (!await _collection.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
             {
-                throw new InvalidOperationException($"Collection '{this._collectionName}' does not exist.");
+                throw new InvalidOperationException($"Collection '{_collectionName}' does not exist.");
             }
 
-            this._isCollectionExistenceAsserted = true;
+            _isCollectionExistenceAsserted = true;
         }
     }
 
@@ -168,14 +168,14 @@ internal sealed class FunctionStore
 
         public FunctionVectorizationInfo(string name, string vectorizationSource)
         {
-            this.Name = name;
-            this.VectorizationSource = vectorizationSource;
+            Name = name;
+            VectorizationSource = vectorizationSource;
         }
 
         public void Deconstruct(out string name, out string vectorizationSource)
         {
-            name = this.Name;
-            vectorizationSource = this.VectorizationSource;
+            name = Name;
+            vectorizationSource = VectorizationSource;
         }
     }
 }

@@ -19,8 +19,8 @@ public sealed class FileIOPlugin
     /// </summary>
     public IEnumerable<string>? AllowedFolders
     {
-        get => this._allowedFolders;
-        set => this._allowedFolders = value is null ? null : new HashSet<string>(value, StringComparer.OrdinalIgnoreCase);
+        get => _allowedFolders;
+        set => _allowedFolders = value is null ? null : new HashSet<string>(value, StringComparer.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -39,7 +39,7 @@ public sealed class FileIOPlugin
     [KernelFunction, Description("Read a file")]
     public async Task<string> ReadAsync([Description("Source file")] string path)
     {
-        if (!this.IsFilePathAllowed(path))
+        if (!IsFilePathAllowed(path))
         {
             throw new InvalidOperationException("Reading from the provided location is not allowed.");
         }
@@ -62,13 +62,13 @@ public sealed class FileIOPlugin
         [Description("Destination file")] string path,
         [Description("File content")] string content)
     {
-        if (!this.IsFilePathAllowed(path))
+        if (!IsFilePathAllowed(path))
         {
             throw new InvalidOperationException("Writing to the provided location is not allowed.");
         }
 
         byte[] text = Encoding.UTF8.GetBytes(content);
-        var fileMode = this.DisableFileOverwrite ? FileMode.CreateNew : FileMode.Create;
+        var fileMode = DisableFileOverwrite ? FileMode.CreateNew : FileMode.Create;
         using var writer = new FileStream(path, fileMode, FileAccess.Write, FileShare.None);
         await writer.WriteAsync(text
 #if !NET
@@ -93,7 +93,7 @@ public sealed class FileIOPlugin
             throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
         }
 
-        if (this.DisableFileOverwrite && File.Exists(path))
+        if (DisableFileOverwrite && File.Exists(path))
         {
             throw new ArgumentException("Invalid file path, overwriting existing files is disabled.", nameof(path));
         }
@@ -111,7 +111,7 @@ public sealed class FileIOPlugin
             throw new UnauthorizedAccessException($"File is read-only: {path}");
         }
 
-        return this._allowedFolders is null || this._allowedFolders.Contains(directoryPath);
+        return _allowedFolders is null || _allowedFolders.Contains(directoryPath);
     }
     #endregion
 }

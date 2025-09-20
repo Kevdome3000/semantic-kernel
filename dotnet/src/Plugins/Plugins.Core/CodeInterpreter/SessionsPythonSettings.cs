@@ -64,8 +64,8 @@ public class SessionsPythonSettings
     [JsonConstructor]
     public SessionsPythonSettings(string sessionId, Uri endpoint)
     {
-        this.SessionId = sessionId;
-        this.Endpoint = endpoint;
+        SessionId = sessionId;
+        Endpoint = endpoint;
     }
 
 

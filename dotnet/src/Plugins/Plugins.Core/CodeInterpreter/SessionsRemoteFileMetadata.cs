@@ -50,5 +50,5 @@ public sealed class SessionsRemoteFileMetadata
     /// The full path of the entity.
     /// </summary>
     [Description("The full path of the entity.")]
-    public string FullPath => $"/mnt/data/{this.Name}";
+    public string FullPath => $"/mnt/data/{Name}";
 }

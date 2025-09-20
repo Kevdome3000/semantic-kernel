@@ -74,10 +74,10 @@ public sealed class ContextualFunctionProvider : AIContextProvider
         Verify.True(maxNumberOfFunctions > 0, "Max number of functions must be greater than 0");
         Verify.NotNullOrWhiteSpace(collectionName);
 
-        this._options = options ?? new ContextualFunctionProviderOptions();
-        Verify.True(this._options.NumberOfRecentMessagesInContext > 0, "Number of recent messages to include into context must be greater than 0");
+        _options = options ?? new ContextualFunctionProviderOptions();
+        Verify.True(_options.NumberOfRecentMessagesInContext > 0, "Number of recent messages to include into context must be greater than 0");
 
-        this._functionStore = new FunctionStore(
+        _functionStore = new FunctionStore(
             vectorStore,
             collectionName,
             vectorDimensions,
@@ -86,7 +86,7 @@ public sealed class ContextualFunctionProvider : AIContextProvider
             loggerFactory,
             options: new()
             {
-                EmbeddingValueProvider = this._options.EmbeddingValueProvider,
+                EmbeddingValueProvider = _options.EmbeddingValueProvider,
             }
          );
     }
@@ -95,18 +95,18 @@ public sealed class ContextualFunctionProvider : AIContextProvider
     public override async Task<AIContext> ModelInvokingAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
     {
         // Vectorize the functions if they are not already vectorized
-        if (!this._areFunctionsVectorized)
+        if (!_areFunctionsVectorized)
         {
-            await this._functionStore.SaveAsync(cancellationToken).ConfigureAwait(false);
+            await _functionStore.SaveAsync(cancellationToken).ConfigureAwait(false);
 
-            this._areFunctionsVectorized = true;
+            _areFunctionsVectorized = true;
         }
 
         // Build the context
-        var context = await this.BuildContextAsync(newMessages, cancellationToken).ConfigureAwait(false);
+        var context = await BuildContextAsync(newMessages, cancellationToken).ConfigureAwait(false);
 
         // Get the function relevant to the context
-        var functions = await this._functionStore
+        var functions = await _functionStore
                 .SearchAsync(context, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
 
@@ -117,12 +117,12 @@ public sealed class ContextualFunctionProvider : AIContextProvider
     public override Task MessageAddingAsync(string? conversationId, ChatMessage newMessage, CancellationToken cancellationToken = default)
     {
         // Add the new message to the recent messages queue
-        this._recentMessages.Enqueue(newMessage);
+        _recentMessages.Enqueue(newMessage);
 
         // If there are more messages than the configured limit, remove the oldest ones
-        for (int i = RecentMessagesBufferSize + this._options.NumberOfRecentMessagesInContext; i < this._recentMessages.Count; i++)
+        for (int i = RecentMessagesBufferSize + _options.NumberOfRecentMessagesInContext; i < _recentMessages.Count; i++)
         {
-            this._recentMessages.TryDequeue(out _);
+            _recentMessages.TryDequeue(out _);
         }
 
         return Task.CompletedTask;
@@ -135,19 +135,19 @@ public sealed class ContextualFunctionProvider : AIContextProvider
     /// <param name="cancellationToken">The cancellation token to use for cancellation.</param>
     private async Task<string> BuildContextAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken)
     {
-        if (this._options.ContextEmbeddingValueProvider is not null)
+        if (_options.ContextEmbeddingValueProvider is not null)
         {
-            var recentMessages = this._recentMessages
+            var recentMessages = _recentMessages
                 .Except(newMessages) // Exclude the new messages from the recent messages
-                .TakeLast(this._options.NumberOfRecentMessagesInContext); // Ensure we only take the recent messages up to the configured limit
+                .TakeLast(_options.NumberOfRecentMessagesInContext); // Ensure we only take the recent messages up to the configured limit
 
-            return await this._options.ContextEmbeddingValueProvider.Invoke(recentMessages, newMessages, cancellationToken).ConfigureAwait(false);
+            return await _options.ContextEmbeddingValueProvider.Invoke(recentMessages, newMessages, cancellationToken).ConfigureAwait(false);
         }
 
         // Build context from the recent messages that already include the new messages
         return string.Join(
             Environment.NewLine,
-            this._recentMessages.TakeLast(newMessages.Count + this._options.NumberOfRecentMessagesInContext)
+            _recentMessages.TakeLast(newMessages.Count + _options.NumberOfRecentMessagesInContext)
                 .Where(m => !string.IsNullOrWhiteSpace(m?.Text))
                 .Select(m => m.Text));
     }

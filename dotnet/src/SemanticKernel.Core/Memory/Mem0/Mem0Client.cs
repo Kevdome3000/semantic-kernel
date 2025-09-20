@@ -25,7 +25,7 @@ internal sealed class Mem0Client
     {
         Verify.NotNull(httpClient);
 
-        this._httpClient = httpClient;
+        _httpClient = httpClient;
     }
 
     public async Task<IEnumerable<string>> SearchAsync(string? applicationId, string? agentId, string? threadId, string? userId, string? inputText)
@@ -49,7 +49,7 @@ internal sealed class Mem0Client
 
         // Search.
         using var content = new StringContent(JsonSerializer.Serialize(searchRequest, Mem0SourceGenerationContext.Default.SearchRequest), Encoding.UTF8, "application/json");
-        var responseMessage = await this._httpClient.PostAsync(s_searchUri, content).ConfigureAwait(false);
+        var responseMessage = await _httpClient.PostAsync(s_searchUri, content).ConfigureAwait(false);
         responseMessage.EnsureSuccessStatusCode();
 
         // Process response.
@@ -87,7 +87,7 @@ internal sealed class Mem0Client
 #pragma warning restore CA1308 // Normalize strings to uppercase
 
         using var content = new StringContent(JsonSerializer.Serialize(createMemoryRequest, Mem0SourceGenerationContext.Default.CreateMemoryRequest), Encoding.UTF8, "application/json");
-        var responseMessage = await this._httpClient.PostAsync(s_createMemoryUri, content).ConfigureAwait(false);
+        var responseMessage = await _httpClient.PostAsync(s_createMemoryUri, content).ConfigureAwait(false);
         responseMessage.EnsureSuccessStatusCode();
     }
 
@@ -103,7 +103,7 @@ internal sealed class Mem0Client
         var clearMemoryUrl = new Uri($"/v1/memories/?{queryString}", UriKind.Relative);
 
         // Delete.
-        var responseMessage = await this._httpClient.DeleteAsync(clearMemoryUrl).ConfigureAwait(false);
+        var responseMessage = await _httpClient.DeleteAsync(clearMemoryUrl).ConfigureAwait(false);
         responseMessage.EnsureSuccessStatusCode();
     }
 

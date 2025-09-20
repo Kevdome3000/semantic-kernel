@@ -20,9 +20,9 @@ public sealed class TextSearchStoreSourceRetrievalResponse
         Verify.NotNull(request);
         Verify.NotNull(text);
 
-        this.SourceId = request.SourceId;
-        this.SourceLink = request.SourceLink;
-        this.Text = text;
+        SourceId = request.SourceId;
+        SourceLink = request.SourceLink;
+        Text = text;
     }
 
     /// <summary>

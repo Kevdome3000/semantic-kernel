@@ -22,10 +22,10 @@ internal sealed class EchoPromptTemplate : IPromptTemplate
         Verify.NotNull(promptConfig, nameof(promptConfig));
         Verify.NotNull(promptConfig.Template, nameof(promptConfig.Template));
 
-        this._promptConfig = promptConfig;
-        this._renderResult = Task.FromResult(this._promptConfig.Template);
+        _promptConfig = promptConfig;
+        _renderResult = Task.FromResult(_promptConfig.Template);
     }
 
     /// <inheritdoc/>
-    public Task<string> RenderAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default) => this._renderResult;
+    public Task<string> RenderAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default) => _renderResult;
 }

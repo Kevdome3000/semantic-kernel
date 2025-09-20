@@ -37,8 +37,7 @@ internal static class DataUriParser
         // If it is not you can return false. Quite effective
         // Further, if it meets the above criteria, then test for spaces.
         // If it contains spaces, it is not base64
-        if (value is null
-            || value.Length == 0
+        if (string.IsNullOrEmpty(value)
             || value.Length % 4 != 0
             || value.Contains(' ')
             || value.Contains('\t')

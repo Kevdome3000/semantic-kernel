@@ -35,7 +35,7 @@ internal sealed class NonNullCollection<T> : IList<T>, IReadOnlyList<T>
     public NonNullCollection(IEnumerable<T> items)
     {
         Verify.NotNull(items);
-        _items = new(items);
+        _items = new List<T>(items);
     }
 
 

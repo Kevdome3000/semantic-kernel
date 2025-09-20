@@ -413,9 +413,9 @@ After:
         }
 
         return new KernelFunctionFromMethod(
-            this.UnderlyingMethod!,
-            this._function,
-            this.Name,
+            UnderlyingMethod!,
+            _function,
+            Name,
             pluginName,
             Description,
             Metadata.Parameters,
@@ -487,7 +487,7 @@ After:
         KernelVerify.ValidFunctionName(functionName);
 
         _function = implementationFunc;
-        this._underlyingMethod = method;
+        _underlyingMethod = method;
     }
 
     private KernelFunctionFromMethod(
@@ -505,7 +505,7 @@ After:
         KernelVerify.ValidFunctionName(functionName);
 
         _function = implementationFunc;
-        this._underlyingMethod = method;
+        _underlyingMethod = method;
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "This method is AOT save.")]

@@ -351,9 +351,7 @@ public static class TextSearchExtensions
                 return [];
             }
 
-            var parameters = function.Metadata.Parameters;
-
-            searchOptions ??= new()
+            searchOptions ??= new TextSearchOptions
             {
                 Top = count,
                 Skip = skip,

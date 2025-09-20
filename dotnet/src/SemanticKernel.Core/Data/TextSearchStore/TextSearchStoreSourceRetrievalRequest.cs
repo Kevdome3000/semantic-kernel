@@ -17,8 +17,8 @@ public sealed class TextSearchStoreSourceRetrievalRequest
     /// <param name="sourceLink">The source link of the document to retrieve.</param>
     public TextSearchStoreSourceRetrievalRequest(string? sourceId, string? sourceLink)
     {
-        this.SourceId = sourceId;
-        this.SourceLink = sourceLink;
+        SourceId = sourceId;
+        SourceLink = sourceLink;
     }
 
     /// <summary>

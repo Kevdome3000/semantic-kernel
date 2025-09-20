@@ -34,8 +34,8 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
         IMemoryStore storage,
         ITextEmbeddingGenerationService embeddingGenerator)
     {
-        this._textEmbeddingsService = embeddingGenerator;
-        this._storage = storage;
+        _textEmbeddingsService = embeddingGenerator;
+        _storage = storage;
     }
 
     /// <summary>
@@ -47,8 +47,8 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
         IMemoryStore storage,
         IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator)
     {
-        this._embeddingGenerator = embeddingGenerator;
-        this._storage = storage;
+        _embeddingGenerator = embeddingGenerator;
+        _storage = storage;
     }
 
     /// <inheritdoc/>
@@ -61,7 +61,7 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        ReadOnlyMemory<float> embedding = await this.GenerateEmbeddingAsync(text, kernel, cancellationToken).
+        ReadOnlyMemory<float> embedding = await GenerateEmbeddingAsync(text, kernel, cancellationToken).
             ConfigureAwait(false);
         MemoryRecord data = MemoryRecord.LocalRecord(
             id: id,
@@ -70,14 +70,14 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
             additionalMetadata: additionalMetadata,
             embedding: embedding);
 
-        if (!(await this._storage.DoesCollectionExistAsync(collection, cancellationToken).
+        if (!(await _storage.DoesCollectionExistAsync(collection, cancellationToken).
                 ConfigureAwait(false)))
         {
-            await this._storage.CreateCollectionAsync(collection, cancellationToken).
+            await _storage.CreateCollectionAsync(collection, cancellationToken).
                 ConfigureAwait(false);
         }
 
-        return await this._storage.UpsertAsync(collection, data, cancellationToken).
+        return await _storage.UpsertAsync(collection, data, cancellationToken).
             ConfigureAwait(false);
     }
 
@@ -92,19 +92,19 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        var embedding = await this.GenerateEmbeddingAsync(text, kernel, cancellationToken).
+        var embedding = await GenerateEmbeddingAsync(text, kernel, cancellationToken).
             ConfigureAwait(false);
         var data = MemoryRecord.ReferenceRecord(externalId: externalId, sourceName: externalSourceName, description: description,
             additionalMetadata: additionalMetadata, embedding: embedding);
 
-        if (!(await this._storage.DoesCollectionExistAsync(collection, cancellationToken).
+        if (!(await _storage.DoesCollectionExistAsync(collection, cancellationToken).
                 ConfigureAwait(false)))
         {
-            await this._storage.CreateCollectionAsync(collection, cancellationToken).
+            await _storage.CreateCollectionAsync(collection, cancellationToken).
                 ConfigureAwait(false);
         }
 
-        return await this._storage.UpsertAsync(collection, data, cancellationToken).
+        return await _storage.UpsertAsync(collection, data, cancellationToken).
             ConfigureAwait(false);
     }
 
@@ -116,7 +116,7 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        MemoryRecord? record = await this._storage.GetAsync(collection, key, withEmbedding, cancellationToken).
+        MemoryRecord? record = await _storage.GetAsync(collection, key, withEmbedding, cancellationToken).
             ConfigureAwait(false);
 
         if (record is null) { return null; }
@@ -131,7 +131,7 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        await this._storage.RemoveAsync(collection, key, cancellationToken).
+        await _storage.RemoveAsync(collection, key, cancellationToken).
             ConfigureAwait(false);
     }
 
@@ -145,13 +145,13 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
         Kernel? kernel = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var queryEmbedding = await this.GenerateEmbeddingAsync(query, kernel, cancellationToken).
+        var queryEmbedding = await GenerateEmbeddingAsync(query, kernel, cancellationToken).
             ConfigureAwait(false);
 
-        if ((await this._storage.DoesCollectionExistAsync(collection, cancellationToken).
+        if ((await _storage.DoesCollectionExistAsync(collection, cancellationToken).
                 ConfigureAwait(false)))
         {
-            IAsyncEnumerable<(MemoryRecord, double)> results = this._storage.GetNearestMatchesAsync(
+            IAsyncEnumerable<(MemoryRecord, double)> results = _storage.GetNearestMatchesAsync(
                 collectionName: collection,
                 embedding: queryEmbedding,
                 limit: limit,
@@ -170,15 +170,15 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
     /// <inheritdoc/>
     public async Task<IList<string>> GetCollectionsAsync(Kernel? kernel = null, CancellationToken cancellationToken = default)
     {
-        return await this._storage.GetCollectionsAsync(cancellationToken).
+        return await _storage.GetCollectionsAsync(cancellationToken).
             ToListAsync(cancellationToken).
             ConfigureAwait(false);
     }
 
     private async Task<ReadOnlyMemory<float>> GenerateEmbeddingAsync(string text, Kernel? kernel, CancellationToken cancellationToken)
     {
-        return (this._textEmbeddingsService is not null)
-                    ? await this._textEmbeddingsService.GenerateEmbeddingAsync(text, kernel, cancellationToken).ConfigureAwait(false)
-                    : (await this._embeddingGenerator!.GenerateAsync(text, cancellationToken: cancellationToken).ConfigureAwait(false)).Vector;
+        return (_textEmbeddingsService is not null)
+                    ? await _textEmbeddingsService.GenerateEmbeddingAsync(text, kernel, cancellationToken).ConfigureAwait(false)
+                    : (await _embeddingGenerator!.GenerateAsync(text, cancellationToken: cancellationToken).ConfigureAwait(false)).Vector;
     }
 }

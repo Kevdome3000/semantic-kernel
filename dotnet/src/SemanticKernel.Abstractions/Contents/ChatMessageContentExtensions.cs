@@ -25,50 +25,37 @@ public static class ChatMessageContentExtensions
 
         foreach (var item in content.Items)
         {
-            AIContent? aiContent = null;
-            switch (item)
+            AIContent? aiContent = item switch
             {
-                case TextContent tc:
-                    aiContent = new Microsoft.Extensions.AI.TextContent(tc.Text);
-                    break;
+                TextContent tc => new Microsoft.Extensions.AI.TextContent(tc.Text),
+                ImageContent ic => ic.DataUri is not null
+                    ? new DataContent(ic.DataUri, ic.MimeType)
+                    : ic.Uri is not null
+                        ? new UriContent(ic.Uri, ic.MimeType ?? "image/*")
+                        : null,
+                AudioContent ac => ac.DataUri is not null
+                    ? new DataContent(ac.DataUri, ac.MimeType)
+                    : ac.Uri is not null
+                        ? new UriContent(ac.Uri, ac.MimeType ?? "audio/*")
+                        : null,
+                BinaryContent bc => bc.DataUri is not null
+                    ? new DataContent(bc.DataUri, bc.MimeType)
+                    : bc.Uri is not null
+                        ? new UriContent(bc.Uri, bc.MimeType ?? "application/octet-stream")
+                        : null,
+                FunctionCallContent fcc => new Microsoft.Extensions.AI.FunctionCallContent(fcc.Id ?? string.Empty, fcc.FunctionName, fcc.Arguments),
+                FunctionResultContent frc => new Microsoft.Extensions.AI.FunctionResultContent(frc.CallId ?? string.Empty, frc.Result),
+                _ => null
+            };
 
-                case ImageContent ic:
-                    aiContent =
-                        ic.DataUri is not null ? new DataContent(ic.DataUri, ic.MimeType) :
-                        ic.Uri is not null ? new UriContent(ic.Uri, ic.MimeType ?? "image/*") :
-                        null;
-                    break;
-
-                case AudioContent ac:
-                    aiContent =
-                        ac.DataUri is not null ? new DataContent(ac.DataUri, ac.MimeType) :
-                        ac.Uri is not null ? new UriContent(ac.Uri, ac.MimeType ?? "audio/*") :
-                        null;
-                    break;
-
-                case BinaryContent bc:
-                    aiContent =
-                        bc.DataUri is not null ? new DataContent(bc.DataUri, bc.MimeType) :
-                        bc.Uri is not null ? new UriContent(bc.Uri, bc.MimeType ?? "application/octet-stream") :
-                        null;
-                    break;
-
-                case FunctionCallContent fcc:
-                    aiContent = new Microsoft.Extensions.AI.FunctionCallContent(fcc.Id ?? string.Empty, fcc.FunctionName, fcc.Arguments);
-                    break;
-
-                case FunctionResultContent frc:
-                    aiContent = new Microsoft.Extensions.AI.FunctionResultContent(frc.CallId ?? string.Empty, frc.Result);
-                    break;
-            }
-
-            if (aiContent is not null)
+            if (aiContent is null)
             {
-                aiContent.RawRepresentation = item.InnerContent;
-                aiContent.AdditionalProperties = item.Metadata is not null ? new(item.Metadata) : null;
-
-                message.Contents.Add(aiContent);
+                continue;
             }
+            aiContent.RawRepresentation = item.InnerContent;
+            aiContent.AdditionalProperties = item.Metadata is not null ? new(item.Metadata) : null;
+
+            message.Contents.Add(aiContent);
         }
 
         return message;

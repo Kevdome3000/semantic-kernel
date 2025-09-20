@@ -47,14 +47,14 @@ public sealed partial class SessionsPythonPlugin
         Verify.NotNull(httpClientFactory, nameof(httpClientFactory));
         Verify.NotNull(settings.Endpoint, nameof(settings.Endpoint));
 
-        this._settings = settings;
+        _settings = settings;
 
         // Ensure the endpoint won't change by reference
-        this._poolManagementEndpoint = GetBaseEndpoint(settings.Endpoint);
+        _poolManagementEndpoint = GetBaseEndpoint(settings.Endpoint);
 
-        this._authTokenProvider = authTokenProvider;
-        this._httpClientFactory = httpClientFactory;
-        this._logger = loggerFactory?.CreateLogger(typeof(SessionsPythonPlugin)) ?? NullLogger.Instance;
+        _authTokenProvider = authTokenProvider;
+        _httpClientFactory = httpClientFactory;
+        _logger = loggerFactory?.CreateLogger(typeof(SessionsPythonPlugin)) ?? NullLogger.Instance;
     }
 
     /// <summary>
@@ -86,20 +86,20 @@ public sealed partial class SessionsPythonPlugin
     {
         Verify.NotNullOrWhiteSpace(code, nameof(code));
 
-        if (this._settings.SanitizeInput)
+        if (_settings.SanitizeInput)
         {
             code = SanitizeCodeInput(code);
         }
 
-        this._logger.LogTrace("Executing Python code: {Code}", code);
+        _logger.LogTrace("Executing Python code: {Code}", code);
 
-        using var httpClient = this._httpClientFactory.CreateClient();
+        using var httpClient = _httpClientFactory.CreateClient();
 
-        var requestBody = new SessionsPythonCodeExecutionProperties(this._settings, code);
+        var requestBody = new SessionsPythonCodeExecutionProperties(_settings, code);
 
         using var content = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
 
-        using var response = await this.SendAsync(httpClient, HttpMethod.Post, "executions", cancellationToken, content).ConfigureAwait(false);
+        using var response = await SendAsync(httpClient, HttpMethod.Post, "executions", cancellationToken, content).ConfigureAwait(false);
 
         return JsonSerializer.Deserialize<SessionsPythonCodeExecutionResult>(await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false))!;
     }
@@ -122,9 +122,9 @@ public sealed partial class SessionsPythonPlugin
         Verify.NotNullOrWhiteSpace(remoteFileName, nameof(remoteFileName));
         Verify.NotNullOrWhiteSpace(localFilePath, nameof(localFilePath));
 
-        this._logger.LogInformation("Uploading file: {LocalFilePath} to {RemoteFileName}", localFilePath, remoteFileName);
+        _logger.LogInformation("Uploading file: {LocalFilePath} to {RemoteFileName}", localFilePath, remoteFileName);
 
-        using var httpClient = this._httpClientFactory.CreateClient();
+        using var httpClient = _httpClientFactory.CreateClient();
 
         using var fileContent = new ByteArrayContent(File.ReadAllBytes(localFilePath));
 
@@ -133,7 +133,7 @@ public sealed partial class SessionsPythonPlugin
             { fileContent, "file", remoteFileName },
         };
 
-        using var response = await this.SendAsync(httpClient, HttpMethod.Post, "files", cancellationToken, multipartFormDataContent).ConfigureAwait(false);
+        using var response = await SendAsync(httpClient, HttpMethod.Post, "files", cancellationToken, multipartFormDataContent).ConfigureAwait(false);
 
         var stringContent = await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false);
 
@@ -155,11 +155,11 @@ public sealed partial class SessionsPythonPlugin
     {
         Verify.NotNullOrWhiteSpace(remoteFileName, nameof(remoteFileName));
 
-        this._logger.LogTrace("Downloading file: {RemoteFileName} to {LocalFileName}", remoteFileName, localFilePath);
+        _logger.LogTrace("Downloading file: {RemoteFileName} to {LocalFileName}", remoteFileName, localFilePath);
 
-        using var httpClient = this._httpClientFactory.CreateClient();
+        using var httpClient = _httpClientFactory.CreateClient();
 
-        using var response = await this.SendAsync(httpClient, HttpMethod.Get, $"files/{Uri.EscapeDataString(remoteFileName)}/content", cancellationToken).ConfigureAwait(false);
+        using var response = await SendAsync(httpClient, HttpMethod.Get, $"files/{Uri.EscapeDataString(remoteFileName)}/content", cancellationToken).ConfigureAwait(false);
 
         var fileContent = await response.Content.ReadAsByteArrayAndTranslateExceptionAsync(cancellationToken).ConfigureAwait(false);
 
@@ -186,11 +186,11 @@ public sealed partial class SessionsPythonPlugin
     [KernelFunction, Description("Lists all entities: files or directories in the `/mnt/data` directory of the current session.")]
     public async Task<IReadOnlyList<SessionsRemoteFileMetadata>> ListFilesAsync(CancellationToken cancellationToken = default)
     {
-        this._logger.LogTrace("Listing files for Session ID: {SessionId}", this._settings.SessionId);
+        _logger.LogTrace("Listing files for Session ID: {SessionId}", _settings.SessionId);
 
-        using var httpClient = this._httpClientFactory.CreateClient();
+        using var httpClient = _httpClientFactory.CreateClient();
 
-        using var response = await this.SendAsync(httpClient, HttpMethod.Get, "files", cancellationToken).ConfigureAwait(false);
+        using var response = await SendAsync(httpClient, HttpMethod.Get, "files", cancellationToken).ConfigureAwait(false);
 
         var jsonElementResult = JsonSerializer.Deserialize<JsonElement>(await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false));
 
@@ -240,9 +240,9 @@ public sealed partial class SessionsPythonPlugin
     {
         request.Headers.Add("User-Agent", $"{HttpHeaderConstant.Values.UserAgent}/{s_assemblyVersion} (Language=dotnet)");
 
-        if (this._authTokenProvider is not null)
+        if (_authTokenProvider is not null)
         {
-            request.Headers.Add("Authorization", $"Bearer {(await this._authTokenProvider(cancellationToken).ConfigureAwait(false))}");
+            request.Headers.Add("Authorization", $"Bearer {(await _authTokenProvider(cancellationToken).ConfigureAwait(false))}");
         }
     }
 
@@ -258,13 +258,13 @@ public sealed partial class SessionsPythonPlugin
     private async Task<HttpResponseMessage> SendAsync(HttpClient httpClient, HttpMethod method, string path, CancellationToken cancellationToken, HttpContent? httpContent = null)
     {
         // The query string is the same for all operations
-        var pathWithQueryString = $"{path}?identifier={this._settings.SessionId}&api-version={ApiVersion}";
+        var pathWithQueryString = $"{path}?identifier={_settings.SessionId}&api-version={ApiVersion}";
 
-        var uri = new Uri(this._poolManagementEndpoint, pathWithQueryString);
+        var uri = new Uri(_poolManagementEndpoint, pathWithQueryString);
 
         // If a list of allowed domains has been provided, the host of the provided
         // uri is checked to verify it is in the allowed domain list.
-        if (!this._settings.AllowedDomains?.Contains(uri.Host) ?? false)
+        if (!_settings.AllowedDomains?.Contains(uri.Host) ?? false)
         {
             throw new InvalidOperationException("Sending requests to the provided location is not allowed.");
         }
@@ -274,7 +274,7 @@ public sealed partial class SessionsPythonPlugin
             Content = httpContent,
         };
 
-        await this.AddHeadersAsync(request, cancellationToken).ConfigureAwait(false);
+        await AddHeadersAsync(request, cancellationToken).ConfigureAwait(false);
 
         return await httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
     }

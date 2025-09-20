@@ -16,13 +16,18 @@ public readonly struct OperationSelectionPredicateContext : IEquatable<Operation
     /// <param name="Path">The path of the operation.</param>
     /// <param name="Method">The HTTP method (GET, POST, etc.) of the operation.</param>
     /// <param name="Description">The description of the operation.</param>
-    internal OperationSelectionPredicateContext(string? Id, string Path, string Method, string? Description)
+    internal OperationSelectionPredicateContext(
+        string? Id,
+        string Path,
+        string Method,
+        string? Description)
     {
         this.Id = Id;
         this.Path = Path;
         this.Method = Method;
         this.Description = Description;
     }
+
 
     /// <summary>
     /// The identifier for the operation.
@@ -44,18 +49,24 @@ public readonly struct OperationSelectionPredicateContext : IEquatable<Operation
     /// </summary>
     public string? Description { get; }
 
+
     /// <inheritdoc />
     public override bool Equals(object? obj)
     {
-        return obj is OperationSelectionPredicateContext other && this.Equals(other);
+        return obj is OperationSelectionPredicateContext other && Equals(other);
     }
+
 
     /// <inheritdoc />
     public override int GetHashCode()
     {
         // Using a tuple to create a hash code based on the properties  
-        return HashCode.Combine(this.Id, this.Path, this.Method, this.Description);
+        return HashCode.Combine(Id,
+            Path,
+            Method,
+            Description);
     }
+
 
     /// <inheritdoc />
     public static bool operator ==(OperationSelectionPredicateContext left, OperationSelectionPredicateContext right)
@@ -63,18 +74,17 @@ public readonly struct OperationSelectionPredicateContext : IEquatable<Operation
         return left.Equals(right);
     }
 
+
     /// <inheritdoc />
     public static bool operator !=(OperationSelectionPredicateContext left, OperationSelectionPredicateContext right)
     {
         return !(left == right);
     }
 
+
     /// <inheritdoc />
     public bool Equals(OperationSelectionPredicateContext other)
     {
-        return this.Id == other.Id &&
-               this.Path == other.Path &&
-               this.Method == other.Method &&
-               this.Description == other.Description;
+        return Id == other.Id && Path == other.Path && Method == other.Method && Description == other.Description;
     }
 }

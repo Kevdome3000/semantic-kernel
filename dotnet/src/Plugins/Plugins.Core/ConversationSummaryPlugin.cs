@@ -41,17 +41,17 @@ public class ConversationSummaryPlugin
             }
         };
 
-        this._summarizeConversationFunction = KernelFunctionFactory.CreateFromPrompt(
+        _summarizeConversationFunction = KernelFunctionFactory.CreateFromPrompt(
             PromptFunctionConstants.SummarizeConversationDefinition,
             description: "Given a section of a conversation transcript, summarize the part of the conversation.",
             executionSettings: settings);
 
-        this._conversationActionItemsFunction = KernelFunctionFactory.CreateFromPrompt(
+        _conversationActionItemsFunction = KernelFunctionFactory.CreateFromPrompt(
             PromptFunctionConstants.GetConversationActionItemsDefinition,
             description: "Given a section of a conversation transcript, identify action items.",
             executionSettings: settings);
 
-        this._conversationTopicsFunction = KernelFunctionFactory.CreateFromPrompt(
+        _conversationTopicsFunction = KernelFunctionFactory.CreateFromPrompt(
             PromptFunctionConstants.GetConversationTopicsDefinition,
             description: "Analyze a conversation transcript and extract key topics worth remembering.",
             executionSettings: settings);
@@ -68,7 +68,7 @@ public class ConversationSummaryPlugin
         [Description("A long conversation transcript.")]
         string input,
         Kernel kernel) =>
-        ProcessAsync(this._summarizeConversationFunction, input, kernel);
+        ProcessAsync(_summarizeConversationFunction, input, kernel);
 
 
     /// <summary>
@@ -81,7 +81,7 @@ public class ConversationSummaryPlugin
         [Description("A long conversation transcript.")]
         string input,
         Kernel kernel) =>
-        ProcessAsync(this._conversationActionItemsFunction, input, kernel);
+        ProcessAsync(_conversationActionItemsFunction, input, kernel);
 
 
     /// <summary>
@@ -94,7 +94,7 @@ public class ConversationSummaryPlugin
         [Description("A long conversation transcript.")]
         string input,
         Kernel kernel) =>
-        ProcessAsync(this._conversationTopicsFunction, input, kernel);
+        ProcessAsync(_conversationTopicsFunction, input, kernel);
 
 
     private static async Task<string> ProcessAsync(KernelFunction func, string input, Kernel kernel)

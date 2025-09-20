@@ -36,15 +36,15 @@ public sealed class HttpPlugin
     /// </remarks>
     [ActivatorUtilitiesConstructor]
     public HttpPlugin(HttpClient? client = null) =>
-        this._client = client ?? HttpClientProvider.GetHttpClient();
+        _client = client ?? HttpClientProvider.GetHttpClient();
 
     /// <summary>
     /// List of allowed domains to download from.
     /// </summary>
     public IEnumerable<string>? AllowedDomains
     {
-        get => this._allowedDomains;
-        set => this._allowedDomains = value is null ? null : new HashSet<string>(value, StringComparer.OrdinalIgnoreCase);
+        get => _allowedDomains;
+        set => _allowedDomains = value is null ? null : new HashSet<string>(value, StringComparer.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -57,7 +57,7 @@ public sealed class HttpPlugin
     public Task<string> GetAsync(
         [Description("The URI of the request")] string uri,
         CancellationToken cancellationToken = default) =>
-        this.SendRequestAsync(uri, HttpMethod.Get, requestContent: null, cancellationToken);
+        SendRequestAsync(uri, HttpMethod.Get, requestContent: null, cancellationToken);
 
     /// <summary>
     /// Sends an HTTP POST request to the specified URI and returns the response body as a string.
@@ -71,7 +71,7 @@ public sealed class HttpPlugin
         [Description("The URI of the request")] string uri,
         [Description("The body of the request")] string body,
         CancellationToken cancellationToken = default) =>
-        this.SendRequestAsync(uri, HttpMethod.Post, new StringContent(body), cancellationToken);
+        SendRequestAsync(uri, HttpMethod.Post, new StringContent(body), cancellationToken);
 
     /// <summary>
     /// Sends an HTTP PUT request to the specified URI and returns the response body as a string.
@@ -85,7 +85,7 @@ public sealed class HttpPlugin
         [Description("The URI of the request")] string uri,
         [Description("The body of the request")] string body,
         CancellationToken cancellationToken = default) =>
-        this.SendRequestAsync(uri, HttpMethod.Put, new StringContent(body), cancellationToken);
+        SendRequestAsync(uri, HttpMethod.Put, new StringContent(body), cancellationToken);
 
     /// <summary>
     /// Sends an HTTP DELETE request to the specified URI and returns the response body as a string.
@@ -97,7 +97,7 @@ public sealed class HttpPlugin
     public Task<string> DeleteAsync(
         [Description("The URI of the request")] string uri,
         CancellationToken cancellationToken = default) =>
-        this.SendRequestAsync(uri, HttpMethod.Delete, requestContent: null, cancellationToken);
+        SendRequestAsync(uri, HttpMethod.Delete, requestContent: null, cancellationToken);
 
     #region private
     private HashSet<string>? _allowedDomains;
@@ -110,7 +110,7 @@ public sealed class HttpPlugin
     {
         Verify.NotNull(uri);
 
-        return this._allowedDomains is null || this._allowedDomains.Contains(uri.Host);
+        return _allowedDomains is null || _allowedDomains.Contains(uri.Host);
     }
 
     /// <summary>Sends an HTTP request and returns the response content as a string.</summary>
@@ -121,7 +121,7 @@ public sealed class HttpPlugin
     private async Task<string> SendRequestAsync(string uriStr, HttpMethod method, HttpContent? requestContent, CancellationToken cancellationToken)
     {
         var uri = new Uri(uriStr);
-        if (!this.IsUriAllowed(uri))
+        if (!IsUriAllowed(uri))
         {
             throw new InvalidOperationException("Sending requests to the provided location is not allowed.");
         }
@@ -129,7 +129,7 @@ public sealed class HttpPlugin
         using var request = new HttpRequestMessage(method, uri) { Content = requestContent };
         request.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
         request.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(HttpPlugin)));
-        using var response = await this._client.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
+        using var response = await _client.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
         return await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false);
     }
     #endregion

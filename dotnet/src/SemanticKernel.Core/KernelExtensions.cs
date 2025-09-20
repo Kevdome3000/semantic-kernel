@@ -205,7 +205,7 @@ public static class KernelExtensions
         return KernelFunctionFactory.CreateFromPrompt(
             promptTemplate,
             jsonSerializerOptions,
-            executionSettings,
+            [executionSettings ?? new PromptExecutionSettings()],
             functionName,
             description,
             templateFormat,
@@ -243,6 +243,7 @@ public static class KernelExtensions
 
         return KernelFunctionFactory.CreateFromPrompt(
             promptTemplate,
+            JsonSerializerOptions.Default,
             executionSettings,
             functionName,
             description,

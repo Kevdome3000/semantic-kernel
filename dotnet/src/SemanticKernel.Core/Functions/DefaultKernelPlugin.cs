@@ -45,12 +45,12 @@ internal sealed class DefaultKernelPlugin : KernelPlugin
     /// <inheritdoc/>
     public override bool TryGetFunction(string name, [NotNullWhen(true)] out KernelFunction? function)
     {
-        if (this._functions.TryGetValue(name, out function))
+        if (_functions.TryGetValue(name, out function))
         {
             return true;
         }
 
-        if (this._functions.Count == 0 || name.Length <= this.Name.Length)
+        if (_functions.Count == 0 || name.Length <= Name.Length)
         {
             // The function name is too short to have the plugin name aborting the search.
             function = null;
@@ -58,7 +58,7 @@ internal sealed class DefaultKernelPlugin : KernelPlugin
         }
 
         // When a kernel function is used as an ai function by IChatClients it needs to be discoverable by the FQN.
-        function = (KernelFunction?)this._functions.Values
+        function = (KernelFunction?)_functions.Values
             .Select(f => f as AIFunction)
             .FirstOrDefault(aiFunction => aiFunction.Name == name);
 

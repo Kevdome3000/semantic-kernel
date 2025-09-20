@@ -40,16 +40,16 @@ public sealed class TextSearchProvider : AIContextProvider
     {
         Verify.NotNull(textSearch);
 
-        this._textSearch = textSearch;
-        this._logger = loggerFactory?.CreateLogger<TextSearchProvider>();
-        this.Options = options ?? new();
+        _textSearch = textSearch;
+        _logger = loggerFactory?.CreateLogger<TextSearchProvider>();
+        Options = options ?? new();
 
-        this._aIFunctions =
+        _aIFunctions =
         [
             AIFunctionFactory.Create(
-            this.SearchAsync,
-            name: this.Options.PluginFunctionName ?? DefaultPluginSearchFunctionName,
-            description: this.Options.PluginFunctionDescription ?? DefaultPluginSearchFunctionDescription)
+            SearchAsync,
+            name: Options.PluginFunctionName ?? DefaultPluginSearchFunctionName,
+            description: Options.PluginFunctionDescription ?? DefaultPluginSearchFunctionDescription)
         ];
     }
 
@@ -61,11 +61,11 @@ public sealed class TextSearchProvider : AIContextProvider
     /// <inheritdoc/>
     public override async Task<AIContext> ModelInvokingAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
     {
-        if (this.Options.SearchTime != TextSearchProviderOptions.RagBehavior.BeforeAIInvoke)
+        if (Options.SearchTime != TextSearchProviderOptions.RagBehavior.BeforeAIInvoke)
         {
             return new()
             {
-                AIFunctions = this._aIFunctions.ToArray(),
+                AIFunctions = _aIFunctions.ToArray(),
             };
         }
 
@@ -73,17 +73,17 @@ public sealed class TextSearchProvider : AIContextProvider
 
         string input = string.Join("\n", newMessages.Where(m => m is not null).Select(m => m.Text));
 
-        var searchResults = await this._textSearch.GetTextSearchResultsAsync(
+        var searchResults = await _textSearch.GetTextSearchResultsAsync(
             input,
-            new() { Top = this.Options.Top, Filter = this.Options.Filter },
+            new() { Top = Options.Top, Filter = Options.Filter },
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
         var results = await searchResults.Results.ToListAsync(cancellationToken).ConfigureAwait(false);
 
-        var formatted = this.FormatResults(results);
+        var formatted = FormatResults(results);
 
-        this._logger?.LogInformation("TextSearchBehavior: Retrieved {Count} search results.", results.Count);
-        this._logger?.LogTrace("TextSearchBehavior:\nInput Messages:{Input}\nOutput context instructions:\n{Instructions}", input, formatted);
+        _logger?.LogInformation("TextSearchBehavior: Retrieved {Count} search results.", results.Count);
+        _logger?.LogTrace("TextSearchBehavior:\nInput Messages:{Input}\nOutput context instructions:\n{Instructions}", input, formatted);
 
         return new() { Instructions = formatted };
     }
@@ -94,14 +94,14 @@ public sealed class TextSearchProvider : AIContextProvider
     [KernelFunction]
     internal async Task<string> SearchAsync(string userQuestion, CancellationToken cancellationToken = default)
     {
-        var searchResults = await this._textSearch.GetTextSearchResultsAsync(
+        var searchResults = await _textSearch.GetTextSearchResultsAsync(
             userQuestion,
-            new() { Top = this.Options.Top, Filter = this.Options.Filter },
+            new() { Top = Options.Top, Filter = Options.Filter },
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
         var results = await searchResults.Results.ToListAsync(cancellationToken).ConfigureAwait(false);
 
-        var formatted = this.FormatResults(results);
+        var formatted = FormatResults(results);
 
         return formatted;
     }
@@ -113,9 +113,9 @@ public sealed class TextSearchProvider : AIContextProvider
     /// <returns>The formatted results.</returns>
     private string FormatResults(List<TextSearchResult> results)
     {
-        if (this.Options.ContextFormatter is not null)
+        if (Options.ContextFormatter is not null)
         {
-            return this.Options.ContextFormatter(results);
+            return Options.ContextFormatter(results);
         }
 
         if (results.Count == 0)
@@ -124,7 +124,7 @@ public sealed class TextSearchProvider : AIContextProvider
         }
 
         var sb = new StringBuilder();
-        sb.AppendLine(this.Options.ContextPrompt ?? DefaultContextPrompt);
+        sb.AppendLine(Options.ContextPrompt ?? DefaultContextPrompt);
         for (int i = 0; i < results.Count; i++)
         {
             var result = results[i];
@@ -142,7 +142,7 @@ public sealed class TextSearchProvider : AIContextProvider
             sb.AppendLine($"Contents: {result.Value}");
             sb.AppendLine("----");
         }
-        sb.AppendLine(this.Options.IncludeCitationsPrompt ?? DefaultIncludeCitationsPrompt);
+        sb.AppendLine(Options.IncludeCitationsPrompt ?? DefaultIncludeCitationsPrompt);
         sb.AppendLine();
         return sb.ToString();
     }

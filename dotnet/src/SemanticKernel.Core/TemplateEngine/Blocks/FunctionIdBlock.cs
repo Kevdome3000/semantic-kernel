@@ -39,37 +39,37 @@ internal sealed partial class FunctionIdBlock : Block, ITextRendering
     public FunctionIdBlock(string? text, ILoggerFactory? loggerFactory = null)
         : base(text?.Trim(), loggerFactory)
     {
-        var functionNameParts = this.Content.Split('.');
+        var functionNameParts = Content.Split('.');
 
         if (functionNameParts.Length > 2)
         {
-            this.Logger.LogError("Invalid function name `{FunctionName}`.", this.Content);
+            Logger.LogError("Invalid function name `{FunctionName}`.", Content);
 
-            throw new KernelException($"Invalid function name `{this.Content}`. A function name can contain at most one dot separating the plugin name from the function name");
+            throw new KernelException($"Invalid function name `{Content}`. A function name can contain at most one dot separating the plugin name from the function name");
         }
 
         if (functionNameParts.Length == 2)
         {
-            this.PluginName = functionNameParts[0];
-            this.FunctionName = functionNameParts[1];
+            PluginName = functionNameParts[0];
+            FunctionName = functionNameParts[1];
 
             return;
         }
 
-        this.FunctionName = this.Content;
+        FunctionName = Content;
     }
 
     public override bool IsValid(out string errorMsg)
     {
         if (!ValidContentRegex().
-                IsMatch(this.Content))
+                IsMatch(Content))
         {
             errorMsg = "The function identifier is empty";
 
             return false;
         }
 
-        if (HasMoreThanOneDot(this.Content))
+        if (HasMoreThanOneDot(Content))
         {
             errorMsg = "The function identifier can contain max one '.' char separating plugin name from function name";
 
@@ -84,7 +84,7 @@ internal sealed partial class FunctionIdBlock : Block, ITextRendering
     /// <inheritdoc/>
     public object? Render(KernelArguments? arguments)
     {
-        return this.Content;
+        return Content;
     }
 
     private static bool HasMoreThanOneDot(string? value)

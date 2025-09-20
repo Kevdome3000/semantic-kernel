@@ -34,7 +34,7 @@ public sealed class KernelPromptTemplateFactory : IPromptTemplateFactory
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public KernelPromptTemplateFactory(ILoggerFactory? loggerFactory = null)
     {
-        this._loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
+        _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
     }
 
     /// <inheritdoc/>
@@ -44,7 +44,7 @@ public sealed class KernelPromptTemplateFactory : IPromptTemplateFactory
 
         if (templateConfig.TemplateFormat.Equals(PromptTemplateConfig.SemanticKernelTemplateFormat, StringComparison.Ordinal))
         {
-            result = new KernelPromptTemplate(templateConfig, this.AllowDangerouslySetContent, this._loggerFactory);
+            result = new KernelPromptTemplate(templateConfig, AllowDangerouslySetContent, _loggerFactory);
 
             return true;
         }

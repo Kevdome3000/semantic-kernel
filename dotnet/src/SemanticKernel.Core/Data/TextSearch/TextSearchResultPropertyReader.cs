@@ -29,12 +29,12 @@ internal sealed class TextSearchResultPropertyReader
     /// <param name="dataModelType">Type of the data model.</param>
     public TextSearchResultPropertyReader([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] Type dataModelType)
     {
-        this._dataModelType = dataModelType;
+        _dataModelType = dataModelType;
 
         var (NameProperty, ValueProperty, LinkProperty) = FindPropertiesInfo(dataModelType);
-        this._nameProperty = NameProperty;
-        this._valueProperty = ValueProperty;
-        this._linkProperty = LinkProperty;
+        _nameProperty = NameProperty;
+        _valueProperty = ValueProperty;
+        _linkProperty = LinkProperty;
     }
 
     /// <summary>
@@ -43,7 +43,7 @@ internal sealed class TextSearchResultPropertyReader
     /// <param name="dataModel">The data model instance.</param>
     public string? GetName(object dataModel)
     {
-        return this._nameProperty?.GetValue(dataModel)?.ToString();
+        return _nameProperty?.GetValue(dataModel)?.ToString();
     }
 
     /// <summary>
@@ -52,7 +52,7 @@ internal sealed class TextSearchResultPropertyReader
     /// <param name="dataModel">The data model instance.</param>
     public string? GetValue(object dataModel)
     {
-        return this._valueProperty?.GetValue(dataModel)?.ToString();
+        return _valueProperty?.GetValue(dataModel)?.ToString();
     }
 
     /// <summary>
@@ -61,7 +61,7 @@ internal sealed class TextSearchResultPropertyReader
     /// <param name="dataModel">The data model instance.</param>
     public string? GetLink(object dataModel)
     {
-        return this._linkProperty?.GetValue(dataModel)?.ToString();
+        return _linkProperty?.GetValue(dataModel)?.ToString();
     }
 
     /// <summary>

@@ -50,18 +50,18 @@ public sealed class WhiteboardProvider : AIContextProvider
     {
         Verify.NotNull(chatClient);
 
-        this._chatClient = chatClient;
-        this._maxWhiteboardMessages = options?.MaxWhiteboardMessages ?? 10;
-        this._contextPrompt = options?.ContextPrompt ?? DefaultContextPrompt;
-        this._whiteboardEmptyPrompt = options?.WhiteboardEmptyPrompt ?? DefaultWhiteboardEmptyPrompt;
-        this._maintenancePrompt = options?.MaintenancePromptTemplate ?? MaintenancePromptTemplate;
-        this._logger = loggerFactory?.CreateLogger<WhiteboardProvider>();
+        _chatClient = chatClient;
+        _maxWhiteboardMessages = options?.MaxWhiteboardMessages ?? 10;
+        _contextPrompt = options?.ContextPrompt ?? DefaultContextPrompt;
+        _whiteboardEmptyPrompt = options?.WhiteboardEmptyPrompt ?? DefaultWhiteboardEmptyPrompt;
+        _maintenancePrompt = options?.MaintenancePromptTemplate ?? MaintenancePromptTemplate;
+        _logger = loggerFactory?.CreateLogger<WhiteboardProvider>();
     }
 
     /// <summary>
     /// Gets the current whiteboard content.
     /// </summary>
-    public IReadOnlyList<string> CurrentWhiteboardContent => this._currentWhiteboardContent;
+    public IReadOnlyList<string> CurrentWhiteboardContent => _currentWhiteboardContent;
 
     /// <inheritdoc/>
     public override async Task MessageAddingAsync(string? conversationId, ChatMessage newMessage, CancellationToken cancellationToken = default)
@@ -73,25 +73,25 @@ public sealed class WhiteboardProvider : AIContextProvider
 
         if (newMessage.Role == ChatRole.User || newMessage.Role == ChatRole.Assistant)
         {
-            this._recentMessages.Enqueue(newMessage);
+            _recentMessages.Enqueue(newMessage);
 
             // Store the last message that we got as a way to avoid doing multiple updates at the same time.
-            Interlocked.CompareExchange(ref this._messageBeingProcessed, newMessage, this._messageBeingProcessed);
+            Interlocked.CompareExchange(ref _messageBeingProcessed, newMessage, _messageBeingProcessed);
 
             // If a whiteboard update task is already running, wait for it to finish before starting a new one.
-            if (!this._updateWhiteboardTask.IsCompleted)
+            if (!_updateWhiteboardTask.IsCompleted)
             {
-                await this._updateWhiteboardTask.ConfigureAwait(false);
+                await _updateWhiteboardTask.ConfigureAwait(false);
             }
 
             // If our message isn't the last one we got, we don't need to do anything since
             // we will run the update, on the thread that received the last message.
-            if (this._messageBeingProcessed != newMessage)
+            if (_messageBeingProcessed != newMessage)
             {
                 return;
             }
 
-            this._updateWhiteboardTask = this.UpdateWhiteboardAsync(newMessage, cancellationToken);
+            _updateWhiteboardTask = UpdateWhiteboardAsync(newMessage, cancellationToken);
         }
     }
 
@@ -100,20 +100,20 @@ public sealed class WhiteboardProvider : AIContextProvider
     {
         // Take a reference to the current whiteboard to avoid inconsistent logging and results
         // if it's updated during this method's execution.
-        var currentWhiteboard = this._currentWhiteboardContent;
+        var currentWhiteboard = _currentWhiteboardContent;
 
         if (currentWhiteboard.Count == 0)
         {
-            this._logger?.LogTrace("WhiteboardBehavior: Output context instructions:\n{Context}", this._whiteboardEmptyPrompt);
-            return Task.FromResult(new AIContext() { Instructions = this._whiteboardEmptyPrompt });
+            _logger?.LogTrace("WhiteboardBehavior: Output context instructions:\n{Context}", _whiteboardEmptyPrompt);
+            return Task.FromResult(new AIContext() { Instructions = _whiteboardEmptyPrompt });
         }
 
         var numberedMessages = currentWhiteboard.Select((x, i) => $"{i} {x}");
         var joinedMessages = string.Join(Environment.NewLine, numberedMessages);
-        var context = $"{this._contextPrompt}\n{joinedMessages}";
+        var context = $"{_contextPrompt}\n{joinedMessages}";
 
-        this._logger?.LogInformation("WhiteboardBehavior: Whiteboard contains {Count} messages.", currentWhiteboard.Count);
-        this._logger?.LogTrace("WhiteboardBehavior: Output context instructions:\n{Context}", context);
+        _logger?.LogInformation("WhiteboardBehavior: Whiteboard contains {Count} messages.", currentWhiteboard.Count);
+        _logger?.LogTrace("WhiteboardBehavior: Output context instructions:\n{Context}", context);
 
         return Task.FromResult(new AIContext()
         {
@@ -127,20 +127,20 @@ public sealed class WhiteboardProvider : AIContextProvider
     /// <returns>A task that completes when all messages are processed.</returns>
     public async Task WhenProcessingCompleteAsync()
     {
-        if (!this._updateWhiteboardTask.IsCompleted)
+        if (!_updateWhiteboardTask.IsCompleted)
         {
-            await this._updateWhiteboardTask.ConfigureAwait(false);
+            await _updateWhiteboardTask.ConfigureAwait(false);
         }
     }
 
     private async Task UpdateWhiteboardAsync(ChatMessage newMessage, CancellationToken cancellationToken = default)
     {
-        var recentMessagesList = this._recentMessages.ToList();
+        var recentMessagesList = _recentMessages.ToList();
 
         // If there are more than MaxQueueSize messages in the queue, remove the oldest ones
         for (int i = MaxQueueSize; i < recentMessagesList.Count; i++)
         {
-            this._recentMessages.TryDequeue(out _);
+            _recentMessages.TryDequeue(out _);
         }
 
         // Extract the most important information from the input messages.
@@ -154,11 +154,11 @@ public sealed class WhiteboardProvider : AIContextProvider
 
         // Serialize the input messages and the current whiteboard content to JSON.
         var inputMessagesJson = JsonSerializer.Serialize(basicMessages, WhiteboardProviderSourceGenerationContext.Default.IEnumerableBasicMessage);
-        var currentWhiteboardJson = JsonSerializer.Serialize(this._currentWhiteboardContent, WhiteboardProviderSourceGenerationContext.Default.ListString);
+        var currentWhiteboardJson = JsonSerializer.Serialize(_currentWhiteboardContent, WhiteboardProviderSourceGenerationContext.Default.ListString);
 
         // Inovke the LLM to extract the latest information from the input messages and update the whiteboard.
-        var result = await this._chatClient.GetResponseAsync(
-            this.FormatPromptTemplate(inputMessagesJson, currentWhiteboardJson, this._maxWhiteboardMessages),
+        var result = await _chatClient.GetResponseAsync(
+            FormatPromptTemplate(inputMessagesJson, currentWhiteboardJson, _maxWhiteboardMessages),
             new()
             {
                 Temperature = 0,
@@ -168,9 +168,9 @@ public sealed class WhiteboardProvider : AIContextProvider
 
         // Update the current whiteboard content with the LLM result.
         var newWhiteboardResponse = JsonSerializer.Deserialize(result.ToString(), WhiteboardProviderSourceGenerationContext.Default.NewWhiteboardResponse);
-        this._currentWhiteboardContent = newWhiteboardResponse?.NewWhiteboard ?? [];
+        _currentWhiteboardContent = newWhiteboardResponse?.NewWhiteboard ?? [];
 
-        this._logger?.LogTrace(
+        _logger?.LogTrace(
             "WhiteboardBehavior: Updated whiteboard.\nInputMessages:\n{InputMessagesJson}\nCurrentWhiteboard:\n{CurrentWhiteboardJson}\nNew Whiteboard:\n{NewWhiteboard}",
             inputMessagesJson,
             currentWhiteboardJson,
@@ -179,7 +179,7 @@ public sealed class WhiteboardProvider : AIContextProvider
 
     private string FormatPromptTemplate(string inputMessagesJson, string currentWhiteboardJson, int maxWhiteboardMessages)
     {
-        var sb = new StringBuilder(this._maintenancePrompt);
+        var sb = new StringBuilder(_maintenancePrompt);
         sb.Replace("{{$inputMessages}}", inputMessagesJson);
         sb.Replace("{{$currentWhiteboard}}", currentWhiteboardJson);
         sb.Replace("{{$maxWhiteboardMessages}}", maxWhiteboardMessages.ToString());

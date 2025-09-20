@@ -25,7 +25,7 @@ public static class WebServiceCollectionExtensions
         this IServiceCollection services,
         string apiKey,
         BingTextSearchOptions? options = null,
-        string? serviceId = default)
+        string? serviceId = null)
     {
         Verify.NotNull(services);
 
@@ -52,7 +52,7 @@ public static class WebServiceCollectionExtensions
         this IServiceCollection services,
         string apiKey,
         BraveTextSearchOptions? options = null,
-        string? serviceId = default)
+        string? serviceId = null)
     {
         services.AddKeyedSingleton<ITextSearch>(
             serviceId,
@@ -79,7 +79,7 @@ public static class WebServiceCollectionExtensions
         string searchEngineId,
         string apiKey,
         GoogleTextSearchOptions? options = null,
-        string? serviceId = default)
+        string? serviceId = null)
     {
         Verify.NotNull(services);
 
@@ -106,7 +106,7 @@ public static class WebServiceCollectionExtensions
         this IServiceCollection services,
         string apiKey,
         TavilyTextSearchOptions? options = null,
-        string? serviceId = default)
+        string? serviceId = null)
     {
         Verify.NotNull(services);
 

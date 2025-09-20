@@ -35,23 +35,23 @@ internal sealed class NamedArgBlock : Block, ITextRendering
     public NamedArgBlock(string? text, ILoggerFactory? logger = null)
         : base(TrimWhitespace(text), logger)
     {
-        if (!TryGetNameAndValue(this.Content, out string argName, out string argValue))
+        if (!TryGetNameAndValue(Content, out string argName, out string argValue))
         {
-            this.Logger.LogError("Invalid named argument `{Text}`", text);
+            Logger.LogError("Invalid named argument `{Text}`", text);
 
             throw new KernelException($"A function named argument must contain a name and value separated by a '{Symbols.NamedArgBlockSeparator}' character.");
         }
 
-        this.Name = argName;
-        this._argNameAsVarBlock = new VarBlock($"{Symbols.VarPrefix}{argName}");
+        Name = argName;
+        _argNameAsVarBlock = new VarBlock($"{Symbols.VarPrefix}{argName}");
 
         if (argValue[0] == Symbols.VarPrefix)
         {
-            this.VarBlock = new VarBlock(argValue);
+            VarBlock = new VarBlock(argValue);
         }
         else
         {
-            this._valBlock = new ValBlock(argValue);
+            _valBlock = new ValBlock(argValue);
         }
     }
 
@@ -91,18 +91,18 @@ internal sealed class NamedArgBlock : Block, ITextRendering
     /// <returns></returns>
     internal object? GetValue(KernelArguments? arguments)
     {
-        var valueIsValidValBlock = this._valBlock is not null && this._valBlock.IsValid(out var errorMessage);
+        var valueIsValidValBlock = _valBlock is not null && _valBlock.IsValid(out var errorMessage);
 
         if (valueIsValidValBlock)
         {
-            return this._valBlock!.Render(arguments);
+            return _valBlock!.Render(arguments);
         }
 
-        var valueIsValidVarBlock = this.VarBlock is not null && this.VarBlock.IsValid(out var errorMessage2);
+        var valueIsValidVarBlock = VarBlock is not null && VarBlock.IsValid(out var errorMessage2);
 
         if (valueIsValidVarBlock)
         {
-            return this.VarBlock!.Render(arguments);
+            return VarBlock!.Render(arguments);
         }
 
         return string.Empty;
@@ -111,7 +111,7 @@ internal sealed class NamedArgBlock : Block, ITextRendering
     /// <inheritdoc/>
     public object? Render(KernelArguments? arguments)
     {
-        return this.Content;
+        return Content;
     }
 
     /// <summary>
@@ -124,38 +124,38 @@ internal sealed class NamedArgBlock : Block, ITextRendering
     {
         errorMsg = string.Empty;
 
-        if (string.IsNullOrEmpty(this.Name))
+        if (string.IsNullOrEmpty(Name))
         {
             errorMsg = "A named argument must have a name";
-            this.Logger.LogError(errorMsg);
+            Logger.LogError(errorMsg);
 
             return false;
         }
 
-        if (this._valBlock is not null && !this._valBlock.IsValid(out var valErrorMsg))
+        if (_valBlock is not null && !_valBlock.IsValid(out var valErrorMsg))
         {
-            errorMsg = $"There was an issue with the named argument value for '{this.Name}': {valErrorMsg}";
-            this.Logger.LogError(errorMsg);
+            errorMsg = $"There was an issue with the named argument value for '{Name}': {valErrorMsg}";
+            Logger.LogError(errorMsg);
 
             return false;
         }
-        else if (this.VarBlock is not null && !this.VarBlock.IsValid(out var variableErrorMsg))
+        else if (VarBlock is not null && !VarBlock.IsValid(out var variableErrorMsg))
         {
-            errorMsg = $"There was an issue with the named argument value for '{this.Name}': {variableErrorMsg}";
-            this.Logger.LogError(errorMsg);
+            errorMsg = $"There was an issue with the named argument value for '{Name}': {variableErrorMsg}";
+            Logger.LogError(errorMsg);
 
             return false;
         }
-        else if (this._valBlock is null && this.VarBlock is null)
+        else if (_valBlock is null && VarBlock is null)
         {
             errorMsg = "A named argument must have a value";
-            this.Logger.LogError(errorMsg);
+            Logger.LogError(errorMsg);
 
             return false;
         }
 
         // Argument names share the same validation as variables
-        if (!this._argNameAsVarBlock.IsValid(out var argNameErrorMsg))
+        if (!_argNameAsVarBlock.IsValid(out var argNameErrorMsg))
         {
             errorMsg = Regex.Replace(argNameErrorMsg, "a variable", "An argument", RegexOptions.IgnoreCase);
             errorMsg = Regex.Replace(errorMsg, "the variable", "The argument", RegexOptions.IgnoreCase);

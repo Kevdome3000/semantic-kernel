@@ -39,14 +39,14 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
         Verify.NotNull(promptConfig.Template, nameof(promptConfig.Template));
 
         loggerFactory ??= NullLoggerFactory.Instance;
-        this._logger = loggerFactory.CreateLogger(typeof(KernelPromptTemplate)) ?? NullLogger.Instance;
+        _logger = loggerFactory.CreateLogger(typeof(KernelPromptTemplate)) ?? NullLogger.Instance;
 
-        this._blocks = this.ExtractBlocks(promptConfig, loggerFactory);
-        AddMissingInputVariables(this._blocks, promptConfig);
+        _blocks = ExtractBlocks(promptConfig, loggerFactory);
+        AddMissingInputVariables(_blocks, promptConfig);
 
-        this._allowDangerouslySetContent = allowDangerouslySetContent || promptConfig.AllowDangerouslySetContent;
+        _allowDangerouslySetContent = allowDangerouslySetContent || promptConfig.AllowDangerouslySetContent;
 
-        this._safeBlocks = new HashSet<string>(promptConfig.InputVariables.Where(iv => allowDangerouslySetContent || iv.AllowDangerouslySetContent).
+        _safeBlocks = new HashSet<string>(promptConfig.InputVariables.Where(iv => allowDangerouslySetContent || iv.AllowDangerouslySetContent).
             Select(iv => iv.Name));
     }
 
@@ -55,7 +55,7 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
     {
         Verify.NotNull(kernel);
 
-        return this.RenderAsync(this._blocks, kernel, arguments, cancellationToken);
+        return RenderAsync(_blocks, kernel, arguments, cancellationToken);
     }
 
     #region private
@@ -128,7 +128,7 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
 
             if (blockResult is not null)
             {
-                if (ShouldEncodeTags(this._allowDangerouslySetContent, this._safeBlocks, block!))
+                if (ShouldEncodeTags(_allowDangerouslySetContent, _safeBlocks, block!))
                 {
                     blockResult = HttpUtility.HtmlEncode(blockResult);
                 }
@@ -188,6 +188,7 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
                     break;
             }
         }
+        return;
 
         void AddIfMissing(string variableName)
         {

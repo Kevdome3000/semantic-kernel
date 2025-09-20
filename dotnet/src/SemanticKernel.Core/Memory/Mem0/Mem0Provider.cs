@@ -76,23 +76,23 @@ public sealed class Mem0Provider : AIContextProvider
             throw new ArgumentException("The BaseAddress of the provided httpClient parameter must be set.", nameof(httpClient));
         }
 
-        this._applicationId = options?.ApplicationId;
-        this._agentId = options?.AgentId;
-        this._threadId = options?.ThreadId;
-        this._userId = options?.UserId;
-        this._scopeToPerOperationThreadId = options?.ScopeToPerOperationThreadId ?? false;
-        this._contextPrompt = options?.ContextPrompt ?? DefaultContextPrompt;
-        this._logger = loggerFactory?.CreateLogger<Mem0Provider>();
+        _applicationId = options?.ApplicationId;
+        _agentId = options?.AgentId;
+        _threadId = options?.ThreadId;
+        _userId = options?.UserId;
+        _scopeToPerOperationThreadId = options?.ScopeToPerOperationThreadId ?? false;
+        _contextPrompt = options?.ContextPrompt ?? DefaultContextPrompt;
+        _logger = loggerFactory?.CreateLogger<Mem0Provider>();
 
-        this._mem0Client = new(httpClient);
+        _mem0Client = new(httpClient);
     }
 
     /// <inheritdoc/>
     public override Task ConversationCreatedAsync(string? conversationId, CancellationToken cancellationToken = default)
     {
-        this.ValidatePerOperationThreadId(conversationId);
+        ValidatePerOperationThreadId(conversationId);
 
-        this._perOperationThreadId ??= conversationId;
+        _perOperationThreadId ??= conversationId;
         return Task.CompletedTask;
     }
 
@@ -100,7 +100,7 @@ public sealed class Mem0Provider : AIContextProvider
     public override async Task MessageAddingAsync(string? conversationId, ChatMessage newMessage, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(newMessage);
-        this.ValidatePerOperationThreadId(conversationId);
+        ValidatePerOperationThreadId(conversationId);
 
         switch (newMessage.Role)
         {
@@ -112,15 +112,15 @@ public sealed class Mem0Provider : AIContextProvider
                 return;
         }
 
-        this._perOperationThreadId ??= conversationId;
+        _perOperationThreadId ??= conversationId;
 
         if (!string.IsNullOrWhiteSpace(newMessage.Text))
         {
-            await this._mem0Client.CreateMemoryAsync(
-                this._applicationId,
-                this._agentId,
-                this._scopeToPerOperationThreadId ? this._perOperationThreadId : this._threadId,
-                this._userId,
+            await _mem0Client.CreateMemoryAsync(
+                _applicationId,
+                _agentId,
+                _scopeToPerOperationThreadId ? _perOperationThreadId : _threadId,
+                _userId,
                 newMessage.Text,
                 newMessage.Role.Value).ConfigureAwait(false);
         }
@@ -137,11 +137,11 @@ public sealed class Mem0Provider : AIContextProvider
                 Where(m => m is not null && !string.IsNullOrWhiteSpace(m.Text)).
                 Select(m => m.Text));
 
-        var memories = (await this._mem0Client.SearchAsync(
-                this._applicationId,
-                this._agentId,
-                this._scopeToPerOperationThreadId ? this._perOperationThreadId : this._threadId,
-                this._userId,
+        var memories = (await _mem0Client.SearchAsync(
+                _applicationId,
+                _agentId,
+                _scopeToPerOperationThreadId ? _perOperationThreadId : _threadId,
+                _userId,
                 inputText).ConfigureAwait(false)).ToList();
 
         var lineSeparatedMemories = string.Join(Environment.NewLine, memories);
@@ -150,15 +150,15 @@ public sealed class Mem0Provider : AIContextProvider
         {
             Instructions =
                 $"""
-                {this._contextPrompt}
+                {_contextPrompt}
                 {lineSeparatedMemories}
                 """
         };
 
-        if (this._logger != null)
+        if (_logger != null)
         {
-            this._logger.LogInformation("Mem0Behavior: Retrieved {Count} memories from mem0.", memories.Count);
-            this._logger.LogTrace("Mem0Behavior:\nInput messages:{Input}\nOutput context instructions:\n{Instructions}", inputText, context.Instructions);
+            _logger.LogInformation("Mem0Behavior: Retrieved {Count} memories from mem0.", memories.Count);
+            _logger.LogTrace("Mem0Behavior:\nInput messages:{Input}\nOutput context instructions:\n{Instructions}", inputText, context.Instructions);
         }
 
         return context;
@@ -170,11 +170,11 @@ public sealed class Mem0Provider : AIContextProvider
     /// <returns>A task that completes when the memory is cleared.</returns>
     public Task ClearStoredMemoriesAsync()
     {
-        return this._mem0Client.ClearMemoryAsync(
-            this._applicationId,
-            this._agentId,
-            this._scopeToPerOperationThreadId ? this._perOperationThreadId : this._threadId,
-            this._userId);
+        return _mem0Client.ClearMemoryAsync(
+            _applicationId,
+            _agentId,
+            _scopeToPerOperationThreadId ? _perOperationThreadId : _threadId,
+            _userId);
     }
 
     /// <summary>
@@ -183,7 +183,7 @@ public sealed class Mem0Provider : AIContextProvider
     /// <param name="threadId">The new thread id.</param>
     private void ValidatePerOperationThreadId(string? threadId)
     {
-        if (this._scopeToPerOperationThreadId && !string.IsNullOrWhiteSpace(threadId) && this._perOperationThreadId != null && threadId != this._perOperationThreadId)
+        if (_scopeToPerOperationThreadId && !string.IsNullOrWhiteSpace(threadId) && _perOperationThreadId != null && threadId != _perOperationThreadId)
         {
             throw new InvalidOperationException($"The {nameof(Mem0Provider)} can only be used with one thread at a time when {nameof(Mem0ProviderOptions.ScopeToPerOperationThreadId)} is set to true.");
         }

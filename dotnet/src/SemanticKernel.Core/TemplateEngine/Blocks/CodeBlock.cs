@@ -34,7 +34,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
     public CodeBlock(List<Block> tokens, string? content, ILoggerFactory? loggerFactory = null)
         : base(content?.Trim(), loggerFactory)
     {
-        this.Blocks = tokens;
+        Blocks = tokens;
     }
 
     /// <summary>
@@ -47,30 +47,30 @@ internal sealed class CodeBlock : Block, ICodeRendering
     {
         errorMsg = "";
 
-        foreach (Block token in this.Blocks)
+        foreach (Block token in Blocks)
         {
             if (!token.IsValid(out errorMsg))
             {
-                this.Logger.LogError(errorMsg);
+                Logger.LogError(errorMsg);
 
                 return false;
             }
         }
 
-        if (this.Blocks.Count > 0 && this.Blocks[0].Type == BlockTypes.NamedArg)
+        if (Blocks.Count > 0 && Blocks[0].Type == BlockTypes.NamedArg)
         {
             errorMsg = "Unexpected named argument found. Expected function name first.";
-            this.Logger.LogError(errorMsg);
+            Logger.LogError(errorMsg);
 
             return false;
         }
 
-        if (this.Blocks.Count > 1 && !this.IsValidFunctionCall(out errorMsg))
+        if (Blocks.Count > 1 && !IsValidFunctionCall(out errorMsg))
         {
             return false;
         }
 
-        this._validated = true;
+        _validated = true;
 
         return true;
     }
@@ -78,21 +78,21 @@ internal sealed class CodeBlock : Block, ICodeRendering
     /// <inheritdoc/>
     public ValueTask<object?> RenderCodeAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
     {
-        if (!this._validated && !this.IsValid(out var error))
+        if (!_validated && !IsValid(out var error))
         {
             throw new KernelException(error);
         }
 
-        if (this.Logger.IsEnabled(LogLevel.Trace))
+        if (Logger.IsEnabled(LogLevel.Trace))
         {
-            this.Logger.LogTrace("Rendering code: `{Content}`", this.Content);
+            Logger.LogTrace("Rendering code: `{Content}`", Content);
         }
 
-        return this.Blocks[0].Type switch
+        return Blocks[0].Type switch
         {
-            BlockTypes.Value or BlockTypes.Variable => new ValueTask<object?>(((ITextRendering)this.Blocks[0]).Render(arguments)),
-            BlockTypes.FunctionId => this.RenderFunctionCallAsync((FunctionIdBlock)this.Blocks[0], kernel, arguments, cancellationToken),
-            _ => throw new KernelException($"Unexpected first token type: {this.Blocks[0].Type:G}"),
+            BlockTypes.Value or BlockTypes.Variable => new ValueTask<object?>(((ITextRendering)Blocks[0]).Render(arguments)),
+            BlockTypes.FunctionId => RenderFunctionCallAsync((FunctionIdBlock)Blocks[0], kernel, arguments, cancellationToken),
+            _ => throw new KernelException($"Unexpected first token type: {Blocks[0].Type:G}"),
         };
     }
 
@@ -108,10 +108,10 @@ internal sealed class CodeBlock : Block, ICodeRendering
     {
         // If the code syntax is {{functionName $varName}} use $varName instead of $input
         // If the code syntax is {{functionName 'value'}} use "value" instead of $input
-        if (this.Blocks.Count > 1)
+        if (Blocks.Count > 1)
         {
             //Cloning the original arguments to avoid side effects - arguments added to the original arguments collection as a result of rendering template variables.
-            arguments = this.EnrichFunctionArguments(kernel, fBlock, arguments is null
+            arguments = EnrichFunctionArguments(kernel, fBlock, arguments is null
                 ? []
                 : new KernelArguments(arguments));
         }
@@ -125,7 +125,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
         }
         catch (Exception ex)
         {
-            this.Logger.LogError(ex, "Function {Plugin}.{Function} execution failed with error {Error}", fBlock.PluginName, fBlock.FunctionName,
+            Logger.LogError(ex, "Function {Plugin}.{Function} execution failed with error {Error}", fBlock.PluginName, fBlock.FunctionName,
                 ex.Message);
 
             throw;
@@ -136,28 +136,28 @@ internal sealed class CodeBlock : Block, ICodeRendering
     {
         errorMsg = "";
 
-        if (this.Blocks[0].Type != BlockTypes.FunctionId)
+        if (Blocks[0].Type != BlockTypes.FunctionId)
         {
-            errorMsg = $"Unexpected second token found: {this.Blocks[1].Content}";
-            this.Logger.LogError(errorMsg);
+            errorMsg = $"Unexpected second token found: {Blocks[1].Content}";
+            Logger.LogError(errorMsg);
 
             return false;
         }
 
-        if (this.Blocks[1].Type is not BlockTypes.Value and not BlockTypes.Variable and not BlockTypes.NamedArg)
+        if (Blocks[1].Type is not BlockTypes.Value and not BlockTypes.Variable and not BlockTypes.NamedArg)
         {
             errorMsg = "The first arg of a function must be a quoted string, variable or named argument";
-            this.Logger.LogError(errorMsg);
+            Logger.LogError(errorMsg);
 
             return false;
         }
 
-        for (int i = 2; i < this.Blocks.Count; i++)
+        for (int i = 2; i < Blocks.Count; i++)
         {
-            if (this.Blocks[i].Type is not BlockTypes.NamedArg)
+            if (Blocks[i].Type is not BlockTypes.NamedArg)
             {
                 errorMsg = $"Functions only support named arguments after the first argument. Argument {i} is not named.";
-                this.Logger.LogError(errorMsg);
+                Logger.LogError(errorMsg);
 
                 return false;
             }
@@ -178,12 +178,12 @@ internal sealed class CodeBlock : Block, ICodeRendering
     /// <exception cref="KernelException">Occurs when any argument other than the first is not a named argument.</exception>
     private KernelArguments EnrichFunctionArguments(Kernel kernel, FunctionIdBlock fBlock, KernelArguments arguments)
     {
-        var firstArg = this.Blocks[1];
+        var firstArg = Blocks[1];
 
         // Sensitive data, logging as trace, disabled by default
-        if (this.Logger.IsEnabled(LogLevel.Trace))
+        if (Logger.IsEnabled(LogLevel.Trace))
         {
-            this.Logger.LogTrace("Passing variable/value: `{Content}`", firstArg.Content);
+            Logger.LogTrace("Passing variable/value: `{Content}`", firstArg.Content);
         }
 
         // Get the function metadata
@@ -193,7 +193,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
         // Check if the function has parameters to be set
         if (functionMetadata.Parameters.Count == 0)
         {
-            throw new ArgumentException($"Function {fBlock.PluginName}.{fBlock.FunctionName} does not take any arguments but it is being called in the template with {this.Blocks.Count - 1} arguments.");
+            throw new ArgumentException($"Function {fBlock.PluginName}.{fBlock.FunctionName} does not take any arguments but it is being called in the template with {Blocks.Count - 1} arguments.");
         }
 
         string? firstPositionalParameterName = null;
@@ -205,7 +205,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
             // Gets the function first parameter name
             firstPositionalParameterName = functionMetadata.Parameters[0].Name;
 
-            firstPositionalInputValue = ((ITextRendering)this.Blocks[1]).Render(arguments);
+            firstPositionalInputValue = ((ITextRendering)Blocks[1]).Render(arguments);
             // Type check is avoided and marshalling is done by the function itself
 
             // Keep previous trust information when updating the input
@@ -213,21 +213,21 @@ internal sealed class CodeBlock : Block, ICodeRendering
             namedArgsStartIndex++;
         }
 
-        for (int i = namedArgsStartIndex; i < this.Blocks.Count; i++)
+        for (int i = namedArgsStartIndex; i < Blocks.Count; i++)
         {
             // When casting fails because the block isn't a NamedArg, arg is null
-            if (this.Blocks[i] is not NamedArgBlock arg)
+            if (Blocks[i] is not NamedArgBlock arg)
             {
                 var errorMsg = "Functions support up to one positional argument";
-                this.Logger.LogError(errorMsg);
+                Logger.LogError(errorMsg);
 
-                throw new KernelException($"Unexpected first token type: {this.Blocks[i].Type:G}");
+                throw new KernelException($"Unexpected first token type: {Blocks[i].Type:G}");
             }
 
             // Sensitive data, logging as trace, disabled by default
-            if (this.Logger.IsEnabled(LogLevel.Trace))
+            if (Logger.IsEnabled(LogLevel.Trace))
             {
-                this.Logger.LogTrace("Passing variable/value: `{Content}`", arg.Content);
+                Logger.LogTrace("Passing variable/value: `{Content}`", arg.Content);
             }
 
             // Check if the positional parameter clashes with a named parameter

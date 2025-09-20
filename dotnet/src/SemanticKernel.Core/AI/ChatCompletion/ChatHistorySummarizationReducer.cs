@@ -79,9 +79,9 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
         Verify.True(targetCount > 0, "Target message count must be greater than zero.");
         Verify.True(!thresholdCount.HasValue || thresholdCount > 0, "The reduction threshold length must be greater than zero.");
 
-        this._service = service;
-        this._targetCount = targetCount;
-        this._thresholdCount = thresholdCount ?? 0;
+        _service = service;
+        _targetCount = targetCount;
+        _thresholdCount = thresholdCount ?? 0;
     }
 
     /// <inheritdoc/>
@@ -94,8 +94,8 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
 
         // First pass to determine the truncation index
         int truncationIndex = chatHistory.LocateSafeReductionIndex(
-            this._targetCount,
-            this._thresholdCount,
+            _targetCount,
+            _thresholdCount,
             insertionPoint,
             hasSystemMessage: systemMessage is not null);
 
@@ -106,15 +106,15 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
             // Second pass to extract history for summarization
             IEnumerable<ChatMessageContent> summarizedHistory =
                 chatHistory.Extract(
-                    this.UseSingleSummary ? 0 : insertionPoint,
+                    UseSingleSummary ? 0 : insertionPoint,
                     truncationIndex,
                     filter: (m) => m.Items.Any(i => i is FunctionCallContent || i is FunctionResultContent));
 
             try
             {
                 // Summarize
-                ChatHistory summarizationRequest = [.. summarizedHistory, new ChatMessageContent(AuthorRole.System, this.SummarizationInstructions)];
-                ChatMessageContent summaryMessage = await this._service.GetChatMessageContentAsync(summarizationRequest, cancellationToken: cancellationToken).ConfigureAwait(false);
+                ChatHistory summarizationRequest = [.. summarizedHistory, new ChatMessageContent(AuthorRole.System, SummarizationInstructions)];
+                ChatMessageContent summaryMessage = await _service.GetChatMessageContentAsync(summarizationRequest, cancellationToken: cancellationToken).ConfigureAwait(false);
                 summaryMessage.Metadata = new Dictionary<string, object?> { { SummaryMetadataKey, true } };
 
                 // Assembly the summarized history
@@ -122,7 +122,7 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
             }
             catch
             {
-                if (this.FailOnError)
+                if (FailOnError)
                 {
                     throw;
                 }
@@ -139,7 +139,7 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
                 yield return systemMessage;
             }
 
-            if (insertionPoint > 0 && !this.UseSingleSummary)
+            if (insertionPoint > 0 && !UseSingleSummary)
             {
                 for (int index = 0; index <= insertionPoint - 1; ++index)
                 {
@@ -164,14 +164,14 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
     {
         ChatHistorySummarizationReducer? other = obj as ChatHistorySummarizationReducer;
         return other != null &&
-               this._thresholdCount == other._thresholdCount &&
-               this._targetCount == other._targetCount &&
-               this.UseSingleSummary == other.UseSingleSummary &&
-               string.Equals(this.SummarizationInstructions, other.SummarizationInstructions, StringComparison.Ordinal);
+               _thresholdCount == other._thresholdCount &&
+               _targetCount == other._targetCount &&
+               UseSingleSummary == other.UseSingleSummary &&
+               string.Equals(SummarizationInstructions, other.SummarizationInstructions, StringComparison.Ordinal);
     }
 
     /// <inheritdoc/>
-    public override int GetHashCode() => HashCode.Combine(nameof(ChatHistorySummarizationReducer), this._thresholdCount, this._targetCount, this.SummarizationInstructions, this.UseSingleSummary);
+    public override int GetHashCode() => HashCode.Combine(nameof(ChatHistorySummarizationReducer), _thresholdCount, _targetCount, SummarizationInstructions, UseSingleSummary);
 
     private readonly IChatCompletionService _service;
     private readonly int _thresholdCount;

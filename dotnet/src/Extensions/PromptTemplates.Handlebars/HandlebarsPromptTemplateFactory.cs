@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.PromptTemplates.Handlebars;
-
+using System;
 using System.Diagnostics.CodeAnalysis;
 
+namespace Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 
 /// <summary>
 /// Provides an <see cref="IPromptTemplateFactory"/> for the handlebars prompt template format.
@@ -22,7 +22,7 @@ public sealed class HandlebarsPromptTemplateFactory : IPromptTemplateFactory
     /// <summary>
     /// The character used to delimit plugin, function, or variable names in a Handlebars template.
     /// </summary>
-    public string NameDelimiter => this._options.PrefixSeparator;
+    public string NameDelimiter => _options.PrefixSeparator;
 
     /// <summary>
     /// Gets or sets a value indicating whether to allow potentially dangerous content to be inserted into the prompt.
@@ -42,7 +42,7 @@ public sealed class HandlebarsPromptTemplateFactory : IPromptTemplateFactory
     /// <param name="options">Handlebars promnpt template options</param>
     public HandlebarsPromptTemplateFactory(HandlebarsPromptTemplateOptions? options = null)
     {
-        this._options = options ?? new();
+        _options = options ?? new HandlebarsPromptTemplateOptions();
     }
 
 
@@ -51,9 +51,9 @@ public sealed class HandlebarsPromptTemplateFactory : IPromptTemplateFactory
     {
         Verify.NotNull(templateConfig);
 
-        if (templateConfig.TemplateFormat.Equals(HandlebarsTemplateFormat, System.StringComparison.Ordinal))
+        if (templateConfig.TemplateFormat.Equals(HandlebarsTemplateFormat, StringComparison.Ordinal))
         {
-            result = new HandlebarsPromptTemplate(templateConfig, this.AllowDangerouslySetContent, this._options);
+            result = new HandlebarsPromptTemplate(templateConfig, AllowDangerouslySetContent, _options);
 
             return true;
         }

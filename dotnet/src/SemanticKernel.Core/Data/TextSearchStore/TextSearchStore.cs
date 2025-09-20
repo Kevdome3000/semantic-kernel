@@ -83,10 +83,10 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
         }
 
         // Assign
-        this._vectorStore = vectorStore;
-        this._vectorDimensions = vectorDimensions;
-        this._options = options ?? new TextSearchStoreOptions();
-        this._wordSegmenter = this._options.WordSegementer ?? s_defaultWordSegementer;
+        _vectorStore = vectorStore;
+        _vectorDimensions = vectorDimensions;
+        _options = options ?? new TextSearchStoreOptions();
+        _wordSegmenter = _options.WordSegementer ?? s_defaultWordSegementer;
 
         // Create a definition so that we can use the dimensions provided at runtime.
         VectorStoreCollectionDefinition ragDocumentDefinition = new()
@@ -103,7 +103,7 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
             }
         };
 
-        this._vectorStoreRecordCollection = this._vectorStore.GetCollection<TKey, TextRagStorageDocument<TKey>>(collectionName, ragDocumentDefinition);
+        _vectorStoreRecordCollection = _vectorStore.GetCollection<TKey, TextRagStorageDocument<TKey>>(collectionName, ragDocumentDefinition);
     }
 
     /// <summary>
@@ -116,7 +116,7 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
     {
         Verify.NotNull(textChunks);
 
-        var vectorStoreRecordCollection = await this.EnsureCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
+        var vectorStoreRecordCollection = await EnsureCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
 
         var storageDocuments = textChunks.Select(textChunk =>
         {
@@ -148,7 +148,7 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
     {
         Verify.NotNull(documents);
 
-        var vectorStoreRecordCollection = await this.EnsureCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
+        var vectorStoreRecordCollection = await EnsureCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
 
         var storageDocuments = documents.Select(document =>
         {
@@ -169,7 +169,7 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
                 throw new ArgumentException($"Either the {nameof(TextSearchDocument.SourceId)} or {nameof(TextSearchDocument.SourceLink)} properties must be set when the {nameof(TextSearchStoreUpsertOptions.PersistSourceText)} setting is false.", nameof(document));
             }
 
-            var key = GenerateUniqueKey<TKey>(this._options.UseSourceIdAsPrimaryKey ?? false ? document.SourceId : null);
+            var key = GenerateUniqueKey<TKey>(_options.UseSourceIdAsPrimaryKey ?? false ? document.SourceId : null);
 
             return new TextRagStorageDocument<TKey>
             {
@@ -189,7 +189,7 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
     /// <inheritdoc/>
     public async Task<KernelSearchResults<string>> SearchAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
-        var searchResult = await this.SearchInternalAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        var searchResult = await SearchInternalAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
 
         return new(searchResult.Select(x => x.Text ?? string.Empty).ToAsyncEnumerable());
     }
@@ -197,7 +197,7 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
     /// <inheritdoc/>
     public async Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
-        var searchResult = await this.SearchInternalAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        var searchResult = await SearchInternalAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
 
         var results = searchResult.Select(x => new TextSearchResult(x.Text ?? string.Empty) { Name = x.SourceName, Link = x.SourceLink });
         return new(searchResult.Select(x =>
@@ -211,7 +211,7 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
     /// <inheritdoc/>
     public async Task<KernelSearchResults<object>> GetSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
-        var searchResult = await this.SearchInternalAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        var searchResult = await SearchInternalAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
         return new(searchResult.Select(x => (object)x).ToAsyncEnumerable());
     }
 
@@ -230,15 +230,15 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
             return Enumerable.Empty<TextRagStorageDocument<TKey>>();
         }
 
-        var vectorStoreRecordCollection = await this.EnsureCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
+        var vectorStoreRecordCollection = await EnsureCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
 
         // If the user has not opted out of hybrid search, check if the vector store supports it.
-        var hybridSearchCollection = this._options.UseHybridSearch ?? true ?
+        var hybridSearchCollection = _options.UseHybridSearch ?? true ?
             vectorStoreRecordCollection.GetService(typeof(IKeywordHybridSearchable<TextRagStorageDocument<TKey>>)) as IKeywordHybridSearchable<TextRagStorageDocument<TKey>> :
             null;
 
         // Optional filter to limit the search to a specific namespace.
-        Expression<Func<TextRagStorageDocument<TKey>, bool>>? filter = string.IsNullOrWhiteSpace(this._options.SearchNamespace) ? null : x => x.Namespaces.Contains(this._options.SearchNamespace);
+        Expression<Func<TextRagStorageDocument<TKey>, bool>>? filter = string.IsNullOrWhiteSpace(_options.SearchNamespace) ? null : x => x.Namespaces.Contains(_options.SearchNamespace);
 
         // Execute a hybrid search if possible, otherwise perform a regular vector search.
         var searchResult = hybridSearchCollection is null
@@ -252,7 +252,7 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
                 cancellationToken: cancellationToken)
             : hybridSearchCollection.HybridSearchAsync(
                 query,
-                this._wordSegmenter(query),
+                _wordSegmenter(query),
                 searchOptions?.Top ?? 3,
                 options: new()
                 {
@@ -274,12 +274,12 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
 
         if (sourceIdsToRetrieve.Count > 0)
         {
-            if (this._options.SourceRetrievalCallback is null)
+            if (_options.SourceRetrievalCallback is null)
             {
                 throw new InvalidOperationException($"The {nameof(TextSearchStoreOptions.SourceRetrievalCallback)} option must be set if retrieving documents without stored text.");
             }
 
-            var retrievalResponses = await this._options.SourceRetrievalCallback(sourceIdsToRetrieve).ConfigureAwait(false);
+            var retrievalResponses = await _options.SourceRetrievalCallback(sourceIdsToRetrieve).ConfigureAwait(false);
 
             if (retrievalResponses is null)
             {
@@ -313,34 +313,34 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
     private async Task<VectorStoreCollection<TKey, TextRagStorageDocument<TKey>>> EnsureCollectionExistsAsync(CancellationToken cancellationToken)
     {
         // Return immediately if the collection is already created, no need to do any locking in this case.
-        if (this._collectionInitialized)
+        if (_collectionInitialized)
         {
-            return this._vectorStoreRecordCollection;
+            return _vectorStoreRecordCollection;
         }
 
         // Wait on a lock to ensure that only one thread can create the collection.
-        await this._collectionInitializationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        await _collectionInitializationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
         // If multiple threads waited on the lock, and the first already created the collection,
         // we can return immediately without doing any work in subsequent threads.
-        if (this._collectionInitialized)
+        if (_collectionInitialized)
         {
-            this._collectionInitializationLock.Release();
-            return this._vectorStoreRecordCollection;
+            _collectionInitializationLock.Release();
+            return _vectorStoreRecordCollection;
         }
 
         // Only the winning thread should reach this point and create the collection.
         try
         {
-            await this._vectorStoreRecordCollection.EnsureCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
-            this._collectionInitialized = true;
+            await _vectorStoreRecordCollection.EnsureCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
+            _collectionInitialized = true;
         }
         finally
         {
-            this._collectionInitializationLock.Release();
+            _collectionInitializationLock.Release();
         }
 
-        return this._vectorStoreRecordCollection;
+        return _vectorStoreRecordCollection;
     }
 
     /// <summary>
@@ -363,15 +363,15 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
     /// <inheritdoc/>
     private void Dispose(bool disposing)
     {
-        if (!this._disposedValue)
+        if (!_disposedValue)
         {
             if (disposing)
             {
-                this._vectorStoreRecordCollection.Dispose();
-                this._collectionInitializationLock.Dispose();
+                _vectorStoreRecordCollection.Dispose();
+                _collectionInitializationLock.Dispose();
             }
 
-            this._disposedValue = true;
+            _disposedValue = true;
         }
     }
 
@@ -379,7 +379,7 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
     public void Dispose()
     {
         // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        this.Dispose(disposing: true);
+        Dispose(disposing: true);
         GC.SuppressFinalize(this);
     }
 

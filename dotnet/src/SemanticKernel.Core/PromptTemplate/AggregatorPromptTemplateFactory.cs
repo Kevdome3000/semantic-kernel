@@ -26,7 +26,7 @@ public sealed class AggregatorPromptTemplateFactory : IPromptTemplateFactory
             Verify.NotNull(promptTemplateFactory, nameof(promptTemplateFactories));
         }
 
-        this._promptTemplateFactories = promptTemplateFactories;
+        _promptTemplateFactories = promptTemplateFactories;
     }
 
     /// <inheritdoc/>
@@ -34,7 +34,7 @@ public sealed class AggregatorPromptTemplateFactory : IPromptTemplateFactory
     {
         Verify.NotNull(templateConfig);
 
-        foreach (var promptTemplateFactory in this._promptTemplateFactories)
+        foreach (var promptTemplateFactory in _promptTemplateFactories)
         {
             if (promptTemplateFactory?.TryCreate(templateConfig, out result) is true && result is not null)
             {

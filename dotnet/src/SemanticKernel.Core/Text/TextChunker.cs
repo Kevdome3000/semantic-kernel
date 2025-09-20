@@ -20,27 +20,27 @@ public static class TextChunker
     /// Represents a list of strings with token count.
     /// Used to reduce the number of calls to the tokenizer.
     /// </summary>
-    private sealed class StringListWithTokenCount(TextChunker.TokenCounter? tokenCounter)
+    private sealed class StringListWithTokenCount(TokenCounter? tokenCounter)
     {
         private readonly TokenCounter? _tokenCounter = tokenCounter;
 
-        public void Add(string value) => this.Values.Add((value, this._tokenCounter is null ? GetDefaultTokenCount(value.Length) : this._tokenCounter(value)));
+        public void Add(string value) => Values.Add((value, _tokenCounter is null ? GetDefaultTokenCount(value.Length) : _tokenCounter(value)));
 
-        public void Add(string value, int tokenCount) => this.Values.Add((value, tokenCount));
+        public void Add(string value, int tokenCount) => Values.Add((value, tokenCount));
 
-        public void AddRange(StringListWithTokenCount range) => this.Values.AddRange(range.Values);
+        public void AddRange(StringListWithTokenCount range) => Values.AddRange(range.Values);
 
-        public void RemoveRange(int index, int count) => this.Values.RemoveRange(index, count);
+        public void RemoveRange(int index, int count) => Values.RemoveRange(index, count);
 
-        public int Count => this.Values.Count;
+        public int Count => Values.Count;
 
-        public List<string> ToStringList() => this.Values.Select(v => v.Value).ToList();
+        public List<string> ToStringList() => Values.Select(v => v.Value).ToList();
 
         private List<(string Value, int TokenCount)> Values { get; } = [];
 
-        public string ValueAt(int i) => this.Values[i].Value;
+        public string ValueAt(int i) => Values[i].Value;
 
-        public int TokenCountAt(int i) => this.Values[i].TokenCount;
+        public int TokenCountAt(int i) => Values[i].TokenCount;
     }
 
     /// <summary>

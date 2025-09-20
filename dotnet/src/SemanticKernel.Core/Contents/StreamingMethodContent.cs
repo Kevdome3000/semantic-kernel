@@ -17,13 +17,13 @@ public sealed class StreamingMethodContent : StreamingKernelContent
     /// <inheritdoc/>
     public override byte[] ToByteArray()
     {
-        if (this.Content is byte[] bytes)
+        if (Content is byte[] bytes)
         {
             return bytes;
         }
 
         // By default if a native value is not Byte[] we output the UTF8 string representation of the value
-        return this.Content?.ToString() is string s
+        return Content?.ToString() is string s
             ? Encoding.UTF8.GetBytes(s)
             : [];
     }
@@ -31,7 +31,7 @@ public sealed class StreamingMethodContent : StreamingKernelContent
     /// <inheritdoc/>
     public override string ToString()
     {
-        return this.Content.ToString() ?? string.Empty;
+        return Content.ToString() ?? string.Empty;
     }
 
     /// <summary>
@@ -41,6 +41,6 @@ public sealed class StreamingMethodContent : StreamingKernelContent
     /// <param name="metadata">Additional metadata associated with the content.</param>
     public StreamingMethodContent(object innerContent, IReadOnlyDictionary<string, object?>? metadata = null) : base(innerContent, metadata: metadata)
     {
-        this.Content = innerContent;
+        Content = innerContent;
     }
 }

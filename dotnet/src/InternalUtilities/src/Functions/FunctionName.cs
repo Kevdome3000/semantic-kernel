@@ -61,16 +61,17 @@ internal sealed class FunctionName
 
         int separatorPos = fullyQualifiedName.IndexOf(functionNameSeparator, StringComparison.Ordinal);
 
-        if (separatorPos >= 0)
+        if (separatorPos < 0)
         {
-            pluginName = fullyQualifiedName.AsSpan(0, separatorPos).
-                Trim().
-                ToString();
-
-            functionName = fullyQualifiedName.AsSpan(separatorPos + functionNameSeparator.Length).
-                Trim().
-                ToString();
+            return new FunctionName(name: functionName, pluginName: pluginName);
         }
+        pluginName = fullyQualifiedName.AsSpan(0, separatorPos).
+            Trim().
+            ToString();
+
+        functionName = fullyQualifiedName.AsSpan(separatorPos + functionNameSeparator.Length).
+            Trim().
+            ToString();
 
         return new FunctionName(name: functionName, pluginName: pluginName);
     }

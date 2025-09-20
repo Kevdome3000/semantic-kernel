@@ -118,11 +118,11 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
         Verify.NotNull(vectorSearchable);
         Verify.NotNull(textEmbeddingGeneration);
 
-        this._vectorSearchable = vectorSearchable;
-        this._textEmbeddingGeneration = textEmbeddingGeneration;
-        this._propertyReader = new Lazy<TextSearchResultPropertyReader>(() => new TextSearchResultPropertyReader(typeof(TRecord)));
-        this._stringMapper = stringMapper ?? this.CreateTextSearchStringMapper();
-        this._resultMapper = resultMapper ?? this.CreateTextSearchResultMapper();
+        _vectorSearchable = vectorSearchable;
+        _textEmbeddingGeneration = textEmbeddingGeneration;
+        _propertyReader = new Lazy<TextSearchResultPropertyReader>(() => new TextSearchResultPropertyReader(typeof(TRecord)));
+        _stringMapper = stringMapper ?? CreateTextSearchStringMapper();
+        _resultMapper = resultMapper ?? CreateTextSearchResultMapper();
     }
 
     /// <summary>
@@ -164,34 +164,34 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     {
         Verify.NotNull(vectorSearchable);
 
-        this._vectorSearchable = vectorSearchable;
-        this._propertyReader = new Lazy<TextSearchResultPropertyReader>(() => new TextSearchResultPropertyReader(typeof(TRecord)));
-        this._stringMapper = stringMapper ?? this.CreateTextSearchStringMapper();
-        this._resultMapper = resultMapper ?? this.CreateTextSearchResultMapper();
+        _vectorSearchable = vectorSearchable;
+        _propertyReader = new Lazy<TextSearchResultPropertyReader>(() => new TextSearchResultPropertyReader(typeof(TRecord)));
+        _stringMapper = stringMapper ?? CreateTextSearchStringMapper();
+        _resultMapper = resultMapper ?? CreateTextSearchResultMapper();
     }
 
     /// <inheritdoc/>
     public Task<KernelSearchResults<string>> SearchAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
-        var searchResponse = this.ExecuteVectorSearchAsync(query, searchOptions, cancellationToken);
+        var searchResponse = ExecuteVectorSearchAsync(query, searchOptions, cancellationToken);
 
-        return Task.FromResult(new KernelSearchResults<string>(this.GetResultsAsStringAsync(searchResponse, cancellationToken)));
+        return Task.FromResult(new KernelSearchResults<string>(GetResultsAsStringAsync(searchResponse, cancellationToken)));
     }
 
     /// <inheritdoc/>
     public Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
-        var searchResponse = this.ExecuteVectorSearchAsync(query, searchOptions, cancellationToken);
+        var searchResponse = ExecuteVectorSearchAsync(query, searchOptions, cancellationToken);
 
-        return Task.FromResult(new KernelSearchResults<TextSearchResult>(this.GetResultsAsTextSearchResultAsync(searchResponse, cancellationToken)));
+        return Task.FromResult(new KernelSearchResults<TextSearchResult>(GetResultsAsTextSearchResultAsync(searchResponse, cancellationToken)));
     }
 
     /// <inheritdoc/>
     public Task<KernelSearchResults<object>> GetSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
-        var searchResponse = this.ExecuteVectorSearchAsync(query, searchOptions, cancellationToken);
+        var searchResponse = ExecuteVectorSearchAsync(query, searchOptions, cancellationToken);
 
-        return Task.FromResult(new KernelSearchResults<object>(this.GetResultsAsRecordAsync(searchResponse, cancellationToken)));
+        return Task.FromResult(new KernelSearchResults<object>(GetResultsAsRecordAsync(searchResponse, cancellationToken)));
     }
 
     #region private
@@ -214,9 +214,9 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
                 throw new ArgumentException($"Expected result of type {typeof(TRecord).FullName} but got {result.GetType().FullName}.");
             }
 
-            var value = this._propertyReader.Value.GetValue(result) ?? throw new InvalidOperationException($"Value property of {typeof(TRecord).FullName} cannot be null.");
-            var name = this._propertyReader.Value.GetName(result);
-            var link = this._propertyReader.Value.GetLink(result);
+            var value = _propertyReader.Value.GetValue(result) ?? throw new InvalidOperationException($"Value property of {typeof(TRecord).FullName} cannot be null.");
+            var name = _propertyReader.Value.GetName(result);
+            var link = _propertyReader.Value.GetLink(result);
 
             return new TextSearchResult(value)
             {
@@ -238,7 +238,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
                 throw new ArgumentException($"Expected result of type {typeof(TRecord).FullName} but got {result.GetType().FullName}.");
             }
 
-            var value = this._propertyReader.Value.GetValue(result);
+            var value = _propertyReader.Value.GetValue(result);
             return (string?)value ?? throw new InvalidOperationException("Value property cannot be null.");
         });
     }
@@ -261,11 +261,11 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
         };
 
 #pragma warning disable CS0618 // Type or member is obsolete
-        if (this._textEmbeddingGeneration is not null)
+        if (_textEmbeddingGeneration is not null)
         {
-            var vectorizedQuery = await this._textEmbeddingGeneration!.GenerateEmbeddingAsync(query, cancellationToken: cancellationToken).ConfigureAwait(false);
+            var vectorizedQuery = await _textEmbeddingGeneration!.GenerateEmbeddingAsync(query, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            await foreach (var result in this._vectorSearchable!.SearchAsync(vectorizedQuery, searchOptions.Top, vectorSearchOptions, cancellationToken).ConfigureAwait(false))
+            await foreach (var result in _vectorSearchable!.SearchAsync(vectorizedQuery, searchOptions.Top, vectorSearchOptions, cancellationToken).ConfigureAwait(false))
             {
                 yield return result;
             }
@@ -274,7 +274,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
         }
 #pragma warning restore CS0618 // Type or member is obsolete
 
-        await foreach (var result in this._vectorSearchable!.SearchAsync(query, searchOptions.Top, vectorSearchOptions, cancellationToken).ConfigureAwait(false))
+        await foreach (var result in _vectorSearchable!.SearchAsync(query, searchOptions.Top, vectorSearchOptions, cancellationToken).ConfigureAwait(false))
         {
             yield return result;
         }
@@ -318,7 +318,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
         {
             if (result.Record is not null)
             {
-                yield return this._resultMapper.MapFromResultToTextSearchResult(result.Record);
+                yield return _resultMapper.MapFromResultToTextSearchResult(result.Record);
                 await Task.Yield();
             }
         }
@@ -340,7 +340,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
         {
             if (result.Record is not null)
             {
-                yield return this._stringMapper.MapFromResultToString(result.Record);
+                yield return _stringMapper.MapFromResultToString(result.Record);
                 await Task.Yield();
             }
         }

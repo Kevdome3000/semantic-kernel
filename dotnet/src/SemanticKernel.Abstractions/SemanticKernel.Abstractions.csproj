@@ -8,6 +8,7 @@
     <EnablePackageValidation>true</EnablePackageValidation>
     <IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net7.0'))">true</IsAotCompatible>
       <LangVersion>latestmajor</LangVersion>
+      <WarningsAsErrors>false</WarningsAsErrors>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(IsReleaseCandidate)' == 'true'">

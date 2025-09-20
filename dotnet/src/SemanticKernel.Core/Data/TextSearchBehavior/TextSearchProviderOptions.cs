@@ -21,7 +21,7 @@ public sealed class TextSearchProviderOptions
     /// <value>The default value is 3 if not set.</value>
     public int Top
     {
-        get => this._top;
+        get => _top;
         init
         {
             if (value < 1)
@@ -29,7 +29,7 @@ public sealed class TextSearchProviderOptions
                 throw new ArgumentOutOfRangeException(nameof(value), "Top must be greater than 0.");
             }
 
-            this._top = value;
+            _top = value;
         }
     }
 

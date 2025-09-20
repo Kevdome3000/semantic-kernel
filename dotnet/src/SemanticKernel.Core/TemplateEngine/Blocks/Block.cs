@@ -32,8 +32,8 @@ internal abstract class Block
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     private protected Block(string? content, ILoggerFactory? loggerFactory)
     {
-        this.Content = content ?? string.Empty;
-        this.Logger = loggerFactory?.CreateLogger(this.GetType()) ?? NullLogger.Instance;
+        Content = content ?? string.Empty;
+        Logger = loggerFactory?.CreateLogger(GetType()) ?? NullLogger.Instance;
     }
 
     /// <summary>

@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.SemanticKernel.ChatCompletion;
 
@@ -91,9 +90,7 @@ public static class ChatClientExtensions
     {
         Verify.NotNull(client);
 
-        return client is IChatCompletionService chatCompletionService ?
-            chatCompletionService :
-            new ChatClientChatCompletionService(client, serviceProvider);
+        return client as IChatCompletionService ?? new ChatClientChatCompletionService(client, serviceProvider);
     }
 
     /// <summary>

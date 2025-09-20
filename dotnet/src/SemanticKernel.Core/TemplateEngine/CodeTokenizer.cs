@@ -86,9 +86,9 @@ internal sealed class CodeTokenizer(ILoggerFactory? loggerFactory = null)
         {
             blocks.Add(nextChar switch
             {
-                Symbols.VarPrefix => new VarBlock(text, this._loggerFactory),
-                Symbols.DblQuote or Symbols.SglQuote => new ValBlock(text, this._loggerFactory),
-                _ => new FunctionIdBlock(text, this._loggerFactory),
+                Symbols.VarPrefix => new VarBlock(text, _loggerFactory),
+                Symbols.DblQuote or Symbols.SglQuote => new ValBlock(text, _loggerFactory),
+                _ => new FunctionIdBlock(text, _loggerFactory),
             });
 
             return blocks;
@@ -150,14 +150,14 @@ internal sealed class CodeTokenizer(ILoggerFactory? loggerFactory = null)
                 // When we reach the end of the value
                 if (currentChar == textValueDelimiter && currentTokenType == TokenTypes.Value)
                 {
-                    blocks.Add(new ValBlock(currentTokenContent.ToString(), this._loggerFactory));
+                    blocks.Add(new ValBlock(currentTokenContent.ToString(), _loggerFactory));
                     currentTokenContent.Clear();
                     currentTokenType = TokenTypes.None;
                     spaceSeparatorFound = false;
                 }
                 else if (currentChar == namedArgValuePrefix && currentTokenType == TokenTypes.NamedArg)
                 {
-                    blocks.Add(new NamedArgBlock(currentTokenContent.ToString(), this._loggerFactory));
+                    blocks.Add(new NamedArgBlock(currentTokenContent.ToString(), _loggerFactory));
                     currentTokenContent.Clear();
                     currentTokenType = TokenTypes.None;
                     spaceSeparatorFound = false;
@@ -174,7 +174,7 @@ internal sealed class CodeTokenizer(ILoggerFactory? loggerFactory = null)
             {
                 if (currentTokenType == TokenTypes.Variable)
                 {
-                    blocks.Add(new VarBlock(currentTokenContent.ToString(), this._loggerFactory));
+                    blocks.Add(new VarBlock(currentTokenContent.ToString(), _loggerFactory));
                     currentTokenContent.Clear();
                     currentTokenType = TokenTypes.None;
                 }
@@ -186,11 +186,11 @@ internal sealed class CodeTokenizer(ILoggerFactory? loggerFactory = null)
                     // a named arg is used without a function call
                     if (IsValidNamedArg(tokenContent))
                     {
-                        blocks.Add(new NamedArgBlock(tokenContent, this._loggerFactory));
+                        blocks.Add(new NamedArgBlock(tokenContent, _loggerFactory));
                     }
                     else
                     {
-                        blocks.Add(new FunctionIdBlock(tokenContent, this._loggerFactory));
+                        blocks.Add(new FunctionIdBlock(tokenContent, _loggerFactory));
                     }
 
                     currentTokenContent.Clear();
@@ -198,7 +198,7 @@ internal sealed class CodeTokenizer(ILoggerFactory? loggerFactory = null)
                 }
                 else if (currentTokenType == TokenTypes.NamedArg && namedArgSeparatorFound && namedArgValuePrefix != 0)
                 {
-                    blocks.Add(new NamedArgBlock(currentTokenContent.ToString(), this._loggerFactory));
+                    blocks.Add(new NamedArgBlock(currentTokenContent.ToString(), _loggerFactory));
                     currentTokenContent.Clear();
                     namedArgSeparatorFound = false;
                     namedArgValuePrefix = '\0';
@@ -275,12 +275,12 @@ internal sealed class CodeTokenizer(ILoggerFactory? loggerFactory = null)
         switch (currentTokenType)
         {
             case TokenTypes.Value:
-                blocks.Add(new ValBlock(currentTokenContent.ToString(), this._loggerFactory));
+                blocks.Add(new ValBlock(currentTokenContent.ToString(), _loggerFactory));
 
                 break;
 
             case TokenTypes.Variable:
-                blocks.Add(new VarBlock(currentTokenContent.ToString(), this._loggerFactory));
+                blocks.Add(new VarBlock(currentTokenContent.ToString(), _loggerFactory));
 
                 break;
 
@@ -291,17 +291,17 @@ internal sealed class CodeTokenizer(ILoggerFactory? loggerFactory = null)
                 // a named arg is used without a function call
                 if (IsValidNamedArg(tokenContent))
                 {
-                    blocks.Add(new NamedArgBlock(tokenContent, this._loggerFactory));
+                    blocks.Add(new NamedArgBlock(tokenContent, _loggerFactory));
                 }
                 else
                 {
-                    blocks.Add(new FunctionIdBlock(currentTokenContent.ToString(), this._loggerFactory));
+                    blocks.Add(new FunctionIdBlock(currentTokenContent.ToString(), _loggerFactory));
                 }
 
                 break;
 
             case TokenTypes.NamedArg:
-                blocks.Add(new NamedArgBlock(currentTokenContent.ToString(), this._loggerFactory));
+                blocks.Add(new NamedArgBlock(currentTokenContent.ToString(), _loggerFactory));
 
                 break;
 
