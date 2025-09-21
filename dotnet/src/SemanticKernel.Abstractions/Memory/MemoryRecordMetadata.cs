@@ -4,6 +4,7 @@ using System;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Memory;
+
 /// <summary>
 /// Class representing the metadata associated with a Semantic Kernel memory.
 /// </summary>
@@ -53,6 +54,7 @@ public class MemoryRecordMetadata : ICloneable
     [JsonPropertyName("additional_metadata")]
     public string AdditionalMetadata { get; }
 
+
     /// <summary>
     /// Constructor.
     /// </summary>
@@ -79,6 +81,7 @@ public class MemoryRecordMetadata : ICloneable
         Description = description;
         AdditionalMetadata = additionalMetadata;
     }
+
 
     /// <summary>
     /// Creates a shallow copy of <see cref="MemoryRecordMetadata"/>.

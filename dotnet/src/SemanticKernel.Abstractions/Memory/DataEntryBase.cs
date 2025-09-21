@@ -4,6 +4,7 @@ using System;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Memory;
+
 /// <summary>
 /// A base class for data entries.
 /// </summary>
@@ -20,6 +21,7 @@ public class DataEntryBase
         Key = key ?? string.Empty;
         Timestamp = timestamp;
     }
+
 
     /// <summary>
     /// Gets the key of the data.

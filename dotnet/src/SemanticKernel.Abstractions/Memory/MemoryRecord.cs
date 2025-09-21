@@ -6,6 +6,7 @@ using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Memory;
+
 /// <summary>
 /// IMPORTANT: this is a storage schema. Changing the fields will invalidate existing metadata stored in persistent vector DBs.
 /// </summary>
@@ -23,6 +24,7 @@ public class MemoryRecord : DataEntryBase
     [JsonPropertyName("metadata")]
     public MemoryRecordMetadata Metadata { get; }
 
+
     /// <summary>
     /// Constructor, use <see cref="ReferenceRecord"/> or <see cref="LocalRecord"/>
     /// </summary>
@@ -36,6 +38,7 @@ public class MemoryRecord : DataEntryBase
         Metadata = metadata;
         Embedding = embedding;
     }
+
 
     /// <summary>
     /// Prepare an instance about a memory which source is stored externally.
@@ -56,20 +59,23 @@ public class MemoryRecord : DataEntryBase
         ReadOnlyMemory<float> embedding,
         string? additionalMetadata = null,
         string? key = null,
-        DateTimeOffset? timestamp = null) => new(
-        new MemoryRecordMetadata
-        (
-            true,
-            externalSourceName: sourceName,
-            id: externalId,
-            description: description ?? string.Empty,
-            text: string.Empty,
-            additionalMetadata: additionalMetadata ?? string.Empty
-        ),
-        embedding,
-        key,
-        timestamp
-    );
+        DateTimeOffset? timestamp = null)
+    {
+        return new MemoryRecord(
+            new MemoryRecordMetadata(
+                true,
+                externalSourceName: sourceName,
+                id: externalId,
+                description: description ?? string.Empty,
+                text: string.Empty,
+                additionalMetadata: additionalMetadata ?? string.Empty
+            ),
+            embedding,
+            key,
+            timestamp
+        );
+    }
+
 
     /// <summary>
     /// Prepare an instance for a memory stored in the internal storage provider.
@@ -89,20 +95,23 @@ public class MemoryRecord : DataEntryBase
         ReadOnlyMemory<float> embedding,
         string? additionalMetadata = null,
         string? key = null,
-        DateTimeOffset? timestamp = null) => new(
-        new MemoryRecordMetadata
-        (
-            false,
-            id,
-            text,
-            description ?? string.Empty,
-            string.Empty,
-            additionalMetadata ?? string.Empty
-        ),
-        embedding,
-        key,
-        timestamp
-    );
+        DateTimeOffset? timestamp = null)
+    {
+        return new MemoryRecord(
+            new MemoryRecordMetadata(
+                false,
+                id,
+                text,
+                description ?? string.Empty,
+                string.Empty,
+                additionalMetadata ?? string.Empty
+            ),
+            embedding,
+            key,
+            timestamp
+        );
+    }
+
 
     /// <summary>
     /// Create a memory record from a serialized metadata string.
@@ -119,11 +128,15 @@ public class MemoryRecord : DataEntryBase
         string? key = null,
         DateTimeOffset? timestamp = null)
     {
-        var metadata = JsonSerializer.Deserialize<MemoryRecordMetadata>(json, MemoryRecordMetadataJsonSerializerContext.Default.MemoryRecordMetadata);
+        MemoryRecordMetadata? metadata = JsonSerializer.Deserialize<MemoryRecordMetadata>(json, MemoryRecordMetadataJsonSerializerContext.Default.MemoryRecordMetadata);
         return metadata is not null
-            ? new MemoryRecord(metadata, embedding, key, timestamp)
+            ? new MemoryRecord(metadata,
+                embedding,
+                key,
+                timestamp)
             : throw new KernelException("Unable to create memory record from serialized metadata");
     }
+
 
     /// <summary>
     /// Create a memory record from a memory record's metadata.
@@ -137,7 +150,14 @@ public class MemoryRecord : DataEntryBase
         MemoryRecordMetadata metadata,
         ReadOnlyMemory<float> embedding,
         string? key = null,
-        DateTimeOffset? timestamp = null) => new(metadata, embedding, key, timestamp);
+        DateTimeOffset? timestamp = null)
+    {
+        return new MemoryRecord(metadata,
+            embedding,
+            key,
+            timestamp);
+    }
+
 
     /// <summary>
     /// Serialize the metadata of a memory record.

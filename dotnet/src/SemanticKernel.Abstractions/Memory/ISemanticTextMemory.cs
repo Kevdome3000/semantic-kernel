@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Memory;
+
 /// <summary>
 /// An interface for semantic memory that creates and recalls memories associated with text.
 /// </summary>
@@ -30,6 +31,7 @@ public interface ISemanticTextMemory
         Kernel? kernel = null,
         CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Save some information into the semantic memory, keeping only a reference to the source information.
     /// </summary>
@@ -52,6 +54,7 @@ public interface ISemanticTextMemory
         Kernel? kernel = null,
         CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Fetch a memory by key.
     /// For local memories the key is the "id" used when saving the record.
@@ -70,6 +73,7 @@ public interface ISemanticTextMemory
         Kernel? kernel = null,
         CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Remove a memory by key.
     /// For local memories the key is the "id" used when saving the record.
@@ -84,6 +88,7 @@ public interface ISemanticTextMemory
         string key,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Find some information in memory
@@ -104,6 +109,7 @@ public interface ISemanticTextMemory
         bool withEmbeddings = false,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Gets a group of all available collection names.

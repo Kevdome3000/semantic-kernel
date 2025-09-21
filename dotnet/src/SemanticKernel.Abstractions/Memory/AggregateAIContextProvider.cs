@@ -17,12 +17,13 @@ namespace Microsoft.SemanticKernel;
 [Experimental("SKEXP0130")]
 public sealed class AggregateAIContextProvider : AIContextProvider
 {
-    private readonly List<AIContextProvider> _providers = new();
+    private readonly List<AIContextProvider> _providers = [];
 
     /// <summary>
     /// Gets the list of registered <see cref="AIContextProvider"/> objects.
     /// </summary>
     public IReadOnlyList<AIContextProvider> Providers => _providers;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AggregateAIContextProvider"/> class with the specified <see cref="AIContextProvider"/> objects.
@@ -33,6 +34,7 @@ public sealed class AggregateAIContextProvider : AIContextProvider
         _providers.AddRange(aiContextProviders ?? []);
     }
 
+
     /// <summary>
     /// Adds a new <see cref="AIContextProvider"/> objects.
     /// </summary>
@@ -42,17 +44,19 @@ public sealed class AggregateAIContextProvider : AIContextProvider
         _providers.Add(aiContextProvider);
     }
 
+
     /// <summary>
     /// Adds all <see cref="AIContextProvider"/> objects registered on the provided dependency injection service provider.
     /// </summary>
     /// <param name="serviceProvider">The dependency injection service provider to read <see cref="AIContextProvider"/> objects from.</param>
     public void AddFromServiceProvider(IServiceProvider serviceProvider)
     {
-        foreach (var aiContextProvider in serviceProvider.GetServices<AIContextProvider>())
+        foreach (AIContextProvider aiContextProvider in serviceProvider.GetServices<AIContextProvider>())
         {
             Add(aiContextProvider);
         }
     }
+
 
     /// <inheritdoc />
     public override async Task ConversationCreatedAsync(string? conversationId, CancellationToken cancellationToken = default)
@@ -60,11 +64,13 @@ public sealed class AggregateAIContextProvider : AIContextProvider
         await Task.WhenAll(Providers.Select(x => x.ConversationCreatedAsync(conversationId, cancellationToken)).ToList()).ConfigureAwait(false);
     }
 
+
     /// <inheritdoc />
     public override async Task ConversationDeletingAsync(string? conversationId, CancellationToken cancellationToken = default)
     {
         await Task.WhenAll(Providers.Select(x => x.ConversationDeletingAsync(conversationId, cancellationToken)).ToList()).ConfigureAwait(false);
     }
+
 
     /// <inheritdoc />
     public override async Task MessageAddingAsync(string? conversationId, ChatMessage newMessage, CancellationToken cancellationToken = default)
@@ -72,23 +78,28 @@ public sealed class AggregateAIContextProvider : AIContextProvider
         await Task.WhenAll(Providers.Select(x => x.MessageAddingAsync(conversationId, newMessage, cancellationToken)).ToList()).ConfigureAwait(false);
     }
 
+
     /// <inheritdoc />
     public override async Task<AIContext> ModelInvokingAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
     {
-        var subContexts = await Task.WhenAll(Providers.Select(x => x.ModelInvokingAsync(newMessages, cancellationToken)).ToList()).ConfigureAwait(false);
-        subContexts = subContexts.Where(x => x != null).ToArray();
+        AIContext[] subContexts = await Task.WhenAll(Providers.Select(x => x.ModelInvokingAsync(newMessages, cancellationToken)).ToList()).ConfigureAwait(false);
+        subContexts = subContexts.ToArray();
 
-        var combinedContext = new AIContext();
-        combinedContext.AIFunctions = subContexts.Where(x => x.AIFunctions != null).SelectMany(x => x.AIFunctions).ToList();
-        combinedContext.Instructions = string.Join("\n", subContexts.Where(x => !string.IsNullOrWhiteSpace(x.Instructions)).Select(x => x.Instructions));
+        AIContext combinedContext = new AIContext
+        {
+            AIFunctions = subContexts.SelectMany(x => x.AIFunctions).ToList(),
+            Instructions = string.Join("\n", subContexts.Where(x => !string.IsNullOrWhiteSpace(x.Instructions)).Select(x => x.Instructions))
+        };
         return combinedContext;
     }
+
 
     /// <inheritdoc />
     public override async Task SuspendingAsync(string? conversationId, CancellationToken cancellationToken = default)
     {
         await Task.WhenAll(Providers.Select(x => x.SuspendingAsync(conversationId, cancellationToken))).ConfigureAwait(false);
     }
+
 
     /// <inheritdoc />
     public override async Task ResumingAsync(string? conversationId, CancellationToken cancellationToken = default)

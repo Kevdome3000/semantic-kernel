@@ -22,10 +22,15 @@ public static class AggregateAIContextProviderExtensions
     /// <param name="newMessage">The new message.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    public static Task MessageAddingAsync(this AggregateAIContextProvider aggregateAIContextProvider, string? conversationId, ChatMessageContent newMessage, CancellationToken cancellationToken = default)
+    public static Task MessageAddingAsync(
+        this AggregateAIContextProvider aggregateAIContextProvider,
+        string? conversationId,
+        ChatMessageContent newMessage,
+        CancellationToken cancellationToken = default)
     {
         return aggregateAIContextProvider.MessageAddingAsync(conversationId, newMessage.ToChatMessage(), cancellationToken);
     }
+
 
     /// <summary>
     /// Called just before the Model/Agent/etc. is invoked

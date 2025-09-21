@@ -4,6 +4,7 @@ using System;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Memory;
+
 /// <summary>
 /// Copy of metadata associated with a memory entry.
 /// </summary>
@@ -25,6 +26,7 @@ public class MemoryQueryResult
     /// </summary>
     public ReadOnlyMemory<float>? Embedding { get; }
 
+
     /// <summary>
     /// Create a new instance of MemoryQueryResult
     /// </summary>
@@ -45,6 +47,7 @@ public class MemoryQueryResult
         Embedding = embedding;
     }
 
+
     /// <summary>
     /// Creates instance of <see cref="MemoryQueryResult"/> based on <see cref="MemoryRecord"/> and search relevance.
     /// </summary>
@@ -52,10 +55,13 @@ public class MemoryQueryResult
     /// <param name="relevance">Search relevance, from 0 to 1, where 1 means perfect match.</param>
     public static MemoryQueryResult FromMemoryRecord(
         MemoryRecord record,
-        double relevance) => new(
-        (MemoryRecordMetadata)record.Metadata.Clone(),
-        relevance,
-        record.Embedding.IsEmpty
-            ? null
-            : record.Embedding);
+        double relevance)
+    {
+        return new MemoryQueryResult(
+            (MemoryRecordMetadata)record.Metadata.Clone(),
+            relevance,
+            record.Embedding.IsEmpty
+                ? null
+                : record.Embedding);
+    }
 }

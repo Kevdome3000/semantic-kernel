@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Memory;
+
 /// <summary>
 /// Implementation of <see cref="ISemanticTextMemory"/> that stores nothing.
 /// </summary>
@@ -17,6 +18,7 @@ public sealed class NullMemory : ISemanticTextMemory
     /// Singleton instance
     /// </summary>
     public static NullMemory Instance { get; } = new();
+
 
     /// <inheritdoc/>
     public Task<string> SaveInformationAsync(
@@ -30,6 +32,7 @@ public sealed class NullMemory : ISemanticTextMemory
     {
         return s_emptyStringTask;
     }
+
 
     /// <inheritdoc/>
     public Task<string> SaveReferenceAsync(
@@ -45,6 +48,7 @@ public sealed class NullMemory : ISemanticTextMemory
         return s_emptyStringTask;
     }
 
+
     /// <inheritdoc/>
     public Task<MemoryQueryResult?> GetAsync(
         string collection,
@@ -56,6 +60,7 @@ public sealed class NullMemory : ISemanticTextMemory
         return Task.FromResult<MemoryQueryResult?>(null);
     }
 
+
     /// <inheritdoc/>
     public Task RemoveAsync(
         string collection,
@@ -65,6 +70,7 @@ public sealed class NullMemory : ISemanticTextMemory
     {
         return Task.CompletedTask;
     }
+
 
     /// <inheritdoc/>
     public IAsyncEnumerable<MemoryQueryResult> SearchAsync(
@@ -79,6 +85,7 @@ public sealed class NullMemory : ISemanticTextMemory
         return AsyncEnumerable.Empty<MemoryQueryResult>();
     }
 
+
     /// <inheritdoc/>
     public Task<IList<string>> GetCollectionsAsync(
         Kernel? kernel = null,
@@ -86,6 +93,7 @@ public sealed class NullMemory : ISemanticTextMemory
     {
         return Task.FromResult<IList<string>>([]);
     }
+
 
     private NullMemory()
     {

@@ -34,6 +34,7 @@ public abstract class AIContextProvider
         return Task.CompletedTask;
     }
 
+
     /// <summary>
     /// Called just before a message is added to the chat by any participant.
     /// </summary>
@@ -48,6 +49,7 @@ public abstract class AIContextProvider
     {
         return Task.CompletedTask;
     }
+
 
     /// <summary>
     /// Called just before a conversation/thread is deleted.
@@ -64,6 +66,7 @@ public abstract class AIContextProvider
         return Task.CompletedTask;
     }
 
+
     /// <summary>
     /// Called just before the Model/Agent/etc. is invoked
     /// Implementers can load any additional context required at this time,
@@ -73,6 +76,7 @@ public abstract class AIContextProvider
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task that completes when the context has been rendered and returned.</returns>
     public abstract Task<AIContext> ModelInvokingAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Called when the current conversion is temporarily suspended and any state should be saved.
@@ -88,6 +92,7 @@ public abstract class AIContextProvider
     {
         return Task.CompletedTask;
     }
+
 
     /// <summary>
     /// Called when the current conversion is resumed and any state should be restored.
