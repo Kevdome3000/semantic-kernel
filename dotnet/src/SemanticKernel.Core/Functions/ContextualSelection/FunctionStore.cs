@@ -80,10 +80,8 @@ internal sealed class FunctionStore
         var functionRecords = new List<Dictionary<string, object?>>(nameSourcePairs.Count);
 
         // Create vector store records
-        for (var i = 0; i < nameSourcePairs.Count; i++)
+        foreach ((string name, string vectorizationSource) in nameSourcePairs)
         {
-            var (name, vectorizationSource) = nameSourcePairs[i];
-
             functionRecords.Add(new Dictionary<string, object?>()
             {
                 ["Name"] = name,

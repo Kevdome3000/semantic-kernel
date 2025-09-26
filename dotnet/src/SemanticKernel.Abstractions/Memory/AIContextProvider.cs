@@ -17,6 +17,7 @@ namespace Microsoft.SemanticKernel;
 /// the AI model just before invocation and supply additional tools for function invocation.
 /// </remarks>
 [Experimental("SKEXP0130")]
+// ReSharper disable once InconsistentNaming
 public abstract class AIContextProvider
 {
     /// <summary>
