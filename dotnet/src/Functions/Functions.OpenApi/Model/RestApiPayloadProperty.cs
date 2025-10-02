@@ -22,11 +22,11 @@ public sealed class RestApiPayloadProperty
     /// </summary>
     public string? ArgumentName
     {
-        get => this._argumentName;
+        get => _argumentName;
         set
         {
-            this._freezable.ThrowIfFrozen();
-            this._argumentName = value;
+            _freezable.ThrowIfFrozen();
+            _argumentName = value;
         }
     }
 
@@ -89,14 +89,14 @@ public sealed class RestApiPayloadProperty
         KernelJsonSchema? schema = null,
         object? defaultValue = null)
     {
-        this.Name = name;
-        this.Type = type;
-        this.IsRequired = isRequired;
-        this.Description = description;
-        this.Properties = properties;
-        this.Schema = schema;
-        this.Format = format;
-        this.DefaultValue = defaultValue;
+        Name = name;
+        Type = type;
+        IsRequired = isRequired;
+        Description = description;
+        Properties = properties;
+        Schema = schema;
+        Format = format;
+        DefaultValue = defaultValue;
     }
 
     /// <summary>
@@ -104,13 +104,13 @@ public sealed class RestApiPayloadProperty
     /// </summary>
     internal void Freeze()
     {
-        this.Properties = new ReadOnlyCollection<RestApiPayloadProperty>(this.Properties);
-        foreach (var property in this.Properties)
+        Properties = new ReadOnlyCollection<RestApiPayloadProperty>(Properties);
+        foreach (var property in Properties)
         {
             property.Freeze();
         }
 
-        this._freezable.Freeze();
+        _freezable.Freeze();
     }
     private readonly Freezable _freezable = new();
     private string? _argumentName;

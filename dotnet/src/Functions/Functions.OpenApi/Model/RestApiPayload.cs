@@ -39,10 +39,10 @@ public sealed class RestApiPayload
     /// <param name="schema">The JSON Schema.</param>
     internal RestApiPayload(string mediaType, IList<RestApiPayloadProperty> properties, string? description = null, KernelJsonSchema? schema = null)
     {
-        this.MediaType = mediaType;
-        this.Properties = properties;
-        this.Description = description;
-        this.Schema = schema;
+        MediaType = mediaType;
+        Properties = properties;
+        Description = description;
+        Schema = schema;
     }
 
     /// <summary>
@@ -50,8 +50,8 @@ public sealed class RestApiPayload
     /// </summary>
     internal void Freeze()
     {
-        this.Properties = new ReadOnlyCollection<RestApiPayloadProperty>(this.Properties);
-        foreach (var property in this.Properties)
+        Properties = new ReadOnlyCollection<RestApiPayloadProperty>(Properties);
+        foreach (var property in Properties)
         {
             property.Freeze();
         }

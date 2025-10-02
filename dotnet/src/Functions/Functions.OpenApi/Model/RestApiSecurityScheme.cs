@@ -63,6 +63,6 @@ public sealed class RestApiSecurityScheme
 
     internal void Freeze()
     {
-        this.Flows?.Freeze();
+        Flows?.Freeze();
     }
 }

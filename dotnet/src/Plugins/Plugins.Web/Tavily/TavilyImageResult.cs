@@ -35,8 +35,8 @@ internal sealed class TavilyImageResult
     public TavilyImageResult(string url, string description)
 #pragma warning restore CA1054 // URI-like parameters should not be strings
     {
-        this.Url = url ?? throw new ArgumentNullException(nameof(url));
-        this.Description = description ?? throw new ArgumentNullException(nameof(description));
+        Url = url ?? throw new ArgumentNullException(nameof(url));
+        Description = description ?? throw new ArgumentNullException(nameof(description));
     }
 }
 #pragma warning restore CA1812 // Instantiated by reflection

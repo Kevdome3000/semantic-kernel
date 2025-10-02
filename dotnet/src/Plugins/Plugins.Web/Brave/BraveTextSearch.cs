@@ -31,39 +31,39 @@ public sealed class BraveTextSearch : ITextSearch
     {
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        this._apiKey = apiKey;
-        this._uri = options?.Endpoint ?? new Uri(DefaultUri);
-        this._logger = options?.LoggerFactory?.CreateLogger(typeof(BraveTextSearch)) ?? NullLogger.Instance;
+        _apiKey = apiKey;
+        _uri = options?.Endpoint ?? new Uri(DefaultUri);
+        _logger = options?.LoggerFactory?.CreateLogger(typeof(BraveTextSearch)) ?? NullLogger.Instance;
 
-        this._httpClient = options?.HttpClient ?? HttpClientProvider.GetHttpClient();
+        _httpClient = options?.HttpClient ?? HttpClientProvider.GetHttpClient();
 
-        this._httpClient.DefaultRequestHeaders.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
-        this._httpClient.DefaultRequestHeaders.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(BraveTextSearch)));
+        _httpClient.DefaultRequestHeaders.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
+        _httpClient.DefaultRequestHeaders.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(BraveTextSearch)));
 
-        this._stringMapper = options?.StringMapper ?? s_defaultStringMapper;
-        this._resultMapper = options?.ResultMapper ?? s_defaultResultMapper;
+        _stringMapper = options?.StringMapper ?? s_defaultStringMapper;
+        _resultMapper = options?.ResultMapper ?? s_defaultResultMapper;
     }
 
     /// <inheritdoc/>
     public async Task<KernelSearchResults<string>> SearchAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = new CancellationToken())
     {
         searchOptions ??= new TextSearchOptions();
-        BraveSearchResponse<BraveWebResult>? searchResponse = await this.ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        BraveSearchResponse<BraveWebResult>? searchResponse = await ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
 
         long? totalCount = searchOptions.IncludeTotalCount ? searchResponse?.Web?.Results.Count : null;
 
-        return new KernelSearchResults<string>(this.GetResultsAsStringAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
+        return new KernelSearchResults<string>(GetResultsAsStringAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
 
     /// <inheritdoc/>
     public async Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = new CancellationToken())
     {
         searchOptions ??= new TextSearchOptions();
-        BraveSearchResponse<BraveWebResult>? searchResponse = await this.ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        BraveSearchResponse<BraveWebResult>? searchResponse = await ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
 
         long? totalCount = searchOptions.IncludeTotalCount ? searchResponse?.Web?.Results.Count : null;
 
-        return new KernelSearchResults<TextSearchResult>(this.GetResultsAsTextSearchResultAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
+        return new KernelSearchResults<TextSearchResult>(GetResultsAsTextSearchResultAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
 
     /// <inheritdoc/>
@@ -71,11 +71,11 @@ public sealed class BraveTextSearch : ITextSearch
         CancellationToken cancellationToken = new CancellationToken())
     {
         searchOptions ??= new TextSearchOptions();
-        BraveSearchResponse<BraveWebResult>? searchResponse = await this.ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        BraveSearchResponse<BraveWebResult>? searchResponse = await ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
 
         long? totalCount = searchOptions.IncludeTotalCount ? searchResponse?.Web?.Results.Count : null;
 
-        return new KernelSearchResults<object>(this.GetResultsAsWebPageAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
+        return new KernelSearchResults<object>(GetResultsAsWebPageAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
 
     #region private
@@ -114,14 +114,14 @@ public sealed class BraveTextSearch : ITextSearch
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     private async Task<BraveSearchResponse<BraveWebResult>?> ExecuteSearchAsync(string query, TextSearchOptions searchOptions, CancellationToken cancellationToken = default)
     {
-        using HttpResponseMessage response = await this.SendGetRequestAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage response = await SendGetRequestAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
 
-        this._logger.LogDebug("Response received: {StatusCode}", response.StatusCode);
+        _logger.LogDebug("Response received: {StatusCode}", response.StatusCode);
 
         string json = await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false);
 
         // Sensitive data, logging as trace, disabled by default
-        this._logger.LogTrace("Response content received: {Data}", json);
+        _logger.LogTrace("Response content received: {Data}", json);
 
         return JsonSerializer.Deserialize<BraveSearchResponse<BraveWebResult>>(json);
     }
@@ -147,16 +147,16 @@ public sealed class BraveTextSearch : ITextSearch
             throw new ArgumentOutOfRangeException(nameof(searchOptions), searchOptions.Skip, $"{nameof(searchOptions.Skip)} value must be equal or greater than 0 and less than 10.");
         }
 
-        Uri uri = new($"{this._uri}?q={BuildQuery(query, searchOptions)}");
+        Uri uri = new($"{_uri}?q={BuildQuery(query, searchOptions)}");
 
         using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
 
-        if (!string.IsNullOrEmpty(this._apiKey))
+        if (!string.IsNullOrEmpty(_apiKey))
         {
-            httpRequestMessage.Headers.Add("X-Subscription-Token", this._apiKey);
+            httpRequestMessage.Headers.Add("X-Subscription-Token", _apiKey);
         }
 
-        return await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+        return await _httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -192,7 +192,7 @@ public sealed class BraveTextSearch : ITextSearch
         {
             foreach (var webPage in webResults)
             {
-                yield return this._resultMapper.MapFromResultToTextSearchResult(webPage);
+                yield return _resultMapper.MapFromResultToTextSearchResult(webPage);
                 await Task.Yield();
             }
         }
@@ -212,7 +212,7 @@ public sealed class BraveTextSearch : ITextSearch
         {
             foreach (var webPage in webResults)
             {
-                yield return this._stringMapper.MapFromResultToString(webPage);
+                yield return _stringMapper.MapFromResultToString(webPage);
                 await Task.Yield();
             }
         }
@@ -221,7 +221,7 @@ public sealed class BraveTextSearch : ITextSearch
         {
             foreach (var newsPage in newsResults)
             {
-                yield return this._stringMapper.MapFromResultToString(newsPage);
+                yield return _stringMapper.MapFromResultToString(newsPage);
                 await Task.Yield();
             }
         }
@@ -230,7 +230,7 @@ public sealed class BraveTextSearch : ITextSearch
         {
             foreach (var videoPage in videoResults)
             {
-                yield return this._stringMapper.MapFromResultToString(videoPage);
+                yield return _stringMapper.MapFromResultToString(videoPage);
                 await Task.Yield();
             }
         }

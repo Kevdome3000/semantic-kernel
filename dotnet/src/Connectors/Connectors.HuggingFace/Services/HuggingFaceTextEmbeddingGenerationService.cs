@@ -25,7 +25,7 @@ public sealed class HuggingFaceTextEmbeddingGenerationService : ITextEmbeddingGe
     private HuggingFaceClient Client { get; }
 
     /// <inheritdoc />
-    public IReadOnlyDictionary<string, object?> Attributes => this.AttributesInternal;
+    public IReadOnlyDictionary<string, object?> Attributes => AttributesInternal;
 
 
     /// <summary>
@@ -45,15 +45,15 @@ public sealed class HuggingFaceTextEmbeddingGenerationService : ITextEmbeddingGe
     {
         Verify.NotNullOrWhiteSpace(model);
 
-        this.Client = new HuggingFaceClient(
+        Client = new HuggingFaceClient(
             modelId: model,
             endpoint: endpoint ?? httpClient?.BaseAddress,
             apiKey: apiKey,
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
-            logger: loggerFactory?.CreateLogger(this.GetType())
+            logger: loggerFactory?.CreateLogger(GetType())
         );
 
-        this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
+        AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }
 
 
@@ -72,18 +72,18 @@ public sealed class HuggingFaceTextEmbeddingGenerationService : ITextEmbeddingGe
     {
         Verify.NotNull(endpoint);
 
-        this.Client = new HuggingFaceClient(
+        Client = new HuggingFaceClient(
             modelId: null,
             endpoint: endpoint ?? httpClient?.BaseAddress,
             apiKey: apiKey,
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
-            logger: loggerFactory?.CreateLogger(this.GetType())
+            logger: loggerFactory?.CreateLogger(GetType())
         );
     }
 
 
     /// <inheritdoc/>
     public Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(IList<string> data, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this.Client.GenerateEmbeddingsAsync(data, kernel, cancellationToken);
+        => Client.GenerateEmbeddingsAsync(data, kernel, cancellationToken);
 
 }

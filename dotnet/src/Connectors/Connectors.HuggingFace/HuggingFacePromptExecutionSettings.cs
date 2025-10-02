@@ -43,12 +43,12 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     [JsonPropertyName("temperature")]
     public float Temperature
     {
-        get => this._temperature;
+        get => _temperature;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._temperature = value;
+            ThrowIfFrozen();
+            _temperature = value;
         }
     }
 
@@ -61,12 +61,12 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     [JsonPropertyName("top_k")]
     public int? TopK
     {
-        get => this._topK;
+        get => _topK;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._topK = value;
+            ThrowIfFrozen();
+            _topK = value;
         }
     }
 
@@ -76,12 +76,12 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     [JsonPropertyName("max_tokens")]
     public int? MaxTokens
     {
-        get => this._maxTokens;
+        get => _maxTokens;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._maxTokens = value;
+            ThrowIfFrozen();
+            _maxTokens = value;
         }
     }
 
@@ -92,12 +92,12 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     [JsonPropertyName("max_new_tokens")]
     public int? MaxNewTokens
     {
-        get => this._maxNewTokens;
+        get => _maxNewTokens;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._maxNewTokens = value;
+            ThrowIfFrozen();
+            _maxNewTokens = value;
         }
     }
 
@@ -111,12 +111,12 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     [JsonPropertyName("max_time")]
     public float? MaxTime
     {
-        get => this._maxTime;
+        get => _maxTime;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._maxTime = value;
+            ThrowIfFrozen();
+            _maxTime = value;
         }
     }
 
@@ -127,12 +127,12 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     [JsonPropertyName("top_p")]
     public float? TopP
     {
-        get => this._topP;
+        get => _topP;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._topP = value;
+            ThrowIfFrozen();
+            _topP = value;
         }
     }
 
@@ -146,12 +146,12 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     [JsonPropertyName("repetition_penalty")]
     public float? RepetitionPenalty
     {
-        get => this._repetitionPenalty;
+        get => _repetitionPenalty;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._repetitionPenalty = value;
+            ThrowIfFrozen();
+            _repetitionPenalty = value;
         }
     }
 
@@ -167,12 +167,12 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     [JsonPropertyName("use_cache")]
     public bool UseCache
     {
-        get => this._useCache;
+        get => _useCache;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._useCache = value;
+            ThrowIfFrozen();
+            _useCache = value;
         }
     }
 
@@ -188,12 +188,12 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     [JsonConverter(typeof(BoolJsonConverter))]
     public bool WaitForModel
     {
-        get => this._waitForModel;
+        get => _waitForModel;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._waitForModel = value;
+            ThrowIfFrozen();
+            _waitForModel = value;
         }
     }
 
@@ -206,12 +206,12 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     [JsonPropertyName("results_per_prompt")]
     public int ResultsPerPrompt
     {
-        get => this._resultsPerPrompt;
+        get => _resultsPerPrompt;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._resultsPerPrompt = value;
+            ThrowIfFrozen();
+            _resultsPerPrompt = value;
         }
     }
 
@@ -222,12 +222,12 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     [JsonPropertyName("presence_penalty")]
     public float? PresencePenalty
     {
-        get => this._presencePenalty;
+        get => _presencePenalty;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._presencePenalty = value;
+            ThrowIfFrozen();
+            _presencePenalty = value;
         }
     }
 
@@ -239,12 +239,12 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     [JsonConverter(typeof(OptionalBoolJsonConverter))]
     public bool? LogProbs
     {
-        get => this._logProbs;
+        get => _logProbs;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._logProbs = value;
+            ThrowIfFrozen();
+            _logProbs = value;
         }
     }
 
@@ -254,12 +254,12 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     [JsonPropertyName("seed")]
     public long? Seed
     {
-        get => this._seed;
+        get => _seed;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._seed = value;
+            ThrowIfFrozen();
+            _seed = value;
         }
     }
 
@@ -269,12 +269,12 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     [JsonPropertyName("stop")]
     public List<string>? Stop
     {
-        get => this._stop;
+        get => _stop;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._stop = value;
+            ThrowIfFrozen();
+            _stop = value;
         }
     }
 
@@ -285,12 +285,12 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     [JsonPropertyName("top_logprobs")]
     public int? TopLogProbs
     {
-        get => this._topLogProbs;
+        get => _topLogProbs;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._topLogProbs = value;
+            ThrowIfFrozen();
+            _topLogProbs = value;
         }
     }
 
@@ -301,12 +301,12 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     [JsonConverter(typeof(OptionalBoolJsonConverter))]
     public bool? ReturnFullText
     {
-        get => this._returnFullText;
+        get => _returnFullText;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._returnFullText = value;
+            ThrowIfFrozen();
+            _returnFullText = value;
         }
     }
 
@@ -317,12 +317,12 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     [JsonConverter(typeof(OptionalBoolJsonConverter))]
     public bool? DoSample
     {
-        get => this._doSample;
+        get => _doSample;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._doSample = value;
+            ThrowIfFrozen();
+            _doSample = value;
         }
     }
 
@@ -333,12 +333,12 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     [JsonConverter(typeof(OptionalBoolJsonConverter))]
     public bool? Details
     {
-        get => this._details;
+        get => _details;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._details = value;
+            ThrowIfFrozen();
+            _details = value;
         }
     }
 
@@ -348,29 +348,29 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     {
         return new HuggingFacePromptExecutionSettings()
         {
-            ModelId = this.ModelId,
-            ExtensionData = this.ExtensionData is not null
-                ? new Dictionary<string, object>(this.ExtensionData)
+            ModelId = ModelId,
+            ExtensionData = ExtensionData is not null
+                ? new Dictionary<string, object>(ExtensionData)
                 : null,
-            Temperature = this.Temperature,
-            TopP = this.TopP,
-            TopK = this.TopK,
-            MaxTokens = this.MaxTokens,
-            MaxNewTokens = this.MaxNewTokens,
-            MaxTime = this.MaxTime,
-            RepetitionPenalty = this.RepetitionPenalty,
-            UseCache = this.UseCache,
-            WaitForModel = this.WaitForModel,
-            ResultsPerPrompt = this.ResultsPerPrompt,
-            PresencePenalty = this.PresencePenalty,
-            LogProbs = this.LogProbs,
-            Seed = this.Seed,
-            Stop = this.Stop is not null
-                ? new List<string>(this.Stop)
+            Temperature = Temperature,
+            TopP = TopP,
+            TopK = TopK,
+            MaxTokens = MaxTokens,
+            MaxNewTokens = MaxNewTokens,
+            MaxTime = MaxTime,
+            RepetitionPenalty = RepetitionPenalty,
+            UseCache = UseCache,
+            WaitForModel = WaitForModel,
+            ResultsPerPrompt = ResultsPerPrompt,
+            PresencePenalty = PresencePenalty,
+            LogProbs = LogProbs,
+            Seed = Seed,
+            Stop = Stop is not null
+                ? new List<string>(Stop)
                 : null,
-            TopLogProbs = this.TopLogProbs,
-            ReturnFullText = this.ReturnFullText,
-            DoSample = this.DoSample,
+            TopLogProbs = TopLogProbs,
+            ReturnFullText = ReturnFullText,
+            DoSample = DoSample,
         };
     }
 

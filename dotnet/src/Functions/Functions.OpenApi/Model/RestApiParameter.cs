@@ -19,11 +19,11 @@ public sealed class RestApiParameter
     /// </summary>
     public string? ArgumentName
     {
-        get => this._argumentName;
+        get => _argumentName;
         set
         {
-            this._freezable.ThrowIfFrozen();
-            this._argumentName = value;
+            _freezable.ThrowIfFrozen();
+            _argumentName = value;
         }
     }
 
@@ -78,11 +78,11 @@ public sealed class RestApiParameter
     /// </summary>
     public KernelJsonSchema? Schema
     {
-        get => this._schema;
+        get => _schema;
         set
         {
-            this._freezable.ThrowIfFrozen();
-            this._schema = value;
+            _freezable.ThrowIfFrozen();
+            _schema = value;
         }
     }
 
@@ -115,21 +115,21 @@ public sealed class RestApiParameter
         string? format = null,
         KernelJsonSchema? schema = null)
     {
-        this.Name = name;
-        this.Type = type;
-        this.IsRequired = isRequired;
-        this.Expand = expand;
-        this.Location = location;
-        this.Style = style;
-        this.ArrayItemType = arrayItemType;
-        this.DefaultValue = defaultValue;
-        this.Description = description;
-        this.Format = format;
-        this.Schema = schema;
+        Name = name;
+        Type = type;
+        IsRequired = isRequired;
+        Expand = expand;
+        Location = location;
+        Style = style;
+        ArrayItemType = arrayItemType;
+        DefaultValue = defaultValue;
+        Description = description;
+        Format = format;
+        Schema = schema;
     }
     internal void Freeze()
     {
-        this._freezable.Freeze();
+        _freezable.Freeze();
     }
 
     private readonly Freezable _freezable = new();

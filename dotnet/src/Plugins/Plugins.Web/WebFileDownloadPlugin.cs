@@ -40,8 +40,8 @@ public sealed class WebFileDownloadPlugin
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public WebFileDownloadPlugin(HttpClient httpClient, ILoggerFactory? loggerFactory = null)
     {
-        this._httpClient = httpClient;
-        this._logger = loggerFactory?.CreateLogger(typeof(WebFileDownloadPlugin)) ?? NullLogger.Instance;
+        _httpClient = httpClient;
+        _logger = loggerFactory?.CreateLogger(typeof(WebFileDownloadPlugin)) ?? NullLogger.Instance;
     }
 
     /// <summary>
@@ -49,8 +49,8 @@ public sealed class WebFileDownloadPlugin
     /// </summary>
     public IEnumerable<string>? AllowedDomains
     {
-        get => this._allowedDomains;
-        set => this._allowedDomains = value is null ? null : new HashSet<string>(value, StringComparer.OrdinalIgnoreCase);
+        get => _allowedDomains;
+        set => _allowedDomains = value is null ? null : new HashSet<string>(value, StringComparer.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -58,8 +58,8 @@ public sealed class WebFileDownloadPlugin
     /// </summary>
     public IEnumerable<string>? AllowedFolders
     {
-        get => this._allowedFolders;
-        set => this._allowedFolders = value is null ? null : new HashSet<string>(value, StringComparer.OrdinalIgnoreCase);
+        get => _allowedFolders;
+        set => _allowedFolders = value is null ? null : new HashSet<string>(value, StringComparer.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -86,33 +86,33 @@ public sealed class WebFileDownloadPlugin
         [Description("Path where to save file locally")] string filePath,
         CancellationToken cancellationToken = default)
     {
-        this._logger.LogDebug($"{nameof(this.DownloadToFileAsync)} got called");
-        this._logger.LogDebug("Sending GET request for {0}", url);
+        _logger.LogDebug($"{nameof(DownloadToFileAsync)} got called");
+        _logger.LogDebug("Sending GET request for {0}", url);
 
-        if (!this.IsUriAllowed(url))
+        if (!IsUriAllowed(url))
         {
             throw new InvalidOperationException("Downloading from the provided location is not allowed.");
         }
 
         var expandedFilePath = Environment.ExpandEnvironmentVariables(filePath);
-        if (!this.IsFilePathAllowed(expandedFilePath))
+        if (!IsFilePathAllowed(expandedFilePath))
         {
             throw new InvalidOperationException("Downloading to the provided location is not allowed.");
         }
 
         using HttpRequestMessage request = new(HttpMethod.Get, url);
 
-        using HttpResponseMessage response = await this._httpClient.SendWithSuccessCheckAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage response = await _httpClient.SendWithSuccessCheckAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
 
         // Check the content length if provided
-        if (response.Content.Headers.ContentLength.HasValue && response.Content.Headers.ContentLength.Value > this.MaximumDownloadSize)
+        if (response.Content.Headers.ContentLength.HasValue && response.Content.Headers.ContentLength.Value > MaximumDownloadSize)
         {
-            throw new InvalidOperationException($"The file size exceeds the maximum allowed size of {this.MaximumDownloadSize} bytes.");
+            throw new InvalidOperationException($"The file size exceeds the maximum allowed size of {MaximumDownloadSize} bytes.");
         }
 
-        this._logger.LogDebug("Response received: {0}", response.StatusCode);
+        _logger.LogDebug("Response received: {0}", response.StatusCode);
 
-        var fileMode = this.DisableFileOverwrite ? FileMode.CreateNew : FileMode.Create;
+        var fileMode = DisableFileOverwrite ? FileMode.CreateNew : FileMode.Create;
 
         using Stream source = await response.Content.ReadAsStreamAndTranslateExceptionAsync(cancellationToken).ConfigureAwait(false);
         using FileStream destination = new(expandedFilePath, FileMode.Create);
@@ -129,9 +129,9 @@ public sealed class WebFileDownloadPlugin
             while ((bytesRead = await source.ReadAsync(buffer, 0, bufferSize, cancellationToken).ConfigureAwait(false)) != 0)
 #endif
             {
-                if (totalBytesWritten + bytesRead > this.MaximumDownloadSize)
+                if (totalBytesWritten + bytesRead > MaximumDownloadSize)
                 {
-                    throw new InvalidOperationException($"The file size exceeds the maximum allowed size of {this.MaximumDownloadSize} bytes.");
+                    throw new InvalidOperationException($"The file size exceeds the maximum allowed size of {MaximumDownloadSize} bytes.");
                 }
 #if NET6_0_OR_GREATER
                 await destination.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken).ConfigureAwait(false);
@@ -161,7 +161,7 @@ public sealed class WebFileDownloadPlugin
     {
         Verify.NotNull(uri);
 
-        return this._allowedDomains is null || this._allowedDomains.Contains(uri.Host);
+        return _allowedDomains is null || _allowedDomains.Contains(uri.Host);
     }
 
     /// <summary>
@@ -177,7 +177,7 @@ public sealed class WebFileDownloadPlugin
             throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
         }
 
-        if (this.DisableFileOverwrite && File.Exists(path))
+        if (DisableFileOverwrite && File.Exists(path))
         {
             throw new ArgumentException("Invalid file path, overwriting existing files is disabled.", nameof(path));
         }
@@ -195,7 +195,7 @@ public sealed class WebFileDownloadPlugin
             throw new UnauthorizedAccessException($"File is read-only: {path}");
         }
 
-        return this._allowedFolders is null || this._allowedFolders.Contains(directoryPath);
+        return _allowedFolders is null || _allowedFolders.Contains(directoryPath);
     }
     #endregion
 }

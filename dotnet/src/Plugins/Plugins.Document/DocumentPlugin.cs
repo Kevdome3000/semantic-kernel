@@ -51,9 +51,9 @@ public sealed class DocumentPlugin
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public DocumentPlugin(IDocumentConnector documentConnector, IFileSystemConnector fileSystemConnector, ILoggerFactory? loggerFactory = null)
     {
-        this._documentConnector = documentConnector ?? throw new ArgumentNullException(nameof(documentConnector));
-        this._fileSystemConnector = fileSystemConnector ?? throw new ArgumentNullException(nameof(fileSystemConnector));
-        this._logger = loggerFactory?.CreateLogger(typeof(DocumentPlugin)) ?? NullLogger.Instance;
+        _documentConnector = documentConnector ?? throw new ArgumentNullException(nameof(documentConnector));
+        _fileSystemConnector = fileSystemConnector ?? throw new ArgumentNullException(nameof(fileSystemConnector));
+        _logger = loggerFactory?.CreateLogger(typeof(DocumentPlugin)) ?? NullLogger.Instance;
     }
 
 
@@ -66,9 +66,9 @@ public sealed class DocumentPlugin
         string filePath,
         CancellationToken cancellationToken = default)
     {
-        this._logger.LogDebug("Reading text from {0}", filePath);
-        using var stream = await this._fileSystemConnector.GetFileContentStreamAsync(filePath, cancellationToken).ConfigureAwait(false);
-        return this._documentConnector.ReadText(stream);
+        _logger.LogDebug("Reading text from {0}", filePath);
+        using var stream = await _fileSystemConnector.GetFileContentStreamAsync(filePath, cancellationToken).ConfigureAwait(false);
+        return _documentConnector.ReadText(stream);
     }
 
 
@@ -87,20 +87,20 @@ public sealed class DocumentPlugin
         }
 
         // If the document already exists, open it. If not, create it.
-        if (await this._fileSystemConnector.FileExistsAsync(filePath, cancellationToken).ConfigureAwait(false))
+        if (await _fileSystemConnector.FileExistsAsync(filePath, cancellationToken).ConfigureAwait(false))
         {
-            this._logger.LogDebug("Writing text to file {0}", filePath);
-            using Stream stream = await this._fileSystemConnector.GetWriteableFileStreamAsync(filePath, cancellationToken).ConfigureAwait(false);
-            this._documentConnector.AppendText(stream, text);
+            _logger.LogDebug("Writing text to file {0}", filePath);
+            using Stream stream = await _fileSystemConnector.GetWriteableFileStreamAsync(filePath, cancellationToken).ConfigureAwait(false);
+            _documentConnector.AppendText(stream, text);
         }
         else
         {
-            this._logger.LogDebug("File does not exist. Creating file at {0}", filePath);
-            using Stream stream = await this._fileSystemConnector.CreateFileAsync(filePath, cancellationToken).ConfigureAwait(false);
-            this._documentConnector.Initialize(stream);
+            _logger.LogDebug("File does not exist. Creating file at {0}", filePath);
+            using Stream stream = await _fileSystemConnector.CreateFileAsync(filePath, cancellationToken).ConfigureAwait(false);
+            _documentConnector.Initialize(stream);
 
-            this._logger.LogDebug("Writing text to {0}", filePath);
-            this._documentConnector.AppendText(stream, text);
+            _logger.LogDebug("Writing text to {0}", filePath);
+            _documentConnector.AppendText(stream, text);
         }
     }
 }

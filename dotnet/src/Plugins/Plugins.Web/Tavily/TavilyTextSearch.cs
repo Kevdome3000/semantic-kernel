@@ -31,48 +31,48 @@ public sealed class TavilyTextSearch : ITextSearch
     {
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        this._apiKey = apiKey;
-        this._uri = options?.Endpoint ?? new Uri(DefaultUri);
-        this._searchOptions = options;
-        this._logger = options?.LoggerFactory?.CreateLogger(typeof(TavilyTextSearch)) ?? NullLogger.Instance;
-        this._httpClient = options?.HttpClient ?? HttpClientProvider.GetHttpClient();
-        this._httpClient.DefaultRequestHeaders.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
-        this._httpClient.DefaultRequestHeaders.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(TavilyTextSearch)));
-        this._stringMapper = options?.StringMapper ?? s_defaultStringMapper;
-        this._resultMapper = options?.ResultMapper ?? s_defaultResultMapper;
+        _apiKey = apiKey;
+        _uri = options?.Endpoint ?? new Uri(DefaultUri);
+        _searchOptions = options;
+        _logger = options?.LoggerFactory?.CreateLogger(typeof(TavilyTextSearch)) ?? NullLogger.Instance;
+        _httpClient = options?.HttpClient ?? HttpClientProvider.GetHttpClient();
+        _httpClient.DefaultRequestHeaders.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
+        _httpClient.DefaultRequestHeaders.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(TavilyTextSearch)));
+        _stringMapper = options?.StringMapper ?? s_defaultStringMapper;
+        _resultMapper = options?.ResultMapper ?? s_defaultResultMapper;
     }
 
     /// <inheritdoc/>
     public async Task<KernelSearchResults<string>> SearchAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
         searchOptions ??= new TextSearchOptions();
-        TavilySearchResponse? searchResponse = await this.ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        TavilySearchResponse? searchResponse = await ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
 
         long? totalCount = null;
 
-        return new KernelSearchResults<string>(this.GetResultsAsStringAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
+        return new KernelSearchResults<string>(GetResultsAsStringAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
 
     /// <inheritdoc/>
     public async Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
         searchOptions ??= new TextSearchOptions();
-        TavilySearchResponse? searchResponse = await this.ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        TavilySearchResponse? searchResponse = await ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
 
         long? totalCount = null;
 
-        return new KernelSearchResults<TextSearchResult>(this.GetResultsAsTextSearchResultAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
+        return new KernelSearchResults<TextSearchResult>(GetResultsAsTextSearchResultAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
 
     /// <inheritdoc/>
     public async Task<KernelSearchResults<object>> GetSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
         searchOptions ??= new TextSearchOptions();
-        TavilySearchResponse? searchResponse = await this.ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        TavilySearchResponse? searchResponse = await ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
 
         long? totalCount = null;
 
-        return new KernelSearchResults<object>(this.GetSearchResultsAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
+        return new KernelSearchResults<object>(GetSearchResultsAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
 
     #region private
@@ -106,14 +106,14 @@ public sealed class TavilyTextSearch : ITextSearch
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     private async Task<TavilySearchResponse?> ExecuteSearchAsync(string query, TextSearchOptions searchOptions, CancellationToken cancellationToken)
     {
-        using HttpResponseMessage response = await this.SendGetRequestAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage response = await SendGetRequestAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
 
-        this._logger.LogDebug("Response received: {StatusCode}", response.StatusCode);
+        _logger.LogDebug("Response received: {StatusCode}", response.StatusCode);
 
         string json = await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false);
 
         // Sensitive data, logging as trace, disabled by default
-        this._logger.LogTrace("Response content received: {Data}", json);
+        _logger.LogTrace("Response content received: {Data}", json);
 
         return JsonSerializer.Deserialize<TavilySearchResponse>(json);
     }
@@ -132,19 +132,19 @@ public sealed class TavilyTextSearch : ITextSearch
             throw new ArgumentOutOfRangeException(nameof(searchOptions), searchOptions, $"{nameof(searchOptions)} count value must be greater than 0 and have a maximum value of 50.");
         }
 
-        var requestContent = this.BuildRequestContent(query, searchOptions);
+        var requestContent = BuildRequestContent(query, searchOptions);
 
-        using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, this._uri)
+        using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, _uri)
         {
             Content = GetJsonContent(requestContent)
         };
 
-        if (!string.IsNullOrEmpty(this._apiKey))
+        if (!string.IsNullOrEmpty(_apiKey))
         {
-            httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");
+            httpRequestMessage.Headers.Add("Authorization", $"Bearer {_apiKey}");
         }
 
-        return await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+        return await _httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -165,7 +165,7 @@ public sealed class TavilyTextSearch : ITextSearch
             await Task.Yield();
         }
 
-        if (this._searchOptions?.IncludeImages ?? false && searchResponse.Images is not null)
+        if (_searchOptions?.IncludeImages ?? false && searchResponse.Images is not null)
         {
             foreach (var image in searchResponse.Images!)
             {
@@ -189,15 +189,15 @@ public sealed class TavilyTextSearch : ITextSearch
 
         foreach (var result in searchResponse.Results)
         {
-            yield return this._resultMapper.MapFromResultToTextSearchResult(result);
+            yield return _resultMapper.MapFromResultToTextSearchResult(result);
             await Task.Yield();
         }
 
-        if (this._searchOptions?.IncludeImages ?? false && searchResponse.Images is not null)
+        if (_searchOptions?.IncludeImages ?? false && searchResponse.Images is not null)
         {
             foreach (var image in searchResponse.Images!)
             {
-                yield return this._resultMapper.MapFromResultToTextSearchResult(image);
+                yield return _resultMapper.MapFromResultToTextSearchResult(image);
                 await Task.Yield();
             }
         }
@@ -215,7 +215,7 @@ public sealed class TavilyTextSearch : ITextSearch
             yield break;
         }
 
-        if (this._searchOptions?.IncludeAnswer ?? false)
+        if (_searchOptions?.IncludeAnswer ?? false)
         {
             yield return searchResponse.Answer ?? string.Empty;
             await Task.Yield();
@@ -223,15 +223,15 @@ public sealed class TavilyTextSearch : ITextSearch
 
         foreach (var result in searchResponse.Results)
         {
-            yield return this._stringMapper.MapFromResultToString(result);
+            yield return _stringMapper.MapFromResultToString(result);
             await Task.Yield();
         }
 
-        if (this._searchOptions?.IncludeImages ?? false && searchResponse.Images is not null)
+        if (_searchOptions?.IncludeImages ?? false && searchResponse.Images is not null)
         {
             foreach (var image in searchResponse.Images!)
             {
-                yield return this._stringMapper.MapFromResultToString(image);
+                yield return _stringMapper.MapFromResultToString(image);
                 await Task.Yield();
             }
         }
@@ -352,13 +352,13 @@ public sealed class TavilyTextSearch : ITextSearch
             timeRange,
             days,
 #pragma warning disable CA1308 // Lower is preferred over uppercase
-            this._searchOptions?.SearchDepth?.ToString()?.ToLowerInvariant(),
+            _searchOptions?.SearchDepth?.ToString()?.ToLowerInvariant(),
 #pragma warning restore CA1308
-            this._searchOptions?.ChunksPerSource,
-            this._searchOptions?.IncludeImages,
-            this._searchOptions?.IncludeImageDescriptions,
-            this._searchOptions?.IncludeAnswer,
-            this._searchOptions?.IncludeRawContent,
+            _searchOptions?.ChunksPerSource,
+            _searchOptions?.IncludeImages,
+            _searchOptions?.IncludeImageDescriptions,
+            _searchOptions?.IncludeAnswer,
+            _searchOptions?.IncludeRawContent,
             maxResults,
             includeDomains,
             excludeDomains);

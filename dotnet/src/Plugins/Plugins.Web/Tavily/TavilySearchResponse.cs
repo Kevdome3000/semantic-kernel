@@ -68,11 +68,11 @@ internal sealed class TavilySearchResponse
             string? answer,
             IList<TavilyImageResult>? images)
     {
-        this.Query = query ?? throw new ArgumentNullException(nameof(query));
-        this.ResponseTime = responseTime;
-        this.Results = results ?? throw new ArgumentNullException(nameof(results));
-        this.Answer = answer;
-        this.Images = images;
+        Query = query ?? throw new ArgumentNullException(nameof(query));
+        ResponseTime = responseTime;
+        Results = results ?? throw new ArgumentNullException(nameof(results));
+        Answer = answer;
+        Images = images;
     }
 }
 #pragma warning restore CA1812 // Instantiated by reflection

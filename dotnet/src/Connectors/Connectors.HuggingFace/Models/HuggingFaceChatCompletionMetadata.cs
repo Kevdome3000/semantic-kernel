@@ -30,8 +30,8 @@ public sealed class HuggingFaceChatCompletionMetadata : ReadOnlyDictionary<strin
 #pragma warning disable CA1720 // Identifier contains type name
     public string? Object
     {
-        get => this.GetValueFromDictionary(nameof(this.Object)) as string;
-        internal init => this.SetValueInDictionary(value, nameof(this.Object));
+        get => GetValueFromDictionary(nameof(Object)) as string;
+        internal init => SetValueInDictionary(value, nameof(Object));
     }
 #pragma warning restore CA1720 // Identifier contains type name
 
@@ -40,8 +40,8 @@ public sealed class HuggingFaceChatCompletionMetadata : ReadOnlyDictionary<strin
     /// </summary>
     public long? Created
     {
-        get => (this.GetValueFromDictionary(nameof(this.Created)) as long?) ?? 0;
-        internal init => this.SetValueInDictionary(value, nameof(this.Created));
+        get => (GetValueFromDictionary(nameof(Created)) as long?) ?? 0;
+        internal init => SetValueInDictionary(value, nameof(Created));
     }
 
     /// <summary>
@@ -49,8 +49,8 @@ public sealed class HuggingFaceChatCompletionMetadata : ReadOnlyDictionary<strin
     /// </summary>
     public string? Model
     {
-        get => this.GetValueFromDictionary(nameof(this.Model)) as string;
-        internal init => this.SetValueInDictionary(value, nameof(this.Model));
+        get => GetValueFromDictionary(nameof(Model)) as string;
+        internal init => SetValueInDictionary(value, nameof(Model));
     }
 
     /// <summary>
@@ -58,8 +58,8 @@ public sealed class HuggingFaceChatCompletionMetadata : ReadOnlyDictionary<strin
     /// </summary>
     public string? FinishReason
     {
-        get => this.GetValueFromDictionary(nameof(this.FinishReason)) as string;
-        internal init => this.SetValueInDictionary(value, nameof(this.FinishReason));
+        get => GetValueFromDictionary(nameof(FinishReason)) as string;
+        internal init => SetValueInDictionary(value, nameof(FinishReason));
     }
 
     /// <summary>
@@ -67,8 +67,8 @@ public sealed class HuggingFaceChatCompletionMetadata : ReadOnlyDictionary<strin
     /// </summary>
     public string? SystemFingerPrint
     {
-        get => this.GetValueFromDictionary(nameof(this.SystemFingerPrint)) as string;
-        internal init => this.SetValueInDictionary(value, nameof(this.SystemFingerPrint));
+        get => GetValueFromDictionary(nameof(SystemFingerPrint)) as string;
+        internal init => SetValueInDictionary(value, nameof(SystemFingerPrint));
     }
 
     /// <summary>
@@ -76,8 +76,8 @@ public sealed class HuggingFaceChatCompletionMetadata : ReadOnlyDictionary<strin
     /// </summary>
     public string? Id
     {
-        get => this.GetValueFromDictionary(nameof(this.Id)) as string;
-        internal init => this.SetValueInDictionary(value, nameof(this.Id));
+        get => GetValueFromDictionary(nameof(Id)) as string;
+        internal init => SetValueInDictionary(value, nameof(Id));
     }
 
     /// <summary>
@@ -88,8 +88,8 @@ public sealed class HuggingFaceChatCompletionMetadata : ReadOnlyDictionary<strin
     /// </remarks>
     public int? UsageTotalTokens
     {
-        get => (this.GetValueFromDictionary(nameof(this.UsageTotalTokens)) as int?);
-        internal init => this.SetValueInDictionary(value, nameof(this.UsageTotalTokens));
+        get => (GetValueFromDictionary(nameof(UsageTotalTokens)) as int?);
+        internal init => SetValueInDictionary(value, nameof(UsageTotalTokens));
     }
 
     /// <summary>
@@ -100,8 +100,8 @@ public sealed class HuggingFaceChatCompletionMetadata : ReadOnlyDictionary<strin
     /// </remarks>
     public int? UsagePromptTokens
     {
-        get => (this.GetValueFromDictionary(nameof(this.UsagePromptTokens)) as int?);
-        internal init => this.SetValueInDictionary(value, nameof(this.UsagePromptTokens));
+        get => (GetValueFromDictionary(nameof(UsagePromptTokens)) as int?);
+        internal init => SetValueInDictionary(value, nameof(UsagePromptTokens));
     }
 
     /// <summary>
@@ -112,8 +112,8 @@ public sealed class HuggingFaceChatCompletionMetadata : ReadOnlyDictionary<strin
     /// </remarks>
     public int? UsageCompletionTokens
     {
-        get => (this.GetValueFromDictionary(nameof(this.UsageCompletionTokens)) as int?);
-        internal init => this.SetValueInDictionary(value, nameof(this.UsageCompletionTokens));
+        get => (GetValueFromDictionary(nameof(UsageCompletionTokens)) as int?);
+        internal init => SetValueInDictionary(value, nameof(UsageCompletionTokens));
     }
 
     /// <summary>
@@ -121,8 +121,8 @@ public sealed class HuggingFaceChatCompletionMetadata : ReadOnlyDictionary<strin
     /// </summary>
     public object? LogProbs
     {
-        get => this.GetValueFromDictionary(nameof(this.LogProbs));
-        internal init => this.SetValueInDictionary(value, nameof(this.LogProbs));
+        get => GetValueFromDictionary(nameof(LogProbs));
+        internal init => SetValueInDictionary(value, nameof(LogProbs));
     }
 
 
@@ -139,11 +139,11 @@ public sealed class HuggingFaceChatCompletionMetadata : ReadOnlyDictionary<strin
 
 
     private void SetValueInDictionary(object? value, string propertyName)
-        => this.Dictionary[propertyName] = value;
+        => Dictionary[propertyName] = value;
 
 
     private object? GetValueFromDictionary(string propertyName)
-        => this.Dictionary.TryGetValue(propertyName, out var value)
+        => Dictionary.TryGetValue(propertyName, out var value)
             ? value
             : null;
 

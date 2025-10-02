@@ -385,7 +385,7 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
 
         return result.GetValue<TResult>();
     }
-
+ 
 
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/> and streams its results.

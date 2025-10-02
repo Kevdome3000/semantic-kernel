@@ -31,7 +31,7 @@ public sealed class RestApiParameterFilterContext
     /// <param name="parameter">The REST API parameter to filter.</param>
     internal RestApiParameterFilterContext(RestApiOperation operation, RestApiParameter parameter)
     {
-        this.Operation = operation;
-        this.Parameter = parameter;
+        Operation = operation;
+        Parameter = parameter;
     }
 }

@@ -24,7 +24,7 @@ public sealed class HuggingFaceImageToTextService : IImageToTextService
     private readonly HuggingFaceClient _client;
 
     /// <inheritdoc />
-    public IReadOnlyDictionary<string, object?> Attributes => this._attributesInternal;
+    public IReadOnlyDictionary<string, object?> Attributes => _attributesInternal;
 
 
     /// <summary>
@@ -44,15 +44,15 @@ public sealed class HuggingFaceImageToTextService : IImageToTextService
     {
         Verify.NotNullOrWhiteSpace(model);
 
-        this._client = new HuggingFaceClient(
+        _client = new HuggingFaceClient(
             modelId: model,
             endpoint: endpoint ?? httpClient?.BaseAddress,
             apiKey: apiKey,
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
-            logger: loggerFactory?.CreateLogger(this.GetType())
+            logger: loggerFactory?.CreateLogger(GetType())
         );
 
-        this._attributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
+        _attributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }
 
 
@@ -71,12 +71,12 @@ public sealed class HuggingFaceImageToTextService : IImageToTextService
     {
         Verify.NotNull(endpoint);
 
-        this._client = new HuggingFaceClient(
+        _client = new HuggingFaceClient(
             modelId: null,
             endpoint: endpoint,
             apiKey: apiKey,
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
-            logger: loggerFactory?.CreateLogger(this.GetType())
+            logger: loggerFactory?.CreateLogger(GetType())
         );
     }
 
@@ -87,6 +87,6 @@ public sealed class HuggingFaceImageToTextService : IImageToTextService
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => this._client.GenerateTextFromImageAsync(content, executionSettings, kernel, cancellationToken);
+        => _client.GenerateTextFromImageAsync(content, executionSettings, kernel, cancellationToken);
 
 }

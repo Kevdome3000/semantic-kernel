@@ -33,8 +33,8 @@ public sealed class RestApiOAuthFlow
     /// </summary>
     public IDictionary<string, string> Scopes
     {
-        get => this._scopes;
-        init => this._scopes = value;
+        get => _scopes;
+        init => _scopes = value;
     }
 
     /// <summary>
@@ -48,7 +48,7 @@ public sealed class RestApiOAuthFlow
 
     internal void Freeze()
     {
-        this._scopes = new ReadOnlyDictionary<string, string>(this._scopes);
+        _scopes = new ReadOnlyDictionary<string, string>(_scopes);
     }
 
     private IDictionary<string, string> _scopes;

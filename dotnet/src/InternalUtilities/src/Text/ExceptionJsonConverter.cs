@@ -37,7 +37,7 @@ internal sealed class ExceptionJsonConverter : JsonConverter<object>
             if (ex.InnerException is Exception innerEx)
             {
                 writer.WritePropertyName(InnerExceptionPropertyName);
-                this.Write(writer, innerEx, options);
+                Write(writer, innerEx, options);
             }
 
             writer.WriteString(StackTracePropertyName, ex.StackTrace);

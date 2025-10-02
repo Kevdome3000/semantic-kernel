@@ -130,15 +130,15 @@ public class OpenApiFunctionExecutionParameters
         bool enablePayloadNamespacing = false,
         IList<string>? operationsToExclude = null)
     {
-        this.HttpClient = httpClient;
-        this.AuthCallback = authCallback;
-        this.ServerUrlOverride = serverUrlOverride;
-        this.UserAgent = userAgent ?? HttpHeaderConstant.Values.UserAgent;
-        this.IgnoreNonCompliantErrors = ignoreNonCompliantErrors;
-        this.EnableDynamicPayload = enableDynamicOperationPayload;
-        this.EnablePayloadNamespacing = enablePayloadNamespacing;
+        HttpClient = httpClient;
+        AuthCallback = authCallback;
+        ServerUrlOverride = serverUrlOverride;
+        UserAgent = userAgent ?? HttpHeaderConstant.Values.UserAgent;
+        IgnoreNonCompliantErrors = ignoreNonCompliantErrors;
+        EnableDynamicPayload = enableDynamicOperationPayload;
+        EnablePayloadNamespacing = enablePayloadNamespacing;
 #pragma warning disable CS0618 // Type or member is obsolete
-        this.OperationsToExclude = operationsToExclude ?? [];
+        OperationsToExclude = operationsToExclude ?? [];
 #pragma warning restore CS0618 // Type or member is obsolete
     }
 

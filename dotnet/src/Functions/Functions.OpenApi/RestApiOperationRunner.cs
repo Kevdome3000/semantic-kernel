@@ -143,30 +143,30 @@ internal sealed class RestApiOperationRunner
         RestApiOperationHeadersFactory? headersFactory = null,
         RestApiOperationPayloadFactory? payloadFactory = null)
     {
-        this._httpClient = httpClient;
-        this._userAgent = userAgent ?? HttpHeaderConstant.Values.UserAgent;
-        this._enableDynamicPayload = enableDynamicPayload;
-        this._enablePayloadNamespacing = enablePayloadNamespacing;
-        this._httpResponseContentReader = httpResponseContentReader;
-        this._responseFactory = responseFactory;
-        this._urlFactory = urlFactory;
-        this._headersFactory = headersFactory;
-        this._payloadFactory = payloadFactory;
+        _httpClient = httpClient;
+        _userAgent = userAgent ?? HttpHeaderConstant.Values.UserAgent;
+        _enableDynamicPayload = enableDynamicPayload;
+        _enablePayloadNamespacing = enablePayloadNamespacing;
+        _httpResponseContentReader = httpResponseContentReader;
+        _responseFactory = responseFactory;
+        _urlFactory = urlFactory;
+        _headersFactory = headersFactory;
+        _payloadFactory = payloadFactory;
 
         // If no auth callback provided, use empty function
         if (authCallback is null)
         {
-            this._authCallback = (_, __) => Task.CompletedTask;
+            _authCallback = (_, __) => Task.CompletedTask;
         }
         else
         {
-            this._authCallback = authCallback;
+            _authCallback = authCallback;
         }
 
-        this._payloadFactoryByMediaType = new()
+        _payloadFactoryByMediaType = new()
         {
-            { MediaTypeApplicationJson, this.BuildJsonPayload },
-            { MediaTypeTextPlain, this.BuildPlainTextPayload }
+            { MediaTypeApplicationJson, BuildJsonPayload },
+            { MediaTypeTextPlain, BuildPlainTextPayload }
         };
     }
 
@@ -184,13 +184,13 @@ internal sealed class RestApiOperationRunner
         RestApiOperationRunOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        var url = this._urlFactory?.Invoke(operation, arguments, options) ?? this.BuildsOperationUrl(operation, arguments, options?.ServerUrlOverride, options?.ApiHostUrl);
+        var url = _urlFactory?.Invoke(operation, arguments, options) ?? BuildsOperationUrl(operation, arguments, options?.ServerUrlOverride, options?.ApiHostUrl);
 
-        var headers = this._headersFactory?.Invoke(operation, arguments, options) ?? operation.BuildHeaders(arguments);
+        var headers = _headersFactory?.Invoke(operation, arguments, options) ?? operation.BuildHeaders(arguments);
 
-        var (Payload, Content) = this._payloadFactory?.Invoke(operation, arguments, this._enableDynamicPayload, this._enablePayloadNamespacing, options) ?? this.BuildOperationPayload(operation, arguments);
+        var (Payload, Content) = _payloadFactory?.Invoke(operation, arguments, _enableDynamicPayload, _enablePayloadNamespacing, options) ?? BuildOperationPayload(operation, arguments);
 
-        return this.SendAsync(operation, url, headers, Payload, Content, options, cancellationToken);
+        return SendAsync(operation, url, headers, Payload, Content, options, cancellationToken);
     }
 
     #region private
@@ -223,15 +223,15 @@ internal sealed class RestApiOperationRunner
         requestMessage.Properties.Add(OpenApiKernelFunctionContext.KernelFunctionContextKey, new OpenApiKernelFunctionContext(options?.Kernel, options?.KernelFunction, options?.KernelArguments));
 #endif
 
-        await this._authCallback(requestMessage, cancellationToken).ConfigureAwait(false);
+        await _authCallback(requestMessage, cancellationToken).ConfigureAwait(false);
 
         if (requestContent is not null)
         {
             requestMessage.Content = requestContent;
         }
 
-        requestMessage.Headers.Add("User-Agent", !string.IsNullOrWhiteSpace(this._userAgent)
-            ? this._userAgent
+        requestMessage.Headers.Add("User-Agent", !string.IsNullOrWhiteSpace(_userAgent)
+            ? _userAgent
             : HttpHeaderConstant.Values.UserAgent);
         requestMessage.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(RestApiOperationRunner)));
 
@@ -248,9 +248,9 @@ internal sealed class RestApiOperationRunner
 
         try
         {
-            responseMessage = await this._httpClient.SendWithSuccessCheckAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+            responseMessage = await _httpClient.SendWithSuccessCheckAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
 
-            response = await this.BuildResponseAsync(operation, requestMessage, responseMessage, payload, cancellationToken).ConfigureAwait(false);
+            response = await BuildResponseAsync(operation, requestMessage, responseMessage, payload, cancellationToken).ConfigureAwait(false);
 
             return response;
         }
@@ -334,7 +334,7 @@ internal sealed class RestApiOperationRunner
 
         var mediaType = contentType?.MediaType ?? throw new KernelException("No media type available.");
 
-        var content = await this.ReadHttpContentAsync(requestMessage, responseMessage, mediaType, cancellationToken).ConfigureAwait(false);
+        var content = await ReadHttpContentAsync(requestMessage, responseMessage, mediaType, cancellationToken).ConfigureAwait(false);
 
         return new RestApiOperationResponse(content, contentType.ToString())
         {
@@ -376,7 +376,7 @@ internal sealed class RestApiOperationRunner
         mediaType = mediaType!.ToLowerInvariant().Trim();
 #pragma warning restore CA1308 // Normalize strings to uppercase
 
-        if (!this._payloadFactoryByMediaType.TryGetValue(mediaType, out var payloadFactory))
+        if (!_payloadFactoryByMediaType.TryGetValue(mediaType, out var payloadFactory))
         {
             throw new KernelException($"The media type {mediaType} of the {operation.Id} operation is not supported by {nameof(RestApiOperationRunner)}.");
         }
@@ -393,14 +393,14 @@ internal sealed class RestApiOperationRunner
     private (object Payload, HttpContent Content) BuildJsonPayload(RestApiPayload? payloadMetadata, IDictionary<string, object?> arguments)
     {
         // Build operation payload dynamically
-        if (this._enableDynamicPayload)
+        if (_enableDynamicPayload)
         {
             if (payloadMetadata is null)
             {
                 throw new KernelException("Payload can't be built dynamically due to the missing payload metadata.");
             }
 
-            var payload = this.BuildJsonObject(payloadMetadata.Properties, arguments);
+            var payload = BuildJsonObject(payloadMetadata.Properties, arguments);
 
             return (payload, new StringContent(payload.ToJsonString(), Encoding.UTF8, MediaTypeApplicationJson));
         }
@@ -427,11 +427,11 @@ internal sealed class RestApiOperationRunner
 
         foreach (var propertyMetadata in properties)
         {
-            var argumentName = this.GetArgumentNameForPayload(propertyMetadata.Name, propertyNamespace);
+            var argumentName = GetArgumentNameForPayload(propertyMetadata.Name, propertyNamespace);
 
             if (propertyMetadata.Type == "object")
             {
-                var node = this.BuildJsonObject(propertyMetadata.Properties, arguments, argumentName);
+                var node = BuildJsonObject(propertyMetadata.Properties, arguments, argumentName);
                 result.Add(propertyMetadata.Name, node);
                 continue;
             }
@@ -508,7 +508,7 @@ internal sealed class RestApiOperationRunner
     /// <returns>The argument name for the payload property.</returns>
     private string GetArgumentNameForPayload(string propertyName, string? propertyNamespace)
     {
-        if (!this._enablePayloadNamespacing)
+        if (!_enablePayloadNamespacing)
         {
             return propertyName;
         }
@@ -544,9 +544,9 @@ internal sealed class RestApiOperationRunner
         object? content = null;
 
         // Read content using the custom reader if provided.
-        if (this._httpResponseContentReader is not null)
+        if (_httpResponseContentReader is not null)
         {
-            content = await this._httpResponseContentReader.Invoke(new(requestMessage, responseMessage), cancellationToken).ConfigureAwait(false);
+            content = await _httpResponseContentReader.Invoke(new(requestMessage, responseMessage), cancellationToken).ConfigureAwait(false);
         }
 
         // If no custom reader is provided or the custom reader did not return any content, read the content using the default readers.
@@ -599,7 +599,7 @@ internal sealed class RestApiOperationRunner
     {
         async Task<RestApiOperationResponse> Build(RestApiOperationResponseFactoryContext context, CancellationToken ct)
         {
-            var response = await this.ReadContentAndCreateOperationResponseAsync(context.Request, context.Response, payload, ct).ConfigureAwait(false);
+            var response = await ReadContentAndCreateOperationResponseAsync(context.Request, context.Response, payload, ct).ConfigureAwait(false);
 
             response.ExpectedSchema ??= GetExpectedSchema(context.Operation.Responses.ToDictionary(item => item.Key, item => item.Value.Schema), context.Response.StatusCode);
 
@@ -607,9 +607,9 @@ internal sealed class RestApiOperationRunner
         }
 
         // Delegate the response building to the custom response factory if provided.
-        if (this._responseFactory is not null)
+        if (_responseFactory is not null)
         {
-            var response = await this._responseFactory(new(operation: operation, request: requestMessage, response: responseMessage, internalFactory: Build), cancellationToken).ConfigureAwait(false);
+            var response = await _responseFactory(new(operation: operation, request: requestMessage, response: responseMessage, internalFactory: Build), cancellationToken).ConfigureAwait(false);
 
             // Handling the case when the content is a stream
             if (response.Content is Stream stream and not HttpResponseStream)

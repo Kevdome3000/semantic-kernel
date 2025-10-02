@@ -18,6 +18,6 @@ internal sealed class EmptyKeyedServiceProvider : IKeyedServiceProvider
 
     /// <inheritdoc />
     public object GetRequiredKeyedService(Type serviceType, object? serviceKey) =>
-        this.GetKeyedService(serviceType, serviceKey) ??
+        GetKeyedService(serviceType, serviceKey) ??
         throw new InvalidOperationException($"No service for type '{serviceType}' and key '{serviceKey}' has been registered.");
 }

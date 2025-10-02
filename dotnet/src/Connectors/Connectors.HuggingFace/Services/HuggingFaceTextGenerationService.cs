@@ -25,7 +25,7 @@ public sealed class HuggingFaceTextGenerationService : ITextGenerationService
     private HuggingFaceClient Client { get; }
 
     /// <inheritdoc />
-    public IReadOnlyDictionary<string, object?> Attributes => this.AttributesInternal;
+    public IReadOnlyDictionary<string, object?> Attributes => AttributesInternal;
 
 
     /// <summary>
@@ -45,15 +45,15 @@ public sealed class HuggingFaceTextGenerationService : ITextGenerationService
     {
         Verify.NotNull(model);
 
-        this.Client = new HuggingFaceClient(
+        Client = new HuggingFaceClient(
             modelId: model,
             endpoint: endpoint ?? httpClient?.BaseAddress,
             apiKey: apiKey,
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
-            logger: loggerFactory?.CreateLogger(this.GetType()) ?? NullLogger.Instance
+            logger: loggerFactory?.CreateLogger(GetType()) ?? NullLogger.Instance
         );
 
-        this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
+        AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }
 
 
@@ -72,12 +72,12 @@ public sealed class HuggingFaceTextGenerationService : ITextGenerationService
     {
         Verify.NotNull(endpoint);
 
-        this.Client = new HuggingFaceClient(
+        Client = new HuggingFaceClient(
             modelId: null,
             endpoint: endpoint,
             apiKey: apiKey,
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
-            logger: loggerFactory?.CreateLogger(this.GetType()) ?? NullLogger.Instance
+            logger: loggerFactory?.CreateLogger(GetType()) ?? NullLogger.Instance
         );
     }
 
@@ -88,7 +88,7 @@ public sealed class HuggingFaceTextGenerationService : ITextGenerationService
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => this.Client.GenerateTextAsync(prompt, executionSettings, cancellationToken);
+        => Client.GenerateTextAsync(prompt, executionSettings, cancellationToken);
 
 
     /// <inheritdoc />
@@ -97,6 +97,6 @@ public sealed class HuggingFaceTextGenerationService : ITextGenerationService
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => this.Client.StreamGenerateTextAsync(prompt, executionSettings, cancellationToken);
+        => Client.StreamGenerateTextAsync(prompt, executionSettings, cancellationToken);
 
 }

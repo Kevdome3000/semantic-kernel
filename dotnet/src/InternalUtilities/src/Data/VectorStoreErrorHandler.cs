@@ -301,9 +301,9 @@ internal static class VectorStoreErrorHandler
             VectorStoreCollectionMetadata metadata,
             string operationName)
         {
-            this._enumerable = enumerable;
-            this._metadata = metadata;
-            this._operationName = operationName;
+            _enumerable = enumerable;
+            _metadata = metadata;
+            _operationName = operationName;
         }
 
         public ConfiguredCancelableErrorHandlingAsyncEnumerable(
@@ -311,24 +311,24 @@ internal static class VectorStoreErrorHandler
             VectorStoreMetadata metadata,
             string operationName)
         {
-            this._enumerable = enumerable;
-            this._metadata = new()
+            _enumerable = enumerable;
+            _metadata = new()
             {
                 CollectionName = null,
                 VectorStoreName = metadata.VectorStoreName,
                 VectorStoreSystemName = metadata.VectorStoreSystemName,
-            };
-            this._operationName = operationName;
+       };
+            _operationName = operationName;
         }
 
-        public ConfiguredCancelableErrorHandlingAsyncEnumerable<TResult, TException>.Enumerator GetAsyncEnumerator(CancellationToken cancellationToken = default)
+        public Enumerator GetAsyncEntor(CancellationToken cancellationToken = default)
         {
-            return new Enumerator(this._enumerable.WithCancellation(cancellationToken).GetAsyncEnumerator(), this._metadata, this._operationName);
+            return new Enumerator(_enumerable.WithCancellation(cancellationToken).GetAsyncEnumerator(), _metadata, _operationName);
         }
 
         public ConfiguredCancelableErrorHandlingAsyncEnumerable<TResult, TException> ConfigureAwait(bool continueOnCapturedContext)
         {
-            return new ConfiguredCancelableErrorHandlingAsyncEnumerable<TResult, TException>(this._enumerable.ConfigureAwait(continueOnCapturedContext), this._metadata, this._operationName);
+            return new ConfiguredCancelableErrorHandlingAsyncEnumerable<TResult, TException>(this._enumerable.ConfigureAwait(continueOnCapturedContext), _metadata, _operationName);
         }
 
         public struct Enumerator(

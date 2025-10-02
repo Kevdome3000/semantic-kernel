@@ -64,10 +64,10 @@ public sealed class TavilySearchResult
         double score,
         string? rawContent)
     {
-        this.Title = title ?? throw new ArgumentNullException(nameof(title));
-        this.Url = url ?? throw new ArgumentNullException(nameof(url));
-        this.Content = content ?? throw new ArgumentNullException(nameof(content));
-        this.Score = score;
-        this.RawContent = rawContent;
+        Title = title ?? throw new ArgumentNullException(nameof(title));
+        Url = url ?? throw new ArgumentNullException(nameof(url));
+        Content = content ?? throw new ArgumentNullException(nameof(content));
+        Score = score;
+        RawContent = rawContent;
     }
 }

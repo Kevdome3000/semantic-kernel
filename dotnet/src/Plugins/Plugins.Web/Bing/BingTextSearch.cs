@@ -31,47 +31,47 @@ public sealed class BingTextSearch : ITextSearch
     {
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        this._apiKey = apiKey;
-        this._uri = options?.Endpoint ?? new Uri(DefaultUri);
-        this._logger = options?.LoggerFactory?.CreateLogger(typeof(BingTextSearch)) ?? NullLogger.Instance;
-        this._httpClient = options?.HttpClient ?? HttpClientProvider.GetHttpClient();
-        this._httpClient.DefaultRequestHeaders.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
-        this._httpClient.DefaultRequestHeaders.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(BingTextSearch)));
-        this._stringMapper = options?.StringMapper ?? s_defaultStringMapper;
-        this._resultMapper = options?.ResultMapper ?? s_defaultResultMapper;
+        _apiKey = apiKey;
+        _uri = options?.Endpoint ?? new Uri(DefaultUri);
+        _logger = options?.LoggerFactory?.CreateLogger(typeof(BingTextSearch)) ?? NullLogger.Instance;
+        _httpClient = options?.HttpClient ?? HttpClientProvider.GetHttpClient();
+        _httpClient.DefaultRequestHeaders.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
+        _httpClient.DefaultRequestHeaders.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(BingTextSearch)));
+        _stringMapper = options?.StringMapper ?? s_defaultStringMapper;
+        _resultMapper = options?.ResultMapper ?? s_defaultResultMapper;
     }
 
     /// <inheritdoc/>
     public async Task<KernelSearchResults<string>> SearchAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
         searchOptions ??= new TextSearchOptions();
-        BingSearchResponse<BingWebPage>? searchResponse = await this.ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        BingSearchResponse<BingWebPage>? searchResponse = await ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
 
         long? totalCount = searchOptions.IncludeTotalCount ? searchResponse?.WebPages?.TotalEstimatedMatches : null;
 
-        return new KernelSearchResults<string>(this.GetResultsAsStringAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
+        return new KernelSearchResults<string>(GetResultsAsStringAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
 
     /// <inheritdoc/>
     public async Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
         searchOptions ??= new TextSearchOptions();
-        BingSearchResponse<BingWebPage>? searchResponse = await this.ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        BingSearchResponse<BingWebPage>? searchResponse = await ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
 
         long? totalCount = searchOptions.IncludeTotalCount ? searchResponse?.WebPages?.TotalEstimatedMatches : null;
 
-        return new KernelSearchResults<TextSearchResult>(this.GetResultsAsTextSearchResultAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
+        return new KernelSearchResults<TextSearchResult>(GetResultsAsTextSearchResultAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
 
     /// <inheritdoc/>
     public async Task<KernelSearchResults<object>> GetSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
         searchOptions ??= new TextSearchOptions();
-        BingSearchResponse<BingWebPage>? searchResponse = await this.ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        BingSearchResponse<BingWebPage>? searchResponse = await ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
 
         long? totalCount = searchOptions.IncludeTotalCount ? searchResponse?.WebPages?.TotalEstimatedMatches : null;
 
-        return new KernelSearchResults<object>(this.GetResultsAsWebPageAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
+        return new KernelSearchResults<object>(GetResultsAsWebPageAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
 
     #region private
@@ -100,14 +100,14 @@ public sealed class BingTextSearch : ITextSearch
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     private async Task<BingSearchResponse<BingWebPage>?> ExecuteSearchAsync(string query, TextSearchOptions searchOptions, CancellationToken cancellationToken = default)
     {
-        using HttpResponseMessage response = await this.SendGetRequestAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage response = await SendGetRequestAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
 
-        this._logger.LogDebug("Response received: {StatusCode}", response.StatusCode);
+        _logger.LogDebug("Response received: {StatusCode}", response.StatusCode);
 
         string json = await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false);
 
         // Sensitive data, logging as trace, disabled by default
-        this._logger.LogTrace("Response content received: {Data}", json);
+        _logger.LogTrace("Response content received: {Data}", json);
 
         return JsonSerializer.Deserialize<BingSearchResponse<BingWebPage>>(json);
     }
@@ -126,16 +126,16 @@ public sealed class BingTextSearch : ITextSearch
             throw new ArgumentOutOfRangeException(nameof(searchOptions), searchOptions, $"{nameof(searchOptions)} count value must be greater than 0 and have a maximum value of 50.");
         }
 
-        Uri uri = new($"{this._uri}?q={BuildQuery(query, searchOptions)}");
+        Uri uri = new($"{_uri}?q={BuildQuery(query, searchOptions)}");
 
         using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
 
-        if (!string.IsNullOrEmpty(this._apiKey))
+        if (!string.IsNullOrEmpty(_apiKey))
         {
-            httpRequestMessage.Headers.Add("Ocp-Apim-Subscription-Key", this._apiKey);
+            httpRequestMessage.Headers.Add("Ocp-Apim-Subscription-Key", _apiKey);
         }
 
-        return await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+        return await _httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -171,7 +171,7 @@ public sealed class BingTextSearch : ITextSearch
 
         foreach (var webPage in searchResponse.WebPages.Value)
         {
-            yield return this._resultMapper.MapFromResultToTextSearchResult(webPage);
+            yield return _resultMapper.MapFromResultToTextSearchResult(webPage);
             await Task.Yield();
         }
     }
@@ -190,7 +190,7 @@ public sealed class BingTextSearch : ITextSearch
 
         foreach (var webPage in searchResponse.WebPages.Value)
         {
-            yield return this._stringMapper.MapFromResultToString(webPage);
+            yield return _stringMapper.MapFromResultToString(webPage);
             await Task.Yield();
         }
     }

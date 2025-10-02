@@ -25,7 +25,7 @@ public sealed class HuggingFaceChatCompletionService : IChatCompletionService
     private HuggingFaceMessageApiClient Client { get; }
 
     /// <inheritdoc />
-    public IReadOnlyDictionary<string, object?> Attributes => this.AttributesInternal;
+    public IReadOnlyDictionary<string, object?> Attributes => AttributesInternal;
 
 
     /// <summary>
@@ -45,15 +45,15 @@ public sealed class HuggingFaceChatCompletionService : IChatCompletionService
     {
         Verify.NotNullOrWhiteSpace(model);
 
-        this.Client = new HuggingFaceMessageApiClient(
+        Client = new HuggingFaceMessageApiClient(
             modelId: model,
             endpoint: endpoint,
             apiKey: apiKey,
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
-            logger: loggerFactory?.CreateLogger(this.GetType()) ?? NullLogger.Instance
+            logger: loggerFactory?.CreateLogger(GetType()) ?? NullLogger.Instance
         );
 
-        this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
+        AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }
 
 
@@ -72,12 +72,12 @@ public sealed class HuggingFaceChatCompletionService : IChatCompletionService
     {
         Verify.NotNull(endpoint);
 
-        this.Client = new HuggingFaceMessageApiClient(
+        Client = new HuggingFaceMessageApiClient(
             modelId: null,
             endpoint: endpoint,
             apiKey: apiKey,
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
-            logger: loggerFactory?.CreateLogger(this.GetType()) ?? NullLogger.Instance
+            logger: loggerFactory?.CreateLogger(GetType()) ?? NullLogger.Instance
         );
     }
 
@@ -88,7 +88,7 @@ public sealed class HuggingFaceChatCompletionService : IChatCompletionService
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => this.Client.CompleteChatMessageAsync(chatHistory, executionSettings, cancellationToken);
+        => Client.CompleteChatMessageAsync(chatHistory, executionSettings, cancellationToken);
 
 
     /// <inheritdoc />
@@ -97,6 +97,6 @@ public sealed class HuggingFaceChatCompletionService : IChatCompletionService
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => this.Client.StreamCompleteChatMessageAsync(chatHistory, executionSettings, cancellationToken);
+        => Client.StreamCompleteChatMessageAsync(chatHistory, executionSettings, cancellationToken);
 
 }

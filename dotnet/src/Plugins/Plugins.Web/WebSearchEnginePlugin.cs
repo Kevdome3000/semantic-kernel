@@ -46,7 +46,7 @@ public sealed class WebSearchEnginePlugin
     /// <param name="connector">The web search engine connector.</param>
     public WebSearchEnginePlugin(IWebSearchEngineConnector connector)
     {
-        this._connector = connector;
+        _connector = connector;
     }
 
 
@@ -70,7 +70,7 @@ public sealed class WebSearchEnginePlugin
         int offset = 0,
         CancellationToken cancellationToken = default)
     {
-        var results = await this._connector.SearchAsync<string>(query, count, offset, cancellationToken).
+        var results = await _connector.SearchAsync<string>(query, count, offset, cancellationToken).
             ConfigureAwait(false);
 
         if (!results.Any())
@@ -104,7 +104,7 @@ public sealed class WebSearchEnginePlugin
 
         try
         {
-            results = await this._connector.SearchAsync<WebPage>(query, count, offset, cancellationToken).
+            results = await _connector.SearchAsync<WebPage>(query, count, offset, cancellationToken).
                 ConfigureAwait(false);
 
             if (!results.Any())

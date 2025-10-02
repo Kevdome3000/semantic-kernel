@@ -22,16 +22,16 @@ public sealed class HuggingFaceTextGenerationMetadata : ReadOnlyDictionary<strin
 
     internal HuggingFaceTextGenerationMetadata(TextGenerationResponse response) : this()
     {
-        this.GeneratedTokens = response.FirstOrDefault()?.
+        GeneratedTokens = response.FirstOrDefault()?.
             Details?.GeneratedTokens;
 
-        this.FinishReason = response.FirstOrDefault()?.
+        FinishReason = response.FirstOrDefault()?.
             Details?.FinishReason;
 
-        this.Tokens = response.FirstOrDefault()?.
+        Tokens = response.FirstOrDefault()?.
             Details?.Tokens;
 
-        this.PrefillTokens = response.FirstOrDefault()?.
+        PrefillTokens = response.FirstOrDefault()?.
             Details?.Prefill;
     }
 
@@ -46,8 +46,8 @@ public sealed class HuggingFaceTextGenerationMetadata : ReadOnlyDictionary<strin
     /// </summary>
     public object? Tokens
     {
-        get => this.GetValueFromDictionary(nameof(this.Tokens));
-        internal init => this.SetValueInDictionary(value, nameof(this.Tokens));
+        get => GetValueFromDictionary(nameof(Tokens));
+        internal init => SetValueInDictionary(value, nameof(Tokens));
     }
 
     /// <summary>
@@ -55,8 +55,8 @@ public sealed class HuggingFaceTextGenerationMetadata : ReadOnlyDictionary<strin
     /// </summary>
     public object? PrefillTokens
     {
-        get => this.GetValueFromDictionary(nameof(this.PrefillTokens));
-        internal init => this.SetValueInDictionary(value, nameof(this.PrefillTokens));
+        get => GetValueFromDictionary(nameof(PrefillTokens));
+        internal init => SetValueInDictionary(value, nameof(PrefillTokens));
     }
 
     /// <summary>
@@ -64,8 +64,8 @@ public sealed class HuggingFaceTextGenerationMetadata : ReadOnlyDictionary<strin
     /// </summary>
     public int? GeneratedTokens
     {
-        get => this.GetValueFromDictionary(nameof(this.GeneratedTokens)) as int?;
-        internal init => this.SetValueInDictionary(value, nameof(this.GeneratedTokens));
+        get => GetValueFromDictionary(nameof(GeneratedTokens)) as int?;
+        internal init => SetValueInDictionary(value, nameof(GeneratedTokens));
     }
 
     /// <summary>
@@ -73,8 +73,8 @@ public sealed class HuggingFaceTextGenerationMetadata : ReadOnlyDictionary<strin
     /// </summary>
     public string? FinishReason
     {
-        get => this.GetValueFromDictionary(nameof(this.FinishReason)) as string;
-        internal init => this.SetValueInDictionary(value, nameof(this.FinishReason));
+        get => GetValueFromDictionary(nameof(FinishReason)) as string;
+        internal init => SetValueInDictionary(value, nameof(FinishReason));
     }
 
 
@@ -91,11 +91,11 @@ public sealed class HuggingFaceTextGenerationMetadata : ReadOnlyDictionary<strin
 
 
     private void SetValueInDictionary(object? value, string propertyName)
-        => this.Dictionary[propertyName] = value;
+        => Dictionary[propertyName] = value;
 
 
     private object? GetValueFromDictionary(string propertyName)
-        => this.Dictionary.TryGetValue(propertyName, out var value)
+        => Dictionary.TryGetValue(propertyName, out var value)
             ? value
             : null;
 

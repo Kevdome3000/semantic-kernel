@@ -170,7 +170,7 @@ public static partial class OpenApiKernelPluginFactory
         ILoggerFactory? loggerFactory = null,
         CancellationToken cancellationToken = default)
     {
-        using var documentStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(pluginJson));
+        using var documentStream = new MemoryStream(Encoding.UTF8.GetBytes(pluginJson));
 
         loggerFactory ??= NullLoggerFactory.Instance;
 

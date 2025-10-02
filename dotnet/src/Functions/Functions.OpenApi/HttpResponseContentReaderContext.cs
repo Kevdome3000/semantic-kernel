@@ -16,8 +16,8 @@ public sealed class HttpResponseContentReaderContext
     /// <param name="response">HTTP response message.</param>
     internal HttpResponseContentReaderContext(HttpRequestMessage request, HttpResponseMessage response)
     {
-        this.Request = request;
-        this.Response = response;
+        Request = request;
+        Response = response;
     }
 
 

@@ -35,24 +35,24 @@ public sealed class RestApiSpecification
     /// <param name="operations">REST API operations.</param>
     internal RestApiSpecification(RestApiInfo info, List<RestApiSecurityRequirement>? securityRequirements, IList<RestApiOperation> operations)
     {
-        this.Info = info;
-        this.SecurityRequirements = securityRequirements;
-        this.Operations = operations;
+        Info = info;
+        SecurityRequirements = securityRequirements;
+        Operations = operations;
     }
 
     internal void Freeze()
     {
-        if (this.SecurityRequirements is not null)
+        if (SecurityRequirements is not null)
         {
-            this.SecurityRequirements = new ReadOnlyCollection<RestApiSecurityRequirement>(this.SecurityRequirements);
-            foreach (var securityRequirement in this.SecurityRequirements)
+            SecurityRequirements = new ReadOnlyCollection<RestApiSecurityRequirement>(SecurityRequirements);
+            foreach (var securityRequirement in SecurityRequirements)
             {
                 securityRequirement.Freeze();
             }
         }
 
-        this.Operations = new ReadOnlyCollection<RestApiOperation>(this.Operations);
-        foreach (var operation in this.Operations)
+        Operations = new ReadOnlyCollection<RestApiOperation>(Operations);
+        foreach (var operation in Operations)
         {
             operation.Freeze();
         }

@@ -123,18 +123,18 @@ internal sealed class TavilySearchRequest
         IList<string>? includeDomains,
         IList<string>? excludeDomains)
     {
-        this.Query = query ?? throw new ArgumentNullException(nameof(query));
-        this.Topic = topic;
-        this.TimeRange = timeRange;
-        this.Days = days;
-        this.SearchDepth = searchDepth;
-        this.ChunksPerSource = chunksPerSource;
-        this.IncludeImages = includeImages;
-        this.IncludeImageDescriptions = includeImageDescriptions;
-        this.IncludeAnswer = includeAnswer;
-        this.IncludeRawContent = includeRawContent;
-        this.MaxResults = maxResults;
-        this.IncludeDomains = includeDomains;
-        this.ExcludeDomains = excludeDomains;
+        Query = query ?? throw new ArgumentNullException(nameof(query));
+        Topic = topic;
+        TimeRange = timeRange;
+        Days = days;
+        SearchDepth = searchDepth;
+        ChunksPerSource = chunksPerSource;
+        IncludeImages = includeImages;
+        IncludeImageDescriptions = includeImageDescriptions;
+        IncludeAnswer = includeAnswer;
+        IncludeRawContent = includeRawContent;
+        MaxResults = maxResults;
+        IncludeDomains = includeDomains;
+        ExcludeDomains = excludeDomains;
     }
 }

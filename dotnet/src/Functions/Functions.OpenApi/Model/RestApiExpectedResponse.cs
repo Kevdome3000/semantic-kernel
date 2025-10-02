@@ -31,8 +31,8 @@ public sealed class RestApiExpectedResponse
     /// <param name="schema">The schema against which the response body should be validated.</param>
     internal RestApiExpectedResponse(string description, string mediaType, KernelJsonSchema? schema = null)
     {
-        this.Description = description;
-        this.MediaType = mediaType;
-        this.Schema = schema;
+        Description = description;
+        MediaType = mediaType;
+        Schema = schema;
     }
 }

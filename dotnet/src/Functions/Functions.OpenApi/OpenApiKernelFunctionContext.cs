@@ -29,9 +29,9 @@ public sealed class OpenApiKernelFunctionContext
     /// <param name="arguments">The <see cref="KernelArguments"/> associated with this context.</param>
     internal OpenApiKernelFunctionContext(Kernel? kernel, KernelFunction? function, KernelArguments? arguments)
     {
-        this.Kernel = kernel;
-        this.Function = function;
-        this.Arguments = arguments;
+        Kernel = kernel;
+        Function = function;
+        Arguments = arguments;
     }
 
 

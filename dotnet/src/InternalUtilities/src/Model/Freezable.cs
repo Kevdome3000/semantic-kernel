@@ -19,12 +19,12 @@ internal sealed class Freezable
     /// </summary>
     public void Freeze()
     {
-        if (this.IsFrozen)
+        if (IsFrozen)
         {
             return;
         }
 
-        this.IsFrozen = true;
+        IsFrozen = true;
     }
 
     /// <summary>
@@ -33,7 +33,7 @@ internal sealed class Freezable
     /// <exception cref="InvalidOperationException"></exception>
     public void ThrowIfFrozen()
     {
-        if (this.IsFrozen)
+        if (IsFrozen)
         {
             throw new InvalidOperationException("The object is frozen and cannot be modified.");
         }

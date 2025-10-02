@@ -58,12 +58,12 @@ public sealed class BingConnector : IWebSearchEngineConnector
     {
         Verify.NotNull(httpClient);
 
-        this._apiKey = apiKey;
-        this._logger = loggerFactory?.CreateLogger(typeof(BingConnector)) ?? NullLogger.Instance;
-        this._httpClient = httpClient;
-        this._httpClient.DefaultRequestHeaders.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
-        this._httpClient.DefaultRequestHeaders.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(BingConnector)));
-        this._uri = uri ?? new Uri(DefaultUri);
+        _apiKey = apiKey;
+        _logger = loggerFactory?.CreateLogger(typeof(BingConnector)) ?? NullLogger.Instance;
+        _httpClient = httpClient;
+        _httpClient.DefaultRequestHeaders.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
+        _httpClient.DefaultRequestHeaders.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(BingConnector)));
+        _uri = uri ?? new Uri(DefaultUri);
     }
 
 
@@ -79,20 +79,20 @@ public sealed class BingConnector : IWebSearchEngineConnector
             throw new ArgumentOutOfRangeException(nameof(count), count, $"{nameof(count)} value must be greater than 0 and less than 50.");
         }
 
-        Uri uri = new($"{this._uri}={Uri.EscapeDataString(query.Trim())}&count={count}&offset={offset}");
+        Uri uri = new($"{_uri}={Uri.EscapeDataString(query.Trim())}&count={count}&offset={offset}");
 
-        this._logger.LogDebug("Sending request: {Uri}", uri);
+        _logger.LogDebug("Sending request: {Uri}", uri);
 
-        using HttpResponseMessage response = await this.SendGetRequestAsync(uri, cancellationToken).
+        using HttpResponseMessage response = await SendGetRequestAsync(uri, cancellationToken).
             ConfigureAwait(false);
 
-        this._logger.LogDebug("Response received: {StatusCode}", response.StatusCode);
+        _logger.LogDebug("Response received: {StatusCode}", response.StatusCode);
 
         string json = await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).
             ConfigureAwait(false);
 
         // Sensitive data, logging as trace, disabled by default
-        this._logger.LogTrace("Response content received: {Data}", json);
+        _logger.LogTrace("Response content received: {Data}", json);
 
         WebSearchResponse? data = JsonSerializer.Deserialize<WebSearchResponse>(json);
 
@@ -137,12 +137,12 @@ public sealed class BingConnector : IWebSearchEngineConnector
     {
         using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
 
-        if (!string.IsNullOrEmpty(this._apiKey))
+        if (!string.IsNullOrEmpty(_apiKey))
         {
-            httpRequestMessage.Headers.Add("Ocp-Apim-Subscription-Key", this._apiKey);
+            httpRequestMessage.Headers.Add("Ocp-Apim-Subscription-Key", _apiKey);
         }
 
-        return await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).
+        return await _httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).
             ConfigureAwait(false);
     }
 

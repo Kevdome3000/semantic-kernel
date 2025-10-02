@@ -21,7 +21,7 @@ internal static class WordprocessingDocumentEx
         MainDocumentPart mainPart = wordprocessingDocument.AddMainDocumentPart();
 
         // Create the document structure.
-        mainPart.Document = new DocumentFormat.OpenXml.Wordprocessing.Document();
+        mainPart.Document = new Document();
         mainPart.Document.AppendChild(new Body());
     }
 
@@ -59,7 +59,7 @@ internal static class WordprocessingDocumentEx
 
         Paragraph para = body.AppendChild(new Paragraph());
         Run run = para.AppendChild(new Run());
-        run.AppendChild(new DocumentFormat.OpenXml.Wordprocessing.Text(text));
+        run.AppendChild(new Text(text));
     }
 
 }

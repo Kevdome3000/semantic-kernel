@@ -18,10 +18,10 @@ public sealed class RestApiOperationResponseFactoryContext
     /// <param name="internalFactory">The internal factory to create instances of the <see cref="RestApiOperationResponse"/>.</param>
     internal RestApiOperationResponseFactoryContext(RestApiOperation operation, HttpRequestMessage request, HttpResponseMessage response, RestApiOperationResponseFactory internalFactory)
     {
-        this.InternalFactory = internalFactory;
-        this.Operation = operation;
-        this.Request = request;
-        this.Response = response;
+        InternalFactory = internalFactory;
+        Operation = operation;
+        Request = request;
+        Response = response;
     }
 
     /// <summary>

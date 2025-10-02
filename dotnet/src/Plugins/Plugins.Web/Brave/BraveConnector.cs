@@ -46,12 +46,12 @@ public sealed class BraveConnector : IWebSearchEngineConnector
     {
         Verify.NotNull(httpClient);
 
-        this._apiKey = apiKey;
-        this._logger = loggerFactory?.CreateLogger(typeof(BraveConnector)) ?? NullLogger.Instance;
-        this._httpClient = httpClient;
-        this._httpClient.DefaultRequestHeaders.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
-        this._httpClient.DefaultRequestHeaders.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(BraveConnector)));
-        this._uri = uri ?? new Uri(DefaultUri);
+        _apiKey = apiKey;
+        _logger = loggerFactory?.CreateLogger(typeof(BraveConnector)) ?? NullLogger.Instance;
+        _httpClient = httpClient;
+        _httpClient.DefaultRequestHeaders.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
+        _httpClient.DefaultRequestHeaders.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(BraveConnector)));
+        _uri = uri ?? new Uri(DefaultUri);
     }
 
     /// <inheritdoc/>
@@ -69,18 +69,18 @@ public sealed class BraveConnector : IWebSearchEngineConnector
             throw new ArgumentOutOfRangeException(nameof(offset), offset, $"{nameof(count)} value must be equal or greater than 0 and less than 10.");
         }
 
-        Uri uri = new($"{this._uri}={Uri.EscapeDataString(query.Trim())}&count={count}&offset={offset}");
+        Uri uri = new($"{_uri}={Uri.EscapeDataString(query.Trim())}&count={count}&offset={offset}");
 
-        this._logger.LogDebug("Sending request: {Uri}", uri);
+        _logger.LogDebug("Sending request: {Uri}", uri);
 
-        using HttpResponseMessage response = await this.SendGetRequestAsync(uri, cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage response = await SendGetRequestAsync(uri, cancellationToken).ConfigureAwait(false);
 
-        this._logger.LogDebug("Response received: {StatusCode}", response.StatusCode);
+        _logger.LogDebug("Response received: {StatusCode}", response.StatusCode);
 
         string json = await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false);
 
         // Sensitive data, logging as trace, disabled by default
-        this._logger.LogTrace("Response content received: {Data}", json);
+        _logger.LogTrace("Response content received: {Data}", json);
 
         var data = JsonSerializer.Deserialize<BraveSearchResponse<BraveWebResult>>(json);
 
@@ -150,11 +150,11 @@ public sealed class BraveConnector : IWebSearchEngineConnector
     {
         using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
 
-        if (!string.IsNullOrEmpty(this._apiKey))
+        if (!string.IsNullOrEmpty(_apiKey))
         {
-            httpRequestMessage.Headers.Add("X-Subscription-Token", this._apiKey);
+            httpRequestMessage.Headers.Add("X-Subscription-Token", _apiKey);
         }
 
-        return await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+        return await _httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
     }
 }

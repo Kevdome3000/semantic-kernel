@@ -22,13 +22,13 @@ public sealed class HuggingFaceTextGenerationStreamMetadata : ReadOnlyDictionary
 
     internal HuggingFaceTextGenerationStreamMetadata(TextGenerationStreamResponse streamResponse) : this()
     {
-        this.Index = streamResponse.Index;
-        this.TokenId = streamResponse.Token?.Id ?? 0;
-        this.TokenSpecial = streamResponse.Token?.Special;
-        this.TokenLogProb = streamResponse.Token?.LogProb;
-        this.GeneratedText = streamResponse.GeneratedText;
-        this.GeneratedTokens = streamResponse.Details?.GeneratedTokens;
-        this.FinishReason = streamResponse.Details?.FinishReason;
+        Index = streamResponse.Index;
+        TokenId = streamResponse.Token?.Id ?? 0;
+        TokenSpecial = streamResponse.Token?.Special;
+        TokenLogProb = streamResponse.Token?.LogProb;
+        GeneratedText = streamResponse.GeneratedText;
+        GeneratedTokens = streamResponse.Details?.GeneratedTokens;
+        FinishReason = streamResponse.Details?.FinishReason;
     }
 
 
@@ -42,8 +42,8 @@ public sealed class HuggingFaceTextGenerationStreamMetadata : ReadOnlyDictionary
     /// </summary>
     public int Index
     {
-        get => this.GetValueFromDictionary(nameof(this.Index)) as int? ?? 0;
-        internal init => this.SetValueInDictionary(value, nameof(this.Index));
+        get => GetValueFromDictionary(nameof(Index)) as int? ?? 0;
+        internal init => SetValueInDictionary(value, nameof(Index));
     }
 
     /// <summary>
@@ -51,8 +51,8 @@ public sealed class HuggingFaceTextGenerationStreamMetadata : ReadOnlyDictionary
     /// </summary>
     public int TokenId
     {
-        get => this.GetValueFromDictionary(nameof(this.TokenId)) as int? ?? 0;
-        internal init => this.SetValueInDictionary(value, nameof(this.TokenId));
+        get => GetValueFromDictionary(nameof(TokenId)) as int? ?? 0;
+        internal init => SetValueInDictionary(value, nameof(TokenId));
     }
 
     /// <summary>
@@ -60,8 +60,8 @@ public sealed class HuggingFaceTextGenerationStreamMetadata : ReadOnlyDictionary
     /// </summary>
     public bool? TokenSpecial
     {
-        get => this.GetValueFromDictionary(nameof(this.TokenSpecial)) as bool? ?? false;
-        internal init => this.SetValueInDictionary(value, nameof(this.TokenSpecial));
+        get => GetValueFromDictionary(nameof(TokenSpecial)) as bool? ?? false;
+        internal init => SetValueInDictionary(value, nameof(TokenSpecial));
     }
 
     /// <summary>
@@ -69,8 +69,8 @@ public sealed class HuggingFaceTextGenerationStreamMetadata : ReadOnlyDictionary
     /// </summary>
     public double? TokenLogProb
     {
-        get => this.GetValueFromDictionary(nameof(this.TokenLogProb)) as double? ?? 0;
-        internal init => this.SetValueInDictionary(value, nameof(this.TokenLogProb));
+        get => GetValueFromDictionary(nameof(TokenLogProb)) as double? ?? 0;
+        internal init => SetValueInDictionary(value, nameof(TokenLogProb));
     }
 
     /// <summary>
@@ -78,8 +78,8 @@ public sealed class HuggingFaceTextGenerationStreamMetadata : ReadOnlyDictionary
     /// </summary>
     public string? GeneratedText
     {
-        get => this.GetValueFromDictionary(nameof(this.GeneratedText)) as string;
-        internal init => this.SetValueInDictionary(value, nameof(this.GeneratedText));
+        get => GetValueFromDictionary(nameof(GeneratedText)) as string;
+        internal init => SetValueInDictionary(value, nameof(GeneratedText));
     }
 
     /// <summary>
@@ -87,8 +87,8 @@ public sealed class HuggingFaceTextGenerationStreamMetadata : ReadOnlyDictionary
     /// </summary>
     public int? GeneratedTokens
     {
-        get => this.GetValueFromDictionary(nameof(this.GeneratedTokens)) as int?;
-        internal init => this.SetValueInDictionary(value, nameof(this.GeneratedTokens));
+        get => GetValueFromDictionary(nameof(GeneratedTokens)) as int?;
+        internal init => SetValueInDictionary(value, nameof(GeneratedTokens));
     }
 
     /// <summary>
@@ -96,8 +96,8 @@ public sealed class HuggingFaceTextGenerationStreamMetadata : ReadOnlyDictionary
     /// </summary>
     public string? FinishReason
     {
-        get => this.GetValueFromDictionary(nameof(this.FinishReason)) as string;
-        internal init => this.SetValueInDictionary(value, nameof(this.FinishReason));
+        get => GetValueFromDictionary(nameof(FinishReason)) as string;
+        internal init => SetValueInDictionary(value, nameof(FinishReason));
     }
 
 
@@ -114,11 +114,11 @@ public sealed class HuggingFaceTextGenerationStreamMetadata : ReadOnlyDictionary
 
 
     private void SetValueInDictionary(object? value, string propertyName)
-        => this.Dictionary[propertyName] = value;
+        => Dictionary[propertyName] = value;
 
 
     private object? GetValueFromDictionary(string propertyName)
-        => this.Dictionary.TryGetValue(propertyName, out var value)
+        => Dictionary.TryGetValue(propertyName, out var value)
             ? value
             : null;
 

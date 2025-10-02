@@ -40,9 +40,9 @@ public sealed class RestApiServer
     internal RestApiServer(string? url = null, IDictionary<string, RestApiServerVariable>? variables = null, string? description = null)
 #pragma warning restore CA1054 // URI-like parameters should not be strings
     {
-        this.Url = string.IsNullOrEmpty(url) ? null : url;
-        this.Variables = variables ?? new Dictionary<string, RestApiServerVariable>();
-        this.Description = description;
+        Url = string.IsNullOrEmpty(url) ? null : url;
+        Variables = variables ?? new Dictionary<string, RestApiServerVariable>();
+        Description = description;
     }
 
     /// <summary>
@@ -50,8 +50,8 @@ public sealed class RestApiServer
     /// </summary>
     internal void Freeze()
     {
-        this.Variables = new ReadOnlyDictionary<string, RestApiServerVariable>(this.Variables);
-        foreach (var variable in this.Variables.Values)
+        Variables = new ReadOnlyDictionary<string, RestApiServerVariable>(Variables);
+        foreach (var variable in Variables.Values)
         {
             variable.Freeze();
         }

@@ -17,11 +17,11 @@ public sealed class RestApiServerVariable
     /// </summary>
     public string? ArgumentName
     {
-        get => this._argumentName;
+        get => _argumentName;
         set
         {
-            this._freezable.ThrowIfFrozen();
-            this._argumentName = value;
+            _freezable.ThrowIfFrozen();
+            _argumentName = value;
         }
     }
 
@@ -50,9 +50,9 @@ public sealed class RestApiServerVariable
     /// <param name="enumValues">An enumeration of string values to be used if the substitution options are from a limited set.</param>
     internal RestApiServerVariable(string defaultValue, string? description = null, IList<string>? enumValues = null)
     {
-        this.Default = defaultValue;
-        this.Description = description;
-        this.Enum = enumValues;
+        Default = defaultValue;
+        Description = description;
+        Enum = enumValues;
     }
 
 
@@ -62,13 +62,13 @@ public sealed class RestApiServerVariable
     /// <param name="value">Value to be used as a substitution.</param>
     public bool IsValid(string? value)
     {
-        return this.Enum?.Contains(value!) ?? true;
+        return Enum?.Contains(value!) ?? true;
     }
 
     internal void Freeze()
     {
-        this.Enum = this.Enum is not null ? new ReadOnlyCollection<string>(this.Enum) : null;
-        this._freezable.Freeze();
+        Enum = Enum is not null ? new ReadOnlyCollection<string>(Enum) : null;
+        _freezable.Freeze();
     }
 
     private string? _argumentName;

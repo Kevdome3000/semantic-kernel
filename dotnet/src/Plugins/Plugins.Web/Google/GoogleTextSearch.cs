@@ -47,50 +47,50 @@ public sealed class GoogleTextSearch : ITextSearch, IDisposable
         Verify.NotNull(initializer);
         Verify.NotNullOrWhiteSpace(searchEngineId);
 
-        this._search = new CustomSearchAPIService(initializer);
-        this._searchEngineId = searchEngineId;
-        this._logger = options?.LoggerFactory?.CreateLogger(typeof(GoogleTextSearch)) ?? NullLogger.Instance;
-        this._stringMapper = options?.StringMapper ?? s_defaultStringMapper;
-        this._resultMapper = options?.ResultMapper ?? s_defaultResultMapper;
+        _search = new CustomSearchAPIService(initializer);
+        _searchEngineId = searchEngineId;
+        _logger = options?.LoggerFactory?.CreateLogger(typeof(GoogleTextSearch)) ?? NullLogger.Instance;
+        _stringMapper = options?.StringMapper ?? s_defaultStringMapper;
+        _resultMapper = options?.ResultMapper ?? s_defaultResultMapper;
     }
 
     /// <inheritdoc/>
     public async Task<KernelSearchResults<object>> GetSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
         searchOptions ??= new TextSearchOptions();
-        var searchResponse = await this.ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        var searchResponse = await ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
 
         long? totalCount = searchOptions.IncludeTotalCount ? long.Parse(searchResponse.SearchInformation.TotalResults) : null;
 
-        return new KernelSearchResults<object>(this.GetResultsAsResultAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
+        return new KernelSearchResults<object>(GetResultsAsResultAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
 
     /// <inheritdoc/>
     public async Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
         searchOptions ??= new TextSearchOptions();
-        var searchResponse = await this.ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        var searchResponse = await ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
 
         long? totalCount = searchOptions.IncludeTotalCount ? long.Parse(searchResponse.SearchInformation.TotalResults) : null;
 
-        return new KernelSearchResults<TextSearchResult>(this.GetResultsAsTextSearchResultAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
+        return new KernelSearchResults<TextSearchResult>(GetResultsAsTextSearchResultAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
 
     /// <inheritdoc/>
     public async Task<KernelSearchResults<string>> SearchAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
         searchOptions ??= new TextSearchOptions();
-        var searchResponse = await this.ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        var searchResponse = await ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
 
         long? totalCount = searchOptions.IncludeTotalCount ? long.Parse(searchResponse.SearchInformation.TotalResults) : null;
 
-        return new KernelSearchResults<string>(this.GetResultsAsStringAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
+        return new KernelSearchResults<string>(GetResultsAsStringAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
 
     /// <inheritdoc/>
     public void Dispose()
     {
-        this._search.Dispose();
+        _search.Dispose();
     }
 
     #region private
@@ -149,13 +149,13 @@ public sealed class GoogleTextSearch : ITextSearch, IDisposable
             throw new ArgumentOutOfRangeException(nameof(searchOptions), offset, $"{nameof(searchOptions)}.Offset value must be must be greater than 0.");
         }
 
-        var search = this._search.Cse.List();
-        search.Cx = this._searchEngineId;
+        var search = _search.Cse.List();
+        search.Cx = _searchEngineId;
         search.Q = query;
         search.Num = count;
         search.Start = offset;
 
-        this.AddFilters(search, searchOptions);
+        AddFilters(search, searchOptions);
 
         return await search.ExecuteAsync(cancellationToken).ConfigureAwait(false);
     }
@@ -209,7 +209,7 @@ public sealed class GoogleTextSearch : ITextSearch, IDisposable
 
         foreach (var item in searchResponse.Items)
         {
-            yield return this._resultMapper.MapFromResultToTextSearchResult(item);
+            yield return _resultMapper.MapFromResultToTextSearchResult(item);
             await Task.Yield();
         }
     }
@@ -228,7 +228,7 @@ public sealed class GoogleTextSearch : ITextSearch, IDisposable
 
         foreach (var item in searchResponse.Items)
         {
-            yield return this._stringMapper.MapFromResultToString(item);
+            yield return _stringMapper.MapFromResultToString(item);
             await Task.Yield();
         }
     }

@@ -56,9 +56,9 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
         Verify.NotNull(initializer);
         Verify.NotNullOrWhiteSpace(searchEngineId);
 
-        this._search = new CustomSearchAPIService(initializer);
-        this._searchEngineId = searchEngineId;
-        this._logger = loggerFactory?.CreateLogger(typeof(GoogleConnector)) ?? NullLogger.Instance;
+        _search = new CustomSearchAPIService(initializer);
+        _searchEngineId = searchEngineId;
+        _logger = loggerFactory?.CreateLogger(typeof(GoogleConnector)) ?? NullLogger.Instance;
     }
 
 
@@ -79,8 +79,8 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
             throw new ArgumentOutOfRangeException(nameof(offset));
         }
 
-        var search = this._search.Cse.List();
-        search.Cx = this._searchEngineId;
+        var search = _search.Cse.List();
+        search.Cx = _searchEngineId;
         search.Q = query;
         search.Num = count;
         search.Start = offset;
@@ -134,7 +134,7 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
     /// </summary>
     public void Dispose()
     {
-        this._search.Dispose();
+        _search.Dispose();
     }
 
 }

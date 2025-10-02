@@ -39,18 +39,18 @@ public sealed class HuggingFaceEmbeddingGenerator : IEmbeddingGenerator<string, 
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._isExternalHttpClient = httpClient is not null;
-        this._httpClient = HttpClientProvider.GetHttpClient(httpClient);
+        _isExternalHttpClient = httpClient is not null;
+        _httpClient = HttpClientProvider.GetHttpClient(httpClient);
 
-        this.Client = new HuggingFaceClient(
+        Client = new HuggingFaceClient(
         modelId: modelId,
-            endpoint: endpoint ?? this._httpClient.BaseAddress,
+            endpoint: endpoint ?? _httpClient.BaseAddress,
             apiKey: apiKey,
-            httpClient: this._httpClient,
-            logger: loggerFactory?.CreateLogger(this.GetType()) ?? NullLogger.Instance
+            httpClient: _httpClient,
+            logger: loggerFactory?.CreateLogger(GetType()) ?? NullLogger.Instance
         );
 
-        this._metadata = new EmbeddingGeneratorMetadata(providerUri: endpoint, defaultModelId: modelId);
+        _metadata = new EmbeddingGeneratorMetadata(providerUri: endpoint, defaultModelId: modelId);
     }
 
     /// <summary>
@@ -68,25 +68,25 @@ public sealed class HuggingFaceEmbeddingGenerator : IEmbeddingGenerator<string, 
     {
         Verify.NotNull(endpoint);
 
-        this._isExternalHttpClient = httpClient is not null;
-        this._httpClient = HttpClientProvider.GetHttpClient(httpClient);
+        _isExternalHttpClient = httpClient is not null;
+        _httpClient = HttpClientProvider.GetHttpClient(httpClient);
 
-        this.Client = new HuggingFaceClient(
+        Client = new HuggingFaceClient(
             modelId: null,
-            endpoint: endpoint ?? this._httpClient.BaseAddress,
+            endpoint: endpoint ?? _httpClient.BaseAddress,
             apiKey: apiKey,
-            httpClient: this._httpClient,
-            logger: loggerFactory?.CreateLogger(this.GetType()) ?? NullLogger.Instance
+            httpClient: _httpClient,
+            logger: loggerFactory?.CreateLogger(GetType()) ?? NullLogger.Instance
         );
 
-        this._metadata = new EmbeddingGeneratorMetadata(providerUri: endpoint);
+        _metadata = new EmbeddingGeneratorMetadata(providerUri: endpoint);
     }
 
     /// <inheritdoc/>
     public async Task<GeneratedEmbeddings<Embedding<float>>> GenerateAsync(IEnumerable<string> values, EmbeddingGenerationOptions? options = null, CancellationToken cancellationToken = default)
     {
         var data = values.ToList();
-        var result = await this.Client.GenerateEmbeddingsAsync(data, null, cancellationToken).ConfigureAwait(false);
+        var result = await Client.GenerateEmbeddingsAsync(data, null, cancellationToken).ConfigureAwait(false);
         return new GeneratedEmbeddings<Embedding<float>>(result.Select(e => new Embedding<float>(e)));
     }
 
@@ -94,9 +94,9 @@ public sealed class HuggingFaceEmbeddingGenerator : IEmbeddingGenerator<string, 
     public void Dispose()
     {
         // Dispose the HttpClient only if it was created internally
-        if (!this._isExternalHttpClient)
+        if (!_isExternalHttpClient)
         {
-            this._httpClient.Dispose();
+            _httpClient.Dispose();
         }
     }
 
@@ -108,7 +108,7 @@ public sealed class HuggingFaceEmbeddingGenerator : IEmbeddingGenerator<string, 
         return
             serviceKey is null ? null :
             serviceType.IsInstanceOfType(this) ? this :
-            serviceType == typeof(EmbeddingGeneratorMetadata) ? this._metadata :
+            serviceType == typeof(EmbeddingGeneratorMetadata) ? _metadata :
             null;
     }
 }
