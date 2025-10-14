@@ -33,13 +33,13 @@ internal sealed class MagenticAgentActor :
     public MagenticAgentActor(AgentId id, IAgentRuntime runtime, OrchestrationContext context, Agent agent, ILogger<MagenticAgentActor>? logger = null)
         : base(id, runtime, context, agent, logger)
     {
-        this._cache = [];
+        _cache = [];
     }
 
     /// <inheritdoc/>
     public ValueTask HandleAsync(MagenticMessages.Group item, MessageContext messageContext)
     {
-        this._cache.AddRange(item.Messages);
+        _cache.AddRange(item.Messages);
 
 #if !NETCOREAPP
         return Task.CompletedTask.AsValueTask();
@@ -51,8 +51,8 @@ internal sealed class MagenticAgentActor :
     /// <inheritdoc/>
     public async ValueTask HandleAsync(MagenticMessages.Reset item, MessageContext messageContext)
     {
-        this._cache.Clear();
-        await this.DeleteThreadAsync(messageContext.CancellationToken).ConfigureAwait(false);
+        _cache.Clear();
+        await DeleteThreadAsync(messageContext.CancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -60,14 +60,14 @@ internal sealed class MagenticAgentActor :
     {
         try
         {
-            this.Logger.LogMagenticAgentInvoke(this.Id);
+            Logger.LogMagenticAgentInvoke(Id);
 
-            ChatMessageContent response = await this.InvokeAsync(this._cache, messageContext.CancellationToken).ConfigureAwait(false);
+            ChatMessageContent response = await InvokeAsync(_cache, messageContext.CancellationToken).ConfigureAwait(false);
 
-            this.Logger.LogMagenticAgentResult(this.Id, response.Content);
+            Logger.LogMagenticAgentResult(Id, response.Content);
 
-            this._cache.Clear();
-            await this.PublishMessageAsync(response.AsGroupMessage(), this.Context.Topic).ConfigureAwait(false);
+            _cache.Clear();
+            await PublishMessageAsync(response.AsGroupMessage(), Context.Topic).ConfigureAwait(false);
         }
         catch (Exception exception)
         {

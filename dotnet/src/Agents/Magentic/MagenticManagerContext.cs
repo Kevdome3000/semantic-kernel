@@ -26,12 +26,12 @@ public sealed class MagenticManagerContext
         int stallCount,
         int resetCount)
     {
-        this.Team = team;
-        this.Task = [.. task];
-        this.History = [.. history];
-        this.ResponseCount = responseCount;
-        this.StallCount = stallCount;
-        this.ResetCount = resetCount;
+        Team = team;
+        Task = [.. task];
+        History = [.. history];
+        ResponseCount = responseCount;
+        StallCount = stallCount;
+        ResetCount = resetCount;
     }
 
     /// <summary>

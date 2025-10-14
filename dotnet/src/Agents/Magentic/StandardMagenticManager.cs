@@ -46,31 +46,31 @@ public sealed class StandardMagenticManager : MagenticManager
             throw new KernelException($"Unable to proceed with frozen {nameof(PromptExecutionSettings)}.");
         }
 
-        this._service = service;
-        this._executionSettings = executionSettings;
-        this._executionSettings.SetResponseFormat<MagenticProgressLedger>();
+        _service = service;
+        _executionSettings = executionSettings;
+        _executionSettings.SetResponseFormat<MagenticProgressLedger>();
     }
 
     /// <inheritdoc/>
     public override async ValueTask<IList<ChatMessageContent>> PlanAsync(MagenticManagerContext context, CancellationToken cancellationToken)
     {
-        this._facts = await this.PrepareTaskFactsAsync(context, MagenticPrompts.NewFactsTemplate, cancellationToken).ConfigureAwait(false);
-        this._plan = await this.PrepareTaskPlanAsync(context, MagenticPrompts.NewPlanTemplate, cancellationToken).ConfigureAwait(false);
+        _facts = await PrepareTaskFactsAsync(context, MagenticPrompts.NewFactsTemplate, cancellationToken).ConfigureAwait(false);
+        _plan = await PrepareTaskPlanAsync(context, MagenticPrompts.NewPlanTemplate, cancellationToken).ConfigureAwait(false);
 
-        Debug.WriteLine($"\n<FACTS>:\n{this._facts}\n</FACTS>\n\n<PLAN>:\n{this._plan}\n</PLAN>\n");
+        Debug.WriteLine($"\n<FACTS>:\n{_facts}\n</FACTS>\n\n<PLAN>:\n{_plan}\n</PLAN>\n");
 
-        return await this.PrepareTaskLedgerAsync(context, cancellationToken).ConfigureAwait(false);
+        return await PrepareTaskLedgerAsync(context, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
     public override async ValueTask<IList<ChatMessageContent>> ReplanAsync(MagenticManagerContext context, CancellationToken cancellationToken)
     {
-        this._facts = await this.PrepareTaskFactsAsync(context, MagenticPrompts.RefreshFactsTemplate, cancellationToken).ConfigureAwait(false);
-        this._plan = await this.PrepareTaskPlanAsync(context, MagenticPrompts.RefreshPlanTemplate, cancellationToken).ConfigureAwait(false);
+        _facts = await PrepareTaskFactsAsync(context, MagenticPrompts.RefreshFactsTemplate, cancellationToken).ConfigureAwait(false);
+        _plan = await PrepareTaskPlanAsync(context, MagenticPrompts.RefreshPlanTemplate, cancellationToken).ConfigureAwait(false);
 
-        Debug.WriteLine($"\n<FACTS>:\n{this._facts}\n</FACTS>\n\n<PLAN>:\n{this._plan}\n</PLAN>\n");
+        Debug.WriteLine($"\n<FACTS>:\n{_facts}\n</FACTS>\n\n<PLAN>:\n{_plan}\n</PLAN>\n");
 
-        return await this.PrepareTaskLedgerAsync(context, cancellationToken).ConfigureAwait(false);
+        return await PrepareTaskLedgerAsync(context, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -80,10 +80,10 @@ public sealed class StandardMagenticManager : MagenticManager
         KernelArguments arguments =
             new()
             {
-                { MagenticPrompts.Parameters.Task, this.FormatInputTask(context.Task) },
+                { MagenticPrompts.Parameters.Task, FormatInputTask(context.Task) },
                 { MagenticPrompts.Parameters.Team, context.Team.FormatNames() },
             };
-        string response = await this.GetResponseAsync(internalChat, MagenticPrompts.StatusTemplate, arguments, this._executionSettings, cancellationToken).ConfigureAwait(false);
+        string response = await GetResponseAsync(internalChat, MagenticPrompts.StatusTemplate, arguments, _executionSettings, cancellationToken).ConfigureAwait(false);
         MagenticProgressLedger status =
             JsonSerializer.Deserialize<MagenticProgressLedger>(response) ??
             throw new InvalidDataException($"Message content does not align with requested type: {nameof(MagenticProgressLedger)}.");
@@ -99,7 +99,7 @@ public sealed class StandardMagenticManager : MagenticManager
             {
                 { MagenticPrompts.Parameters.Task, context.Task },
             };
-        string response = await this.GetResponseAsync(context.History, MagenticPrompts.AnswerTemplate, arguments, executionSettings: null, cancellationToken).ConfigureAwait(false);
+        string response = await GetResponseAsync(context.History, MagenticPrompts.AnswerTemplate, arguments, executionSettings: null, cancellationToken).ConfigureAwait(false);
 
         return new ChatMessageContent(AuthorRole.Assistant, response);
     }
@@ -109,11 +109,11 @@ public sealed class StandardMagenticManager : MagenticManager
         KernelArguments arguments =
             new()
             {
-                { MagenticPrompts.Parameters.Task, this.FormatInputTask(context.Task) },
-                { MagenticPrompts.Parameters.Facts, this._facts },
+                { MagenticPrompts.Parameters.Task, FormatInputTask(context.Task) },
+                { MagenticPrompts.Parameters.Facts, _facts },
             };
         return
-            await this.GetResponseAsync(
+            await GetResponseAsync(
                 context.History,
                 promptTemplate,
                 arguments,
@@ -130,7 +130,7 @@ public sealed class StandardMagenticManager : MagenticManager
             };
 
         return
-            await this.GetResponseAsync(
+            await GetResponseAsync(
                 context.History,
                 promptTemplate,
                 arguments,
@@ -143,12 +143,12 @@ public sealed class StandardMagenticManager : MagenticManager
         KernelArguments arguments =
             new()
             {
-                { MagenticPrompts.Parameters.Task, this.FormatInputTask(context.Task) },
+                { MagenticPrompts.Parameters.Task, FormatInputTask(context.Task) },
                 { MagenticPrompts.Parameters.Team, context.Team.FormatList() },
-                { MagenticPrompts.Parameters.Facts, this._facts },
-                { MagenticPrompts.Parameters.Plan, this._plan },
+                { MagenticPrompts.Parameters.Facts, _facts },
+                { MagenticPrompts.Parameters.Plan, _plan },
             };
-        string ledger = await this.GetMessageAsync(MagenticPrompts.LedgerTemplate, arguments).ConfigureAwait(false);
+        string ledger = await GetMessageAsync(MagenticPrompts.LedgerTemplate, arguments).ConfigureAwait(false);
 
         return [new ChatMessageContent(AuthorRole.System, ledger)];
     }
@@ -166,9 +166,9 @@ public sealed class StandardMagenticManager : MagenticManager
         CancellationToken cancellationToken = default)
     {
         ChatHistory history = [.. internalChat];
-        string message = await this.GetMessageAsync(template, arguments).ConfigureAwait(false);
+        string message = await GetMessageAsync(template, arguments).ConfigureAwait(false);
         history.Add(new ChatMessageContent(AuthorRole.User, message));
-        ChatMessageContent response = await this._service.GetChatMessageContentAsync(history, executionSettings, kernel: null, cancellationToken).ConfigureAwait(false);
+        ChatMessageContent response = await _service.GetChatMessageContentAsync(history, executionSettings, kernel: null, cancellationToken).ConfigureAwait(false);
         return response.Content ?? string.Empty;
     }
 

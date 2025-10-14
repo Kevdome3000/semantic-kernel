@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Microsoft.Extensions.AI;
-using Microsoft.SemanticKernel.ChatCompletion;
 
 #pragma warning disable IDE0130
 namespace Microsoft.SemanticKernel;

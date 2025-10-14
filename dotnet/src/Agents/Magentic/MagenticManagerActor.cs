@@ -50,10 +50,10 @@ internal sealed class MagenticManagerActor :
     public MagenticManagerActor(AgentId id, IAgentRuntime runtime, OrchestrationContext context, MagenticManager manager, MagenticTeam team, AgentType orchestrationType, ILogger? logger = null)
         : base(id, runtime, context, DefaultDescription, logger)
     {
-        this._chat = [];
-        this._manager = manager;
-        this._orchestrationType = orchestrationType;
-        this._team = team;
+        _chat = [];
+        _manager = manager;
+        _orchestrationType = orchestrationType;
+        _team = team;
 
         Debug.WriteLine($"TEAM:\n{team.FormatList()}");
     }
@@ -61,24 +61,24 @@ internal sealed class MagenticManagerActor :
     /// <inheritdoc/>
     public async ValueTask HandleAsync(MagenticMessages.InputTask item, MessageContext messageContext)
     {
-        this.Logger.LogMagenticManagerInit(this.Id);
+        Logger.LogMagenticManagerInit(Id);
 
-        this._chat.AddRange(item.Messages);
-        this._inputTask = item.Messages.ToList().AsReadOnly();
+        _chat.AddRange(item.Messages);
+        _inputTask = item.Messages.ToList().AsReadOnly();
 
-        await this.PublishMessageAsync(item.Messages.AsGroupMessage(), this.Context.Topic).ConfigureAwait(false);
-        await this.PrepareAsync(isReset: false, messageContext.CancellationToken).ConfigureAwait(false);
-        await this.ManageAsync(messageContext.CancellationToken).ConfigureAwait(false);
+        await PublishMessageAsync(item.Messages.AsGroupMessage(), Context.Topic).ConfigureAwait(false);
+        await PrepareAsync(isReset: false, messageContext.CancellationToken).ConfigureAwait(false);
+        await ManageAsync(messageContext.CancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
     public async ValueTask HandleAsync(MagenticMessages.Group item, MessageContext messageContext)
     {
-        this.Logger.LogMagenticManagerInvoke(this.Id);
+        Logger.LogMagenticManagerInvoke(Id);
 
-        this._chat.AddRange(item.Messages);
+        _chat.AddRange(item.Messages);
 
-        await this.ManageAsync(messageContext.CancellationToken).ConfigureAwait(false);
+        await ManageAsync(messageContext.CancellationToken).ConfigureAwait(false);
     }
 
     private async ValueTask ManageAsync(CancellationToken cancellationToken)
@@ -92,15 +92,15 @@ internal sealed class MagenticManagerActor :
             string agentInstruction = string.Empty;
             try
             {
-                MagenticManagerContext context = this.CreateContext();
-                MagenticProgressLedger status = await this._manager.EvaluateTaskProgressAsync(context, cancellationToken).ConfigureAwait(false);
+                MagenticManagerContext context = CreateContext();
+                MagenticProgressLedger status = await _manager.EvaluateTaskProgressAsync(context, cancellationToken).ConfigureAwait(false);
 
                 Debug.WriteLine($"STATUS:\n{status.ToJson()}");
 
                 if (status.IsTaskComplete)
                 {
-                    ChatMessageContent finalAnswer = await this._manager.PrepareFinalAnswerAsync(context, cancellationToken).ConfigureAwait(false);
-                    await this.PublishMessageAsync(finalAnswer.AsResultMessage(), this._orchestrationType, cancellationToken).ConfigureAwait(false);
+                    ChatMessageContent finalAnswer = await _manager.PrepareFinalAnswerAsync(context, cancellationToken).ConfigureAwait(false);
+                    await PublishMessageAsync(finalAnswer.AsResultMessage(), _orchestrationType, cancellationToken).ConfigureAwait(false);
                     break;
                 }
 
@@ -110,12 +110,12 @@ internal sealed class MagenticManagerActor :
             }
             catch (Exception exception) when (!exception.IsCriticalException())
             {
-                this.Logger.LogMagenticManagerStatusFailure(this.Context.Topic, exception);
+                Logger.LogMagenticManagerStatusFailure(Context.Topic, exception);
                 isStalled = true;
                 stallMessage = exception.Message;
             }
 
-            bool hasAgent = this._team.TryGetValue(agentName, out (string Type, string Description) agent);
+            bool hasAgent = _team.TryGetValue(agentName, out (string Type, string Description) agent);
             if (!hasAgent)
             {
                 isStalled = true;
@@ -124,68 +124,68 @@ internal sealed class MagenticManagerActor :
 
             if (isStalled)
             {
-                ++this._stallCount;
+                ++_stallCount;
 
-                Debug.WriteLine($"TASK STALLED: #{this._stallCount}/{this._manager.MaximumStallCount} [#{this._retryCount}] -  {stallMessage}");
+                Debug.WriteLine($"TASK STALLED: #{_stallCount}/{_manager.MaximumStallCount} [#{_retryCount}] -  {stallMessage}");
             }
             else
             {
-                this._stallCount = Math.Max(0, this._stallCount - 1);
+                _stallCount = Math.Max(0, _stallCount - 1);
             }
 
-            bool needsReset = this._stallCount >= this._manager.MaximumStallCount;
+            bool needsReset = _stallCount >= _manager.MaximumStallCount;
 
             if (!needsReset && hasAgent)
             {
-                ++this._invocationCount;
+                ++_invocationCount;
 
-                if (this._invocationCount >= this._manager.MaximumInvocationCount)
+                if (_invocationCount >= _manager.MaximumInvocationCount)
                 {
-                    this.Logger.LogMagenticManagerTaskFailed(this.Context.Topic);
+                    Logger.LogMagenticManagerTaskFailed(Context.Topic);
                     try
                     {
-                        var partialResult = this._chat.Last((message) => message.Role == AuthorRole.Assistant);
-                        await this.PublishMessageAsync(partialResult.AsResultMessage(), this._orchestrationType, cancellationToken).ConfigureAwait(false);
+                        var partialResult = _chat.Last((message) => message.Role == AuthorRole.Assistant);
+                        await PublishMessageAsync(partialResult.AsResultMessage(), _orchestrationType, cancellationToken).ConfigureAwait(false);
                     }
                     catch (InvalidOperationException)
                     {
-                        await this.PublishMessageAsync("I've reaches the maximum number of invocations. No partial result available.".AsResultMessage(), this._orchestrationType, cancellationToken).ConfigureAwait(false);
+                        await PublishMessageAsync("I've reaches the maximum number of invocations. No partial result available.".AsResultMessage(), _orchestrationType, cancellationToken).ConfigureAwait(false);
                     }
                     break;
                 }
 
                 ChatMessageContent instruction = new(AuthorRole.Assistant, agentInstruction);
-                this._chat.Add(instruction);
-                await this.PublishMessageAsync(instruction.AsGroupMessage(), this.Context.Topic, messageId: null, cancellationToken).ConfigureAwait(false);
-                await this.PublishMessageAsync(new MagenticMessages.Speak(), agent.Type, cancellationToken).ConfigureAwait(false);
+                _chat.Add(instruction);
+                await PublishMessageAsync(instruction.AsGroupMessage(), Context.Topic, messageId: null, cancellationToken).ConfigureAwait(false);
+                await PublishMessageAsync(new MagenticMessages.Speak(), agent.Type, cancellationToken).ConfigureAwait(false);
                 break;
             }
 
-            if (this._stallCount >= this._manager.MaximumStallCount)
+            if (_stallCount >= _manager.MaximumStallCount)
             {
-                if (this._retryCount >= this._manager.MaximumResetCount)
+                if (_retryCount >= _manager.MaximumResetCount)
                 {
-                    this.Logger.LogMagenticManagerTaskFailed(this.Context.Topic);
+                    Logger.LogMagenticManagerTaskFailed(Context.Topic);
                     try
                     {
-                        var partialResult = this._chat.Last((message) => message.Role == AuthorRole.Assistant);
-                        await this.PublishMessageAsync(partialResult.AsResultMessage(), this._orchestrationType, cancellationToken).ConfigureAwait(false);
+                        var partialResult = _chat.Last((message) => message.Role == AuthorRole.Assistant);
+                        await PublishMessageAsync(partialResult.AsResultMessage(), _orchestrationType, cancellationToken).ConfigureAwait(false);
                     }
                     catch (InvalidOperationException)
                     {
-                        await this.PublishMessageAsync("I've experienced multiple failures and am unable to continue. No partial result available.".AsResultMessage(), this._orchestrationType, cancellationToken).ConfigureAwait(false);
+                        await PublishMessageAsync("I've experienced multiple failures and am unable to continue. No partial result available.".AsResultMessage(), _orchestrationType, cancellationToken).ConfigureAwait(false);
                     }
                     break;
                 }
 
-                this._retryCount++;
-                this._stallCount = 0;
+                _retryCount++;
+                _stallCount = 0;
 
-                this.Logger.LogMagenticManagerTaskReset(this.Context.Topic, this._retryCount);
-                Debug.WriteLine($"TASK RESET [#{this._retryCount}]");
+                Logger.LogMagenticManagerTaskReset(Context.Topic, _retryCount);
+                Debug.WriteLine($"TASK RESET [#{_retryCount}]");
 
-                await this.PublishMessageAsync(new MagenticMessages.Reset(), this.Context.Topic, messageId: null, cancellationToken).ConfigureAwait(false);
-                await this.PrepareAsync(isReset: true, cancellationToken).ConfigureAwait(false);
+                await PublishMessageAsync(new MagenticMessages.Reset(), Context.Topic, messageId: null, cancellationToken).ConfigureAwait(false);
+                await PrepareAsync(isReset: true, cancellationToken).ConfigureAwait(false);
             }
         }
         while (isStalled);
@@ -193,24 +193,24 @@ internal sealed class MagenticManagerActor :
 
     private async ValueTask PrepareAsync(bool isReset, CancellationToken cancellationToken)
     {
-        ChatHistory internalChat = [.. this._chat];
-        this._chat.Clear();
+        ChatHistory internalChat = [.. _chat];
+        _chat.Clear();
 
-        MagenticManagerContext context = this.CreateContext(internalChat);
+        MagenticManagerContext context = CreateContext(internalChat);
 
         IList<ChatMessageContent> plan;
         if (isReset)
         {
-            plan = await this._manager.PlanAsync(context, cancellationToken).ConfigureAwait(false);
+            plan = await _manager.PlanAsync(context, cancellationToken).ConfigureAwait(false);
         }
         else
         {
-            plan = await this._manager.ReplanAsync(context, cancellationToken).ConfigureAwait(false);
+            plan = await _manager.ReplanAsync(context, cancellationToken).ConfigureAwait(false);
         }
 
-        this._chat.AddRange(plan);
+        _chat.AddRange(plan);
     }
 
     private MagenticManagerContext CreateContext(ChatHistory? chat = null) =>
-        new(this._team, this._inputTask, (chat ?? this._chat), this._invocationCount, this._stallCount, this._retryCount);
+        new(_team, _inputTask, (chat ?? _chat), _invocationCount, _stallCount, _retryCount);
 }

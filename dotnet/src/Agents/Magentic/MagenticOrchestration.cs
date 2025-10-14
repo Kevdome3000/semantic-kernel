@@ -30,7 +30,7 @@ public class MagenticOrchestration<TInput, TOutput> :
     {
         Verify.NotNull(manager, nameof(manager));
 
-        this._manager = manager;
+        _manager = manager;
     }
 
     /// <inheritdoc />
@@ -50,7 +50,7 @@ public class MagenticOrchestration<TInput, TOutput> :
 
         int agentCount = 0;
         MagenticTeam team = [];
-        foreach (Agent agent in this.Members)
+        foreach (Agent agent in Members)
         {
             ++agentCount;
             AgentType agentType = await RegisterAgentAsync(agent, agentCount).ConfigureAwait(false);
@@ -59,24 +59,24 @@ public class MagenticOrchestration<TInput, TOutput> :
 
             team[name] = (agentType, description ?? DefaultAgentDescription);
 
-            logger.LogRegisterActor(this.OrchestrationLabel, agentType, "MEMBER", agentCount);
+            logger.LogRegisterActor(OrchestrationLabel, agentType, "MEMBER", agentCount);
 
             await runtime.SubscribeAsync(agentType, context.Topic).ConfigureAwait(false);
         }
 
         AgentType managerType =
             await runtime.RegisterOrchestrationAgentAsync(
-                this.FormatAgentType(context.Topic, "Manager"),
+                FormatAgentType(context.Topic, "Manager"),
                 (agentId, runtime) =>
                 {
-                    MagenticManagerActor actor = new(agentId, runtime, context, this._manager, team, outputType, context.LoggerFactory.CreateLogger<MagenticManagerActor>());
+                    MagenticManagerActor actor = new(agentId, runtime, context, _manager, team, outputType, context.LoggerFactory.CreateLogger<MagenticManagerActor>());
 #if !NETCOREAPP
                     return actor.AsValueTask<IHostableAgent>();
 #else
                     return ValueTask.FromResult<IHostableAgent>(actor);
 #endif
                 }).ConfigureAwait(false);
-        logger.LogRegisterActor(this.OrchestrationLabel, managerType, "MANAGER");
+        logger.LogRegisterActor(OrchestrationLabel, managerType, "MANAGER");
 
         await runtime.SubscribeAsync(managerType, context.Topic).ConfigureAwait(false);
 
@@ -84,7 +84,7 @@ public class MagenticOrchestration<TInput, TOutput> :
 
         ValueTask<AgentType> RegisterAgentAsync(Agent agent, int agentCount) =>
             runtime.RegisterOrchestrationAgentAsync(
-                this.FormatAgentType(context.Topic, $"Agent_{agentCount}"),
+                FormatAgentType(context.Topic, $"Agent_{agentCount}"),
                 (agentId, runtime) =>
                 {
                     MagenticAgentActor actor = new(agentId, runtime, context, agent, context.LoggerFactory.CreateLogger<MagenticAgentActor>());

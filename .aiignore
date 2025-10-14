@@ -1,0 +1,34 @@
+# User-managed defaults (preserved)
+# >>> DEFAULTS (.aiignore) START
+/.benchmarks/
+/.idea/
+/node_modules/
+/bin/
+/obj/
+.devcontainer/
+.vscode/
+.github/
+java/
+/.scannerwork/
+/build/
+/dist/
+/.venv/
+/.pytest_cache/
+/.DS_Store
+*.log
+*.tmp
+*.bak
+*.swp
+*.png
+docs/code_maps
+docs/images
+docs/COSINE_SIMILARITY.md
+docs/DOT_PRODUCT.md
+docs/EMBEDDINGS.md
+docs/EUCLIDEAN_DISTANCE.md
+docs/FAQS.md
+docs/GLOSSARY.md
+docs/PLANNERS.md
+docs/PLUGINS.md
+docs/PROMPT_TEMPLATE_LANGUAGE.md
+# <<< DEFAULTS (.aiignore) END
