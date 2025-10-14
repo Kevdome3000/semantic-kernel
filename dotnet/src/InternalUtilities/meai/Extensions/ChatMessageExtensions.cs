@@ -8,10 +8,17 @@ using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.Extensions.AI;
 
+using ImageContent = ImageContent;
+using AudioContent = AudioContent;
+using BinaryContent = BinaryContent;
+using KernelContent = KernelContent;
+using ChatMessageContent = ChatMessageContent;
+
+
 [ExcludeFromCodeCoverage]
 internal static class ChatMessageExtensions
 {
-    /// <summary>Converts a <see cref="ChatMessage"/> to a <see cref="ChatMessageContent"/>.</summary>
+    /// <summary>Converts a <see cref="Microsoft.Extensions.AI.ChatMessage"/> to a <see cref="ChatMessageContent"/>.</summary>
     internal static ChatMessageContent ToChatMessageContent(this ChatMessage message, ChatResponse? response = null)
     {
         ChatMessageContent result = new()
@@ -28,18 +35,18 @@ internal static class ChatMessageExtensions
 #pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             KernelContent? resultContent = content switch
             {
-                Microsoft.Extensions.AI.TextContent tc => new TextContent(tc.Text),
+                TextContent tc => new SemanticKernel.TextContent(tc.Text),
                 DataContent dc when dc.HasTopLevelMediaType("image") => new ImageContent(dc.Uri),
                 UriContent uc when uc.HasTopLevelMediaType("image") => new ImageContent(uc.Uri),
                 DataContent dc when dc.HasTopLevelMediaType("audio") => new AudioContent(dc.Uri),
                 UriContent uc when uc.HasTopLevelMediaType("audio") => new AudioContent(uc.Uri),
                 DataContent dc => new BinaryContent(dc.Uri),
                 UriContent uc => new BinaryContent(uc.Uri),
-                Microsoft.Extensions.AI.FunctionCallContent fcc => new FunctionCallContent(
+                FunctionCallContent fcc => new SemanticKernel.FunctionCallContent(
                     functionName: fcc.Name,
                     id: fcc.CallId,
                     arguments: fcc.Arguments is not null ? new(fcc.Arguments) : null),
-                Microsoft.Extensions.AI.FunctionResultContent frc => new FunctionResultContent(
+                FunctionResultContent frc => new SemanticKernel.FunctionResultContent(
                     functionName: GetFunctionCallContent(frc.CallId)?.Name,
                     callId: frc.CallId,
                     result: frc.Result),
@@ -58,10 +65,10 @@ internal static class ChatMessageExtensions
 
         return result;
 
-        Microsoft.Extensions.AI.FunctionCallContent? GetFunctionCallContent(string callId)
+        FunctionCallContent? GetFunctionCallContent(string callId)
             => response?.Messages
                 .Select(m => m.Contents
-                .FirstOrDefault(c => c is Microsoft.Extensions.AI.FunctionCallContent fcc && fcc.CallId == callId) as Microsoft.Extensions.AI.FunctionCallContent)
+                .FirstOrDefault(c => c is FunctionCallContent fcc && fcc.CallId == callId) as FunctionCallContent)
                     .FirstOrDefault(fcc => fcc is not null);
     }
 
