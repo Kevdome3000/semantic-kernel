@@ -261,7 +261,7 @@ public sealed class BraveTextSearch : ITextSearch
         {
             if (result is not BraveWebResult webPage)
             {
-                throw new ArgumentException("Result must be a BraveWebResult", nameof(result));
+                throw new ArgumentException(@"Result must be a BraveWebResult", nameof(result));
             }
 
             return webPage.Description ?? string.Empty;
@@ -278,7 +278,7 @@ public sealed class BraveTextSearch : ITextSearch
         {
             if (result is not BraveWebResult webPage)
             {
-                throw new ArgumentException("Result must be a BraveWebResult", nameof(result));
+                throw new ArgumentException(@"Result must be a BraveWebResult", nameof(result));
             }
 
             return new TextSearchResult(webPage.Description ?? string.Empty) { Name = webPage.Title, Link = webPage.Url };
@@ -313,7 +313,7 @@ public sealed class BraveTextSearch : ITextSearch
                     }
                     else
                     {
-                        throw new ArgumentException($"Unknown equality filter clause field name '{equalityFilterClause.FieldName}', must be one of {string.Join(",", s_queryParameters)}", nameof(searchOptions));
+                        throw new ArgumentException($@"Unknown equality filter clause field name '{equalityFilterClause.FieldName}', must be one of {string.Join(",", s_queryParameters)}", nameof(searchOptions));
                     }
                 }
             }
@@ -335,32 +335,32 @@ public sealed class BraveTextSearch : ITextSearch
         {
             case "country":
                 if (value is not string strCountry || !s_countryCodes.Contains(strCountry))
-                { throw new ArgumentException($"Country Code must be one of {string.Join(",", s_countryCodes)}", nameof(value)); }
+                { throw new ArgumentException($@"Country Code must be one of {string.Join(",", s_countryCodes)}", nameof(value)); }
                 break;
 
             case "search_lang":
                 if (value is not string strLang || !s_searchLang.Contains(strLang))
-                { throw new ArgumentException($"Search Language must be one of {string.Join(",", s_searchLang)}", nameof(value)); }
+                { throw new ArgumentException($@"Search Language must be one of {string.Join(",", s_searchLang)}", nameof(value)); }
                 break;
 
             case "ui_lang":
                 if (value is not string strUi || !s_uiCode.Contains(strUi))
-                { throw new ArgumentException($"UI Language must be one of {string.Join(",", s_uiCode)}", nameof(value)); }
+                { throw new ArgumentException($@"UI Language must be one of {string.Join(",", s_uiCode)}", nameof(value)); }
                 break;
 
             case "safesearch":
                 if (value is not string safe || !s_safeSearch.Contains(safe))
-                { throw new ArgumentException($"SafeSearch allows only: {string.Join(",", s_safeSearch)}", nameof(value)); }
+                { throw new ArgumentException($@"SafeSearch allows only: {string.Join(",", s_safeSearch)}", nameof(value)); }
                 break;
 
             case "text_decorations":
                 if (value is not bool)
-                { throw new ArgumentException("Text Decorations must be of type bool", nameof(value)); }
+                { throw new ArgumentException(@"Text Decorations must be of type bool", nameof(value)); }
                 break;
 
             case "spellcheck":
                 if (value is not bool)
-                { throw new ArgumentException("SpellCheck must be of type bool", nameof(value)); }
+                { throw new ArgumentException(@"SpellCheck must be of type bool", nameof(value)); }
                 break;
 
             case "result_filter":
@@ -368,18 +368,18 @@ public sealed class BraveTextSearch : ITextSearch
                 {
                     var filters = filterStr.Split([","], StringSplitOptions.RemoveEmptyEntries);
                     if (filters.Any(f => !s_resultFilter.Contains(f)))
-                    { throw new ArgumentException($"Result Filter allows only: {string.Join(",", s_resultFilter)}", nameof(value)); }
+                    { throw new ArgumentException($@"Result Filter allows only: {string.Join(",", s_resultFilter)}", nameof(value)); }
                 }
                 break;
 
             case "units":
                 if (value is not string strUnit || strUnit is not ("metric" or "imperial"))
-                { throw new ArgumentException("Units can only be `metric` or `imperial`", nameof(value)); }
+                { throw new ArgumentException(@"Units can only be `metric` or `imperial`", nameof(value)); }
                 break;
 
             case "extra_snippets":
                 if (value is not bool)
-                { throw new ArgumentException("Extra Snippets must be of type bool", nameof(value)); }
+                { throw new ArgumentException(@"Extra Snippets must be of type bool", nameof(value)); }
                 break;
         }
     }

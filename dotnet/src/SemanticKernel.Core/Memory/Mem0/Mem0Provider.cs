@@ -73,7 +73,7 @@ public sealed class Mem0Provider : AIContextProvider
 
         if (string.IsNullOrWhiteSpace(httpClient.BaseAddress?.AbsolutePath))
         {
-            throw new ArgumentException("The BaseAddress of the provided httpClient parameter must be set.", nameof(httpClient));
+            throw new ArgumentException(@"The BaseAddress of the provided httpClient parameter must be set.", nameof(httpClient));
         }
 
         _applicationId = options?.ApplicationId;

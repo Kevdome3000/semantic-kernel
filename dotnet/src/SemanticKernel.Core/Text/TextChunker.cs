@@ -115,12 +115,12 @@ public static class TextChunker
     {
         if (maxTokensPerParagraph <= 0)
         {
-            throw new ArgumentException("maxTokensPerParagraph should be a positive number", nameof(maxTokensPerParagraph));
+            throw new ArgumentException(@"maxTokensPerParagraph should be a positive number", nameof(maxTokensPerParagraph));
         }
 
         if (maxTokensPerParagraph <= overlapTokens)
         {
-            throw new ArgumentException("overlapTokens cannot be larger than maxTokensPerParagraph", nameof(maxTokensPerParagraph));
+            throw new ArgumentException(@"overlapTokens cannot be larger than maxTokensPerParagraph", nameof(maxTokensPerParagraph));
         }
 
         // Optimize empty inputs if we can efficiently determine the're empty

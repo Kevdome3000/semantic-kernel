@@ -123,7 +123,7 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
             // Without text we cannot generate a vector.
             if (string.IsNullOrWhiteSpace(textChunk))
             {
-                throw new ArgumentException("One of the provided text chunks is null.", nameof(textChunks));
+                throw new ArgumentException(@"One of the provided text chunks is null.", nameof(textChunks));
             }
 
             return new TextRagStorageDocument<TKey>
@@ -160,13 +160,13 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
             // Without text we cannot generate a vector.
             if (string.IsNullOrWhiteSpace(document.Text))
             {
-                throw new ArgumentException($"The {nameof(TextSearchDocument.Text)} property must be set.", nameof(document));
+                throw new ArgumentException($@"The {nameof(TextSearchDocument.Text)} property must be set.", nameof(document));
             }
 
             // If we aren't persisting the text, we need a source id or link to refer back to the original document.
             if (options?.PersistSourceText is false && string.IsNullOrWhiteSpace(document.SourceId) && string.IsNullOrWhiteSpace(document.SourceLink))
             {
-                throw new ArgumentException($"Either the {nameof(TextSearchDocument.SourceId)} or {nameof(TextSearchDocument.SourceLink)} properties must be set when the {nameof(TextSearchStoreUpsertOptions.PersistSourceText)} setting is false.", nameof(document));
+                throw new ArgumentException($@"Either the {nameof(TextSearchDocument.SourceId)} or {nameof(TextSearchDocument.SourceLink)} properties must be set when the {nameof(TextSearchStoreUpsertOptions.PersistSourceText)} setting is false.", nameof(document));
             }
 
             var key = GenerateUniqueKey<TKey>(_options.UseSourceIdAsPrimaryKey ?? false ? document.SourceId : null);

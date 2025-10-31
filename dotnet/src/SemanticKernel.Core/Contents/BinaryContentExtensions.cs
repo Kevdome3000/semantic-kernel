@@ -20,7 +20,7 @@ public static class BinaryContentExtensions
     {
         if (string.IsNullOrWhiteSpace(filePath))
         {
-            throw new ArgumentException("File path cannot be null or empty", nameof(filePath));
+            throw new ArgumentException(@"File path cannot be null or empty", nameof(filePath));
         }
 
         if (!overwrite && File.Exists(filePath))

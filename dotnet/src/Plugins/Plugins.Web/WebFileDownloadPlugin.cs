@@ -174,19 +174,19 @@ public sealed class WebFileDownloadPlugin
 
         if (path.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase))
         {
-            throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
+            throw new ArgumentException(@"Invalid file path, UNC paths are not supported.", nameof(path));
         }
 
         if (DisableFileOverwrite && File.Exists(path))
         {
-            throw new ArgumentException("Invalid file path, overwriting existing files is disabled.", nameof(path));
+            throw new ArgumentException(@"Invalid file path, overwriting existing files is disabled.", nameof(path));
         }
 
         string? directoryPath = Path.GetDirectoryName(path);
 
         if (string.IsNullOrEmpty(directoryPath))
         {
-            throw new ArgumentException("Invalid file path, a fully qualified file location must be specified.", nameof(path));
+            throw new ArgumentException(@"Invalid file path, a fully qualified file location must be specified.", nameof(path));
         }
 
         if (File.Exists(path) && File.GetAttributes(path).HasFlag(FileAttributes.ReadOnly))

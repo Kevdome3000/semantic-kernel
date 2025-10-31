@@ -265,7 +265,7 @@ public sealed class TavilyTextSearch : ITextSearch
             {
                 return imageResult.Description ?? string.Empty;
             }
-            throw new ArgumentException("Result must be a TavilySearchResult", nameof(result));
+            throw new ArgumentException(@"Result must be a TavilySearchResult", nameof(result));
         }
     }
 
@@ -287,7 +287,7 @@ public sealed class TavilyTextSearch : ITextSearch
                 var name = uri.Segments[^1];
                 return new TextSearchResult(imageResult.Description ?? string.Empty) { Name = name, Link = imageResult.Url };
             }
-            throw new ArgumentException("Result must be a TavilySearchResult", nameof(result));
+            throw new ArgumentException(@"Result must be a TavilySearchResult", nameof(result));
         }
     }
 
@@ -340,7 +340,7 @@ public sealed class TavilyTextSearch : ITextSearch
                     }
                     else
                     {
-                        throw new ArgumentException($"Unknown equality filter clause field name '{equalityFilterClause.FieldName}', must be one of {string.Join(",", s_validFieldNames)}", nameof(searchOptions));
+                        throw new ArgumentException($@"Unknown equality filter clause field name '{equalityFilterClause.FieldName}', must be one of {string.Join(",", s_validFieldNames)}", nameof(searchOptions));
                     }
                 }
             }

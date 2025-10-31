@@ -62,7 +62,7 @@ internal static partial class Verify
 
         if (list.Count == 0)
         {
-            throw new ArgumentException("The value cannot be empty.", paramName);
+            throw new ArgumentException(@"The value cannot be empty.", paramName);
         }
     }
 
@@ -82,7 +82,7 @@ internal static partial class Verify
 
         if (!FilenameRegex().IsMatch(filename))
         {
-            throw new ArgumentException($"Invalid filename format: '{filename}'. Filename should consist of an actual name and a file extension.", paramName);
+            throw new ArgumentException($@"Invalid filename format: '{filename}'. Filename should consist of an actual name and a file extension.", paramName);
         }
     }
 
@@ -93,17 +93,17 @@ internal static partial class Verify
 
         if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || string.IsNullOrEmpty(uri.Host))
         {
-            throw new ArgumentException($"The `{url}` is not valid.", paramName);
+            throw new ArgumentException($@"The `{url}` is not valid.", paramName);
         }
 
         if (!allowQuery && !string.IsNullOrEmpty(uri.Query))
         {
-            throw new ArgumentException($"The `{url}` is not valid: it cannot contain query parameters.", paramName);
+            throw new ArgumentException($@"The `{url}` is not valid: it cannot contain query parameters.", paramName);
         }
 
         if (!string.IsNullOrEmpty(uri.Fragment))
         {
-            throw new ArgumentException($"The `{url}` is not valid: it cannot contain URL fragments.", paramName);
+            throw new ArgumentException($@"The `{url}` is not valid: it cannot contain URL fragments.", paramName);
         }
     }
 
@@ -138,7 +138,7 @@ internal static partial class Verify
     [DoesNotReturn]
     internal static void ThrowArgumentInvalidName(string kind, string name, string? paramName)
     {
-        throw new ArgumentException($"A {kind} can contain only ASCII letters, digits, and underscores: '{name}' is not a valid name.", paramName);
+        throw new ArgumentException($@"A {kind} can contain only ASCII letters, digits, and underscores: '{name}' is not a valid name.", paramName);
     }
 
 
@@ -152,7 +152,7 @@ internal static partial class Verify
     [DoesNotReturn]
     internal static void ThrowArgumentWhiteSpaceException(string? paramName)
     {
-        throw new ArgumentException("The value cannot be an empty string or composed entirely of whitespace.", paramName);
+        throw new ArgumentException(@"The value cannot be an empty string or composed entirely of whitespace.", paramName);
     }
 
 
@@ -197,14 +197,14 @@ internal static partial class Verify
         // Check for URL injection patterns and invalid characters
         if (s_invalidLocationCharacters.Any(hostNameSegment.Contains))
         {
-            throw new ArgumentException($"The location '{hostNameSegment}' contains invalid characters that could enable URL injection.", paramName);
+            throw new ArgumentException($@"The location '{hostNameSegment}' contains invalid characters that could enable URL injection.", paramName);
         }
 
         // Validate location format (allows alphanumeric, hyphens, and underscores)
         // Common format examples: us-east1, europe-west4, asia-northeast1
         if (!Regex.IsMatch(hostNameSegment, @"^[a-zA-Z0-9][a-zA-Z0-9\-_]*[a-zA-Z0-9]$"))
         {
-            throw new ArgumentException($"The location '{hostNameSegment}' is not valid. Location must start and end with alphanumeric characters and can contain hyphens and underscores.", paramName);
+            throw new ArgumentException($@"The location '{hostNameSegment}' is not valid. Location must start and end with alphanumeric characters and can contain hyphens and underscores.", paramName);
         }
     }
 

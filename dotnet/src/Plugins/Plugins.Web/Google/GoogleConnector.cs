@@ -17,7 +17,7 @@ using global::Google.Apis.Services;
 /// Google search connector.
 /// Provides methods to search using Google Custom Search API.
 /// </summary>
-public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
+public sealed class  GoogleConnector : IWebSearchEngineConnector, IDisposable
 {
 
     private readonly ILogger _logger;
