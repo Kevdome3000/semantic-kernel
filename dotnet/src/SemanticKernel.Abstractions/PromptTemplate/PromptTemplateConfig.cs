@@ -8,6 +8,7 @@ using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// Provides the configuration information necessary to create a prompt template.
 /// </summary>
@@ -36,12 +37,14 @@ public sealed class PromptTemplateConfig
     /// <summary>Lazily-initialized execution settings. The key is the service ID, or <see cref="PromptExecutionSettings.DefaultServiceId"/> for the default execution settings.</summary>
     private Dictionary<string, PromptExecutionSettings>? _executionSettings;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptTemplateConfig"/> class.
     /// </summary>
     public PromptTemplateConfig()
     {
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptTemplateConfig"/> class using the specified prompt template string.
@@ -52,6 +55,7 @@ public sealed class PromptTemplateConfig
     {
         Template = template;
     }
+
 
     /// <summary>
     /// Creates a <see cref="PromptTemplateConfig"/> from the specified JSON.
@@ -64,8 +68,9 @@ public sealed class PromptTemplateConfig
     [RequiresDynamicCode("Uses reflection to deserialize the prompt template config from JSON, making it incompatible with AOT scenarios.")]
     public static PromptTemplateConfig FromJson(string json)
     {
-        return FromJsonInternal(json, jsonSerializerOptions: null);
+        return FromJsonInternal(json, null);
     }
+
 
     /// <summary>
     /// Creates a <see cref="PromptTemplateConfig"/> from the specified JSON.
@@ -82,6 +87,7 @@ public sealed class PromptTemplateConfig
     {
         return FromJsonInternal(json, jsonSerializerOptions);
     }
+
 
     /// <summary>
     /// Gets or sets the function name to use by default when creating prompt functions using this configuration.
@@ -205,6 +211,7 @@ public sealed class PromptTemplateConfig
         ? settings
         : null;
 
+
     /// <summary>
     /// Adds the specified <see cref="PromptExecutionSettings"/> to the <see cref="ExecutionSettings"/> dictionary.
     /// </summary>
@@ -230,8 +237,8 @@ public sealed class PromptTemplateConfig
             throw new ArgumentException($@"Execution settings for service id '{key}' already exists.", nameof(serviceId));
         }
 
-        ExecutionSettings[key] = settings;
     }
+
 
     /// <summary>
     /// Converts the <see cref="InputVariable"/> collection into a collection of <see cref="KernelParameterMetadata"/>.
@@ -241,25 +248,31 @@ public sealed class PromptTemplateConfig
     {
         KernelParameterMetadata[] result = [];
 
-        if (_inputVariables is List<InputVariable> inputVariables)
+        if (_inputVariables is { Count: > 0 })
         {
-            result = new KernelParameterMetadata[inputVariables.Count];
+            result = new KernelParameterMetadata[_inputVariables.Count];
+
             for (int i = 0; i < result.Length; i++)
             {
-                InputVariable p = inputVariables[i];
+                InputVariable p = _inputVariables[i];
                 result[i] = new KernelParameterMetadata(p.Name, jsonSerializerOptions)
                 {
                     Description = p.Description,
                     DefaultValue = p.Default,
                     IsRequired = p.IsRequired,
-                    ParameterType = !string.IsNullOrWhiteSpace(p.JsonSchema) ? null : p.Default?.GetType() ?? typeof(string),
-                    Schema = !string.IsNullOrWhiteSpace(p.JsonSchema) ? KernelJsonSchema.Parse(p.JsonSchema!) : null,
+                    ParameterType = !string.IsNullOrWhiteSpace(p.JsonSchema)
+                        ? null
+                        : p.Default?.GetType() ?? typeof(string),
+                    Schema = !string.IsNullOrWhiteSpace(p.JsonSchema)
+                        ? KernelJsonSchema.Parse(p.JsonSchema!)
+                        : null
                 };
             }
         }
 
         return result;
     }
+
 
     /// <summary>
     /// Converts the <see cref="InputVariable"/> collection into a collection of <see cref="KernelParameterMetadata"/>.
@@ -296,34 +309,39 @@ public sealed class PromptTemplateConfig
         return result;
     }
 
+
     /// <summary>
     /// Converts any <see cref="OutputVariable"/> into a <see cref="KernelReturnParameterMetadata"/>.
     /// </summary>
     [RequiresUnreferencedCode("Uses reflection to generate JSON schema, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to generate JSON schema, making it incompatible with AOT scenarios.")]
-    public KernelReturnParameterMetadata? GetKernelReturnParameterMetadata() =>
-        OutputVariable is OutputVariable outputVariable
-            ?
-            new KernelReturnParameterMetadata
+    public KernelReturnParameterMetadata? GetKernelReturnParameterMetadata()
+    {
+        return OutputVariable is { } outputVariable
+            ? new KernelReturnParameterMetadata
             {
                 Description = outputVariable.Description,
                 Schema = KernelJsonSchema.ParseOrNull(outputVariable.JsonSchema)
             }
             : null;
+    }
+
 
     /// <summary>
     /// Converts any <see cref="OutputVariable"/> into a <see cref="KernelReturnParameterMetadata"/>.
     /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to generate and parse JSON schema.</param>"
     /// </summary>
-    public KernelReturnParameterMetadata? GetKernelReturnParameterMetadata(JsonSerializerOptions jsonSerializerOptions) =>
-        OutputVariable is OutputVariable outputVariable
-            ?
-            new KernelReturnParameterMetadata(jsonSerializerOptions)
+    public KernelReturnParameterMetadata? GetKernelReturnParameterMetadata(JsonSerializerOptions jsonSerializerOptions)
+    {
+        return OutputVariable is OutputVariable outputVariable
+            ? new KernelReturnParameterMetadata(jsonSerializerOptions)
             {
                 Description = outputVariable.Description,
                 Schema = KernelJsonSchema.ParseOrNull(outputVariable.JsonSchema)
-            } :
-            null;
+            }
+            : null;
+    }
+
 
     /// <summary>
     /// Creates a <see cref="PromptTemplateConfig"/> from the specified JSON.
@@ -341,6 +359,7 @@ public sealed class PromptTemplateConfig
 
         Exception? innerException = null;
         PromptTemplateConfig? config = null;
+
         try
         {
             if (jsonSerializerOptions is not null)
@@ -374,8 +393,7 @@ public sealed class PromptTemplateConfig
                     }
                     else
                     {
-                        throw new NotSupportedException($"Default value for input variable '{inputVariable.Name}' must be a string. " +
-                            $"This is a temporary limitation; future updates are expected to remove this constraint. Prompt function - '{config.Name ?? config.Description}'.");
+                        throw new NotSupportedException($"Default value for input variable '{inputVariable.Name}' must be a string. " + $"This is a temporary limitation; future updates are expected to remove this constraint. Prompt function - '{config.Name ?? config.Description}'.");
                     }
                 }
             }
@@ -386,7 +404,6 @@ public sealed class PromptTemplateConfig
         }
 
         return
-            config ??
-            throw new ArgumentException($"Unable to deserialize {nameof(PromptTemplateConfig)} from the specified JSON.", nameof(json), innerException);
+            config ?? throw new ArgumentException($"Unable to deserialize {nameof(PromptTemplateConfig)} from the specified JSON.", nameof(json), innerException);
     }
 }

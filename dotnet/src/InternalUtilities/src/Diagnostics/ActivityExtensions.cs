@@ -14,22 +14,6 @@ namespace Microsoft.SemanticKernel.Diagnostics;
 internal static class ActivityExtensions
 {
     /// <summary>
-    /// Starts an activity with the appropriate tags for a kernel function execution.
-    /// </summary>
-    public static Activity? StartFunctionActivity(this ActivitySource source, string functionName, string functionDescription)
-    {
-        const string OperationName = "execute_tool";
-
-        return source.StartActivityWithTags($"{OperationName} {functionName}",
-        [
-            new KeyValuePair<string, object?>("gen_ai.operation.name", OperationName),
-            new KeyValuePair<string, object?>("gen_ai.tool.name", functionName),
-            new KeyValuePair<string, object?>("gen_ai.tool.description", functionDescription)
-        ]);
-    }
-
-
-    /// <summary>
     /// Starts an activity with the specified name and tags.
     /// </summary>
     public static Activity? StartActivityWithTags(
@@ -54,7 +38,6 @@ internal static class ActivityExtensions
         {
             activity.SetTag(tag.Key, tag.Value);
         }
-        ;
 
         return activity;
     }

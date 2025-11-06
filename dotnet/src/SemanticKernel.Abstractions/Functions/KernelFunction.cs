@@ -12,6 +12,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
@@ -298,11 +299,12 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
         kernel ??= Kernel;
         Verify.NotNull(kernel);
 
-        using Activity? activity = s_activitySource.StartFunctionActivity(Name, Description);
-        ILogger logger = kernel.LoggerFactory.CreateLogger(typeof(KernelFunction));
-
         // Ensure arguments are initialized.
         arguments ??= [];
+
+        using var activity = this.StartFunctionActivity(this.Name, this.Description, arguments, this._jsonSerializerOptions);
+        ILogger logger = kernel.LoggerFactory.CreateLogger(typeof(KernelFunction)) ?? NullLogger.Instance;
+
         logger.LogFunctionInvoking(PluginName, Name);
 
         LogFunctionArguments(logger,
@@ -336,10 +338,8 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
 
             logger.LogFunctionInvokedSuccess(PluginName, Name);
 
-            LogFunctionResult(logger,
-                PluginName,
-                Name,
-                functionResult);
+            this.SetFunctionResultTag(activity, functionResult, this._jsonSerializerOptions);
+            this.LogFunctionResult(logger, this.PluginName, this.Name, functionResult);
 
             return functionResult;
         }
@@ -428,10 +428,12 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
         kernel ??= Kernel;
         Verify.NotNull(kernel);
 
-        using Activity? activity = s_activitySource.StartFunctionActivity(Name, Description);
-        ILogger logger = kernel.LoggerFactory.CreateLogger(Name) ?? NullLogger.Instance;
-
+        // Ensure arguments are initialized.
         arguments ??= [];
+
+        using var activity = this.StartFunctionActivity(this.Name, this.Description, arguments, this._jsonSerializerOptions);
+        ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name) ?? NullLogger.Instance;
+
         logger.LogFunctionStreamingInvoking(PluginName, Name);
 
         LogFunctionArguments(logger,
@@ -442,6 +444,8 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
         TagList tags = new() { { MeasurementFunctionTagName, Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
 
+        // Prepare to collect results if activity is enabled.
+        List<TResult>? results = (activity is not null || logger.IsEnabled(LogLevel.Trace)) ? [] : null;
         try
         {
             IAsyncEnumerator<TResult> enumerator;
@@ -517,6 +521,7 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
                         throw;
                     }
 
+                    results?.Add(enumerator.Current);
                     // Yield the next streaming result.
                     yield return enumerator.Current;
                 }
@@ -528,6 +533,8 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
             TimeSpan duration = new((long)((Stopwatch.GetTimestamp() - startingTimestamp) * (10_000_000.0 / Stopwatch.Frequency)));
             s_streamingDuration.Record(duration.TotalSeconds, in tags);
             logger.LogFunctionStreamingComplete(PluginName, Name, duration.TotalSeconds);
+            this.SetFunctionResultTag(activity, new FunctionResult(this, results, kernel.Culture), this._jsonSerializerOptions);
+            this.LogFunctionResult(logger, this.PluginName, this.Name, new FunctionResult(this, results, kernel.Culture));
         }
     }
 
@@ -552,6 +559,18 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
             : $"{PluginName}.{Name}";
     }
 
+
+    /// <summary>Creates an <see cref="AIFunction"/> for this <see cref="KernelFunction"/>.</summary>
+    /// <param name="kernel">
+    /// The <see cref="Kernel"/> instance to pass to the <see cref="KernelFunction"/> when it's invoked as part of the <see cref="AIFunction"/>'s invocation.
+    /// </param>
+    /// <returns>An instance of <see cref="AIFunction"/> that, when invoked, will in turn invoke the current <see cref="KernelFunction"/>.</returns>
+    [Experimental("SKEXP0001")]
+    [Obsolete("Use the kernel function directly or for similar behavior use Clone(Kernel) method instead.")]
+    public AIFunction AsAIFunction(Kernel? kernel = null)
+    {
+        return new KernelAIFunction(this, kernel);
+    }
 
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/>.
@@ -612,6 +631,7 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
         KernelArguments arguments,
         CancellationToken cancellationToken);
 
+    #region Private
 
     /// <summary>Handles special-cases for exception handling when invoking a function.</summary>
     private static void HandleException(
@@ -722,20 +742,100 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
     }
 
 
-    /// <summary>Creates an <see cref="AIFunction"/> for this <see cref="KernelFunction"/>.</summary>
-    /// <param name="kernel">
-    /// The <see cref="Kernel"/> instance to pass to the <see cref="KernelFunction"/> when it's invoked as part of the <see cref="AIFunction"/>'s invocation.
-    /// </param>
-    /// <returns>An instance of <see cref="AIFunction"/> that, when invoked, will in turn invoke the current <see cref="KernelFunction"/>.</returns>
-    [Experimental("SKEXP0001")]
-    [Obsolete("Use the kernel function directly or for similar behavior use Clone(Kernel) method instead.")]
-    public AIFunction AsAIFunction(Kernel? kernel = null)
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "The warning is shown and should be addressed at the function creation site; there is no need to show it again at the function invocation sites.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "The warning is shown and should be addressed at the function creation site; there is no need to show it again at the function invocation sites.")]
+    private Activity? StartFunctionActivity(
+        string functionName,
+        string functionDescription,
+        KernelArguments arguments,
+        JsonSerializerOptions? jsonSerializerOptions = null)
     {
-        return new KernelAIFunction(this, kernel);
+        if (!s_activitySource.HasListeners())
+        {
+            return null;
+        }
+
+        const string OperationName = "execute_tool";
+
+        List<KeyValuePair<string, object?>> tags =
+        [
+            new KeyValuePair<string, object?>("gen_ai.operation.name", OperationName),
+            new KeyValuePair<string, object?>("gen_ai.tool.name", functionName),
+            new KeyValuePair<string, object?>("gen_ai.tool.description", functionDescription),
+        ];
+
+#pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        if (ModelDiagnostics.IsSensitiveEventsEnabled())
+        {
+            tags.Add(new KeyValuePair<string, object?>("gen_ai.tool.call.arguments", SerializeArguments(arguments, jsonSerializerOptions)));
+        }
+#pragma warning restore SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+        return s_activitySource.StartActivityWithTags($"{OperationName} {functionName}", tags, ActivityKind.Internal);
+
+        [RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
+        [RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
+        static string SerializeArguments(KernelArguments args, JsonSerializerOptions? jsonSerializerOptions)
+        {
+            try
+            {
+                if (jsonSerializerOptions is not null)
+                {
+                    JsonTypeInfo<KernelArguments> typeInfo = (JsonTypeInfo<KernelArguments>)jsonSerializerOptions.GetTypeInfo(typeof(KernelArguments));
+                    return JsonSerializer.Serialize(args, typeInfo);
+                }
+
+
+    return JsonSerializer.Serialize(args);
+            }
+            catch (NotSupportedException)
+            {
+                return "Failed to serialize arguments to Json";
+            }
+        }
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "The warning is shown and should be addressed at the function creation site; there is no need to show it again at the function invocation sites.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "The warning is shown and should be addressed at the function creation site; there is no need to show it again at the function invocation sites.")]
+    private Activity? SetFunctionResultTag(Activity? activity, FunctionResult result, JsonSerializerOptions? jsonSerializerOptions = null)
+    {
+#pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        if (ModelDiagnostics.IsSensitiveEventsEnabled())
+        {
+            activity?.SetTag("gen_ai.tool.call.result", SerializeResult(result, jsonSerializerOptions));
+        }
+#pragma warning restore SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
-    #region Private
+        return activity;
+
+        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "By design. See comment below.")]
+        [RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
+        [RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
+        static string SerializeResult(FunctionResult result, JsonSerializerOptions? jsonSerializerOptions)
+        {
+            // Try to retrieve the result as a string first
+            try
+            {
+                return result.GetValue<string>() ?? string.Empty;
+            }
+            catch { }
+
+            // Fallback to JSON serialization
+            try
+            {
+                if (jsonSerializerOptions is not null)
+                {
+                    JsonTypeInfo<object?> typeInfo = (JsonTypeInfo<object?>)jsonSerializerOptions.GetTypeInfo(typeof(object));
+                    return JsonSerializer.Serialize(result.Value, typeInfo);
+                }
+                return JsonSerializer.Serialize(result.Value);
+            }
+            catch (NotSupportedException)
+            {
+                return "Failed to serialize result to Json";
+            }
+        }
+    }
 
     private JsonElement _jsonSchema;
 
