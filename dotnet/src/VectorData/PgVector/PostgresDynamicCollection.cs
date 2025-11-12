@@ -20,10 +20,20 @@ public sealed class PostgresDynamicCollection : PostgresCollection<object, Dicti
     /// <param name="name">The name of the collection.</param>
     /// <param name="ownsDataSource">A value indicating whether the data source should be disposed when the collection is disposed.</param>
     /// <param name="options">Optional configuration options for this class.</param>
-    public PostgresDynamicCollection(NpgsqlDataSource dataSource, string name, bool ownsDataSource, PostgresCollectionOptions options)
-        : this(dataSource, ownsDataSource ? new NpgsqlDataSourceArc(dataSource) : null, name, options)
+    public PostgresDynamicCollection(
+        NpgsqlDataSource dataSource,
+        string name,
+        bool ownsDataSource,
+        PostgresCollectionOptions options)
+        : this(dataSource,
+            ownsDataSource
+                ? new NpgsqlDataSourceArc(dataSource)
+                : null,
+            name,
+            options)
     {
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgresCollection{TKey, TRecord}"/> class.
@@ -32,11 +42,19 @@ public sealed class PostgresDynamicCollection : PostgresCollection<object, Dicti
     /// <param name="name">The name of the collection.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     public PostgresDynamicCollection(string connectionString, string name, PostgresCollectionOptions options)
-        : this(PostgresUtils.CreateDataSource(connectionString), name, ownsDataSource: true, options)
+        : this(PostgresUtils.CreateDataSource(connectionString),
+            name,
+            true,
+            options)
     {
     }
 
-    internal PostgresDynamicCollection(NpgsqlDataSource dataSource, NpgsqlDataSourceArc? dataSourceArc, string name, PostgresCollectionOptions options)
+
+    internal PostgresDynamicCollection(
+        NpgsqlDataSource dataSource,
+        NpgsqlDataSourceArc? dataSourceArc,
+        string name,
+        PostgresCollectionOptions options)
         : base(
             dataSource,
             dataSourceArc,

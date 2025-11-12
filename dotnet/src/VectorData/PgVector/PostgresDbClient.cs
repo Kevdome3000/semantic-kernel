@@ -13,17 +13,19 @@ internal sealed class NpgsqlDataSourceArc(NpgsqlDataSource dataSource) : IDispos
 {
     private int _referenceCount = 1;
 
+
     public void Dispose()
     {
-        if (Interlocked.Decrement(ref this._referenceCount) == 0)
+        if (Interlocked.Decrement(ref _referenceCount) == 0)
         {
             dataSource.Dispose();
         }
     }
 
+
     internal NpgsqlDataSourceArc IncrementReferenceCount()
     {
-        Interlocked.Increment(ref this._referenceCount);
+        Interlocked.Increment(ref _referenceCount);
 
         return this;
     }

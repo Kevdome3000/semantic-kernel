@@ -26,6 +26,7 @@ public sealed class PostgresVectorStore : VectorStore
 
     /// <summary>Data source used to interact with the database.</summary>
     private readonly NpgsqlDataSource _dataSource;
+
     private readonly NpgsqlDataSourceArc? _dataSourceArc;
     private readonly string _databaseName;
 
@@ -33,6 +34,7 @@ public sealed class PostgresVectorStore : VectorStore
     private readonly string _schema;
 
     private readonly IEmbeddingGenerator? _embeddingGenerator;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgresVectorStore"/> class.
@@ -44,18 +46,21 @@ public sealed class PostgresVectorStore : VectorStore
     {
         Verify.NotNull(dataSource);
 
-        this._schema = options?.Schema ?? PostgresVectorStoreOptions.Default.Schema;
-        this._embeddingGenerator = options?.EmbeddingGenerator;
-        this._dataSource = dataSource;
-        this._dataSourceArc = ownsDataSource ? new NpgsqlDataSourceArc(dataSource) : null;
-        this._databaseName = new NpgsqlConnectionStringBuilder(dataSource.ConnectionString).Database!;
+        _schema = options?.Schema ?? PostgresVectorStoreOptions.Default.Schema;
+        _embeddingGenerator = options?.EmbeddingGenerator;
+        _dataSource = dataSource;
+        _dataSourceArc = ownsDataSource
+            ? new NpgsqlDataSourceArc(dataSource)
+            : null;
+        _databaseName = new NpgsqlConnectionStringBuilder(dataSource.ConnectionString).Database!;
 
-        this._metadata = new()
+        _metadata = new VectorStoreMetadata
         {
             VectorStoreSystemName = PostgresConstants.VectorStoreSystemName,
-            VectorStoreName = this._databaseName
+            VectorStoreName = _databaseName
         };
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgresVectorStore"/> class.
@@ -64,17 +69,19 @@ public sealed class PostgresVectorStore : VectorStore
     /// <param name="options">Optional configuration options for this class.</param>
     public PostgresVectorStore(string connectionString, PostgresVectorStoreOptions? options = default)
 #pragma warning disable CA2000 // Dispose objects before losing scope
-        : this(PostgresUtils.CreateDataSource(connectionString), ownsDataSource: true, options)
+        : this(PostgresUtils.CreateDataSource(connectionString), true, options)
 #pragma warning restore CA2000 // Dispose objects before losing scope
     {
     }
 
+
     /// <inheritdoc/>
     protected override void Dispose(bool disposing)
     {
-        this._dataSourceArc?.Dispose();
+        _dataSourceArc?.Dispose();
         base.Dispose(disposing);
     }
+
 
     /// <inheritdoc />
     public override IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default)
@@ -82,25 +89,28 @@ public sealed class PostgresVectorStore : VectorStore
         return PostgresUtils.WrapAsyncEnumerableAsync(
             GetTablesAsync(cancellationToken),
             "ListCollectionNames",
-            this._metadata);
+            _metadata);
 
         async IAsyncEnumerable<string> GetTablesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
-            NpgsqlConnection connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+            NpgsqlConnection connection = await _dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
 
             await using (connection)
-            using (var command = connection.CreateCommand())
             {
-                PostgresSqlBuilder.BuildGetTablesCommand(command, this._schema);
-                using NpgsqlDataReader dataReader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
-
-                while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
+                using (var command = connection.CreateCommand())
                 {
-                    yield return dataReader.GetString(dataReader.GetOrdinal("table_name"));
+                    PostgresSqlBuilder.BuildGetTablesCommand(command, _schema);
+                    using NpgsqlDataReader dataReader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+
+                    while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
+                    {
+                        yield return dataReader.GetString(dataReader.GetOrdinal("table_name"));
+                    }
                 }
             }
         }
     }
+
 
 #pragma warning disable IDE0090 // Use 'new(...)'
     /// <inheritdoc />
@@ -114,16 +124,17 @@ public sealed class PostgresVectorStore : VectorStore
         => typeof(TRecord) == typeof(Dictionary<string, object?>)
             ? throw new ArgumentException(VectorDataStrings.GetCollectionWithDictionaryNotSupported)
             : new PostgresCollection<TKey, TRecord>(
-                this._dataSource,
-                this._dataSourceArc,
+                _dataSource,
+                _dataSourceArc,
                 name,
-                new()
+                new PostgresCollectionOptions
                 {
-                    Schema = this._schema,
+                    Schema = _schema,
                     Definition = definition,
-                    EmbeddingGenerator = this._embeddingGenerator,
+                    EmbeddingGenerator = _embeddingGenerator
                 }
             );
+
 
     /// <inheritdoc />
 #if NET8_0_OR_GREATER
@@ -132,31 +143,34 @@ public sealed class PostgresVectorStore : VectorStore
     public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
 #endif
         => new PostgresDynamicCollection(
-            this._dataSource,
-            this._dataSourceArc,
+            _dataSource,
+            _dataSourceArc,
             name,
-            new()
+            new PostgresCollectionOptions
             {
-                Schema = this._schema,
+                Schema = _schema,
                 Definition = definition,
-                EmbeddingGenerator = this._embeddingGenerator,
+                EmbeddingGenerator = _embeddingGenerator
             }
         );
 #pragma warning restore IDE0090 // Use 'new(...)'
 
+
     /// <inheritdoc />
     public override Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)
     {
-        var collection = this.GetDynamicCollection(name, s_generalPurposeDefinition);
+        var collection = GetDynamicCollection(name, s_generalPurposeDefinition);
         return collection.CollectionExistsAsync(cancellationToken);
     }
+
 
     /// <inheritdoc />
     public override Task EnsureCollectionDeletedAsync(string name, CancellationToken cancellationToken = default)
     {
-        var collection = this.GetDynamicCollection(name, s_generalPurposeDefinition);
+        var collection = GetDynamicCollection(name, s_generalPurposeDefinition);
         return collection.EnsureCollectionDeletedAsync(cancellationToken);
     }
+
 
     /// <inheritdoc />
     public override object? GetService(Type serviceType, object? serviceKey = null)
@@ -164,10 +178,14 @@ public sealed class PostgresVectorStore : VectorStore
         Verify.NotNull(serviceType);
 
         return
-            serviceKey is not null ? null :
-            serviceType == typeof(VectorStoreMetadata) ? this._metadata :
-            serviceType == typeof(NpgsqlDataSource) ? this._dataSource :
-            serviceType.IsInstanceOfType(this) ? this :
-            null;
+            serviceKey is not null
+                ? null
+                : serviceType == typeof(VectorStoreMetadata)
+                    ? _metadata
+                    : serviceType == typeof(NpgsqlDataSource)
+                        ? _dataSource
+                        : serviceType.IsInstanceOfType(this)
+                            ? this
+                            : null;
     }
 }

@@ -19,9 +19,9 @@ internal static class PostgresPropertyMapping
     public static object? MapVectorForStorageModel(object? vector)
         => vector switch
         {
-            ReadOnlyMemory<float> m => new Pgvector.Vector(m),
-            Embedding<float> e => new Pgvector.Vector(e.Vector),
-            float[] a => new Pgvector.Vector(a),
+            ReadOnlyMemory<float> m => new Vector(m),
+            Embedding<float> e => new Vector(e.Vector),
+            float[] a => new Vector(a),
 
 #if NET8_0_OR_GREATER
             ReadOnlyMemory<Half> m => new Pgvector.HalfVector(m),
@@ -38,8 +38,10 @@ internal static class PostgresPropertyMapping
             var value => throw new NotSupportedException($"Mapping for type '{value.GetType().Name}' to a vector is not supported.")
         };
 
-    public static NpgsqlDbType? GetNpgsqlDbType(Type propertyType) =>
-        (Nullable.GetUnderlyingType(propertyType) ?? propertyType) switch
+
+    public static NpgsqlDbType? GetNpgsqlDbType(Type propertyType)
+    {
+        return (Nullable.GetUnderlyingType(propertyType) ?? propertyType) switch
         {
             Type t when t == typeof(bool) => NpgsqlDbType.Boolean,
             Type t when t == typeof(short) => NpgsqlDbType.Smallint,
@@ -56,6 +58,8 @@ internal static class PostgresPropertyMapping
 
             _ => null
         };
+    }
+
 
     /// <summary>
     /// Maps a .NET type to a PostgreSQL type name.
@@ -101,16 +105,17 @@ internal static class PostgresPropertyMapping
         }
 
         // Handle collections
-        if ((propertyType.IsArray && TryGetBaseType(propertyType.GetElementType()!, out string? elementPgType))
-            || (propertyType.IsGenericType
-                && propertyType.GetGenericTypeDefinition() == typeof(List<>)
-                && TryGetBaseType(propertyType.GetGenericArguments()[0], out elementPgType)))
+        if (propertyType.IsArray && TryGetBaseType(propertyType.GetElementType()!, out string? elementPgType)
+            || propertyType.IsGenericType
+            && propertyType.GetGenericTypeDefinition() == typeof(List<>)
+            && TryGetBaseType(propertyType.GetGenericArguments()[0], out elementPgType))
         {
             return (elementPgType + "[]", true);
         }
 
         throw new NotSupportedException($"Type {propertyType.Name} is not supported by this store.");
     }
+
 
     /// <summary>
     /// Gets the PostgreSQL vector type name based on the dimensions of the vector property.
@@ -145,8 +150,12 @@ internal static class PostgresPropertyMapping
         return ($"{pgType}({vectorProperty.Dimensions})", unwrappedEmbeddingType != vectorProperty.EmbeddingType);
     }
 
+
     public static NpgsqlParameter GetNpgsqlParameter(object? value)
-        => new() { Value = value ?? DBNull.Value };
+    {
+        return new NpgsqlParameter { Value = value ?? DBNull.Value };
+    }
+
 
     /// <summary>
     /// Returns information about indexes to create, validating that the dimensions of the vector are supported.
@@ -159,6 +168,7 @@ internal static class PostgresPropertyMapping
     public static List<(string column, string kind, string function, bool isVector)> GetIndexInfo(IReadOnlyList<PropertyModel> properties)
     {
         var vectorIndexesToCreate = new List<(string column, string kind, string function, bool isVector)>();
+
         foreach (var property in properties)
         {
             switch (property)
@@ -179,9 +189,7 @@ internal static class PostgresPropertyMapping
                         if (PostgresConstants.IndexMaxDimensions.TryGetValue(indexKind, out int maxDimensions) && vectorProperty.Dimensions > maxDimensions)
                         {
                             throw new NotSupportedException(
-                                $"The provided vector property {vectorProperty.ModelName} has {vectorProperty.Dimensions} dimensions, " +
-                                $"which is not supported by the {indexKind} index. The maximum number of dimensions supported by the {indexKind} index " +
-                                $"is {maxDimensions}. Please reduce the number of dimensions or use a different index."
+                                $"The provided vector property {vectorProperty.ModelName} has {vectorProperty.Dimensions} dimensions, " + $"which is not supported by the {indexKind} index. The maximum number of dimensions supported by the {indexKind} index " + $"is {maxDimensions}. Please reduce the number of dimensions or use a different index."
                             );
                         }
 

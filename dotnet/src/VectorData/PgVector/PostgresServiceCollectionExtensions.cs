@@ -18,6 +18,7 @@ public static class PostgresServiceCollectionExtensions
     private const string DynamicCodeMessage = "This method is incompatible with NativeAOT, consult the documentation for adding collections in a way that's compatible with NativeAOT.";
     private const string UnreferencedCodeMessage = "This method is incompatible with trimming, consult the documentation for adding collections in a way that's compatible with NativeAOT.";
 
+
     /// <summary>
     /// Register a <see cref="PostgresVectorStore"/> as <see cref="VectorStore"/>, where the <see cref="NpgsqlDataSource"/> is retrieved from the dependency injection container.
     /// </summary>
@@ -32,20 +33,24 @@ public static class PostgresServiceCollectionExtensions
     {
         Verify.NotNull(services);
 
-        services.Add(new ServiceDescriptor(typeof(PostgresVectorStore), (sp) =>
-        {
-            var dataSource = sp.GetRequiredService<NpgsqlDataSource>();
-            options = GetStoreOptions(sp, _ => options);
+        services.Add(new ServiceDescriptor(typeof(PostgresVectorStore),
+            sp =>
+            {
+                var dataSource = sp.GetRequiredService<NpgsqlDataSource>();
+                options = GetStoreOptions(sp, _ => options);
 
-            // The data source has been solved from the DI container, so we do not own it.
-            return new PostgresVectorStore(dataSource, ownsDataSource: false, options);
-        }, lifetime));
+                // The data source has been solved from the DI container, so we do not own it.
+                return new PostgresVectorStore(dataSource, false, options);
+            },
+            lifetime));
 
         services.Add(new ServiceDescriptor(typeof(VectorStore),
-            static (sp) => sp.GetRequiredService<PostgresVectorStore>(), lifetime));
+            static sp => sp.GetRequiredService<PostgresVectorStore>(),
+            lifetime));
 
         return services;
     }
+
 
     /// <summary>
     /// Registers a <see cref="PostgresVectorStore"/> as <see cref="VectorStore"/>, with the specified connection string and service lifetime.
@@ -59,8 +64,13 @@ public static class PostgresServiceCollectionExtensions
     {
         Verify.NotNullOrWhiteSpace(connectionString);
 
-        return AddVectorStore(services, serviceKey: null, sp => connectionString, sp => options, lifetime);
+        return AddVectorStore(services,
+            null,
+            sp => connectionString,
+            sp => options,
+            lifetime);
     }
+
 
     /// <summary>
     /// Registers a keyed <see cref="PostgresVectorStore"/> as <see cref="VectorStore"/>, with the specified connection string and service lifetime.
@@ -80,8 +90,13 @@ public static class PostgresServiceCollectionExtensions
     {
         Verify.NotNullOrWhiteSpace(connectionString);
 
-        return AddVectorStore(services, serviceKey, sp => connectionString, sp => options, lifetime);
+        return AddVectorStore(services,
+            serviceKey,
+            sp => connectionString,
+            sp => options,
+            lifetime);
     }
+
 
     /// <summary>
     /// Registers a <see cref="PostgresVectorStore"/> as <see cref="VectorStore"/>, with the specified connection string and service lifetime.
@@ -92,7 +107,14 @@ public static class PostgresServiceCollectionExtensions
         Func<IServiceProvider, string> connectionStringProvider,
         Func<IServiceProvider, PostgresVectorStoreOptions?>? optionsProvider = null,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
-        => AddVectorStore(services, serviceKey: null, connectionStringProvider, optionsProvider, lifetime);
+    {
+        return AddVectorStore(services,
+            null,
+            connectionStringProvider,
+            optionsProvider,
+            lifetime);
+    }
+
 
     /// <inheritdoc cref="AddVectorStore(IServiceCollection, object?, Func{IServiceProvider, string}, Func{IServiceProvider, PostgresVectorStoreOptions?}?, ServiceLifetime)"/>
     public static IServiceCollection AddKeyedPostgresVectorStore(
@@ -101,7 +123,14 @@ public static class PostgresServiceCollectionExtensions
         Func<IServiceProvider, string> connectionStringProvider,
         Func<IServiceProvider, PostgresVectorStoreOptions?>? optionsProvider = null,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
-        => AddVectorStore(services, serviceKey, connectionStringProvider, optionsProvider, lifetime);
+    {
+        return AddVectorStore(services,
+            serviceKey,
+            connectionStringProvider,
+            optionsProvider,
+            lifetime);
+    }
+
 
     /// <summary>
     /// Registers a keyed <see cref="PostgresVectorStore"/> as <see cref="VectorStore"/>, with the specified connection string and service lifetime.
@@ -122,19 +151,25 @@ public static class PostgresServiceCollectionExtensions
         Verify.NotNull(services);
         Verify.NotNull(connectionStringProvider);
 
-        services.Add(new ServiceDescriptor(typeof(PostgresVectorStore), serviceKey, (sp, _) =>
-        {
-            var connectionString = connectionStringProvider(sp);
-            var options = GetStoreOptions(sp, optionsProvider);
+        services.Add(new ServiceDescriptor(typeof(PostgresVectorStore),
+            serviceKey,
+            (sp, _) =>
+            {
+                var connectionString = connectionStringProvider(sp);
+                var options = GetStoreOptions(sp, optionsProvider);
 
-            return new PostgresVectorStore(connectionString, options);
-        }, lifetime));
+                return new PostgresVectorStore(connectionString, options);
+            },
+            lifetime));
 
-        services.Add(new ServiceDescriptor(typeof(VectorStore), serviceKey,
-            static (sp, key) => sp.GetRequiredKeyedService<PostgresVectorStore>(key), lifetime));
+        services.Add(new ServiceDescriptor(typeof(VectorStore),
+            serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<PostgresVectorStore>(key),
+            lifetime));
 
         return services;
     }
+
 
     /// <summary>
     /// Register a <see cref="PostgresCollection{TKey, TRecord}"/> where the <see cref="NpgsqlDataSource"/> is retrieved from the dependency injection container.
@@ -159,19 +194,25 @@ public static class PostgresServiceCollectionExtensions
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(name);
 
-        services.Add(new ServiceDescriptor(typeof(PostgresCollection<TKey, TRecord>), (sp) =>
-        {
-            var dataSource = sp.GetRequiredService<NpgsqlDataSource>();
-            var copy = GetCollectionOptions(sp, _ => options);
+        services.Add(new ServiceDescriptor(typeof(PostgresCollection<TKey, TRecord>),
+            sp =>
+            {
+                var dataSource = sp.GetRequiredService<NpgsqlDataSource>();
+                var copy = GetCollectionOptions(sp, _ => options);
 
-            // The data source has been solved from the DI container, so we do not own it.
-            return new PostgresCollection<TKey, TRecord>(dataSource, name, ownsDataSource: false, copy);
-        }, lifetime));
+                // The data source has been solved from the DI container, so we do not own it.
+                return new PostgresCollection<TKey, TRecord>(dataSource,
+                    name,
+                    false,
+                    copy);
+            },
+            lifetime));
 
-        AddAbstractions<TKey, TRecord>(services, serviceKey: null, lifetime);
+        AddAbstractions<TKey, TRecord>(services, null, lifetime);
 
         return services;
     }
+
 
     /// <summary>
     /// Registers a <see cref="PostgresCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>, with the specified connection string and service lifetime.
@@ -190,8 +231,14 @@ public static class PostgresServiceCollectionExtensions
     {
         Verify.NotNullOrWhiteSpace(connectionString);
 
-        return AddKeyedPostgresCollection<TKey, TRecord>(services, serviceKey: null, name, sp => connectionString, sp => options, lifetime);
+        return AddKeyedPostgresCollection<TKey, TRecord>(services,
+            null,
+            name,
+            sp => connectionString,
+            sp => options,
+            lifetime);
     }
+
 
     /// <summary>
     /// Registers a keyed <see cref="PostgresCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>, with the specified connection string and service lifetime.
@@ -219,8 +266,14 @@ public static class PostgresServiceCollectionExtensions
     {
         Verify.NotNullOrWhiteSpace(connectionString);
 
-        return AddKeyedPostgresCollection<TKey, TRecord>(services, serviceKey, name, sp => connectionString, sp => options, lifetime);
+        return AddKeyedPostgresCollection<TKey, TRecord>(services,
+            serviceKey,
+            name,
+            sp => connectionString,
+            sp => options,
+            lifetime);
     }
+
 
     /// <summary>
     /// Registers a <see cref="PostgresCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>, with the specified connection string and service lifetime.
@@ -236,7 +289,15 @@ public static class PostgresServiceCollectionExtensions
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TKey : notnull
         where TRecord : class
-        => AddKeyedPostgresCollection<TKey, TRecord>(services, serviceKey: null, name, connectionStringProvider, optionsProvider, lifetime);
+    {
+        return AddKeyedPostgresCollection<TKey, TRecord>(services,
+            null,
+            name,
+            connectionStringProvider,
+            optionsProvider,
+            lifetime);
+    }
+
 
     /// <summary>
     /// Registers a keyed <see cref="PostgresCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>, with the specified connection string and service lifetime.
@@ -264,35 +325,45 @@ public static class PostgresServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(name);
         Verify.NotNull(connectionStringProvider);
 
-        services.Add(new ServiceDescriptor(typeof(PostgresCollection<TKey, TRecord>), serviceKey, (sp, _) =>
-        {
-            var connectionString = connectionStringProvider(sp);
-            var options = GetCollectionOptions(sp, optionsProvider);
-            return new PostgresCollection<TKey, TRecord>(connectionString, name, options);
-        }, lifetime));
+        services.Add(new ServiceDescriptor(typeof(PostgresCollection<TKey, TRecord>),
+            serviceKey,
+            (sp, _) =>
+            {
+                var connectionString = connectionStringProvider(sp);
+                var options = GetCollectionOptions(sp, optionsProvider);
+                return new PostgresCollection<TKey, TRecord>(connectionString, name, options);
+            },
+            lifetime));
 
         AddAbstractions<TKey, TRecord>(services, serviceKey, lifetime);
 
         return services;
     }
 
+
     private static void AddAbstractions<TKey, TRecord>(IServiceCollection services, object? serviceKey, ServiceLifetime lifetime)
         where TKey : notnull
         where TRecord : class
     {
-        services.Add(new ServiceDescriptor(typeof(VectorStoreCollection<TKey, TRecord>), serviceKey,
-            static (sp, key) => sp.GetRequiredKeyedService<PostgresCollection<TKey, TRecord>>(key), lifetime));
+        services.Add(new ServiceDescriptor(typeof(VectorStoreCollection<TKey, TRecord>),
+            serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<PostgresCollection<TKey, TRecord>>(key),
+            lifetime));
 
-        services.Add(new ServiceDescriptor(typeof(IVectorSearchable<TRecord>), serviceKey,
-            static (sp, key) => sp.GetRequiredKeyedService<PostgresCollection<TKey, TRecord>>(key), lifetime));
+        services.Add(new ServiceDescriptor(typeof(IVectorSearchable<TRecord>),
+            serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<PostgresCollection<TKey, TRecord>>(key),
+            lifetime));
 
         // Once HybridSearch supports get implemented by PostgresCollection,
         // we need to add IKeywordHybridSearchable abstraction here as well.
     }
 
+
     private static PostgresVectorStoreOptions? GetStoreOptions(IServiceProvider sp, Func<IServiceProvider, PostgresVectorStoreOptions?>? optionsProvider)
     {
         var options = optionsProvider?.Invoke(sp);
+
         if (options?.EmbeddingGenerator is not null)
         {
             return options; // The user has provided everything, there is nothing to change.
@@ -301,12 +372,14 @@ public static class PostgresServiceCollectionExtensions
         var embeddingGenerator = sp.GetService<IEmbeddingGenerator>();
         return embeddingGenerator is null
             ? options // There is nothing to change.
-            : new(options) { EmbeddingGenerator = embeddingGenerator }; // Create a brand new copy in order to avoid modifying the original options.
+            : new PostgresVectorStoreOptions(options) { EmbeddingGenerator = embeddingGenerator }; // Create a brand new copy in order to avoid modifying the original options.
     }
+
 
     private static PostgresCollectionOptions? GetCollectionOptions(IServiceProvider sp, Func<IServiceProvider, PostgresCollectionOptions?>? optionsProvider)
     {
         var options = optionsProvider?.Invoke(sp);
+
         if (options?.EmbeddingGenerator is not null)
         {
             return options; // The user has provided everything, there is nothing to change.
@@ -315,6 +388,6 @@ public static class PostgresServiceCollectionExtensions
         var embeddingGenerator = sp.GetService<IEmbeddingGenerator>();
         return embeddingGenerator is null
             ? options // There is nothing to change.
-            : new(options) { EmbeddingGenerator = embeddingGenerator }; // Create a brand new copy in order to avoid modifying the original options.
+            : new PostgresCollectionOptions(options) { EmbeddingGenerator = embeddingGenerator }; // Create a brand new copy in order to avoid modifying the original options.
     }
 }

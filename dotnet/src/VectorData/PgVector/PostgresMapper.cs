@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData.ProviderServices;
 using Npgsql;
+using Pgvector;
 
 namespace Microsoft.SemanticKernel.Connectors.PgVector;
 
@@ -43,19 +44,20 @@ internal sealed class PostgresMapper<TRecord>(CollectionModel model)
 
                 switch (reader.GetValue(ordinal))
                 {
-                    case Pgvector.Vector { Memory: ReadOnlyMemory<float> memory }:
+                    case Vector { Memory: ReadOnlyMemory<float> memory }:
                     {
-                        vectorProperty.SetValueAsObject(record, (Nullable.GetUnderlyingType(vectorProperty.Type) ?? vectorProperty.Type) switch
-                        {
-                            var t when t == typeof(ReadOnlyMemory<float>) => memory,
-                            var t when t == typeof(Embedding<float>) => new Embedding<float>(memory),
-                            var t when t == typeof(float[])
-                                => MemoryMarshal.TryGetArray(memory, out ArraySegment<float> segment) && segment.Count == segment.Array!.Length
-                                    ? segment.Array
-                                    : memory.ToArray(),
+                        vectorProperty.SetValueAsObject(record,
+                            (Nullable.GetUnderlyingType(vectorProperty.Type) ?? vectorProperty.Type) switch
+                            {
+                                var t when t == typeof(ReadOnlyMemory<float>) => memory,
+                                var t when t == typeof(Embedding<float>) => new Embedding<float>(memory),
+                                var t when t == typeof(float[])
+                                    => MemoryMarshal.TryGetArray(memory, out ArraySegment<float> segment) && segment.Count == segment.Array!.Length
+                                        ? segment.Array
+                                        : memory.ToArray(),
 
-                            _ => throw new UnreachableException()
-                        });
+                                _ => throw new UnreachableException()
+                            });
                         continue;
                     }
 
@@ -85,7 +87,7 @@ internal sealed class PostgresMapper<TRecord>(CollectionModel model)
                         vectorProperty.SetValueAsObject(record, bitArray);
                         continue;
 
-                    case Pgvector.SparseVector pgSparseVector:
+                    case SparseVector pgSparseVector:
                         vectorProperty.SetValueAsObject(record, pgSparseVector);
                         continue;
 
@@ -102,6 +104,7 @@ internal sealed class PostgresMapper<TRecord>(CollectionModel model)
 
         return record;
     }
+
 
     private static void PopulateProperty(PropertyModel property, NpgsqlDataReader reader, TRecord record)
     {

@@ -10,16 +10,17 @@ using Pgvector;
 
 namespace Microsoft.SemanticKernel.Connectors.PgVector;
 
-internal class PostgresModelBuilder() : CollectionModelBuilder(PostgresModelBuilder.ModelBuildingOptions)
+internal class PostgresModelBuilder() : CollectionModelBuilder(ModelBuildingOptions)
 {
-    internal const string SupportedVectorTypes = "ReadOnlyMemory<float>, Embedding<float>, float[], ReadOnlyMemory<Half>, Embedding<Half>, Half[], BinaryEmbedding, BitArray, or SparseVector";
+    internal const string SupportedVectorTypes = "ReadOnlyMemory<float>, Embedding<float>, float[], ReadOnlyMemory<Half>, Embedding<Half>, Half[], BitArray, or SparseVector";
 
     public static readonly CollectionModelBuildingOptions ModelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = false,
         SupportsMultipleKeys = false,
-        SupportsMultipleVectors = true,
+        SupportsMultipleVectors = true
     };
+
 
     protected override bool IsKeyPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
@@ -32,6 +33,7 @@ internal class PostgresModelBuilder() : CollectionModelBuilder(PostgresModelBuil
             || type == typeof(Guid);
     }
 
+
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
         supportedTypes = "bool, short, int, long, float, double, decimal, string, DateTime, DateTimeOffset, Guid, or arrays/lists of these types";
@@ -42,26 +44,21 @@ internal class PostgresModelBuilder() : CollectionModelBuilder(PostgresModelBuil
         }
 
         return IsValid(type)
-            || (type.IsArray && IsValid(type.GetElementType()!))
-            || (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>) && IsValid(type.GenericTypeArguments[0]));
+            || type.IsArray && IsValid(type.GetElementType()!)
+            || type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>) && IsValid(type.GenericTypeArguments[0]);
 
         static bool IsValid(Type type)
-            => type == typeof(bool) ||
-                type == typeof(short) ||
-                type == typeof(int) ||
-                type == typeof(long) ||
-                type == typeof(float) ||
-                type == typeof(double) ||
-                type == typeof(decimal) ||
-                type == typeof(string) ||
-                type == typeof(byte[]) ||
-                type == typeof(DateTime) ||
-                type == typeof(DateTimeOffset) ||
-                type == typeof(Guid);
+        {
+            return type == typeof(bool) || type == typeof(short) || type == typeof(int) || type == typeof(long) || type == typeof(float) || type == typeof(double) || type == typeof(decimal) || type == typeof(string) || type == typeof(byte[]) || type == typeof(DateTime) || type == typeof(DateTimeOffset) || type == typeof(Guid);
+        }
     }
 
+
     protected override bool IsVectorPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
-        => IsVectorPropertyTypeValidCore(type, out supportedTypes);
+    {
+        return IsVectorPropertyTypeValidCore(type, out supportedTypes);
+    }
+
 
     internal static bool IsVectorPropertyTypeValidCore(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
@@ -72,18 +69,19 @@ internal class PostgresModelBuilder() : CollectionModelBuilder(PostgresModelBuil
             type = underlyingType;
         }
 
-        return type == typeof(ReadOnlyMemory<float>) ||
-            type == typeof(Embedding<float>) ||
-            type == typeof(float[]) ||
+        return type == typeof(ReadOnlyMemory<float>)
+            || type == typeof(Embedding<float>)
+            || type == typeof(float[])
+            ||
 #if NET8_0_OR_GREATER
             type == typeof(ReadOnlyMemory<Half>) ||
             type == typeof(Embedding<Half>) ||
             type == typeof(Half[]) ||
 #endif
-            type == typeof(BinaryEmbedding) ||
-            type == typeof(BitArray) ||
-            type == typeof(SparseVector);
+            type == typeof(BitArray)
+            || type == typeof(SparseVector);
     }
+
 
     /// <inheritdoc />
     protected override Type? ResolveEmbeddingType(
@@ -94,5 +92,5 @@ internal class PostgresModelBuilder() : CollectionModelBuilder(PostgresModelBuil
 #if NET8_0_OR_GREATER
         ?? vectorProperty.ResolveEmbeddingType<Embedding<Half>>(embeddingGenerator, userRequestedEmbeddingType)
 #endif
-        ?? vectorProperty.ResolveEmbeddingType<BinaryEmbedding>(embeddingGenerator, userRequestedEmbeddingType);
+    ;
 }

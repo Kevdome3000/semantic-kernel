@@ -11,6 +11,7 @@ public sealed class PostgresCollectionOptions : VectorStoreCollectionOptions
 {
     internal static readonly PostgresCollectionOptions Default = new();
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgresCollectionOptions"/> class.
     /// </summary>
@@ -18,10 +19,12 @@ public sealed class PostgresCollectionOptions : VectorStoreCollectionOptions
     {
     }
 
+
     internal PostgresCollectionOptions(PostgresCollectionOptions? source) : base(source)
     {
-        this.Schema = source?.Schema ?? PostgresVectorStoreOptions.Default.Schema;
+        Schema = source?.Schema ?? PostgresVectorStoreOptions.Default.Schema;
     }
+
 
     /// <summary>
     /// Gets or sets the database schema.
