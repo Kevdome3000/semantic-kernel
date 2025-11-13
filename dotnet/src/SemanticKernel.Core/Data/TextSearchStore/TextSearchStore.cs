@@ -116,9 +116,9 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
     {
         Verify.NotNull(textChunks);
 
-        var vectorStoreRecordCollection = await EnsureCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
+        VectorStoreCollection<TKey, TextRagStorageDocument<TKey>> vectorStoreRecordCollection = await EnsureCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
 
-        var storageDocuments = textChunks.Select(textChunk =>
+        IEnumerable<TextRagStorageDocument<TKey>> storageDocuments = textChunks.Select(textChunk =>
         {
             // Without text we cannot generate a vector.
             if (string.IsNullOrWhiteSpace(textChunk))
@@ -148,9 +148,9 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
     {
         Verify.NotNull(documents);
 
-        var vectorStoreRecordCollection = await EnsureCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
+        VectorStoreCollection<TKey, TextRagStorageDocument<TKey>> vectorStoreRecordCollection = await EnsureCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
 
-        var storageDocuments = documents.Select(document =>
+        IEnumerable<TextRagStorageDocument<TKey>> storageDocuments = documents.Select(document =>
         {
             if (document is null)
             {
@@ -169,7 +169,7 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
                 throw new ArgumentException($@"Either the {nameof(TextSearchDocument.SourceId)} or {nameof(TextSearchDocument.SourceLink)} properties must be set when the {nameof(TextSearchStoreUpsertOptions.PersistSourceText)} setting is false.", nameof(document));
             }
 
-            var key = GenerateUniqueKey<TKey>(_options.UseSourceIdAsPrimaryKey ?? false ? document.SourceId : null);
+            TKey key = GenerateUniqueKey<TKey>(_options.UseSourceIdAsPrimaryKey ?? false ? document.SourceId : null);
 
             return new TextRagStorageDocument<TKey>
             {
@@ -189,7 +189,7 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
     /// <inheritdoc/>
     public async Task<KernelSearchResults<string>> SearchAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
-        var searchResult = await SearchInternalAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        IEnumerable<TextRagStorageDocument<TKey>> searchResult = await SearchInternalAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
 
         return new(searchResult.Select(x => x.Text ?? string.Empty).ToAsyncEnumerable());
     }
@@ -197,9 +197,9 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
     /// <inheritdoc/>
     public async Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
-        var searchResult = await SearchInternalAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        IEnumerable<TextRagStorageDocument<TKey>> searchResult = await SearchInternalAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
 
-        var results = searchResult.Select(x => new TextSearchResult(x.Text ?? string.Empty) { Name = x.SourceName, Link = x.SourceLink });
+        IEnumerable<TextSearchResult> results = searchResult.Select(x => new TextSearchResult(x.Text ?? string.Empty) { Name = x.SourceName, Link = x.SourceLink });
         return new(searchResult.Select(x =>
             new TextSearchResult(x.Text ?? string.Empty)
             {
@@ -211,7 +211,7 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
     /// <inheritdoc/>
     public async Task<KernelSearchResults<object>> GetSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
-        var searchResult = await SearchInternalAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        IEnumerable<TextRagStorageDocument<TKey>> searchResult = await SearchInternalAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
         return new(searchResult.Select(x => (object)x).ToAsyncEnumerable());
     }
 
@@ -230,10 +230,10 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
             return Enumerable.Empty<TextRagStorageDocument<TKey>>();
         }
 
-        var vectorStoreRecordCollection = await EnsureCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
+        VectorStoreCollection<TKey, TextRagStorageDocument<TKey>> vectorStoreRecordCollection = await EnsureCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
 
         // If the user has not opted out of hybrid search, check if the vector store supports it.
-        var hybridSearchCollection = _options.UseHybridSearch ?? true ?
+        IKeywordHybridSearchable<TextRagStorageDocument<TKey>>? hybridSearchCollection = _options.UseHybridSearch ?? true ?
             vectorStoreRecordCollection.GetService(typeof(IKeywordHybridSearchable<TextRagStorageDocument<TKey>>)) as IKeywordHybridSearchable<TextRagStorageDocument<TKey>> :
             null;
 
@@ -241,7 +241,7 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
         Expression<Func<TextRagStorageDocument<TKey>, bool>>? filter = string.IsNullOrWhiteSpace(_options.SearchNamespace) ? null : x => x.Namespaces.Contains(_options.SearchNamespace);
 
         // Execute a hybrid search if possible, otherwise perform a regular vector search.
-        var searchResult = hybridSearchCollection is null
+        IAsyncEnumerable<VectorSearchResult<TextRagStorageDocument<TKey>>> searchResult = hybridSearchCollection is null
             ? vectorStoreRecordCollection.SearchAsync(
                 query,
                 searchOptions?.Top ?? 3,
@@ -262,12 +262,12 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
 
         // Retrieve the documents from the search results.
         var searchResponseDocs = await searchResult
-            .Select(x => x.Record, cancellationToken)
+            .Select(x => x.Record)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
         // Find any source ids and links for which the text needs to be retrieved.
-        var sourceIdsToRetrieve = searchResponseDocs
+        List<TextSearchStoreSourceRetrievalRequest> sourceIdsToRetrieve = searchResponseDocs
             .Where(x => string.IsNullOrWhiteSpace(x.Text))
             .Select(x => new TextSearchStoreSourceRetrievalRequest(x.SourceId, x.SourceLink))
             .ToList();
@@ -279,7 +279,7 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
                 throw new InvalidOperationException($"The {nameof(TextSearchStoreOptions.SourceRetrievalCallback)} option must be set if retrieving documents without stored text.");
             }
 
-            var retrievalResponses = await _options.SourceRetrievalCallback(sourceIdsToRetrieve).ConfigureAwait(false);
+            IEnumerable<TextSearchStoreSourceRetrievalResponse>? retrievalResponses = await _options.SourceRetrievalCallback(sourceIdsToRetrieve).ConfigureAwait(false);
 
             if (retrievalResponses is null)
             {

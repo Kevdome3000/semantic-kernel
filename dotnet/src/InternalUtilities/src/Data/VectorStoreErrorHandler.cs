@@ -321,7 +321,7 @@ internal static class VectorStoreErrorHandler
             _operationName = operationName;
         }
 
-        public Enumerator GetAsyncEntor(CancellationToken cancellationToken = default)
+        public Enumerator GetAsyncEnumerator(CancellationToken cancellationToken = default)
         {
             return new Enumerator(_enumerable.WithCancellation(cancellationToken).GetAsyncEnumerator(), _metadata, _operationName);
         }
