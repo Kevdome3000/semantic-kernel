@@ -84,7 +84,7 @@
     <PackageVersion Include="ModelContextProtocol" Version="0.4.0-preview.3" />
     <PackageVersion Include="MSTest.TestFramework" Version="3.8.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageVersion Include="Npgsql" Version="9.0.4" />
+    <PackageVersion Include="Npgsql" Version="10.0.0-rc.1" />
     <PackageVersion Include="OData2Linq" Version="2.2.0" />
     <PackageVersion Include="OllamaSharp" Version="5.3.5" />
     <PackageVersion Include="OpenAI" Version="2.5.0" />
@@ -115,8 +115,8 @@
     <!-- Tokenizers -->
     <PackageVersion Include="Microsoft.ML.Tokenizers" Version="1.0.2" />
     <!-- Microsoft.Extensions.* -->
-    <PackageVersion Include="Microsoft.Extensions.AI" Version="9.10.0" />
-    <PackageVersion Include="Microsoft.Extensions.AI.Abstractions" Version="9.10.0" />
+    <PackageVersion Include="Microsoft.Extensions.AI" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.AI.Abstractions" Version="10.0.0" />
     <PackageVersion Include="Microsoft.Extensions.AI.AzureAIInference" Version="9.10.0-preview.1.25513.3" />
     <PackageVersion Include="Microsoft.Extensions.AI.OpenAI" Version="9.10.0-preview.1.25513.3" />
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.0" />
