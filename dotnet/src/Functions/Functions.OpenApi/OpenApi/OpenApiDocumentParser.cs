@@ -16,7 +16,11 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.OpenApi;
+using Microsoft.OpenApi.Any;
+using Microsoft.OpenApi.Interfaces;
+using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Readers;
+using Microsoft.OpenApi.Writers;
 using Microsoft.SemanticKernel.Text;
 using SharpYaml.Serialization;
 
