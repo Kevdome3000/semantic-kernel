@@ -50,7 +50,7 @@ internal sealed class EmptyServiceProvider : IServiceProvider, IKeyedServiceProv
     }
 
     private static bool VerifyAotCompatibility =>
-#if NET8_0_OR_GREATER
+#if NET
             !System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported;
 #else
             false;

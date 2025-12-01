@@ -30,7 +30,7 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
 {
-    private static readonly JsonElement s_defaultSchema = JsonDocument.Parse("{}").RootElement;
+    private static readonly JsonElement s_defaultSchema = JsonElement.Parse("{}");
 
     /// <summary>The measurement tag name for the function name.</summary>
     private protected const string MeasurementFunctionTagName = "semantic_kernel.function.name";
@@ -844,7 +844,7 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
     [Obsolete("Use the kernel function directly or for similar behavior use Clone(Kernel) method instead.")]
     private sealed class KernelAIFunction : AIFunction
     {
-        private static readonly JsonElement s_defaultSchema = JsonDocument.Parse("{}").RootElement;
+        private static readonly JsonElement s_defaultSchema = JsonElement.Parse("{}");
         private readonly KernelFunction _kernelFunction;
         private readonly Kernel? _kernel;
 

@@ -230,7 +230,7 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
                 generatedEmbeddings ??= new Dictionary<VectorPropertyModel, IReadOnlyList<Embedding>>(vectorPropertyCount);
                 generatedEmbeddings[vectorProperty] = [await floatTask.ConfigureAwait(false)];
             }
-#if NET8_0_OR_GREATER
+#if NET
             else if (vectorProperty.TryGenerateEmbedding<TRecord, Embedding<Half>>(record, cancellationToken, out var halfTask))
             {
                 generatedEmbeddings ??= new Dictionary<VectorPropertyModel, IReadOnlyList<Embedding>>(vectorPropertyCount);
@@ -314,7 +314,7 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
                 generatedEmbeddings ??= new Dictionary<VectorPropertyModel, IReadOnlyList<Embedding>>(vectorPropertyCount);
                 generatedEmbeddings[vectorProperty] = await floatTask.ConfigureAwait(false);
             }
-#if NET8_0_OR_GREATER
+#if NET
             else if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<Half>>(records, cancellationToken, out var halfTask))
             {
                 generatedEmbeddings ??= new Dictionary<VectorPropertyModel, IReadOnlyList<Embedding>>(vectorPropertyCount);
@@ -496,7 +496,7 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<float>> generator
                 => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
 
-#if NET8_0_OR_GREATER
+#if NET
             // Dense float16
             ReadOnlyMemory<Half> r => r,
             Half[] f => new ReadOnlyMemory<Half>(f),

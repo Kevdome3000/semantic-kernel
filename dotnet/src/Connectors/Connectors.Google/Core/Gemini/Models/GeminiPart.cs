@@ -51,6 +51,13 @@ internal sealed class GeminiPart : IJsonOnDeserialized
 
 
     /// <summary>
+    /// Gets or sets a value indicating whether this part contains thinking content.
+    /// </summary>
+    [JsonPropertyName("thought")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? Thought { get; set; }
+
+    /// <summary>
     /// Checks whether only one property of the GeminiPart instance is not null.
     /// Returns true if only one property among Text, InlineData, FileData, FunctionCall, and FunctionResponse is not null,
     /// Otherwise, it returns false.

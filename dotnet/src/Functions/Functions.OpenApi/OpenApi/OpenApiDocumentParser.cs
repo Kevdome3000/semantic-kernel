@@ -297,7 +297,7 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
     {
         if (servers == null || servers.Count == 0)
         {
-            return new List<RestApiServer>();
+            return [];
         }
 
         var result = new List<RestApiServer>(servers.Count);

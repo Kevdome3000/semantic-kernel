@@ -98,7 +98,7 @@ public sealed class AggregatorAgent(Func<AgentChat> chatProvider) : Agent
     }
 
     /// <inheritdoc/>
-    protected internal async override Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken)
+    protected internal override async Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken)
     {
         this.Logger.LogOpenAIAssistantAgentRestoringChannel(nameof(CreateChannelAsync), nameof(AggregatorChannel));
 

@@ -60,8 +60,10 @@ public class StreamingKernelContentItemCollectionTests
     public void ItShouldBeEmptyAfterClear()
     {
         // Arrange
-        var collection = new StreamingKernelContentItemCollection();
-        collection.Add(new StreamingTextContent("fake-text"));
+        var collection = new StreamingKernelContentItemCollection
+        {
+            new StreamingTextContent("fake-text")
+        };
 
         // Act
         collection.Clear();

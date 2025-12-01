@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Connectors.HuggingFace.UnitTests;
-
 using System;
 using System.Globalization;
 using System.Linq;
@@ -18,14 +16,12 @@ using Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
 using Microsoft.SemanticKernel.Http;
 using Xunit;
 
+namespace SemanticKernel.Connectors.HuggingFace.UnitTests;
 
 public sealed class HuggingFaceStreamingChatCompletionTests : IDisposable
 {
-
     private readonly HttpClient _httpClient;
-
     private readonly HttpMessageHandlerStub _messageHandlerStub;
-
 
     public HuggingFaceStreamingChatCompletionTests()
     {
@@ -38,7 +34,6 @@ public sealed class HuggingFaceStreamingChatCompletionTests : IDisposable
         };
     }
 
-
     [Fact]
     public async Task ShouldContainModelInRequestBodyAsync()
     {
@@ -48,8 +43,7 @@ public sealed class HuggingFaceStreamingChatCompletionTests : IDisposable
         var chatHistory = CreateSampleChatHistory();
 
         // Act
-        await client.StreamCompleteChatMessageAsync(chatHistory, executionSettings: null, cancellationToken: CancellationToken.None).
-            ToListAsync();
+        await client.StreamCompleteChatMessageAsync(chatHistory, executionSettings: null, cancellationToken: CancellationToken.None).ToListAsync();
 
         // Assert
         Assert.NotNull(this._messageHandlerStub.RequestContent);
@@ -57,7 +51,6 @@ public sealed class HuggingFaceStreamingChatCompletionTests : IDisposable
 
         Assert.Contains(modelId, requestContent, StringComparison.Ordinal);
     }
-
 
     [Fact]
     public async Task ShouldContainRolesInRequestAsync()
@@ -67,19 +60,16 @@ public sealed class HuggingFaceStreamingChatCompletionTests : IDisposable
         var chatHistory = CreateSampleChatHistory();
 
         // Act
-        await client.StreamCompleteChatMessageAsync(chatHistory, executionSettings: null, cancellationToken: CancellationToken.None).
-            ToListAsync();
+        await client.StreamCompleteChatMessageAsync(chatHistory, executionSettings: null, cancellationToken: CancellationToken.None).ToListAsync();
 
         // Assert
         var request = JsonSerializer.Deserialize<ChatCompletionRequest>(this._messageHandlerStub.RequestContent);
         Assert.NotNull(request);
-
         Assert.Collection(request.Messages!,
             item => Assert.Equal(chatHistory[0].Role, new AuthorRole(item.Role!)),
             item => Assert.Equal(chatHistory[1].Role, new AuthorRole(item.Role!)),
             item => Assert.Equal(chatHistory[2].Role, new AuthorRole(item.Role!)));
     }
-
 
     [Fact]
     public async Task ShouldReturnValidChatResponseAsync()
@@ -95,8 +85,7 @@ public sealed class HuggingFaceStreamingChatCompletionTests : IDisposable
         var responseChunks = Regex.Matches(testDataResponse, @"data:(\{.*\})");
 
         // Act
-        var chatMessageContents = await client.StreamCompleteChatMessageAsync(chatHistory, executionSettings: null, cancellationToken: CancellationToken.None).
-            ToListAsync();
+        var chatMessageContents = await client.StreamCompleteChatMessageAsync(chatHistory, executionSettings: null, cancellationToken: CancellationToken.None).ToListAsync();
 
         // Assert
 
@@ -104,24 +93,17 @@ public sealed class HuggingFaceStreamingChatCompletionTests : IDisposable
         Assert.Equal(responseChunks.Count, chatMessageContents.Count);
 
         var i = -1;
-
         foreach (Match match in responseChunks)
         {
             i++;
+            JsonElement jsonDeltaChunk = JsonElement.Parse(match.Groups[1].Value)
+                .GetProperty("choices")[0]
+                .GetProperty("delta");
 
-            JsonElement jsonDeltaChunk = JsonSerializer.Deserialize<JsonElement>(match.Groups[1].Value).
-                GetProperty("choices")[0].
-                GetProperty("delta");
-
-            Assert.Equal(jsonDeltaChunk.GetProperty("content").
-                GetString(), chatMessageContents[i].Content);
-
-            Assert.Equal(jsonDeltaChunk.GetProperty("role").
-                GetString(), chatMessageContents[i].
-                Role.ToString());
+            Assert.Equal(jsonDeltaChunk.GetProperty("content").GetString(), chatMessageContents[i].Content);
+            Assert.Equal(jsonDeltaChunk.GetProperty("role").GetString(), chatMessageContents[i].Role.ToString());
         }
     }
-
 
     [Fact]
     public async Task ShouldReturnValidMetadataAsync()
@@ -134,52 +116,34 @@ public sealed class HuggingFaceStreamingChatCompletionTests : IDisposable
 
         // Act
         var chatMessageContents =
-            await client.StreamCompleteChatMessageAsync(chatHistory, executionSettings: null, cancellationToken: CancellationToken.None).
-                ToListAsync();
+            await client.StreamCompleteChatMessageAsync(chatHistory, executionSettings: null, cancellationToken: CancellationToken.None).ToListAsync();
 
         // Assert
         var i = -1;
-
         foreach (Match match in responseChunks)
         {
             i++;
             var messageChunk = chatMessageContents[i];
 
-            JsonElement jsonRootChunk = JsonSerializer.Deserialize<JsonElement>(match.Groups[1].Value);
+            JsonElement jsonRootChunk = JsonElement.Parse(match.Groups[1].Value);
 
             Assert.NotNull(messageChunk.Metadata);
             Assert.IsType<HuggingFaceChatCompletionMetadata>(messageChunk.Metadata);
 
             var metadata = messageChunk.Metadata as HuggingFaceChatCompletionMetadata;
 
-            Assert.Equal(jsonRootChunk.GetProperty("id").
-                GetString(), metadata!.Id);
-
-            Assert.Equal(jsonRootChunk.GetProperty("created").
-                GetInt64(), metadata.Created);
-
-            Assert.Equal(jsonRootChunk.GetProperty("object").
-                GetString(), metadata.Object);
-
-            Assert.Equal(jsonRootChunk.GetProperty("model").
-                GetString(), metadata.Model);
-
-            Assert.Equal(jsonRootChunk.GetProperty("system_fingerprint").
-                GetString(), metadata.SystemFingerPrint);
-
-            Assert.Equal(jsonRootChunk.GetProperty("choices")[0].
-                GetProperty("finish_reason").
-                GetString(), metadata.FinishReason);
+            Assert.Equal(jsonRootChunk.GetProperty("id").GetString(), metadata!.Id);
+            Assert.Equal(jsonRootChunk.GetProperty("created").GetInt64(), metadata.Created);
+            Assert.Equal(jsonRootChunk.GetProperty("object").GetString(), metadata.Object);
+            Assert.Equal(jsonRootChunk.GetProperty("model").GetString(), metadata.Model);
+            Assert.Equal(jsonRootChunk.GetProperty("system_fingerprint").GetString(), metadata.SystemFingerPrint);
+            Assert.Equal(jsonRootChunk.GetProperty("choices")[0].GetProperty("finish_reason").GetString(), metadata.FinishReason);
 
             var options = new JsonSerializerOptions();
             options.Converters.Add(new DoubleConverter());
-
-            Assert.Equal(jsonRootChunk.GetProperty("choices")[0].
-                GetProperty("logprobs").
-                GetRawText(), JsonSerializer.Serialize(metadata.LogProbs, options));
+            Assert.Equal(jsonRootChunk.GetProperty("choices")[0].GetProperty("logprobs").GetRawText(), JsonSerializer.Serialize(metadata.LogProbs, options));
         }
     }
-
 
     [Fact]
     public async Task ShouldUsePromptExecutionSettingsAsync()
@@ -187,7 +151,6 @@ public sealed class HuggingFaceStreamingChatCompletionTests : IDisposable
         // Arrange
         var client = this.CreateChatCompletionClient();
         var chatHistory = CreateSampleChatHistory();
-
         var executionSettings = new HuggingFacePromptExecutionSettings()
         {
             MaxTokens = 102,
@@ -201,8 +164,7 @@ public sealed class HuggingFaceStreamingChatCompletionTests : IDisposable
         };
 
         // Act
-        await client.StreamCompleteChatMessageAsync(chatHistory, executionSettings: executionSettings, cancellationToken: CancellationToken.None).
-            ToListAsync();
+        await client.StreamCompleteChatMessageAsync(chatHistory, executionSettings: executionSettings, cancellationToken: CancellationToken.None).ToListAsync();
 
         // Assert
         var request = JsonSerializer.Deserialize<ChatCompletionRequest>(this._messageHandlerStub.RequestContent);
@@ -217,7 +179,6 @@ public sealed class HuggingFaceStreamingChatCompletionTests : IDisposable
         Assert.Equal(executionSettings.TopLogProbs, request.TopLogProbs);
     }
 
-
     [Fact]
     public async Task ShouldNotPassConvertedSystemMessageToUserMessageToRequestAsync()
     {
@@ -228,8 +189,7 @@ public sealed class HuggingFaceStreamingChatCompletionTests : IDisposable
         chatHistory.AddUserMessage("Hello");
 
         // Act
-        await client.StreamCompleteChatMessageAsync(chatHistory, executionSettings: null, cancellationToken: CancellationToken.None).
-            ToListAsync();
+        await client.StreamCompleteChatMessageAsync(chatHistory, executionSettings: null, cancellationToken: CancellationToken.None).ToListAsync();
 
         // Assert
         var request = JsonSerializer.Deserialize<ChatCompletionRequest>(this._messageHandlerStub.RequestContent);
@@ -241,7 +201,6 @@ public sealed class HuggingFaceStreamingChatCompletionTests : IDisposable
         Assert.Equal(message, systemMessage);
     }
 
-
     [Fact]
     public async Task ItCreatesPostRequestIfBearerIsSpecifiedWithAuthorizationHeaderAsync()
     {
@@ -251,15 +210,13 @@ public sealed class HuggingFaceStreamingChatCompletionTests : IDisposable
         var chatHistory = CreateSampleChatHistory();
 
         // Act
-        await client.StreamCompleteChatMessageAsync(chatHistory, executionSettings: null, cancellationToken: CancellationToken.None).
-            ToListAsync();
+        await client.StreamCompleteChatMessageAsync(chatHistory, executionSettings: null, cancellationToken: CancellationToken.None).ToListAsync();
 
         // Assert
         Assert.NotNull(this._messageHandlerStub.RequestHeaders);
         Assert.NotNull(this._messageHandlerStub.RequestHeaders.Authorization);
         Assert.Equal($"Bearer {apiKey}", this._messageHandlerStub.RequestHeaders.Authorization.ToString());
     }
-
 
     [Fact]
     public async Task ItCreatesPostRequestAsync()
@@ -269,13 +226,11 @@ public sealed class HuggingFaceStreamingChatCompletionTests : IDisposable
         var chatHistory = CreateSampleChatHistory();
 
         // Act
-        await client.StreamCompleteChatMessageAsync(chatHistory, executionSettings: null, cancellationToken: CancellationToken.None).
-            ToListAsync();
+        await client.StreamCompleteChatMessageAsync(chatHistory, executionSettings: null, cancellationToken: CancellationToken.None).ToListAsync();
 
         // Assert
         Assert.Equal(HttpMethod.Post, this._messageHandlerStub.Method);
     }
-
 
     [Fact]
     public async Task ItCreatesPostRequestWithValidUserAgentAsync()
@@ -285,14 +240,12 @@ public sealed class HuggingFaceStreamingChatCompletionTests : IDisposable
         var chatHistory = CreateSampleChatHistory();
 
         // Act
-        await client.StreamCompleteChatMessageAsync(chatHistory, executionSettings: null, cancellationToken: CancellationToken.None).
-            ToListAsync();
+        await client.StreamCompleteChatMessageAsync(chatHistory, executionSettings: null, cancellationToken: CancellationToken.None).ToListAsync();
 
         // Assert
         Assert.NotNull(this._messageHandlerStub.RequestHeaders);
         Assert.Equal(HttpHeaderConstant.Values.UserAgent, this._messageHandlerStub.RequestHeaders.UserAgent.ToString());
     }
-
 
     [Fact]
     public async Task ItCreatesPostRequestWithSemanticKernelVersionHeaderAsync()
@@ -303,19 +256,14 @@ public sealed class HuggingFaceStreamingChatCompletionTests : IDisposable
         var expectedVersion = HttpHeaderConstant.Values.GetAssemblyVersion(typeof(HuggingFaceClient));
 
         // Act
-        await client.StreamCompleteChatMessageAsync(chatHistory, executionSettings: null, cancellationToken: CancellationToken.None).
-            ToListAsync();
+        await client.StreamCompleteChatMessageAsync(chatHistory, executionSettings: null, cancellationToken: CancellationToken.None).ToListAsync();
 
         // Assert
         Assert.NotNull(this._messageHandlerStub.RequestHeaders);
-
-        var header = this._messageHandlerStub.RequestHeaders.GetValues(HttpHeaderConstant.Names.SemanticKernelVersion).
-            SingleOrDefault();
-
+        var header = this._messageHandlerStub.RequestHeaders.GetValues(HttpHeaderConstant.Names.SemanticKernelVersion).SingleOrDefault();
         Assert.NotNull(header);
         Assert.Equal(expectedVersion, header);
     }
-
 
     private static ChatHistory CreateSampleChatHistory()
     {
@@ -323,10 +271,8 @@ public sealed class HuggingFaceStreamingChatCompletionTests : IDisposable
         chatHistory.AddUserMessage("Hello");
         chatHistory.AddAssistantMessage("Hi");
         chatHistory.AddUserMessage("How are you?");
-
         return chatHistory;
     }
-
 
     private HuggingFaceMessageApiClient CreateChatCompletionClient(
         string modelId = "fake-model",
@@ -335,12 +281,11 @@ public sealed class HuggingFaceStreamingChatCompletionTests : IDisposable
         HttpClient? httpClient = null)
     {
         return new HuggingFaceMessageApiClient(
-            modelId: modelId,
-            apiKey: apiKey,
-            endpoint: endpoint,
-            httpClient: httpClient ?? this._httpClient);
+                modelId: modelId,
+                apiKey: apiKey,
+                endpoint: endpoint,
+                httpClient: httpClient ?? this._httpClient);
     }
-
 
     public void Dispose()
     {
@@ -348,27 +293,21 @@ public sealed class HuggingFaceStreamingChatCompletionTests : IDisposable
         this._messageHandlerStub.Dispose();
     }
 
-
     private sealed class DoubleConverter : JsonConverter<double>
     {
-
         public override double Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             return reader.GetSingle();
         }
-
 
         public override void Write(Utf8JsonWriter writer, double value, JsonSerializerOptions options)
         {
             var numberString = value.ToString("0.############################", CultureInfo.InvariantCulture);
 
             // Trim unnecessary trailing zeros and possible trailing decimal point
-            numberString = numberString.TrimEnd('0').
-                TrimEnd('.');
+            numberString = numberString.TrimEnd('0').TrimEnd('.');
 
             writer.WriteRawValue(numberString);
         }
-
     }
-
 }

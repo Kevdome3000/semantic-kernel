@@ -1,27 +1,24 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Google.Core;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Extensions.Logging;
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
 
+namespace Microsoft.SemanticKernel.Connectors.Google.Core;
 
 /// <summary>
 /// Represents a client for interacting with the embeddings models by Google AI.
 /// </summary>
 internal sealed class GoogleAIEmbeddingClient : ClientBase
 {
-
     private readonly string _embeddingModelId;
-
     private readonly Uri _embeddingEndpoint;
     private readonly int? _dimensions;
-
 
     /// <summary>
     /// Represents a client for interacting with the embeddings models by Google AI.
@@ -54,41 +51,36 @@ internal sealed class GoogleAIEmbeddingClient : ClientBase
         this._dimensions = dimensions;
     }
 
-
     /// <summary>
     /// Generates embeddings for the given data asynchronously.
     /// </summary>
     /// <param name="data">The list of strings to generate embeddings for.</param>
+    /// <param name="options">The embedding generation options.</param>
     /// <param name="cancellationToken">The cancellation token to cancel the operation.</param>
     /// <returns>Result contains a list of read-only memories of floats representing the generated embeddings.</returns>
     public async Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
         IList<string> data,
+        EmbeddingGenerationOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrEmpty(data);
 
-        var geminiRequest = this.GetEmbeddingRequest(data);
+        var geminiRequest = this.GetEmbeddingRequest(data, options);
 
-        using var httpRequestMessage = await this.CreateHttpRequestAsync(geminiRequest, this._embeddingEndpoint).
-            ConfigureAwait(false);
+        using var httpRequestMessage = await this.CreateHttpRequestAsync(geminiRequest, this._embeddingEndpoint).ConfigureAwait(false);
 
-        string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken).
-            ConfigureAwait(false);
+        string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
+            .ConfigureAwait(false);
 
         return DeserializeAndProcessEmbeddingsResponse(body);
     }
 
-
-    private GoogleAIEmbeddingRequest GetEmbeddingRequest(IEnumerable<string> data)
-        => GoogleAIEmbeddingRequest.FromData(data, this._embeddingModelId, this._dimensions);
-
+    private GoogleAIEmbeddingRequest GetEmbeddingRequest(IEnumerable<string> data, EmbeddingGenerationOptions? options = null)
+    => GoogleAIEmbeddingRequest.FromData(data, options?.ModelId ?? this._embeddingModelId, options?.Dimensions ?? this._dimensions, options);
 
     private static List<ReadOnlyMemory<float>> DeserializeAndProcessEmbeddingsResponse(string body)
         => ProcessEmbeddingsResponse(DeserializeResponse<GoogleAIEmbeddingResponse>(body));
 
-
     private static List<ReadOnlyMemory<float>> ProcessEmbeddingsResponse(GoogleAIEmbeddingResponse embeddingsResponse)
-        => embeddingsResponse.Embeddings.Select(embedding => embedding.Values).
-            ToList();
-
+        => embeddingsResponse.Embeddings.Select(embedding => embedding.Values).ToList();
 }

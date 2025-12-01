@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Text;
+
 /// <summary>
 /// Internal class for parsing Server-Sent Events (SSE) data from a stream.
 /// </summary>
@@ -38,26 +39,21 @@ internal static class SseJsonParser
         try
         {
             using SseReader sseReader = new(stream);
-
             while (!cancellationToken.IsCancellationRequested)
             {
-                SseLine? sseLine = await sseReader.ReadSingleDataEventAsync(cancellationToken).
-                    ConfigureAwait(false);
-
+                SseLine? sseLine = await sseReader.ReadSingleDataEventAsync(cancellationToken).ConfigureAwait(false);
                 if (sseLine is null)
                 {
                     break; // end of stream
                 }
 
                 ReadOnlyMemory<char> value = sseLine.Value.FieldValue;
-
                 if (value.Span.SequenceEqual("[DONE]".AsSpan()))
                 {
                     break;
                 }
 
                 var sseData = parser(sseLine.Value);
-
                 if (sseData is not null)
                 {
                     yield return sseData;
@@ -67,9 +63,8 @@ internal static class SseJsonParser
         finally
         {
             // Always dispose the stream immediately once enumeration is complete for any reason
-#if NETCOREAPP3_0_OR_GREATER
-            await stream.DisposeAsync().
-                ConfigureAwait(false);
+#if NET
+            await stream.DisposeAsync().ConfigureAwait(false);
 #else
             stream.Dispose();
 #endif
@@ -85,8 +80,7 @@ internal static class SseJsonParser
     /// <returns>An asynchronous enumerable sequence of deserialized objects of type <typeparamref name="T"/>.</returns>
     internal static async IAsyncEnumerable<T> ParseAsync<T>(Stream stream, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        await foreach (var sseData in ParseAsync(stream, DeserializeTargetType, cancellationToken).
-                           ConfigureAwait(false))
+        await foreach (var sseData in ParseAsync(stream, DeserializeTargetType, cancellationToken).ConfigureAwait(false))
         {
             yield return (T)sseData.Data;
         }
@@ -94,7 +88,6 @@ internal static class SseJsonParser
         static SseData? DeserializeTargetType(SseLine sseLine)
         {
             var obj = JsonSerializer.Deserialize<T>(sseLine.FieldValue.Span, JsonOptionsCache.ReadPermissive);
-
             return new SseData(sseLine.EventName, obj!);
         }
     }

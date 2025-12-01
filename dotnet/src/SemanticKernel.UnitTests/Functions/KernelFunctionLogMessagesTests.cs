@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.UnitTests.Functions;
-
 using System;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
@@ -10,10 +8,10 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Moq;
 using Xunit;
 
+namespace SemanticKernel.UnitTests.Functions;
 
 public class KernelFunctionLogMessagesTests
 {
-
     [Theory]
     [InlineData(typeof(string))]
     [InlineData(typeof(int))]
@@ -34,9 +32,7 @@ public class KernelFunctionLogMessagesTests
         };
 
         var logger = new Mock<ILogger>();
-
-        logger.Setup(l => l.IsEnabled(It.IsAny<LogLevel>())).
-            Returns(true);
+        logger.Setup(l => l.IsEnabled(It.IsAny<LogLevel>())).Returns(true);
 
         var functionResult = new FunctionResult(KernelFunctionFactory.CreateFromMethod(() => { }), testData.FunctionResult);
 
@@ -52,13 +48,9 @@ public class KernelFunctionLogMessagesTests
             It.IsAny<Func<It.IsAnyType, Exception?, string>>()));
     }
 
-
     private sealed class User
     {
-
         [JsonPropertyName("name")]
         public string? Name { get; set; }
-
     }
-
 }

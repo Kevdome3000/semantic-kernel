@@ -30,7 +30,6 @@ internal sealed class ChatHistoryChannel : AgentChannel
 
     private readonly ChatHistory _history;
 
-
     /// <inheritdoc/>
     protected override async IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(
         Agent agent,
@@ -74,7 +73,6 @@ internal sealed class ChatHistoryChannel : AgentChannel
 
             // Dequeue the next message to yield.
             yieldMessage = messageQueue.Dequeue();
-
             yield return (IsMessageVisible(yieldMessage), yieldMessage);
         }
 
@@ -88,10 +86,9 @@ internal sealed class ChatHistoryChannel : AgentChannel
 
         // Function content not visible, unless result is the final message.
         bool IsMessageVisible(ChatMessageContent message) =>
-            (!message.Items.Any(i => i is FunctionCallContent || i is FunctionResultContent) ||
-             messageQueue.Count == 0);
+            (!message.Items.Any(i => i is FunctionCallContent or FunctionResultContent) ||
+              messageQueue.Count == 0);
     }
-
 
     /// <inheritdoc/>
     protected override async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(Agent agent, IList<ChatMessageContent> messages, [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -129,13 +126,11 @@ internal sealed class ChatHistoryChannel : AgentChannel
         return Task.CompletedTask;
     }
 
-
     /// <inheritdoc/>
     protected override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken)
     {
         return this._history.ToDescendingAsync();
     }
-
 
     /// <inheritdoc/>
     protected override Task ResetAsync(CancellationToken cancellationToken = default)
@@ -156,5 +151,4 @@ internal sealed class ChatHistoryChannel : AgentChannel
     {
         this._history = history ?? [];
     }
-
 }

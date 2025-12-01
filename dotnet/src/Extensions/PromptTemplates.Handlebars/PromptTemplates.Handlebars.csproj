@@ -34,8 +34,4 @@
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
-
-    <ItemGroup>
-        <Compile Remove="..\..\InternalUtilities\src\Data\**"/>
-    </ItemGroup>
 </Project>

@@ -272,7 +272,7 @@ internal static class PostgresSqlBuilder
         bool includeVectors = false)
         where TKey : notnull
     {
-        List<string> queryColumns = new();
+        List<string> queryColumns = [];
 
         foreach (var property in model.Properties)
         {

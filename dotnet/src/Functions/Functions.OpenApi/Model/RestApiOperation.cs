@@ -151,8 +151,8 @@ public sealed class RestApiOperation
         Responses = responses ?? new Dictionary<string, RestApiExpectedResponse>();
         SecurityRequirements = securityRequirements;
         Payload = payload;
-        PathServers = pathServers ?? new List<RestApiServer>();
-        OperationServers = operationServers ?? new List<RestApiServer>();
+        PathServers = pathServers ?? [];
+        OperationServers = operationServers ?? [];
     }
 
     /// <summary>

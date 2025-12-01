@@ -25,7 +25,7 @@ internal sealed class PostgresFilterTranslator : SqlFilterTranslator
     }
 
 
-    internal List<object> ParameterValues { get; } = new();
+    internal List<object> ParameterValues { get; } = [];
 
 
     protected override void TranslateConstant(object? value)

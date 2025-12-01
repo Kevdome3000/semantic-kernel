@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Filtering;
-
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -11,6 +9,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 
+namespace Filtering;
 
 /// <summary>
 /// This example shows how to implement Personal Identifiable Information (PII) detection with Filters using Microsoft Presidio service: https://github.com/microsoft/presidio.
@@ -18,7 +17,6 @@ using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 /// </summary>
 public class PIIDetection(ITestOutputHelper output) : BaseTest(output)
 {
-
     /// <summary>
     /// Use Presidio Text Analyzer to detect PII information in prompt with specified score threshold.
     /// If the score exceeds the threshold, prompt won't be sent to LLM and custom result will be returned from function.
@@ -61,7 +59,7 @@ public class PIIDetection(ITestOutputHelper output) : BaseTest(output)
             logger.LogError("Exception: {Exception}", exception.Message);
         }
 
-        /*
+        /* 
         Prompt: John Smith has a card 1111 2222 3333 4444
         Entity type: CREDIT_CARD. Score: 1
         Entity type: PERSON. Score: 0.85
@@ -77,7 +75,6 @@ public class PIIDetection(ITestOutputHelper output) : BaseTest(output)
         Result: Of course! I'm here to help. What do you need assistance with?
         */
     }
-
 
     /// <summary>
     /// Use Presidio Text Anonymizer to detect PII information in prompt and update the prompt by following specified rules before sending it to LLM.
@@ -134,13 +131,13 @@ public class PIIDetection(ITestOutputHelper output) : BaseTest(output)
             new()
             {
                 Template =
-                    """
-                    | Name | Phone number | Position |
-                    |------|--------------|----------|
-                    {{#each (SearchPlugin-GetContacts)}}
-                    | {{Name}} | {{Phone}} | {{Position}} |
-                    {{/each}}
-                    """,
+                """
+                | Name | Phone number | Position |
+                |------|--------------|----------|
+                {{#each (SearchPlugin-GetContacts)}}
+                | {{Name}} | {{Phone}} | {{Position}} |
+                {{/each}}
+                """,
                 TemplateFormat = "handlebars"
             },
             new HandlebarsPromptTemplateFactory()
@@ -150,14 +147,14 @@ public class PIIDetection(ITestOutputHelper output) : BaseTest(output)
         logger.LogInformation("Result: {Result}", result.ToString());
 
         /*
-        Prompt before anonymization :
+        Prompt before anonymization : 
         | Name        | Phone number      | Position  |
         |-------------|-------------------|---------- |
         | John Smith  | +1 (123) 456-7890 | Developer |
         | Alice Doe   | +1 (987) 654-3120 | Manager   |
         | Emily Davis | +1 (555) 555-5555 | Designer  |
 
-        Prompt after anonymization :
+        Prompt after anonymization : 
         | Name        | Phone number      | Position  |
         |-------------|-------------------|-----------|
         | ANONYMIZED  | +1                | Developer |
@@ -167,7 +164,6 @@ public class PIIDetection(ITestOutputHelper output) : BaseTest(output)
         Result: true
         */
     }
-
 
     #region Filters
 
@@ -179,7 +175,6 @@ public class PIIDetection(ITestOutputHelper output) : BaseTest(output)
         PresidioTextAnalyzerService analyzerService,
         double scoreThreshold) : IPromptRenderFilter
     {
-
         public async Task OnPromptRenderAsync(PromptRenderContext context, Func<PromptRenderContext, Task> next)
         {
             await next(context);
@@ -212,9 +207,7 @@ public class PIIDetection(ITestOutputHelper output) : BaseTest(output)
                 throw new KernelException("Prompt contains PII information. Operation is canceled.");
             }
         }
-
     }
-
 
     /// <summary>
     /// Filter which use Text Anonymizer to detect PII in prompt and update the prompt by following specified rules before sending it to LLM.
@@ -225,7 +218,6 @@ public class PIIDetection(ITestOutputHelper output) : BaseTest(output)
         PresidioTextAnonymizerService anonymizerService,
         Dictionary<string, PresidioTextAnonymizer> anonymizers) : IPromptRenderFilter
     {
-
         public async Task OnPromptRenderAsync(PromptRenderContext context, Func<PromptRenderContext, Task> next)
         {
             await next(context);
@@ -251,11 +243,9 @@ public class PIIDetection(ITestOutputHelper output) : BaseTest(output)
             // Update prompt in context to sent new prompt without PII to LLM
             context.RenderedPrompt = anonymizerResult.Text;
         }
-
     }
 
     #endregion
-
 
     #region Microsoft Presidio Text Analyzer
 
@@ -265,21 +255,15 @@ public class PIIDetection(ITestOutputHelper output) : BaseTest(output)
     /// </summary>
     private readonly struct AnalyzerEntityType(string name)
     {
-
         public string Name { get; } = name;
 
         public static AnalyzerEntityType Person = new("PERSON");
-
         public static AnalyzerEntityType PhoneNumber = new("PHONE_NUMBER");
-
         public static AnalyzerEntityType EmailAddress = new("EMAIL_ADDRESS");
-
         public static AnalyzerEntityType CreditCard = new("CREDIT_CARD");
 
         public static implicit operator string(AnalyzerEntityType type) => type.Name;
-
     }
-
 
     /// <summary>
     /// Request model for Text Analyzer. Only required properties are defined here for demonstration purposes.
@@ -287,7 +271,6 @@ public class PIIDetection(ITestOutputHelper output) : BaseTest(output)
     /// </summary>
     private sealed class PresidioTextAnalyzerRequest
     {
-
         /// <summary>The text to analyze.</summary>
         [JsonPropertyName("text")]
         public string Text { get; set; }
@@ -295,9 +278,7 @@ public class PIIDetection(ITestOutputHelper output) : BaseTest(output)
         /// <summary>Two characters for the desired language in ISO_639-1 format.</summary>
         [JsonPropertyName("language")]
         public string Language { get; set; } = "en";
-
     }
-
 
     /// <summary>
     /// Response model from Text Analyzer. Only required properties are defined here for demonstration purposes.
@@ -305,7 +286,6 @@ public class PIIDetection(ITestOutputHelper output) : BaseTest(output)
     /// </summary>
     private sealed class PresidioTextAnalyzerResponse
     {
-
         /// <summary>Where the PII starts.</summary>
         [JsonPropertyName("start")]
         public int Start { get; set; }
@@ -321,18 +301,14 @@ public class PIIDetection(ITestOutputHelper output) : BaseTest(output)
         /// <summary>The supported PII entity types.</summary>
         [JsonPropertyName("entity_type")]
         public string EntityType { get; set; }
-
     }
-
 
     /// <summary>
     /// Service which performs HTTP request to Text Analyzer.
     /// </summary>
     private sealed class PresidioTextAnalyzerService(HttpClient httpClient)
     {
-
         private const string RequestUri = "analyze";
-
 
         public async Task<List<PresidioTextAnalyzerResponse>> AnalyzeAsync(PresidioTextAnalyzerRequest request)
         {
@@ -345,13 +321,11 @@ public class PIIDetection(ITestOutputHelper output) : BaseTest(output)
             var responseContent = await response.Content.ReadAsStringAsync();
 
             return JsonSerializer.Deserialize<List<PresidioTextAnalyzerResponse>>(responseContent) ??
-                   throw new Exception("Analyzer response is not available.");
+                throw new Exception("Analyzer response is not available.");
         }
-
     }
 
     #endregion
-
 
     #region Microsoft Presidio Text Anonymizer
 
@@ -361,30 +335,22 @@ public class PIIDetection(ITestOutputHelper output) : BaseTest(output)
     /// </summary>
     private readonly struct AnonymizerType(string name)
     {
-
         public string Name { get; } = name;
 
         public static AnonymizerType Hash = new("hash");
-
         public static AnonymizerType Mask = new("mask");
-
         public static AnonymizerType Redact = new("redact");
-
         public static AnonymizerType Replace = new("replace");
-
         public static AnonymizerType Encrypt = new("encrypt");
 
         public static implicit operator string(AnonymizerType type) => type.Name;
-
     }
-
 
     /// <summary>
     /// Anonymizer model that describes how to update the prompt.
     /// </summary>
     private sealed class PresidioTextAnonymizer
     {
-
         /// <summary>Anonymizer action type that can be performed to update the prompt.</summary>
         [JsonPropertyName("type")]
         public string Type { get; set; }
@@ -392,9 +358,7 @@ public class PIIDetection(ITestOutputHelper output) : BaseTest(output)
         /// <summary>New value for "replace" anonymizer type.</summary>
         [JsonPropertyName("new_value")]
         public string NewValue { get; set; }
-
     }
-
 
     /// <summary>
     /// Request model for Text Anonymizer.
@@ -402,7 +366,6 @@ public class PIIDetection(ITestOutputHelper output) : BaseTest(output)
     /// </summary>
     private sealed class PresidioTextAnonymizerRequest
     {
-
         /// <summary>The text to anonymize.</summary>
         [JsonPropertyName("text")]
         public string Text { get; set; }
@@ -414,9 +377,7 @@ public class PIIDetection(ITestOutputHelper output) : BaseTest(output)
         /// <summary>Array of analyzer detections.</summary>
         [JsonPropertyName("analyzer_results")]
         public List<PresidioTextAnalyzerResponse> AnalyzerResults { get; set; }
-
     }
-
 
     /// <summary>
     /// Response item model for Text Anonymizer.
@@ -424,7 +385,6 @@ public class PIIDetection(ITestOutputHelper output) : BaseTest(output)
     /// </summary>
     private sealed class PresidioTextAnonymizerResponseItem
     {
-
         /// <summary>Name of the used operator.</summary>
         [JsonPropertyName("operator")]
         public string Operator { get; set; }
@@ -440,9 +400,7 @@ public class PIIDetection(ITestOutputHelper output) : BaseTest(output)
         /// <summary>End index in the changed text.</summary>
         [JsonPropertyName("end")]
         public int End { get; set; }
-
     }
-
 
     /// <summary>
     /// Response model for Text Anonymizer.
@@ -450,7 +408,6 @@ public class PIIDetection(ITestOutputHelper output) : BaseTest(output)
     /// </summary>
     private sealed class PresidioTextAnonymizerResponse
     {
-
         /// <summary>The new text returned.</summary>
         [JsonPropertyName("text")]
         public string Text { get; set; }
@@ -458,18 +415,14 @@ public class PIIDetection(ITestOutputHelper output) : BaseTest(output)
         /// <summary>Array of anonymized entities.</summary>
         [JsonPropertyName("items")]
         public List<PresidioTextAnonymizerResponseItem> Items { get; set; }
-
     }
-
 
     /// <summary>
     /// Service which performs HTTP request to Text Anonymizer.
     /// </summary>
     private sealed class PresidioTextAnonymizerService(HttpClient httpClient)
     {
-
         private const string RequestUri = "anonymize";
-
 
         public async Task<PresidioTextAnonymizerResponse> AnonymizeAsync(PresidioTextAnonymizerRequest request)
         {
@@ -482,13 +435,11 @@ public class PIIDetection(ITestOutputHelper output) : BaseTest(output)
             var responseContent = await response.Content.ReadAsStringAsync();
 
             return JsonSerializer.Deserialize<PresidioTextAnonymizerResponse>(responseContent) ??
-                   throw new Exception("Anonymizer response is not available.");
+                throw new Exception("Anonymizer response is not available.");
         }
-
     }
 
     #endregion
-
 
     #region Plugins
 
@@ -497,33 +448,24 @@ public class PIIDetection(ITestOutputHelper output) : BaseTest(output)
     /// </summary>
     private sealed class Contact
     {
-
         public string Name { get; set; }
-
         public string Phone { get; set; }
-
         public string Position { get; set; }
-
     }
-
 
     /// <summary>
     /// Search Plugin to be called from prompt for demonstration purposes.
     /// </summary>
     private sealed class SearchPlugin
     {
-
         [KernelFunction]
-        public List<Contact> GetContacts() => new()
-        {
-            new() { Name = "John Smith", Phone = "+1 (123) 456-7890", Position = "Developer" },
-            new() { Name = "Alice Doe", Phone = "+1 (987) 654-3120", Position = "Manager" },
-            new() { Name = "Emily Davis", Phone = "+1 (555) 555-5555", Position = "Designer" }
-        };
-
+        public List<Contact> GetContacts() =>
+            [
+                new () { Name = "John Smith", Phone = "+1 (123) 456-7890", Position = "Developer" },
+                new () { Name = "Alice Doe", Phone = "+1 (987) 654-3120", Position = "Manager" },
+                new () { Name = "Emily Davis", Phone = "+1 (555) 555-5555", Position = "Designer" }
+            ];
     }
 
     #endregion
-
-
 }

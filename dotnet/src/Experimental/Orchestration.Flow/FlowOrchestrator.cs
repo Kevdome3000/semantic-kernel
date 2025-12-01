@@ -1,21 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Experimental.Orchestration;
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Abstractions;
-using Execution;
+using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
+using Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 
+namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 
 /// <summary>
 /// A flow orchestrator that using semantic kernel for execution.
 /// </summary>
 public class FlowOrchestrator
 {
-
     private readonly IKernelBuilder _kernelBuilder;
 
     private readonly IFlowStatusProvider _flowStatusProvider;
@@ -25,7 +23,6 @@ public class FlowOrchestrator
     private readonly IFlowValidator _flowValidator;
 
     private readonly FlowOrchestratorConfig? _config;
-
 
     /// <summary>
     /// Initialize a new instance of the <see cref="FlowOrchestrator"/> class.
@@ -51,7 +48,6 @@ public class FlowOrchestrator
         this._config = config;
     }
 
-
     /// <summary>
     /// Execute a given flow.
     /// </summary>
@@ -64,7 +60,8 @@ public class FlowOrchestrator
         [Description("The flow to execute")] Flow flow,
         [Description("Execution session id")] string sessionId,
         [Description("Current input")] string input,
-        [Description("Execution arguments")] KernelArguments? kernelArguments = null)
+        [Description("Execution arguments")]
+        KernelArguments? kernelArguments = null)
     {
         try
         {
@@ -76,9 +73,6 @@ public class FlowOrchestrator
         }
 
         var executor = new FlowExecutor(this._kernelBuilder, this._flowStatusProvider, this._globalPluginCollection, this._config);
-
-        return await executor.ExecuteFlowAsync(flow, sessionId, input, kernelArguments ?? new KernelArguments()).
-            ConfigureAwait(false);
+        return await executor.ExecuteFlowAsync(flow, sessionId, input, kernelArguments ?? []).ConfigureAwait(false);
     }
-
 }

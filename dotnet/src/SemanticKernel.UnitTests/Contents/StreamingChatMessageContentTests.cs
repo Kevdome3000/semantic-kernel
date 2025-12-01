@@ -1,16 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.UnitTests.Contents;
-
 using System.Text;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 
+namespace SemanticKernel.UnitTests.Contents;
 
 public class StreamingChatMessageContentTests
 {
-
     [Fact]
     public void ConstructorShouldAddTextContentToItemsCollectionIfContentProvided()
     {
@@ -23,7 +21,6 @@ public class StreamingChatMessageContentTests
         Assert.Contains(sut.Items, item => item is StreamingTextContent textContent && textContent.Text == "fake-content");
     }
 
-
     [Fact]
     public void ConstructorShouldNodAddTextContentToItemsCollectionIfNoContentProvided()
     {
@@ -33,7 +30,6 @@ public class StreamingChatMessageContentTests
         // Assert
         Assert.Empty(sut.Items);
     }
-
 
     [Fact]
     public void ContentPropertySetterShouldAddTextContentToItemsCollection()
@@ -50,7 +46,6 @@ public class StreamingChatMessageContentTests
         Assert.Contains(sut.Items, item => item is StreamingTextContent textContent && textContent.Text == "fake-content");
     }
 
-
     [Fact]
     public void ContentPropertySetterShouldNotAddTextContentToItemsCollection()
     {
@@ -63,7 +58,6 @@ public class StreamingChatMessageContentTests
         // Assert
         Assert.Empty(sut.Items);
     }
-
 
     [Theory]
     [InlineData(null)]
@@ -84,7 +78,6 @@ public class StreamingChatMessageContentTests
         Assert.Equal(content, ((StreamingTextContent)sut.Items[0]).Text);
     }
 
-
     [Fact]
     public void ContentPropertyGetterShouldReturnNullIfThereAreNoTextContentItems()
     {
@@ -96,7 +89,6 @@ public class StreamingChatMessageContentTests
         Assert.Equal(string.Empty, sut.ToString());
     }
 
-
     [Fact]
     public void ContentPropertyGetterShouldReturnContentOfTextContentItem()
     {
@@ -107,7 +99,6 @@ public class StreamingChatMessageContentTests
         Assert.Equal("fake-content", sut.Content);
         Assert.Equal("fake-content", sut.ToString());
     }
-
 
     [Fact]
     public void ContentPropertyGetterShouldReturnContentOfTheFirstTextContentItem()
@@ -128,7 +119,6 @@ public class StreamingChatMessageContentTests
         Assert.Equal("fake-content-1", sut.Content);
     }
 
-
     [Theory]
     [InlineData(null)]
     [InlineData("")]
@@ -148,7 +138,6 @@ public class StreamingChatMessageContentTests
         Assert.Null(message.AuthorName);
     }
 
-
     [Fact]
     public void ItShouldBePossibleToSetAndGetEncodingEvenIfThereAreNoItems()
     {
@@ -162,7 +151,6 @@ public class StreamingChatMessageContentTests
         Assert.Empty(sut.Items);
         Assert.Equal(Encoding.UTF32, sut.Encoding);
     }
-
 
     [Fact]
     public void EncodingPropertySetterShouldUpdateEncodingTextContentItem()
@@ -178,7 +166,6 @@ public class StreamingChatMessageContentTests
         Assert.Equal(Encoding.UTF32, ((StreamingTextContent)sut.Items[0]).Encoding);
     }
 
-
     [Fact]
     public void EncodingPropertyGetterShouldReturnEncodingOfTextContentItem()
     {
@@ -191,5 +178,4 @@ public class StreamingChatMessageContentTests
         // Assert
         Assert.Equal(Encoding.Latin1, sut.Encoding);
     }
-
 }

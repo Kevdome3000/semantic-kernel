@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Connectors.HuggingFace.UnitTests;
-
 using System;
 using System.Linq;
 using System.Net.Http;
@@ -15,16 +13,13 @@ using Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
 using Microsoft.SemanticKernel.Http;
 using Xunit;
 
+namespace SemanticKernel.Connectors.HuggingFace.UnitTests;
 
 public sealed class HuggingFaceStreamingTextGenerationTests : IDisposable
 {
-
     private readonly HttpClient _httpClient;
-
     private readonly HttpMessageHandlerStub _messageHandlerStub;
-
     private const string SamplePrompt = "Hello, How are you?";
-
 
     public HuggingFaceStreamingTextGenerationTests()
     {
@@ -34,7 +29,6 @@ public sealed class HuggingFaceStreamingTextGenerationTests : IDisposable
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
     }
 
-
     [Fact]
     public async Task SpecifiedServiceModelShouldBeUsedAsync()
     {
@@ -43,13 +37,11 @@ public sealed class HuggingFaceStreamingTextGenerationTests : IDisposable
         var client = this.CreateTextGenerationClient(modelId: modelId);
 
         //Act
-        await client.StreamGenerateTextAsync(SamplePrompt, executionSettings: null, cancellationToken: CancellationToken.None).
-            ToListAsync();
+        await client.StreamGenerateTextAsync(SamplePrompt, executionSettings: null, cancellationToken: CancellationToken.None).ToListAsync();
 
         //Assert
         Assert.EndsWith($"/{modelId}", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
     }
-
 
     [Fact]
     public async Task SpecifiedExecutionSettingseModelShouldBeUsedAsync()
@@ -59,13 +51,11 @@ public sealed class HuggingFaceStreamingTextGenerationTests : IDisposable
         var client = this.CreateTextGenerationClient();
 
         //Act
-        await client.StreamGenerateTextAsync(SamplePrompt, executionSettings: new PromptExecutionSettings { ModelId = modelId }, cancellationToken: CancellationToken.None).
-            ToListAsync();
+        await client.StreamGenerateTextAsync(SamplePrompt, executionSettings: new PromptExecutionSettings { ModelId = modelId }, cancellationToken: CancellationToken.None).ToListAsync();
 
         //Assert
         Assert.EndsWith($"/{modelId}", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
     }
-
 
     [Fact]
     public async Task ShouldReturnValidChatResponseAsync()
@@ -76,8 +66,7 @@ public sealed class HuggingFaceStreamingTextGenerationTests : IDisposable
         var responseChunks = Regex.Matches(testDataResponse, @"data:(\{.*\})");
 
         // Act
-        var textChunks = await client.StreamGenerateTextAsync("Hello, Explain me world in many word ;)", executionSettings: null, cancellationToken: CancellationToken.None).
-            ToListAsync();
+        var textChunks = await client.StreamGenerateTextAsync("Hello, Explain me world in many word ;)", executionSettings: null, cancellationToken: CancellationToken.None).ToListAsync();
 
         // Assert
 
@@ -85,19 +74,17 @@ public sealed class HuggingFaceStreamingTextGenerationTests : IDisposable
         Assert.Equal(responseChunks.Count, textChunks.Count);
 
         var i = -1;
-
         foreach (Match match in responseChunks)
         {
             i++;
+            JsonElement jsonTokenChunk = JsonElement.Parse(match.Groups[1].Value)
+                .GetProperty("token");
 
-            JsonElement jsonTokenChunk = JsonSerializer.Deserialize<JsonElement>(match.Groups[1].Value).
-                GetProperty("token");
-
-            Assert.Equal(jsonTokenChunk.GetProperty("text").
-                GetString(), textChunks[i].Text);
+            Assert.Equal(jsonTokenChunk
+                .GetProperty("text")
+                .GetString(), textChunks[i].Text);
         }
     }
-
 
     [Fact]
     public async Task ShouldReturnValidMetadataAsync()
@@ -109,63 +96,41 @@ public sealed class HuggingFaceStreamingTextGenerationTests : IDisposable
 
         // Act
         var chatMessageContents =
-            await client.StreamGenerateTextAsync(SamplePrompt, executionSettings: null, cancellationToken: CancellationToken.None).
-                ToListAsync();
+            await client.StreamGenerateTextAsync(SamplePrompt, executionSettings: null, cancellationToken: CancellationToken.None).ToListAsync();
 
         // Assert
         var i = -1;
-
         foreach (Match match in responseChunks)
         {
             i++;
             var messageChunk = chatMessageContents[i];
 
-            JsonElement jsonRootChunk = JsonSerializer.Deserialize<JsonElement>(match.Groups[1].Value);
+            JsonElement jsonRootChunk = JsonElement.Parse(match.Groups[1].Value);
 
             Assert.NotNull(messageChunk.Metadata);
             Assert.IsType<HuggingFaceTextGenerationStreamMetadata>(messageChunk.Metadata);
 
             var metadata = messageChunk.Metadata as HuggingFaceTextGenerationStreamMetadata;
 
-            Assert.Equal(jsonRootChunk.GetProperty("index").
-                GetInt32(), metadata!.Index);
+            Assert.Equal(jsonRootChunk.GetProperty("index").GetInt32(), metadata!.Index);
+            Assert.Equal(jsonRootChunk.GetProperty("generated_text").GetString(), metadata.GeneratedText);
+            Assert.Equal(jsonRootChunk.GetProperty("token").GetProperty("id").GetInt32(), metadata.TokenId);
+            Assert.Equal(jsonRootChunk.GetProperty("token").GetProperty("logprob").GetDouble(), metadata!.TokenLogProb);
+            Assert.Equal(jsonRootChunk.GetProperty("token").GetProperty("special").GetBoolean(), metadata!.TokenSpecial);
 
-            Assert.Equal(jsonRootChunk.GetProperty("generated_text").
-                GetString(), metadata.GeneratedText);
-
-            Assert.Equal(jsonRootChunk.GetProperty("token").
-                GetProperty("id").
-                GetInt32(), metadata.TokenId);
-
-            Assert.Equal(jsonRootChunk.GetProperty("token").
-                GetProperty("logprob").
-                GetDouble(), metadata!.TokenLogProb);
-
-            Assert.Equal(jsonRootChunk.GetProperty("token").
-                GetProperty("special").
-                GetBoolean(), metadata!.TokenSpecial);
-
-            if (jsonRootChunk.GetProperty("details").
-                    ValueKind == JsonValueKind.Object)
+            if (jsonRootChunk.GetProperty("details").ValueKind == JsonValueKind.Object)
             {
-                Assert.Equal(jsonRootChunk.GetProperty("details").
-                    GetProperty("finish_reason").
-                    GetString(), metadata.FinishReason);
-
-                Assert.Equal(jsonRootChunk.GetProperty("details").
-                    GetProperty("generated_tokens").
-                    GetInt32(), metadata.GeneratedTokens);
+                Assert.Equal(jsonRootChunk.GetProperty("details").GetProperty("finish_reason").GetString(), metadata.FinishReason);
+                Assert.Equal(jsonRootChunk.GetProperty("details").GetProperty("generated_tokens").GetInt32(), metadata.GeneratedTokens);
             }
         }
     }
-
 
     [Fact]
     public async Task ShouldUsePromptExecutionSettingsAsync()
     {
         // Arrange
         var client = this.CreateTextGenerationClient();
-
         var executionSettings = new HuggingFacePromptExecutionSettings()
         {
             MaxTokens = null,
@@ -180,8 +145,7 @@ public sealed class HuggingFaceStreamingTextGenerationTests : IDisposable
         };
 
         // Act
-        await client.StreamGenerateTextAsync(SamplePrompt, executionSettings: executionSettings, cancellationToken: CancellationToken.None).
-            ToListAsync();
+        await client.StreamGenerateTextAsync(SamplePrompt, executionSettings: executionSettings, cancellationToken: CancellationToken.None).ToListAsync();
 
         // Assert
         var request = JsonSerializer.Deserialize<TextGenerationRequest>(this._messageHandlerStub.RequestContent);
@@ -197,7 +161,6 @@ public sealed class HuggingFaceStreamingTextGenerationTests : IDisposable
         Assert.Equal(executionSettings.WaitForModel, request.Options!.WaitForModel);
         Assert.Equal(executionSettings.UseCache, request.Options.UseCache);
     }
-
 
     [Fact]
     public async Task ShouldHaveModelIdDefinedWhenProvidedInServiceAsync()
@@ -215,7 +178,6 @@ public sealed class HuggingFaceStreamingTextGenerationTests : IDisposable
         }
     }
 
-
     [Fact]
     public async Task ShouldHaveModelIdDefinedWhenProvidedInExecutionSettingsAsync()
     {
@@ -232,7 +194,6 @@ public sealed class HuggingFaceStreamingTextGenerationTests : IDisposable
         }
     }
 
-
     [Fact]
     public async Task ItCreatesPostRequestIfBearerIsSpecifiedWithAuthorizationHeaderAsync()
     {
@@ -241,15 +202,13 @@ public sealed class HuggingFaceStreamingTextGenerationTests : IDisposable
         var client = this.CreateTextGenerationClient(apiKey: apiKey);
 
         // Act
-        await client.StreamGenerateTextAsync(SamplePrompt, executionSettings: null, cancellationToken: CancellationToken.None).
-            ToListAsync();
+        await client.StreamGenerateTextAsync(SamplePrompt, executionSettings: null, cancellationToken: CancellationToken.None).ToListAsync();
 
         // Assert
         Assert.NotNull(this._messageHandlerStub.RequestHeaders);
         Assert.NotNull(this._messageHandlerStub.RequestHeaders.Authorization);
         Assert.Equal($"Bearer {apiKey}", this._messageHandlerStub.RequestHeaders.Authorization.ToString());
     }
-
 
     [Fact]
     public async Task ItCreatesPostRequestAsync()
@@ -258,13 +217,11 @@ public sealed class HuggingFaceStreamingTextGenerationTests : IDisposable
         var client = this.CreateTextGenerationClient();
 
         // Act
-        await client.StreamGenerateTextAsync(SamplePrompt, executionSettings: null, cancellationToken: CancellationToken.None).
-            ToListAsync();
+        await client.StreamGenerateTextAsync(SamplePrompt, executionSettings: null, cancellationToken: CancellationToken.None).ToListAsync();
 
         // Assert
         Assert.Equal(HttpMethod.Post, this._messageHandlerStub.Method);
     }
-
 
     [Fact]
     public async Task ItCreatesPostRequestWithValidUserAgentAsync()
@@ -273,14 +230,12 @@ public sealed class HuggingFaceStreamingTextGenerationTests : IDisposable
         var client = this.CreateTextGenerationClient();
 
         // Act
-        await client.StreamGenerateTextAsync(SamplePrompt, executionSettings: null, cancellationToken: CancellationToken.None).
-            ToListAsync();
+        await client.StreamGenerateTextAsync(SamplePrompt, executionSettings: null, cancellationToken: CancellationToken.None).ToListAsync();
 
         // Assert
         Assert.NotNull(this._messageHandlerStub.RequestHeaders);
         Assert.Equal(HttpHeaderConstant.Values.UserAgent, this._messageHandlerStub.RequestHeaders.UserAgent.ToString());
     }
-
 
     [Fact]
     public async Task ItCreatesPostRequestWithSemanticKernelVersionHeaderAsync()
@@ -290,19 +245,14 @@ public sealed class HuggingFaceStreamingTextGenerationTests : IDisposable
         var expectedVersion = HttpHeaderConstant.Values.GetAssemblyVersion(typeof(HuggingFaceClient));
 
         // Act
-        await client.StreamGenerateTextAsync(SamplePrompt, executionSettings: null, cancellationToken: CancellationToken.None).
-            ToListAsync();
+        await client.StreamGenerateTextAsync(SamplePrompt, executionSettings: null, cancellationToken: CancellationToken.None).ToListAsync();
 
         // Assert
         Assert.NotNull(this._messageHandlerStub.RequestHeaders);
-
-        var header = this._messageHandlerStub.RequestHeaders.GetValues(HttpHeaderConstant.Names.SemanticKernelVersion).
-            SingleOrDefault();
-
+        var header = this._messageHandlerStub.RequestHeaders.GetValues(HttpHeaderConstant.Names.SemanticKernelVersion).SingleOrDefault();
         Assert.NotNull(header);
         Assert.Equal(expectedVersion, header);
     }
-
 
     private HuggingFaceClient CreateTextGenerationClient(
         string modelId = "fake-model",
@@ -315,11 +265,9 @@ public sealed class HuggingFaceStreamingTextGenerationTests : IDisposable
             endpoint: endpoint,
             httpClient: httpClient ?? this._httpClient);
 
-
     public void Dispose()
     {
         this._httpClient.Dispose();
         this._messageHandlerStub.Dispose();
     }
-
 }

@@ -201,7 +201,7 @@ public class BinaryContent : KernelContent
 
         if (newMetadata is null)
         {
-            newMetadata = new Dictionary<string, object?>();
+            newMetadata = [];
 
             if (Metadata is not null)
             {
