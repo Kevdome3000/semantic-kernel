@@ -62,7 +62,7 @@ internal abstract class SqlFilterTranslator
                 return;
 
             case ConstantExpression constant:
-                TranslateConstant(constant.Value);
+                TranslateConstant(constant.Value, isSearchCondition);
                 return;
 
             case QueryParameterExpression { Name: var name, Value: var value }:
@@ -139,13 +139,10 @@ internal abstract class SqlFilterTranslator
         _sql.Append(')');
 
         static bool IsNull(Expression expression)
-        {
-            return expression is ConstantExpression { Value: null } or QueryParameterExpression { Value: null };
-        }
+            => expression is ConstantExpression { Value: null } or QueryParameterExpression { Value: null };
     }
 
-
-    protected virtual void TranslateConstant(object? value)
+    protected virtual void TranslateConstant(object? value, bool isSearchCondition)
     {
         switch (value)
         {
@@ -219,7 +216,7 @@ internal abstract class SqlFilterTranslator
 
     protected virtual void GenerateColumn(PropertyModel property, bool isSearchCondition = false) // StorageName is considered to be a safe input, we quote and escape it mostly to produce valid SQL.
     {
-    _sql.Append('"').Append(property.StorageName.Replace("\"", "\"\"")).Append('"');
+        _sql.Append('"').Append(property.StorageName.Replace("\"", "\"\"")).Append('"');
     }
 
 
@@ -252,6 +249,20 @@ internal abstract class SqlFilterTranslator
                 Object: Expression source,
                 Arguments: [var item]
             } when declaringType.GetGenericTypeDefinition() == typeof(List<>):
+                TranslateContains(source, item);
+                return;
+
+            // C# 14 made changes to overload resolution to prefer Span-based overloads when those exist ("first-class spans");
+            // this makes MemoryExtensions.Contains() be resolved rather than Enumerable.Contains() (see above).
+            // MemoryExtensions.Contains() also accepts a Span argument for the source, adding an implicit cast we need to remove.
+            // See https://github.com/dotnet/runtime/issues/109757 for more context.
+            // Note that MemoryExtensions.Contains has an optional 3rd ComparisonType parameter; we only match when
+            // it's null.
+            case { Method.Name: nameof(MemoryExtensions.Contains), Arguments: [var spanArg, var item, ..] } contains
+                when contains.Method.DeclaringType == typeof(MemoryExtensions)
+                    && (contains.Arguments.Count is 2
+                        || (contains.Arguments.Count is 3 && contains.Arguments[2] is ConstantExpression { Value: null }))
+                    && TryUnwrapSpanImplicitCast(spanArg, out var source):
                 TranslateContains(source, item);
                 return;
 
@@ -299,8 +310,12 @@ internal abstract class SqlFilterTranslator
             {
                 result = unwrapped;
                 return true;
-    }
+            }
 
+            result = null;
+            return false;
+        }
+    }
 
     private void TranslateContains(Expression source, Expression item)
     {
@@ -317,7 +332,6 @@ internal abstract class SqlFilterTranslator
                 _sql.Append(" IN (");
 
                 var isFirst = true;
-
                 foreach (var element in newArray.Expressions)
                 {
                     if (isFirst)
@@ -344,7 +358,6 @@ internal abstract class SqlFilterTranslator
                 throw new NotSupportedException("Unsupported Contains expression");
         }
     }
-
 
     protected abstract void TranslateContainsOverArrayColumn(Expression source, Expression item);
 

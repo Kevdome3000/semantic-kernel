@@ -27,8 +27,7 @@ internal sealed class PostgresFilterTranslator : SqlFilterTranslator
 
     internal List<object> ParameterValues { get; } = [];
 
-
-    protected override void TranslateConstant(object? value)
+    protected override void TranslateConstant(object? value, bool isSearchCondition)
     {
         switch (value)
         {
@@ -59,14 +58,14 @@ internal sealed class PostgresFilterTranslator : SqlFilterTranslator
                         _sql.Append(',');
                     }
 
-                    TranslateConstant(element);
+                    this.TranslateConstant(element, isSearchCondition: false);
                 }
 
                 _sql.Append(']');
                 return;
 
             default:
-                base.TranslateConstant(value);
+                base.TranslateConstant(value, isSearchCondition);
                 break;
         }
     }
