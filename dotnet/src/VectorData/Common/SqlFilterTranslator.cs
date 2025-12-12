@@ -258,6 +258,47 @@ internal abstract class SqlFilterTranslator
             default:
                 throw new NotSupportedException($"Unsupported method call: {methodCall.Method.DeclaringType?.Name}.{methodCall.Method.Name}");
         }
+
+        static bool TryUnwrapSpanImplicitCast(Expression expression, [NotNullWhen(true)] out Expression? result)
+        {
+            // Different versions of the compiler seem to generate slightly different expression tree representations for this
+            // implicit cast:
+            var (unwrapped, castDeclaringType) = expression switch
+            {
+                UnaryExpression
+                {
+                    NodeType: ExpressionType.Convert,
+                    Method: { Name: "op_Implicit", DeclaringType: { IsGenericType: true } implicitCastDeclaringType },
+                    Operand: var operand
+                } => (operand, implicitCastDeclaringType),
+
+                MethodCallExpression
+                {
+                    Method: { Name: "op_Implicit", DeclaringType: { IsGenericType: true } implicitCastDeclaringType },
+                    Arguments: [var firstArgument]
+                } => (firstArgument, implicitCastDeclaringType),
+
+                _ => (null, null)
+            };
+
+            // For the dynamic case, there's a Convert node representing an up-cast to object[]; unwrap that too.
+            if (unwrapped is UnaryExpression
+                {
+                    NodeType: ExpressionType.Convert,
+                    Method: null
+                } convert
+                && convert.Type == typeof(object[]))
+            {
+                result = convert.Operand;
+                return true;
+            }
+
+            if (unwrapped is not null
+                && castDeclaringType?.GetGenericTypeDefinition() is var genericTypeDefinition
+                    && (genericTypeDefinition == typeof(Span<>) || genericTypeDefinition == typeof(ReadOnlySpan<>)))
+            {
+                result = unwrapped;
+                return true;
     }
 
 
