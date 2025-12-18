@@ -88,7 +88,7 @@ internal static class HttpClientProvider
                 },
             };
         }
-#elif NETSTANDARD2_0
+#elif NETSTANDARD2_0_OR_GREATER
         private static HttpClientHandler CreateHandler()
         {
             var handler = new HttpClientHandler();
@@ -101,7 +101,7 @@ internal static class HttpClientProvider
 
             return handler;
         }
-#elif NET462
+#elif NETFRAMEWORK
         private static HttpClientHandler CreateHandler()
             => new();
 #endif
