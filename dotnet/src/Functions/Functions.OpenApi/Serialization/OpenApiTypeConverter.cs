@@ -41,7 +41,7 @@ internal static class OpenApiTypeConverter
                 {
                     string stringArgument => JsonValue.Create(long.Parse(stringArgument, CultureInfo.InvariantCulture)),
                     byte or sbyte or short or ushort or int or uint or long or ulong => JsonValue.Create(argument),
-                    JsonElement jsonElement when jsonElement.TryGetInt64(out var intValue) => JsonValue.Create(intValue),
+                    JsonElement jsonElement when jsonElement.TryGetInt64(out long intValue) => JsonValue.Create(intValue),
                     _ => null
                 },
                 "boolean" => argument switch
@@ -53,11 +53,11 @@ internal static class OpenApiTypeConverter
                 },
                 "number" => argument switch
                 {
-                    string stringArgument when long.TryParse(stringArgument, out var intValue) => JsonValue.Create(intValue),
-                    string stringArgument when double.TryParse(stringArgument, out var doubleValue) => JsonValue.Create(doubleValue),
+                    string stringArgument when long.TryParse(stringArgument, out long intValue) => JsonValue.Create(intValue),
+                    string stringArgument when double.TryParse(stringArgument, out double doubleValue) => JsonValue.Create(doubleValue),
                     byte or sbyte or short or ushort or int or uint or long or ulong or float or double or decimal => JsonValue.Create(argument),
-                    JsonElement jsonElement when jsonElement.TryGetInt64(out var intValue) => JsonValue.Create(intValue),
-                    JsonElement jsonElement when jsonElement.TryGetDouble(out var doubleValue) => JsonValue.Create(doubleValue),
+                    JsonElement jsonElement when jsonElement.TryGetInt64(out long intValue) => JsonValue.Create(intValue),
+                    JsonElement jsonElement when jsonElement.TryGetDouble(out double doubleValue) => JsonValue.Create(doubleValue),
                     _ => null
                 },
                 _ => schema is null
@@ -86,11 +86,11 @@ internal static class OpenApiTypeConverter
     /// <returns>A JsonNode representing the converted value.</returns>
     private static JsonNode? ValidateSchemaAndConvert(string parameterName, KernelJsonSchema parameterSchema, object argument)
     {
-        var jsonSchema = JsonSchema.FromText(JsonSerializer.Serialize(parameterSchema));
+        JsonSchema jsonSchema = JsonSchema.FromText(JsonSerializer.Serialize(parameterSchema));
 
-        var node = JsonSerializer.SerializeToNode(argument);
+        JsonNode? node = JsonSerializer.SerializeToNode(argument);
 
-        if (jsonSchema.Evaluate(node).IsValid)
+        if (jsonSchema.Evaluate(node.ToJsonDocument().RootElement).IsValid)
         {
             return node;
         }
