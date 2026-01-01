@@ -39,14 +39,15 @@ public sealed class FunctionResult
     /// </summary>
     /// <param name="result">Instance of <see cref="FunctionResult"/> with result data to copy.</param>
     /// <param name="value">The resulting object of the function's invocation.</param>
-    public FunctionResult(FunctionResult result, object? value = null)
+    /// <param name="metadata">Metadata associated with the function's execution</param>   '
+    public FunctionResult(FunctionResult result, object? value = null, IReadOnlyDictionary<string, object?>? metadata = null)
     {
         Verify.NotNull(result);
 
         Function = result.Function;
         Value = value ?? result.Value;
         Culture = result.Culture;
-        Metadata = result.Metadata;
+        Metadata = metadata ?? result.Metadata;
         RenderedPrompt = result.RenderedPrompt;
     }
 

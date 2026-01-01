@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.AI;
 
@@ -16,7 +17,7 @@ namespace Microsoft.SemanticKernel;
 /// A <see cref="KernelArguments"/> is a dictionary of argument names and values. It also carries a
 /// <see cref="PromptExecutionSettings"/>, accessible via the <see cref="ExecutionSettings"/> property.
 /// </remarks>
-public sealed class KernelArguments : AIFunctionArguments
+public class KernelArguments : AIFunctionArguments
 {
     private IReadOnlyDictionary<string, PromptExecutionSettings>? _executionSettings;
 
@@ -47,28 +48,29 @@ public sealed class KernelArguments : AIFunctionArguments
     public KernelArguments(IEnumerable<PromptExecutionSettings>? executionSettings)
         : base(StringComparer.OrdinalIgnoreCase)
     {
-        if (executionSettings is not null)
+        if (executionSettings is null)
         {
-            var newExecutionSettings = new Dictionary<string, PromptExecutionSettings>();
+            return;
+        }
+        var newExecutionSettings = new Dictionary<string, PromptExecutionSettings>();
 
-            foreach (var settings in executionSettings)
+        foreach (var settings in executionSettings)
+        {
+            var targetServiceId = settings.ServiceId ?? PromptExecutionSettings.DefaultServiceId;
+
+            if (newExecutionSettings.ContainsKey(targetServiceId))
             {
-                var targetServiceId = settings.ServiceId ?? PromptExecutionSettings.DefaultServiceId;
+                var exceptionMessage = (targetServiceId == PromptExecutionSettings.DefaultServiceId)
+                    ? $"Multiple prompt execution settings with the default service id '{PromptExecutionSettings.DefaultServiceId}' or no service id have been provided. Specify a single default prompt execution settings and provide a unique service id for all other instances."
+                    : $"Multiple prompt execution settings with the service id '{targetServiceId}' have been provided. Provide a unique service id for all instances.";
 
-                if (newExecutionSettings.ContainsKey(targetServiceId))
-                {
-                    var exceptionMessage = (targetServiceId == PromptExecutionSettings.DefaultServiceId)
-                        ? $"Multiple prompt execution settings with the default service id '{PromptExecutionSettings.DefaultServiceId}' or no service id have been provided. Specify a single default prompt execution settings and provide a unique service id for all other instances."
-                        : $"Multiple prompt execution settings with the service id '{targetServiceId}' have been provided. Provide a unique service id for all instances.";
-
-                    throw new ArgumentException(exceptionMessage, nameof(executionSettings));
-                }
-
-                newExecutionSettings[targetServiceId] = settings;
+                throw new ArgumentException(exceptionMessage, nameof(executionSettings));
             }
 
-            ExecutionSettings = newExecutionSettings;
+            newExecutionSettings[targetServiceId] = settings;
         }
+
+        ExecutionSettings = newExecutionSettings;
     }
 
     /// <summary>
@@ -100,13 +102,9 @@ public sealed class KernelArguments : AIFunctionArguments
         {
             if (value is { Count: > 0 })
             {
-                foreach (var kv in value!)
+                foreach (KeyValuePair<string, PromptExecutionSettings> kv in value!.Where(kv => !string.IsNullOrWhiteSpace(kv.Value.ServiceId) && kv.Key != kv.Value.ServiceId))
                 {
-                    // Ensures that if a service id is specified it needs to match to the current key in the dictionary.
-                    if (!string.IsNullOrWhiteSpace(kv.Value.ServiceId) && kv.Key != kv.Value.ServiceId)
-                    {
-                        throw new ArgumentException($@"Service id '{kv.Value.ServiceId}' must match the key '{kv.Key}'.", nameof(ExecutionSettings));
-                    }
+                    throw new ArgumentException($@"Service id '{kv.Value.ServiceId}' must match the key '{kv.Key}'.", nameof(ExecutionSettings));
                 }
             }
 

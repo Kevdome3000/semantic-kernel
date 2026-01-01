@@ -302,7 +302,7 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
         // Ensure arguments are initialized.
         arguments ??= [];
 
-        using var activity = this.StartFunctionActivity(this.Name, this.Description, arguments, this._jsonSerializerOptions);
+        using var activity = StartFunctionActivity(Name, Description, arguments, _jsonSerializerOptions);
         ILogger logger = kernel.LoggerFactory.CreateLogger(typeof(KernelFunction)) ?? NullLogger.Instance;
 
         logger.LogFunctionInvoking(PluginName, Name);
@@ -321,7 +321,7 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
             // Quick check for cancellation after logging about function start but before doing any real work.
             cancellationToken.ThrowIfCancellationRequested();
 
-            FunctionInvocationContext? invocationContext = await kernel.OnFunctionInvocationAsync(this,
+            FunctionInvocationContext invocationContext = await kernel.OnFunctionInvocationAsync(this,
                     arguments,
                     functionResult,
                     false,
@@ -338,8 +338,8 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
 
             logger.LogFunctionInvokedSuccess(PluginName, Name);
 
-            this.SetFunctionResultTag(activity, functionResult, this._jsonSerializerOptions);
-            this.LogFunctionResult(logger, this.PluginName, this.Name, functionResult);
+            SetFunctionResultTag(activity, functionResult, _jsonSerializerOptions);
+            LogFunctionResult(logger, PluginName, Name, functionResult);
 
             return functionResult;
         }
@@ -431,8 +431,8 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
         // Ensure arguments are initialized.
         arguments ??= [];
 
-        using var activity = this.StartFunctionActivity(this.Name, this.Description, arguments, this._jsonSerializerOptions);
-        ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name) ?? NullLogger.Instance;
+        using var activity = StartFunctionActivity(Name, Description, arguments, _jsonSerializerOptions);
+        ILogger logger = kernel.LoggerFactory.CreateLogger(Name) ?? NullLogger.Instance;
 
         logger.LogFunctionStreamingInvoking(PluginName, Name);
 
@@ -533,8 +533,8 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
             TimeSpan duration = new((long)((Stopwatch.GetTimestamp() - startingTimestamp) * (10_000_000.0 / Stopwatch.Frequency)));
             s_streamingDuration.Record(duration.TotalSeconds, in tags);
             logger.LogFunctionStreamingComplete(PluginName, Name, duration.TotalSeconds);
-            this.SetFunctionResultTag(activity, new FunctionResult(this, results, kernel.Culture), this._jsonSerializerOptions);
-            this.LogFunctionResult(logger, this.PluginName, this.Name, new FunctionResult(this, results, kernel.Culture));
+            SetFunctionResultTag(activity, new FunctionResult(this, results, kernel.Culture), _jsonSerializerOptions);
+            LogFunctionResult(logger, PluginName, Name, new FunctionResult(this, results, kernel.Culture));
         }
     }
 
