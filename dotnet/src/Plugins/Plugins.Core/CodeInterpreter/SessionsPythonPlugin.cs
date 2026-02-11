@@ -47,14 +47,14 @@ public sealed partial class SessionsPythonPlugin
         Verify.NotNull(httpClientFactory, nameof(httpClientFactory));
         Verify.NotNull(settings.Endpoint, nameof(settings.Endpoint));
 
-        _settings = settings;
+        this._settings = settings;
 
         // Ensure the endpoint won't change by reference
-        _poolManagementEndpoint = GetBaseEndpoint(settings.Endpoint);
+        this._poolManagementEndpoint = GetBaseEndpoint(settings.Endpoint);
 
-        _authTokenProvider = authTokenProvider;
-        _httpClientFactory = httpClientFactory;
-        _logger = loggerFactory?.CreateLogger(typeof(SessionsPythonPlugin)) ?? NullLogger.Instance;
+        this._authTokenProvider = authTokenProvider;
+        this._httpClientFactory = httpClientFactory;
+        this._logger = loggerFactory?.CreateLogger(typeof(SessionsPythonPlugin)) ?? NullLogger.Instance;
     }
 
     /// <summary>
@@ -86,20 +86,20 @@ public sealed partial class SessionsPythonPlugin
     {
         Verify.NotNullOrWhiteSpace(code, nameof(code));
 
-        if (_settings.SanitizeInput)
+        if (this._settings.SanitizeInput)
         {
             code = SanitizeCodeInput(code);
         }
 
-        _logger.LogTrace("Executing Python code: {Code}", code);
+        this._logger.LogTrace("Executing Python code: {Code}", code);
 
-        using var httpClient = _httpClientFactory.CreateClient();
+        using var httpClient = this._httpClientFactory.CreateClient();
 
-        var requestBody = new SessionsPythonCodeExecutionProperties(_settings, code);
+        var requestBody = new SessionsPythonCodeExecutionProperties(this._settings, code);
 
         using var content = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
 
-        using var response = await SendAsync(httpClient, HttpMethod.Post, "executions", cancellationToken, content).ConfigureAwait(false);
+        using var response = await this.SendAsync(httpClient, HttpMethod.Post, "executions", cancellationToken, content).ConfigureAwait(false);
 
         return JsonSerializer.Deserialize<SessionsPythonCodeExecutionResult>(await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false))!;
     }
@@ -113,6 +113,7 @@ public sealed partial class SessionsPythonPlugin
     /// <returns>The metadata of the uploaded file.</returns>
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="HttpRequestException"></exception>
+    /// <exception cref="InvalidOperationException">Thrown when file operations are disabled or the path is not allowed.</exception>
     [KernelFunction, Description("Uploads a file to the `/mnt/data` directory of the current session.")]
     public async Task<SessionsRemoteFileMetadata> UploadFileAsync(
         [Description("The name of the remote file, relative to `/mnt/data`.")] string remoteFileName,
@@ -122,18 +123,20 @@ public sealed partial class SessionsPythonPlugin
         Verify.NotNullOrWhiteSpace(remoteFileName, nameof(remoteFileName));
         Verify.NotNullOrWhiteSpace(localFilePath, nameof(localFilePath));
 
-        _logger.LogInformation("Uploading file: {LocalFilePath} to {RemoteFileName}", localFilePath, remoteFileName);
+        var validatedLocalPath = this.ValidateLocalPathForUpload(localFilePath);
 
-        using var httpClient = _httpClientFactory.CreateClient();
+        this._logger.LogInformation("Uploading file: {LocalFilePath} to {RemoteFileName}", validatedLocalPath, remoteFileName);
 
-        using var fileContent = new ByteArrayContent(File.ReadAllBytes(localFilePath));
+        using var httpClient = this._httpClientFactory.CreateClient();
+
+        using var fileContent = new ByteArrayContent(File.ReadAllBytes(validatedLocalPath));
 
         using var multipartFormDataContent = new MultipartFormDataContent()
         {
             { fileContent, "file", remoteFileName },
         };
 
-        using var response = await SendAsync(httpClient, HttpMethod.Post, "files", cancellationToken, multipartFormDataContent).ConfigureAwait(false);
+        using var response = await this.SendAsync(httpClient, HttpMethod.Post, "files", cancellationToken, multipartFormDataContent).ConfigureAwait(false);
 
         var stringContent = await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false);
 
@@ -147,27 +150,33 @@ public sealed partial class SessionsPythonPlugin
     /// <param name="localFilePath">The path to save the downloaded file to. If not provided won't save it in the disk.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The data of the downloaded file as byte array.</returns>
-    [KernelFunction, Description("Downloads a file from the `/mnt/data` directory of the current session.")]
+    /// <exception cref="InvalidOperationException">Thrown when file operations are disabled or the path is not allowed.</exception>
     public async Task<byte[]> DownloadFileAsync(
-        [Description("The name of the remote file to download, relative to `/mnt/data`.")] string remoteFileName,
-        [Description("The path to save the downloaded file to. If not provided won't save it in the disk.")] string? localFilePath = null,
+        string remoteFileName,
+        string? localFilePath = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(remoteFileName, nameof(remoteFileName));
 
-        _logger.LogTrace("Downloading file: {RemoteFileName} to {LocalFileName}", remoteFileName, localFilePath);
+        string? validatedLocalPath = null;
+        if (!string.IsNullOrWhiteSpace(localFilePath))
+        {
+            validatedLocalPath = this.ValidateLocalPathForDownload(localFilePath);
+        }
 
-        using var httpClient = _httpClientFactory.CreateClient();
+        this._logger.LogTrace("Downloading file: {RemoteFileName} to {LocalFileName}", remoteFileName, validatedLocalPath);
 
-        using var response = await SendAsync(httpClient, HttpMethod.Get, $"files/{Uri.EscapeDataString(remoteFileName)}/content", cancellationToken).ConfigureAwait(false);
+        using var httpClient = this._httpClientFactory.CreateClient();
+
+        using var response = await this.SendAsync(httpClient, HttpMethod.Get, $"files/{Uri.EscapeDataString(remoteFileName)}/content", cancellationToken).ConfigureAwait(false);
 
         var fileContent = await response.Content.ReadAsByteArrayAndTranslateExceptionAsync(cancellationToken).ConfigureAwait(false);
 
-        if (!string.IsNullOrWhiteSpace(localFilePath))
+        if (!string.IsNullOrWhiteSpace(validatedLocalPath))
         {
             try
             {
-                File.WriteAllBytes(localFilePath, fileContent);
+                File.WriteAllBytes(validatedLocalPath, fileContent);
             }
             catch (Exception ex)
             {
@@ -186,11 +195,11 @@ public sealed partial class SessionsPythonPlugin
     [KernelFunction, Description("Lists all entities: files or directories in the `/mnt/data` directory of the current session.")]
     public async Task<IReadOnlyList<SessionsRemoteFileMetadata>> ListFilesAsync(CancellationToken cancellationToken = default)
     {
-        _logger.LogTrace("Listing files for Session ID: {SessionId}", _settings.SessionId);
+        this._logger.LogTrace("Listing files for Session ID: {SessionId}", this._settings.SessionId);
 
-        using var httpClient = _httpClientFactory.CreateClient();
+        using var httpClient = this._httpClientFactory.CreateClient();
 
-        using var response = await SendAsync(httpClient, HttpMethod.Get, "files", cancellationToken).ConfigureAwait(false);
+        using var response = await this.SendAsync(httpClient, HttpMethod.Get, "files", cancellationToken).ConfigureAwait(false);
 
         var jsonElementResult = JsonElement.Parse(await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false));
 
@@ -240,9 +249,9 @@ public sealed partial class SessionsPythonPlugin
     {
         request.Headers.Add("User-Agent", $"{HttpHeaderConstant.Values.UserAgent}/{s_assemblyVersion} (Language=dotnet)");
 
-        if (_authTokenProvider is not null)
+        if (this._authTokenProvider is not null)
         {
-            request.Headers.Add("Authorization", $"Bearer {(await _authTokenProvider(cancellationToken).ConfigureAwait(false))}");
+            request.Headers.Add("Authorization", $"Bearer {(await this._authTokenProvider(cancellationToken).ConfigureAwait(false))}");
         }
     }
 
@@ -258,13 +267,13 @@ public sealed partial class SessionsPythonPlugin
     private async Task<HttpResponseMessage> SendAsync(HttpClient httpClient, HttpMethod method, string path, CancellationToken cancellationToken, HttpContent? httpContent = null)
     {
         // The query string is the same for all operations
-        var pathWithQueryString = $"{path}?identifier={_settings.SessionId}&api-version={ApiVersion}";
+        var pathWithQueryString = $"{path}?identifier={this._settings.SessionId}&api-version={ApiVersion}";
 
-        var uri = new Uri(_poolManagementEndpoint, pathWithQueryString);
+        var uri = new Uri(this._poolManagementEndpoint, pathWithQueryString);
 
         // If a list of allowed domains has been provided, the host of the provided
         // uri is checked to verify it is in the allowed domain list.
-        if (!_settings.AllowedDomains?.Contains(uri.Host) ?? false)
+        if (!this._settings.AllowedDomains?.Contains(uri.Host) ?? false)
         {
             throw new InvalidOperationException("Sending requests to the provided location is not allowed.");
         }
@@ -274,9 +283,93 @@ public sealed partial class SessionsPythonPlugin
             Content = httpContent,
         };
 
-        await AddHeadersAsync(request, cancellationToken).ConfigureAwait(false);
+        await this.AddHeadersAsync(request, cancellationToken).ConfigureAwait(false);
 
         return await httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Validates that the local file path is within allowed upload directories.
+    /// </summary>
+    /// <param name="localFilePath">The local file path to validate.</param>
+    /// <returns>The canonicalized path if valid.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when file operations are disabled or the path is not allowed.</exception>
+    private string ValidateLocalPathForUpload(string localFilePath)
+    {
+        if (!this._settings.EnableDangerousFileUploads)
+        {
+            throw new InvalidOperationException(
+                "File upload is disabled. Set 'EnableDangerousFileUploads' to true and configure 'AllowedUploadDirectories' to enable.");
+        }
+
+        if (this._settings.AllowedUploadDirectories is null || !this._settings.AllowedUploadDirectories.Any())
+        {
+            throw new InvalidOperationException(
+                "File upload requires 'AllowedUploadDirectories' to be configured.");
+        }
+
+        var canonicalPath = Path.GetFullPath(localFilePath);
+
+        foreach (var allowedDir in this._settings.AllowedUploadDirectories)
+        {
+            var canonicalAllowedDir = Path.GetFullPath(allowedDir);
+            // Ensure we match the directory correctly by appending separator
+            var separator = Path.DirectorySeparatorChar.ToString();
+            var allowedDirWithSeparator = canonicalAllowedDir.EndsWith(separator, StringComparison.OrdinalIgnoreCase)
+                ? canonicalAllowedDir
+                : canonicalAllowedDir + separator;
+
+            if (canonicalPath.StartsWith(allowedDirWithSeparator, StringComparison.OrdinalIgnoreCase))
+            {
+                return canonicalPath;
+            }
+        }
+
+        throw new InvalidOperationException(
+            $"Access denied: '{localFilePath}' is not within allowed upload directories.");
+    }
+
+    /// <summary>
+    /// Validates that the local file path is within allowed download directories.
+    /// </summary>
+    /// <param name="localFilePath">The local file path to validate.</param>
+    /// <returns>The canonicalized path if valid.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when the path is not allowed.</exception>
+    private string ValidateLocalPathForDownload(string localFilePath)
+    {
+        // If no restrictions configured, allow all paths (permissive by default for downloads)
+        if (this._settings.AllowedDownloadDirectories is null || !this._settings.AllowedDownloadDirectories.Any())
+        {
+            return Path.GetFullPath(localFilePath);
+        }
+
+        // Get the directory of the target file path
+        var targetDirectory = Path.GetDirectoryName(localFilePath);
+        if (string.IsNullOrEmpty(targetDirectory))
+        {
+            targetDirectory = ".";
+        }
+
+        var canonicalTargetDir = Path.GetFullPath(targetDirectory);
+        var canonicalFilePath = Path.GetFullPath(localFilePath);
+
+        foreach (var allowedDir in this._settings.AllowedDownloadDirectories)
+        {
+            var canonicalAllowedDir = Path.GetFullPath(allowedDir);
+            // Ensure we match the directory correctly by appending separator
+            var separator = Path.DirectorySeparatorChar.ToString();
+            var allowedDirWithSeparator = canonicalAllowedDir.EndsWith(separator, StringComparison.OrdinalIgnoreCase)
+                ? canonicalAllowedDir
+                : canonicalAllowedDir + separator;
+
+            if (canonicalTargetDir.StartsWith(allowedDirWithSeparator, StringComparison.OrdinalIgnoreCase))
+            {
+                return canonicalFilePath;
+            }
+        }
+
+        throw new InvalidOperationException(
+            $"Access denied: '{localFilePath}' is not within allowed download directories.");
     }
 
 #if NET

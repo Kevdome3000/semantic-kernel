@@ -22,15 +22,22 @@ internal class PostgresModelBuilder() : CollectionModelBuilder(ModelBuildingOpti
     };
 
 
-    protected override bool IsKeyPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
-    {
-        supportedTypes = "short, int, long, string, Guid";
+    protected override bool SupportsKeyAutoGeneration(Type keyPropertyType)
+        => keyPropertyType == typeof(Guid) || keyPropertyType == typeof(int) || keyPropertyType == typeof(long);
 
-        return type == typeof(short)
-            || type == typeof(int)
-            || type == typeof(long)
-            || type == typeof(string)
-            || type == typeof(Guid);
+    protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
+    {
+        var type = keyProperty.Type;
+
+        if (type != typeof(short)
+            && type != typeof(int)
+            && type != typeof(long)
+            && type != typeof(string)
+            && type != typeof(Guid))
+        {
+            throw new NotSupportedException(
+                $"Property '{keyProperty.ModelName}' has unsupported type '{type.Name}'. Key properties must be one of the supported types: short, int, long, string, Guid.");
+        }
     }
 
 
