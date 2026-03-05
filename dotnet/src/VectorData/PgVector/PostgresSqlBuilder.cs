@@ -161,11 +161,12 @@ internal static class PostgresSqlBuilder
             return sql.ToString();
         }
 
-        // Only support creating HNSW index creation through the connector.
+        // Support creating HNSW and DiskANN (pgvectorscale) indexes through the connector.
         var indexTypeName = indexKind switch
         {
             IndexKind.Hnsw => "hnsw",
-            _ => throw new NotSupportedException($"Index kind '{indexKind}' is not supported for table creation. If you need to create an index of this type, please do so manually. Only HNSW indexes are supported through the vector store.")
+            IndexKind.DiskAnn => "diskann",
+            _ => throw new NotSupportedException($"Index kind '{indexKind}' is not supported for table creation. If you need to create an index of this type, please do so manually. Only HNSW and DiskANN indexes are supported through the vector store.")
         };
 
         distanceFunction ??= PostgresConstants.DefaultDistanceFunction; // Default to Cosine distance

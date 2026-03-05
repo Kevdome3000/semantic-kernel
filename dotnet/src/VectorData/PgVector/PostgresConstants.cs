@@ -29,6 +29,7 @@ internal static class PostgresConstants
 
     public static readonly Dictionary<string, int> IndexMaxDimensions = new()
     {
-        { IndexKind.Hnsw, 2000 }
+        { IndexKind.Hnsw, 2000 },
+        { IndexKind.DiskAnn, 2000 }
     };
 }
