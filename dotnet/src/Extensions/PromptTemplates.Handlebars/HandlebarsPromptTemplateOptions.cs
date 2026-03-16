@@ -1,21 +1,17 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel.PromptTemplates.Handlebars;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using HandlebarsDotNet;
 using HandlebarsDotNet.Helpers.Enums;
 using HandlebarsDotNet.Helpers.Options;
 
-
+namespace Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 /// <summary>
 /// Configuration for Handlebars helpers.
 /// </summary>
 public sealed class HandlebarsPromptTemplateOptions : HandlebarsHelpersOptions
 {
-
     // TODO [@teresaqhoang]: Issue #3947 Add Categories filter for KernelSystemHelpers (i.e., KernelHelperCategories)
-
 
     /// <summary>
     /// Delegate for registering custom Handlebars helpers with conflict resolution.
@@ -23,7 +19,6 @@ public sealed class HandlebarsPromptTemplateOptions : HandlebarsHelpersOptions
     /// <param name="name">The name of the helper.</param>
     /// <param name="helper">The helper to register.</param>
     public delegate void RegisterHelperCallback(string name, HandlebarsReturnHelper helper);
-
 
     /// <summary>
     /// Callback for registering custom helpers.
@@ -52,7 +47,6 @@ public sealed class HandlebarsPromptTemplateOptions : HandlebarsHelpersOptions
     /// </value>
     public Action<RegisterHelperCallback, HandlebarsPromptTemplateOptions, KernelArguments>? RegisterCustomHelpers { get; set; }
 
-
     /// <summary>
     /// Flag indicating whether to enable HTML decoding of the rendered template.
     /// </summary>
@@ -64,13 +58,12 @@ public sealed class HandlebarsPromptTemplateOptions : HandlebarsHelpersOptions
     /// <remarks>Categories only filters built-in dotnet helpers, the ones defined here: https://github.com/Handlebars-Net/Handlebars.Net.Helpers/wiki.</remarks>
     public HandlebarsPromptTemplateOptions()
     {
-        PrefixSeparator = "-";
+        this.PrefixSeparator = "-";
 
-        Categories =
+        this.Categories =
         [
             Category.Math, // Enables basic math operations (https://github.com/Handlebars-Net/Handlebars.Net.Helpers/wiki/Math)
             Category.String // Enables string manipulation (https://github.com/Handlebars-Net/Handlebars.Net.Helpers/wiki/String)
         ];
     }
-
 }

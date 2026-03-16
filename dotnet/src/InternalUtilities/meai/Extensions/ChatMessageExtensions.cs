@@ -1,19 +1,17 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
+using AudioContent = Microsoft.SemanticKernel.AudioContent;
+using BinaryContent = Microsoft.SemanticKernel.BinaryContent;
+using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
+using ImageContent = Microsoft.SemanticKernel.ImageContent;
+using KernelContent = Microsoft.SemanticKernel.KernelContent;
+
 namespace Microsoft.Extensions.AI;
-
-using ImageContent = ImageContent;
-using AudioContent = AudioContent;
-using BinaryContent = BinaryContent;
-using KernelContent = KernelContent;
-using ChatMessageContent = ChatMessageContent;
-
 
 [ExcludeFromCodeCoverage]
 internal static class ChatMessageExtensions

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Net;
@@ -24,7 +24,6 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
     /// TODO [@teresaqhoang]: Support override of default options
     private readonly HandlebarsPromptTemplateOptions _options;
 
-
     /// <summary>
     /// Constructor for Handlebars PromptTemplate.
     /// </summary>
@@ -33,13 +32,12 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
     /// <param name="options">Handlebars prompt template options</param>
     internal HandlebarsPromptTemplate(PromptTemplateConfig promptConfig, bool allowDangerouslySetContent = false, HandlebarsPromptTemplateOptions? options = null)
     {
-        _allowDangerouslySetContent = allowDangerouslySetContent;
-        _loggerFactory ??= NullLoggerFactory.Instance;
-        _logger = _loggerFactory.CreateLogger(typeof(HandlebarsPromptTemplate));
-        _promptModel = promptConfig;
-        _options = options ?? new HandlebarsPromptTemplateOptions();
+        this._allowDangerouslySetContent = allowDangerouslySetContent;
+        this._loggerFactory ??= NullLoggerFactory.Instance;
+        this._logger = this._loggerFactory.CreateLogger(typeof(HandlebarsPromptTemplate));
+        this._promptModel = promptConfig;
+        this._options = options ?? new HandlebarsPromptTemplateOptions();
     }
-
 
     /// <inheritdoc/>
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
@@ -48,22 +46,21 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
     {
         Verify.NotNull(kernel);
 
-        arguments = GetVariables(arguments);
+        arguments = this.GetVariables(arguments);
         var handlebarsInstance = HandlebarsDotNet.Handlebars.Create();
 
         // Register kernel, system, and any custom helpers
-        RegisterHelpers(handlebarsInstance,
+        this.RegisterHelpers(handlebarsInstance,
             kernel,
             arguments,
             cancellationToken);
 
-        var template = handlebarsInstance.Compile(_promptModel.Template);
+        var template = handlebarsInstance.Compile(this._promptModel.Template);
         var text = template(arguments).Trim();
-        return _options.EnableHtmlDecoder
+        return this._options.EnableHtmlDecoder
             ? WebUtility.HtmlDecode(text)
             : text;
     }
-
 
     #region private
 
@@ -71,7 +68,6 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
     private readonly ILogger _logger;
     private readonly PromptTemplateConfig _promptModel;
     private readonly bool _allowDangerouslySetContent;
-
 
     /// <summary>
     /// Registers kernel, system, and any custom helpers.
@@ -89,29 +85,28 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
         HandlebarsHelpers.Register(handlebarsInstance,
             options =>
             {
-                options.PrefixSeparator = _options.PrefixSeparator;
-                options.Categories = _options.Categories;
-                options.UseCategoryPrefix = _options.UseCategoryPrefix;
-                options.CustomHelperPaths = _options.CustomHelperPaths;
+                options.PrefixSeparator = this._options.PrefixSeparator;
+                options.Categories = this._options.Categories;
+                options.UseCategoryPrefix = this._options.UseCategoryPrefix;
+                options.CustomHelperPaths = this._options.CustomHelperPaths;
             });
 
         // Add helpers for kernel functions
         KernelFunctionHelpers.Register(handlebarsInstance,
             kernel,
             arguments,
-            _promptModel,
-            _allowDangerouslySetContent,
-            _options.PrefixSeparator,
+            this._promptModel,
+            this._allowDangerouslySetContent,
+            this._options.PrefixSeparator,
             cancellationToken);
 
         // Add any custom helpers
-        _options.RegisterCustomHelpers?.Invoke(
+        this._options.RegisterCustomHelpers?.Invoke(
             (name, customHelper)
                 => KernelHelpersUtils.RegisterHelperSafe(handlebarsInstance, name, customHelper),
-            _options,
+            this._options,
             arguments);
     }
-
 
     /// <summary>
     /// Gets the variables for the prompt template, including setting any default values from the prompt config.
@@ -120,7 +115,7 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
     {
         KernelArguments result = [];
 
-        foreach (var p in _promptModel.InputVariables)
+        foreach (var p in this._promptModel.InputVariables)
         {
             if (p.Default is null || p.Default is string stringDefault && stringDefault.Length == 0)
             {
@@ -136,14 +131,13 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
             {
                 if (kvp.Value is not null)
                 {
-                    result[kvp.Key] = GetEncodedValueOrDefault(_promptModel, kvp.Key, kvp.Value);
+                    result[kvp.Key] = this.GetEncodedValueOrDefault(this._promptModel, kvp.Key, kvp.Value);
                 }
             }
         }
 
         return result;
     }
-
 
     /// <summary>
     /// Encodes argument value if necessary, or throws an exception if encoding is not supported.
@@ -153,7 +147,7 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
     /// <param name="propertyValue">The value of the property/argument.</param>
     private object GetEncodedValueOrDefault(PromptTemplateConfig promptTemplateConfig, string propertyName, object propertyValue)
     {
-        if (_allowDangerouslySetContent || promptTemplateConfig.AllowDangerouslySetContent)
+        if (this._allowDangerouslySetContent || promptTemplateConfig.AllowDangerouslySetContent)
         {
             return propertyValue;
         }
@@ -191,7 +185,6 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
             $"Argument '{propertyName}' has a value that doesn't support automatic encoding. " + $"Set {nameof(InputVariable.AllowDangerouslySetContent)} to 'true' for this argument and implement custom encoding, " + "or provide the value as a string.");
     }
 
-
     /// <summary>
     /// Determines if a type is considered safe and doesn't require encoding.
     /// </summary>
@@ -220,6 +213,5 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
     }
 
     #endregion
-
 
 }

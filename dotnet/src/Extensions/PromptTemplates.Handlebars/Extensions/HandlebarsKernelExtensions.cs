@@ -1,19 +1,16 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Threading;
 using System.Threading.Tasks;
-using PromptTemplates.Handlebars;
+using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 
-
+namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides <see cref="Kernel"/> extensions methods for Handlebars functionality.
 /// </summary>
 public static class HandlebarsKernelExtensions
 {
     private static readonly HandlebarsPromptTemplateFactory s_promptTemplateFactory = new();
-
 
     /// <summary>
     /// Invokes a prompt specified via a prompt template in the Handlebars prompt template format.

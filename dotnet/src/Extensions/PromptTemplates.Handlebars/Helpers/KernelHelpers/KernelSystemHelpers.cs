@@ -1,22 +1,18 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-using static Microsoft.SemanticKernel.PromptTemplates.Handlebars.Helpers.KernelHelpersUtils;
-
-namespace Microsoft.SemanticKernel.PromptTemplates.Handlebars.Helpers;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using HandlebarsDotNet;
 using HandlebarsDotNet.Compiler;
+using static Microsoft.SemanticKernel.PromptTemplates.Handlebars.Helpers.KernelHelpersUtils;
 
-
+namespace Microsoft.SemanticKernel.PromptTemplates.Handlebars.Helpers;
 /// <summary>
 /// Extension class to register additional helpers as Kernel System helpers.
 /// </summary>
 internal static class KernelSystemHelpers
 {
-
     /// <summary>
     /// The "NaN", "Infinity", and "-Infinity" String tokens can be read as floating-point constants, and the Single and Double values for these constants will be written as their corresponding JSON string representations.
     /// </summary>
@@ -24,7 +20,6 @@ internal static class KernelSystemHelpers
     {
         NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowNamedFloatingPointLiterals
     };
-
 
     /// <summary>
     /// Register all (default) or specific categories of system helpers.
@@ -39,7 +34,6 @@ internal static class KernelSystemHelpers
     {
         RegisterSystemHelpers(handlebarsInstance, kernel, variables);
     }
-
 
     /// <summary>
     /// Register all system helpers.
@@ -201,5 +195,4 @@ internal static class KernelSystemHelpers
             return left == right || (left is not null && left.Equals(right));
         });
     }
-
 }
