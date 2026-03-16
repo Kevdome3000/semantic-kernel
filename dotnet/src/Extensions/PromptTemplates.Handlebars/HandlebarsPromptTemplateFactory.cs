@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -10,7 +10,6 @@ namespace Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 /// </summary>
 public sealed class HandlebarsPromptTemplateFactory : IPromptTemplateFactory
 {
-
     /// <summary>Gets the name of the Handlebars template format.</summary>
     public static string HandlebarsTemplateFormat => "handlebars";
 
@@ -22,7 +21,7 @@ public sealed class HandlebarsPromptTemplateFactory : IPromptTemplateFactory
     /// <summary>
     /// The character used to delimit plugin, function, or variable names in a Handlebars template.
     /// </summary>
-    public string NameDelimiter => _options.PrefixSeparator;
+    public string NameDelimiter => this._options.PrefixSeparator;
 
     /// <summary>
     /// Gets or sets a value indicating whether to allow potentially dangerous content to be inserted into the prompt.
@@ -35,16 +34,14 @@ public sealed class HandlebarsPromptTemplateFactory : IPromptTemplateFactory
     /// </remarks>
     public bool AllowDangerouslySetContent { get; init; } = false;
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="HandlebarsPromptTemplateFactory"/> class.
     /// </summary>
     /// <param name="options">Handlebars promnpt template options</param>
     public HandlebarsPromptTemplateFactory(HandlebarsPromptTemplateOptions? options = null)
     {
-        _options = options ?? new HandlebarsPromptTemplateOptions();
+        this._options = options ?? new HandlebarsPromptTemplateOptions();
     }
-
 
     /// <inheritdoc/>
     public bool TryCreate(PromptTemplateConfig templateConfig, [NotNullWhen(true)] out IPromptTemplate? result)
@@ -53,7 +50,7 @@ public sealed class HandlebarsPromptTemplateFactory : IPromptTemplateFactory
 
         if (templateConfig.TemplateFormat.Equals(HandlebarsTemplateFormat, StringComparison.Ordinal))
         {
-            result = new HandlebarsPromptTemplate(templateConfig, AllowDangerouslySetContent, _options);
+            result = new HandlebarsPromptTemplate(templateConfig, this.AllowDangerouslySetContent, this._options);
 
             return true;
         }
@@ -62,5 +59,4 @@ public sealed class HandlebarsPromptTemplateFactory : IPromptTemplateFactory
 
         return false;
     }
-
 }

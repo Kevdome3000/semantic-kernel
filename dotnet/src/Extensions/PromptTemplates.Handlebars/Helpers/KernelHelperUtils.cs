@@ -1,6 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-namespace Microsoft.SemanticKernel.PromptTemplates.Handlebars.Helpers;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System;
 using System.Linq;
@@ -8,7 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using HandlebarsDotNet;
 
-
+namespace Microsoft.SemanticKernel.PromptTemplates.Handlebars.Helpers;
 /// <summary>
 /// Extension class to register additional helpers as Kernel System helpers.
 /// </summary>
@@ -30,7 +28,6 @@ internal static class KernelHelpersUtils
         handlebarsInstance.RegisterHelper(helperName, helper);
     }
 
-
     /// <summary>
     /// Returns value if defined, else, tries to resolve value from given KernelArguments dictionary.
     /// </summary>
@@ -51,7 +48,6 @@ internal static class KernelHelpersUtils
         return argument;
     }
 
-
     /// <summary>
     /// Processes arguments to resolve unbinded values. If argument was not bound to the Handlebars template at render time, get the value from the KernelArguments dictionary.
     /// </summary>
@@ -67,7 +63,6 @@ internal static class KernelHelpersUtils
 
         return new Arguments(processedArguments.ToArray());
     }
-
 
     /// <summary>
     /// Determines whether the specified type is a numeric type.
@@ -93,7 +88,6 @@ internal static class KernelHelpersUtils
                        TypeCode.Decimal);
     }
 
-
     /// <summary>
     /// Tries to parse the input as any of the numeric types.
     /// </summary>
@@ -108,7 +102,6 @@ internal static class KernelHelpersUtils
                double.TryParse(input, out _) ||
                decimal.TryParse(input, out _);
     }
-
 
     /// <summary>
     /// Tries to convert a <see cref="JsonNode"/> object to a specific type.
